@@ -1,0 +1,32 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "id_and_name",
+        "namespace": "public"
+      },
+      "stream_state": {
+        "stream_name": "id_and_name",
+        "stream_namespace": "public",
+        "cursor_field": ["id"],
+        "cursor": "5"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "other",
+        "namespace": "public"
+      },
+      "stream_state": {
+        "stream_name": "other",
+        "stream_namespace": "public",
+        "cursor_field": ["id"],
+        "cursor": "2"
+      }
+    }
+  }
+]

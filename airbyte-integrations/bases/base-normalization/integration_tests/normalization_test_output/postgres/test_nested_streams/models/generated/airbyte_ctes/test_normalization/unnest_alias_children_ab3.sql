@@ -9,7 +9,7 @@ select
     {{ dbt_utils.surrogate_key([
         '_airbyte_unnest_alias_hashid',
         'ab_id',
-        adapter.quote('owner'),
+        object_to_string(adapter.quote('owner')),
     ]) }} as _airbyte_children_hashid,
     tmp.*
 from {{ ref('unnest_alias_children_ab2') }} tmp

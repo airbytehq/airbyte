@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -247,8 +247,6 @@ class SponsoredProductsReportStream(ReportStream):
     """
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports
     """
-
-    primary_key = ["profileId", "recordType", "reportDate"]
 
     def report_init_endpoint(self, record_type: str) -> str:
         return f"/v2/sp/{record_type}/report"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -15,6 +15,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import io.airbyte.commons.json.JsonSchemas.FieldNameOrList;
 import io.airbyte.commons.util.MoreIterators;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -94,6 +95,20 @@ public class JsonPaths {
     return jsonPath + JSON_PATH_LIST_SPLAT;
   }
 
+  /**
+   * Map path produced by {@link JsonSchemas} to the JSONPath format.
+   *
+   * @param jsonSchemaPath - path as described in {@link JsonSchemas}
+   * @return path as JSONPath
+   */
+  public static String mapJsonSchemaPathToJsonPath(final List<FieldNameOrList> jsonSchemaPath) {
+    String jsonPath = empty();
+    for (final FieldNameOrList fieldNameOrList : jsonSchemaPath) {
+      jsonPath = fieldNameOrList.isList() ? appendAppendListSplat(jsonPath) : appendField(jsonPath, fieldNameOrList.getFieldName());
+    }
+    return jsonPath;
+  }
+
   /*
    * This version of the JsonPath Configuration object allows queries to return to the path of values
    * instead of the values that were found.
@@ -117,7 +132,7 @@ public class JsonPaths {
    * @param jsonPath - path to validate
    */
   public static void assertIsSingleReturnQuery(final String jsonPath) {
-    Preconditions.checkArgument(!jsonPath.contains("*"), "Cannot accept paths with wildcards because they may return more than one item.");
+    Preconditions.checkArgument(JsonPath.isPathDefinite(jsonPath), "Cannot accept paths with wildcards because they may return more than one item.");
   }
 
   /**

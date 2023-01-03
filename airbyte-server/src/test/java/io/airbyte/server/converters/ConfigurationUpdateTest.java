@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.converters;
@@ -19,6 +19,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
@@ -33,20 +34,19 @@ class ConfigurationUpdateTest {
 
   private static final String IMAGE_REPOSITORY = "foo";
   private static final String IMAGE_TAG = "bar";
-  private static final String IMAGE_NAME = IMAGE_REPOSITORY + ":" + IMAGE_TAG;
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
   private static final JsonNode SPEC = CatalogHelpers.fieldsToJsonSchema(
-      Field.of("username", JsonSchemaType.STRING),
-      Field.of("password", JsonSchemaType.STRING));
+      Field.of(JdbcUtils.USERNAME_KEY, JsonSchemaType.STRING),
+      Field.of(JdbcUtils.PASSWORD_KEY, JsonSchemaType.STRING));
   private static final ConnectorSpecification CONNECTOR_SPECIFICATION = new ConnectorSpecification().withConnectionSpecification(SPEC);
   private static final JsonNode ORIGINAL_CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
-      .put("username", "airbyte")
-      .put("password", "abc")
+      .put(JdbcUtils.USERNAME_KEY, "airbyte")
+      .put(JdbcUtils.PASSWORD_KEY, "abc")
       .build());
   private static final JsonNode NEW_CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
-      .put("username", "airbyte")
-      .put("password", "xyz")
+      .put(JdbcUtils.USERNAME_KEY, "airbyte")
+      .put(JdbcUtils.PASSWORD_KEY, "xyz")
       .build());
   private static final StandardSourceDefinition SOURCE_DEFINITION = new StandardSourceDefinition()
       .withDockerRepository(IMAGE_REPOSITORY)

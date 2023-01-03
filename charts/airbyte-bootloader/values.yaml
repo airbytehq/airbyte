@@ -1,0 +1,185 @@
+##  global.serviceAccountName Name of service account to be associated with service
+##  deploymentMode Determines deployment mode of airbyte
+##  secretName Overrides the secrate name with with credentials to S3 Bucket and logging
+##  database.secretName Name of database secret
+##  database.secretValue Value of database password key stored in secret
+##  database.host Hostname of database
+##  database.port Database port
+global:
+  serviceAccountName: placeholderServiceAccount
+  deploymentMode: oss
+  secretName: ""
+  database:
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
+    port: "5432"
+  secrets: {}
+  env_vars: {}
+  extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
+
+
+enabled: true
+##  image.repository The repository to use for the airbyte bootloader image.
+##  image.pullPolicy the pull policy to use for the airbyte bootloader image
+##  image.tag The airbyte bootloader image tag. Defaults to the chart's AppVersion
+image:
+  repository: airbyte/bootloader
+  pullPolicy: IfNotPresent
+
+##  podAnnotations [object] Add extra annotations to the bootloader pod
+##
+podAnnotations: {}
+
+##  podLabels [object] Add extra labels to the bootloader pod
+##
+podLabels: {}
+
+##  containerSecurityContext Security context for the container
+## Examples:
+## containerSecurityContext:
+##    runAsNonRoot: true
+##    runAsUser: 1000
+##    readOnlyRootFilesystem: true
+containerSecurityContext: {}
+
+##  nodeSelector [object] Node labels for pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+##  tolerations [array] Tolerations for worker pod assignment.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+## Bootloader resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+##  bootloader.resources.limits [object] The resources limits for the airbyte bootloader image
+##  bootloader.resources.requests [object] The requested resources for the airbyte bootloader image
+resources:
+  ## Example:
+  ## limits:
+  ##    cpu: 200m
+  ##    memory: 1Gi
+  limits: {}
+  ## requests:
+  ##    memory: 256Mi
+  ##    cpu: 250m
+  requests: {}
+
+##  affinity [object] Affinity and anti-affinity for bootloader pod assignment.
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+##  extraEnv [array] Supply extra env variables to main container using full notation
+## Example: (With default env vars and values taken from generated config map)
+## extraEnv:
+##   - name: AIRBYTE_VERSION
+##     valueFrom:
+##       configMapKeyRef:
+##         name: airbyte-env
+##         key: AIRBYTE_VERSION
+##   - name: DATABASE_HOST
+##     valueFrom:
+##       configMapKeyRef:
+##         name: airbyte-env
+##         key: DATABASE_HOST
+##   - name: DATABASE_PORT
+##     valueFrom:
+##       configMapKeyRef:
+##         name: airbyte-env
+##         key: DATABASE_PORT
+##   - name: DATABASE_PASSWORD
+##     valueFrom:
+##       secretKeyRef:
+##         name: airbyte-secrets
+##         key: DATABASE_PASSWORD
+##   - name: DATABASE_URL
+##     valueFrom:
+##       configMapKeyRef:
+##         name: airbyte-env
+##         key: DATABASE_URL
+##   - name: DATABASE_USER
+##     valueFrom:
+##       secretKeyRef:
+##         name: airbyte-secrets
+##         key: DATABASE_USER
+##
+extraEnv: []
+
+##  secrets [object] Supply additional secrets to container
+## Example:
+## secrets:
+##   DATABASE_PASSWORD: strong-password
+##   DATABASE_USER: my-db-user
+secrets: {}
+
+##  extraContainer [array] Additional container for server pod(s)
+## Example:
+# extraContainers:
+#   - name: otel_collector
+#     image: somerepo/someimage:sometag
+#     args: [
+#         "--important-args"
+#     ]
+#     ports:
+#       - containerPort: 443
+#     volumeMounts:
+#       - name: volumeMountCool
+#         mountPath: /some/path
+#         readOnly: true
+extraContainers: []
+
+##  extraInitContainers [array] Additional init containers for server pod(s)
+## Example:
+# extraInitContainers:
+#   - name: sleepy
+#     image: alpine
+#     command: ['sleep', '60']
+
+extraInitContainers: []
+
+##  extraVolumeMounts [array] Additional volumeMounts for server container(s).
+## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumeMounts:
+##   - name: tmpdir
+##     mountPath: /tmp
+##
+extraVolumeMounts: []
+
+##  extraVolumes [array] Additional volumes for server pod(s).
+## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumes:
+##   - name: tmpdir
+##     emptyDir: {}
+##
+extraVolumes: []
+
+##  env_vars [object] Supply extra env variables to main container using simplified notation
+## Example:
+# env_vars:
+#   AIRBYTE_VERSION: 0.40.4
+
+#   # Airbyte Internal Database, see https://docs.airbyte.io/operator-guides/configuring-airbyte-db
+#   DATABASE_HOST: airbyte-db-svc
+#   DATABASE_PORT: 5432
+#   # translate manually DATABASE_URL: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}
+#   DATABASE_URL: jdbc:postgresql://airbyte-db-svc:5432/airbyte
+#   DATABASE_PASSWORD: 12345
+#   DATABASE_USER: airbyte
+env_vars: {}
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}

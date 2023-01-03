@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class GcsJsonlDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
-  protected GcsJsonlDestinationAcceptanceTest() {
+  public GcsJsonlDestinationAcceptanceTest() {
     super(S3Format.JSONL);
   }
 

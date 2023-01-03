@@ -1,17 +1,18 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { useConfig } from "config";
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { Destination } from "core/domain/connector";
+import { Action, Namespace } from "core/analytics";
+import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationService } from "core/domain/connector/DestinationService";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
+import { useConfig } from "../../config";
+import { DestinationRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
-import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useAnalyticsService } from "./Analytics";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const destinationsKeys = {
@@ -20,27 +21,27 @@ export const destinationsKeys = {
   list: (filters: string) => [...destinationsKeys.lists(), { filters }] as const,
   detail: (destinationId: string) => [...destinationsKeys.all, "details", destinationId] as const,
 };
-//
-type ValuesProps = {
+
+interface ValuesProps {
   name: string;
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
-};
-//
-type ConnectorProps = { name: string; destinationDefinitionId: string };
-
-function useDestinationService(): DestinationService {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-
-  return useInitService(
-    () => new DestinationService(config.apiUrl, middlewares),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config]
-  );
 }
 
-type DestinationList = { destinations: Destination[] };
+interface ConnectorProps {
+  name: string;
+  destinationDefinitionId: string;
+}
+
+function useDestinationService() {
+  const { apiUrl } = useConfig();
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+  return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+}
+
+interface DestinationList {
+  destinations: DestinationRead[];
+}
 
 const useDestinationList = (): DestinationList => {
   const workspace = useCurrentWorkspace();
@@ -51,7 +52,7 @@ const useDestinationList = (): DestinationList => {
 
 const useGetDestination = <T extends string | undefined | null>(
   destinationId: T
-): T extends string ? Destination : Destination | undefined => {
+): T extends string ? DestinationRead : DestinationRead | undefined => {
   const service = useDestinationService();
 
   return useSuspenseQuery(destinationsKeys.detail(destinationId ?? ""), () => service.get(destinationId ?? ""), {
@@ -67,6 +68,10 @@ const useCreateDestination = () => {
   return useMutation(
     async (createDestinationPayload: { values: ValuesProps; destinationConnector?: ConnectorProps }) => {
       const { values, destinationConnector } = createDestinationPayload;
+
+      if (!destinationConnector?.destinationDefinitionId) {
+        throw new Error("No Destination Definition Provided");
+      }
 
       return service.create({
         name: values.name,
@@ -89,16 +94,17 @@ const useDeleteDestination = () => {
   const service = useDestinationService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
+  const removeConnectionsFromList = useRemoveConnectionsFromList();
 
   return useMutation(
-    (payload: { destination: Destination; connectionsWithDestination: Connection[] }) =>
+    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionListItem[] }) =>
       service.delete(payload.destination.destinationId),
     {
       onSuccess: (_data, ctx) => {
-        analyticsService.track("Destination - Action", {
-          action: "Delete destination",
+        analyticsService.track(Namespace.DESTINATION, Action.DELETE, {
+          actionDescription: "Destination deleted",
           connector_destination: ctx.destination.destinationName,
-          connector_destination_id: ctx.destination.destinationDefinitionId,
+          connector_destination_definition_id: ctx.destination.destinationDefinitionId,
         });
 
         queryClient.removeQueries(destinationsKeys.detail(ctx.destination.destinationId));
@@ -111,12 +117,8 @@ const useDeleteDestination = () => {
             } as DestinationList)
         );
 
-        // To delete connections with current destination from local store
         const connectionIds = ctx.connectionsWithDestination.map((item) => item.connectionId);
-
-        queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
-          connections: ls?.connections.filter((c) => connectionIds.includes(c.connectionId)) ?? [],
-        }));
+        removeConnectionsFromList(connectionIds);
       },
     }
   );

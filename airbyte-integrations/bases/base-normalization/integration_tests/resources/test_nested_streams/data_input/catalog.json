@@ -272,6 +272,40 @@
       "sync_mode": "incremental",
       "cursor_field": [],
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "arrays",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "array_of_strings": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "nested_array_parent": {
+              "type": ["null", "object"],
+              "properties": {
+                "nested_array": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
     }
   ]
 }

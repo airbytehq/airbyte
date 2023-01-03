@@ -1,0 +1,202 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "description": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "collection_position": {
+      "type": ["null", "integer"]
+    },
+    "table_id": {
+      "type": ["null", "integer"]
+    },
+    "result_metadata": {
+      "type": ["null", "array"],
+      "items": {
+        "properties": {
+          "display_name": {
+            "type": ["null", "string"]
+          },
+          "field_ref": {
+            "type": ["null", "string", "array"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "base_type": {
+            "type": ["null", "string"]
+          },
+          "effective_type": {
+            "type": ["null", "string"]
+          },
+          "semantic_type": {
+            "type": ["null", "string"]
+          },
+          "fingerprint": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "creator": {
+      "type": ["null", "object"],
+      "properties": {
+        "email": {
+          "type": ["null", "string"]
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "last_login": {
+          "type": ["null", "string"]
+        },
+        "is_qbnewb": {
+          "type": ["null", "boolean"]
+        },
+        "is_superuser": {
+          "type": ["null", "boolean"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "date_joined": {
+          "type": ["null", "string"]
+        },
+        "common_name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "database_id": {
+      "type": ["null", "integer"]
+    },
+    "enable_embedding": {
+      "type": ["null", "boolean"]
+    },
+    "collection_id": {
+      "type": ["null", "integer"]
+    },
+    "query_type": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "creator_id": {
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "made_public_by_id": {
+      "type": ["null", "integer"]
+    },
+    "embedding_params": {
+      "type": ["null", "string"]
+    },
+    "cache_ttl": {
+      "type": ["null", "integer"]
+    },
+    "dataset_query": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "native": {
+          "type": ["null", "object"],
+          "properties": {
+            "query": {
+              "type": ["null", "string"]
+            },
+            "template-tags": {
+              "type": ["null", "object"]
+            }
+          }
+        },
+        "database": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "display": {
+      "type": ["null", "string"]
+    },
+    "last-edit-info": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "email": {
+          "type": ["null", "string"]
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "timestamp": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "visualization_settings": {
+      "type": ["null", "object"]
+    },
+    "collection": {
+      "type": ["null", "object"],
+      "properties": {
+        "authority_level": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "archived": {
+          "type": ["null", "boolean"]
+        },
+        "slug": {
+          "type": ["null", "string"]
+        },
+        "color": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "personal_owner_id": {
+          "type": ["null", "integer"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "location": {
+          "type": ["null", "string"]
+        },
+        "namespace": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "dataset": {
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "public_uuid": {
+      "type": ["null", "string"]
+    }
+  }
+}

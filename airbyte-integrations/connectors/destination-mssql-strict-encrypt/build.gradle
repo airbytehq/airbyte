@@ -10,10 +10,10 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-mssql')
     implementation project(':airbyte-test-utils')
@@ -21,7 +21,7 @@ dependencies {
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.testcontainers.mssqlserver
+    testImplementation libs.connectors.testcontainers.mssqlserver
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mssql-strict-encrypt')

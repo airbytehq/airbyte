@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.Release.Name }}-airbyte-server-svc
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "airbyte.selectorLabels" . | nindent 4 }}
+    {{- if .Values.extraSelectorLabels }}
+    {{ toYaml (mergeOverwrite .Values.extraSelectorLabels .Values.global.extraSelectorLabels) | nindent 4 }}
+    {{- end }}

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: airbyte-connector-builder-server-svc
+spec:
+  type: NodePort
+  ports:
+    - port: 8003
+      protocol: TCP
+      targetPort: 80
+  selector:
+    airbyte: connector-builder-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-connector-builder-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      airbyte: connector-builder-server
+  template:
+    metadata:
+      labels:
+        airbyte: connector-builder-server
+    spec:
+      containers:
+        - name: airbyte-connector-builder-server-container
+          image: airbyte/connector-builder-server
+          env:
+            - name: AIRBYTE_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AIRBYTE_VERSION
+          ports:
+            - containerPort: 80

@@ -17,6 +17,6 @@
       "readOnly": true
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details about the time tracking provider."
 }

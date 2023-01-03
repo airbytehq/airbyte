@@ -1,0 +1,23 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+    id 'airbyte-source-acceptance-test'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.sftp.SftpSource'
+}
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.2'
+    implementation 'com.jcraft:jsch:0.1.55'
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-sftp')
+    testImplementation libs.connectors.testcontainers
+}

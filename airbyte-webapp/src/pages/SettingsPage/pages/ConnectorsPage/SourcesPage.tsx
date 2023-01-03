@@ -2,24 +2,28 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
-import { SourceDefinition } from "core/domain/connector";
-import useConnector from "hooks/services/useConnector";
+import { SourceDefinitionRead } from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useGetConnectorsOutOfDate, useUpdateSourceDefinitions } from "hooks/services/useConnector";
 import { useSourceList } from "hooks/services/useSourceHook";
 import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import ConnectorsView from "./components/ConnectorsView";
 
 const SourcesPage: React.FC = () => {
-  const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
+  useTrackPage(PageTrackingCodes.SETTINGS_SOURCE);
+
+  const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
   const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
 
-  const { hasNewSourceVersion, updateAllSourceVersions } = useConnector();
+  const { hasNewSourceVersion } = useGetConnectorsOutOfDate();
+  const { updateAllSourceVersions } = useUpdateSourceDefinitions();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
@@ -40,8 +44,8 @@ const SourcesPage: React.FC = () => {
     [feedbackList, formatMessage, updateSourceDefinition]
   );
 
-  const usedSourcesDefinitions: SourceDefinition[] = useMemo(() => {
-    const sourceDefinitionMap = new Map<string, SourceDefinition>();
+  const usedSourcesDefinitions: SourceDefinitionRead[] = useMemo(() => {
+    const sourceDefinitionMap = new Map<string, SourceDefinitionRead>();
     sources.forEach((source) => {
       const sourceDefinition = sourceDefinitions.find(
         (sourceDefinition) => sourceDefinition.sourceDefinitionId === source.sourceDefinitionId
@@ -56,11 +60,11 @@ const SourcesPage: React.FC = () => {
   }, [sources, sourceDefinitions]);
 
   const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
-    setIsUpdateSucces(false);
+    setIsUpdateSuccess(false);
     await updateAllSourceVersions();
-    setIsUpdateSucces(true);
+    setIsUpdateSuccess(true);
     setTimeout(() => {
-      setIsUpdateSucces(false);
+      setIsUpdateSuccess(false);
     }, 2000);
   }, [updateAllSourceVersions]);
 

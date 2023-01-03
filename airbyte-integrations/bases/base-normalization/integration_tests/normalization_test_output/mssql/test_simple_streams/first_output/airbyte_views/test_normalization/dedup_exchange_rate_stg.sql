@@ -30,14 +30,14 @@ select
     bigint
 ) as id,
     cast(currency as 
-    VARCHAR(max)) as currency,
+    NVARCHAR(max)) as currency,
     try_parse(nullif("date", '''') as date) as "date",
-    try_parse(nullif(timestamp_col, '''') as datetime) as timestamp_col,
+    try_parse(nullif(timestamp_col, '''') as datetimeoffset) as timestamp_col,
     cast("HKD@spéçiäl & characters" as 
     float
 ) as "HKD@spéçiäl & characters",
     cast(hkd_special___characters as 
-    VARCHAR(max)) as hkd_special___characters,
+    NVARCHAR(max)) as hkd_special___characters,
     cast(nzd as 
     float
 ) as nzd,
@@ -59,15 +59,15 @@ select
     
 
     concat(concat(coalesce(cast(id as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(currency as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("date" as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(timestamp_col as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("HKD@spéçiäl & characters" as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(hkd_special___characters as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(nzd as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(usd as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_dedup_exchange_rate_hashid,
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(currency as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast("date" as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(timestamp_col as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast("HKD@spéçiäl & characters" as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(hkd_special___characters as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(nzd as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(usd as 
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_dedup_exchange_rate_hashid,
     tmp.*
 from __dbt__cte__dedup_exchange_rate_ab2 tmp
 -- dedup_exchange_rate

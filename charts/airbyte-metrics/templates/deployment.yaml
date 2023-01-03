@@ -1,0 +1,135 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "airbyte.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ include "airbyte.chart" . }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      airbyte: metrics
+  strategy:
+    type: Recreate # Needed due to volume claims
+  template:
+    metadata:
+      labels:
+        airbyte: metrics
+        {{- if .Values.podLabels }}
+          {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ .Values.global.serviceAccountName }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+          {{- printf "- name: %s" .name | nindent 2 }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: airbyte-metrics-container
+        image: {{ printf "%s:%s" .Values.image.repository (include "metrics.imageTag" .) }}
+        imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        env:
+        {{- if eq .Values.global.deploymentMode "oss"  }}
+        - name: AIRBYTE_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: AIRBYTE_VERSION
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.database.secretName | default (include "airbyte.chart" .) }}
+              key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: DATABASE_URL
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-airbyte-secrets
+              key: DATABASE_USER
+        - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+        - name: METRIC_CLIENT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: METRIC_CLIENT
+        - name: OTEL_COLLECTOR_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: OTEL_COLLECTOR_ENDPOINT
+        {{- end }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: metrics-secrets
+              key: {{ $k }}
+        {{- end }}
+        {{- end }}
+
+        # Values from env
+        {{- if .Values.env_vars }}
+        {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
+
+        # Values from extraEnv for more compability(if you want to use external secret source or other stuff)
+        {{- if .Values.extraEnv }}
+        {{- toYaml .Values.extraEnv | nindent 8 }}
+        {{- end }}
+
+        {{- if .Values.resources }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.containerSecurityContext }}
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        {{- end }}
+        {{- if .Values.extraVolumeMounts }}
+        volumeMounts:
+          {{ toYaml .Values.extraVolumeMounts | nindent 10 }}
+        {{- end }}
+      {{- if .Values.extraContainers }}
+      {{ toYaml .Values.extraContainers | nindent 6 }}
+      {{- end }}
+      {{- if .Values.global.extraContainers }}
+      {{ toYaml .Values.global.extraContainers | nindent 6 }}
+      {{- end }}
+      volumes:
+      {{- if .Values.extraVolumes }}
+      {{ toYaml .Values.extraVolumes | nindent 6 }}
+      {{- end }}

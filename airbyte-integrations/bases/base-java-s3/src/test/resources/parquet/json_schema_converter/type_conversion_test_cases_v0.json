@@ -1,0 +1,270 @@
+[
+  {
+    "fieldName": "string_field",
+    "jsonFieldSchema": {
+      "type": "string"
+    },
+    "avroFieldType": ["null", "string"]
+  },
+  {
+    "fieldName": "integer_field",
+    "jsonFieldSchema": {
+      "type": "number",
+      "airbyte_type": "integer"
+    },
+    "avroFieldType": ["null", "int"]
+  },
+  {
+    "fieldName": "big_integer_field",
+    "jsonFieldSchema": {
+      "type": "string",
+      "airbyte_type": "big_integer"
+    },
+    "avroFieldType": ["null", "string"]
+  },
+  {
+    "fieldName": "float_field",
+    "jsonFieldSchema": {
+      "type": "number",
+      "airbyte_type": "float"
+    },
+    "avroFieldType": ["null", "float"]
+  },
+  {
+    "fieldName": "null_field",
+    "jsonFieldSchema": {
+      "type": "null"
+    },
+    "avroFieldType": "null"
+  },
+  {
+    "fieldName": "union_field",
+    "jsonFieldSchema": {
+      "type": ["null", "number", "string"]
+    },
+    "avroFieldType": ["null", "double", "string"]
+  },
+  {
+    "fieldName": "array_field_single_type",
+    "jsonFieldSchema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string"]
+      }
+    ]
+  },
+  {
+    "fieldName": "array_field_multiple_types",
+    "jsonFieldSchema": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "airbyte_type": "big_integer"
+        }
+      ]
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string", "double"]
+      }
+    ]
+  },
+  {
+    "fieldName": "object_field",
+    "jsonFieldSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "big_integer_id": {
+          "type": "string",
+          "airbyte_type": "big_integer"
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "record",
+        "name": "object_field",
+        "fields": [
+          {
+            "name": "id",
+            "type": ["null", "int"],
+            "default": null
+          },
+          {
+            "name": "big_integer_id",
+            "type": ["null", "string"],
+            "default": null
+          },
+          {
+            "name": "node_id",
+            "type": ["null", "string"],
+            "default": null
+          },
+          {
+            "name": "_airbyte_additional_properties",
+            "type": ["null", { "type": "map", "values": "string" }],
+            "default": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "fieldName": "object_field_without_properties",
+    "jsonFieldSchema": {
+      "type": "object"
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "record",
+        "name": "object_field_without_properties",
+        "fields": [
+          {
+            "name": "_airbyte_additional_properties",
+            "type": ["null", { "type": "map", "values": "string" }],
+            "default": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "fieldName": "_airbyte_additional_properties",
+    "jsonFieldSchema": {
+      "type": "object"
+    },
+    "avroFieldType": ["null", { "type": "map", "values": "string" }]
+  },
+  {
+    "fieldName": "_ab_additional_properties",
+    "jsonFieldSchema": {
+      "type": "object"
+    },
+    "avroFieldType": ["null", { "type": "map", "values": "string" }]
+  },
+  {
+    "fieldName": "any_of_field",
+    "jsonFieldSchema": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "integer" },
+        { "type": "number" }
+      ]
+    },
+    "avroFieldType": ["null", "string", "int", "double"]
+  },
+  {
+    "fieldName": "all_of_field",
+    "jsonFieldSchema": {
+      "allOf": [
+        { "type": "string" },
+        { "type": "integer" },
+        { "type": "number", "airbyte_type": "float" }
+      ]
+    },
+    "avroFieldType": ["null", "string", "int", "float"]
+  },
+  {
+    "fieldName": "one_of_field",
+    "jsonFieldSchema": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "integer" },
+        { "type": "string", "airbyte_type": "big_integer" }
+      ]
+    },
+    "avroFieldType": ["null", "string", "int"]
+  },
+  {
+    "fieldName": "logical_type_date_time",
+    "jsonFieldSchema": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "avroFieldType": [
+      "null",
+      { "type": "long", "logicalType": "timestamp-micros" },
+      "string"
+    ]
+  },
+  {
+    "fieldName": "logical_type_date",
+    "jsonFieldSchema": {
+      "type": "string",
+      "format": "date"
+    },
+    "avroFieldType": [
+      "null",
+      { "type": "int", "logicalType": "date" },
+      "string"
+    ]
+  },
+  {
+    "fieldName": "logical_type_time",
+    "jsonFieldSchema": {
+      "type": "string",
+      "format": "time"
+    },
+    "avroFieldType": [
+      "null",
+      { "type": "long", "logicalType": "time-micros" },
+      "string"
+    ]
+  },
+  {
+    "fieldName": "array_field_without_items",
+    "jsonFieldSchema": {
+      "type": "array"
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string"]
+      }
+    ]
+  },
+  {
+    "fieldName": "array_field_with_empty_items",
+    "jsonFieldSchema": {
+      "type": "array",
+      "items": {}
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string"]
+      }
+    ]
+  },
+  {
+    "fieldName": "field_without_type",
+    "jsonFieldSchema": {},
+    "avroFieldType": ["null", "string"]
+  }
+]

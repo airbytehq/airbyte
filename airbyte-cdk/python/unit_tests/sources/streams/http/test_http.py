@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -240,28 +240,31 @@ def test_raise_on_http_errors_off_5xx(mocker, status_code):
 @pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
 def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
     stream = AutoFailFalseHttpStream()
-    req = requests.Response()
-    req.status_code = status_code
+    req = requests.PreparedRequest()
+    res = requests.Response()
+    res.status_code = status_code
 
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    mocker.patch.object(requests.Session, "send", return_value=res)
     response = stream._send_request(req, {})
     assert response.status_code == status_code
 
 
-def test_raise_on_http_errors_off_timeout(requests_mock):
+@pytest.mark.parametrize(
+    "error",
+    (
+        requests.exceptions.ConnectTimeout,
+        requests.exceptions.ConnectionError,
+        requests.exceptions.ChunkedEncodingError,
+        requests.exceptions.ReadTimeout,
+    ),
+)
+def test_raise_on_http_errors(mocker, error):
     stream = AutoFailFalseHttpStream()
-    requests_mock.register_uri("GET", stream.url_base, exc=requests.exceptions.ConnectTimeout)
+    send_mock = mocker.patch.object(requests.Session, "send", side_effect=error())
 
-    with pytest.raises(requests.exceptions.ConnectTimeout):
+    with pytest.raises(error):
         list(stream.read_records(SyncMode.full_refresh))
-
-
-def test_raise_on_http_errors_off_connection_error(requests_mock):
-    stream = AutoFailFalseHttpStream()
-    requests_mock.register_uri("GET", stream.url_base, exc=requests.exceptions.ConnectionError)
-
-    with pytest.raises(requests.exceptions.ConnectionError):
-        list(stream.read_records(SyncMode.full_refresh))
+    assert send_mock.call_count == stream.max_retries + 1
 
 
 class PostHttpStream(StubBasicReadHttpStream):
@@ -326,13 +329,13 @@ class TestRequestBody:
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
     def test_body_for_all_methods(self, mocker, requests_mock):
-        """Stream must send a body for POST/PATCH/PUT methods only"""
+        """Stream must send a body for GET/POST/PATCH/PUT methods only"""
         stream = PostHttpStream()
         methods = {
             "POST": True,
             "PUT": True,
             "PATCH": True,
-            "GET": False,
+            "GET": True,
             "DELETE": False,
             "OPTIONS": False,
         }
@@ -370,14 +373,15 @@ class CacheHttpSubStream(HttpSubStream):
 
 def test_caching_filename():
     stream = CacheHttpStream()
-    assert stream.cache_filename == f"{stream.name}.yml"
+    assert stream.cache_filename == f"{stream.name}.sqlite"
 
 
-def test_caching_cassettes_are_different():
+def test_caching_sessions_are_different():
     stream_1 = CacheHttpStream()
     stream_2 = CacheHttpStream()
 
-    assert stream_1.cache_file != stream_2.cache_file
+    assert stream_1._session != stream_2._session
+    assert stream_1.cache_filename == stream_2.cache_filename
 
 
 def test_parent_attribute_exist():
@@ -392,7 +396,7 @@ def test_cache_response(mocker):
     mocker.patch.object(stream, "url_base", "https://google.com/")
     list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
-    with open(stream.cache_filename, "r") as f:
+    with open(stream.cache_filename, "rb") as f:
         assert f.read()
 
 
@@ -411,19 +415,31 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
 
 
 @patch("airbyte_cdk.sources.streams.core.logging", MagicMock())
-def test_using_cache(mocker):
+def test_using_cache(mocker, requests_mock):
+    requests_mock.register_uri("GET", "https://google.com/", text="text")
+    requests_mock.register_uri("GET", "https://google.com/search", text="text")
+
     parent_stream = CacheHttpStreamWithSlices()
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
 
+    assert requests_mock.call_count == 0
+    assert parent_stream._session.cache.response_count() == 0
+
     for _slice in parent_stream.stream_slices():
         list(parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice))
+
+    assert requests_mock.call_count == 2
+    assert parent_stream._session.cache.response_count() == 2
 
     child_stream = CacheHttpSubStream(parent=parent_stream)
 
     for _slice in child_stream.stream_slices(sync_mode=SyncMode.full_refresh):
         pass
 
-    assert parent_stream.cassete.play_count != 0
+    assert requests_mock.call_count == 2
+    assert parent_stream._session.cache.response_count() == 2
+    assert parent_stream._session.cache.has_url("https://google.com/")
+    assert parent_stream._session.cache.has_url("https://google.com/search")
 
 
 class AutoFailTrueHttpStream(StubBasicReadHttpStream):
@@ -435,9 +451,10 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
     mocker.patch.object(AutoFailTrueHttpStream, "logger")
     mocker.patch.object(AutoFailTrueHttpStream, "should_retry", mocker.Mock(return_value=False))
     stream = AutoFailTrueHttpStream()
-    req = requests.Response()
-    req.status_code = status_code
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    req = requests.PreparedRequest()
+    res = requests.Response()
+    res.status_code = status_code
+    mocker.patch.object(requests.Session, "send", return_value=res)
     with pytest.raises(requests.exceptions.HTTPError):
         response = stream._send_request(req, {})
         stream.logger.error.assert_called_with(response.text)
@@ -474,10 +491,10 @@ def test_default_parse_response_error_message(api_response: dict, expected_messa
     assert message == expected_message
 
 
-def test_default_parse_response_error_message_not_json():
+def test_default_parse_response_error_message_not_json(requests_mock):
     stream = StubBasicReadHttpStream()
-    response = MagicMock()
-    response.json.side_effect = requests.exceptions.JSONDecodeError()
+    requests_mock.register_uri("GET", "mock://test.com/not_json", text="this is not json")
+    response = requests.get("mock://test.com/not_json")
 
     message = stream.parse_response_error_message(response)
     assert message is None

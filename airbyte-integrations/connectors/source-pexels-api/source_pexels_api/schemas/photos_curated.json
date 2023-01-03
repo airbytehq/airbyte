@@ -1,0 +1,175 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1667389456.json",
+  "title": "Root",
+  "type": "object",
+  "properties": {
+    "page": {
+      "$id": "#root/page",
+      "title": "Page",
+      "type": "integer",
+      "default": 0
+    },
+    "per_page": {
+      "$id": "#root/per_page",
+      "title": "Per_page",
+      "type": "integer",
+      "default": 0
+    },
+    "photos": {
+      "$id": "#root/photos",
+      "title": "Photos",
+      "type": "array",
+      "default": [],
+      "items": {
+        "$id": "#root/photos/items",
+        "title": "Items",
+        "type": "object",
+        "properties": {
+          "id": {
+            "$id": "#root/photos/items/id",
+            "title": "Id",
+            "type": "integer",
+            "default": 0
+          },
+          "width": {
+            "$id": "#root/photos/items/width",
+            "title": "Width",
+            "type": "integer",
+            "default": 0
+          },
+          "height": {
+            "$id": "#root/photos/items/height",
+            "title": "Height",
+            "type": "integer",
+            "default": 0
+          },
+          "url": {
+            "$id": "#root/photos/items/url",
+            "title": "Url",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          },
+          "photographer": {
+            "$id": "#root/photos/items/photographer",
+            "title": "Photographer",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          },
+          "photographer_url": {
+            "$id": "#root/photos/items/photographer_url",
+            "title": "Photographer_url",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          },
+          "photographer_id": {
+            "$id": "#root/photos/items/photographer_id",
+            "title": "Photographer_id",
+            "type": "integer",
+            "default": 0
+          },
+          "avg_color": {
+            "$id": "#root/photos/items/avg_color",
+            "title": "Avg_color",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          },
+          "src": {
+            "$id": "#root/photos/items/src",
+            "title": "Src",
+            "type": "object",
+            "properties": {
+              "original": {
+                "$id": "#root/photos/items/src/original",
+                "title": "Original",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              },
+              "large2x": {
+                "$id": "#root/photos/items/src/large2x",
+                "title": "Large2x",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              },
+              "large": {
+                "$id": "#root/photos/items/src/large",
+                "title": "Large",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              },
+              "medium": {
+                "$id": "#root/photos/items/src/medium",
+                "title": "Medium",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              },
+              "small": {
+                "$id": "#root/photos/items/src/small",
+                "title": "Small",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              },
+              "portrait": {
+                "$id": "#root/photos/items/src/portrait",
+                "title": "Portrait",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              },
+              "landscape": {
+                "$id": "#root/photos/items/src/landscape",
+                "title": "Landscape",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              },
+              "tiny": {
+                "$id": "#root/photos/items/src/tiny",
+                "title": "Tiny",
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+              }
+            }
+          },
+          "liked": {
+            "$id": "#root/photos/items/liked",
+            "title": "Liked",
+            "type": "boolean",
+            "default": true
+          },
+          "alt": {
+            "$id": "#root/photos/items/alt",
+            "title": "Alt",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          }
+        }
+      }
+    },
+    "total_results": {
+      "$id": "#root/total_results",
+      "title": "Total_results",
+      "type": "integer",
+      "default": 0
+    },
+    "next_page": {
+      "$id": "#root/next_page",
+      "title": "Next_page",
+      "type": "string",
+      "default": "",
+      "pattern": "^.*$"
+    }
+  }
+}

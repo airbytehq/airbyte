@@ -1,13 +1,16 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
+from datetime import timedelta
 from unittest.mock import MagicMock
 
+import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from source_mixpanel.source import (
+from source_mixpanel.streams import (
     Annotations,
     CohortMembers,
     Cohorts,
@@ -21,8 +24,9 @@ from source_mixpanel.source import (
     MixpanelStream,
     Revenue,
 )
+from source_mixpanel.utils import read_full_refresh
 
-from .utils import get_url_to_mock, setup_response
+from .utils import get_url_to_mock, read_incremental, setup_response
 
 logger = AirbyteLogger()
 
@@ -52,20 +56,20 @@ def time_sleep_mock(mocker):
     yield time_mock
 
 
-def test_url_base(patch_base_class):
-    stream = MixpanelStream(authenticator=MagicMock())
+def test_url_base(patch_base_class, config):
+    stream = MixpanelStream(authenticator=MagicMock(), **config)
 
     assert stream.url_base == "https://mixpanel.com/api/2.0/"
 
 
-def test_request_headers(patch_base_class):
-    stream = MixpanelStream(authenticator=MagicMock())
+def test_request_headers(patch_base_class, config):
+    stream = MixpanelStream(authenticator=MagicMock(), **config)
 
     assert stream.request_headers(stream_state={}) == {"Accept": "application/json"}
 
 
-def test_updated_state(patch_incremental_base_class):
-    stream = IncrementalMixpanelStream(authenticator=MagicMock())
+def test_updated_state(patch_incremental_base_class, config):
+    stream = IncrementalMixpanelStream(authenticator=MagicMock(), **config)
 
     updated_state = stream.get_updated_state(
         current_stream_state={"date": "2021-01-25T00:00:00Z"}, latest_record={"date": "2021-02-25T00:00:00Z"}
@@ -101,12 +105,12 @@ def cohorts_response():
     )
 
 
-def test_cohorts_stream_incremental(requests_mock, cohorts_response):
+def test_cohorts_stream_incremental(requests_mock, cohorts_response, config):
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
 
-    stream = Cohorts(authenticator=MagicMock())
+    stream = Cohorts(authenticator=MagicMock(), **config)
 
-    records = stream.read_records(sync_mode=SyncMode.incremental, stream_state={"created": "2019-04-02 23:22:01"})
+    records = read_incremental(stream, stream_state={"created": "2019-04-02 23:22:01"}, cursor_field=["created"])
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
@@ -152,29 +156,32 @@ def engage_response():
     )
 
 
-def test_engage_stream_incremental(requests_mock, engage_response):
+def test_engage_stream_incremental(requests_mock, engage_response, config):
     requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
 
-    stream = Engage(authenticator=MagicMock())
+    stream = Engage(authenticator=MagicMock(), **config)
 
-    records = stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state={"created": "2008-12-12T11:20:47"})
+    stream_state = {"created": "2008-12-12T11:20:47"}
+    records = list(read_incremental(stream, stream_state, cursor_field=["created"]))
 
-    records_length = sum(1 for _ in records)
-    assert records_length == 1
+    assert len(records) == 1
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
 
 
-def test_cohort_members_stream_incremental(requests_mock, engage_response, cohorts_response):
+def test_cohort_members_stream_incremental(requests_mock, engage_response, cohorts_response, config):
     requests_mock.register_uri("POST", MIXPANEL_BASE_URL + "engage?page_size=1000", engage_response)
     requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "cohorts/list", cohorts_response)
 
-    stream = CohortMembers(authenticator=MagicMock())
-
+    stream = CohortMembers(authenticator=MagicMock(), **config)
+    stream.set_cursor(["created"])
+    stream_state = {"created": "2008-12-12T11:20:47"}
     records = stream.read_records(
-        sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state={"created": "2008-12-12T11:20:47"}, stream_slice={"id": 1000}
+        sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000}
     )
 
-    records_length = sum(1 for _ in records)
-    assert records_length == 1
+    records = [item for item in records]
+    assert len(records) == 1
+    assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
 
 
 @pytest.fixture
@@ -199,13 +206,15 @@ def funnels_list_url(config):
 
 
 @pytest.fixture
-def funnels_response():
+def funnels_response(start_date):
+    first_date = start_date + timedelta(days=1)
+    second_date = start_date + timedelta(days=10)
     return setup_response(
         200,
         {
-            "meta": {"dates": ["2016-09-12" "2016-09-19" "2016-09-26"]},
+            "meta": {"dates": [str(first_date), str(second_date)]},
             "data": {
-                "2016-09-12": {
+                str(first_date): {
                     "steps": [],
                     "analysis": {
                         "completion": 20524,
@@ -214,7 +223,7 @@ def funnels_response():
                         "worst": 1,
                     },
                 },
-                "2016-09-19": {
+                str(second_date): {
                     "steps": [],
                     "analysis": {
                         "completion": 20500,
@@ -242,6 +251,25 @@ def test_funnels_stream(requests_mock, config, funnels_response, funnels_list_re
             records_arr.append(record)
 
     assert len(records_arr) == 4
+    last_record = records_arr[-1]
+    # Test without current state date
+    new_state = stream.get_updated_state(current_stream_state={}, latest_record=records_arr[-1])
+    assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
+
+    # Test with current state, that lesser than last record date
+    last_record_date = pendulum.parse(last_record["date"]).date()
+    new_state = stream.get_updated_state(
+        current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date - timedelta(days=1))}},
+        latest_record=records_arr[-1],
+    )
+    assert new_state == {str(last_record["funnel_id"]): {"date": last_record["date"]}}
+
+    # Test with current state, that is greater, than last record date
+    new_state = stream.get_updated_state(
+        current_stream_state={str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}},
+        latest_record=records_arr[-1],
+    )
+    assert new_state == {str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}}
 
 
 @pytest.fixture
@@ -258,15 +286,34 @@ def engage_schema_response():
     )
 
 
-def test_engage_schema(requests_mock, engage_schema_response):
+def test_engage_schema(requests_mock, engage_schema_response, config):
 
-    stream = EngageSchema(authenticator=MagicMock())
+    stream = EngageSchema(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), engage_schema_response)
 
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
 
     records_length = sum(1 for _ in records)
     assert records_length == 3
+
+
+def test_update_engage_schema(requests_mock, config):
+    stream = EngageSchema(authenticator=MagicMock(), **config)
+    requests_mock.register_uri(
+        "GET",
+        get_url_to_mock(stream),
+        setup_response(
+            200,
+            {
+                "results": {
+                    "$someNewSchemaField": {"count": 124, "type": "string"},
+                }
+            },
+        ),
+    )
+    engage_stream = Engage(authenticator=MagicMock(), **config)
+    engage_schema = engage_stream.get_json_schema()
+    assert "someNewSchemaField" in engage_schema["properties"]
 
 
 @pytest.fixture
@@ -282,9 +329,9 @@ def annotations_response():
     )
 
 
-def test_annotations_stream(requests_mock, annotations_response):
+def test_annotations_stream(requests_mock, annotations_response, config):
 
-    stream = Annotations(authenticator=MagicMock())
+    stream = Annotations(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), annotations_response)
 
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
@@ -312,9 +359,9 @@ def revenue_response():
     )
 
 
-def test_revenue_stream(requests_mock, revenue_response):
+def test_revenue_stream(requests_mock, revenue_response, config):
 
-    stream = Revenue(authenticator=MagicMock())
+    stream = Revenue(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), revenue_response)
 
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
@@ -344,9 +391,9 @@ def export_schema_response():
     )
 
 
-def test_export_schema(requests_mock, export_schema_response):
+def test_export_schema(requests_mock, export_schema_response, config):
 
-    stream = ExportSchema(authenticator=MagicMock())
+    stream = ExportSchema(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_schema_response)
 
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
@@ -362,7 +409,7 @@ def export_response():
         {
             "event": "Viewed E-commerce Page",
             "properties": {
-                "time": 1623860880,
+                "time": 1623860880,  # 2021-06-16T16:28:00
                 "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
                 "$browser": "Chrome",
                 "$browser_version": "91.0.4472.101",
@@ -377,14 +424,47 @@ def export_response():
     )
 
 
-def test_export_stream(requests_mock, export_response):
+def test_export_stream(requests_mock, export_response, config):
 
-    stream = Export(authenticator=MagicMock())
+    stream = Export(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
+
+
+def test_export_stream_request_params(config):
+    stream = Export(authenticator=MagicMock(), **config)
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    stream_state = {"date": "2021-06-16T17:00:00"}
+
+    request_params = stream.request_params(stream_state=None, stream_slice=stream_slice)
+    assert "where" not in request_params
+
+    request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
+    assert "where" not in request_params
+
+    request_params = stream.request_params(stream_state=stream_state, stream_slice=stream_slice)
+    assert "where" in request_params
+    timestamp = int(pendulum.parse("2021-06-16T17:00:00Z").timestamp())
+    assert request_params.get("where") == f'properties["$time"]>=datetime({timestamp})'
+
+
+def test_export_terminated_early(requests_mock, config):
+    stream = Export(authenticator=MagicMock(), **config)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), text="terminated early\n")
+    assert list(read_full_refresh(stream)) == []
+
+
+def test_export_iter_dicts(config):
+    stream = Export(authenticator=MagicMock(), **config)
+    record = {"key1": "value1", "key2": "value2"}
+    record_string = json.dumps(record)
+    assert list(stream.iter_dicts([record_string, record_string])) == [record, record]
+    # combine record from 2 standing nearby parts
+    assert list(stream.iter_dicts([record_string, record_string[:2], record_string[2:], record_string])) == [record, record, record]
+    # drop record parts because they are not standing nearby
+    assert list(stream.iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]

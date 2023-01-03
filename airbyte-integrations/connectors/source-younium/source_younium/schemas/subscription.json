@@ -1,0 +1,836 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "orderNumber": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number"
+    },
+    "isLastVersion": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "remarks": {
+      "type": "string"
+    },
+    "effectiveStartDate": {
+      "type": "string"
+    },
+    "effectiveEndDate": {
+      "type": "string"
+    },
+    "cancellationDate": {
+      "type": "string"
+    },
+    "effectiveChangeDate": {
+      "type": "string"
+    },
+    "orderDate": {
+      "type": "string"
+    },
+    "noticePeriodDate": {
+      "type": "string"
+    },
+    "lastRenewalDate": {
+      "type": "string"
+    },
+    "noticePeriod": {
+      "type": "number"
+    },
+    "term": {
+      "type": "number"
+    },
+    "renewalTerm": {
+      "type": "number"
+    },
+    "isAutoRenewed": {
+      "type": "boolean"
+    },
+    "orderType": {
+      "type": "string"
+    },
+    "termType": {
+      "type": "string"
+    },
+    "orderPaymentMethod": {
+      "type": "string"
+    },
+    "invoiceSeparatly": {
+      "type": "boolean"
+    },
+    "yourReference": {
+      "type": "string"
+    },
+    "ourReference": {
+      "type": "string"
+    },
+    "yourOrderNumber": {
+      "type": "string"
+    },
+    "invoiceAddress": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "county": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "deliveryAddress": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "county": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "invoiceBatchGroup": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "paymentTerm": {
+      "type": "string"
+    },
+    "useAccountInvoiceBatchGroup": {
+      "type": "boolean"
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "accountNumber": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "externalERPId": {
+          "type": "string"
+        },
+        "externalCRMId": {
+          "type": "string"
+        }
+      }
+    },
+    "invoiceAccount": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "accountNumber": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "externalERPId": {
+          "type": "string"
+        },
+        "externalCRMId": {
+          "type": "string"
+        }
+      }
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productNumber": {
+            "type": "string"
+          },
+          "chargePlanId": {
+            "type": "string"
+          },
+          "chargePlanName": {
+            "type": "string"
+          },
+          "chargePlanNumber": {
+            "type": "string"
+          },
+          "productLineNumber": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "charges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "chargeNumber": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "number"
+                },
+                "isLastVersion": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "chargeType": {
+                  "type": "string"
+                },
+                "priceModel": {
+                  "type": "string"
+                },
+                "effectiveStartDate": {
+                  "type": "string"
+                },
+                "effectiveEndDate": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "number"
+                },
+                "unitCode": {
+                  "type": "string"
+                },
+                "startOn": {
+                  "type": "string"
+                },
+                "endOn": {
+                  "type": "string"
+                },
+                "chargedThroughDate": {
+                  "type": "string"
+                },
+                "lastRenewalDate": {
+                  "type": "string"
+                },
+                "lastPriceAdjustmentDate": {
+                  "type": "string"
+                },
+                "pricePeriod": {
+                  "type": "string"
+                },
+                "usageRating": {
+                  "type": "string"
+                },
+                "revenueRecognitionRule": {
+                  "type": "string"
+                },
+                "billingDay": {
+                  "type": "string"
+                },
+                "specificBillingDay": {
+                  "type": "number"
+                },
+                "billingPeriod": {
+                  "type": "string"
+                },
+                "billingTiming": {
+                  "type": "string"
+                },
+                "periodAlignment": {
+                  "type": "string"
+                },
+                "taxTemplate": {
+                  "type": "string"
+                },
+                "taxIncluded": {
+                  "type": "boolean"
+                },
+                "createInvoiceLinesPerTier": {
+                  "type": "boolean"
+                },
+                "estimatedUsage": {
+                  "type": "number"
+                },
+                "estimatedQuantity": {
+                  "type": "number"
+                },
+                "remarks": {
+                  "type": "string"
+                },
+                "accountsReceivableAccount": {
+                  "type": "string"
+                },
+                "deferredRevenueAccount": {
+                  "type": "string"
+                },
+                "recognizedRevenueAccount": {
+                  "type": "string"
+                },
+                "changeState": {
+                  "type": "string"
+                },
+                "displayPrice": {
+                  "type": "number"
+                },
+                "customFields": {
+                  "type": "object"
+                },
+                "priceDetails": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "tier": {
+                        "type": "number"
+                      },
+                      "price": {
+                        "type": "number"
+                      },
+                      "listPrice": {
+                        "type": "number"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "fromQuantity": {
+                        "type": "number"
+                      },
+                      "toQuantity": {
+                        "type": "number"
+                      },
+                      "priceBase": {
+                        "type": "string"
+                      },
+                      "lineDiscountPercent": {
+                        "type": "number"
+                      },
+                      "lineDiscountAmount": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "recurringMonthlyAmount": {
+                  "type": "number"
+                },
+                "recurringMonthlyAmountBase": {
+                  "type": "number"
+                },
+                "features": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "orderDiscounts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "orderDiscountId": {
+                        "type": "string"
+                      },
+                      "chargeId": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "externalERPId": {
+                  "type": "string"
+                },
+                "externalCRMId": {
+                  "type": "string"
+                },
+                "cmrr": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "number"
+                    },
+                    "currencyCode": {
+                      "type": "string"
+                    },
+                    "currencyConversionDate": {
+                      "type": "string"
+                    },
+                    "baseCurrencyAmount": {
+                      "type": "number"
+                    },
+                    "baseCurrencyCode": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "acv": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "number"
+                    },
+                    "currencyCode": {
+                      "type": "string"
+                    },
+                    "currencyConversionDate": {
+                      "type": "string"
+                    },
+                    "baseCurrencyAmount": {
+                      "type": "number"
+                    },
+                    "baseCurrencyCode": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "tcv": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "number"
+                    },
+                    "currencyCode": {
+                      "type": "string"
+                    },
+                    "currencyConversionDate": {
+                      "type": "string"
+                    },
+                    "baseCurrencyAmount": {
+                      "type": "number"
+                    },
+                    "baseCurrencyCode": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "emrr": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "number"
+                    },
+                    "currencyCode": {
+                      "type": "string"
+                    },
+                    "currencyConversionDate": {
+                      "type": "string"
+                    },
+                    "baseCurrencyAmount": {
+                      "type": "number"
+                    },
+                    "baseCurrencyCode": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "oneTimeFees": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "number"
+                    },
+                    "currencyCode": {
+                      "type": "string"
+                    },
+                    "currencyConversionDate": {
+                      "type": "string"
+                    },
+                    "baseCurrencyAmount": {
+                      "type": "number"
+                    },
+                    "baseCurrencyCode": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "orderProductId": {
+                  "type": "string"
+                },
+                "orderId": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "customFields": {
+            "type": "object"
+          },
+          "externalERPId": {
+            "type": "string"
+          },
+          "externalCRMId": {
+            "type": "string"
+          },
+          "cmrr": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "currencyConversionDate": {
+                "type": "string"
+              },
+              "baseCurrencyAmount": {
+                "type": "number"
+              },
+              "baseCurrencyCode": {
+                "type": "string"
+              }
+            }
+          },
+          "acv": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "currencyConversionDate": {
+                "type": "string"
+              },
+              "baseCurrencyAmount": {
+                "type": "number"
+              },
+              "baseCurrencyCode": {
+                "type": "string"
+              }
+            }
+          },
+          "emrr": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "currencyConversionDate": {
+                "type": "string"
+              },
+              "baseCurrencyAmount": {
+                "type": "number"
+              },
+              "baseCurrencyCode": {
+                "type": "string"
+              }
+            }
+          },
+          "oneTimeFees": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "currencyConversionDate": {
+                "type": "string"
+              },
+              "baseCurrencyAmount": {
+                "type": "number"
+              },
+              "baseCurrencyCode": {
+                "type": "string"
+              }
+            }
+          },
+          "tcv": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "currencyConversionDate": {
+                "type": "string"
+              },
+              "baseCurrencyAmount": {
+                "type": "number"
+              },
+              "baseCurrencyCode": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "milestoneDate": {
+            "type": "string"
+          },
+          "plannedDate": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "orderDiscounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "startOn": {
+            "type": "string"
+          },
+          "endOn": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          },
+          "percent": {
+            "type": "number"
+          },
+          "discountType": {
+            "type": "string"
+          },
+          "orderProductCharges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "orderDiscountId": {
+                  "type": "string"
+                },
+                "chargeId": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "onSpecificCharges": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "currency": {
+      "type": "string"
+    },
+    "externalERPId": {
+      "type": "string"
+    },
+    "externalCRMId": {
+      "type": "string"
+    },
+    "currencyCodeToUseWhenInvoice": {
+      "type": "string"
+    },
+    "customFields": {
+      "type": "object"
+    },
+    "cmrr": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currencyCode": {
+          "type": "string"
+        },
+        "currencyConversionDate": {
+          "type": "string"
+        },
+        "baseCurrencyAmount": {
+          "type": "number"
+        },
+        "baseCurrencyCode": {
+          "type": "string"
+        }
+      }
+    },
+    "acv": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currencyCode": {
+          "type": "string"
+        },
+        "currencyConversionDate": {
+          "type": "string"
+        },
+        "baseCurrencyAmount": {
+          "type": "number"
+        },
+        "baseCurrencyCode": {
+          "type": "string"
+        }
+      }
+    },
+    "emrr": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currencyCode": {
+          "type": "string"
+        },
+        "currencyConversionDate": {
+          "type": "string"
+        },
+        "baseCurrencyAmount": {
+          "type": "number"
+        },
+        "baseCurrencyCode": {
+          "type": "string"
+        }
+      }
+    },
+    "oneTimeFees": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currencyCode": {
+          "type": "string"
+        },
+        "currencyConversionDate": {
+          "type": "string"
+        },
+        "baseCurrencyAmount": {
+          "type": "number"
+        },
+        "baseCurrencyCode": {
+          "type": "string"
+        }
+      }
+    },
+    "tcv": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currencyCode": {
+          "type": "string"
+        },
+        "currencyConversionDate": {
+          "type": "string"
+        },
+        "baseCurrencyAmount": {
+          "type": "number"
+        },
+        "baseCurrencyCode": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {{ config(
     sort = "_airbyte_emitted_at",
     unique_key = '_airbyte_ab_id',
-    schema = "_airbyte_test_normalization",
+    schema = "_airbyte_test_normalization_bhhpj",
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
@@ -21,5 +21,5 @@ select
 from {{ ref('dedup_exchange_rate_ab1') }}
 -- dedup_exchange_rate
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

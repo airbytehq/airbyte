@@ -34,6 +34,26 @@
             },
             "column`_'with\"_quotes": {
               "type": "string"
+            },
+            "datetime_tz": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "datetime_no_tz": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "time_tz": {
+              "type": "string",
+              "format": "time",
+              "airbyte_type": "time_with_timezone"
+            },
+            "time_no_tz": {
+              "type": "string",
+              "format": "time",
+              "airbyte_type": "time_without_timezone"
             }
           }
         },
@@ -237,6 +257,31 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "types_testing",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "airbyte_integer_column": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "nullable_airbyte_integer_column": {
+              "type": ["null", "number"],
+              "airbyte_type": "integer"
+            }
+          }
+        }
       },
       "sync_mode": "full_refresh",
       "cursor_field": [],

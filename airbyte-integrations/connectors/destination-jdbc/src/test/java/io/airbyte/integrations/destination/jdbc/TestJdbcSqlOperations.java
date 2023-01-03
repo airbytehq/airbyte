@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.List;
 
 public class TestJdbcSqlOperations extends JdbcSqlOperations {

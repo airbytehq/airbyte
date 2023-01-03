@@ -1,0 +1,19 @@
+/* Override default Slider styles:
+ this is one of ways how to override slider style without adding them to global style file
+*/
+/* stylelint-disable selector-class-pattern */
+.slick-list {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  user-select: none;
+  margin: 0 -9px; /* add space between slides */
+}
+
+.slick-track {
+  display: flex; /* make horizontal slider */
+}
+
+.slick-slide {
+  margin: 0 10px; /* add space between slides */
+}

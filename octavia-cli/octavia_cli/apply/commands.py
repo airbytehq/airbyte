@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from glob import glob
@@ -55,7 +55,10 @@ def apply_single_resource(resource: BaseResource, force: bool) -> None:
     """
     if resource.was_created:
         click.echo(
-            click.style(f"🐙 - {resource.resource_name} exists on your Airbyte instance, let's check if we need to update it!", fg="yellow")
+            click.style(
+                f"🐙 - {resource.resource_name} exists on your Airbyte instance according to your state file, let's check if we need to update it!",
+                fg="yellow",
+            )
         )
         messages = update_resource(resource, force)
     else:

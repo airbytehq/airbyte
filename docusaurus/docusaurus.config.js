@@ -9,20 +9,57 @@ const config = {
     title: 'Airbyte Documentation',
     tagline:
         'Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.',
-    url: 'https://airbytehq.github.io',
+    url: 'https://docs.airbyte.com',
     // Assumed relative path.  If you are using airbytehq.github.io use /
     // anything else should match the repo name
     baseUrl: '/',
-    onBrokenLinks: 'warn',
-    onBrokenMarkdownLinks: 'warn',
+    onBrokenLinks: 'throw',
+    onBrokenMarkdownLinks: 'throw',
     favicon: 'img/favicon.png',
     organizationName: 'airbytehq', // Usually your GitHub org/user name.
     projectName: 'airbyte', // Usually your repo name.
 
     plugins:    [
-                    [
-                        require.resolve('@cmfcmf/docusaurus-search-local'), {indexBlog: false}
-                    ]
+                  [
+                    require.resolve('@cmfcmf/docusaurus-search-local'), {indexBlog: false},
+                  ],
+                  [
+                    '@docusaurus/plugin-client-redirects',
+                    {
+                      fromExtensions: ['html', 'htm'], // /myPage.html -> /myPage
+                      redirects: [
+                        // /docs/oldDoc -> /docs/newDoc
+                        {
+                          from: '/upgrading-airbyte',
+                          to: '/operator-guides/upgrading-airbyte',
+                        },
+                        {
+                            from: '/catalog',
+                            to: '/understanding-airbyte/airbyte-protocol',
+                        },
+                        {
+                            from: '/integrations/sources/google-analytics-data-api',
+                            to: '/integrations/sources/google-analytics-v4',
+                        },
+                        {
+                            from: '/project-overview/security',
+                            to: '/operator-guides/security',
+                        },
+                        {
+                            from: '/operator-guides/securing-airbyte',
+                            to: '/operator-guides/security',
+                        },
+                        {
+                            from: '/connector-development/config-based/',
+                            to: '/connector-development/config-based/low-code-cdk-overview',
+                        },
+//                        {
+//                         from: '/some-lame-path',
+//                         to: '/a-much-cooler-uri',
+//                        },
+                      ],
+                    },
+                  ],
                 ],
 
     presets: [
@@ -32,9 +69,10 @@ const config = {
             ({
                 docs: {
                     routeBasePath: '/',
+                    sidebarCollapsible: true,
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
-                    path: '../docs'
+                    path: '../docs',
                 },
                 blog: false,
                 theme: {
@@ -54,6 +92,11 @@ const config = {
             colorMode: {
                 disableSwitch: false,
             },
+            docs: {
+                sidebar: {
+                  autoCollapseCategories: true,
+                },
+              },
             navbar: {
                 title: '',
                 logo: {
@@ -81,7 +124,7 @@ const config = {
                     },
                     {
                         href: 'https://discuss.airbyte.io/',
-                        label: 'Discourse',
+                        label: 'Support',
                         position: 'left',
                     },
                     {

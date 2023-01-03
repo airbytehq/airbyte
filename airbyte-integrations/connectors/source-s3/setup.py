@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
-    "pyarrow==4.0.1",
+    "pyarrow==9.0.0",
     "smart-open[s3]==5.1.0",
     "wcmatch==8.2",
     "dill==0.3.4",

@@ -3,9 +3,9 @@ import styled from "styled-components";
 
 import { ResourceTypes } from "./types";
 
-type PlaceholderProps = {
+interface PlaceholderProps {
   resource: ResourceTypes;
-};
+}
 
 const Img = styled.img<PlaceholderProps>`
   max-height: ${({ resource }) =>
@@ -16,7 +16,7 @@ const Img = styled.img<PlaceholderProps>`
 `;
 
 const Placeholder: React.FC<PlaceholderProps> = ({ resource }) => {
-  return <Img src={`/empty-${resource}.png`} alt="placeholder" resource={resource} />;
+  return <Img src={`/empty-${resource}.png`} alt="" resource={resource} />;
 };
 
 export default Placeholder;

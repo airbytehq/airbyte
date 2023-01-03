@@ -2,32 +2,32 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "site_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "uuid": {
       "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "active": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "kind": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "canonical_name": {
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "survey_url": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

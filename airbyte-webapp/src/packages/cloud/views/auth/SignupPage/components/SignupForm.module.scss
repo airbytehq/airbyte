@@ -1,0 +1,11 @@
+@use "../../../../../../scss/colors";
+@use "../../../../../../scss/variables";
+
+.statusMessage {
+  margin-top: variables.$spacing-md;
+  color: colors.$red;
+}
+
+.disclaimer {
+  margin-top: variables.$spacing-xl;
+}

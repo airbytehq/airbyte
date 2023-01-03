@@ -1,73 +1,84 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.temporal.ConnectionManagerUtils;
+import io.airbyte.commons.temporal.StreamResetRecordsHelper;
+import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.commons.temporal.TemporalUtils;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.init.YamlSeedConfigPersistence;
-import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.StatePersistence;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.check.DatabaseCheckException;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.DatabaseInstance;
-import io.airbyte.db.instance.MinimumFlywayMigrationVersionCheck;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
-import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
-import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.SchedulerJobClient;
-import io.airbyte.scheduler.client.TemporalEventRunner;
-import io.airbyte.scheduler.persistence.DefaultJobCreator;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
-import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.persistence.job.DefaultJobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WebUrlHelper;
+import io.airbyte.persistence.job.WorkspaceHelper;
+import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
+import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
+import io.airbyte.persistence.job.errorreporter.JobErrorReportingClientFactory;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
+import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
-import io.airbyte.server.handlers.DbMigrationHandler;
-import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.server.handlers.AttemptHandler;
+import io.airbyte.server.handlers.ConnectionsHandler;
+import io.airbyte.server.handlers.DestinationDefinitionsHandler;
+import io.airbyte.server.handlers.DestinationHandler;
+import io.airbyte.server.handlers.HealthCheckHandler;
+import io.airbyte.server.handlers.JobHistoryHandler;
+import io.airbyte.server.handlers.LogsHandler;
+import io.airbyte.server.handlers.OAuthHandler;
+import io.airbyte.server.handlers.OpenApiConfigHandler;
+import io.airbyte.server.handlers.OperationsHandler;
+import io.airbyte.server.handlers.SchedulerHandler;
+import io.airbyte.server.handlers.SourceDefinitionsHandler;
+import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
+import io.airbyte.server.handlers.WebBackendConnectionsHandler;
+import io.airbyte.server.handlers.WebBackendGeographiesHandler;
+import io.airbyte.server.handlers.WorkspacesHandler;
+import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
+import io.airbyte.server.scheduler.EventRunner;
+import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.server.services.AirbyteGithubStore;
+import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
-import lombok.val;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -81,6 +92,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+@SuppressWarnings("PMD.AvoidCatchingThrowable")
 public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
@@ -100,6 +112,7 @@ public class ServerApp implements ServerRunnable {
   }
 
   @Override
+  @SuppressWarnings("PMD.InvalidLogMessageFormat")
   public void start() throws Exception {
     final Server server = new Server(PORT);
 
@@ -134,76 +147,62 @@ public class ServerApp implements ServerRunnable {
     final String banner = MoreResources.readResource("banner/banner.txt");
     LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
     server.join();
+
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      try {
+        server.stop();
+      } catch (final Exception ex) {
+        // silently fail at this stage because server is terminating.
+        LOGGER.warn("exception: " + ex);
+      }
+    }));
   }
 
   private static void assertDatabasesReady(final Configs configs,
-                                           final DatabaseInstance configsDatabaseInstance,
-                                           final DataSource configsDataSource,
-                                           final DatabaseInstance jobsDatabaseInstance,
-                                           final DataSource jobsDataSource)
-      throws InterruptedException {
+                                           final DSLContext configsDslContext,
+                                           final Flyway configsFlyway,
+                                           final DSLContext jobsDslContext,
+                                           final Flyway jobsFlyway)
+      throws DatabaseCheckException {
     LOGGER.info("Checking configs database flyway migration version..");
-    MinimumFlywayMigrationVersionCheck.assertDatabase(configsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
-    final Flyway configsFlyway = FlywayFactory.create(configsDataSource, ServerApp.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    val configsMigrator = new ConfigsDatabaseMigrator(configsDatabaseInstance.getInitialized(), configsFlyway);
-    MinimumFlywayMigrationVersionCheck.assertMigrations(configsMigrator, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
-        configs.getConfigsDatabaseInitializationTimeoutMs());
+    DatabaseCheckFactory
+        .createConfigsDatabaseMigrationCheck(configsDslContext, configsFlyway, configs.getConfigsDatabaseMinimumFlywayMigrationVersion(),
+            configs.getConfigsDatabaseInitializationTimeoutMs())
+        .check();
 
     LOGGER.info("Checking jobs database flyway migration version..");
-    MinimumFlywayMigrationVersionCheck.assertDatabase(jobsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
-    final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, ServerApp.class.getName(), JobsDatabaseMigrator.DB_IDENTIFIER,
-        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    val jobsMigrator = new JobsDatabaseMigrator(jobsDatabaseInstance.getInitialized(), jobsFlyway);
-    MinimumFlywayMigrationVersionCheck.assertMigrations(jobsMigrator, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
-        configs.getJobsDatabaseInitializationTimeoutMs());
-
+    DatabaseCheckFactory.createJobsDatabaseMigrationCheck(jobsDslContext, jobsFlyway, configs.getJobsDatabaseMinimumFlywayMigrationVersion(),
+        configs.getJobsDatabaseInitializationTimeoutMs()).check();
   }
 
   public static ServerRunnable getServer(final ServerFactory apiFactory,
-                                         final ConfigPersistence seed,
                                          final Configs configs,
                                          final DSLContext configsDslContext,
-                                         final DataSource configsDataSource,
+                                         final Flyway configsFlyway,
                                          final DSLContext jobsDslContext,
-                                         final DataSource jobsDataSource)
+                                         final Flyway jobsFlyway)
       throws Exception {
-    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
-
     LogClientSingleton.getInstance().setWorkspaceMdc(
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
     LOGGER.info("Checking databases..");
-    final DatabaseInstance configsDatabaseInstance =
-        new ConfigsDatabaseInstance(configsDslContext);
-    final DatabaseInstance jobsDatabaseInstance =
-        new JobsDatabaseInstance(jobsDslContext);
-    assertDatabasesReady(configs, configsDatabaseInstance, configsDataSource, jobsDatabaseInstance, jobsDataSource);
-
-    LOGGER.info("Creating Staged Resource folder...");
-    ConfigDumpImporter.initStagedResourceFolder();
+    assertDatabasesReady(configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway);
 
     LOGGER.info("Creating config repository...");
-    final Database configDatabase = configsDatabaseInstance.getInitialized();
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .maskSecrets(!featureFlags.exposeSecretsInExport())
-        .copySecrets(false)
-        .build();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+    final Database configsDatabase = new Database(configsDslContext);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configsDslContext, configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configsDslContext, configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
+    final ConfigRepository configRepository = new ConfigRepository(configsDatabase);
     final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
     final SecretsRepositoryWriter secretsRepositoryWriter =
         new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating jobs persistence...");
-    final Database jobDatabase = jobsDatabaseInstance.getInitialized();
-    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final Database jobsDatabase = new Database(jobsDslContext);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobsDatabase);
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -215,82 +214,181 @@ public class ServerApp implements ServerRunnable {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
-    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);
+    final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
+
+    final WebUrlHelper webUrlHelper = new WebUrlHelper(configs.getWebappUrl());
+    final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
+    final JobErrorReporter jobErrorReporter =
+        new JobErrorReporter(
+            configRepository,
+            configs.getDeploymentMode(),
+            configs.getAirbyteVersionOrWarning(),
+            webUrlHelper,
+            jobErrorReportingClient);
+
+    final TemporalUtils temporalUtils = new TemporalUtils(
+        configs.getTemporalCloudClientCert(),
+        configs.getTemporalCloudClientKey(),
+        configs.temporalCloudEnabled(),
+        configs.getTemporalCloudHost(),
+        configs.getTemporalCloudNamespace(),
+        configs.getTemporalHost(),
+        configs.getTemporalRetentionInDays());
+
+    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configsDatabase);
+    final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService();
+    final ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
+    final StreamResetRecordsHelper streamResetRecordsHelper = new StreamResetRecordsHelper(jobPersistence, streamResetPersistence);
+
+    final TemporalClient temporalClient = new TemporalClient(
+        configs.getWorkspaceRoot(),
+        TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace()),
+        temporalService,
+        streamResetPersistence,
+        connectionManagerUtils,
+        streamResetRecordsHelper);
+
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
-    final SchedulerJobClient schedulerJobClient =
-        new DefaultSchedulerJobClient(
-            configs.connectorSpecificResourceDefaultsEnabled(),
-            jobPersistence,
-            new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
-        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-    final EventRunner eventRunner = new TemporalEventRunner(
-        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs));
+    final EventRunner eventRunner = new TemporalEventRunner(temporalClient);
 
-    final Flyway configsFlyway = FlywayFactory.create(configsDataSource, DbMigrationHandler.class.getSimpleName(),
-        ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
-        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
 
-    // It is important that the migration to the temporal scheduler is performed before the server
-    // accepts any requests.
-    // This is why this migration is performed here instead of in the bootloader - so that the server
-    // blocks on this.
-    // TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
-    // "major" version bump as it will no longer be needed.
-    migrateExistingConnectionsToTemporalScheduler(configRepository, jobPersistence, eventRunner);
+    final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
+
+    final AttemptHandler attemptHandler = new AttemptHandler(jobPersistence);
+
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
+
+    final ConnectionsHandler connectionsHandler = new ConnectionsHandler(
+        configRepository,
+        workspaceHelper,
+        trackingClient,
+        eventRunner,
+        connectionHelper);
+
+    final DestinationHandler destinationHandler = new DestinationHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        schemaValidator,
+        connectionsHandler);
+
+    final OperationsHandler operationsHandler = new OperationsHandler(configRepository);
+
+    final SchedulerHandler schedulerHandler = new SchedulerHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        syncSchedulerClient,
+        jobPersistence,
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        eventRunner,
+        connectionsHandler,
+        envVariableFeatureFlags);
+
+    final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
+        destinationHandler);
+
+    final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
+
+    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader);
+
+    final SourceHandler sourceHandler = new SourceHandler(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        schemaValidator,
+        connectionsHandler);
+
+    final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler);
+
+    final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
+        jobPersistence,
+        configs.getWorkerEnvironment(),
+        configs.getLogConfigs(),
+        connectionsHandler,
+        sourceHandler,
+        sourceDefinitionsHandler,
+        destinationHandler,
+        destinationDefinitionsHandler,
+        configs.getAirbyteVersion(),
+        temporalClient);
+
+    final LogsHandler logsHandler = new LogsHandler(configs);
+
+    final WorkspacesHandler workspacesHandler = new WorkspacesHandler(
+        configRepository,
+        secretsRepositoryWriter,
+        connectionsHandler,
+        destinationHandler,
+        sourceHandler);
+
+    final OpenApiConfigHandler openApiConfigHandler = new OpenApiConfigHandler();
+
+    final StatePersistence statePersistence = new StatePersistence(configsDatabase);
+
+    final StateHandler stateHandler = new StateHandler(statePersistence);
+
+    final WebBackendConnectionsHandler webBackendConnectionsHandler = new WebBackendConnectionsHandler(
+        connectionsHandler,
+        stateHandler,
+        sourceHandler,
+        destinationHandler,
+        jobHistoryHandler,
+        schedulerHandler,
+        operationsHandler,
+        eventRunner,
+        configRepository);
+
+    final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
+
+    final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler =
+        new WebBackendCheckUpdatesHandler(configRepository, AirbyteGithubStore.production());
 
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
-        schedulerJobClient,
         syncSchedulerClient,
-        temporalService,
         configRepository,
         secretsRepositoryReader,
         secretsRepositoryWriter,
         jobPersistence,
-        seed,
-        configDatabase,
-        jobDatabase,
+        configsDatabase,
+        jobsDatabase,
         trackingClient,
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        workerConfigs,
-        configs.getWebappUrl(),
         configs.getAirbyteVersion(),
         configs.getWorkspaceRoot(),
         httpClient,
-        featureFlags,
         eventRunner,
         configsFlyway,
-        jobsFlyway);
+        jobsFlyway,
+        attemptHandler,
+        connectionsHandler,
+        destinationDefinitionsHandler,
+        destinationHandler,
+        healthCheckHandler,
+        jobHistoryHandler,
+        logsHandler,
+        oAuthHandler,
+        openApiConfigHandler,
+        operationsHandler,
+        schedulerHandler,
+        sourceHandler,
+        sourceDefinitionsHandler,
+        stateHandler,
+        workspacesHandler,
+        webBackendConnectionsHandler,
+        webBackendGeographiesHandler,
+        webBackendCheckUpdatesHandler);
   }
 
-  @VisibleForTesting
-  static void migrateExistingConnectionsToTemporalScheduler(final ConfigRepository configRepository,
-                                                            final JobPersistence jobPersistence,
-                                                            final EventRunner eventRunner)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
-    // Skip the migration if it was already performed, to save on resources/startup time
-    if (jobPersistence.isSchedulerMigrated()) {
-      LOGGER.info("Migration to temporal scheduler has already been performed");
-      return;
-    }
-
-    LOGGER.info("Start migration to the new scheduler...");
-    final Set<UUID> connectionIds =
-        configRepository.listStandardSyncs().stream()
-            .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
-            .map(standardSync -> standardSync.getConnectionId()).collect(Collectors.toSet());
-    eventRunner.migrateSyncIfNeeded(connectionIds);
-    jobPersistence.setSchedulerMigrationDone();
-    LOGGER.info("Done migrating to the new scheduler...");
-  }
-
-  public static void main(final String[] args) throws Exception {
+  public static void main(final String[] args) {
     try {
       final Configs configs = new EnvConfigs();
 
@@ -307,8 +405,12 @@ public class ServerApp implements ServerRunnable {
         // Ensure that the database resources are closed on application shutdown
         CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
-        getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault(),
-            configs, configsDslContext, configsDataSource, jobsDslContext, jobsDataSource).start();
+        final Flyway configsFlyway = FlywayFactory.create(configsDataSource, ServerApp.class.getSimpleName(),
+            ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+        final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, ServerApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+            JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+
+        getServer(new ServerFactory.Api(), configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();
       }
     } catch (final Throwable e) {
       LOGGER.error("Server failed", e);

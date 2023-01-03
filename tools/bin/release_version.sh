@@ -14,12 +14,17 @@ if [[ -z "${CLOUDREPO_PASSWORD}" ]]; then
   exit 1;
 fi
 
-if [[ -z "${DOCKER_PASSWORD}" ]]; then
-  echo 'DOCKER_PASSWORD for airbytebot not set.';
+if [[ -z "${DOCKER_HUB_USERNAME}" ]]; then
+  echo 'DOCKER_HUB_USERNAME not set.';
   exit 1;
 fi
 
-docker login -u airbytebot -p "${DOCKER_PASSWORD}"
+if [[ -z "${DOCKER_HUB_PASSWORD}" ]]; then
+  echo 'DOCKER_HUB_PASSWORD for docker user not set.';
+  exit 1;
+fi
+
+docker login -u "${DOCKER_HUB_USERNAME}" -p "${DOCKER_HUB_PASSWORD}"
 
 source ./tools/bin/bump_version.sh
 

@@ -1,0 +1,55 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/SyncStats.yaml
+title: SyncStats
+description: sync stats.
+type: object
+required:
+  - recordsEmitted
+  - bytesEmitted
+additionalProperties: true
+properties:
+  bytesEmitted:
+    type: integer
+  destinationStateMessagesEmitted:
+    description: Number of State messages emitted by the Destination Connector
+    type: integer
+  destinationWriteEndTime:
+    type: integer
+    description: The exit time of the destination container/pod
+  destinationWriteStartTime:
+    type: integer
+    description: The boot time of the destination container/pod
+  estimatedBytes:
+    type: integer
+    description: The total estimated number of bytes for the sync
+  estimatedRecords:
+    type: integer
+    description: The total estimated number of records for the sync
+  meanSecondsBeforeSourceStateMessageEmitted:
+    type: integer
+  maxSecondsBeforeSourceStateMessageEmitted:
+    type: integer
+  maxSecondsBetweenStateMessageEmittedandCommitted:
+    type: integer
+  meanSecondsBetweenStateMessageEmittedandCommitted:
+    type: integer
+  recordsEmitted:
+    type: integer
+  recordsCommitted:
+    type: integer # if unset, committed records could not be computed
+  replicationEndTime:
+    type: integer
+    description: The end of the replication activity
+  replicationStartTime:
+    type: integer
+    description: The start of the replication activity
+  sourceReadEndTime:
+    type: integer
+    description: The exit time of the source container/pod
+  sourceReadStartTime:
+    type: integer
+    description: The boot time of the source container/pod
+  sourceStateMessagesEmitted:
+    description: Number of State messages emitted by the Source Connector
+    type: integer

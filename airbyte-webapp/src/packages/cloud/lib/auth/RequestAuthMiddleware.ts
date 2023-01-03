@@ -9,7 +9,7 @@ export interface JwtProvider {
 export function RequestAuthMiddleware(jwtProvider: JwtProvider): RequestMiddleware {
   return async (options: RequestInit) => ({
     ...options,
-    header: merge(options.headers, {
+    headers: merge(options.headers, {
       Authorization: `Bearer ${await jwtProvider.getValue()}`,
     }),
   });

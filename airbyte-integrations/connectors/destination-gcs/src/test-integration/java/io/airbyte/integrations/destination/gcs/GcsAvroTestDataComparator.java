@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -18,7 +18,7 @@ public class GcsAvroTestDataComparator extends AdvancedTestDataComparator {
   }
 
   private Instant getInstantFromEpoch(String epochValue) {
-    return Instant.ofEpochMilli(Long.parseLong(epochValue.replaceAll("000$", "")));
+    return Instant.ofEpochMilli(Long.parseLong(epochValue) / 1000);
   }
 
   @Override

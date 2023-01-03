@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -18,7 +18,7 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -84,7 +84,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public void createSchemaIfNotExists(final String datasetId, final String datasetLocation) {
     if (!existingSchemas.contains(datasetId)) {
       LOGGER.info("Creating dataset {}", datasetId);
-      BigQueryUtils.createDataset(bigQuery, datasetId, datasetLocation);
+      BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
       existingSchemas.add(datasetId);
     }
   }
@@ -138,7 +138,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
         BigQueryUtils.waitForJobFinish(loadJob);
         LOGGER.info("[{}] Tmp table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(), tmpTableId, datasetId);
       } catch (final BigQueryException | InterruptedException e) {
-        LOGGER.error(String.format("[%s] Failed to upload staging files to tmp table %s (%s)", loadJob.getJobId(), tmpTableId, datasetId), e);
+        throw new RuntimeException(
+            String.format("[%s] Failed to upload staging files to tmp table %s (%s)", loadJob.getJobId(), tmpTableId, datasetId), e);
       }
     });
   }

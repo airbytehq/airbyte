@@ -1,0 +1,6 @@
+{
+  "instance_api_url": "https://localhost:3000/api/",
+  "username": "username",
+  "password": "<secret>",
+  "session_token": "<secret>"
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows.google;
@@ -11,7 +11,7 @@ public class GoogleAnalyticsOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
-    return new GoogleAnalyticsOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
+    return new GoogleAnalyticsViewIdOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
   }
 
   @Override

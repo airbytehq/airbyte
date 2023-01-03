@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -45,7 +45,7 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
       try {
         queryContext.getObject(i);
         if (!queryContext.wasNull()) {
-          setJsonField(queryContext, i, jsonNode);
+          copyToJsonField(queryContext, i, jsonNode);
         }
       } catch (final SQLException e) {
         putCockroachSpecialDataType(queryContext, i, jsonNode);

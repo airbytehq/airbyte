@@ -17,7 +17,7 @@ import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
  * It initializes all required services for app to work
  * and also adds all overrides of hooks/services
  */
-const AppServicesProvider: React.FC = ({ children }) => {
+const AppServicesProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   return (
     <ServicesProvider>
       <FirebaseSdkProvider>
@@ -27,7 +27,7 @@ const AppServicesProvider: React.FC = ({ children }) => {
   );
 };
 
-const ServiceOverrides: React.FC = React.memo(({ children }) => {
+const ServiceOverrides: React.FC<React.PropsWithChildren<unknown>> = React.memo(({ children }) => {
   const auth = useAuth();
 
   const middlewares: RequestMiddleware[] = useMemo(

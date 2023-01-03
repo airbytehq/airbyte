@@ -4,12 +4,17 @@ set -e
 
 . tools/lib/lib.sh
 
-if test -z "${DOCKER_PASSWORD}"; then
-  echo 'DOCKER_PASSWORD for airbytebot not set.';
+if test -z "${DOCKER_HUB_USERNAME}"; then
+  echo 'DOCKER_HUB_USERNNAME not set.';
   exit 1;
 fi
 
-docker login --username airbytebot --password "${DOCKER_PASSWORD}"
+if test -z "${DOCKER_HUB_PASSWORD}"; then
+  echo 'DOCKER_HUB_PASSWORD for docker user not set.';
+  exit 1;
+fi
+
+docker login --username "${DOCKER_HUB_USERNAME}" --password "${DOCKER_HUB_PASSWORD}"
 
 source ./tools/bin/bump_version.sh
 

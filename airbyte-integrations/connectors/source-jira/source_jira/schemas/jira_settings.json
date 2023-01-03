@@ -41,6 +41,6 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details of an application property."
 }

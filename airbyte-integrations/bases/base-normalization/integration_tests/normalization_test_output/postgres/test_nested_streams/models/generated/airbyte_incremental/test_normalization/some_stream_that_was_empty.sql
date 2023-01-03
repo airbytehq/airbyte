@@ -18,5 +18,5 @@ from {{ ref('some_stream_that_was_empty_scd') }}
 -- some_stream_that_was_empty from {{ source('test_normalization', '_airbyte_raw_some_stream_that_was_empty') }}
 where 1 = 1
 and _airbyte_active_row = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

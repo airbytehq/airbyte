@@ -1,0 +1,63 @@
+{
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "_links": {
+      "properties": {
+        "assignee": {
+          "properties": {
+            "self": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "href": {
+                  "type": ["null", "string"]
+                }
+              },
+              "description": "gets this Resource Set"
+            },
+            "resources": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "href": {
+                  "type": ["null", "string"]
+                }
+              },
+              "description": "gets a paginable list of resources included in this set"
+            },
+            "bindings": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "href": {
+                  "type": ["null", "string"]
+                }
+              },
+              "description": "gets a paginable list of admin Role Bindings assigned to this set"
+            },
+            "next": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "href": {
+                  "type": ["null", "string"]
+                }
+              },
+              "description": "the link for the next page, 'after' is the query string, the cursor field is id"
+            }
+          }
+        }
+      },
+      "type": ["object", "null"]
+    }
+  },
+  "type": "object"
+}

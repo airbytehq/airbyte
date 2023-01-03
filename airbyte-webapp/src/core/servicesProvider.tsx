@@ -1,23 +1,24 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { useMap } from "react-use";
 
-type ServiceContainer = {
-  [key: string]: Service;
-};
+type ServiceContainer = Record<string, Service>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Service = any;
 
-type ServicesProviderApi = {
+interface ServicesProviderApi {
   register(name: string, service: Service): void;
   getService<T>(serviceType: string): T;
   unregister(name: string): void;
   registeredServices: ServiceContainer;
-};
+}
 
 const ServicesProviderContext = React.createContext<ServicesProviderApi | null>(null);
 
-export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({ children, inject }) => {
+export const ServicesProvider: React.FC<React.PropsWithChildren<{ inject?: ServiceContainer }>> = ({
+  children,
+  inject,
+}) => {
   const [registeredServices, { remove, set }] = useMap<ServiceContainer>(inject);
 
   const ctxValue = useMemo<ServicesProviderApi>(
@@ -33,20 +34,6 @@ export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({ chil
 
   return <ServicesProviderContext.Provider value={ctxValue}>{children}</ServicesProviderContext.Provider>;
 };
-
-export type ServiceInject = [string, Service];
-
-const WithServiceInner: React.FC<{
-  serviceInject: ServiceInject[];
-}> = ({ children, serviceInject }) => {
-  useInjectServices(serviceInject);
-
-  return <>{children}</>;
-};
-
-export const WithService: React.FC<{
-  serviceInject: ServiceInject[];
-}> = React.memo(WithServiceInner);
 
 export function useInjectServices(serviceInject: ServiceContainer): void {
   const { register, unregister } = useServicesProvider();
@@ -77,5 +64,3 @@ export function useGetService<T>(serviceToken: string): T {
 
   return useMemo(() => registeredServices[serviceToken], [registeredServices, serviceToken]);
 }
-
-//

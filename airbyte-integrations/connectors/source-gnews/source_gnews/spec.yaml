@@ -1,0 +1,214 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/gnews
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Gnews Spec
+  type: object
+  required:
+    - api_key
+    - query
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      title: API Key
+      description: API Key
+      order: 0
+      airbyte_secret: true
+    query:
+      type: string
+      order: 1
+      title: Query
+      description: >-
+        This parameter allows you to specify your search keywords to find the news articles you are looking for.
+        The keywords will be used to return the most relevant articles. It is possible to use logical operators 
+        with keywords.
+        - Phrase Search Operator: This operator allows you to make an exact search. Keywords surrounded by 
+          quotation marks are used to search for articles with the exact same keyword sequence. 
+          For example the query: "Apple iPhone" will return articles matching at least once this sequence of keywords.
+        - Logical AND Operator: This operator allows you to make sure that several keywords are all used in the article
+          search. By default the space character acts as an AND operator, it is possible to replace the space character 
+          by AND to obtain the same result. For example the query: Apple Microsoft is equivalent to Apple AND Microsoft
+        - Logical OR Operator: This operator allows you to retrieve articles matching the keyword a or the keyword b.
+          It is important to note that this operator has a higher precedence than the AND operator. For example the 
+          query: Apple OR Microsoft will return all articles matching the keyword Apple as well as all articles matching 
+          the keyword Microsoft
+        - Logical NOT Operator: This operator allows you to remove from the results the articles corresponding to the
+          specified keywords. To use it, you need to add NOT in front of each word or phrase surrounded by quotes.
+          For example the query: Apple NOT iPhone will return all articles matching the keyword Apple but not the keyword
+          iPhone
+      examples:
+        - Microsoft Windows 10
+        - Apple OR Microsoft
+        - Apple AND NOT iPhone
+        - (Windows 7) AND (Windows 10)
+        - Intel AND (i7 OR i9)
+    language:
+      type: string
+      title: Language
+      decription: >-
+        This parameter allows you to specify the language of the news articles returned by the API. 
+        You have to set as value the 2 letters code of the language you want to filter.
+      order: 2
+      enum:
+        - ar
+        - zh
+        - nl
+        - en
+        - fr
+        - de
+        - el
+        - he
+        - hi
+        - it
+        - ja
+        - ml
+        - mr
+        - "no"
+        - pt
+        - ro
+        - ru
+        - es
+        - sv
+        - ta
+        - te
+        - uk
+    country:
+      type: string
+      title: Country
+      description: >-
+        This parameter allows you to specify the country where the news articles returned by the API
+        were published, the contents of the articles are not necessarily related to the specified
+        country. You have to set as value the 2 letters code of the country you want to filter.
+      order: 3
+      enum:
+        - au
+        - br
+        - ca
+        - cn
+        - eg
+        - fr
+        - de
+        - gr
+        - hk
+        - in
+        - ie
+        - il
+        - it
+        - jp
+        - nl
+        - "no"
+        - pk
+        - pe
+        - ph
+        - pt
+        - ro
+        - ru
+        - sg
+        - es
+        - se
+        - ch
+        - tw
+        - ua
+        - gb
+        - us
+    in:
+      type: array
+      title: In
+      description: >-
+        This parameter allows you to choose in which attributes the keywords are searched. The attributes that can
+        be set are title, description and content. It is possible to combine several attributes.
+      order: 4
+      items:
+        type: string
+        enum:
+          - title
+          - description
+          - content
+    nullable:
+      type: array
+      title: Nullable
+      description: >-
+        This parameter allows you to specify the attributes that you allow to return null values. The attributes that 
+        can be set are title, description and content. It is possible to combine several attributes
+      order: 5
+      items:
+        type: string
+        enum:
+          - title
+          - description
+          - content
+    start_date:
+      type: string
+      title: Start Date
+      description: >-
+        This parameter allows you to filter the articles that have a publication date greater than or equal to the 
+        specified value. The date must respect the following format: YYYY-MM-DD hh:mm:ss (in UTC)
+      order: 6
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$
+      examples:
+        - "2022-08-21 16:27:09"
+    end_date:
+      type: string
+      title: End Date
+      description: >-
+        This parameter allows you to filter the articles that have a publication date smaller than or equal to the 
+        specified value. The date must respect the following format: YYYY-MM-DD hh:mm:ss (in UTC)
+      order: 6
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$
+      examples:
+        - "2022-08-21 16:27:09"
+    sortby:
+      type: string
+      title: Sort By
+      description: >-
+        This parameter allows you to choose with which type of sorting the articles should be returned. Two values 
+        are possible:
+          - publishedAt = sort by publication date, the articles with the most recent publication date are returned first
+          - relevance = sort by best match to keywords, the articles with the best match are returned first
+      order: 7
+      enum:
+        - publishedAt
+        - relevance
+    top_headlines_query:
+      type: string
+      order: 8
+      title: Top Headlines Query
+      description: >-
+        This parameter allows you to specify your search keywords to find the news articles you are looking for.
+        The keywords will be used to return the most relevant articles. It is possible to use logical operators 
+        with keywords.
+        - Phrase Search Operator: This operator allows you to make an exact search. Keywords surrounded by 
+          quotation marks are used to search for articles with the exact same keyword sequence. 
+          For example the query: "Apple iPhone" will return articles matching at least once this sequence of keywords.
+        - Logical AND Operator: This operator allows you to make sure that several keywords are all used in the article
+          search. By default the space character acts as an AND operator, it is possible to replace the space character 
+          by AND to obtain the same result. For example the query: Apple Microsoft is equivalent to Apple AND Microsoft
+        - Logical OR Operator: This operator allows you to retrieve articles matching the keyword a or the keyword b.
+          It is important to note that this operator has a higher precedence than the AND operator. For example the 
+          query: Apple OR Microsoft will return all articles matching the keyword Apple as well as all articles matching 
+          the keyword Microsoft
+        - Logical NOT Operator: This operator allows you to remove from the results the articles corresponding to the
+          specified keywords. To use it, you need to add NOT in front of each word or phrase surrounded by quotes.
+          For example the query: Apple NOT iPhone will return all articles matching the keyword Apple but not the keyword
+          iPhone
+      examples:
+        - Microsoft Windows 10
+        - Apple OR Microsoft
+        - Apple AND NOT iPhone
+        - (Windows 7) AND (Windows 10)
+        - Intel AND (i7 OR i9)
+    top_headlines_topic:
+      type: string
+      title: Top Headlines Topic
+      description: This parameter allows you to change the category for the request.
+      order: 9
+      enum:
+        - breaking-news
+        - world
+        - nation
+        - business
+        - technology
+        - entertainment
+        - sports
+        - science
+        - health

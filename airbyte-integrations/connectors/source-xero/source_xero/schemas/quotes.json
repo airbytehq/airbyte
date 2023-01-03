@@ -1,0 +1,88 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Contact": {
+      "$ref": "contacts.json"
+    },
+    "Date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ExpiryDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "LineAmountTypes": {
+      "type": ["null", "string"]
+    },
+    "LineItems": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "line_items.json"
+      }
+    },
+    "SubTotal": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "TotalTax": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "Total": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "TotalDiscount": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "UpdatedDateUTC": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "CurrencyRate": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "QuoteID": {
+      "type": ["null", "string"]
+    },
+    "QuoteNumber": {
+      "type": ["null", "string"]
+    },
+    "Reference": {
+      "type": ["null", "string"]
+    },
+    "BrandingThemeID": {
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "type": ["null", "string"]
+    },
+    "Summary": {
+      "type": ["null", "string"]
+    },
+    "Terms": {
+      "type": ["null", "string"]
+    },
+    "TrackingCategory": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "tracking_categories.json"
+      }
+    }
+  },
+  "additionalProperties": true
+}

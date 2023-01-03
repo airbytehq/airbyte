@@ -174,9 +174,6 @@
     "segments.day_of_week": {
       "type": ["null", "string"]
     },
-    "segments.keyword.ad_group_criterion": {
-      "type": ["null", "string"]
-    },
     "ad_group_ad.ad.expanded_text_ad.description": {
       "type": ["null", "string"]
     },

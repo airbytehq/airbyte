@@ -1,16 +1,8 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
+import { getHealthCheck } from "../request/AirbyteClient";
+import { AirbyteRequestService } from "../request/AirbyteRequestService";
 
-class HealthService extends AirbyteRequestService {
-  constructor(rootUrl: string, requestSigner: RequestMiddleware[] = []) {
-    super(rootUrl, requestSigner);
-  }
-
-  async health(): Promise<void> {
-    await this.fetch("health", undefined, {
-      method: "GET",
-    });
+export class HealthService extends AirbyteRequestService {
+  health() {
+    return getHealthCheck(this.requestOptions);
   }
 }
-
-export { HealthService };

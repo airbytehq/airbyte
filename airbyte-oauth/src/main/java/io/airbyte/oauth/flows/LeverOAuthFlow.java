@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -34,15 +34,19 @@ public class LeverOAuthFlow extends BaseOAuth2Flow {
       "users:read:admin",
       "offline_access");
 
-  public LeverOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+  public LeverOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
-  private String getAudience(JsonNode inputOAuthConfiguration) {
+  private String getAudience(final JsonNode inputOAuthConfiguration) {
     return String.format("%s/v1/", getBaseApiUrl(inputOAuthConfiguration));
   }
 
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  @Override
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("client_id", clientId)
@@ -57,12 +61,13 @@ public class LeverOAuthFlow extends BaseOAuth2Flow {
    * Returns the URL where to retrieve the access token from.
    */
   @Override
-  protected String getAccessTokenUrl(JsonNode inputOAuthConfiguration) {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return String.format(ACCESS_TOKEN_URL, getBaseAuthUrl(inputOAuthConfiguration));
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl, JsonNode inputOAuthConfiguration) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl, final JsonNode inputOAuthConfiguration)
+      throws IOException {
 
     try {
       return URLDecoder.decode((new URIBuilder(String.format(AUTHORIZE_URL, getBaseAuthUrl(inputOAuthConfiguration)))
@@ -73,12 +78,12 @@ public class LeverOAuthFlow extends BaseOAuth2Flow {
           .addParameter("scope", SCOPES)
           .addParameter("audience", getAudience(inputOAuthConfiguration))
           .addParameter("prompt", "consent").build().toString()), StandardCharsets.UTF_8);
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
 
-  private String getBaseAuthUrl(JsonNode inputOAuthConfiguration) {
+  private String getBaseAuthUrl(final JsonNode inputOAuthConfiguration) {
     if (isProduction(inputOAuthConfiguration)) {
       return "http1s://auth.lever.co";
     } else {
@@ -86,7 +91,7 @@ public class LeverOAuthFlow extends BaseOAuth2Flow {
     }
   }
 
-  private String getBaseApiUrl(JsonNode inputOAuthConfiguration) {
+  private String getBaseApiUrl(final JsonNode inputOAuthConfiguration) {
     if (isProduction(inputOAuthConfiguration)) {
       return "https://api.lever.co/";
     } else {
@@ -94,8 +99,8 @@ public class LeverOAuthFlow extends BaseOAuth2Flow {
     }
   }
 
-  private boolean isProduction(JsonNode inputOAuthConfiguration) {
-    var environment = inputOAuthConfiguration.get("environment");
+  private boolean isProduction(final JsonNode inputOAuthConfiguration) {
+    final var environment = inputOAuthConfiguration.get("environment");
     return environment != null
         && environment.asText().toLowerCase(Locale.ROOT).equals("production");
   }

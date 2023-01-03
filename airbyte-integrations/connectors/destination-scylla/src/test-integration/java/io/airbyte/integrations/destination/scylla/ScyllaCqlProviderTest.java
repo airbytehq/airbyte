@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.scylla;
@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.datastax.driver.core.exceptions.InvalidQueryException;
+import io.airbyte.integrations.util.HostPortResolver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,8 +30,8 @@ class ScyllaCqlProviderTest {
   void setup() {
     var scyllaContainer = ScyllaContainerInitializr.initContainer();
     var scyllaConfig = TestDataFactory.scyllaConfig(
-        scyllaContainer.getHost(),
-        scyllaContainer.getFirstMappedPort());
+        HostPortResolver.resolveHost(scyllaContainer),
+        HostPortResolver.resolvePort(scyllaContainer));
     this.scyllaCqlProvider = new ScyllaCqlProvider(scyllaConfig);
     this.nameTransformer = new ScyllaNameTransformer(scyllaConfig);
     this.scyllaCqlProvider.createKeyspaceIfNotExists(SCYLLA_KEYSPACE);

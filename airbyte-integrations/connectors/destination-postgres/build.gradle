@@ -10,19 +10,19 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
 
     testImplementation project(':airbyte-test-utils')
 
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.connectors.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-postgres')
 
-    integrationTestJavaImplementation libs.testcontainers.postgresql
+    integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)

@@ -1,0 +1,5 @@
+*
+!Dockerfile
+!main.py
+!destination_sqlite
+!setup.py

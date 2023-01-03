@@ -4,20 +4,33 @@ import { FormattedMessage } from "react-intl";
 
 import ArrayOfObjectsEditor from "components/ArrayOfObjectsEditor";
 
-import { Transformation } from "core/domain/connection/operation";
+import { OperationRead } from "core/request/AirbyteClient";
+import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { isDefined } from "utils/common";
 import TransformationForm from "views/Connection/TransformationForm";
 
-import { ConnectionFormMode } from "../ConnectionForm";
+import { useDefaultTransformation } from "../formConfig";
 
-const TransformationField: React.FC<
-  ArrayHelpers & {
-    form: FormikProps<{ transformations: Transformation[] }>;
-    defaultTransformation: Transformation;
-    mode?: ConnectionFormMode;
-  }
-> = ({ remove, push, replace, form, defaultTransformation, mode }) => {
+interface TransformationFieldProps extends ArrayHelpers {
+  form: FormikProps<{ transformations: OperationRead[] }>;
+  mode?: ConnectionFormMode;
+  onStartEdit?: () => void;
+  onEndEdit?: () => void;
+}
+
+const TransformationField: React.FC<TransformationFieldProps> = ({
+  remove,
+  push,
+  replace,
+  form,
+  mode,
+  onStartEdit,
+  onEndEdit,
+}) => {
   const [editableItemIdx, setEditableItem] = useState<number | null>(null);
+  const defaultTransformation = useDefaultTransformation();
+  const clearEditableItem = () => setEditableItem(null);
+
   return (
     <ArrayOfObjectsEditor
       items={form.values.transformations}
@@ -27,25 +40,36 @@ const TransformationField: React.FC<
       }
       addButtonText={<FormattedMessage id="form.addTransformation" />}
       onRemove={remove}
-      onStartEdit={(idx) => setEditableItem(idx)}
+      onStartEdit={(idx) => {
+        setEditableItem(idx);
+        onStartEdit?.();
+      }}
+      onCancel={() => {
+        clearEditableItem();
+        onEndEdit?.();
+      }}
       mode={mode}
-    >
-      {(editableItem) => (
+      editModalSize="xl"
+      renderItemEditorForm={(editableItem) => (
         <TransformationForm
           transformation={editableItem ?? defaultTransformation}
           isNewTransformation={!editableItem}
-          onCancel={() => setEditableItem(null)}
+          onCancel={() => {
+            clearEditableItem();
+            onEndEdit?.();
+          }}
           onDone={(transformation) => {
             if (isDefined(editableItemIdx)) {
               editableItemIdx >= form.values.transformations.length
                 ? push(transformation)
                 : replace(editableItemIdx, transformation);
-              setEditableItem(null);
+              clearEditableItem();
+              onEndEdit?.();
             }
           }}
         />
       )}
-    </ArrayOfObjectsEditor>
+    />
   );
 };
 

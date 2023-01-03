@@ -1,6 +1,6 @@
-export type Values = {
+export interface Values {
   connectorType: string;
   name: string;
   additionalInfo?: string;
   email?: string;
-};
+}

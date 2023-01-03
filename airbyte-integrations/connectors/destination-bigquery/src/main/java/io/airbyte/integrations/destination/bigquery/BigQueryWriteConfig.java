@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;

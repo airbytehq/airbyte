@@ -1,0 +1,64 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: airbyte-db-svc
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-1"
+  labels:
+    {{ include "airbyte.databaseLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      protocol: TCP
+  selector:
+    {{ include "airbyte.databaseSelectorLabels" . | nindent 4 }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: airbyte-db
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-1"
+  labels:
+    {{ include "airbyte.databaseLabels" . | nindent 4 }}
+spec:
+  replicas: 1
+  serviceName: airbyte-db-svc
+  selector:
+    matchLabels:
+      {{ include "airbyte.databaseSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{ include "airbyte.databaseSelectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: airbyte-db-container
+          image: airbyte/db:{{ ((.Values.global.image).tag) | default .Chart.AppVersion }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.postgresqlDatabase }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.postgresqlPassword }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.postgresqlUsername }}
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: airbyte-volume-db
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: airbyte-volume-db
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 500Mi
+{{- end }}

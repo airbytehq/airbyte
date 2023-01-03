@@ -23,7 +23,6 @@ yarn-error.log*
 *.iml
 /.idea
 
-.npmrc
 .env
 .env.development
 .env.production
@@ -31,3 +30,4 @@ yarn-error.log*
 /cypress/screenshots
 /cypress/videos
 /cypress/fixtures
+/cypress/downloads

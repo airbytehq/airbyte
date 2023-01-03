@@ -1,47 +1,32 @@
 import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
-import { useConfig } from "config";
-import { Workspace } from "core/domain/workspace/Workspace";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
+
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
-import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { useNotificationService } from "hooks/services/Notification";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
+import { WorkspaceRead } from "../core/request/AirbyteClient";
 import ConnectionPage from "./ConnectionPage";
-import DestinationPage from "./DestinationPage";
-import OnboardingPage from "./OnboardingPage";
+import CreationFormPage from "./ConnectionPage/pages/CreationFormPage";
+import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
+import { AllDestinationsPage } from "./destination/AllDestinationsPage";
+import CreateDestinationPage from "./destination/CreateDestinationPage";
+import { DestinationItemPage } from "./destination/DestinationItemPage";
+import { DestinationOverviewPage } from "./destination/DestinationOverviewPage";
+import { DestinationSettingsPage } from "./destination/DestinationSettingsPage";
 import PreferencesPage from "./PreferencesPage";
-import { RoutePaths } from "./routePaths";
+import { RoutePaths, DestinationPaths } from "./routePaths";
 import SettingsPage from "./SettingsPage";
 import SourcesPage from "./SourcesPage";
 
-function useDemo() {
-  const { formatMessage } = useIntl();
-  const config = useConfig();
-
-  const demoNotification = useMemo(
-    () => ({
-      id: "demo.message",
-      title: formatMessage({ id: "demo.message.title" }),
-      text: formatMessage({ id: "demo.message.body" }),
-      nonClosable: true,
-    }),
-    [formatMessage]
-  );
-
-  useNotificationService(config.isDemo ? demoNotification : undefined);
-}
-
-const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
+const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   const analyticsContext = useMemo(
     () => ({
       workspace_id: workspace.workspaceId,
@@ -53,22 +38,27 @@ const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
   useAnalyticsIdentifyUser(workspace.workspaceId);
 };
 
-const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
+const MainViewRoutes: React.FC = () => {
   return (
     <MainView>
-      <Routes>
-        <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
-        <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
-        <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
-        {workspace.displaySetupWizard ? (
-          <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
-        ) : null}
-        <Route
-          path="*"
-          element={<Navigate to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections} />}
-        />
-      </Routes>
+      <ApiErrorBoundary>
+        <Routes>
+          <Route path={RoutePaths.Destination}>
+            <Route index element={<AllDestinationsPage />} />
+            <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
+            <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+            <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
+              <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
+              <Route index element={<DestinationOverviewPage />} />
+            </Route>
+          </Route>
+          <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
+          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+          <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+
+          <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
+        </Routes>
+      </ApiErrorBoundary>
     </MainView>
   );
 };
@@ -88,7 +78,7 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
   return (
     <Navigate
       to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${includePath ? location.pathname : ""}`}
-      replace={true}
+      replace
     />
   );
 };
@@ -96,15 +86,9 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
 const RoutingWithWorkspace: React.FC = () => {
   const workspace = useCurrentWorkspace();
   useAddAnalyticsContextForWorkspace(workspace);
-  useTrackPageAnalytics();
   useApiHealthPoll();
-  useDemo();
 
-  return (
-    <OnboardingServiceProvider>
-      {workspace.initialSetupComplete ? <MainViewRoutes workspace={workspace} /> : <PreferencesRoutes />}
-    </OnboardingServiceProvider>
-  );
+  return workspace.initialSetupComplete ? <MainViewRoutes /> : <PreferencesRoutes />;
 };
 
 export const Routing: React.FC = () => {
@@ -124,6 +108,7 @@ export const Routing: React.FC = () => {
   );
   return (
     <Routes>
+      <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
       <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />

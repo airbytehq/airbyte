@@ -3,9 +3,10 @@ import { useMutation } from "react-query";
 
 import { useConfig } from "config";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { Connector, Scheduler } from "core/domain/connector";
+import { Connector } from "core/domain/connector";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { SourceService } from "core/domain/connector/SourceService";
+import { useGetOutOfDateConnectorsCount } from "services/connector/ConnectorDefinitions";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
@@ -14,70 +15,70 @@ import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/con
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 
-type ConnectorService = {
-  hasNewVersions: boolean;
-  hasNewSourceVersion: boolean;
-  hasNewDestinationVersion: boolean;
-  countNewSourceVersion: number;
-  countNewDestinationVersion: number;
-  updateAllSourceVersions: () => unknown;
-  updateAllDestinationVersions: () => unknown;
-};
+import { CheckConnectionRead } from "../../core/request/AirbyteClient";
 
-const useConnector = (): ConnectorService => {
+export const useUpdateSourceDefinitions = () => {
   const { sourceDefinitions } = useSourceDefinitionList();
-  const { destinationDefinitions } = useDestinationDefinitionList();
-
   const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
-  const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
 
   const newSourceDefinitions = useMemo(() => sourceDefinitions.filter(Connector.hasNewerVersion), [sourceDefinitions]);
-
-  const newDestinationDefinitions = useMemo(
-    () => destinationDefinitions.filter(Connector.hasNewerVersion),
-    [destinationDefinitions]
-  );
 
   const updateAllSourceVersions = async () => {
     await Promise.all(
       newSourceDefinitions?.map((item) =>
         updateSourceDefinition({
           sourceDefinitionId: item.sourceDefinitionId,
-          dockerImageTag: item.latestDockerImageTag,
+          dockerImageTag: item.latestDockerImageTag ?? "",
         })
       )
     );
   };
+
+  return { updateAllSourceVersions };
+};
+
+export const useUpdateDestinationDefinitions = () => {
+  const { destinationDefinitions } = useDestinationDefinitionList();
+  const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
+
+  const newDestinationDefinitions = useMemo(
+    () => destinationDefinitions.filter(Connector.hasNewerVersion),
+    [destinationDefinitions]
+  );
 
   const updateAllDestinationVersions = async () => {
     await Promise.all(
       newDestinationDefinitions?.map((item) =>
         updateDestinationDefinition({
           destinationDefinitionId: item.destinationDefinitionId,
-          dockerImageTag: item.latestDockerImageTag,
+          dockerImageTag: item.latestDockerImageTag ?? "",
         })
       )
     );
   };
 
-  const hasNewSourceVersion = newSourceDefinitions.length > 0;
-  const hasNewDestinationVersion = newDestinationDefinitions.length > 0;
+  return { updateAllDestinationVersions };
+};
+
+export const useGetConnectorsOutOfDate = () => {
+  const outOfDateConnectors = useGetOutOfDateConnectorsCount();
+
+  const hasNewSourceVersion = outOfDateConnectors.sourceDefinitions > 0;
+  const hasNewDestinationVersion = outOfDateConnectors.destinationDefinitions > 0;
   const hasNewVersions = hasNewSourceVersion || hasNewDestinationVersion;
 
   return {
     hasNewVersions,
     hasNewSourceVersion,
     hasNewDestinationVersion,
-    updateAllSourceVersions,
-    updateAllDestinationVersions,
-    countNewSourceVersion: newSourceDefinitions.length,
-    countNewDestinationVersion: newDestinationDefinitions.length,
+    countNewSourceVersion: outOfDateConnectors.sourceDefinitions,
+    countNewDestinationVersion: outOfDateConnectors.destinationDefinitions,
+    outOfDateConnectors,
   };
 };
 
 function useGetDestinationService(): DestinationService {
   const { apiUrl } = useConfig();
-
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
@@ -85,13 +86,12 @@ function useGetDestinationService(): DestinationService {
 
 function useGetSourceService(): SourceService {
   const { apiUrl } = useConfig();
-
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
-type CheckConnectorParams = { signal: AbortSignal } & (
+export type CheckConnectorParams = { signal: AbortSignal } & (
   | { selectedConnectorId: string }
   | {
       selectedConnectorId: string;
@@ -101,14 +101,15 @@ type CheckConnectorParams = { signal: AbortSignal } & (
   | {
       selectedConnectorDefinitionId: string;
       connectionConfiguration: ConnectionConfiguration;
+      workspaceId: string;
     }
 );
 
-const useCheckConnector = (formType: "source" | "destination") => {
+export const useCheckConnector = (formType: "source" | "destination") => {
   const destinationService = useGetDestinationService();
   const sourceService = useGetSourceService();
 
-  return useMutation<Scheduler, Error, CheckConnectorParams>(async (params: CheckConnectorParams) => {
+  return useMutation<CheckConnectionRead, Error, CheckConnectorParams>(async (params: CheckConnectorParams) => {
     const payload: Record<string, unknown> = {};
 
     if ("connectionConfiguration" in params) {
@@ -117,6 +118,10 @@ const useCheckConnector = (formType: "source" | "destination") => {
 
     if ("name" in params) {
       payload.name = params.name;
+    }
+
+    if ("workspaceId" in params) {
+      payload.workspaceId = params.workspaceId;
     }
 
     if (formType === "destination") {
@@ -146,7 +151,3 @@ const useCheckConnector = (formType: "source" | "destination") => {
     });
   });
 };
-
-export { useCheckConnector };
-export type { CheckConnectorParams };
-export default useConnector;

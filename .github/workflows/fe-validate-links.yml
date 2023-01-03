@@ -1,0 +1,47 @@
+name: Check for broken links in FE
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 * * *"
+
+jobs:
+  validate-frontend-links:
+    name: "Validate frontend links"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Run :airbyte-webapp:validateLinks
+        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:validateLinks --scan
+
+      - name: Publish Failures to dev-frontend channel
+        uses: abinoda/slack-action@master
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          args: >-
+            {\"channel\":\"C03088BTMFC\", \"blocks\":[
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":alarm: The periodic link validation failed!\n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n\"}}]}

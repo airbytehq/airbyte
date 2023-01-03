@@ -99,7 +99,7 @@
                 "type": ["null", "string"]
               },
               "call_duration": {
-                "type": ["null", "string"]
+                "type": ["null", "number"]
               },
               "answered_by_name": {
                 "type": ["null", "string"]
@@ -144,10 +144,20 @@
             "type": ["null", "integer"]
           },
           "value": {
-            "type": ["null", "string", "array"],
-            "items": {
-              "type": ["null", "string"]
-            }
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "author_id": {
             "type": ["null", "integer"]
@@ -260,7 +270,9 @@
       "type": ["null", "object"],
       "properties": {
         "custom": {
-          "type": ["null", "object"]
+          "type": ["null", "object"],
+          "properties": {},
+          "additionalProperties": true
         },
         "trusted": {
           "type": ["null", "boolean"]
