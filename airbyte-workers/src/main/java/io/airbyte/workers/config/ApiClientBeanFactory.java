@@ -74,9 +74,12 @@ public class ApiClientBeanFactory {
 
   @Singleton
   @Named("internalApiScheme")
-  public String internalApiScheme(final Environment environment) {
+  public String internalApiScheme(@Value("${airbyte.acceptance.test.enabled}") final boolean isInTestMode, final Environment environment) {
     // control plane workers communicate with the Airbyte API within their internal network, so https
     // isn't needed
+    if (isInTestMode) {
+      return "http";
+    }
     return environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE) ? "http" : "https";
   }
 
@@ -97,8 +100,9 @@ public class ApiClientBeanFactory {
                                      @Value("${airbyte.control.plane.auth-endpoint}") final String controlPlaneAuthEndpoint,
                                      @Value("${airbyte.data.plane.service-account.email}") final String dataPlaneServiceAccountEmail,
                                      @Value("${airbyte.data.plane.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
+                                     @Value("${airbyte.acceptance.test.enabled}") final boolean isInTestMode,
                                      final Environment environment) {
-    if (environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
+    if (isInTestMode || environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
       // control plane workers communicate with the Airbyte API within their internal network, so a signed
       // JWT isn't needed
       return airbyteApiAuthHeaderValue;

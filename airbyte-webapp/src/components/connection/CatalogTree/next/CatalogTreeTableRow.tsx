@@ -1,8 +1,7 @@
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { Row } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { Switch } from "components/ui/Switch";
@@ -117,7 +116,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         )}
       </CatalogTreeTableCell>
       <CatalogTreeTableCell size="xsmall">
-        <FontAwesomeIcon icon={faArrowRight} />
+        <ArrowRightIcon />
       </CatalogTreeTableCell>
       <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
