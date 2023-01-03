@@ -28,7 +28,7 @@ buildscript {
 plugins {
     id 'base'
     id 'pmd'
-    id 'com.diffplug.spotless' version '6.7.1'
+    id 'com.diffplug.spotless' version '6.12.0'
     id 'com.github.hierynomus.license' version '0.16.1'
     id 'com.github.spotbugs' version '5.0.13'
     // The distribution plugin has been added to address the an issue with the copyGeneratedTar
@@ -302,11 +302,11 @@ subprojects { subproj ->
         rulesMinimumPriority = 5
         ruleSets = []
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
-        toolVersion = '6.43.0'
+        toolVersion = '6.51.0'
     }
 
     jacoco {
-        toolVersion = "0.8.7"
+        toolVersion = "0.8.8"
     }
 
     jacocoTestReport {
@@ -349,7 +349,7 @@ subprojects { subproj ->
         excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
         reportLevel = 'high'
         showProgress = false
-        toolVersion = '4.6.0'
+        toolVersion = '4.7.3'
     }
 
     test {
