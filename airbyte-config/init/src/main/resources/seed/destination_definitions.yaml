@@ -60,10 +60,6 @@
   dockerImageTag: 1.2.9
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
-  normalizationConfig:
-    normalizationRepository: airbyte/normalization
-    normalizationTag: 0.2.25
-    normalizationIntegrationType: bigquery
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -285,7 +281,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.51
+  dockerImageTag: 0.3.52
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   normalizationConfig:
@@ -341,7 +337,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.40
+  dockerImageTag: 0.4.41
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
