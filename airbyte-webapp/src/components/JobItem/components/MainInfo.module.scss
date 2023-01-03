@@ -1,5 +1,5 @@
-@use "../../../scss/colors";
-@use "../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
 
 .mainView {
   cursor: pointer;
@@ -44,16 +44,18 @@
     .attemptCount {
       font-size: 12px;
       line-height: 15px;
-      color: colors.$red;
+      color: colors.$grey;
     }
   }
 
+  border-bottom: variables.$border-thin solid transparent !important;
+
   &.open:not(.failed) {
-    border-bottom: variables.$border-thin solid colors.$grey-100;
+    border-bottom: variables.$border-thin solid colors.$grey-100 !important;
   }
 
   &.open.failed {
-    border-bottom: variables.$border-thin solid colors.$red-50;
+    border-bottom: variables.$border-thin solid colors.$red-50 !important;
   }
 }
 

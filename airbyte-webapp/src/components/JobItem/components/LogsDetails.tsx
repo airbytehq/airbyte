@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import { AttemptRead, JobDebugInfoRead } from "../../../core/request/AirbyteClient";
-import AttemptDetails from "./AttemptDetails";
+import { AttemptDetails } from "./AttemptDetails";
 import DownloadButton from "./DownloadButton";
 import { LinkToAttemptButton } from "./LinkToAttemptButton";
 import LogsTable from "./Logs";
