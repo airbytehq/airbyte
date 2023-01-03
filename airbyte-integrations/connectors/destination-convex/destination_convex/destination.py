@@ -54,12 +54,10 @@ class DestinationConvex(Destination):
             else:
                 primary_key = s.primary_key
             stream = {
-                "syncMode": str(s.sync_mode.name),
                 "destinationSyncMode": str(s.destination_sync_mode.name),
                 "cursor": cursor,  # need some logic to combine here
                 "primaryKey": primary_key,
                 "jsonSchema": str(s.stream.json_schema),  # FIXME
-                "namespace": s.stream.namespace,
             }
             streams[s.stream.name] = stream
         writer.stream_metadata = streams
