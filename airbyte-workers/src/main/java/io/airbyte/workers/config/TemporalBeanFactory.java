@@ -33,7 +33,6 @@ import io.temporal.worker.WorkerFactory;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
 
 /**
  * Micronaut bean factory for Temporal-related singletons.
