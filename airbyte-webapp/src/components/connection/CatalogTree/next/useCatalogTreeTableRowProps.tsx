@@ -1,6 +1,5 @@
 /* eslint-disable css-modules/no-unused-class */
 import classNames from "classnames";
-import { getIn, useFormikContext } from "formik";
 import isEqual from "lodash/isEqual";
 import { useMemo } from "react";
 
@@ -17,9 +16,6 @@ type StatusToDisplay = "disabled" | "added" | "removed" | "changed" | "unchanged
 export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
   const [isSelected] = useBulkEditSelect(stream.id);
   const { initialValues } = useConnectionFormService();
-  const { errors } = useFormikContext();
-
-  const configErrors = getIn(errors, `syncCatalog.streams[${stream.id}].config`);
 
   const isStreamEnabled = stream.config?.selected;
 
@@ -73,6 +69,5 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
     isSelected,
     statusToDisplay,
     pillButtonVariant,
-    configErrors,
   };
 };

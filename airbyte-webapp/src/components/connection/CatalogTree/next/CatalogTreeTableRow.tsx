@@ -35,6 +35,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   fields,
   onExpand,
   disabled,
+  configErrors,
 }) => {
   const { primaryKey, cursorField, syncMode, destinationSyncMode } = stream.config ?? {};
   const { defaultCursorField } = stream.stream ?? {};
@@ -52,7 +53,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   const fieldCount = fields?.length ?? 0;
   const onRowClick = fieldCount > 0 ? () => onExpand() : undefined;
 
-  const { streamHeaderContentStyle, pillButtonVariant, configErrors } = useCatalogTreeTableRowProps(stream);
+  const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
 
