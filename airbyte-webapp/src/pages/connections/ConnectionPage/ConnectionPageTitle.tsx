@@ -3,6 +3,7 @@ import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { ConnectionName } from "components/connection/ConnectionName";
 import { InfoBox } from "components/ui/InfoBox";
 import { StepsMenu } from "components/ui/StepsMenu";
 import { Text } from "components/ui/Text";
@@ -11,7 +12,6 @@ import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 
 import { ConnectionPageRoutePaths } from "../types";
-import { ConnectionName } from "./ConnectionName";
 import styles from "./ConnectionPageTitle.module.scss";
 import { StatusMainInfo } from "./StatusMainInfo";
 
