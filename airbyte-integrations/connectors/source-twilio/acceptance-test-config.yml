@@ -19,12 +19,12 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.txt"
         empty_streams:
-            # TODO: SAT should be able to exclude expected records validation on the stream > field level
-            # to avoid exposures such as `auth_token` 
-            # reference: https://github.com/airbytehq/airbyte/pull/20430
+          # TODO: SAT should be able to exclude expected records validation on the stream > field level
+          # to avoid exposures such as `auth_token`
+          # reference: https://github.com/airbytehq/airbyte/pull/20430
           - name: "accounts"
             bypass_reason: "expected records could not be provided without field bypassing, skipping for now. Read #TODO above."
-            # 
+            #
           - name: "alerts"
             bypass_reason: "alerts are transient - they emerge and disappear from time to time"
           - name: "dependent_phone_numbers"
@@ -40,6 +40,8 @@ acceptance_tests:
           - name: "available_phone_numbers_toll_free"
             bypass_reason: "very volatile data"
           - name: "usage_records"
+            bypass_reason: "very volatile data"
+          - name: "usage_triggers"
             bypass_reason: "very volatile data"
         timeout_seconds: 600
   incremental:
