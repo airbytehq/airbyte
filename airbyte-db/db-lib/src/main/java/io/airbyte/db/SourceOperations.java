@@ -12,12 +12,15 @@ public interface SourceOperations<QueryResult, SourceType> {
 
   /**
    * Converts a database row into it's JSON representation.
+   *
    * @throws SQLException
    */
   JsonNode rowToJson(QueryResult queryResult) throws SQLException;
 
   /**
-   * Converts a database source type into an Airbyte type, which is currently represented by a {@link JsonSchemaType}
+   * Converts a database source type into an Airbyte type, which is currently represented by a
+   * {@link JsonSchemaType}
    */
   JsonSchemaType getAirbyteType(SourceType sourceType);
+
 }
