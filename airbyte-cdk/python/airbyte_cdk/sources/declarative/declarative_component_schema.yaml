@@ -366,8 +366,8 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  DeclarativeOauth2Authenticator:
-    description: Authenticator for requests using Oauth authentication
+  OAuthAuthenticator:
+    description: Authenticator for requests using OAuth 2.0 authentication
     type: object
     required:
       - type
@@ -378,7 +378,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [DeclarativeOauth2Authenticator]
+        enum: [OAuthAuthenticator]
       client_id:
         type: string
       client_secret:
@@ -583,7 +583,7 @@ definitions:
           - "$ref": "#/definitions/BasicHttpAuthenticator"
           - "$ref": "#/definitions/BearerAuthenticator"
           - "$ref": "#/definitions/CustomAuthenticator"
-          - "$ref": "#/definitions/DeclarativeOauth2Authenticator"
+          - "$ref": "#/definitions/OAuthAuthenticator"
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
       error_handler:

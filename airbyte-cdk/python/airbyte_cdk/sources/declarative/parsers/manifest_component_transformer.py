@@ -26,7 +26,7 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DeclarativeSource.streams": "DeclarativeStream",
     # DeclarativeStream
     "DeclarativeStream.retriever": "SimpleRetriever",
-    "DeclarativeStream.schema_loader": "DefaultSchemaLoader",
+    "DeclarativeStream.schema_loader": "JsonFileSchemaLoader",
     # DefaultErrorHandler
     "DefaultErrorHandler.response_filters": "HttpResponseFilter",
     # DefaultPaginator

@@ -173,7 +173,7 @@ public class AirbyteAcceptanceTestHarness {
   private final UUID defaultWorkspaceId;
   private final String postgresSqlInitFile;
 
-  private KubernetesClient kubernetesClient = null;
+  private KubernetesClient kubernetesClient;
 
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
