@@ -13,12 +13,10 @@ interface IProps {
   itemTo?: { name: string; icon?: string };
 }
 
-const ConnectionBlock: React.FC<IProps> = (props) => (
+export const ConnectionBlock: React.FC<IProps> = (props) => (
   <Card className={classNames(styles.lightContentCard)}>
     {props.itemFrom ? <ConnectionBlockItem {...props.itemFrom} /> : <Content className={styles.extraBlock} />}
     <FontAwesomeIcon className={styles.arrow} icon={faChevronRight} />
     {props.itemTo ? <ConnectionBlockItem {...props.itemTo} /> : <Content className={styles.extraBlock} />}
   </Card>
 );
-
-export default ConnectionBlock;
