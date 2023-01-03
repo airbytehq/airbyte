@@ -695,31 +695,38 @@ def test_state_with_abnormally_large_values(mocker, read_output, expectation):
     [
         pytest.param(
             Config.TestStrictnessLevel.high,
-            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"])),
+            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"], bypass_reason=None)),
             False,
             False,
             id="high test strictness level, future_state_path and missing streams are defined: run the test.",
         ),
         pytest.param(
             Config.TestStrictnessLevel.low,
-            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"])),
+            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"], bypass_reason=None)),
             False,
             False,
             id="low test strictness level, future_state_path and missing_streams are defined: run the test.",
         ),
         pytest.param(
             Config.TestStrictnessLevel.high,
-            MagicMock(future_state=MagicMock(future_state_path=None)),
+            MagicMock(future_state=MagicMock(future_state_path=None, bypass_reason=None)),
             True,
             False,
             id="high test strictness level, future_state_path and missing streams are defined: fail the test.",
         ),
         pytest.param(
             Config.TestStrictnessLevel.low,
-            MagicMock(future_state=MagicMock(future_state_path=None)),
+            MagicMock(future_state=MagicMock(future_state_path=None, bypass_reason=None)),
             False,
             True,
             id="low test strictness level, future_state_path not defined: skip the test.",
+        ),
+        pytest.param(
+            Config.TestStrictnessLevel.high,
+            MagicMock(future_state=MagicMock(bypass_reason="valid bypass reason")),
+            False,
+            True,
+            id="high test strictness level, bypass_reason: skip test.",
         ),
     ],
 )

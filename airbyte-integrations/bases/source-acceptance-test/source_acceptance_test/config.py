@@ -144,6 +144,7 @@ class FullRefreshConfig(BaseConfig):
 class FutureStateConfig(BaseConfig):
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
     missing_streams: List[EmptyStreamConfiguration] = Field(default=[], description="List of missings streams with valid bypass reasons.")
+    bypass_reason: Optional[str]
 
 
 class IncrementalConfig(BaseConfig):

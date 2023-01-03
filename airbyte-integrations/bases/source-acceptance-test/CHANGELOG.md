@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.24
+Enable bypass reason for future state test config.[#20549](https://github.com/airbytehq/airbyte/pull/20549)
+
 ## 0.2.23
 Skip backward compatibility tests on specifications if actual and previous specifications and discovered catalogs are identical.[#20435](https://github.com/airbytehq/airbyte/pull/20435)
 
