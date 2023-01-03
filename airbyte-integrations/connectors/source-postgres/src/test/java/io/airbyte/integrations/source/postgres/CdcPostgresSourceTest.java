@@ -475,7 +475,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final Long replicationSlotAfterFirstSync = PgLsn.fromPgString(
         source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
-    assertEquals(0, replicationSlotAfterFirstSync.compareTo(replicationSlotAtTheBeginning));
+    assertEquals(replicationSlotAtTheBeginning, replicationSlotAfterFirstSync);
 
     // second batch of records again 20 being created
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
@@ -520,7 +520,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final Long replicationSlotAfterThirdSync = PgLsn.fromPgString(
         source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
-    assertEquals(0, replicationSlotAfterThirdSync.compareTo(replicationSlotAfterSecondSync));
+    assertEquals(replicationSlotAfterSecondSync, replicationSlotAfterThirdSync);
     assertEquals(recordsToCreate + 1, recordsFromThirdBatch.size());
 
     for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
