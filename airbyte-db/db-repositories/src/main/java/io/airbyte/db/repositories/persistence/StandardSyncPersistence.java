@@ -7,10 +7,10 @@ package io.airbyte.db.repositories.persistence;
 import io.airbyte.config.StandardSync;
 import io.airbyte.db.repositories.models.StandardSyncModel;
 import io.airbyte.db.repositories.repositories.StandardSyncRepository;
+import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import jakarta.inject.Singleton;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,15 +37,16 @@ public class StandardSyncPersistence {
     // return toStandardSync(standardSyncRepository.findById(connectionId));
   }
 
-  public List<StandardSync> getStandardSyncs() {
-//    return (List<StandardSync>) standardSyncRepository.findAll(Pageable.from(1)).map(this::toStandardSync);
-    Iterable<StandardSyncModel> syncModels = standardSyncRepository.findAll();
-    List<StandardSync> list = new ArrayList<StandardSync>();
-    for (StandardSyncModel model : syncModels) {
-      StandardSync standardSync = toStandardSync(model);
-      list.add(standardSync);
-    }
-    return list.stream().toList();
+  public List<StandardSync> getStandardSyncs(Pageable pageable) {
+//    return standardSyncRepository.findAll(Pageable.from(0, 1)).map(this::toStandardSync);
+    return standardSyncRepository.findAll(pageable).getContent().stream().map(this::toStandardSync).toList();
+//    Iterable<StandardSyncModel> syncModels = standardSyncRepository.findAll();
+//    List<StandardSync> list = new ArrayList<StandardSync>();
+//    for (StandardSyncModel model : syncModels) {
+//      StandardSync standardSync = toStandardSync(model);
+//      list.add(standardSync);
+//    }
+//    return list.stream().toList();
   }
 
   private StandardSync toStandardSync(StandardSyncModel model) {

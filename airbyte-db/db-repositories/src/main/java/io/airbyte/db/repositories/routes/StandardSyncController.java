@@ -7,6 +7,8 @@ package io.airbyte.db.repositories.routes;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.db.repositories.persistence.StandardSyncPersistence;
+import io.micronaut.data.model.Page;
+import io.micronaut.data.model.Pageable;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import java.io.IOException;
@@ -29,8 +31,8 @@ public class StandardSyncController {
   // }
 
   @Get("/")
-  public List<StandardSync> findAll() throws ConfigNotFoundException, IOException {
-    return standardSyncPersistence.getStandardSyncs();
+  public List<StandardSync> findAll(Pageable pageable) throws ConfigNotFoundException, IOException {
+    return standardSyncPersistence.getStandardSyncs(pageable);
   }
 
   @Get("/test")
