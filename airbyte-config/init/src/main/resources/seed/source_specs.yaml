@@ -3866,7 +3866,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-faker:1.0.0"
+- dockerImage: "airbyte/source-faker:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -3907,8 +3907,17 @@
             \ before a state message is emitted?"
           type: "integer"
           minimum: 1
-          default: 100
+          default: 1000
           order: 3
+        parallelism:
+          title: "Parallelism"
+          description: "How many parallel workers should we use to generate fake data?\
+            \  Choose a value equal to the number of CPUs you will allocate to this\
+            \ source."
+          type: "integer"
+          minimum: 1
+          default: 4
+          order: 4
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4032,7 +4041,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.31"
+- dockerImage: "airbyte/source-file:0.2.32"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4746,7 +4755,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-gnews:0.1.0"
+- dockerImage: "airbyte/source-gnews:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gnews"
     connectionSpecification:
@@ -14664,7 +14673,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:1.0.0"
+- dockerImage: "airbyte/source-tiktok-marketing:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
