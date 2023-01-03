@@ -93,7 +93,7 @@ export const AuthenticationSection: React.FC = () => {
                     tooltip="Scopes to request"
                   />
                   <BuilderField
-                    type="array"
+                    type="string"
                     path="global.authenticator.token_expiry_date_format"
                     optional
                     label="Token expiry date format"
