@@ -11,12 +11,13 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 
 import styles from "./NonBreakingChangesPreferenceField.module.scss";
 
+const SUPPORTED_PREFERENCES = [NonBreakingChangesPreference.ignore, NonBreakingChangesPreference.disable];
+
 export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = ({ field, form }) => {
   const { formatMessage } = useIntl();
 
   const preferenceOptions = useMemo(() => {
-    const values = Object.values(NonBreakingChangesPreference);
-    return values.map((value) => ({
+    return SUPPORTED_PREFERENCES.map((value) => ({
       value,
       label: formatMessage({ id: `connectionForm.nonBreakingChangesPreference.${value}` }),
       testId: `nonBreakingChangesPreference-${value}`,
@@ -29,7 +30,6 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
     <div className={styles.flexRow}>
       <div className={styles.leftFieldCol}>
         <ControlLabels
-          className={styles.connectorLabel}
           nextLine
           label={formatMessage({
             id: "connectionForm.nonBreakingChangesPreference.label",
