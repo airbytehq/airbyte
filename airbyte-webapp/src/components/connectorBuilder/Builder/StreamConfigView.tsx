@@ -6,7 +6,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderStream } from "../types";
 import { AddStreamButton } from "./AddStreamButton";
@@ -27,7 +27,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ s
   const { formatMessage } = useIntl();
   const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
+  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
 
   const streamPath = `streams[${streamNum}]`;
   const streamFieldPath = (fieldPath: string) => `${streamPath}.${fieldPath}`;
