@@ -21,7 +21,9 @@ definitions:
       datetime_format: "%d/%m/%Y %H:%M"
     step: "P1D"
     datetime_format: "%d/%m/%Y %H:%M"
-    cursor_granularity: "PT1M"
+    # There is a discrepancy between the format of the cursor `created_at` and the granularity of the API hence "P1D"
+    # here instead of "PT1M" if we were to check the datetime_format
+    cursor_granularity: "P1D"
     cursor_field: "{{ options['stream_cursor_field'] }}"
     start_time_option:
       field_name: "start"
