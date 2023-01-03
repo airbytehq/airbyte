@@ -1,3 +1,4 @@
+import React from "react";
 import { useIntl } from "react-intl";
 
 import { AuthenticationSection } from "./AuthenticationSection";
@@ -7,7 +8,7 @@ import { BuilderField } from "./BuilderField";
 import { BuilderTitle } from "./BuilderTitle";
 import styles from "./GlobalConfigView.module.scss";
 
-export const GlobalConfigView: React.FC = () => {
+export const GlobalConfigView: React.FC = React.memo(() => {
   const { formatMessage } = useIntl();
 
   return (
@@ -20,4 +21,4 @@ export const GlobalConfigView: React.FC = () => {
       <AuthenticationSection />
     </BuilderConfigView>
   );
-};
+});

@@ -1,4 +1,4 @@
-import { useField } from "formik";
+import { FastField } from "formik";
 import { FormattedMessage } from "react-intl";
 
 import { ControlLabels } from "components/LabeledControl";
@@ -61,16 +61,18 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error })
   return <TagInput name={name} fieldValue={value} onChange={(value) => setValue(value)} error={error} />;
 };
 
-export const BuilderField: React.FC<BuilderFieldProps> = ({
+const InnerBuilderField: React.FC<BuilderFieldProps & { field: any; helpers: any; meta: any }> = ({
   path,
   label,
   tooltip,
   optional = false,
   readOnly,
   pattern,
+  field,
+  meta,
+  helpers,
   ...props
 }) => {
-  const [field, meta, helpers] = useField(path);
   const hasError = !!meta.error && meta.touched;
 
   if (props.type === "boolean") {
@@ -125,5 +127,13 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
         </Text>
       )}
     </ControlLabels>
+  );
+};
+
+export const BuilderField: React.FC<BuilderFieldProps> = (props) => {
+  return (
+    <FastField name={props.path}>
+      {({ field, helpers, meta }: any) => <InnerBuilderField {...props} field={field} helpers={helpers} meta={meta} />}
+    </FastField>
   );
 };

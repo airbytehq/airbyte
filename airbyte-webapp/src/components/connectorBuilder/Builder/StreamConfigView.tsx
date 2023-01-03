@@ -2,6 +2,7 @@ import { faTrashCan, faCopy } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useField } from "formik";
+import React from "react";
 import { useIntl } from "react-intl";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
@@ -22,7 +23,7 @@ interface StreamConfigViewProps {
   streamNum: number;
 }
 
-export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum }) => {
+export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ streamNum }) => {
   const { formatMessage } = useIntl();
   const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
@@ -118,4 +119,4 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
       </BuilderCard>
     </BuilderConfigView>
   );
-};
+});

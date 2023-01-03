@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Form, Formik, useField, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useMemo, useState } from "react";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useEffectOnce } from "react-use";
 import * as yup from "yup";
@@ -82,7 +83,7 @@ function inputInEditingToFormInput({
   };
 }
 
-export const InputsView: React.FC = () => {
+export const InputsView: React.FC = React.memo(() => {
   const { formatMessage } = useIntl();
   const { values, setFieldValue } = useFormikContext<BuilderFormValues>();
   const [inputs, , helpers] = useField<BuilderFormInput[]>("inputs");
@@ -173,7 +174,7 @@ export const InputsView: React.FC = () => {
       )}
     </BuilderConfigView>
   );
-};
+});
 
 const InputModal = ({
   inputInEditing,
