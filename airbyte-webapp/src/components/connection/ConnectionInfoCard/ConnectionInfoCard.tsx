@@ -14,11 +14,11 @@ import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
+import styles from "./ConnectionInfoCard.module.scss";
 import { EnabledControl } from "./EnabledControl";
 import { SchemaChangesDetected } from "./SchemaChangesDetected";
-import styles from "./StatusMainInfo.module.scss";
 
-export const StatusMainInfo: React.FC = () => {
+export const ConnectionInfoCard: React.FC = () => {
   const {
     connection: { source, destination, status, schemaChange },
     schemaHasBeenRefreshed,
@@ -43,12 +43,12 @@ export const StatusMainInfo: React.FC = () => {
         };
 
   return (
-    <div className={styles.container} data-testid="statusMainInfo">
+    <div className={styles.container} data-testid="connectionInfo">
       <div className={styles.pathContainer}>
         <Link
           to={sourceConnectionPath}
           className={classNames(styles.connectorLink, schemaChangeClassNames)}
-          data-testid="statusMainInfo-sourceLink"
+          data-testid="connectionInfo-sourceLink"
         >
           <ConnectorCard
             connectionName={source.sourceName}
@@ -61,7 +61,7 @@ export const StatusMainInfo: React.FC = () => {
         <Link
           to={destinationConnectionPath}
           className={styles.connectorLink}
-          data-testid="statusMainInfo-destinationLink"
+          data-testid="connectionInfo-destinationLink"
         >
           <ConnectorCard
             connectionName={destination.destinationName}

@@ -7,7 +7,7 @@ import { ConnectionStatus, SchemaChange } from "core/request/AirbyteClient";
 import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 
 // eslint-disable-next-line css-modules/no-unused-class
-import styles from "./StatusMainInfo.module.scss";
+import styles from "./connectionInfo.module.scss";
 
 const mockUseConnectionEditService = jest.fn();
 
@@ -32,9 +32,9 @@ const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<s
 );
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { StatusMainInfo } = require("./StatusMainInfo");
+const { ConnectionInfoCard } = require("./ConnectionInfoCard");
 
-describe("<StatusMainInfo />", () => {
+describe("<connectionInfo />", () => {
   beforeEach(() => {
     mockUseConnectionEditService.mockReturnValue({
       connection: mockConnection,
@@ -43,16 +43,16 @@ describe("<StatusMainInfo />", () => {
   });
 
   it("renders", () => {
-    const { getByTestId, queryByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapperWithAutoDetectSchema });
+    const { getByTestId, queryByTestId } = render(<ConnectionInfoCard />, { wrapper: TestWrapperWithAutoDetectSchema });
 
-    expect(getByTestId("statusMainInfo")).toBeDefined();
+    expect(getByTestId("connectionInfo")).toBeDefined();
 
     expect(getByTestId("enabledControl")).toBeDefined();
     expect(getByTestId("enabledControl-switch")).toBeEnabled();
 
     // schema changes-related
-    expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.breaking);
-    expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.breaking);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
     expect(queryByTestId("schemaChangesDetected")).toBeFalsy();
   });
 
@@ -62,10 +62,10 @@ describe("<StatusMainInfo />", () => {
       schemaHasBeenRefreshed: false,
     });
 
-    const { getByTestId, queryByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapperWithAutoDetectSchema });
+    const { getByTestId, queryByTestId } = render(<ConnectionInfoCard />, { wrapper: TestWrapperWithAutoDetectSchema });
 
-    expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.breaking);
-    expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.breaking);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
 
     expect(queryByTestId("enabledControl")).toBeFalsy();
     expect(queryByTestId("schemaChangesDetected")).toBeFalsy();
@@ -77,10 +77,10 @@ describe("<StatusMainInfo />", () => {
       schemaHasBeenRefreshed: false,
     });
 
-    const { getByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapperWithAutoDetectSchema });
+    const { getByTestId } = render(<ConnectionInfoCard />, { wrapper: TestWrapperWithAutoDetectSchema });
 
-    expect(getByTestId("statusMainInfo-sourceLink")).toHaveClass(styles.breaking);
-    expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
+    expect(getByTestId("connectionInfo-sourceLink")).toHaveClass(styles.breaking);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
     expect(getByTestId("schemaChangesDetected")).toBeDefined();
 
     expect(getByTestId("enabledControl-switch")).toBeDisabled();
@@ -92,10 +92,10 @@ describe("<StatusMainInfo />", () => {
       schemaHasBeenRefreshed: false,
     });
 
-    const { getByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapperWithAutoDetectSchema });
+    const { getByTestId } = render(<ConnectionInfoCard />, { wrapper: TestWrapperWithAutoDetectSchema });
 
-    expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.breaking);
-    expect(getByTestId("statusMainInfo-sourceLink")).toHaveClass(styles.nonBreaking);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.breaking);
+    expect(getByTestId("connectionInfo-sourceLink")).toHaveClass(styles.nonBreaking);
     expect(getByTestId("schemaChangesDetected")).toBeDefined();
 
     expect(getByTestId("enabledControl-switch")).toBeEnabled();

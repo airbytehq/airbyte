@@ -3,6 +3,7 @@ import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { ConnectionInfoCard } from "components/connection/ConnectionInfoCard";
 import { ConnectionName } from "components/connection/ConnectionName";
 import { InfoBox } from "components/ui/InfoBox";
 import { StepsMenu } from "components/ui/StepsMenu";
@@ -13,7 +14,6 @@ import { useConnectionEditService } from "hooks/services/ConnectionEdit/Connecti
 
 import { ConnectionPageRoutePaths } from "../types";
 import styles from "./ConnectionPageTitle.module.scss";
-import { StatusMainInfo } from "./StatusMainInfo";
 
 export const ConnectionPageTitle: React.FC = () => {
   const params = useParams<{ id: string; "*": ConnectionPageRoutePaths }>();
@@ -70,7 +70,7 @@ export const ConnectionPageTitle: React.FC = () => {
       </Text>
       <ConnectionName />
       <div className={styles.statusContainer}>
-        <StatusMainInfo />
+        <ConnectionInfoCard />
       </div>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </div>

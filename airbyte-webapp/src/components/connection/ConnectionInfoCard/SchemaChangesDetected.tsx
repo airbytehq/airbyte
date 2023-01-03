@@ -8,9 +8,9 @@ import { Text } from "components/ui/Text";
 import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { ConnectionPageRoutePaths } from "pages/connections/types";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty";
 
-import { ConnectionPageRoutePaths } from "../types";
 import styles from "./SchemaChangesDetected.module.scss";
 
 export const SchemaChangesDetected: React.FC = () => {
