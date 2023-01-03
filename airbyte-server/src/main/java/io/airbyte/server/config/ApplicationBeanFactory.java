@@ -45,7 +45,6 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public EventRunner eventRunner(final TemporalClient temporalClient) {
     return new TemporalEventRunner(temporalClient);
   }
@@ -66,7 +65,6 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JobTracker jobTracker(
                                final ConfigRepository configRepository,
                                final JobPersistence jobPersistence,
@@ -75,7 +73,6 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public WebUrlHelper webUrlHelper(@Value("${airbyte.web-app.url}") final String webAppUrl) {
     return new WebUrlHelper(webAppUrl);
   }

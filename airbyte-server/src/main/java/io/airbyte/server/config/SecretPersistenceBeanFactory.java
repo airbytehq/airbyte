@@ -36,7 +36,6 @@ public class SecretPersistenceBeanFactory {
             pattern = "(?i)^(?!google_secret_manager).*")
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^(?!vault).*")
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
   public SecretPersistence defaultSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return localTestingSecretPersistence(configDatabase);
@@ -45,7 +44,6 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^testing_config_db_table$")
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
   public SecretPersistence localTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return new LocalTestingSecretPersistence(configDatabase);
@@ -54,7 +52,6 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^testing_config_db_table$")
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("ephemeralSecretPersistence")
   public SecretPersistence ephemeralLocalTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return new LocalTestingSecretPersistence(configDatabase);
@@ -81,7 +78,6 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^vault$")
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
   public SecretPersistence vaultSecretPersistence(@Value("${airbyte.secret.store.vault.address}") final String address,
                                                   @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
@@ -92,7 +88,6 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^vault$")
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("ephemeralSecretPersistence")
   public SecretPersistence ephemeralVaultSecretPersistence(@Value("${airbyte.secret.store.vault.address}") final String address,
                                                            @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
@@ -101,19 +96,16 @@ public class SecretPersistenceBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public SecretsHydrator secretsHydrator(@Named("secretPersistence") final SecretPersistence secretPersistence) {
     return new RealSecretsHydrator(secretPersistence);
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public SecretsRepositoryReader secretsRepositoryReader(final ConfigRepository configRepository, final SecretsHydrator secretsHydrator) {
     return new SecretsRepositoryReader(configRepository, secretsHydrator);
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public SecretsRepositoryWriter secretsRepositoryWriter(final ConfigRepository configRepository,
                                                          @Named("secretPersistence") final Optional<SecretPersistence> secretPersistence,
                                                          @Named("ephemeralSecretPersistence") final Optional<SecretPersistence> ephemeralSecretPersistence) {

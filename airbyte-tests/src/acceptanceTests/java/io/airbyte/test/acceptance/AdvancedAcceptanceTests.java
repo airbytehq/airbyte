@@ -89,13 +89,13 @@ class AdvancedAcceptanceTests {
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+    Thread.sleep(60000);
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
             .setPort(8001)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
-    Thread.sleep(60000);
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
     LOGGER.info("workspaceId = " + workspaceId);
 

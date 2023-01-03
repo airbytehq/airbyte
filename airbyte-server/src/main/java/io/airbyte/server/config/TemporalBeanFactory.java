@@ -33,7 +33,6 @@ import java.io.IOException;
 public class TemporalBeanFactory {
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public TrackingClient trackingClient(final TrackingStrategy trackingStrategy,
                                        final DeploymentMode deploymentMode,
                                        final JobPersistence jobPersistence,
@@ -55,13 +54,11 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public OAuthConfigSupplier oAuthConfigSupplier(final ConfigRepository configRepository, final TrackingClient trackingClient) {
     return new OAuthConfigSupplier(configRepository, trackingClient);
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public SynchronousSchedulerClient synchronousSchedulerClient(final TemporalClient temporalClient,
                                                                final JobTracker jobTracker,
                                                                final JobErrorReporter jobErrorReporter,
