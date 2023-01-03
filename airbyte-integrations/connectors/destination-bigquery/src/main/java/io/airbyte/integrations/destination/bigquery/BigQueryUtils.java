@@ -148,7 +148,7 @@ public class BigQueryUtils {
    * @param bigquery - initialized bigquery client
    * @param tmpTestDatasetId - dataset name where tmp table will be created
    */
-  private static void attemptCreateTableAndTestInsert(final BigQuery bigquery, final String tmpTestDatasetId) {
+  public static void attemptCreateTableAndTestInsert(final BigQuery bigquery, final String tmpTestDatasetId) {
     // Create dummy schema that will be used for tmp table creation
     final Schema testTableSchema = Schema.of(
         Field.of("id", StandardSQLTypeName.INT64),
@@ -157,7 +157,7 @@ public class BigQueryUtils {
     // Create tmp table to verify if user has a create table permission. Also below we will do test
     // records insert in it
     final Table test_connection_table_name = createTable(bigquery, tmpTestDatasetId,
-        CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
+        CHECK_TEST_TMP_TABLE_NAME + System.currentTimeMillis(), testTableSchema);
 
     // Try to make test (dummy records) insert to make sure that user has required permissions
     try {

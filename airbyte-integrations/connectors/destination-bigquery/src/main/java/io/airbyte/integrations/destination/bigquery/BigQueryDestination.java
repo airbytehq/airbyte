@@ -88,12 +88,16 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final BigQuery bigquery = getBigQuery(config);
       final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
 
+      // check has permission for custom dataset creation (may be required for normalization)
       BigQueryUtils.checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation);
 
       final Dataset dataset = BigQueryUtils.getOrCreateDataset(bigquery, datasetId, datasetLocation);
       if (!dataset.getLocation().equals(datasetLocation)) {
         throw new ConfigErrorException("Actual dataset location doesn't match to location from config");
       }
+      // check permission for provided dataset
+      BigQueryUtils.attemptCreateTableAndTestInsert(bigquery, datasetId);
+
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM `%s.INFORMATION_SCHEMA.TABLES` LIMIT 1;", datasetId))
           .setUseLegacySql(false)
