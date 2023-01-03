@@ -535,12 +535,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   private Field toField(final CommonField<DataType> field) {
-    if (getType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null
+    if (getAirbyteType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null
         && !field.getProperties().isEmpty()) {
       final var properties = field.getProperties().stream().map(this::toField).toList();
-      return Field.of(field.getName(), getType(field.getType()), properties);
+      return Field.of(field.getName(), getAirbyteType(field.getType()), properties);
     } else {
-      return Field.of(field.getName(), getType(field.getType()));
+      return Field.of(field.getName(), getAirbyteType(field.getType()));
     }
   }
 
@@ -604,12 +604,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       throws Exception;
 
   /**
-   * Map source types and Airbyte types
+   * Map source types to Airbyte types
    *
    * @param columnType source data type
    * @return airbyte data type
    */
-  protected abstract JsonSchemaType getType(DataType columnType);
+  protected abstract JsonSchemaType getAirbyteType(DataType columnType);
 
   /**
    * Get list of system namespaces(schemas) in order to exclude them from the discover result list.
