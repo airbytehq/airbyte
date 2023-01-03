@@ -1,13 +1,13 @@
 # Deploy Airbyte on DigitalOcean
 
-This page guides you through deploying Airbyte Open Source on a DigitalOcean droplet by setting up the deployment environment, and installing and starting Airbyte.  
+This page guides you through deploying Airbyte Open Source on a [DigitalOcean droplet](https://docs.digitalocean.com/products/droplets/how-to/create/) by setting up the deployment environment, and installing and starting Airbyte.  
 
 Alternatively, you can deploy Airbyte on DigitalOcean in one click using their [marketplace](https://cloud.digitalocean.com/droplets/new?onboarding_origin=marketplace&appId=95451155&image=airbyte&utm_source=deploying-airbyte_on-digitalocean-droplet).
 
 ## Requirements
 
-- To test Airbyte, we recommend a $20/month droplet.
-- To deploy Airbyte in a production environment, we recommend a $40/month instance.
+- To test Airbyte, we recommend a $20/month droplet
+- To deploy Airbyte in a production environment, we recommend a $40/month instance
 
 ## Set up the Environment
 
@@ -48,9 +48,7 @@ To install and start Airbyte :
   docker-compose up -d
 ```
 
-2. Verify that Airbyte is running:
-
-    #todo -add the ssh tunnel command
+2. Verify the connection by visiting [http://localhost:8000](http://localhost:8000) in your browser.
 
 ## Troubleshooting
 
