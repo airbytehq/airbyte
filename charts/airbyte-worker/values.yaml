@@ -4,6 +4,10 @@ global:
   credVolumeOverride: ""
   secretName: ""
   extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
   database:
     secretName: ""
     secretValue: ""
@@ -367,3 +371,8 @@ secrets: {}
 #   USE_STREAM_CAPABLE_STATE: true
 
 env_vars: {}
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}
