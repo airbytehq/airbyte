@@ -119,8 +119,10 @@ export const getConnectionSyncStatus = (
       return ConnectionSyncStatus.ACTIVE;
 
     case JobStatus.failed:
-    case JobStatus.cancelled:
       return ConnectionSyncStatus.FAILED;
+
+    case JobStatus.cancelled:
+      return ConnectionSyncStatus.CANCELLED;
 
     case JobStatus.pending:
     case JobStatus.running:
