@@ -201,10 +201,10 @@ spec:
               name: {{ .Release.Name }}-airbyte-env
               key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
         - name: MICRONAUT_ENVIRONMENTS
-            valueFrom:
-              configMapKeyRef:
-                name: { { .Release.Name } }-airbyte-env
-                key: WORKERS_MICRONAUT_ENVIRONMENTS
+          valueFrom:
+            configMapKeyRef:
+              name: { { .Release.Name } }-airbyte-env
+              key: WORKERS_MICRONAUT_ENVIRONMENTS
         {{- end }}
         # Values from secret
         {{- if .Values.secrets }}
