@@ -28,13 +28,14 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       field.onChange(e);
-      if (e.target.value === "") {
+      if (!property.default && e.target.value === "") {
         // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
-        // an empty string which might fail connector validation
+        // an empty string which might fail connector validation.
+        // Do not do this if there's a default value, formik will fill it in when casting.
         helpers.setValue(undefined);
       }
     },
-    [field, helpers]
+    [field, helpers, property.default]
   );
 
   if (property.type === "array" && !property.enum) {
@@ -80,9 +81,10 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         withTime={property.format === "date-time"}
         onChange={(value) => {
           helpers.setTouched(true);
-          if (value === "") {
+          if (!property.default && value === "") {
             // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
-            // an empty string which might fail connector validation
+            // an empty string which might fail connector validation.
+            // Do not do this if there's a default value, formik will fill it in when casting.
             helpers.setValue(undefined);
           } else {
             helpers.setValue(value);
