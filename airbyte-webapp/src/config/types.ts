@@ -22,6 +22,7 @@ export interface Config {
   apiUrl: string;
   oauthRedirectUrl: string;
   healthCheckInterval: number;
+  userDetailInterval: number;
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;

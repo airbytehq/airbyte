@@ -7,6 +7,7 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 // import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useUser } from "core/AuthContext";
 import { useApiHealthPoll } from "hooks/services/Health";
+// import { useUserDetailPoll } from "hooks/services/UserDetail";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 // import { useListWorkspaces } from "services/workspaces/WorkspacesService";
@@ -103,6 +104,7 @@ const RoutingWithWorkspace: React.FC = () => {
   const workspace = useCurrentWorkspace();
   // useAddAnalyticsContextForWorkspace(workspace);
   useApiHealthPoll();
+  // useUserDetailPoll();
 
   return (
     <OnboardingServiceProvider>
