@@ -191,6 +191,9 @@ airbyte:
         address: ${VAULT_ADDRESS:}
         prefix: ${VAULT_PREFIX:}
         token: ${VAULT_AUTH_TOKEN:}
+      aws:
+        access_key: ${AWS_ACCESS_KEY:}
+        access_secret_key: ${AWS_SECRET_ACCESS_KEY:}
   temporal:
     worker:
       ports: ${TEMPORAL_WORKER_PORTS:}

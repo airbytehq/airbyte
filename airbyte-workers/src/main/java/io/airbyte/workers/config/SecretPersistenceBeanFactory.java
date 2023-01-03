@@ -5,6 +5,7 @@
 package io.airbyte.workers.config;
 
 import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.config.persistence.split_secrets.AWSSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
@@ -66,6 +67,16 @@ public class SecretPersistenceBeanFactory {
                                                   @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
                                                   @Value("${airbyte.secret.store.vault.token}") final String token) {
     return new VaultSecretPersistence(address, prefix, token);
+  }
+
+  @Singleton
+  @Requires(property = "airbyte.secret.persistence",
+            pattern = "(?i)^aws_secret_manager$")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Named("secretPersistence")
+  public SecretPersistence awsSecretPersistence(@Value("${airbyte.secret.store.aws.access_key}") final String aws_access_key,
+                                                @Value("${airbyte.secret.store.aws.access_secret_key}") final String aws_secret_access_key) {
+    return new AWSSecretManagerPersistence(aws_access_key, aws_secret_access_key);
   }
 
   @Singleton
