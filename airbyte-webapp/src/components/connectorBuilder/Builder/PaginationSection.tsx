@@ -8,6 +8,7 @@ import { RequestOption } from "core/request/ConnectorManifest";
 import { BuilderPaginator } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
+import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { InjectRequestOptionFields } from "./InjectRequestOptionFields";
 import { ToggleGroupField } from "./ToggleGroupField";
@@ -133,13 +134,13 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
             typeValue: "CursorPagination",
             children: (
               <>
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path={streamFieldPath("paginator.strategy.cursor_value")}
                   label="Cursor value"
                   tooltip="Value of the cursor to send in requests to the API"
                 />
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path={streamFieldPath("paginator.strategy.stop_condition")}
                   label="Stop condition"

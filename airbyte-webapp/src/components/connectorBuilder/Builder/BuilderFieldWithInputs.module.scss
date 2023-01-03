@@ -1,0 +1,34 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.buttonWrapper {
+  position: absolute;
+  right: variables.$spacing-sm;
+  top: 0;
+  width: auto;
+  border: none;
+  background: none;
+  color: colors.$grey-300;
+
+  &:hover {
+    background: none;
+    border: none;
+    color: colors.$blue-500;
+  }
+}
+
+.selectedOption {
+  margin-top: variables.$spacing-lg;
+  background: none;
+  font-size: 12px;
+  color: colors.$blue-500;
+
+  &:hover {
+    color: colors.$blue-900;
+  }
+
+  & > span {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
