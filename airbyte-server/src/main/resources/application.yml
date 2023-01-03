@@ -33,7 +33,7 @@ airbyte:
         address: ${VAULT_ADDRESS:}
         prefix: ${VAULT_PREFIX:}
         token: ${VAULT_AUTH_TOKEN:}
-  role: ${AIRBYTE_ROLE:}
+  role: ${AIRBYTE_ROLE:dev}
   tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
   worker:
     job:
