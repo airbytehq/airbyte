@@ -18,8 +18,10 @@ import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -154,6 +156,17 @@ public class WorkerUtils {
             k -> AirbyteStreamNameNamespacePair.fromAirbyteStream(k.getStream()),
             v -> v.getStream().getJsonSchema()));
 
+  }
+
+  public static String getStdErrFromErrorStream(final InputStream errorStream) throws IOException {
+    BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
+    StringBuilder errorOutput = new StringBuilder();
+    String line;
+    while ((line = reader.readLine()) != null) {
+      errorOutput.append(line);
+      errorOutput.append(System.lineSeparator());
+    }
+    return errorOutput.toString();
   }
 
 }

@@ -87,7 +87,12 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         jobOutput.setCheckConnection(output);
       } else {
         if (failureReason.isEmpty()) {
-          throw new WorkerException("Error checking connection status: no status nor failure reason were outputted.");
+          final String stderr = WorkerUtils.getStdErrFromErrorStream(process.getErrorStream());
+          if (stderr.isEmpty()) {
+            throw new WorkerException("Error checking connection status: no status nor failure reason were outputted.");
+          } else {
+            throw new WorkerException("Error checking connection status.\n" + stderr);
+          }
         }
       }
       return jobOutput;
