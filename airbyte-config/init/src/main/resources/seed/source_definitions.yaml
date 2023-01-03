@@ -474,7 +474,7 @@
 - name: Sample Data (Faker)
   sourceDefinitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
   dockerRepository: airbyte/source-faker
-  dockerImageTag: 1.0.0
+  dockerImageTag: 2.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   sourceType: api
   releaseStage: alpha
