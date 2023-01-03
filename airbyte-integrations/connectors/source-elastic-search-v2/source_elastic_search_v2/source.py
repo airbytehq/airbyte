@@ -76,7 +76,7 @@ class ElasticSearchV2Stream(HttpStream, ABC):
         """
 
         if stream_state == {}:
-            date_filter = "1970-01-01"
+            date_filter = "2020-01-01"
         else:
             date_filter = stream_state.get("date")
 
