@@ -175,7 +175,7 @@ Note: For date-time we are not checking against compliance against ISO8601 \(and
 
 ### Example of `expected_records.jsonl`:
 
-In general, the expected_records.json should contain the subset of output of the records of particular stream you need to test. The required fields are: `stream, data, emitted_at`
+In general, the expected_records.jsonl should contain the subset of output of the records of particular stream you need to test. The required fields are: `stream, data, emitted_at`
 
 ```javascript
 {"stream": "my_stream", "data": {"field_1": "value0", "field_2": "value0", "field_3": null, "field_4": {"is_true": true}, "field_5": 123}, "emitted_at": 1626172757000}
