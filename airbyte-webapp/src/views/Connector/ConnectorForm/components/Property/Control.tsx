@@ -106,7 +106,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
       />
     );
   }
-  const inputType = property.type === "integer" ? "number" : "text";
+  const inputType = property.type === "integer" || property.type === "number" ? "number" : "text";
 
   return (
     <Input

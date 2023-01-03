@@ -1,0 +1,29 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "label": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": ["null", "string"]
+    },
+    "default": {
+      "type": ["null", "string"]
+    },
+    "tip": {
+      "type": ["null", "string"]
+    },
+    "placeholder": {
+      "type": ["null", "string"]
+    }
+  }
+}
