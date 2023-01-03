@@ -95,6 +95,7 @@ class AdvancedAcceptanceTests {
             .setPort(8001)
             .setBasePath("/api"));
     // work in whatever default workspace is present.
+    Thread.sleep(60000);
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
     LOGGER.info("workspaceId = " + workspaceId);
 
