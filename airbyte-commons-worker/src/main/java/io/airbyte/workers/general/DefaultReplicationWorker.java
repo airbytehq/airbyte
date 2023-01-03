@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -196,7 +197,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
       // thrown
       final CompletableFuture<?> readFromDstThread = CompletableFuture.runAsync(
-          readFromDstRunnable(destination, cancelled, messageTracker, connectorConfigUpdater, mdc, timeTracker, destinationConfig),
+          readFromDstRunnable(destination, cancelled, messageTracker, connectorConfigUpdater, mdc, timeTracker, destinationConfig.getDestinationId()),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -222,7 +223,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               recordSchemaValidator,
               metricReporter,
               timeTracker,
-              sourceConfig,
+              sourceConfig.getSourceId(),
               fieldSelectionEnabled),
           executors)
           .whenComplete((msg, ex) -> {
@@ -263,7 +264,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                               final ConnectorConfigUpdater connectorConfigUpdater,
                                               final Map<String, String> mdc,
                                               final ThreadedTimeTracker timeHolder,
-                                              final WorkerDestinationConfig destinationConfig) {
+                                              final UUID destinationId) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
@@ -283,7 +284,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             try {
               if (message.getType() == Type.CONTROL) {
-                acceptDstControlMessage(destinationConfig, message.getControl(), connectorConfigUpdater);
+                acceptDstControlMessage(destinationId, message.getControl(), connectorConfigUpdater);
               }
             } catch (final Exception e) {
               LOGGER.error("Error updating destination configuration", e);
@@ -324,7 +325,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                            final RecordSchemaValidator recordSchemaValidator,
                                                            final WorkerMetricReporter metricReporter,
                                                            final ThreadedTimeTracker timeHolder,
-                                                           final WorkerSourceConfig sourceConfig,
+                                                           final UUID sourceId,
                                                            final boolean fieldSelectionEnabled) {
     return () -> {
       MDC.setContextMap(mdc);
@@ -356,7 +357,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             try {
               if (message.getType() == Type.CONTROL) {
-                acceptSrcControlMessage(sourceConfig, message.getControl(), connectorConfigUpdater);
+                acceptSrcControlMessage(sourceId, message.getControl(), connectorConfigUpdater);
               }
             } catch (final Exception e) {
               LOGGER.error("Error updating source configuration", e);
@@ -420,19 +421,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static void acceptSrcControlMessage(final WorkerSourceConfig sourceConfig,
+  private static void acceptSrcControlMessage(final UUID sourceId,
                                               final AirbyteControlMessage controlMessage,
                                               final ConnectorConfigUpdater connectorConfigUpdater) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-      connectorConfigUpdater.updateSource(sourceConfig.getSourceId(), controlMessage.getConnectorConfig().getConfig());
+      connectorConfigUpdater.updateSource(sourceId, controlMessage.getConnectorConfig().getConfig());
     }
   }
 
-  private static void acceptDstControlMessage(final WorkerDestinationConfig destinationConfig,
+  private static void acceptDstControlMessage(final UUID destinationId,
                                               final AirbyteControlMessage controlMessage,
                                               final ConnectorConfigUpdater connectorConfigUpdater) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-      connectorConfigUpdater.updateDestination(destinationConfig.getDestinationId(), controlMessage.getConnectorConfig().getConfig());
+      connectorConfigUpdater.updateDestination(destinationId, controlMessage.getConnectorConfig().getConfig());
     }
   }
 
