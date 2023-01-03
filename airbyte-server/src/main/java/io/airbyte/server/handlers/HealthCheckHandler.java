@@ -5,9 +5,7 @@
 package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.generated.HealthCheckRead;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
