@@ -14,8 +14,8 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CU
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COUNT_RESULT_COL;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
-import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.enquoteIdentifier;
-import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static java.util.stream.Collectors.toList;
@@ -544,7 +544,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final String schemaName = configuredAirbyteStream.getStream().getNamespace();
       final String tableName = configuredAirbyteStream.getStream().getName();
       final String fullTableName =
-          getFullyQualifiedTableNameWithQuoting(getQuoteString(), schemaName, tableName);
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
 
       final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName);
 
@@ -572,7 +572,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final String schemaName = configuredAirbyteStream.getStream().getNamespace();
       final String tableName = configuredAirbyteStream.getStream().getName();
       final String fullTableName =
-          getFullyQualifiedTableNameWithQuoting(getQuoteString(), schemaName, tableName);
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
 
       final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName);
 
@@ -613,7 +613,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                            final CursorInfo cursorInfo,
                                            final PostgresType cursorFieldType) {
     try {
-      final String quotedCursorField = enquoteIdentifier(getQuoteString(), cursorInfo.getCursorField());
+      final String quotedCursorField = getIdentifierWithQuoting(cursorInfo.getCursorField(), getQuoteString());
 
       // Calculate actual number of rows to sync here.
       final List<JsonNode> result = database.queryJsons(
@@ -640,7 +640,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
             final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
             LOGGER.info("Executing query for table {}: {}", fullTableName, preparedStatement);
-            sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
+            sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
             return preparedStatement;
           },
           resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));

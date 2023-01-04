@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import java.sql.SQLException;
-
 /**
  * Utility class to define constants related to querying postgres
  */
@@ -35,17 +33,5 @@ public class PostgresQueryUtils {
   public static final String ROW_COUNT_RESULT_COL = "rowcount";
 
   public static final String TOTAL_BYTES_RESULT_COL = "totalbytes";
-
-  public static String getFullyQualifiedTableNameWithQuoting(final String identifierQuoteString,
-                                                             final String schemaName,
-                                                             final String tableName)
-      throws SQLException {
-    final String quotedTableName = enquoteIdentifier(identifierQuoteString, tableName);
-    return schemaName != null ? enquoteIdentifier(identifierQuoteString, schemaName) + "." + quotedTableName : quotedTableName;
-  }
-
-  public static String enquoteIdentifier(final String identifierQuoteString, final String identifier) {
-    return identifierQuoteString + identifier + identifierQuoteString;
-  }
 
 }
