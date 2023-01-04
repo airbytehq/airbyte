@@ -2878,6 +2878,12 @@ components:
           format: date
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
+        supportsDbt:
+          type: boolean
+          description: an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used.
+        normalizationConfig:
+          $ref: "#/components/schemas/NormalizationDestinationDefinitionConfig"
+
     DestinationDefinitionReadList:
       type: object
       required:
@@ -4329,6 +4335,25 @@ components:
           type: array
           items:
             "$ref": "#/components/schemas/JobTypeResourceLimit"
+    NormalizationDestinationDefinitionConfig:
+      description: describes a normalization config for destination definition
+      type: object
+      required:
+        - normalizationRepository
+        - normalizationTag
+        - normalizationIntegrationType
+      additionalProperties: false
+      properties:
+        normalizationRepository:
+          type: string
+          description: a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.
+        normalizationTag:
+          type: string
+          description: a field indicating the tag of the docker repository to be used for normalization.
+        normalizationIntegrationType:
+          type: string
+          description: a field indicating the type of integration dialect to use for normalization.
+
     JobTypeResourceLimit:
       description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
       type: object
