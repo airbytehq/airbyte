@@ -31,7 +31,7 @@ dependencies {
 
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
-    testAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
+    testAnnotationProcessor libs.jmh.annotations
 
     testImplementation libs.bundles.micronaut.test
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
@@ -39,8 +39,8 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
-    testImplementation 'org.openjdk.jmh:jmh-core:1.36'
-    testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
+    testImplementation libs.jmh.core
+    testImplementation libs.jmh.annotations
 
     testImplementation project(':airbyte-commons-docker')
 }
