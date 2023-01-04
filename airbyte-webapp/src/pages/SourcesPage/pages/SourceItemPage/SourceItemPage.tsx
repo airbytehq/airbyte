@@ -14,13 +14,10 @@ import { PageHeader } from "components/ui/PageHeader";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useGetSource } from "hooks/services/useSourceHook";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { getIcon } from "utils/imageUtils";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import { DropdownMenuOptionType } from "../../../../components/ui/DropdownMenu";
-import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 import { RoutePaths } from "../../../routePaths";
 import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
@@ -35,14 +32,10 @@ const SourceItemPage: React.FC = () => {
     [params]
   );
 
-  const { destinations } = useDestinationList();
-
-  const { destinationDefinitions } = useDestinationDefinitionList();
-
   const source = useGetSource(params.id || "");
-  const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
+  const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
 
-  const { connections } = useConnectionList();
+  const { connections } = useConnectionList({ sourceId: source.sourceId });
 
   const breadcrumbsData = [
     {
@@ -52,23 +45,18 @@ const SourceItemPage: React.FC = () => {
     { label: source.name },
   ];
 
-  const connectionsWithSource = connections.filter(({ source: { sourceId } }) => sourceId === source.sourceId);
-
   const destinationDropdownOptions: DropdownMenuOptionType[] = useMemo(
     () =>
-      destinations.map((item) => {
-        const destinationDef = destinationDefinitions.find(
-          (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
-        );
+      connections.map((conn) => {
         return {
           as: "button",
-          icon: <ConnectorIcon icon={destinationDef?.icon} />,
+          icon: <ConnectorIcon icon={conn.destination.icon} />,
           iconPosition: "right",
-          displayName: item.name,
-          value: item.destinationId,
+          displayName: conn.destination.name,
+          value: conn.destination.destinationId,
         };
       }),
-    [destinations, destinationDefinitions]
+    [connections]
   );
 
   const onSelectStep = (id: string) => {
@@ -102,7 +90,7 @@ const SourceItemPage: React.FC = () => {
           <Routes>
             <Route
               path="/settings"
-              element={<SourceSettings currentSource={source} connectionsWithSource={connectionsWithSource} />}
+              element={<SourceSettings currentSource={source} connectionsWithSource={connections} />}
             />
             <Route
               index
@@ -114,11 +102,11 @@ const SourceItemPage: React.FC = () => {
                     onSelect={onSelect}
                     entity={source.sourceName}
                     entityName={source.name}
-                    entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
+                    entityIcon={source.icon}
                     releaseStage={sourceDefinition.releaseStage}
                   />
-                  {connectionsWithSource.length ? (
-                    <SourceConnectionTable connections={connectionsWithSource} />
+                  {connections.length ? (
+                    <SourceConnectionTable connections={connections} />
                   ) : (
                     <Placeholder resource={ResourceTypes.Destinations} />
                   )}

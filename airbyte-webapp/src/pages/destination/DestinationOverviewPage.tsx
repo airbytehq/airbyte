@@ -9,38 +9,29 @@ import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useGetDestination } from "hooks/services/useDestinationHook";
-import { useSourceList } from "hooks/services/useSourceHook";
 import { DestinationPaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
-import { getIcon } from "utils/imageUtils";
 
 export const DestinationOverviewPage = () => {
   const params = useParams() as { "*": StepsTypes | ""; id: string };
-  const { sources } = useSourceList();
   const navigate = useNavigate();
+
   const destination = useGetDestination(params.id);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
-  const { connections } = useConnectionList();
-  const { sourceDefinitions } = useSourceDefinitionList();
-
-  const connectionsWithDestination = connections.filter(
-    ({ destination: { destinationId } }) => destinationId === destination.destinationId
-  );
+  const { connections } = useConnectionList({ destinationId: destination.destinationId });
 
   const sourceDropdownOptions: DropdownMenuOptionType[] = useMemo(
     () =>
-      sources.map((item) => {
-        const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
+      connections.map((conn) => {
         return {
           as: "button",
-          icon: <ConnectorIcon icon={sourceDef?.icon} />,
+          icon: <ConnectorIcon icon={conn.source.icon} />,
           iconPosition: "right",
-          displayName: item.name,
-          value: item.sourceId,
+          displayName: conn.source.name,
+          value: conn.source.sourceId,
         };
       }),
-    [sources, sourceDefinitions]
+    [connections]
   );
 
   const onSelect = (data: DropdownMenuOptionType) => {
@@ -56,6 +47,8 @@ export const DestinationOverviewPage = () => {
     navigate(path, { state });
   };
 
+  console.log({ destination, destinationDefinition, connections });
+
   return (
     <>
       <TableItemTitle
@@ -64,11 +57,11 @@ export const DestinationOverviewPage = () => {
         onSelect={onSelect}
         entityName={destination.name}
         entity={destination.destinationName}
-        entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
+        entityIcon={destination.icon}
         releaseStage={destinationDefinition.releaseStage}
       />
-      {connectionsWithDestination.length ? (
-        <DestinationConnectionTable connections={connectionsWithDestination} />
+      {connections.length ? (
+        <DestinationConnectionTable connections={connections} />
       ) : (
         <Placeholder resource={ResourceTypes.Sources} />
       )}
