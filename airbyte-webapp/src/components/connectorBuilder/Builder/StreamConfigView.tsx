@@ -1,7 +1,7 @@
 import { faTrashCan, faCopy } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { useField } from "formik";
+import { FormikErrors, useField } from "formik";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -28,14 +28,21 @@ interface StreamConfigViewProps {
 }
 
 export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum }) => {
-  const { formatMessage } = useIntl();
-  const [field, , helpers] = useField<BuilderStream[]>("streams");
-  const [selectedTab, setSelectedTab] = useState<"configuration" | "schema">("configuration");
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
-
   const streamPath = `streams[${streamNum}]`;
   const streamFieldPath = (fieldPath: string) => `${streamPath}.${fieldPath}`;
+
+  const { formatMessage } = useIntl();
+  const [field, meta, helpers] = useField<BuilderStream[]>("streams");
+  const currentStreamErrors = meta.error?.[streamNum] as FormikErrors<BuilderStream>;
+  const hasSchemaErrors = Boolean(currentStreamErrors?.schema);
+  const hasConfigErrors = Boolean(
+    Object.keys(currentStreamErrors || {}).filter((errorKey) => errorKey !== "schema").length > 0
+  );
+  const [selectedTab, setSelectedTab] = useState<"configuration" | "schema">(
+    hasSchemaErrors && !hasConfigErrors ? "schema" : "configuration"
+  );
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
 
   const handleDelete = () => {
     openConfirmationModal({
@@ -54,9 +61,6 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
     });
   };
 
-  const [, meta] = useField<string | undefined>(streamFieldPath("schema"));
-  const hasSchemaErrors = Boolean(meta.error);
-
   return (
     <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.stream" })}>
       {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
@@ -66,6 +70,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           label={formatMessage({ id: "connectorBuilder.streamConfiguration" })}
           selected={selectedTab === "configuration"}
           onSelect={() => setSelectedTab("configuration")}
+          showErrorIndicator={hasConfigErrors}
         />
         <StreamTab
           label={formatMessage({ id: "connectorBuilder.streamSchema" })}
