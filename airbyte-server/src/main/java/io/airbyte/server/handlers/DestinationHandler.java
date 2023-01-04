@@ -16,6 +16,7 @@ import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationReadList;
 import io.airbyte.api.model.generated.DestinationSearch;
+import io.airbyte.api.model.generated.DestinationSnippetRead;
 import io.airbyte.api.model.generated.DestinationUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
@@ -299,6 +300,16 @@ public class DestinationHandler {
         .destinationDefinitionId(destinationConnection.getDestinationDefinitionId())
         .connectionConfiguration(destinationConnection.getConfiguration())
         .name(destinationConnection.getName())
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
+  }
+
+  protected static DestinationSnippetRead toDestinationSnippetRead(final DestinationConnection destinationConnection,
+                                                                   final StandardDestinationDefinition standardDestinationDefinition) {
+    return new DestinationSnippetRead()
+        .destinationId(destinationConnection.getDestinationId())
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationName(standardDestinationDefinition.getName())
         .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
   }
