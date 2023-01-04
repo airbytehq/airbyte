@@ -2,6 +2,7 @@ import { Field, FieldProps } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels } from "components/LabeledControl";
+import { FlexContainer } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 
@@ -16,7 +17,7 @@ export const CreateConnectionNameField = () => {
     <Section>
       <Field name="name">
         {({ field, meta }: FieldProps<string>) => (
-          <div className={styles.flexRow}>
+          <FlexContainer alignItems="flex-start">
             <div className={styles.leftFieldCol}>
               <ControlLabels
                 className={styles.connectionLabel}
@@ -42,7 +43,7 @@ export const CreateConnectionNameField = () => {
                 })}
               />
             </div>
-          </div>
+          </FlexContainer>
         )}
       </Field>
     </Section>
