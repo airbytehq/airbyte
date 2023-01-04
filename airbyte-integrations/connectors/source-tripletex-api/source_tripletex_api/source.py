@@ -2,12 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import base64
-import pendulum
+import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -53,7 +53,7 @@ class TripletexApiStream(HttpStream, ABC):
         yield from response.json().get("values")
 
 
-class PostingStream(TripletexApiStream, ABC):
+class DateRequiredStream(TripletexApiStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -94,7 +94,8 @@ class PostingStream(TripletexApiStream, ABC):
         return params
 
 
-class Postings(PostingStream):
+
+class Postings(DateRequiredStream):
     primary_key = "id"
 
     def path(
@@ -126,6 +127,14 @@ class Accounts(TripletexApiStream):
     ) -> str:
         return "ledger/account"
 
+class BalanceSheet(DateRequiredStream):
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "balanceSheet"
+
 
 class SourceTripletexApi(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -141,4 +150,4 @@ class SourceTripletexApi(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
-        return [Postings(config=config), Departments(config=config), Accounts(config=config)]
+        return [Postings(config=config), Departments(config=config), Accounts(config=config), BalanceSheet(config=config)]
