@@ -6,3 +6,8 @@
   flex-direction: column;
   gap: variables.$spacing-xl;
 }
+
+.toggleContainer {
+  display: flex;
+  gap: variables.$spacing-md;
+}
