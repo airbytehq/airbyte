@@ -46,7 +46,8 @@ public class ReplicationWorkerPerformanceTest {
    * Because the reported time does not explicitly include throughput numbers, throughput logging has
    * been added. This class is intended to help devs understand the impact of changes on throughput.
    * <p>
-   * To run this, simply run the main method and run the logs.
+   * To use this, simply run the main method, make yourself a cup of coffee for 5 mins, then look the
+   * logs.
    */
   @Benchmark
   // SampleTime = the time taken to run the benchmarked method. Use this because we only care about
