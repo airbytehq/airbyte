@@ -56,3 +56,7 @@ properties:
     description: optional resource requirements to use in dest container - this is used instead of `resourceRequirements` for the dest container
     type: object
     "$ref": ResourceRequirements.yaml
+  workspaceId:
+    description: The id of the workspace associated with this sync
+    type: string
+    format: uuid

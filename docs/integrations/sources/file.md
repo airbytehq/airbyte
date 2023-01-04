@@ -138,7 +138,9 @@ In order to read large files from a remote location, this connector uses the [sm
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
+| 0.2.33  | 2023-01-04 | [21012](https://github.com/airbytehq/airbyte/pull/21012) | Fix special characters bug                               |
+| 0.2.32  | 2022-12-21 | [20740](https://github.com/airbytehq/airbyte/pull/20740) | Source File: increase SSH timeout to 60s                 |
 | 0.2.31  | 2022-11-17 | [19567](https://github.com/airbytehq/airbyte/pull/19567) | Source File: bump 0.2.31                                 |
 | 0.2.30  | 2022-11-10 | [19222](https://github.com/airbytehq/airbyte/pull/19222) | Use AirbyteConnectionStatus for "check" command          |
 | 0.2.29  | 2022-11-08 | [18587](https://github.com/airbytehq/airbyte/pull/18587) | Fix pandas read_csv header none issue.                   |
