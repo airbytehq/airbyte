@@ -14,6 +14,7 @@ interface SecretConfirmationControlProps {
   multiline: boolean;
   disabled?: boolean;
   error?: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
@@ -22,6 +23,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
   multiline,
   name,
   error,
+  onChange,
 }) => {
   const [field, , helpers] = useField(name);
   const [previousValue, setPreviousValue] = useState<unknown>(undefined);
@@ -34,6 +36,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
     multiline && (isEditInProgress || !showButtons) ? (
       <SecretTextArea
         {...field}
+        onChange={onChange}
         autoComplete="off"
         value={field.value ?? ""}
         rows={3}
@@ -45,6 +48,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
     ) : (
       <Input
         {...field}
+        onChange={onChange}
         autoComplete="off"
         value={field.value ?? ""}
         type="password"
