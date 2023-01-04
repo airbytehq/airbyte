@@ -607,7 +607,7 @@
 - name: Google Analytics (Universal Analytics)
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.32
+  dockerImageTag: 0.1.33
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics
   icon: google-analytics.svg
   sourceType: api
@@ -785,7 +785,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -1258,7 +1258,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.34
+  dockerImageTag: 1.0.35
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1530,7 +1530,7 @@
 - name: Snapchat Marketing
   sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
   dockerRepository: airbyte/source-snapchat-marketing
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   icon: snapchat.svg
   sourceType: api
