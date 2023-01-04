@@ -122,7 +122,7 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
           }}
           validateOnBlur
           validateOnChange
-          validationSchema={isCloudApp() === false ? standardValidationSchema : customConnectorValidationSchema}
+          validationSchema={isCloudApp() ? customConnectorValidationSchema : standardValidationSchema}
           onSubmit={async (values, { setSubmitting }) => {
             await onSubmit(values);
             setSubmitting(false);
@@ -156,11 +156,15 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                       type="text"
                       autoComplete="off"
                       placeholder={formatMessage({
-                        id: "admin.dockerRepository.placeholder",
+                        id: `${
+                          isCloudApp() ? "admin.dockerFullImageName.placeholder" : "admin.dockerRepository.placeholder"
+                        }`,
                       })}
                       label={
                         <Label>
-                          <FormattedMessage id="admin.dockerRepository" />
+                          <FormattedMessage
+                            id={isCloudApp() ? "admin.dockerFullImageName" : "admin.dockerRepository"}
+                          />
                         </Label>
                       }
                     />
