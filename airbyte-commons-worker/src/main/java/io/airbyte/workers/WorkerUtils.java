@@ -111,7 +111,7 @@ public class WorkerUtils {
         .withState(sync.getState());
   }
 
-  public static Optional<AirbyteControlConnectorConfigMessage> getLastConfigControlMessage(final Map<Type, List<AirbyteMessage>> messagesByType) {
+  public static Optional<AirbyteControlConnectorConfigMessage> getMostRecentConfigControlMessage(final Map<Type, List<AirbyteMessage>> messagesByType) {
     final List<AirbyteControlConnectorConfigMessage> configMessages = messagesByType.getOrDefault(Type.CONTROL, new ArrayList<>()).stream()
         .map(AirbyteMessage::getControl)
         .filter(control -> control.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG)

@@ -90,7 +90,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
           .findFirst();
 
       if (input.getActorId() != null && input.getActorType() != null) {
-        final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getLastConfigControlMessage(messagesByType);
+        final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getMostRecentConfigControlMessage(messagesByType);
         optionalConfigMsg.ifPresent(
             configMessage -> {
               switch (input.getActorType()) {
