@@ -24,9 +24,10 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
   const { formatMessage } = useIntl();
 
   const {
-    destDefinition: { supportsNormalization, supportsDbt },
+    destDefinition: { normalizationConfig, supportsDbt },
   } = useConnectionFormService();
 
+  const supportsNormalization = Boolean(normalizationConfig);
   const supportsTransformations = useFeature(FeatureItem.AllowCustomDBT) && supportsDbt;
 
   if (!supportsNormalization && !supportsTransformations) {

@@ -43,7 +43,7 @@ function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
 
 export const BulkHeader: React.FC = () => {
   const {
-    destDefinition: { supportedDestinationSyncModes },
+    destDefinitionSpecification: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEditService();
 
