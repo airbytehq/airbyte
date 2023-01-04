@@ -23,6 +23,7 @@ $buttonHeight: 36px;
 }
 
 .selectAndTestContainer {
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: variables.$spacing-lg;
@@ -37,7 +38,7 @@ $buttonHeight: 36px;
   background-color: colors.$blue-50;
   border-radius: variables.$border-radius-sm;
 
-  // leave room for cofig button
+  // leave room for config button
   margin-top: 50px;
 }
 
