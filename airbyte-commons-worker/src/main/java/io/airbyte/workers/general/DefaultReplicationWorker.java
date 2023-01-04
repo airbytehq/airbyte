@@ -115,9 +115,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    // use a virtual thread here?
     this.executors = Executors.newFixedThreadPool(2);
-//    this.executors = Executors.newVirtualThreadPerTaskExecutor();
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.fieldSelectionEnabled = fieldSelectionEnabled;
@@ -311,18 +309,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      AtomicReference<Long> recordsRead = new AtomicReference<>(0L);
+      long recordsRead = 0L;
       final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap<>();
       if (fieldSelectionEnabled) {
         populatedStreamToSelectedFields(catalog, streamToSelectedFields);
       }
-//      var virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
       try {
         // can this while be handled by a virtual thread too?
         while (!cancelled.get() && !source.isFinished()) {
-          // everything in here can be given to a virtual thread
-//          virtualExecutor.submit(() -> {
             final Optional<AirbyteMessage> messageOptional;
             try {
               messageOptional = source.attemptRead();
@@ -348,9 +343,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                 throw new DestinationException("Destination process message delivery failed", e);
               }
 
-              recordsRead.updateAndGet(v -> v + 1);
+              recordsRead += 1;
 
-              if (recordsRead.get() % 1000 == 0) {
+              if (recordsRead % 1000 == 0) {
                 LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
               }
             } else {
@@ -361,7 +356,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                 throw new SourceException("Source cannot be stopped!", e);
               }
             }
-//          });
         }
         timeHolder.trackSourceReadEndTime();
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));

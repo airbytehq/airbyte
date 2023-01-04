@@ -285,13 +285,6 @@ subprojects { subproj ->
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 
-//    tasks.withType(JavaCompile) {
-//        options.compilerArgs += '--enable-preview'
-//    }
-//    tasks.withType(Test) {
-//        jvmArgs += "--enable-preview"
-//    }
-
     repositories {
         mavenCentral()
         maven {

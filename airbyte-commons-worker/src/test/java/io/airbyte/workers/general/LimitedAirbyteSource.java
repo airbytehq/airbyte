@@ -31,7 +31,8 @@ public class LimitedAirbyteSource implements AirbyteSource {
   public Optional<AirbyteMessage> attemptRead() {
     currentRecords++;
     return Optional.of(AirbyteMessageUtils.createRecordMessage("test stream", "data",
-        "This is a fairly long sentence to provide some bytes here. More bytes is better as it helps us measure performance."));
+        "This is a fairly long sentence to provide some bytes here. More bytes is better as it helps us measure performance."
+            + "Random append to prevent dead code generation: " + currentRecords));
   }
 
   @Override
