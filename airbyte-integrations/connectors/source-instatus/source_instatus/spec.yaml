@@ -10,4 +10,4 @@ connectionSpecification:
       type: string
       title: Rest API Key
       airbyte_secret: true
-      description: INSTATUS REST API key
+      description: Instatus REST API key

@@ -34,10 +34,10 @@ definitions:
             - http_codes: [ 429 ]
               action: RETRY
           backoff_strategies:
-            - type: "ConstantBackoffStrategy"
-              backoff_time_in_seconds: 310
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
 
-  401_ignore_requester:
+  api_error_handler_requester:
     $ref: "*ref(definitions.requester)"
     error_handler:
       type: CompositeErrorHandler
@@ -51,8 +51,8 @@ definitions:
             - http_codes: [ 429 ]
               action: RETRY
           backoff_strategies:
-            - type: "ConstantBackoffStrategy"
-              backoff_time_in_seconds: 310
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
 
   retriever:
     record_selector:
@@ -104,7 +104,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.401_ignore_requester)"
+        $ref: "*ref(definitions.api_error_handler_requester)"
         path: "v1/{{ stream_slice.page_id }}/components"
       stream_slicer:
         $ref: "*ref(definitions.page_stream_slicer)"
@@ -118,7 +118,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.401_ignore_requester)"
+        $ref: "*ref(definitions.api_error_handler_requester)"
         path: "v1/{{ stream_slice.page_id }}/incidents"
       stream_slicer:
         $ref: "*ref(definitions.page_stream_slicer)"
@@ -144,7 +144,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.401_ignore_requester)"
+        $ref: "*ref(definitions.api_error_handler_requester)"
         path: "v1/{{ stream_slice.parent_slice.page_id }}/incidents/{{ stream_slice.updates_object_id }}/incident-updates/{{ stream_slice.incident_update_id }}"
       stream_slicer:
         $ref: "*ref(definitions.incident_updates_stream_slicer)"
@@ -158,7 +158,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.401_ignore_requester)"
+        $ref: "*ref(definitions.api_error_handler_requester)"
         path: "v1/{{ stream_slice.page_id }}/maintenances"
       stream_slicer:
         $ref: "*ref(definitions.page_stream_slicer)"
@@ -185,7 +185,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.401_ignore_requester)"
+        $ref: "*ref(definitions.api_error_handler_requester)"
         path: "v1/{{ stream_slice.parent_slice.page_id }}/maintenances/{{ stream_slice.updates_object_id }}/maintenance-updates/{{ stream_slice.maintenance_update_id }}"
       stream_slicer:
         $ref: "*ref(definitions.maintenance_updates_stream_slicer)"
@@ -199,7 +199,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.401_ignore_requester)"
+        $ref: "*ref(definitions.api_error_handler_requester)"
         path: "v1/{{ stream_slice.page_id }}/templates"
       stream_slicer:
         $ref: "*ref(definitions.page_stream_slicer)"
@@ -213,7 +213,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.user_field_retriever)"
       requester:
-        $ref: "*ref(definitions.401_ignore_requester)"
+        $ref: "*ref(definitions.api_error_handler_requester)"
         path: "v1/{{ stream_slice.page_id }}/team"
       stream_slicer:
         $ref: "*ref(definitions.page_stream_slicer)"
@@ -227,7 +227,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.401_ignore_requester)"
+        $ref: "*ref(definitions.api_error_handler_requester)"
         path: "v1/{{ stream_slice.page_id }}/subscribers"
       stream_slicer:
         $ref: "*ref(definitions.page_stream_slicer)"
@@ -241,7 +241,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.401_ignore_requester)"
+        $ref: "*ref(definitions.api_error_handler_requester)"
         path: "v1/{{ stream_slice.page_id }}/metrics"
       stream_slicer:
         $ref: "*ref(definitions.page_stream_slicer)"
