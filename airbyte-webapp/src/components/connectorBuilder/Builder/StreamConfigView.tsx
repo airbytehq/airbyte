@@ -1,5 +1,6 @@
-import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
+import { faTrashCan, faCopy } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import { useField } from "formik";
 import { useIntl } from "react-intl";
 
@@ -7,12 +8,15 @@ import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderStream } from "../types";
+import { AddStreamButton } from "./AddStreamButton";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
 import { BuilderTitle } from "./BuilderTitle";
 import { KeyValueListField } from "./KeyValueListField";
+import { PaginationSection } from "./PaginationSection";
 import styles from "./StreamConfigView.module.scss";
+import { StreamSlicerSection } from "./StreamSlicerSection";
 
 interface StreamConfigViewProps {
   streamNum: number;
@@ -49,13 +53,25 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
       {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderTitle path={streamFieldPath("name")} label="Stream Name" size="md" />
       <div className={styles.controls}>
-        <button className={styles.deleteButton} type="button" onClick={handleDelete}>
+        <AddStreamButton
+          onAddStream={(addedStreamNum) => {
+            setSelectedView(addedStreamNum);
+            setTestStreamIndex(addedStreamNum);
+          }}
+          initialValues={field.value[streamNum]}
+          button={
+            <button className={styles.controlButton} type="button">
+              <FontAwesomeIcon icon={faCopy} />
+            </button>
+          }
+        />
+        <button className={classNames(styles.deleteButton, styles.controlButton)} type="button" onClick={handleDelete}>
           <FontAwesomeIcon icon={faTrashCan} />
         </button>
       </div>
       <BuilderCard>
         <BuilderField
-          type="text"
+          type="string"
           path={streamFieldPath("urlPath")}
           label="Path URL"
           tooltip="Path of the endpoint that this stream represents."
@@ -70,10 +86,19 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
         <BuilderField
           type="array"
           path={streamFieldPath("fieldPointer")}
-          label="Field Pointer"
+          label="Record selector"
           tooltip="Pointer into the response that should be extracted as the final record"
         />
+        <BuilderField
+          type="array"
+          path={streamFieldPath("primaryKey")}
+          label="Primary key"
+          tooltip="Pointer into the response that should be used as the primary key when deduplicating records in the destination"
+          optional
+        />
       </BuilderCard>
+      <PaginationSection streamFieldPath={streamFieldPath} />
+      <StreamSlicerSection streamFieldPath={streamFieldPath} />
       <BuilderCard>
         <KeyValueListField
           path={streamFieldPath("requestOptions.requestParameters")}

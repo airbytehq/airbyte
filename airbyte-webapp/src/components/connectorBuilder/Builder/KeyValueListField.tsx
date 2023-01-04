@@ -49,7 +49,14 @@ export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, labe
   const [{ value: keyValueList }, , { setValue: setKeyValueList }] = useField<Array<[string, string]>>(path);
 
   return (
-    <GroupControls label={<ControlLabels label={label} infoTooltipContent={tooltip} />}>
+    <GroupControls
+      label={<ControlLabels label={label} infoTooltipContent={tooltip} />}
+      control={
+        <Button type="button" variant="secondary" onClick={() => setKeyValueList([...keyValueList, ["", ""]])}>
+          <FormattedMessage id="connectorBuilder.addKeyValue" />
+        </Button>
+      }
+    >
       {keyValueList.map((keyValue, keyValueIndex) => (
         <KeyValueInput
           key={keyValueIndex}
@@ -64,11 +71,6 @@ export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, labe
           }}
         />
       ))}
-      <div>
-        <Button variant="secondary" onClick={() => setKeyValueList([...keyValueList, ["", ""]])}>
-          <FormattedMessage id="connectorBuilder.addKeyValue" />
-        </Button>
-      </div>
     </GroupControls>
   );
 };
