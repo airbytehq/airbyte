@@ -13,17 +13,18 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 class OpenExchangeRates(HttpStream, ABC):
     url_base = "https://openexchangerates.org/api/"
 
     primary_key = None
-    cursor_field = "timestamp"
+    cursor_field = "date"
 
 
-    def __init__(self, base: Optional[str], start_date: str, app_id: str) -> None:
-        super().__init__()
+    def __init__(self, base: Optional[str], start_date: str, app_id: str, **kwargs: dict) -> None:
+        super().__init__(**kwargs)
 
         self.base = base
         self.start_date = start_date
@@ -45,17 +46,35 @@ class OpenExchangeRates(HttpStream, ABC):
         return params
 
     def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
-        headers = {"Authorization": f"Token {self.app_id}", "Content-Type": "application/json"}
+        return self.authenticator.get_auth_header()
 
-        return headers
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: self.start_date}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = pendulum.parse(value[self.cursor_field])
+
+    def parse_response(self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None
+    ) -> Iterable[Mapping]:
         response_json = response.json()
+
+        latest_record_timestamp = pendulum.from_timestamp(response_json['timestamp'])
+
+        if self._cursor_value:
+            self._cursor_value = max(self._cursor_value, latest_record_timestamp)
+
         yield response_json
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_state = stream_state or {}
-        start_date = pendulum.parse(stream_state.get(self.cursor_field, self.start_date))
+        start_date = pendulum.parse(stream_state[self.cursor_field] if stream_state and self.cursor_field in stream_state else self.start_date)
         return self._chunk_date_range(start_date)
 
     def path(
@@ -74,7 +93,7 @@ class OpenExchangeRates(HttpStream, ABC):
         """
         dates = []
         while start_date < pendulum.now():
-            dates.append({"date": start_date.to_date_string()})
+            dates.append({self.cursor_field: start_date.to_date_string()})
             start_date = start_date.add(days=1)
         return dates
 
@@ -90,9 +109,9 @@ class SourceOpenExchangeRates(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
-            headers = {"Authorization": f"Token {config['app_id']}"}
+            auth = TokenAuthenticator(token=config["app_id"], auth_method="Token").get_auth_header()
 
-            resp = requests.get(f"{OpenExchangeRates.url_base}usage.json", headers=headers)
+            resp = requests.get(f"{OpenExchangeRates.url_base}usage.json", headers=auth)
             status = resp.status_code
 
             logger.info(f"Ping response code: {status}")
@@ -115,4 +134,6 @@ class SourceOpenExchangeRates(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [OpenExchangeRates(base=config['base'], start_date=config['start_date'], app_id=config['app_id'])]
+        auth = TokenAuthenticator(token=config["app_id"], auth_method="Token")
+
+        return [OpenExchangeRates(base=config['base'], start_date=config['start_date'], app_id=config['app_id'], authenticator=auth)]
