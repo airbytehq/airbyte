@@ -76,5 +76,4 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.12  | 2023-01-04 | [21004](https://github.com/airbytehq/airbyte/pull/21004) | Source File: Adding Docker Desktop file share warning                |
 | 0.2.11 | 2022-02-14 | [14641](https://github.com/airbytehq/airbyte/pull/14641) | Include lifecycle management |
