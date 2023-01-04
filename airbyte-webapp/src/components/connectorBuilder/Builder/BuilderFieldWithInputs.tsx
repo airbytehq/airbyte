@@ -1,7 +1,7 @@
 import { faPlus, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useField } from "formik";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ListBox, ListBoxControlButtonProps, Option } from "components/ui/ListBox";
 
@@ -33,14 +33,17 @@ export const UserInputHelper = ({
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const { builderFormValues } = useConnectorBuilderState();
-  const options: Array<Option<string | undefined>> = [
-    ...builderFormValues.inputs,
-    ...getInferredInputs(builderFormValues),
-  ].map((input) => ({
-    label: input.definition.title || input.key,
-    value: input.key,
-  }));
-  options.push({ value: undefined, label: "Add new input", icon: <FontAwesomeIcon icon={faPlus} /> });
+  const listOptions = useMemo(() => {
+    const options: Array<Option<string | undefined>> = [
+      ...builderFormValues.inputs,
+      ...getInferredInputs(builderFormValues),
+    ].map((input) => ({
+      label: input.definition.title || input.key,
+      value: input.key,
+    }));
+    options.push({ value: undefined, label: "Add new input", icon: <FontAwesomeIcon icon={faPlus} /> });
+    return options;
+  }, [builderFormValues]);
   return (
     <>
       <ListBox<string | undefined>
@@ -54,10 +57,15 @@ export const UserInputHelper = ({
           if (selectedValue) {
             setValue(`${currentValue || ""}{{ config['${selectedValue}'] }}`);
           } else {
-            setModalOpen(true);
+            // This hack is necessary because listbox will put the focus back when the option list gets hidden, which conflicts with the auto-focus setting of the modal.
+            // As it's not possible to prevent listbox from forcing the focus back on the button component, this wait until the focus went to the button, then opens the modal
+            // so it can move it to the first input
+            setTimeout(() => {
+              setModalOpen(true);
+            }, 50);
           }
         }}
-        options={options}
+        options={listOptions}
       />
       {modalOpen && (
         <InputForm
