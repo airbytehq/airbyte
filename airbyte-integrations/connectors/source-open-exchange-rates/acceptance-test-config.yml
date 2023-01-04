@@ -1,3 +1,5 @@
+connector_image: airbyte/source-retently:dev
+
 acceptance_tests:
   spec:
     tests:
