@@ -12,6 +12,7 @@ import datadog.trace.api.Trace;
 import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionRead;
+import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
@@ -248,11 +249,13 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   }
 
   @Override
-  public Optional<Status> getStatus(final UUID connectionId) {
+  public Optional<ConnectionStatus> getStatus(final UUID connectionId) {
     try {
-      final StandardSync standardSync = getStandardSync(connectionId);
-      return Optional.ofNullable(standardSync.getStatus());
-    } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
+      final io.airbyte.api.client.model.generated.ConnectionIdRequestBody requestBody =
+          new io.airbyte.api.client.model.generated.ConnectionIdRequestBody().connectionId(connectionId);
+      final ConnectionRead connectionRead = connectionApi.getConnection(requestBody);
+      return Optional.ofNullable(connectionRead.getStatus());
+    } catch (ApiException e) {
       log.info("Encountered an error fetching the connection's status: ", e);
       return Optional.empty();
     }
