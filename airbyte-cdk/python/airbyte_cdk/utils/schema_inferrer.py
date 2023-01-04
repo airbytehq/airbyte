@@ -62,7 +62,4 @@ class SchemaInferrer:
         """
         Returns the inferred JSON schema for the specified stream. Might be `None` if there were no records for the given stream name.
         """
-        if stream_name in self.stream_to_builder:
-            return self.stream_to_builder[stream_name].to_schema()
-        else:
-            return None
+        return self.stream_to_builder[stream_name].to_schema() if stream_name in self.stream_to_builder else None
