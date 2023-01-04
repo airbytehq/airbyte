@@ -65,7 +65,7 @@ export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, labe
     <GroupControls
       label={<ControlLabels label={label} infoTooltipContent={tooltip} />}
       control={
-        <Button variant="secondary" onClick={() => setKeyValueList([...keyValueList, ["", ""]])}>
+        <Button type="button" variant="secondary" onClick={() => setKeyValueList([...keyValueList, ["", ""]])}>
           <FormattedMessage id="connectorBuilder.addKeyValue" />
         </Button>
       }
