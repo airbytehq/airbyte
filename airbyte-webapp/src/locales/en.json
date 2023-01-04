@@ -153,6 +153,7 @@
   "connectionForm.nonBreakingChangesPreference.label": "Non-breaking schema updates detected*",
   "connectionForm.nonBreakingChangesPreference.message": "Set how Airbyte handles syncs when it detects a non-breaking schema change in the source",
   "connectionForm.nonBreakingChangesPreference.ignore": "Ignore",
+  "connectionForm.nonBreakingChangesPreference.disable": "Disable connection",
   "connectionForm.schemaChangesBackdrop.message": "Please review the schema updates before making changes to the connection",
 
   "connectionForm.modal.destinationNamespace.title": "Destination namespace",

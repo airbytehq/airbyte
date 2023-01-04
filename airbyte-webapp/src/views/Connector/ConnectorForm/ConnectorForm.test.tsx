@@ -53,7 +53,7 @@ const useAddPriceListItem = (container: HTMLElement) => {
 
     const arrayOfObjectsEditModal = getByTestId(document.body, "arrayOfObjects-editModal");
     const getPriceListInput = (index: number, key: string) =>
-      arrayOfObjectsEditModal.querySelector(`input[name='__temp__connectionConfiguration_priceList${index}.${key}']`);
+      arrayOfObjectsEditModal.querySelector(`input[name='connectionConfiguration.priceList\\[${index}\\].${key}']`);
 
     // Type items into input
     const nameInput = getPriceListInput(index, "name");
