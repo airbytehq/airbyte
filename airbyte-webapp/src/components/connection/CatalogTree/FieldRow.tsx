@@ -75,10 +75,10 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
         <Cell flex={0}>
           <SyncCheckboxContainer>
             {!isDisabled && (
-              <Switch small checked={isSelected} onChange={() => onToggleFieldSelected(field.path, !isSelected)} />
+              <Switch size="sm" checked={isSelected} onChange={() => onToggleFieldSelected(field.path, !isSelected)} />
             )}
             {isDisabled && (
-              <Tooltip control={<Switch small disabled checked={isSelected} />}>
+              <Tooltip control={<Switch size="sm" disabled checked={isSelected} />}>
                 {renderDisabledReasonMessage()}
               </Tooltip>
             )}
