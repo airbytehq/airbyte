@@ -30,7 +30,7 @@ acceptance_tests:
           - name: domains
             bypass_reason: "Is empty in test data"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
           extra_fields: no
           exact_order: no
           extra_records: yes
