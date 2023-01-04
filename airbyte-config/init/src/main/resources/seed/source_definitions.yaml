@@ -1029,7 +1029,7 @@
 - name: Netsuite
   sourceDefinitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
   dockerRepository: airbyte/source-netsuite
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite
   sourceType: api
   releaseStage: alpha
