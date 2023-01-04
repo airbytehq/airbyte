@@ -57,7 +57,7 @@ public class ReplicationWorkerPerformanceTest {
   // that fine a result.
   @Warmup(iterations = 0)
   // How many runs to do.
-  @Fork(value = 1)
+  @Fork(1)
   // Within each run, how many iterations to do.
   @Measurement(iterations = 2)
   public void executeOneSync() throws InterruptedException {
