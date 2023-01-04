@@ -119,7 +119,7 @@ class Roles(GlassfrogStream):
 
 # Source
 class SourceGlassfrog(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             url = "https://api.glassfrog.com/api/v3/people"
             headers = {"X-Auth-Token": config["api_key"]}

@@ -140,7 +140,7 @@ class Items(IncrementalRssStream):
 
 # Source
 class SourceRss(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             resp = requests.get(config.get("url"))
             status = resp.status_code

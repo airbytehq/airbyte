@@ -256,7 +256,7 @@ class SourceSalesloft(AbstractSource):
             refresh_token=config["refresh_token"],
         )
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             access_token, _ = self._create_authenticator(config).refresh_access_token()
             response = requests.get("https://api.salesloft.com/v2/me.json", headers={"Authorization": f"Bearer {access_token}"})

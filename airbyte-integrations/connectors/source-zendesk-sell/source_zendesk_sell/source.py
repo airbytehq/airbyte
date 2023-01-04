@@ -307,7 +307,7 @@ class Visits(ZendeskSellStream):
 
 # Source
 class SourceZendeskSell(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             authenticator = TokenAuthenticator(token=config["api_token"])
             stream = Contacts(authenticator=authenticator)

@@ -42,7 +42,7 @@ class SourceLeverHiring(AbstractSource):
         },
     }
 
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         authenticator = _auth_from_config(config)
         _ = authenticator.get_auth_header()
         return True, None

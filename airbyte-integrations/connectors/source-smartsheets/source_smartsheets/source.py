@@ -13,7 +13,7 @@ from .streams import SmartsheetStream
 
 
 class SourceSmartsheets(AbstractSource):
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         sheet = SmartSheetAPIWrapper(config)
         return sheet.check_connection(logger)
 

@@ -527,7 +527,7 @@ class SourceMarketo(AbstractSource):
     Source Marketo fetch data of personalized multi-channel programs and campaigns to prospects and customers.
     """
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         Testing connection availability for the connector by granting the credentials.
         """

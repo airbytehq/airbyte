@@ -144,7 +144,7 @@ class Controls(CodaStreamDoc):
 
 # Source
 class SourceCoda(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             token = config.get("auth_token")
             headers = {"Authorization": f"Bearer {token}"}

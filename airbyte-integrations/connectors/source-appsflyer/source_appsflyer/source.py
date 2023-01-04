@@ -287,7 +287,7 @@ class RetargetingGeoReport(RetargetingMixin, GeoReport):
 
 # Source
 class SourceAppsflyer(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             timezone = config.get("timezone", "UTC")
             if timezone not in pendulum.timezones:

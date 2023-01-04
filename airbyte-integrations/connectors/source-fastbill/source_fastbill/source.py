@@ -100,7 +100,7 @@ class SourceFastbill(AbstractSource):
     def get_basic_auth(self, config: Mapping[str, Any]) -> requests.auth.HTTPBasicAuth:
         return requests.auth.HTTPBasicAuth(config["username"], config["api_key"])
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             auth = self.get_basic_auth(config)
             records = Customers(auth, **config).read_records(sync_mode=SyncMode.full_refresh)

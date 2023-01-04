@@ -117,7 +117,7 @@ class Calls(IncrementalBabelforceStream):
 
 
 class SourceBabelforce(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             authenticator = BabelforceAuthenticator(access_key_id=config.get("access_key_id"), access_token=config.get("access_token"))
             calls = Calls(region=config.get("region"), authenticator=authenticator)

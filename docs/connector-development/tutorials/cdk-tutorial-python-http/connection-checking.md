@@ -10,7 +10,7 @@ In our case, this is a fairly trivial check since the API requires no credential
 ```python
 class SourcePythonHttpTutorial(AbstractSource):
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
 
@@ -19,7 +19,7 @@ class SourcePythonHttpTutorial(AbstractSource):
 
         :param config:  the user-input config object conforming the connector's spec.yaml
         :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         return True, None
 
@@ -29,7 +29,7 @@ class SourcePythonHttpTutorial(AbstractSource):
 Following the docstring instructions, we'll change the implementation to verify that the input currency is a real currency:
 
 ```python
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         accepted_currencies = {"USD", "JPY", "BGN", "CZK", "DKK"}  # assume these are the only allowed currencies
         input_currency = config['base']
         if input_currency not in accepted_currencies:

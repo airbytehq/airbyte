@@ -37,7 +37,7 @@ class HttpBasicAuthenticator(TokenAuthenticator):
 
 
 class SourceFreshservice(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         kwargs = {
             "authenticator": HttpBasicAuthenticator((config["api_key"], "")),
             "start_date": config["start_date"],

@@ -187,7 +187,7 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
 
 
 class SourceAwsCloudtrail(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         client = Client(config["aws_key_id"], config["aws_secret_key"], config["aws_region_name"])
         try:
             client.session.lookup_events(MaxResults=1)

@@ -44,7 +44,7 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 class SourcePythonHttpTutorial(AbstractSource):
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         ...
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

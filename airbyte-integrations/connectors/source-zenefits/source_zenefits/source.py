@@ -153,7 +153,7 @@ class Time_durations(ZenefitsStream):
 
 
 class SourceZenefits(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         token = config["token"]
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"}
         url = "https://api.zenefits.com/core/people"

@@ -130,7 +130,7 @@ class HttpBasicAuthenticator(TokenAuthenticator):
 
 
 class SourceConfluence(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         auth = HttpBasicAuthenticator(config["email"], config["api_token"], auth_method="Basic").get_auth_header()
         url = f"https://{config['domain_name']}/wiki/rest/api/space"
         try:

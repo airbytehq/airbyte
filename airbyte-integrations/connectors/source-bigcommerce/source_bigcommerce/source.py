@@ -270,7 +270,7 @@ class BigcommerceAuthenticator(HttpAuthenticator):
 
 
 class SourceBigcommerce(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         store_hash = config["store_hash"]
         access_token = config["access_token"]
         api_version = "v3"

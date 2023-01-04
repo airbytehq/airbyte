@@ -122,7 +122,7 @@ class SourceLinkedinPages(AbstractSource):
             )
         raise Exception("incorrect input parameters")
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         # RUN $ python main.py check --config secrets/config.json
 
         """

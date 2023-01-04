@@ -331,7 +331,7 @@ class Permissions(OktaStream):
 
 
 class SourceOkta(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             auth = initialize_authenticator(config)
             api_endpoint = get_api_endpoint(config)

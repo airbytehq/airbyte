@@ -139,7 +139,7 @@ class SourcePivotalTracker(AbstractSource):
             project_ids.append(record["id"])
         return project_ids
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         auth = SourcePivotalTracker._get_authenticator(config)
         self._generate_project_ids(auth)
         return True, None

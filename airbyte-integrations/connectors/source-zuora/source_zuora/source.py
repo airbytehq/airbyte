@@ -499,7 +499,7 @@ class ZuoraGetJobResult(HttpStream):
 
 
 class SourceZuora(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Testing connection availability for the connector by granting the token.
         """

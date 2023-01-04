@@ -78,7 +78,7 @@ class SourceTplcentral(AbstractSource):
             user_login=config.get("user_login"),
         )
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             self._auth(config).get_auth_header()
         except Exception as e:

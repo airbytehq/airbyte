@@ -499,7 +499,7 @@ class SourceIntercom(AbstractSource):
     Source Intercom fetch data from messaging platform.
     """
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         authenticator = VersionApiAuthenticator(token=config["access_token"])
         try:
             url = urljoin(IntercomStream.url_base, "/tags")

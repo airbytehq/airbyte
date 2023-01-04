@@ -85,7 +85,7 @@ class ExchangeRates(HttpStream):
 
 
 class SourcePythonHttpTutorial(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         accepted_currencies = {
             "USD",
             "JPY",

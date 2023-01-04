@@ -29,11 +29,11 @@ STREAMS = [Activity, Companies, Milestones, Projects, Phases, ProjectAttachments
 
 # Source
 class SourceHellobaton(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, any]) -> Tuple[bool, Any]:
         """
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         url_template = "https://{company}.hellobaton.com/api/"
         try:

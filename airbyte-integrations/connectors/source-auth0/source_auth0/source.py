@@ -128,7 +128,7 @@ class Users(IncrementalAuth0Stream):
 
 # Source
 class SourceAuth0(AbstractSource):
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             auth = initialize_authenticator(config)
             api_endpoint = get_api_endpoint(config.get("base_url"), "v2")

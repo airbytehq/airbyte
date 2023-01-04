@@ -87,7 +87,7 @@ class SourceGitlab(AbstractSource):
         for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
             yield from stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             projects = self._projects_stream(config)
             for stream_slice in projects.stream_slices(sync_mode=SyncMode.full_refresh):

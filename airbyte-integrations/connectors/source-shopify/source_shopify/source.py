@@ -745,7 +745,7 @@ class MetafieldShops(IncrementalShopifyStream):
 
 
 class SourceShopify(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Testing connection availability for the connector.
         """

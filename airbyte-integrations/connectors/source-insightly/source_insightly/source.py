@@ -344,7 +344,7 @@ class Users(IncrementalInsightlyStream):
 
 # Source
 class SourceInsightly(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             token = config.get("token")
             response = requests.get(f"{BASE_URL}Instance", auth=(token, ""))

@@ -269,7 +269,7 @@ class SourceKyriba(AbstractSource):
     def gateway_url(self, config: Mapping[str, Any]) -> str:
         return f"https://{config['domain']}/gateway"
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         client = KyribaClient(config["username"], config["password"], self.gateway_url(config))
         client.login()
         return True, None

@@ -119,7 +119,7 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 
 # Source
 class SourceSurveycto(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         return True, None
 
     def generate_streams(self, config: str) -> List[Stream]:

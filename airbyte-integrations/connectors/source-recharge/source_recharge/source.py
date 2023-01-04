@@ -20,7 +20,7 @@ class RechargeTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceRecharge(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         auth = RechargeTokenAuthenticator(token=config["access_token"])
         stream = Shop(authenticator=auth)
         try:

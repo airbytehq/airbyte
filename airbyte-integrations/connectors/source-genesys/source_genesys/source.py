@@ -245,7 +245,7 @@ class SourceGenesys(AbstractSource):
             "client_secret": self.get_client_secret(),
         }
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         TODO: Implement true connection checks using an endpoint that is always live
         Testing connection availability for the connector by granting the credentials.

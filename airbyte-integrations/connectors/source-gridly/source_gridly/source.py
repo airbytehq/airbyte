@@ -83,7 +83,7 @@ class GridlyStream(HttpStream, ABC):
 
 # Source
 class SourceGridly(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         api_key = config.get("api_key")
         grid_id = config.get("grid_id")
         auth = TokenAuthenticator(auth_method="ApiKey", token=api_key)

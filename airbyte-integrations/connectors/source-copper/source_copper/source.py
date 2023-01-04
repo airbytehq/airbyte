@@ -93,7 +93,7 @@ class Companies(CopperStream):
 
 # Source
 class SourceCopper(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             records = People(**config).read_records(sync_mode=SyncMode.full_refresh)
             next(records, None)

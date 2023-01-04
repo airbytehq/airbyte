@@ -100,7 +100,7 @@ class SourceChargify(AbstractSource):
             config["api_key"], SourceChargify.BASIC_AUTH_PASSWORD
         )  # https://developers.chargify.com/docs/api-docs/YXBpOjE0MTA4MjYx-chargify-api-documentation
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = self.get_basic_auth(config)
             customers_gen = Customers(authenticator, domain=config["domain"]).read_records(SyncMode.full_refresh)

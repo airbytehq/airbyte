@@ -237,7 +237,7 @@ class Themes(PaginatedStream):
 
 
 class SourceTypeform(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             form_ids = config.get("form_ids", []).copy()
             # verify if form inputted by user is valid

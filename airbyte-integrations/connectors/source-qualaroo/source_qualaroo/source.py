@@ -48,7 +48,7 @@ class SourceQualaroo(AbstractSource):
         key, token = config["key"], config["token"]
         return QualarooAuthenticator(token=token, key=key)
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         Testing connection availability for the connector by granting the credentials.
         """

@@ -181,7 +181,7 @@ class SourcePrimetric(AbstractSource):
 
         return response
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
 
             if not config["client_secret"] or not config["client_id"]:

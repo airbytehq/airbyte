@@ -15,7 +15,7 @@ from .streams import Members, Workspace
 
 # Source
 class SourceOrbit(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             workspace_stream = Workspace(
                 authenticator=TokenAuthenticator(token=config["api_token"]),

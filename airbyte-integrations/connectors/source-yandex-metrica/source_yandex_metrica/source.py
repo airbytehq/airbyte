@@ -14,7 +14,7 @@ from .streams import Evaluate, Sessions, Views, YandexMetricaStream
 
 # Source
 class SourceYandexMetrica(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             # Check connectivity
             evaluate_views_stream = Evaluate(

@@ -72,7 +72,7 @@ class Price(HttpStream, ABC):
 
 # Source
 class SourceYahooFinancePrice(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         # Check that the tickers are valid
         tickers = list(map(str.strip, config["tickers"].split(",")))
         if len(tickers) == 0:

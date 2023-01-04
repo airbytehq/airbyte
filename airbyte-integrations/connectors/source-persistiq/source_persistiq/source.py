@@ -77,7 +77,7 @@ class Campaigns(PersistiqStream):
 
 
 class SourcePersistiq(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         headers = {"x-api-key": config["api_key"]}
         url = "https://api.persistiq.com/v1/users"
         try:

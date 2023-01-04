@@ -105,7 +105,7 @@ class Users(MyHoursStream):
 
 # Source
 class SourceMyHours(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config) -> Tuple[bool, Any]:
         url = f"{URL_BASE}/Clients"
 
         try:
