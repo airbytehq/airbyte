@@ -3,6 +3,7 @@ import merge from "lodash/merge";
 import { useState } from "react";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import * as yup from "yup";
 
 import { Button } from "components/ui/Button";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
@@ -59,6 +60,10 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, b
             setIsOpen(false);
             onAddStream(numStreams);
           }}
+          validationSchema={yup.object().shape({
+            streamName: yup.string().required("form.empty.error"),
+            urlPath: yup.string().required("form.empty.error"),
+          })}
         >
           <>
             <FormikPatch />

@@ -45,8 +45,11 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,7 +151,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-        metricReporter, featureFlags.applyFieldSelection());
+        metricReporter, enableFieldSelection(featureFlags, syncInput.getWorkspaceId()));
 
     log.info("Running replication worker...");
     final var jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),
@@ -163,6 +166,22 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     return protocolVersion != null
         ? new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, protocolVersion, mdcScope)
         : new DefaultAirbyteStreamFactory(mdcScope);
+  }
+
+  private boolean enableFieldSelection(final FeatureFlags featureFlags, final UUID workspaceId) {
+    final String workspaceIdsString = featureFlags.fieldSelectionWorkspaces();
+    final Set<UUID> workspaceIds = new HashSet<>();
+    for (final String id : workspaceIdsString.split(",")) {
+      workspaceIds.add(UUID.fromString(id));
+    }
+    for (final UUID workspace : workspaceIds) {
+      log.info("field selection workspace: {}", workspace);
+    }
+    if (workspaceId != null && workspaceIds.contains(workspaceId)) {
+      return true;
+    }
+
+    return featureFlags.applyFieldSelection();
   }
 
 }

@@ -72,8 +72,10 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -304,7 +306,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-          metricReporter, false);
+          metricReporter, enableFieldSelection(featureFlags, syncInput.getWorkspaceId()));
     };
   }
 
@@ -340,6 +342,26 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private boolean isResetJob(final String dockerImage) {
     return WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equalsIgnoreCase(dockerImage);
+  }
+
+  private boolean enableFieldSelection(final FeatureFlags featureFlags, final UUID workspaceId) {
+    final String workspaceIdsString = featureFlags.fieldSelectionWorkspaces();
+    final Set<UUID> workspaceIds = new HashSet<>();
+    LOGGER.debug("Field selection enabled for {}", workspaceIdsString);
+    if (!workspaceIdsString.isEmpty()) {
+      for (final String id : workspaceIdsString.split(",")) {
+        try {
+          workspaceIds.add(UUID.fromString(id));
+        } catch (IllegalArgumentException e) {
+          LOGGER.warn("Malformed workspace id for field selection: {}", id);
+        }
+      }
+    }
+    if (workspaceId != null && workspaceIds.contains(workspaceId)) {
+      return true;
+    }
+
+    return featureFlags.applyFieldSelection();
   }
 
 }

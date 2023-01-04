@@ -23,7 +23,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
   hasConfigJsonErrors,
   setTestInputOpen,
 }) => {
-  const { editorView, yamlIsValid, testStreamIndex } = useConnectorBuilderState();
+  const { editorView, yamlIsValid } = useConnectorBuilderState();
   const { hasErrors, validateAndTouch } = useBuilderErrors();
 
   const handleClick = () => {
@@ -36,7 +36,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
       return;
     }
 
-    validateAndTouch(readStream, ["global", testStreamIndex]);
+    validateAndTouch(readStream);
   };
 
   let buttonDisabled = false;
