@@ -54,7 +54,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.25
+  dockerImageTag: 0.1.26
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -607,7 +607,7 @@
 - name: Google Analytics (Universal Analytics)
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.32
+  dockerImageTag: 0.1.33
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics
   icon: google-analytics.svg
   sourceType: api
@@ -1029,7 +1029,7 @@
 - name: Netsuite
   sourceDefinitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
   dockerRepository: airbyte/source-netsuite
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite
   sourceType: api
   releaseStage: alpha
@@ -1530,7 +1530,7 @@
 - name: Snapchat Marketing
   sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
   dockerRepository: airbyte/source-snapchat-marketing
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   icon: snapchat.svg
   sourceType: api

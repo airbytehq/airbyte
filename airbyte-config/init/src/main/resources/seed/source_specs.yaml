@@ -719,7 +719,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.25"
+- dockerImage: "airbyte/source-amazon-ads:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -5227,7 +5227,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.32"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
@@ -9205,7 +9205,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-netsuite:0.1.1"
+- dockerImage: "airbyte/source-netsuite:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -13617,7 +13617,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.10"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:

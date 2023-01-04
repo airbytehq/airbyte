@@ -65,7 +65,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         </div>
       )}
       <Cell flex={0.5} flush>
-        <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
+        <Switch size="sm" checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </Cell>
       {/* <Cell>{fieldCount}</Cell> */}
       <Cell flex={1} title={stream.stream?.namespace || ""}>
