@@ -760,36 +760,34 @@ exports[`ConnectionReplicationTab should render 1`] = `
             </div>
           </div>
         </div>
-        <div>
+        <div
+          class="<removed-for-snapshot-test>"
+        >
           <div
             class="<removed-for-snapshot-test>"
           >
-            <div
+            <button
               class="<removed-for-snapshot-test>"
+              disabled=""
+              type="button"
             >
-              <button
+              <div
                 class="<removed-for-snapshot-test>"
-                disabled=""
-                type="button"
               >
-                <div
-                  class="<removed-for-snapshot-test>"
-                >
-                  Cancel
-                </div>
-              </button>
-              <button
+                Cancel
+              </div>
+            </button>
+            <button
+              class="<removed-for-snapshot-test>"
+              disabled=""
+              type="submit"
+            >
+              <div
                 class="<removed-for-snapshot-test>"
-                disabled=""
-                type="submit"
               >
-                <div
-                  class="<removed-for-snapshot-test>"
-                >
-                  Save changes
-                </div>
-              </button>
-            </div>
+                Save changes
+              </div>
+            </button>
           </div>
         </div>
       </form>
