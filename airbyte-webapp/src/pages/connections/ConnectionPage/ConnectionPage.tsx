@@ -14,46 +14,40 @@ import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { ConnectionPageTitle } from "./ConnectionPageTitle";
 
-export const ConnectionPageInner: React.FC = () => {
+const ConnectionHeadTitle: React.FC = () => {
   const { connection } = useConnectionEditService();
+
+  return (
+    <HeadTitle
+      titles={[
+        { id: "sidebar.connections" },
+        {
+          id: "connection.fromTo",
+          values: {
+            source: connection.source.name,
+            destination: connection.destination.name,
+          },
+        },
+      ]}
+    />
+  );
+};
+
+export const ConnectionPage: React.FC = () => {
+  const { connectionId = "" } = useParams<{
+    connectionId: string;
+  }>();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM);
 
   return (
-    <MainPageWithScroll
-      headTitle={
-        <HeadTitle
-          titles={[
-            { id: "sidebar.connections" },
-            {
-              id: "connection.fromTo",
-              values: {
-                source: connection.source.name,
-                destination: connection.destination.name,
-              },
-            },
-          ]}
-        />
-      }
-      pageTitle={<ConnectionPageTitle />}
-    >
-      <Suspense fallback={<LoadingPage />}>
-        <Outlet />
-      </Suspense>
-    </MainPageWithScroll>
-  );
-};
-
-export const ConnectionPage = () => {
-  const params = useParams<{
-    connectionId: string;
-  }>();
-  const connectionId = params.connectionId || "";
-
-  return (
     <ConnectionEditServiceProvider connectionId={connectionId}>
       <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
-        <ConnectionPageInner />
+        <MainPageWithScroll headTitle={<ConnectionHeadTitle />} pageTitle={<ConnectionPageTitle />}>
+          <Suspense fallback={<LoadingPage />}>
+            <Outlet />
+          </Suspense>
+        </MainPageWithScroll>
       </ResourceNotFoundErrorBoundary>
     </ConnectionEditServiceProvider>
   );
