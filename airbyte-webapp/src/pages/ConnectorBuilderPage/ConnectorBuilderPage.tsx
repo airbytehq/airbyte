@@ -20,36 +20,50 @@ const ConnectorBuilderPageInner: React.FC = () => {
   const { builderFormValues, editorView, setEditorView } = useConnectorBuilderState();
 
   return (
-    <Formik initialValues={builderFormValues} onSubmit={() => undefined} validationSchema={builderFormValidationSchema}>
-      {({ values }) => (
-        <ResizablePanels
-          className={classnames({ [styles.gradientBg]: editorView === "yaml", [styles.solidBg]: editorView === "ui" })}
-          firstPanel={{
-            children: (
-              <>
-                {editorView === "yaml" ? (
-                  <YamlEditor toggleYamlEditor={() => setEditorView("ui")} />
-                ) : (
-                  <Builder values={values} toggleYamlEditor={() => setEditorView("yaml")} />
-                )}
-              </>
-            ),
-            className: styles.leftPanel,
-            minWidth: 100,
-          }}
-          secondPanel={{
-            children: <StreamTestingPanel />,
-            className: styles.rightPanel,
-            flex: 0.33,
-            minWidth: 60,
-            overlay: {
-              displayThreshold: 325,
-              header: formatMessage({ id: "connectorBuilder.testConnector" }),
-              rotation: "counter-clockwise",
-            },
-          }}
-        />
-      )}
+    <Formik
+      initialValues={builderFormValues}
+      onSubmit={() => undefined}
+      validationSchema={builderFormValidationSchema}
+      validateOnChange={false}
+    >
+      {({ values, validateForm }) => {
+        return (
+          <ResizablePanels
+            className={classnames({
+              [styles.gradientBg]: editorView === "yaml",
+              [styles.solidBg]: editorView === "ui",
+            })}
+            firstPanel={{
+              children: (
+                <>
+                  {editorView === "yaml" ? (
+                    <YamlEditor toggleYamlEditor={() => setEditorView("ui")} />
+                  ) : (
+                    <Builder
+                      values={values}
+                      toggleYamlEditor={() => setEditorView("yaml")}
+                      validateForm={validateForm}
+                    />
+                  )}
+                </>
+              ),
+              className: styles.leftPanel,
+              minWidth: 100,
+            }}
+            secondPanel={{
+              children: <StreamTestingPanel />,
+              className: styles.rightPanel,
+              flex: 0.33,
+              minWidth: 60,
+              overlay: {
+                displayThreshold: 325,
+                header: formatMessage({ id: "connectorBuilder.testConnector" }),
+                rotation: "counter-clockwise",
+              },
+            }}
+          />
+        );
+      }}
     </Formik>
   );
 };

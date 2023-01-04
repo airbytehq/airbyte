@@ -79,7 +79,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withResourceRequirements(resetConnection.getResourceRequirements())
             .withState(resetConnection.getState())
             .withIsSourceCustomConnector(resetConnection.getIsSourceCustomConnector())
-            .withIsDestinationCustomConnector(resetConnection.getIsDestinationCustomConnector());
+            .withIsDestinationCustomConnector(resetConnection.getIsDestinationCustomConnector())
+            .withWorkspaceId(resetConnection.getWorkspaceId());
       } else {
         throw new IllegalStateException(
             String.format("Unexpected config type %s for job %d. The only supported config types for this activity are (%s)",
@@ -139,7 +140,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withState(config.getState())
           .withResourceRequirements(config.getResourceRequirements())
           .withSourceResourceRequirements(config.getSourceResourceRequirements())
-          .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
+          .withDestinationResourceRequirements(config.getDestinationResourceRequirements())
+          .withWorkspaceId(config.getWorkspaceId());
 
       return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
