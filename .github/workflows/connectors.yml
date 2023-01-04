@@ -189,25 +189,3 @@ jobs:
           echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:$IMAGE_VERSION"
           docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
           docker push ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
-
-      - name: Trigger webhook for version tag
-        if: ${{ github.event_name == 'push' }}
-        id: webhook-v
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: 'https://eyrcnmuzzyriypdajwdk.functions.supabase.co/gh-webhook'
-          method: 'POST'
-          bearerToken: ${{ secrets.SUPABASE_TOKEN }}
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"action": "published", "package": { "package_version": { "package_url": "ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION" } } }'
-
-      - name: Trigger webhook for dev tag
-        if: ${{ github.event_name == 'push' }}
-        id: webhook-dev
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: 'https://eyrcnmuzzyriypdajwdk.functions.supabase.co/gh-webhook'
-          method: 'POST'
-          bearerToken: ${{ secrets.SUPABASE_TOKEN }}
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"action": "published", "package": { "package_version": { "package_url": "ghcr.io/estuary/${{ matrix.connector }}:dev" } } }'
