@@ -54,6 +54,14 @@ export const BuilderCard: React.FC<React.PropsWithChildren<BuilderCardProps>> = 
       )}
       {copyConfig && streams.length > 1 && (
         <div className={styles.copyButtonContainer}>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => {
+              setCopyFromOpen(true);
+            }}
+            icon={<FontAwesomeIcon icon={faArrowUpRightFromSquare} rotation={180} />}
+          />
           {get(streams[copyConfig.currentStreamIndex], copyConfig.path) && (
             <Button
               variant="secondary"
@@ -82,14 +90,6 @@ export const BuilderCard: React.FC<React.PropsWithChildren<BuilderCardProps>> = 
               title={copyConfig.copyToLabel}
             />
           )}
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => {
-              setCopyFromOpen(true);
-            }}
-            icon={<FontAwesomeIcon icon={faArrowUpRightFromSquare} rotation={180} />}
-          />
           {isCopyFromOpen && (
             <CopyFromModal
               onCancel={() => {
@@ -114,6 +114,10 @@ export const BuilderCard: React.FC<React.PropsWithChildren<BuilderCardProps>> = 
   );
 };
 
+function getStreamName(stream: BuilderStream) {
+  return stream.name || <FormattedMessage id="connectorBuilder.emptyName" />;
+}
+
 const CopyToModal: React.FC<{
   onCancel: () => void;
   onApply: (selectedStreamIndices: number[]) => void;
@@ -134,19 +138,20 @@ const CopyToModal: React.FC<{
         }}
       >
         <ModalBody className={styles.modalStreamListContainer}>
-          {streams.value.map((stream, index) => (
-            <label htmlFor={`copy-to-stream-${index}`} key={index} className={styles.toggleContainer}>
-              <CheckBox
-                id={`copy-to-stream-${index}`}
-                checked={selectMap[index] || false}
-                disabled={index === currentStreamIndex}
-                onChange={() => {
-                  setSelectMap({ ...selectMap, [index]: !selectMap[index] });
-                }}
-              />
-              {stream.name}
-            </label>
-          ))}
+          {streams.value.map((stream, index) =>
+            index === currentStreamIndex ? null : (
+              <label htmlFor={`copy-to-stream-${index}`} key={index} className={styles.toggleContainer}>
+                <CheckBox
+                  id={`copy-to-stream-${index}`}
+                  checked={selectMap[index] || false}
+                  onChange={() => {
+                    setSelectMap({ ...selectMap, [index]: !selectMap[index] });
+                  }}
+                />
+                {getStreamName(stream)}
+              </label>
+            )
+          )}
         </ModalBody>
         <ModalFooter>
           <Button variant="secondary" onClick={onCancel}>
@@ -180,7 +185,7 @@ const CopyFromModal: React.FC<{
               }}
               className={styles.streamItem}
             >
-              {stream.name}
+              {getStreamName(stream)}
             </button>
           )
         )}
