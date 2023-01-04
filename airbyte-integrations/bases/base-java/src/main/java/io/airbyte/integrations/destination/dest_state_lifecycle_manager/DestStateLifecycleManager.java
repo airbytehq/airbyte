@@ -51,6 +51,12 @@ public interface DestStateLifecycleManager {
   void markFlushedAsCommitted();
 
   /**
+   * Moves any committed state message that are emitted to the platform as emitted. This is to avoid
+   * emitting duplicate state messages back to the platform
+   */
+  void markCommittedAsEmitted();
+
+  /**
    * Moves any tracked state messages that are currently pending to committed.
    *
    * Note: that this is skipping "flushed" state since flushed meant that this was using a staging
