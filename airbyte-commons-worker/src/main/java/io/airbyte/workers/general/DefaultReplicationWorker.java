@@ -316,7 +316,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         populatedStreamToSelectedFields(catalog, streamToSelectedFields);
       }
       try {
-        // can this while be handled by a virtual thread too?
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
           try {
