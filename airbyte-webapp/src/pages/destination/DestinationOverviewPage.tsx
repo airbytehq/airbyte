@@ -25,7 +25,7 @@ export const DestinationOverviewPage = () => {
   const { sourceDefinitions } = useSourceDefinitionList();
 
   const connectionsWithDestination = connections.filter(
-    (connectionItem) => connectionItem.destinationId === destination.destinationId
+    ({ destination: { destinationId } }) => destinationId === destination.destinationId
   );
 
   const sourceDropdownOptions: DropdownMenuOptionType[] = useMemo(
