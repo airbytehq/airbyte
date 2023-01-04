@@ -7,7 +7,7 @@ import { ConnectionStatus, SchemaChange } from "core/request/AirbyteClient";
 import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 
 // eslint-disable-next-line css-modules/no-unused-class
-import styles from "./connectionInfo.module.scss";
+import styles from "./ConnectionInfoCard.module.scss";
 
 const mockUseConnectionEditService = jest.fn();
 
