@@ -35,7 +35,7 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
           label={formatMessage({
             id: "connectionForm.nonBreakingChangesPreference.label",
           })}
-          message={formatMessage({
+          infoTooltipContent={formatMessage({
             id: "connectionForm.nonBreakingChangesPreference.message",
           })}
         />

@@ -143,7 +143,7 @@ export const ScheduleField: React.FC = () => {
                 label={formatMessage({
                   id: "form.frequency",
                 })}
-                message={formatMessage({
+                infoTooltipContent={formatMessage({
                   id: "form.frequency.message",
                 })}
               />
