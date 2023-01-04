@@ -3,7 +3,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels } from "components/LabeledControl";
 import { FlexContainer } from "components/ui/Flex";
-import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 
 import { Section } from "views/Connection/ConnectionForm/components/Section";
