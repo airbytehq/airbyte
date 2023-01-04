@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 public class LimitedAirbyteSource implements AirbyteSource {
-  private static final int TOTAL_RECORDS = 10_000_000;
+  private static final int TOTAL_RECORDS = 5_000_000;
 
   private int currentRecords = 0;
 
@@ -30,8 +30,9 @@ public class LimitedAirbyteSource implements AirbyteSource {
   @Override
   public Optional<AirbyteMessage> attemptRead() {
     currentRecords++;
-    return Optional.of(AirbyteMessageUtils.createRecordMessage("test stream", "data",
-        "This is a fairly long sentence to provide some bytes here. More bytes is better as it helps us measure performance."));
+    return Optional.of(AirbyteMessageUtils.createRecordMessage("s1", "data",
+        "This is a fairly long sentence to provide some bytes here. More bytes is better as it helps us measure performance."
+            + "Random append to prevent dead code optimisation: " + currentRecords));
   }
 
   @Override

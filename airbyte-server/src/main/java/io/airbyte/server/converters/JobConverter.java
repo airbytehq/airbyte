@@ -251,5 +251,5 @@ public class JobConverter {
         .recordsCommitted(databaseStatus.recordsCommitted().orElse(0L))
         .hasNormalizationFailed(databaseStatus.normalizationFailed());
   }
-  
+
 }

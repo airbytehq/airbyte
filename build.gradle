@@ -282,15 +282,15 @@ subprojects { subproj ->
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'pmd'
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_19
+    targetCompatibility = JavaVersion.VERSION_19
 
-//    tasks.withType(JavaCompile) {
-//        options.compilerArgs += '--enable-preview'
-//    }
-//    tasks.withType(Test) {
-//        jvmArgs += "--enable-preview"
-//    }
+    tasks.withType(JavaCompile) {
+        options.compilerArgs += '--enable-preview'
+    }
+    tasks.withType(Test) {
+        jvmArgs += "--enable-preview"
+    }
 
     repositories {
         mavenCentral()
