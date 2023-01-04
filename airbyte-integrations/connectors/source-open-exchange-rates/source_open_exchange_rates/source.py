@@ -19,8 +19,7 @@ class OpenExchangeRates(HttpStream, ABC):
     url_base = "https://openexchangerates.org/api/"
 
     primary_key = None
-    date_field_name = "timestamp"
-    cursor_field = date_field_name
+    cursor_field = "timestamp"
 
 
     def __init__(self, base: Optional[str], start_date: str, app_id: str) -> None:
