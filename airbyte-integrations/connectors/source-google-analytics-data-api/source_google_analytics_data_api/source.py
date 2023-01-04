@@ -18,6 +18,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, auth
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
+from source_google_analytics_data_api.utils import DATE_FORMAT
 
 metrics_data_types_map: Dict = {
     "METRIC_TYPE_UNSPECIFIED": "string",
@@ -79,8 +80,6 @@ authenticator_class_map: Dict = {
     ),
 }
 
-DATE_FORMAT = "%Y-%m-%d"
-
 
 class ConfigurationError(Exception):
     pass
@@ -92,7 +91,7 @@ class MetadataDescriptor:
 
     def __get__(self, instance, owner):
         if not self._metadata:
-            stream = GoogleAnalyticsDataApiTestConnectionStream(config=instance.config, authenticator=instance.saved_authenticator)
+            stream = GoogleAnalyticsDataApiTestConnectionStream(config=instance.config, authenticator=instance.config["authenticator"])
             metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh))
             self._metadata = {
                 "dimensions": {m["apiName"]: m for m in metadata["dimensions"]},
@@ -106,10 +105,9 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     url_base = "https://analyticsdata.googleapis.com/v1beta/"
     http_method = "POST"
 
-    def __init__(self, *, authenticator: Union[requests.auth.AuthBase, auth.HttpAuthenticator], config: Mapping[str, Any], **kwargs):
-        super().__init__(authenticator, **kwargs)
+    def __init__(self, *, config: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
         self._config = config
-        self.saved_authenticator = authenticator
 
     @property
     def config(self):
@@ -374,19 +372,19 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
         except ConfigurationError as e:
             return False, str(e)
-        authenticator = self.get_authenticator(config)
-        stream = GoogleAnalyticsDataApiTestConnectionStream(config=config, authenticator=authenticator)
+        config["authenticator"] = self.get_authenticator(config)
+        stream = GoogleAnalyticsDataApiTestConnectionStream(config=config, authenticator=config["authenticator"])
         next(stream.read_records(sync_mode=SyncMode.full_refresh))
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
         config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
-        authenticator = self.get_authenticator(config)
+        config["authenticator"] = self.get_authenticator(config)
 
         return [
             type(report["name"], (GoogleAnalyticsDataApiGenericStream,), {})(
-                config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=authenticator
+                config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=config["authenticator"]
             )
             for report in reports + config["custom_reports"]
         ]

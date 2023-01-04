@@ -5,12 +5,16 @@
 import calendar
 import datetime
 
+DATE_FORMAT = "%Y-%m-%d"
+
 
 def datetime_to_secs(dt: datetime.datetime) -> int:
     return calendar.timegm(dt.utctimetuple())
 
 
 def string_to_date(d: str, f: str = "%Y-%m-%d", old_format=None) -> datetime.date:
+    # To convert old STATE date format "YYYY-MM-DD" to the new format "YYYYMMDD" we need this `old_format` additional param.
+    # As soon all current cloud sync will be converted to the new format we can remove this double format support.
     if old_format:
         try:
             return datetime.datetime.strptime(d, old_format).date()
