@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.general;
 
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -15,4 +19,5 @@ public class StubAirbyteMapper implements AirbyteMapper {
   public AirbyteMessage mapMessage(AirbyteMessage message) {
     return message;
   }
+
 }

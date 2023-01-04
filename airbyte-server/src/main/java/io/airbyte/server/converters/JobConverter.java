@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -251,5 +250,5 @@ public class JobConverter {
         .recordsCommitted(databaseStatus.recordsCommitted().orElse(0L))
         .hasNormalizationFailed(databaseStatus.normalizationFailed());
   }
-  
+
 }

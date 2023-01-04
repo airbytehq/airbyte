@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.general;
 
 import io.airbyte.config.WorkerDestinationConfig;
@@ -48,4 +52,5 @@ public class EmptyAirbyteDestination implements AirbyteDestination {
   public void cancel() throws Exception {
 
   }
+
 }

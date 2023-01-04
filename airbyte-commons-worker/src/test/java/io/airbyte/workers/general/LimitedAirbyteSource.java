@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.general;
 
 import io.airbyte.config.WorkerSourceConfig;
@@ -8,6 +12,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 public class LimitedAirbyteSource implements AirbyteSource {
+
   private static final int TOTAL_RECORDS = 10_000_000;
 
   private int currentRecords = 0;
@@ -44,4 +49,5 @@ public class LimitedAirbyteSource implements AirbyteSource {
   public void cancel() throws Exception {
 
   }
+
 }

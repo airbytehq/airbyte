@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.general;
 
 import io.airbyte.config.ReplicationOutput;
@@ -35,13 +39,12 @@ public class ReplicationWorkerPerformanceTest {
         messageTracker,
         validator,
         metricReporter,
-        false
-        );
+        false);
     AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     final Thread workerThread = new Thread(() -> {
       try {
         output.set(worker.run(new StandardSyncInput().withCatalog(new ConfiguredAirbyteCatalog()
-                .withStreams(List.of(new ConfiguredAirbyteStream().withSyncMode(SyncMode.FULL_REFRESH).withStream(new AirbyteStream().withName("s1"))))),
+            .withStreams(List.of(new ConfiguredAirbyteStream().withSyncMode(SyncMode.FULL_REFRESH).withStream(new AirbyteStream().withName("s1"))))),
             Path.of("/")));
       } catch (final WorkerException e) {
         throw new RuntimeException(e);
@@ -51,8 +54,9 @@ public class ReplicationWorkerPerformanceTest {
     workerThread.start();
     workerThread.join();
     var summary = output.get().getReplicationAttemptSummary();
-    var mbRead = summary.getBytesSynced()/1_000_000;
-    var timeTakenSec = (summary.getEndTime() - summary.getStartTime())/1000.0;
-    log.info("MBs read: {}, Time taken sec: {}, MB/s: {}", mbRead, timeTakenSec, mbRead/timeTakenSec);
+    var mbRead = summary.getBytesSynced() / 1_000_000;
+    var timeTakenSec = (summary.getEndTime() - summary.getStartTime()) / 1000.0;
+    log.info("MBs read: {}, Time taken sec: {}, MB/s: {}", mbRead, timeTakenSec, mbRead / timeTakenSec);
   }
+
 }

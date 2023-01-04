@@ -537,7 +537,6 @@ class DefaultReplicationWorkerTest {
 
     LOGGER.info("total records emitted: {}, total bytes emitted: {}", messageTracker.getTotalRecordsEmitted(), messageTracker.getTotalBytesEmitted());
 
-
     worker.cancel();
     Assertions.assertTimeout(Duration.ofSeconds(5), (Executable) workerThread::join);
     assertNotNull(output.get());
