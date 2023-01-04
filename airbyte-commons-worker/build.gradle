@@ -31,6 +31,7 @@ dependencies {
 
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+    testAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
 
     testImplementation libs.bundles.micronaut.test
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'

@@ -8,29 +8,39 @@ import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.metrics.lib.NotImplementedMetricClient;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Mode;
 
 @Slf4j
 public class ReplicationWorkerPerformanceTest {
 
-  public static void main(String[] args) throws WorkerException, InterruptedException {
+  @Benchmark  @BenchmarkMode(Mode.SampleTime)
+  public void benchmarkOrchestrator() throws InterruptedException {
     var perSource = new LimitedAirbyteSource();
     var perDestination = new EmptyAirbyteDestination();
     var messageTracker = new AirbyteMessageTracker();
     var metricReporter = new WorkerMetricReporter(new NotImplementedMetricClient(), "test-image:0.01");
     var mapper = new StubAirbyteMapper();
-    var validator = new RecordSchemaValidator(Map.of());
+    var validator = new RecordSchemaValidator(Map.of(
+        new AirbyteStreamNameNamespacePair("s1", null),
+        CatalogHelpers.fieldsToJsonSchema(io.airbyte.protocol.models.Field.of("data", JsonSchemaType.STRING))));
 
     var worker = new DefaultReplicationWorker("1", 0,
         perSource,
@@ -57,6 +67,10 @@ public class ReplicationWorkerPerformanceTest {
     var mbRead = summary.getBytesSynced() / 1_000_000;
     var timeTakenSec = (summary.getEndTime() - summary.getStartTime()) / 1000.0;
     log.info("MBs read: {}, Time taken sec: {}, MB/s: {}", mbRead, timeTakenSec, mbRead / timeTakenSec);
+  }
+
+  public static void main(String[] args) throws IOException {
+    org.openjdk.jmh.Main.main(args);
   }
 
 }

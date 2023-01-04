@@ -318,44 +318,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       try {
         // can this while be handled by a virtual thread too?
         while (!cancelled.get() && !source.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional;
-          try {
-            messageOptional = source.attemptRead();
-          } catch (final Exception e) {
-            throw new SourceException("Source process read attempt failed", e);
-          }
-
-          if (messageOptional.isPresent()) {
-            final AirbyteMessage airbyteMessage = messageOptional.get();
-            if (fieldSelectionEnabled) {
-              filterSelectedFields(streamToSelectedFields, airbyteMessage);
-            }
-            validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
-            final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
-
-            messageTracker.acceptFromSource(message);
-
-            try {
-              if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
-                destination.accept(message);
-              }
-            } catch (final Exception e) {
-              throw new DestinationException("Destination process message delivery failed", e);
-            }
-
-            recordsRead += 1;
-
-            if (recordsRead % 1000 == 0) {
-              LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
-            }
-          } else {
-            LOGGER.info("Source has no more messages, closing connection.");
-            try {
-              source.close();
-            } catch (final Exception e) {
-              throw new SourceException("Source cannot be stopped!", e);
-            }
-          }
+          recordsRead = getRecordsRead(source, destination, mapper, messageTracker, recordSchemaValidator, fieldSelectionEnabled, recordsRead,
+              validationErrors,
+              streamToSelectedFields);
         }
         timeHolder.trackSourceReadEndTime();
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
@@ -391,6 +356,52 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
     };
+  }
+
+//  @Benchmark
+  public static long getRecordsRead(AirbyteSource source, AirbyteDestination destination, AirbyteMapper mapper, MessageTracker messageTracker,
+      RecordSchemaValidator recordSchemaValidator, boolean fieldSelectionEnabled, long recordsRead,
+      Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
+      Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields) {
+    final Optional<AirbyteMessage> messageOptional;
+    try {
+      messageOptional = source.attemptRead();
+    } catch (final Exception e) {
+      throw new SourceException("Source process read attempt failed", e);
+    }
+
+    if (messageOptional.isPresent()) {
+      final AirbyteMessage airbyteMessage = messageOptional.get();
+      if (fieldSelectionEnabled) {
+        filterSelectedFields(streamToSelectedFields, airbyteMessage);
+      }
+      validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
+      final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
+
+      messageTracker.acceptFromSource(message);
+
+      try {
+        if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
+          destination.accept(message);
+        }
+      } catch (final Exception e) {
+        throw new DestinationException("Destination process message delivery failed", e);
+      }
+
+      recordsRead += 1;
+
+      if (recordsRead % 1000 == 0) {
+        LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+      }
+    } else {
+      LOGGER.info("Source has no more messages, closing connection.");
+      try {
+        source.close();
+      } catch (final Exception e) {
+        throw new SourceException("Source cannot be stopped!", e);
+      }
+    }
+    return recordsRead;
   }
 
   private ReplicationOutput getReplicationOutput(final StandardSyncInput syncInput,
