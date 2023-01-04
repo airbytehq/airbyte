@@ -235,7 +235,7 @@ class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
         updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
         stream_state_value = current_stream_state.get(self.cursor_field)
         if stream_state_value:
-            stream_state_value = utils.string_to_date(stream_state_value, self._record_date_format)
+            stream_state_value = utils.string_to_date(stream_state_value, self._record_date_format, old_format=DATE_FORMAT)
             updated_state = max(updated_state, stream_state_value)
         current_stream_state[self.cursor_field] = updated_state.strftime(self._record_date_format)
         return current_stream_state
@@ -275,7 +275,7 @@ class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
 
         start_date = stream_state and stream_state.get(self.cursor_field)
         if start_date:
-            start_date = utils.string_to_date(start_date, self._record_date_format)
+            start_date = utils.string_to_date(start_date, self._record_date_format, old_format=DATE_FORMAT)
             start_date = max(start_date, self.config["date_ranges_start_date"])
         else:
             start_date = self.config["date_ranges_start_date"]
