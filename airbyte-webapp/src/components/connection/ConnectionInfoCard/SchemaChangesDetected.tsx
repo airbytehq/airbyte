@@ -8,7 +8,7 @@ import { Text } from "components/ui/Text";
 import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
-import { ConnectionPageRoutePaths } from "pages/connections/types";
+import { ConnectionRoutePaths } from "pages/connections/types";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty";
 
 import styles from "./SchemaChangesDetected.module.scss";
@@ -31,8 +31,8 @@ export const SchemaChangesDetected: React.FC = () => {
   }
 
   const onReviewActionButtonClick: React.MouseEventHandler<HTMLButtonElement> = () => {
-    if (!location.pathname.includes(`/${ConnectionPageRoutePaths.REPLICATION}`)) {
-      navigate(ConnectionPageRoutePaths.REPLICATION);
+    if (!location.pathname.includes(`/${ConnectionRoutePaths.Replication}`)) {
+      navigate(ConnectionRoutePaths.Replication);
     }
 
     refreshSchema();

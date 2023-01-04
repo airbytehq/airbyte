@@ -12,35 +12,35 @@ import { Text } from "components/ui/Text";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 
-import { ConnectionPageRoutePaths } from "../types";
+import { ConnectionRoutePaths } from "../types";
 import styles from "./ConnectionPageTitle.module.scss";
 
 export const ConnectionPageTitle: React.FC = () => {
-  const params = useParams<{ id: string; "*": ConnectionPageRoutePaths }>();
+  const params = useParams<{ id: string; "*": ConnectionRoutePaths }>();
   const navigate = useNavigate();
-  const currentStep = params["*"] || ConnectionPageRoutePaths.STATUS;
+  const currentStep = params["*"] || ConnectionRoutePaths.Status;
 
   const { connection } = useConnectionEditService();
 
   const steps = useMemo(() => {
     const steps = [
       {
-        id: ConnectionPageRoutePaths.STATUS,
+        id: ConnectionRoutePaths.Status,
         name: <FormattedMessage id="sources.status" />,
       },
       {
-        id: ConnectionPageRoutePaths.REPLICATION,
+        id: ConnectionRoutePaths.Replication,
         name: <FormattedMessage id="connection.replication" />,
       },
       {
-        id: ConnectionPageRoutePaths.TRANSFORMATION,
+        id: ConnectionRoutePaths.Transformation,
         name: <FormattedMessage id="connectionForm.transformation.title" />,
       },
     ];
 
     connection.status !== ConnectionStatus.deprecated &&
       steps.push({
-        id: ConnectionPageRoutePaths.SETTINGS,
+        id: ConnectionRoutePaths.Settings,
         name: <FormattedMessage id="sources.settings" />,
       });
 
@@ -49,7 +49,7 @@ export const ConnectionPageTitle: React.FC = () => {
 
   const onSelectStep = useCallback(
     (id: string) => {
-      if (id === ConnectionPageRoutePaths.STATUS) {
+      if (id === ConnectionRoutePaths.Status) {
         navigate("");
       } else {
         navigate(id);

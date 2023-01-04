@@ -6,7 +6,7 @@ import styled from "styled-components";
 import { Link } from "components";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { ConnectionPageRoutePaths } from "pages/connections/types";
+import { ConnectionRoutePaths } from "pages/connections/types";
 import { RoutePaths } from "pages/routePaths";
 
 interface IProps {
@@ -38,7 +38,7 @@ const ConnectorCell: React.FC<IProps> = ({ id }) => {
     event.stopPropagation();
   };
 
-  const settingPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Connections}/${id}/${ConnectionPageRoutePaths.REPLICATION}`;
+  const settingPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Connections}/${id}/${ConnectionRoutePaths.Replication}`;
   return (
     <Content onClick={openSettings}>
       <Link to={settingPath}>
