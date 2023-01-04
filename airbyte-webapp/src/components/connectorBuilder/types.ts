@@ -409,6 +409,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
           name: stream.name,
           url_base: values.global?.urlBase,
           path: stream.urlPath,
+          http_method: stream.httpMethod,
           request_options_provider: {
             // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
             // type: "InterpolatedRequestOptionsProvider",
@@ -474,4 +475,62 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     streams: manifestStreams,
     spec,
   };
+};
+
+const convertToBuilderFormValues = (manifest: ConnectorManifest) => {
+  const builderFormValues = DEFAULT_BUILDER_FORM_VALUES;
+
+  const spec = manifest.spec;
+  if (spec) {
+    const required = spec.connection_specification.required as string[];
+    builderFormValues.inputs = Object.entries(
+      spec.connection_specification.properties as Record<string, AirbyteJSONSchema>
+    ).map(([key, definition]) => {
+      return {
+        key,
+        definition,
+        required: required.includes(key),
+      };
+    });
+    // do we need to do anything with inferred inputs here? Maybe not since InputsView and BuilderSidebar call getInferredInputs directly?
+  }
+
+  const streams = manifest.streams;
+  if (streams && streams.length > 0) {
+    // grab urlBase from first stream to use as global
+    builderFormValues.global.urlBase = streams[0].retriever.requester.url_base;
+
+    // grab first non-undefined authenticator to use as global
+    builderFormValues.global.authenticator = streams.find(
+      (stream) => stream.retriever.requester.authenticator !== undefined
+    )?.retriever?.requester?.authenticator;
+
+    builderFormValues.streams = streams.map((stream) => {
+      let primary_key = [];
+      if (stream.primary_key && Array.isArray(stream.primary_key)) {
+        // if primary key is nested array, grab just the first nested value to use as the primary key
+        if (stream.primary_key.length > 0 && Array.isArray(stream.primary_key[0])) {
+          [primary_key] = stream.primary_key;
+        }
+      }
+
+      const builderStream = {
+        ...DEFAULT_BUILDER_STREAM_VALUES,
+        name: stream.name ?? "",
+        primaryKey: Array.isArray(stream.primary_key) ?? [],
+      };
+
+      // if stream uses a CustomRetriever, only the name and primary key are pulled out, as everything else comes from the SimpleRetriever in the normal case
+      if (stream.retriever.type === "SimpleRetriever") {
+        return {
+          ...builderStream,
+          urlPath: stream.retriever.requester.path,
+          fieldPointer: stream.retriever.record_selector.extractor.field_pointer,
+          httpMethod: stream.retriever.requester.http_method,
+        };
+      }
+
+      return builderStream;
+    });
+  }
 };
