@@ -23,9 +23,12 @@ def future_state_configuration_fixture(inputs, base_path, test_strictness_level)
     elif inputs.future_state and inputs.future_state.future_state_path:
         return Path(base_path) / inputs.future_state.future_state_path, inputs.future_state.missing_streams
     elif test_strictness_level is Config.TestStrictnessLevel.high:
-        pytest.fail("High test strictness level error: a future state configuration must be provided in high test strictness level or a bypass reason should be filled.")
+        pytest.fail(
+            "High test strictness level error: a future state configuration must be provided in high test strictness level or a bypass reason should be filled."
+        )
     else:
         pytest.skip("`future_state` not specified, skipping.")
+
 
 @pytest.fixture(name="future_state")
 def future_state_fixture(future_state_configuration, test_strictness_level, configured_catalog) -> List[MutableMapping]:
