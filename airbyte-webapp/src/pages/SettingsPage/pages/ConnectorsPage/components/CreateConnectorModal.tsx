@@ -9,11 +9,12 @@ import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 import { StatusIcon } from "components/ui/StatusIcon";
 
+import { isCloudApp } from "utils/app";
 import { links } from "utils/links";
 
 import styles from "./CreateConnectorModal.module.scss";
 
-export interface IProps {
+export interface CreateConnectorModalProps {
   errorMessage?: string;
   onClose: () => void;
   onSubmit: (sourceDefinition: {
@@ -83,14 +84,18 @@ const ErrorText = styled.div`
   color: ${({ theme }) => theme.dangerColor};
   max-width: 400px;
 `;
-const validationSchema = yup.object().shape({
-  name: yup.string().required("form.empty.error"),
-  documentationUrl: yup.string().required("form.empty.error"),
-  dockerImageTag: yup.string().required("form.empty.error"),
-  dockerRepository: yup.string().required("form.empty.error"),
+const standardValidationSchema = yup.object().shape({
+  name: yup.string().trim().required("form.empty.error"),
+  documentationUrl: yup.string().trim().required("form.empty.error"),
+  dockerImageTag: yup.string().trim().required("form.empty.error"),
+  dockerRepository: yup.string().trim().required("form.empty.error"),
 });
 
-const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessage }) => {
+const customConnectorValidationSchema = standardValidationSchema.shape({
+  documentationUrl: yup.string().trim().url("form.url.error").notRequired(),
+});
+
+const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, onSubmit, errorMessage }) => {
   const { formatMessage } = useIntl();
 
   return (
@@ -117,7 +122,7 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
           }}
           validateOnBlur
           validateOnChange
-          validationSchema={validationSchema}
+          validationSchema={isCloudApp() === false ? standardValidationSchema : customConnectorValidationSchema}
           onSubmit={async (values, { setSubmitting }) => {
             await onSubmit(values);
             setSubmitting(false);
