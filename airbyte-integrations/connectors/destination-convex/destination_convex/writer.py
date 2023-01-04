@@ -3,6 +3,7 @@
 #
 
 from collections.abc import Mapping
+import time
 from typing import List
 
 from destination_convex.client import ConvexClient
@@ -24,10 +25,21 @@ class ConvexWriter:
         """Deletes all the records belonging to the input stream"""
         if len(stream_names) > 0:
             self.client.delete(stream_names)
-    
-    def add_indexes(self, indexes: Mapping):
+
+    def add_indexes(self, indexes: Mapping[str, List[List[str]]]):
         self.client.add_indexes(indexes)
 
+    def poll_for_indexes(self, indexes: Mapping[str, List[List[str]]]):
+        """Polls until the indexes specified are ready"""
+        while len(indexes) > 0:
+            resp = self.client.get_indexes()
+            for index in resp.json()["indexes"]:
+                if indexes[index["table"]]:
+                    if index["backfill"]["state"] == "done":
+                        indexes.pop(index["table"])
+            if len(indexes) > 0:
+                time.sleep(1)
+        return
 
     def queue_write_operation(self, message: Mapping):
         """Adds messages to the write queue and flushes if the buffer is full"""

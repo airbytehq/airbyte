@@ -47,6 +47,7 @@ class DestinationConvex(Destination):
             writer.delete_stream_entries(streams_to_delete)
         if len(indexes_to_add) != 0:
             writer.add_indexes(indexes_to_add)
+            writer.poll_for_indexes(indexes_to_add)
 
         streams = {}
         for s in configured_catalog.streams:
