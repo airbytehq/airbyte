@@ -1,4 +1,1 @@
-import { AllDestinationsPage } from "./AllDestinationsPage";
-
-export { AllDestinationsPage } from "./AllDestinationsPage";
-export default AllDestinationsPage;
+export { AllDestinationsPage as default } from "./AllDestinationsPage";

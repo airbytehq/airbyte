@@ -1,3 +1,1 @@
-import React from "react";
-
-export default React.lazy(() => import("./DatePicker"));
+export { DatePicker as default } from "./DatePicker";

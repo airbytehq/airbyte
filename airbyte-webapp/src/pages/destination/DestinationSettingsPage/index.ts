@@ -1,4 +1,1 @@
-import { DestinationSettingsPage } from "./DestinationSettingsPage";
-
-export { DestinationSettingsPage } from "./DestinationSettingsPage";
-export default DestinationSettingsPage;
+export { DestinationSettingsPage as default } from "./DestinationSettingsPage";
