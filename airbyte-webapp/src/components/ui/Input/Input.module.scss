@@ -57,7 +57,8 @@
     color: colors.$grey-300;
   }
 
-  &.disabled {
+  &.disabled,
+  &:read-only {
     pointer-events: none;
     color: colors.$grey-400;
   }
