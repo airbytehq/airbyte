@@ -149,3 +149,13 @@ class SaleEvents(MarketplaceEvents):
 class RoyaltyEvents(MarketplaceEvents):
   def path(self, **_) -> str:
     return f"api/company/{self.company_id}/search"
+
+
+class RewardsMintedEvents(EventsStream):
+  def path(self, **_) -> str:
+    return f"api/company/{self.company_id}/search"
+
+
+class PanelsMintedEvents(EventsStream):
+  def path(self, **_) -> str:
+    return f"api/company/{self.company_id}/search"
