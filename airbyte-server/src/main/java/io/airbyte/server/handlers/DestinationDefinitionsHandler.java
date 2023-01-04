@@ -51,8 +51,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 @SuppressWarnings("PMD.AvoidCatchingNPE")
 public class DestinationDefinitionsHandler {
@@ -63,7 +62,6 @@ public class DestinationDefinitionsHandler {
   private final AirbyteGithubStore githubStore;
   private final DestinationHandler destinationHandler;
   private final AirbyteProtocolVersionRange protocolVersionRange;
-  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationDefinitionsHandler.class);
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final SynchronousSchedulerClient schedulerSynchronousClient,
@@ -139,7 +137,6 @@ public class DestinationDefinitionsHandler {
 
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
     final DestinationDefinitionReadList output = toDestinationDefinitionReadList(getLatestDestinations());
-    LOGGER.info(output.toString());
     return output;
   }
 
