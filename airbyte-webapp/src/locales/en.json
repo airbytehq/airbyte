@@ -509,7 +509,7 @@
   "admin.dockerRepository": "Docker repository name",
   "admin.dockerFullImageName": "Docker full image name",
   "admin.dockerRepository.placeholder": "airbytehq/postgres",
-  "admin.dockerFullImageName.placeholder": "us-central1-docker.pkg.dev/airbyte-custom-connectors/customer-name/customer-image",
+  "admin.dockerFullImageName.placeholder": "customer-name/customer-image",
   "admin.dockerImageTag": "Docker image tag",
   "admin.dockerImageTag.placeholder": "12.3",
   "admin.documentationUrl": "Connector Documentation URL",

@@ -8,6 +8,7 @@ import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 import { StatusIcon } from "components/ui/StatusIcon";
+import { Text } from "components/ui/Text";
 
 import { isCloudApp } from "utils/app";
 import { links } from "utils/links";
@@ -35,12 +36,6 @@ const ButtonContent = styled.div`
   align-items: center;
   justify-content: space-between;
   min-height: 40px;
-`;
-
-const Label = styled.div`
-  font-weight: bold;
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  margin-bottom: 8px;
 `;
 
 const FieldContainer = styled.div`
@@ -95,6 +90,14 @@ const customConnectorValidationSchema = standardValidationSchema.shape({
   documentationUrl: yup.string().trim().url("form.url.error").notRequired(),
 });
 
+const Label: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  return (
+    <Text as="span" bold size="lg" className={styles.label}>
+      {children}
+    </Text>
+  );
+};
+
 const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, onSubmit, errorMessage }) => {
   const { formatMessage } = useIntl();
 
@@ -121,18 +124,18 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
             dockerRepository: "",
           }}
           validateOnBlur
-          validateOnChange
+          validateOnChange={false}
           validationSchema={isCloudApp() ? customConnectorValidationSchema : standardValidationSchema}
           onSubmit={async (values, { setSubmitting }) => {
             await onSubmit(values);
             setSubmitting(false);
           }}
         >
-          {({ isSubmitting, dirty, isValid }) => (
+          {({ isSubmitting, dirty }) => (
             <Form>
               <FieldContainer>
                 <Field name="name">
-                  {({ field }: FieldProps<string>) => (
+                  {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       type="text"
@@ -144,13 +147,15 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                           <FormattedMessage id="admin.connectorName" />
                         </Label>
                       }
+                      error={meta.touched && !!meta.error}
+                      message={meta.touched && meta.error && <FormattedMessage id={meta.error} />}
                     />
                   )}
                 </Field>
               </FieldContainer>
               <FieldContainer>
                 <Field name="dockerRepository">
-                  {({ field }: FieldProps<string>) => (
+                  {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       type="text"
@@ -167,13 +172,15 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                           />
                         </Label>
                       }
+                      error={meta.touched && !!meta.error}
+                      message={meta.touched && meta.error && <FormattedMessage id={meta.error} />}
                     />
                   )}
                 </Field>
               </FieldContainer>
               <FieldContainer>
                 <Field name="dockerImageTag">
-                  {({ field }: FieldProps<string>) => (
+                  {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       type="text"
@@ -186,13 +193,15 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                           <FormattedMessage id="admin.dockerImageTag" />
                         </Label>
                       }
+                      error={!!meta.error && meta.touched}
+                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                     />
                   )}
                 </Field>
               </FieldContainer>
               <FieldContainer>
                 <Field name="documentationUrl">
-                  {({ field }: FieldProps<string>) => (
+                  {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       type="text"
@@ -205,6 +214,8 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                           <FormattedMessage id="admin.documentationUrl" />
                         </Label>
                       }
+                      error={meta.touched && !!meta.error}
+                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                     />
                   )}
                 </Field>
@@ -228,7 +239,7 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                   >
                     <FormattedMessage id="form.cancel" />
                   </Button>
-                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid} isLoading={isSubmitting}>
+                  <Button type="submit" disabled={isSubmitting || !dirty} isLoading={isSubmitting}>
                     <FormattedMessage id="form.add" />
                   </Button>
                 </div>
