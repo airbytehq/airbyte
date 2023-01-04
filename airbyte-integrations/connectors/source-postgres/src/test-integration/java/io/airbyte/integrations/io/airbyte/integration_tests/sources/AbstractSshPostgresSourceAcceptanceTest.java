@@ -36,6 +36,7 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+//  * MIgrate JsonSchema getConfiguredCatalog(override)
 @ExtendWith(SystemStubsExtension.class)
 public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 

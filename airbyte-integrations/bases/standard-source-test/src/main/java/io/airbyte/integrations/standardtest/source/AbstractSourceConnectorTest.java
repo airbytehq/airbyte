@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This abstract class contains helpful functionality and boilerplate for testing a source
  * connector.
+ * // TODO : Check if it's needed to change things here (JSonSchema based on version)
  */
 public abstract class AbstractSourceConnectorTest {
 

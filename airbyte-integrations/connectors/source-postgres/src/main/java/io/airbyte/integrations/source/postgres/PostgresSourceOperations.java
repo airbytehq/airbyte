@@ -197,10 +197,10 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
         case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
         case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
-        case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
-        case "_numeric", "_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
+        case "_int2", "_int4", "_int8", "_oid" -> putArray(json, columnName, resultSet, colIndex);
+        case "_numeric", "_decimal" -> putArray(json, columnName, resultSet, colIndex);
         case "_money" -> putMoneyArray(json, columnName, resultSet, colIndex);
-        case "_float4", "_float8" -> putDoubleArray(json, columnName, resultSet, colIndex);
+        case "_float4", "_float8" -> putArray(json, columnName, resultSet, colIndex);
         case "_bool" -> putBooleanArray(json, columnName, resultSet, colIndex);
         case "_bit" -> putBitArray(json, columnName, resultSet, colIndex);
         case "_bytea" -> putByteaArray(json, columnName, resultSet, colIndex);
@@ -212,12 +212,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-            case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
-            case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
-            case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
+            // What is the difference between reading ints as corr (short/int/long) vs reading as a string?
+            case TINYINT, SMALLINT -> putString(json, columnName, resultSet, colIndex);
+            case INTEGER -> putString(json, columnName, resultSet, colIndex);
+            case BIGINT -> putString(json, columnName, resultSet, colIndex);
             case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-            case REAL -> putFloat(json, columnName, resultSet, colIndex);
-            case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+            case REAL -> putString(json, columnName, resultSet, colIndex);
+            case NUMERIC, DECIMAL -> putString(json, columnName, resultSet, colIndex);
             // BIT is a bit string in Postgres, e.g. '0100'
             case BIT, CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
             case DATE -> putDate(json, columnName, resultSet, colIndex);
@@ -369,7 +370,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final String moneyValue = parseMoneyValue(arrayResultSet.getString(colIndex));
-      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
+      arrayNode.add(moneyValue);
     }
     node.set(columnName, arrayNode);
   }
@@ -448,94 +449,51 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   @Override
   public JsonSchemaType getAirbyteType(final PostgresType jdbcType) {
     return switch (jdbcType) {
-      case BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
-      case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
+      case BOOLEAN -> JsonSchemaType.BOOLEAN_V1;
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER_V1;
+      case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER_V1;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.BINARY_DATA_V1;
       case ARRAY -> JsonSchemaType.ARRAY;
-      case BIT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
-              .build())
-          .build();
-      case BOOL_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
-              .build())
-          .build();
-      case BYTEA_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case NAME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case VARCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case CHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case BPCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case TEXT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case INT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.INTEGER)
-          .build();
-      case INT2_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.INTEGER)
-          .build();
-      case INT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.INTEGER)
-          .build();
-      case MONEY_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-              .build())
-          .build();
-      case OID_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-              .build())
-          .build();
-      case NUMERIC_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-              .build())
-          .build();
-      case FLOAT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-              .build())
-          .build();
-      case FLOAT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+      case BIT_ARRAY, BOOL_ARRAY ->
+          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN_V1)
+                  .build())
+              .build();
+      case BYTEA_ARRAY, NAME_ARRAY, VARCHAR_ARRAY, CHAR_ARRAY, BPCHAR_ARRAY, TEXT_ARRAY ->
+          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING_V1)
+                  .build())
+              .build();
+      case INT4_ARRAY, INT2_ARRAY, INT8_ARRAY ->
+          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaType.INTEGER_V1)
+              .build();
+      case OID_ARRAY, NUMERIC_ARRAY, FLOAT4_ARRAY, FLOAT8_ARRAY, MONEY_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER_V1)
               .build())
           .build();
       case TIMESTAMPTZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
+          .withItems(JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1)
           .build();
       case TIMESTAMP_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+          .withItems(JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1)
           .build();
       case TIMETZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+          .withItems(JsonSchemaType.TIME_WITH_TIMEZONE_V1)
           .build();
       case TIME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+          .withItems(JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1)
           .build();
       case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_DATE)
+          .withItems(JsonSchemaType.DATE_V1)
           .build();
 
-      case DATE -> JsonSchemaType.STRING_DATE;
-      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
-      case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
-      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
-      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
-      default -> JsonSchemaType.STRING;
+      case DATE -> JsonSchemaType.DATE_V1;
+      case TIME -> JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1;
+      case TIME_WITH_TIMEZONE -> JsonSchemaType.TIME_WITH_TIMEZONE_V1;
+      case TIMESTAMP -> JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1;
+      default -> JsonSchemaType.STRING_V1;
     };
   }
 
@@ -571,13 +529,14 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     if (resultSet.getMetaData().getColumnTypeName(index).equals("money")) {
       putMoney(node, columnName, resultSet, index);
     } else {
-      super.putDouble(node, columnName, resultSet, index);
+      // Is there a difference between (i) Parsing as double first and THEN casting as string vs (ii) putting String
+      super.putString(node, columnName, resultSet, index);
     }
   }
 
   private void putMoney(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final String moneyValue = parseMoneyValue(resultSet.getString(index));
-    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite));
+    node.put(columnName, moneyValue);
   }
 
   private void putHstoreAsJson(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)

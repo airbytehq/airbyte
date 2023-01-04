@@ -18,7 +18,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.PostgreSQLContainer;
-
+// TODO : MIgrate JsonSchema getConfiguredCatalog(override)
 public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   protected PostgreSQLContainer<?> container;
