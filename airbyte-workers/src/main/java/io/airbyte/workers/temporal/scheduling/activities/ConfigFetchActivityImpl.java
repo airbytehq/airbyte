@@ -9,6 +9,9 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.generated.ConnectionApi;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
@@ -65,12 +68,15 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   private final WorkspaceHelper workspaceHelper;
   private final Integer syncJobMaxAttempts;
   private final Supplier<Long> currentSecondsSupplier;
+  private final ConnectionApi connectionApi;
 
   public ConfigFetchActivityImpl(final ConfigRepository configRepository,
                                  final JobPersistence jobPersistence,
                                  @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
-                                 @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier) {
-    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), syncJobMaxAttempts, currentSecondsSupplier);
+                                 @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier,
+                                 final ConnectionApi connectionApi) {
+    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), syncJobMaxAttempts, currentSecondsSupplier,
+        connectionApi);
   }
 
   @VisibleForTesting
@@ -78,12 +84,14 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
                                     final JobPersistence jobPersistence,
                                     final WorkspaceHelper workspaceHelper,
                                     @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
-                                    @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier) {
+                                    @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier,
+                                    final ConnectionApi connectionApi) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.workspaceHelper = workspaceHelper;
     this.syncJobMaxAttempts = syncJobMaxAttempts;
     this.currentSecondsSupplier = currentSecondsSupplier;
+    this.connectionApi = connectionApi;
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -229,9 +237,11 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   @Override
   public Optional<UUID> getSourceId(final UUID connectionId) {
     try {
-      final StandardSync standardSync = getStandardSync(connectionId);
-      return Optional.ofNullable(standardSync.getSourceId());
-    } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
+      final io.airbyte.api.client.model.generated.ConnectionIdRequestBody requestBody =
+          new io.airbyte.api.client.model.generated.ConnectionIdRequestBody().connectionId(connectionId);
+      final ConnectionRead connectionRead = connectionApi.getConnection(requestBody);
+      return Optional.ofNullable(connectionRead.getSourceId());
+    } catch (ApiException e) {
       log.info("Encountered an error fetching the connection's Source ID: ", e);
       return Optional.empty();
     }
