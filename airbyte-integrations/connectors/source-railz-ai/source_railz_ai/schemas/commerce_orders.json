@@ -86,10 +86,10 @@
             "type": ["string", "integer"]
           },
           "type": {
-            "type": "number"
+            "type": "string"
           },
           "totalAmount": {
-            "type": "number"
+            "type": ["string", "number"]
           }
         }
       }
@@ -193,7 +193,7 @@
       "type": "number"
     },
     "totalAmount": {
-      "type": "number"
+      "type": ["number", "string"]
     },
     "createdDate": {
       "type": "string",

@@ -5,6 +5,17 @@
     "id": {
       "type": ["string", "integer"]
     },
+    "reportId": {
+      "type": ["string", "array"]
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time"
+    },
     "businessName": {
       "type": "string"
     },
@@ -38,10 +49,7 @@
       "type": "string"
     },
     "categories": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string", "array"]
     },
     "merchantName": {
       "type": ["null", "string"]

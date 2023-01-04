@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - client_id
     - secret_key
+    - start_date
   properties:
     client_id:
       type: string

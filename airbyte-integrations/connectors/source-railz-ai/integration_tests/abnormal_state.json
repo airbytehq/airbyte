@@ -44,6 +44,21 @@
       "wave": {
           "start_time" : "2999-12-31"
       }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
+          "start_time" : "2999-12-31"
+      }
     }
   },
   "bank_transfers": {
@@ -89,6 +104,21 @@
     },
     "b_wave": {
       "wave": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
           "start_time" : "2999-12-31"
       }
     }
@@ -138,6 +168,21 @@
       "wave": {
           "start_time" : "2999-12-31"
       }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
+          "start_time" : "2999-12-31"
+      }
     }
   },
   "bills_credit_notes": {
@@ -183,6 +228,21 @@
     },
     "b_wave": {
       "wave": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
           "start_time" : "2999-12-31"
       }
     }
@@ -232,6 +292,21 @@
       "wave": {
           "start_time" : "2999-12-31"
       }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
+          "start_time" : "2999-12-31"
+      }
     }
   },
   "deposits": {
@@ -277,6 +352,21 @@
     },
     "b_wave": {
       "wave": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
           "start_time" : "2999-12-31"
       }
     }
@@ -326,6 +416,21 @@
       "wave": {
           "start_time" : "2999-12-31"
       }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
+          "start_time" : "2999-12-31"
+      }
     }
   },
   "invoices": {
@@ -371,6 +476,21 @@
     },
     "b_wave": {
       "wave": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
           "start_time" : "2999-12-31"
       }
     }
@@ -420,6 +540,21 @@
       "wave": {
           "start_time" : "2999-12-31"
       }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
+          "start_time" : "2999-12-31"
+      }
     }
   },
   "invoices_payments": {
@@ -465,6 +600,21 @@
     },
     "b_wave": {
       "wave": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
           "start_time" : "2999-12-31"
       }
     }
@@ -514,6 +664,21 @@
       "wave": {
           "start_time" : "2999-12-31"
       }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
+          "start_time" : "2999-12-31"
+      }
     }
   },
   "purchase_orders": {
@@ -559,6 +724,21 @@
     },
     "b_wave": {
       "wave": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
           "start_time" : "2999-12-31"
       }
     }
@@ -608,6 +788,21 @@
       "wave": {
           "start_time" : "2999-12-31"
       }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
+          "start_time" : "2999-12-31"
+      }
     }
   },
   "bank_transactions": {
@@ -653,6 +848,21 @@
     },
     "b_wave": {
       "wave": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
           "start_time" : "2999-12-31"
       }
     }
@@ -702,6 +912,21 @@
       "wave": {
           "start_time" : "2999-12-31"
       }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
+          "start_time" : "2999-12-31"
+      }
     }
   },
   "commerce_orders": {
@@ -747,6 +972,21 @@
     },
     "b_wave": {
       "wave": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
           "start_time" : "2999-12-31"
       }
     }
@@ -796,6 +1036,21 @@
       "wave": {
           "start_time" : "2999-12-31"
       }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
+          "start_time" : "2999-12-31"
+      }
     }
   },
   "commerce_transactions": {
@@ -841,6 +1096,21 @@
     },
     "b_wave": {
       "wave": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_shopify": {
+      "shopify": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_square": {
+      "square": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_plaid": {
+      "plaid": {
           "start_time" : "2999-12-31"
       }
     }

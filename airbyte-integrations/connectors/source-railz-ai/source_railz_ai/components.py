@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer, SingleSlice
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 from dataclasses_jsonschema import JsonSchemaMixin
@@ -83,13 +84,10 @@ class RailzAiParentStreamConfig(JsonSchemaMixin):
 class RailzAiServiceSlicer(SingleSlice):
     config: Config
     parent_stream_config: RailzAiParentStreamConfig
-    service_names: Union[List[str], str]
 
     def __post_init__(self, options: Mapping[str, Any]):
         self._options = options
         self._cursor = {}
-        if isinstance(self.service_names, str):
-            self.service_names = InterpolatedString.create(self.service_names, options=options).eval(self.config)
 
     def get_stream_state(self) -> StreamState:
         return self._cursor if self._cursor else {}
@@ -103,8 +101,9 @@ class RailzAiServiceSlicer(SingleSlice):
             self._cursor[stream_slice["businessName"]] = set()
         self._cursor[stream_slice["businessName"]].add(stream_slice["serviceName"])
 
-    def _check_valid_service(self, connection):
-        return connection["serviceName"] in self.service_names and connection["status"] in ["active", "disconnected", "expired"]
+    @staticmethod
+    def _check_valid_service(connection):
+        return connection["status"] in ["active", "disconnected", "expired"]
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
         if not self.parent_stream_config:
@@ -144,26 +143,6 @@ class RailzAiServiceSlicer(SingleSlice):
                 "businessName": stream_slice["businessName"],
                 "serviceName": stream_slice["serviceName"],
             }
-        return options
-
-
-@dataclass
-class RailzAiIncrementalSlicer(DatetimeStreamSlicer):
-    def get_request_params(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        options = {}
-        if stream_slice:
-            start_date = (stream_slice.get(self.stream_slice_field_start.eval(self.config)),)
-            end_date = (stream_slice.get(self.stream_slice_field_end.eval(self.config)),)
-            if isinstance(start_date, tuple):
-                start_date = start_date[0]
-            if isinstance(end_date, tuple):
-                end_date = end_date[0]
-            options = {self.cursor_field.eval(self.config): f"gte:{start_date};lte:{end_date}"}
         return options
 
 
@@ -313,6 +292,32 @@ class RailzAiIncrementalServiceReportsSlicer(RailzAiIncrementalServiceSlicer):
 
 
 @dataclass
+class RailzAiServiceRetriever(SimpleRetriever):
+    
+    def __post_init__(self, options: Mapping[str, Any]):
+        super().__post_init__(options)
+        self._failed_services = set()
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        stream_state: Optional[StreamState] = None,
+    ) -> Iterable[StreamData]:
+        if stream_slice['serviceName'] in self._failed_services:
+            yield from []
+            return
+
+        try:
+            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        except ReadException as e:
+            self._failed_services.add(stream_slice['serviceName'])
+            self.logger.warning(e)
+            yield from []
+
+
+@dataclass
 class RailzAiReportsRetriever(SimpleRetriever):
     meta_fields: Union[List[str], str, None] = None
     _default_meta_fields = ("reportId",)
@@ -332,8 +337,6 @@ class RailzAiReportsRetriever(SimpleRetriever):
         stream_slice: Optional[StreamSlice] = None,
         stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
-        stream_slice = stream_slice or {}
-
         self.paginator.reset()
         records_generator = self._read_pages(
             self.parse_records_and_emit_request_and_responses,
@@ -344,7 +347,8 @@ class RailzAiReportsRetriever(SimpleRetriever):
         def update_cursor_and_get_parsed_records(_record) -> Union[Iterable[Record], None]:
             if isinstance(_record, Mapping):
                 meta_fields = self.meta_fields or self._default_meta_fields
-                for data_element in _record["data"]:
+                data_set = _record["data"] if isinstance(_record["data"], list) else [_record["data"]]
+                for data_element in data_set:
                     parsed_record = {**data_element, **{field: value for field, value in _record["meta"].items() if field in meta_fields}}
                     self.stream_slicer.update_cursor(stream_slice, last_record=parsed_record)
                     yield parsed_record
@@ -364,3 +368,26 @@ class RailzAiReportsRetriever(SimpleRetriever):
 @dataclass
 class RailzAiIncrementalReportsRetriever(RailzAiReportsRetriever):
     _default_meta_fields = ("reportId", "startDate", "endDate")
+
+
+@dataclass
+class RailzAiIncrementalServiceReportsRetriever(RailzAiServiceRetriever, RailzAiIncrementalReportsRetriever):
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        stream_state: Optional[StreamState] = None,
+    ) -> Iterable[StreamData]:
+
+        if stream_slice['serviceName'] in self._failed_services or stream_slice is None:
+            yield from []
+            return
+
+        try:
+            yield from super(RailzAiServiceRetriever, self).read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        except ReadException as e:
+            self._failed_services.add(stream_slice['serviceName'])
+            self.logger.warning(e)
+            yield from []

@@ -43,13 +43,13 @@
             "type": ["string", "integer"]
           },
           "type": {
-            "type": "number"
+            "type": "string"
           }
         }
       }
     },
     "transactionType": {
-      "type": "number"
+      "type": ["string", "number"]
     },
     "createdDate": {
       "type": "string",

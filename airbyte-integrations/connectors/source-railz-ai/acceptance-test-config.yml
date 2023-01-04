@@ -18,32 +18,19 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
-        empty_streams:
-          - name: "bank_accounts"
-            bypass_reason: "only supports Plaid service which while adding it in both sandbox or real account returns error on railz side"
-        timeout_seconds: 600
+        empty_streams: []
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
-        empty_streams:
-          - name: "bank_transactions"
-            bypass_reason: "only supports Plaid service which while adding it in both sandbox or real account returns error on railz side"
-          - name: "commerce_disputes"
-            bypass_reason: "only supports Shopify and Square services which are not provided in sandbox"
-          - name: "commerce_orders"
-            bypass_reason: "only supports Shopify and Square services which are not provided in sandbox"
-          - name: "commerce_products"
-            bypass_reason: "only supports Shopify and Square services which are not provided in sandbox"
-          - name: "commerce_transactions"
-            bypass_reason: "only supports Shopify and Square services which are not provided in sandbox"
-        timeout_seconds: 600
+        empty_streams: []
+        timeout_seconds: 2400
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/reports/configured_catalog_month_incremental.json"
         empty_streams: []
-        timeout_seconds: 600
+        timeout_seconds: 1200
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/reports/configured_catalog_quarter_incremental.json"
         empty_streams: []
-        timeout_seconds: 600
+        timeout_seconds: 800
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/reports/configured_catalog_year_incremental.json"
         empty_streams: []
@@ -54,36 +41,35 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-        timeout_seconds: 3600
+        timeout_seconds: 5200
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/reports/configured_catalog_month_incremental.json"
         future_state:
           future_state_path: "integration_tests/reports/abnormal_state_month.json"
-        timeout_seconds: 3600
+        timeout_seconds: 3200
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/reports/configured_catalog_quarter_incremental.json"
         future_state:
           future_state_path: "integration_tests/reports/abnormal_state_quarter.json"
-        timeout_seconds: 3600
+        timeout_seconds: 1800
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/reports/configured_catalog_year_incremental.json"
         future_state:
           future_state_path: "integration_tests/reports/abnormal_state_year.json"
-        timeout_seconds: 3600
+        timeout_seconds: 1200
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
-        timeout_seconds: 1800
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
-        timeout_seconds: 1800
+        timeout_seconds: 5200
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/reports/configured_catalog_month_incremental.json"
-        timeout_seconds: 1800
+        timeout_seconds: 3200
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/reports/configured_catalog_quarter_incremental.json"
         timeout_seconds: 1800
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/reports/configured_catalog_year_incremental.json"
-        timeout_seconds: 1800
+        timeout_seconds: 1200
