@@ -93,105 +93,6 @@ export const createConnectionValidationSchema = ({
 }: CreateConnectionValidationSchemaArgs) => {
   const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
-  if (isNewStreamsTableEnabled) {
-    return yup
-      .object({
-        // The connection name during Editing is handled separately from the form
-        name: mode === "create" ? yup.string().required("form.empty.error") : yup.string().notRequired(),
-        geography: yup.mixed<Geography>().oneOf(Object.values(Geography)),
-        scheduleType: yup
-          .string()
-          .oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic, ConnectionScheduleType.cron]),
-        scheduleData: yup.mixed().when("scheduleType", (scheduleType) => {
-          if (scheduleType === ConnectionScheduleType.basic) {
-            return yup.object({
-              basicSchedule: yup
-                .object({
-                  units: yup.number().required("form.empty.error"),
-                  timeUnit: yup.string().required("form.empty.error"),
-                })
-                .defined("form.empty.error"),
-            });
-          } else if (scheduleType === ConnectionScheduleType.manual) {
-            return yup.mixed().notRequired();
-          }
-          return yup.object({
-            cron: yup
-              .object({
-                cronExpression: yup
-                  .string()
-                  .trim()
-                  .required("form.empty.error")
-                  .test("validCron", "form.cronExpression.error", validateCronExpression)
-                  .test(
-                    "validCronFrequency",
-                    "form.cronExpression.underOneHourNotAllowed",
-                    (expression) => allowSubOneHourCronExpressions || validateCronFrequencyOneHourOrMore(expression)
-                  ),
-                cronTimeZone: yup.string().required("form.empty.error"),
-              })
-              .defined("form.empty.error"),
-          });
-        }),
-        nonBreakingChangesPreference: allowAutoDetectSchema
-          ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
-          : yup.mixed().notRequired(),
-        namespaceDefinition: yup
-          .string()
-          .oneOf([
-            NamespaceDefinitionType.source,
-            NamespaceDefinitionType.destination,
-            NamespaceDefinitionType.customformat,
-          ])
-          .required("form.empty.error"),
-        namespaceFormat: yup.string().when("namespaceDefinition", {
-          is: NamespaceDefinitionType.customformat,
-          then: yup.string().trim().required("form.empty.error"),
-        }),
-        prefix: yup.string(),
-        syncCatalog: yup.object({
-          streams: yup.array().of(
-            yup.object({
-              id: yup
-                .string()
-                // This is required to get rid of id fields we are using to detect stream for edition
-                .when("$isRequest", (isRequest: boolean, schema: yup.StringSchema) =>
-                  isRequest ? schema.strip(true) : schema
-                ),
-              stream: yup.object(),
-              config: yup.object({
-                selected: yup.boolean(),
-                syncMode: yup.string(),
-                destinationSyncMode: yup.string(),
-                primaryKey: yup
-                  .array()
-                  .of(yup.array().of(yup.string()))
-                  .when(["syncMode", "destinationSyncMode", "selected"], {
-                    is: (syncMode: SyncMode, destinationSyncMode: DestinationSyncMode, selected: boolean) =>
-                      syncMode === SyncMode.incremental &&
-                      destinationSyncMode === DestinationSyncMode.append_dedup &&
-                      selected,
-                    then: yup.array().of(yup.array().of(yup.string())).min(1, "form.empty.error"),
-                  }),
-                cursorField: yup
-                  .array()
-                  .of(yup.string())
-                  .when(["syncMode", "destinationSyncMode", "selected"], {
-                    is: (syncMode: SyncMode, destinationSyncMode: DestinationSyncMode, selected: boolean) =>
-                      (destinationSyncMode === DestinationSyncMode.append ||
-                        destinationSyncMode === DestinationSyncMode.append_dedup) &&
-                      syncMode === SyncMode.incremental &&
-                      selected,
-                    then: yup.array().of(yup.string()).min(1, "form.empty.error"),
-                  }),
-              }),
-            })
-          ),
-        }),
-      })
-      .noUnknown();
-  }
-
   return yup
     .object({
       // The connection name during Editing is handled separately from the form
@@ -213,7 +114,6 @@ export const createConnectionValidationSchema = ({
         } else if (scheduleType === ConnectionScheduleType.manual) {
           return yup.mixed().notRequired();
         }
-
         return yup.object({
           cron: yup
             .object({
@@ -235,7 +135,6 @@ export const createConnectionValidationSchema = ({
       nonBreakingChangesPreference: allowAutoDetectSchema
         ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
         : yup.mixed().notRequired(),
-
       namespaceDefinition: yup
         .string()
         .oneOf([
@@ -249,62 +148,102 @@ export const createConnectionValidationSchema = ({
         then: yup.string().trim().required("form.empty.error"),
       }),
       prefix: yup.string(),
-      syncCatalog: yup.object({
-        streams: yup.array().of(
-          yup.object({
-            id: yup
-              .string()
-              // This is required to get rid of id fields we are using to detect stream for edition
-              .when("$isRequest", (isRequest: boolean, schema: yup.StringSchema) =>
-                isRequest ? schema.strip(true) : schema
-              ),
-            stream: yup.object(),
-            config: yup
-              .object({
-                selected: yup.boolean(),
-                syncMode: yup.string(),
-                destinationSyncMode: yup.string(),
-                primaryKey: yup.array().of(yup.array().of(yup.string())),
-                cursorField: yup.array().of(yup.string()).defined(),
+      syncCatalog: isNewStreamsTableEnabled
+        ? yup.object({
+            streams: yup.array().of(
+              yup.object({
+                id: yup
+                  .string()
+                  // This is required to get rid of id fields we are using to detect stream for edition
+                  .when("$isRequest", (isRequest: boolean, schema: yup.StringSchema) =>
+                    isRequest ? schema.strip(true) : schema
+                  ),
+                stream: yup.object(),
+                config: yup.object({
+                  selected: yup.boolean(),
+                  syncMode: yup.string(),
+                  destinationSyncMode: yup.string(),
+                  primaryKey: yup
+                    .array()
+                    .of(yup.array().of(yup.string()))
+                    .when(["syncMode", "destinationSyncMode", "selected"], {
+                      is: (syncMode: SyncMode, destinationSyncMode: DestinationSyncMode, selected: boolean) =>
+                        syncMode === SyncMode.incremental &&
+                        destinationSyncMode === DestinationSyncMode.append_dedup &&
+                        selected,
+                      then: yup.array().of(yup.array().of(yup.string())).min(1, "form.empty.error"),
+                    }),
+                  cursorField: yup
+                    .array()
+                    .of(yup.string())
+                    .when(["syncMode", "destinationSyncMode", "selected"], {
+                      is: (syncMode: SyncMode, destinationSyncMode: DestinationSyncMode, selected: boolean) =>
+                        (destinationSyncMode === DestinationSyncMode.append ||
+                          destinationSyncMode === DestinationSyncMode.append_dedup) &&
+                        syncMode === SyncMode.incremental &&
+                        selected,
+                      then: yup.array().of(yup.string()).min(1, "form.empty.error"),
+                    }),
+                }),
               })
-              .test({
-                name: "connectionSchema.config.validator",
-                // eslint-disable-next-line no-template-curly-in-string
-                message: "${path} is wrong",
-                test(value) {
-                  if (!value.selected) {
-                    return true;
-                  }
-                  if (DestinationSyncMode.append_dedup === value.destinationSyncMode) {
-                    // it's possible that primaryKey array is always present
-                    // however yup couldn't determine type correctly even with .required() call
-                    if (value.primaryKey?.length === 0) {
-                      return this.createError({
-                        message: "connectionForm.primaryKey.required",
-                        path: `schema.streams[${this.parent.id}].config.primaryKey`,
-                      });
-                    }
-                  }
-
-                  if (SyncMode.incremental === value.syncMode) {
-                    if (
-                      !this.parent.stream.sourceDefinedCursor &&
-                      // it's possible that cursorField array is always present
-                      // however yup couldn't determine type correctly even with .required() call
-                      value.cursorField?.length === 0
-                    ) {
-                      return this.createError({
-                        message: "connectionForm.cursorField.required",
-                        path: `schema.streams[${this.parent.id}].config.cursorField`,
-                      });
-                    }
-                  }
-                  return true;
-                },
-              }),
+            ),
           })
-        ),
-      }),
+        : yup.object({
+            streams: yup.array().of(
+              yup.object({
+                id: yup
+                  .string()
+                  // This is required to get rid of id fields we are using to detect stream for edition
+                  .when("$isRequest", (isRequest: boolean, schema: yup.StringSchema) =>
+                    isRequest ? schema.strip(true) : schema
+                  ),
+                stream: yup.object(),
+                config: yup
+                  .object({
+                    selected: yup.boolean(),
+                    syncMode: yup.string(),
+                    destinationSyncMode: yup.string(),
+                    primaryKey: yup.array().of(yup.array().of(yup.string())),
+                    cursorField: yup.array().of(yup.string()).defined(),
+                  })
+                  .test({
+                    name: "connectionSchema.config.validator",
+                    // eslint-disable-next-line no-template-curly-in-string
+                    message: "${path} is wrong",
+                    test(value) {
+                      if (!value.selected) {
+                        return true;
+                      }
+                      if (DestinationSyncMode.append_dedup === value.destinationSyncMode) {
+                        // it's possible that primaryKey array is always present
+                        // however yup couldn't determine type correctly even with .required() call
+                        if (value.primaryKey?.length === 0) {
+                          return this.createError({
+                            message: "connectionForm.primaryKey.required",
+                            path: `schema.streams[${this.parent.id}].config.primaryKey`,
+                          });
+                        }
+                      }
+
+                      if (SyncMode.incremental === value.syncMode) {
+                        if (
+                          !this.parent.stream.sourceDefinedCursor &&
+                          // it's possible that cursorField array is always present
+                          // however yup couldn't determine type correctly even with .required() call
+                          value.cursorField?.length === 0
+                        ) {
+                          return this.createError({
+                            message: "connectionForm.cursorField.required",
+                            path: `schema.streams[${this.parent.id}].config.cursorField`,
+                          });
+                        }
+                      }
+                      return true;
+                    },
+                  }),
+              })
+            ),
+          }),
     })
     .noUnknown();
 };
