@@ -17,12 +17,12 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: ["payments"]
       expect_records:
-        path: "integration_tests/expected_records.txt"
+        path: "integration_tests/expected_records.jsonl"
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog_oauth.json"
       empty_streams: ["shifts", "orders", "payments", "refunds"]
       expect_records:
-        path: "integration_tests/expected_records_oauth.txt"
+        path: "integration_tests/expected_records_oauth.jsonl"
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

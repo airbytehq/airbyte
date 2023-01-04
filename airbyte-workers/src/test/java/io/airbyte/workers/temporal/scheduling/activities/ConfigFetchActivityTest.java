@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.Cron;
 import io.airbyte.config.Schedule;
@@ -55,6 +56,9 @@ class ConfigFetchActivityTest {
   @Mock
   private Job mJob;
 
+  @Mock
+  private ConnectionApi mConnectionApi;
+
   private ConfigFetchActivityImpl configFetchActivity;
 
   private final static UUID connectionId = UUID.randomUUID();
@@ -102,7 +106,7 @@ class ConfigFetchActivityTest {
   void setup() {
     configFetchActivity =
         new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mWorkspaceHelper, SYNC_JOB_MAX_ATTEMPTS,
-            () -> Instant.now().getEpochSecond());
+            () -> Instant.now().getEpochSecond(), mConnectionApi);
   }
 
   @Nested
@@ -170,7 +174,8 @@ class ConfigFetchActivityTest {
     @Test
     @DisplayName("Test we will wait the required amount of time with legacy config")
     void testWait() throws IOException, JsonValidationException, ConfigNotFoundException {
-      configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> 60L * 3);
+      configFetchActivity =
+          new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> 60L * 3, mConnectionApi);
 
       when(mJob.getStartedAtInSecond())
           .thenReturn(Optional.of(60L));
@@ -192,7 +197,8 @@ class ConfigFetchActivityTest {
     @Test
     @DisplayName("Test we will not wait if we are late in the legacy schedule schema")
     void testNotWaitIfLate() throws IOException, JsonValidationException, ConfigNotFoundException {
-      configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> 60L * 10);
+      configFetchActivity =
+          new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> 60L * 10, mConnectionApi);
 
       when(mJob.getStartedAtInSecond())
           .thenReturn(Optional.of(60L));
@@ -247,7 +253,7 @@ class ConfigFetchActivityTest {
   @Test
   @DisplayName("Test that we will wait the required amount of time with a BASIC_SCHEDULE type on a subsequent run")
   void testBasicScheduleSubsequentRun() throws IOException, JsonValidationException, ConfigNotFoundException {
-    configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> 60L * 3);
+    configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> 60L * 3, mConnectionApi);
 
     when(mJob.getStartedAtInSecond())
         .thenReturn(Optional.of(60L));
@@ -279,7 +285,7 @@ class ConfigFetchActivityTest {
 
     configFetchActivity =
         new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mWorkspaceHelper, SYNC_JOB_MAX_ATTEMPTS,
-            () -> mockRightNow.getTimeInMillis() / 1000L);
+            () -> mockRightNow.getTimeInMillis() / 1000L, mConnectionApi);
 
     when(mJobPersistence.getLastReplicationJob(connectionId))
         .thenReturn(Optional.of(mJob));
@@ -308,7 +314,7 @@ class ConfigFetchActivityTest {
 
     configFetchActivity =
         new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mWorkspaceHelper, SYNC_JOB_MAX_ATTEMPTS,
-            () -> mockRightNow.getTimeInMillis() / 1000L);
+            () -> mockRightNow.getTimeInMillis() / 1000L, mConnectionApi);
 
     when(mJob.getStartedAtInSecond()).thenReturn(Optional.of(mockRightNow.getTimeInMillis() / 1000L));
     when(mJobPersistence.getLastReplicationJob(connectionId))
@@ -338,7 +344,7 @@ class ConfigFetchActivityTest {
 
     configFetchActivity =
         new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mWorkspaceHelper, SYNC_JOB_MAX_ATTEMPTS,
-            () -> mockRightNow.getTimeInMillis() / 1000L);
+            () -> mockRightNow.getTimeInMillis() / 1000L, mConnectionApi);
 
     when(mJob.getStartedAtInSecond()).thenReturn(Optional.of(mockRightNow.getTimeInMillis() / 1000L));
     when(mJobPersistence.getLastReplicationJob(connectionId))
@@ -362,7 +368,8 @@ class ConfigFetchActivityTest {
     @DisplayName("Test that we are using to right service to get the maximum amount of attempt")
     void testGetMaxAttempt() {
       final int maxAttempt = 15031990;
-      configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, maxAttempt, () -> Instant.now().getEpochSecond());
+      configFetchActivity =
+          new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, maxAttempt, () -> Instant.now().getEpochSecond(), mConnectionApi);
       Assertions.assertThat(configFetchActivity.getMaxAttempt().getMaxAttempt())
           .isEqualTo(maxAttempt);
     }
