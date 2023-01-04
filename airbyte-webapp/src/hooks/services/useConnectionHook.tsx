@@ -237,9 +237,7 @@ export const useRemoveConnectionsFromList = (): ((connectionIds: string[]) => vo
   );
 };
 
-const useConnectionList = (
-  payload: Partial<Pick<WebBackendConnectionListRequestBody, "destinationId" | "sourceId">> = {}
-) => {
+const useConnectionList = (payload: Pick<WebBackendConnectionListRequestBody, "destinationId" | "sourceId"> = {}) => {
   const workspace = useCurrentWorkspace();
   const service = useWebConnectionService();
 
