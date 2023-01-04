@@ -188,4 +188,23 @@ jobs:
           docker push ghcr.io/estuary/${{ matrix.connector }}:dev
           echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:$IMAGE_VERSION"
           docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
-          docker push ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
+
+       - name: Install psql
+        if: ${{ github.event_name == 'push' }}
+        run: sudo apt install postgresql-client
+
+      - name: Refresh connector tags for ${{ matrix.connector }}
+        if: ${{ github.event_name == 'push' }}
+        env:
+          PGHOST: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_HOST }}
+          PGUSER: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_USER }}
+          PGPASSWORD: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_PASSWORD }}
+          PGDATABASE: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_DATABASE }}
+        run: |
+          export VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector }}/Dockerfile)
+          echo "UPDATE connector_tags SET job_status='{\"type\": \"queued\"}'
+                  WHERE connector_id IN (
+                    SELECT id FROM connectors WHERE image_name='ghcr.io/estuary/${{ matrix.connector }}'
+                  )
+                  AND
+                  image_tag IN (':$VERSION', ':dev');" | psql
