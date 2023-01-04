@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class LimitedAirbyteSource implements AirbyteSource {
 
-  private static final int TOTAL_RECORDS = 3_00_000;
+  private static final int TOTAL_RECORDS = 1_000_000;
 
   private int currentRecords = 0;
 

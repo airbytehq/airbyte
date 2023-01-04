@@ -358,7 +358,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-//  @Benchmark
   public static long getRecordsRead(AirbyteSource source, AirbyteDestination destination, AirbyteMapper mapper, MessageTracker messageTracker,
       RecordSchemaValidator recordSchemaValidator, boolean fieldSelectionEnabled, long recordsRead,
       Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,

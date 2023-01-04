@@ -25,13 +25,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Mode;
 
 @Slf4j
 public class ReplicationWorkerPerformanceTest {
 
-  @Benchmark  @BenchmarkMode(Mode.SampleTime)
+  // write better comment
+  @Benchmark @AirbyteBenchmark
   public void benchmarkOrchestrator() throws InterruptedException {
     var perSource = new LimitedAirbyteSource();
     var perDestination = new EmptyAirbyteDestination();
