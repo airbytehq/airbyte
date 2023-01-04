@@ -37,11 +37,16 @@ class DestinationConvex(Destination):
         writer = ConvexWriter(ConvexClient(config))
         # TODO put the stream metadata in the writer on initialization
         streams_to_delete = []
+        indexes_to_add = {}
         for configured_stream in configured_catalog.streams:
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 streams_to_delete.append(configured_stream.stream.name)
+            elif configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
+                indexes_to_add[configured_stream.stream.name] = configured_stream.primary_key
         if len(streams_to_delete) != 0:
             writer.delete_stream_entries(streams_to_delete)
+        if len(indexes_to_add) != 0:
+            writer.add_indexes(indexes_to_add)
 
         streams = {}
         for s in configured_catalog.streams:

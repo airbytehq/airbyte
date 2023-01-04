@@ -24,6 +24,10 @@ class ConvexWriter:
         """Deletes all the records belonging to the input stream"""
         if len(stream_names) > 0:
             self.client.delete(stream_names)
+    
+    def add_indexes(self, indexes: Mapping):
+        self.client.add_indexes(indexes)
+
 
     def queue_write_operation(self, message: Mapping):
         """Adds messages to the write queue and flushes if the buffer is full"""

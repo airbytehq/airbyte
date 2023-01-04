@@ -28,6 +28,9 @@ class ConvexClient:
         request_body = {"tableNames": keys}
         return self._request("PUT", endpoint="clear_tables", json=request_body)
 
+    def add_indexes(self, indexes: Mapping):
+        return self._request("PUT", "add_indexes", json={"indexes": indexes})
+
     def _get_auth_headers(self) -> Mapping[str, Any]:
         return {"Authorization": f"Convex {self.access_key}"}
 
