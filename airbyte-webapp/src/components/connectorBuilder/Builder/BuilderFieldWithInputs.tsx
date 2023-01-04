@@ -16,7 +16,11 @@ export const BuilderFieldWithInputs: React.FC<BuilderFieldProps> = (props) => {
   const [field, , helpers] = useField(props.path);
 
   return (
-    <BuilderField {...props} adornment={<UserInputHelper setValue={helpers.setValue} currentValue={field.value} />} />
+    <BuilderField
+      {...props}
+      adornment={<UserInputHelper setValue={helpers.setValue} currentValue={field.value} />}
+      className={styles.inputWithHelper}
+    />
   );
 };
 

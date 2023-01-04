@@ -31,6 +31,7 @@ const KeyValueInput: React.FC<KeyValueInputProps> = ({ keyValue, onChange, onRem
           adornment={
             <UserInputHelper setValue={(newValue) => onChange([newValue, keyValue[1]])} currentValue={keyValue[0]} />
           }
+          className={styles.inputWithHelper}
         />
       </div>
       <div className={styles.labeledInput}>
@@ -43,6 +44,7 @@ const KeyValueInput: React.FC<KeyValueInputProps> = ({ keyValue, onChange, onRem
           adornment={
             <UserInputHelper setValue={(newValue) => onChange([keyValue[0], newValue])} currentValue={keyValue[1]} />
           }
+          className={styles.inputWithHelper}
         />
       </div>
       <button type="button" className={styles.removeButton} onClick={onRemove}>

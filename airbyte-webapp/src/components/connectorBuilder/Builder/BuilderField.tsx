@@ -35,6 +35,7 @@ interface BaseFieldProps {
   optional?: boolean;
   pattern?: RegExp;
   adornment?: ReactNode;
+  className?: string;
 }
 
 export type BuilderFieldProps = BaseFieldProps &
@@ -107,6 +108,7 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
             }
             props.onChange?.(e.target.value);
           }}
+          className={props.className}
           type={props.type}
           value={field.value ?? ""}
           error={hasError}
