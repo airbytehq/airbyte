@@ -47,8 +47,6 @@ export const DestinationOverviewPage = () => {
     navigate(path, { state });
   };
 
-  console.log({ destination, destinationDefinition, connections });
-
   return (
     <>
       <TableItemTitle
