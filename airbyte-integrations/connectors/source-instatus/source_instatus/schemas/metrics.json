@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "order": {
+      "type": ["null", "integer"]
+    },
+    "suffix": {
+      "type": ["null", "string"]
+    },
+    "data": {
+      "type" : [
+        "null",
+        "array"
+      ],
+       "items": {
+          "type": ["null", "object"],
+         "properties": {
+           "properties": {
+           "timestamp": {"type": ["null", "integer"]},
+           "value": {"type": ["null", "number"]}
+           }
+         }
+       }
+    }
+  }
+}
