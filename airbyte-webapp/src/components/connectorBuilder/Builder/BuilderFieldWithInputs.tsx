@@ -58,7 +58,7 @@ export const UserInputHelper = ({
             setValue(`${currentValue || ""}{{ config['${selectedValue}'] }}`);
           } else {
             // This hack is necessary because listbox will put the focus back when the option list gets hidden, which conflicts with the auto-focus setting of the modal.
-            // As it's not possible to prevent listbox from forcing the focus back on the button component, this wait until the focus went to the button, then opens the modal
+            // As it's not possible to prevent listbox from forcing the focus back on the button component, this will wait until the focus went to the button, then opens the modal
             // so it can move it to the first input
             setTimeout(() => {
               setModalOpen(true);
