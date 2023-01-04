@@ -138,13 +138,17 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     });
   }
 
-  private Object convertArray(Object x, RelationalColumn field) {
+  private Object convertArray(final Object x, final RelationalColumn field) {
+    if (x == null) {
+      return DebeziumConverterUtils.convertDefaultValue(field);
+    }
     final String fieldType = field.typeName().toUpperCase();
     Object[] values = new Object[0];
     try {
       values = (Object[]) ((PgArray) x).getArray();
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       LOGGER.error("Failed to convert PgArray:" + e);
+      throw new RuntimeException(e);
     }
     switch (fieldType) {
       // debezium currently cannot handle MONEY[] datatype and it's not implemented
@@ -200,7 +204,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       case "_NAME":
         return Arrays.stream(values).map(value -> (String) value).collect(Collectors.toList());
       default:
-        return new ArrayList<>();
+        throw new RuntimeException("Unknown array type detected " + fieldType);
     }
   }
 
