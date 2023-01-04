@@ -25,7 +25,7 @@ class NoRequiredObj(Object):
 class NoRequiredSchemaBuilder(SchemaBuilder):
     EXTRA_STRATEGIES = (NoRequiredObj,)
 
-
+# This type is inferred from the genson lib, but there is no alias provided for it - creating it here for type safety
 InferredSchema = Dict[str, Union[str, Any, List, List[Dict[str, Union[Any, List]]]]]
 
 
@@ -35,7 +35,7 @@ class SchemaInferrer:
     throughout its lifecycle via the accumulate method.
 
     Instances of this class are stateful, meaning they build their inferred schemas
-    from every record passed into the accumulate method until the reset() method is called.
+    from every record passed into the accumulate method.
 
     """
 
