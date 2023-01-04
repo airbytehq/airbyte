@@ -145,7 +145,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           </BuilderCard>
         </>
       ) : (
-        <BuilderCard>
+        <BuilderCard className={styles.schemaEditor}>
           <SchemaEditor streamFieldPath={streamFieldPath} />
         </BuilderCard>
       )}
@@ -176,7 +176,6 @@ const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string
   return (
     <>
       <CodeEditor
-        height="500px"
         value={field.value || ""}
         language="json"
         theme="airbyte-light"
