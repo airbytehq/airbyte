@@ -9,6 +9,7 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -65,6 +66,11 @@ public class ApiClientBeanFactory {
   @Singleton
   public SourceApi sourceApi(final ApiClient apiClient) {
     return new SourceApi(apiClient);
+  }
+
+  @Singleton
+  public ConnectionApi connectionApi(final ApiClient apiClient) {
+    return new ConnectionApi(apiClient);
   }
 
   @Singleton
