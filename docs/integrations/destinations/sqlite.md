@@ -10,6 +10,12 @@ This destination is meant to be used on a local workstation and won't work on Ku
 
 This destination writes data to a file on the _local_ filesystem on the host running Airbyte. By default, data is written to `/tmp/airbyte_local`. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
 
+:::caution
+
+Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
+
+:::
+
 ### Sync Overview
 
 #### Output schema
@@ -68,4 +74,5 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1  | 2023-01-04 | [21004](https://github.com/airbytehq/airbyte/pull/21004) | Source File: Adding Docker Desktop file share warning |
 | 0.1.0 | 2022-07-25 | [15018](https://github.com/airbytehq/airbyte/pull/15018) | New SQLite destination |
