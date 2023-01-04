@@ -90,9 +90,9 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   @Override
-  public void createTmpTableIfNotExists(final TableId tmpTableId, final Schema tableSchema) {
-    LOGGER.info("Creating tmp table {}", tmpTableId);
-    BigQueryUtils.createPartitionedTable(bigQuery, tmpTableId, tableSchema);
+  public void createTableIfNotExists(final TableId tableId, final Schema tableSchema) {
+    LOGGER.info("Creating target table {}", tableId);
+    BigQueryUtils.createPartitionedTable(bigQuery, tableId, tableSchema);
   }
 
   @Override
@@ -110,36 +110,43 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   /**
+   * Similar to COPY INTO within {@link io.airbyte.integrations.destination.staging.StagingOperations}
+   * which loads the data stored in the stage area into a target table in the destination
+   *
    * Reference
    * https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
    */
   @Override
-  public void copyIntoTmpTableFromStage(final String datasetId,
+  public void copyIntoTargetTableFromStage(final String datasetId,
                                         final String stream,
-                                        final TableId tmpTableId,
-                                        final Schema tmpTableSchema,
+                                        final TableId targetTableId,
+                                        final Schema tableSchema,
                                         final List<String> stagedFiles) {
-    LOGGER.info("Uploading records from staging files to tmp table {} (dataset {}): {}", tmpTableId, datasetId, stagedFiles);
+    LOGGER.info("Uploading records from staging files to target table {} (dataset {}): {}",
+        targetTableId, datasetId, stagedFiles);
 
     stagedFiles.parallelStream().forEach(stagedFile -> {
       final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFile);
       LOGGER.info("Uploading staged file: {}", fullFilePath);
-      final LoadJobConfiguration configuration = LoadJobConfiguration.builder(tmpTableId, fullFilePath)
+      final LoadJobConfiguration configuration = LoadJobConfiguration.builder(targetTableId, fullFilePath)
           .setFormatOptions(FormatOptions.avro())
-          .setSchema(tmpTableSchema)
+          .setSchema(tableSchema)
           .setWriteDisposition(WriteDisposition.WRITE_APPEND)
           .setUseAvroLogicalTypes(true)
           .build();
 
       final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
-      LOGGER.info("[{}] Created a new job to upload records to tmp table {} (dataset {}): {}", loadJob.getJobId(), tmpTableId, datasetId, loadJob);
+      LOGGER.info("[{}] Created a new job to upload record(s) to target table {} (dataset {}): {}", loadJob.getJobId(),
+          targetTableId, datasetId, loadJob);
 
       try {
         BigQueryUtils.waitForJobFinish(loadJob);
-        LOGGER.info("[{}] Tmp table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(), tmpTableId, datasetId);
+        LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
+            targetTableId, datasetId);
       } catch (final BigQueryException | InterruptedException e) {
         throw new RuntimeException(
-            String.format("[%s] Failed to upload staging files to tmp table %s (%s)", loadJob.getJobId(), tmpTableId, datasetId), e);
+            String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
+                targetTableId, datasetId), e);
       }
     });
   }
@@ -169,9 +176,9 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   @Override
-  public void dropTableIfExists(final String datasetId, final TableId tmpTableId) {
-    LOGGER.info("Deleting tmp table {} (dataset {})", tmpTableId, datasetId);
-    bigQuery.delete(tmpTableId);
+  public void dropTableIfExists(final String datasetId, final TableId targetTableId) {
+    LOGGER.info("Deleting target table {} (dataset {})", targetTableId, datasetId);
+    bigQuery.delete(targetTableId);
   }
 
   @Override
@@ -183,6 +190,28 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
     final String stagingDatasetPath = getStagingRootPath(datasetId, stream);
     LOGGER.info("Cleaning up staging path for stream {} (dataset {}): {}", stream, datasetId, stagingDatasetPath);
     gcsStorageOperations.dropBucketObject(stagingDatasetPath);
+  }
+
+  /**
+   * "Truncates" table, this is a workaround to the issue with TRUNCATE TABLE in BigQuery where the
+   * table's partition filter must be turned off to truncate. Since deleting a table is a free
+   * operation this option re-uses functions that already exist
+   *
+   * <p>
+   * See: https://cloud.google.com/bigquery/pricing#free
+   * </p>
+   *
+   * @param datasetId equivalent to schema name
+   * @param targetTableId table name
+   * @param schema schema of the table to be deleted/created
+   */
+  @Override
+  public void truncateTableIfExists(final String datasetId,
+                                    final TableId targetTableId,
+                                    final Schema schema) {
+    LOGGER.info("Truncating target table {} (dataset {})", targetTableId, datasetId);
+    dropTableIfExists(datasetId, targetTableId);
+    createTableIfNotExists(targetTableId, schema);
   }
 
 }

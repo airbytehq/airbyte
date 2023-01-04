@@ -13,7 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * @param streamName output stream name
+ * @param namespace
  * @param datasetId the dataset ID is equivalent to output schema
+ * @param datasetLocation location of dataset (e.g. US, EU)
+ * @param tmpTableId BigQuery temporary table
+ * @param targetTableId BigQuery final raw table
+ * @param tableSchema schema for the table
+ * @param syncMode BigQuery's mapping of write modes to Airbyte's sync mode
+ * @param stagedFiles collection of staged files to copy data from
  */
 public record BigQueryWriteConfig(
                                   String streamName,
