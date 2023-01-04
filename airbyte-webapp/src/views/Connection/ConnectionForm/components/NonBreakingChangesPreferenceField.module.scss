@@ -1,12 +1,6 @@
 @use "scss/colors";
 @use "scss/variables";
 
-.connectorLabel {
-  max-width: 328px;
-  margin-right: variables.$spacing-xl;
-  vertical-align: top;
-}
-
 .leftFieldCol {
   flex: 1;
   max-width: 640px;
