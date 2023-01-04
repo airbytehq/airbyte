@@ -90,12 +90,9 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
           .findFirst();
 
       if (input.getActorId() != null && input.getActorType() != null) {
-        LOGGER.info("has actor and type");
         final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getLastConfigControlMessage(messagesByType);
-        LOGGER.info("opt config msg {}", optionalConfigMsg.orElse(null));
         optionalConfigMsg.ifPresent(
             configMessage -> {
-              LOGGER.info("the thing was present");
               switch (input.getActorType()) {
                 case SOURCE -> connectorConfigUpdater.updateSource(
                     input.getActorId(),
@@ -105,8 +102,6 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
                     configMessage.getConfig());
               }
             });
-      } else {
-        LOGGER.info("no ids");
       }
 
       if (status.isPresent() && exitCode == 0) {
