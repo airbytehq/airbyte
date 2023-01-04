@@ -55,7 +55,7 @@ class OpenExchangeRates(HttpStream, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
-        start_date = pendulum.parse(stream_state.get(self.date_field_name, self.start_date))
+        start_date = pendulum.parse(stream_state.get(self.cursor_field, self.start_date))
         return self._chunk_date_range(start_date)
 
     def path(
@@ -64,7 +64,7 @@ class OpenExchangeRates(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"historical/{stream_slice[self.date_field_name]}.json"
+        return f"historical/{stream_slice[self.cursor_field]}.json"
 
 
     def _chunk_date_range(self, start_date: DateTime) -> List[Mapping[str, Any]]:
@@ -74,7 +74,7 @@ class OpenExchangeRates(HttpStream, ABC):
         """
         dates = []
         while start_date < pendulum.now():
-            dates.append({"timestamp": start_date.to_date_string()})
+            dates.append({"date": start_date.to_date_string()})
             start_date = start_date.add(days=1)
         return dates
 
