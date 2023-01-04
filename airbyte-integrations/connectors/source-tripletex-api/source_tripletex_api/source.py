@@ -53,7 +53,7 @@ class TripletexApiStream(HttpStream, ABC):
         yield from response.json().get("values")
 
 
-class PostingStream(TripletexApiStream, ABC):
+class DateRequiredStream(TripletexApiStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -94,7 +94,8 @@ class PostingStream(TripletexApiStream, ABC):
         return params
 
 
-class Postings(PostingStream):
+
+class Postings(DateRequiredStream):
     primary_key = "id"
 
     def path(
@@ -126,11 +127,8 @@ class Accounts(TripletexApiStream):
     ) -> str:
         return "ledger/account"
 
-class BalanceSheet(TripletexApiStream):
+class BalanceSheet(DateRequiredStream):
     primary_key = "id"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -152,4 +150,4 @@ class SourceTripletexApi(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
-        return [Postings(config=config), Departments(config=config), Accounts(config=config)]
+        return [Postings(config=config), Departments(config=config), Accounts(config=config), BalanceSheet(config=config)]
