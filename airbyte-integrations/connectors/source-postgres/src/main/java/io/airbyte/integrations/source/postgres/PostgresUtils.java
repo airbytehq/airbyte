@@ -54,6 +54,14 @@ public class PostgresUtils {
     return isCdc;
   }
 
+  public static boolean shouldFlushAfterSync(final JsonNode config) {
+    final boolean shouldFlushAfterSync = config.hasNonNull("replication_method")
+        && config.get("replication_method").hasNonNull("lsn_commit_behaviour")
+        && config.get("replication_method").get("lsn_commit_behaviour").asText().equals("After loading Data in the destination");
+    LOGGER.info("Should flush after sync: {}", shouldFlushAfterSync);
+    return shouldFlushAfterSync;
+  }
+
   public static Optional<Integer> getFirstRecordWaitSeconds(final JsonNode config) {
     final JsonNode replicationMethod = config.get("replication_method");
     if (replicationMethod != null && replicationMethod.has("initial_waiting_seconds")) {
