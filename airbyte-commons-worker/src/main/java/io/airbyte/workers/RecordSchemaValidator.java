@@ -27,6 +27,7 @@ public class RecordSchemaValidator {
 
 //  private static final JsonSchemaValidator validator = new JsonSchemaValidator();
   private static final Executor virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
+  private static final Executor threadExecutor = Executors.newFixedThreadPool(1);
   private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
 
   public RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas) {
@@ -44,7 +45,7 @@ public class RecordSchemaValidator {
    */
   public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream)
       throws RecordSchemaValidationException {
-    virtualExecutor.execute(() -> {
+    threadExecutor.execute(() -> {
 
       final JsonNode messageData = message.getData();
       final JsonNode matchingSchema = streams.get(messageStream);
