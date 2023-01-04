@@ -158,6 +158,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .stream()
           .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
               s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
+      LOGGER.debug("field selection enabled: {}", fieldSelectionEnabled);
       final WorkerSourceConfig sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
 
       ApmTraceUtils.addTagsToTrace(generateTraceTags(destinationConfig, jobRoot));
