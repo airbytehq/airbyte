@@ -51,6 +51,8 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.AvoidCatchingNPE")
 public class DestinationDefinitionsHandler {
@@ -61,6 +63,7 @@ public class DestinationDefinitionsHandler {
   private final AirbyteGithubStore githubStore;
   private final DestinationHandler destinationHandler;
   private final AirbyteProtocolVersionRange protocolVersionRange;
+  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationDefinitionsHandler.class);
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final SynchronousSchedulerClient schedulerSynchronousClient,
@@ -88,6 +91,7 @@ public class DestinationDefinitionsHandler {
   @VisibleForTesting
   static DestinationDefinitionRead buildDestinationDefinitionRead(final StandardDestinationDefinition standardDestinationDefinition) {
     try {
+
       return new DestinationDefinitionRead()
           .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
           .name(standardDestinationDefinition.getName())
@@ -98,6 +102,9 @@ public class DestinationDefinitionsHandler {
           .protocolVersion(standardDestinationDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardDestinationDefinition))
           .releaseDate(getReleaseDate(standardDestinationDefinition))
+          .supportsDbt(standardDestinationDefinition.getSupportsDbt())
+          .normalizationConfig(
+              ApiPojoConverters.normalizationDestinationDefinitionConfigToApi(standardDestinationDefinition.getNormalizationConfig()))
           .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardDestinationDefinition.getResourceRequirements()));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
@@ -131,7 +138,9 @@ public class DestinationDefinitionsHandler {
   }
 
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
-    return toDestinationDefinitionReadList(getLatestDestinations());
+    final DestinationDefinitionReadList output = toDestinationDefinitionReadList(getLatestDestinations());
+    LOGGER.info(output.toString());
+    return output;
   }
 
   private List<StandardDestinationDefinition> getLatestDestinations() {
