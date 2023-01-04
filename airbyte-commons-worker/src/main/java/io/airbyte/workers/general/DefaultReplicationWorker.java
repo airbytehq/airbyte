@@ -34,6 +34,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.ThreadedTimeTracker;
@@ -56,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -315,7 +317,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       if (fieldSelectionEnabled) {
         populatedStreamToSelectedFields(catalog, streamToSelectedFields);
       }
-      var virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
+//      var virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
       try {
         // can this while be handled by a virtual thread too?
         while (!cancelled.get() && !source.isFinished()) {
@@ -563,22 +565,22 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     // avoid noise by validating only if the stream has less than 10 records with validation errors
     final boolean streamHasLessThenTenErrs =
         validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10;
-//    if (streamHasLessThenTenErrs) {
-//      try {
-//        recordSchemaValidator.validateSchema(record, messageStream);
-//      } catch (final RecordSchemaValidationException e) {
-//        final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
-//        if (exceptionWithCount == null) {
-//          validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
-//        } else {
-//          final Integer currentCount = exceptionWithCount.getRight();
-//          final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
-//          final Set<String> updatedErrorMessages = Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream()).collect(Collectors.toSet());
-//          validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
-//        }
-//      }
-//
-//    }
+    if (streamHasLessThenTenErrs) {
+      try {
+        recordSchemaValidator.validateSchema(record, messageStream);
+      } catch (final RecordSchemaValidationException e) {
+        final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
+        if (exceptionWithCount == null) {
+          validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
+        } else {
+          final Integer currentCount = exceptionWithCount.getRight();
+          final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
+          final Set<String> updatedErrorMessages = Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream()).collect(Collectors.toSet());
+          validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
+        }
+      }
+
+    }
   }
 
   /**
