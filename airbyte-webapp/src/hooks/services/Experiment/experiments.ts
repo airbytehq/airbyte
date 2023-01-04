@@ -11,7 +11,6 @@ export interface Experiments {
   "connector.inviteUsersHint.linkToUsersPage": boolean;
   "connector.orderOverwrite": Record<string, number>;
   "connector.frequentlyUsedDestinationIds": string[];
-  "connector.startWithDestinationId": string;
   "connector.form.useDatepicker": boolean;
   "authPage.rightSideUrl": string | undefined;
   "authPage.hideSelfHostedCTA": boolean;
