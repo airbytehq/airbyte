@@ -30,6 +30,7 @@ public class JsonSchemaPrimitiveUtil {
     ARRAY,
     BOOLEAN,
     NULL,
+    INTEGER,
     // V1 schema primitives
     STRING_V1,
     BINARY_DATA_V1,
@@ -44,8 +45,14 @@ public class JsonSchemaPrimitiveUtil {
   }
 
   public static final Set<JsonSchemaPrimitive> VO_JSON_SCHEMA_PRIMITIVE_SET =
-      ImmutableSet.of(JsonSchemaPrimitive.STRING, JsonSchemaPrimitive.NUMBER,
-          JsonSchemaPrimitive.OBJECT, JsonSchemaPrimitive.ARRAY, JsonSchemaPrimitive.BOOLEAN, JsonSchemaPrimitive.NULL);
+      ImmutableSet.of(
+          JsonSchemaPrimitive.STRING,
+          JsonSchemaPrimitive.NUMBER,
+          JsonSchemaPrimitive.INTEGER,
+          JsonSchemaPrimitive.OBJECT,
+          JsonSchemaPrimitive.ARRAY,
+          JsonSchemaPrimitive.BOOLEAN,
+          JsonSchemaPrimitive.NULL);
 
   public static final boolean isV0Schema(final JsonSchemaPrimitive type) {
     return VO_JSON_SCHEMA_PRIMITIVE_SET.contains(type);
