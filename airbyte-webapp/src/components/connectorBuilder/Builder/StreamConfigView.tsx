@@ -183,11 +183,7 @@ const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string
           helpers.setValue(val);
         }}
       />
-      {meta.error && (
-        <Text className={styles.errorMessage}>
-          <FormattedMessage id={meta.error} />
-        </Text>
-      )}
+      <Text className={styles.errorMessage}>{meta.error && <FormattedMessage id={meta.error} />}</Text>
     </>
   );
 };
