@@ -11,7 +11,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_
 
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
-import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
@@ -21,12 +20,10 @@ import io.airbyte.commons.temporal.scheduling.state.WorkflowInternalState;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.commons.temporal.scheduling.state.listener.NoopStateListener;
 import io.airbyte.config.ConnectorJobOutput;
-import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -48,22 +45,17 @@ import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.Sch
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
-import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationInput;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.EnsureCleanJobStateInput;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCheckFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobFailureInput;
-import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.ReportJobStartInput;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity;
@@ -307,7 +299,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         standardSyncOutput,
         FailureHelper.failureSummary(failureReasons, workflowInternalState.getPartialSuccess())));
 
-
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
     final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
     ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, attemptNumber));
@@ -325,13 +316,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(),
           connectionUpdaterInput.getAttemptNumber(), connectionUpdaterInput.getConnectionId(), failureReason));
 
-        final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
-            new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()));
-        final AutoDisableConnectionOutput output = runMandatoryActivityWithOutput(
-            autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
-        if (output.isDisabled()) {
-          log.info("Auto-disabled for constantly failing for Connection {}", connectionId);
-        }
+      final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
+          new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()));
+      final AutoDisableConnectionOutput output = runMandatoryActivityWithOutput(
+          autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
+      if (output.isDisabled()) {
+        log.info("Auto-disabled for constantly failing for Connection {}", connectionId);
+      }
 
       // Record the failure metric
       recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.of(failureCause), OssMetricsRegistry.TEMPORAL_WORKFLOW_FAILURE, null));
