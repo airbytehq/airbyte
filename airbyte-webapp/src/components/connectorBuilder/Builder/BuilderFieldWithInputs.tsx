@@ -40,8 +40,9 @@ export const UserInputHelper = ({
   return (
     <>
       <ListBox<string | undefined>
-        buttonClassName={styles.buttonWrapper}
+        buttonClassName={styles.button}
         optionClassName={styles.option}
+        className={styles.container}
         selectedOptionClassName={styles.selectedOption}
         controlButton={UserInputHelperControlButton}
         selectedValue={undefined}
@@ -71,5 +72,11 @@ export const UserInputHelper = ({
 };
 
 const UserInputHelperControlButton: React.FC<ListBoxControlButtonProps<string | undefined>> = () => {
-  return <FontAwesomeIcon icon={faUser} />;
+  return (
+    <div className={styles.buttonContent}>
+      {"{{"}
+      <FontAwesomeIcon icon={faUser} />
+      {"}}"}
+    </div>
+  );
 };
