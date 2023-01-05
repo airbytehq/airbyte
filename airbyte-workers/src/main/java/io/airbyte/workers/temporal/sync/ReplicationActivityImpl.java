@@ -18,6 +18,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.commons.features.FeatureFlagHelper;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
@@ -304,7 +305,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-          metricReporter, false);
+          metricReporter, FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
     };
   }
 
