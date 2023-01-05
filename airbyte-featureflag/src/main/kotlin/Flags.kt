@@ -5,6 +5,16 @@
 package io.airbyte.featureflag
 
 /**
+ * If enabled, all messages from the source to the destination will be logged in 1 second intervals.
+ */
+object LogConnectorMessages : Flag(team = Team.PLATFORM_WORKFLOW, key = "log_connector_messages")
+
+object StreamCapableState : EnvVar(envVar = "USE_STREAM_CAPABLE_STATE")
+object AutoDetectSchema : EnvVar(team = Team.PLATFORM_WORKFLOW, envVar = "AUTO_DETECT_SCHEMA")
+object NeedStateValidation : EnvVar(envVar = "NEED_STATE_VALIDATION")
+object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
+
+/**
  * The team that created and is responsible for individual feature-flags.
  * TODO: finalize the options here!
  */
@@ -91,14 +101,3 @@ open class EnvVar internal constructor(
             ?: default
     }
 }
-
-/**
- * If enabled, all messages from the source to the destination will be logged in 1 second intervals.
- */
-object LogConnectorMessages : Flag(team = Team.PLATFORM_WORKFLOW, key = "log_connector_messages")
-
-object StreamCapableState : EnvVar(envVar = "USE_STREAM_CAPABLE_STATE")
-object AutoDetectSchema : EnvVar(team = Team.PLATFORM_WORKFLOW, envVar = "AUTO_DETECT_SCHEMA")
-object NeedStateValidation : EnvVar(envVar = "NEED_STATE_VALIDATION")
-object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
-
