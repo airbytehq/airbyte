@@ -329,8 +329,6 @@
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
   "destinations.frequentlyUsed": "Most frequently used destinations",
-  "destinations.dontHaveYourOwnDestination": "Don’t have your own destination yet?",
-  "destinations.startWith": "Start with {name}",
 
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 
@@ -718,9 +716,16 @@
   "connectorBuilder.inputsNoSpecUITooltip": "Add User Input fields to allow setting test inputs",
   "connectorBuilder.inputsNoSpecYAMLTooltip": "Add a spec to your manifest to allow setting test inputs",
   "connectorBuilder.setInUserInput": "This setting is configured as part of the user inputs in the testing panel",
-  "connectorBuilder.inputsButton": "Inputs",
   "connectorBuilder.optionalFieldsLabel": "Optional fields",
   "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
+  "connectorBuilder.streamConfiguration": "Configuration",
+  "connectorBuilder.streamSchema": "Schema",
+  "connectorBuilder.invalidSchema": "Invalid JSON - please fix schema to have it applied",
+  "connectorBuilder.copyToPaginationTitle": "Copy pagination settings to...",
+  "connectorBuilder.copyFromPaginationTitle": "Import pagination settings from...",
+  "connectorBuilder.copyToSlicerTitle": "Copy slicing settings to...",
+  "connectorBuilder.copyFromSlicerTitle": "Import slicing settings from...",
+  "connectorBuilder.inputsButton": "Inputs",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
