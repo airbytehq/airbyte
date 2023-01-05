@@ -287,8 +287,8 @@ class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
 
             dates.append(
                 {
-                    "startDate": utils.date_to_string(start_date, DATE_FORMAT),
-                    "endDate": utils.date_to_string(end_date, DATE_FORMAT),
+                    "startDate": utils.date_to_string(start_date),
+                    "endDate": utils.date_to_string(end_date),
                 }
             )
 
@@ -355,7 +355,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                 raise ConfigurationError("credentials.credentials_json is not valid JSON")
 
         try:
-            config["date_ranges_start_date"] = datetime.datetime.strptime(config["date_ranges_start_date"], DATE_FORMAT).date()
+            config["date_ranges_start_date"] = utils.string_to_date(config["date_ranges_start_date"])
         except ValueError as e:
             raise ConfigurationError(str(e))
 
