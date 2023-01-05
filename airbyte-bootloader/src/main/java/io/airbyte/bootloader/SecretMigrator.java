@@ -19,6 +19,8 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +28,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
+@Singleton
 @Slf4j
 public class SecretMigrator {
 
@@ -39,6 +40,18 @@ public class SecretMigrator {
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final Optional<SecretPersistence> secretPersistence;
+
+  public SecretMigrator(final SecretsRepositoryReader secretsReader,
+                        final SecretsRepositoryWriter secretsWriter,
+                        final ConfigRepository configRepository,
+                        final JobPersistence jobPersistence,
+                        @Named("longLivedSecretPersistence") final Optional<SecretPersistence> secretPersistence) {
+    this.secretsReader = secretsReader;
+    this.secretsWriter = secretsWriter;
+    this.configRepository = configRepository;
+    this.jobPersistence = jobPersistence;
+    this.secretPersistence = secretPersistence;
+  }
 
   @Value
   static class ConnectorConfiguration {

@@ -11,6 +11,7 @@ metadata:
 data:
   AIRBYTE_VERSION: {{ .Values.version | default .Chart.AppVersion }}
   API_URL: {{ .Values.webapp.api.url }}
+  BOOTLOADER_MIGRATION_BASELINE_VERSION: "0.29.0.001"
   CONNECTOR_BUILDER_API_URL: {{ .Values.webapp.connectorBuilderServer.url | quote }}
   CONFIG_ROOT: /configs
   CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.15.001"

@@ -2,13 +2,11 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.config;
+package io.airbyte.bootloader.config;
 
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.split_secrets.AWSSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
-import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -36,8 +34,7 @@ public class SecretPersistenceBeanFactory {
             pattern = "(?i)^(?!vault).*")
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^(?!aws_secret_manager).*")
-  @Requires(env = WorkerMode.CONTROL_PLANE)
-  @Named("secretPersistence")
+  @Named("longLivedSecretPersistence")
   public SecretPersistence defaultSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return localTestingSecretPersistence(configDatabase);
   }
@@ -45,16 +42,23 @@ public class SecretPersistenceBeanFactory {
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^testing_config_db_table$")
-  @Requires(env = WorkerMode.CONTROL_PLANE)
-  @Named("secretPersistence")
+  @Named("longLivedSecretPersistence")
   public SecretPersistence localTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return new LocalTestingSecretPersistence(configDatabase);
   }
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
+            pattern = "(?i)^testing_config_db_table$")
+  @Named("ephemeralSecretPersistence")
+  public SecretPersistence ephemeralLocalTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
+    return new LocalTestingSecretPersistence(configDatabase);
+  }
+
+  @Singleton
+  @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^google_secret_manager$")
-  @Named("secretPersistence")
+  @Named("longLivedSecretPersistence")
   public SecretPersistence googleSecretPersistence(@Value("${airbyte.secret.store.gcp.credentials}") final String credentials,
                                                    @Value("${airbyte.secret.store.gcp.project-id}") final String projectId) {
     return GoogleSecretManagerPersistence.getLongLived(projectId, credentials);
@@ -62,9 +66,17 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
+            pattern = "(?i)^google_secret_manager$")
+  @Named("ephemeralSecretPersistence")
+  public SecretPersistence ephemeralGoogleSecretPersistence(@Value("${airbyte.secret.store.gcp.credentials}") final String credentials,
+                                                            @Value("${airbyte.secret.store.gcp.project-id}") final String projectId) {
+    return GoogleSecretManagerPersistence.getEphemeral(projectId, credentials);
+  }
+
+  @Singleton
+  @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^vault$")
-  @Requires(env = WorkerMode.CONTROL_PLANE)
-  @Named("secretPersistence")
+  @Named("longLivedSecretPersistence")
   public SecretPersistence vaultSecretPersistence(@Value("${airbyte.secret.store.vault.address}") final String address,
                                                   @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
                                                   @Value("${airbyte.secret.store.vault.token}") final String token) {
@@ -73,25 +85,25 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
+            pattern = "(?i)^vault$")
+  @Named("ephemeralSecretPersistence")
+  public SecretPersistence ephemeralVaultSecretPersistence(@Value("${airbyte.secret.store.vault.address}") final String address,
+                                                           @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
+                                                           @Value("${airbyte.secret.store.vault.token}") final String token) {
+    return new VaultSecretPersistence(address, prefix, token);
+  }
+
+  @Singleton
+  @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^aws_secret_manager$")
-  @Requires(env = WorkerMode.CONTROL_PLANE)
-  @Named("secretPersistence")
-  public SecretPersistence awsSecretPersistence(@Value("${airbyte.secret.store.aws.access-key}") final String awsAccessKey,
-                                                @Value("${airbyte.secret.store.aws.secret-key}") final String awsSecretKey) {
+  @Named("longLivedSecretPersistence")
+  public SecretPersistence longLivedAwsSecretPersistence(@Value("${airbyte.secret.store.aws.access-key}") final String awsAccessKey,
+                                                         @Value("${airbyte.secret.store.aws.secret-key}") final String awsSecretKey) {
     return new AWSSecretManagerPersistence(awsAccessKey, awsSecretKey);
   }
 
   @Singleton
-  @Requires(property = "airbyte.acceptance.test.enabled",
-            value = "true")
-  public SecretsHydrator noOpSecretsHydrator() {
-    return new NoOpSecretsHydrator();
-  }
-
-  @Singleton
-  @Requires(property = "airbyte.acceptance.test.enabled",
-            value = "false")
-  public SecretsHydrator secretsHydrator(@Named("secretPersistence") final SecretPersistence secretPersistence) {
+  public SecretsHydrator secretsHydrator(@Named("longLivedSecretPersistence") final SecretPersistence secretPersistence) {
     return new RealSecretsHydrator(secretPersistence);
   }
 
