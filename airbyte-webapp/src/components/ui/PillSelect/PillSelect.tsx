@@ -10,6 +10,7 @@ interface PillSelectProps extends PickedPopoutProps {
   variant?: PillButtonVariant;
   disabled?: boolean;
   renderDisabledState?: () => React.ReactNode;
+  hasError?: boolean;
 }
 
 export const PillSelect: React.FC<PillSelectProps> = ({ className, renderDisabledState, ...props }) => {
@@ -36,6 +37,7 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, renderDisable
                 }}
                 active={isOpen}
                 className={className}
+                hasError={props?.hasError}
               >
                 {disabled && !!renderDisabledState ? renderDisabledState() : label}
               </PillButton>

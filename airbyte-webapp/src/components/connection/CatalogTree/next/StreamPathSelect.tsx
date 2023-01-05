@@ -22,6 +22,7 @@ interface StreamPathSelectBaseProps {
   // in some cases we need this path to render with pill background (BulkEditPanel) and
   // in some cases it should be only text (StreamsTable)
   withSourceDefinedPill?: boolean;
+  hasError?: boolean;
 }
 
 interface StreamPathSelectMultiProps {
@@ -82,6 +83,7 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = ({
         props.onPathChange(finalValues);
       }}
       className={styles.streamPathSelect}
+      hasError={props?.hasError}
     />
   );
 };
