@@ -40,8 +40,7 @@ class CommcareStream(HttpStream, ABC):
         return "%Y-%m-%dT%H:%M:%S.%f"
 
     def scrubUnwantedFields(self, form):
-        newform = {k: v for k, v in form.items(
-        ) if not self.unwantedfields.match(k)}
+        newform = {k: v for k, v in form.items() if not self.unwantedfields.match(k)}
         return newform
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -99,8 +98,7 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(
-            value[self.cursor_field], self.dateformat)
+        self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
 
     @property
     def sync_mode(self):
@@ -148,8 +146,7 @@ class Case(IncrementalStream):
 
     def __init__(self, start_date, app_id, schema, **kwargs):
         super().__init__(**kwargs)
-        self._cursor_value = datetime.strptime(
-            start_date, "%Y-%m-%dT%H:%M:%SZ")
+        self._cursor_value = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
         self.schema = schema
 
     def get_json_schema(self):
@@ -174,8 +171,7 @@ class Case(IncrementalStream):
         # start date is what we saved for forms
         # if self.cursor_field in self.state else (CommcareStream.last_form_date or self.initial_date)
         ix = self.state[self.cursor_field]
-        params = {"format": "json", "indexed_on_start": ix.strftime(
-            self.dateformat), "order_by": "indexed_on", "limit": "5000"}
+        params = {"format": "json", "indexed_on_start": ix.strftime(self.dateformat), "order_by": "indexed_on", "limit": "5000"}
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -188,11 +184,9 @@ class Case(IncrementalStream):
                     found = True
                     break
             if found:
-                self._cursor_value = datetime.strptime(
-                    record[self.cursor_field], self.dateformat)
+                self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
                 # Make indexed_on tz aware
-                record.update(
-                    {"streamname": "case", "indexed_on": record["indexed_on"] + "Z"})
+                record.update({"streamname": "case", "indexed_on": record["indexed_on"] + "Z"})
                 # convert xform_ids field from array to comma separated list so flattening won't create
                 # one field per item. This is because some cases have up to 2000 xform_ids and we don't want 2000 extra
                 # fields in the schema
@@ -213,14 +207,14 @@ class Form(IncrementalStream):
     """
     docs: https://www.commcarehq.org/a/[domain]/api/[version]/form/
     """
+
     cursor_field = "indexed_on"
     primary_key = "id"
 
     def __init__(self, start_date, app_id, name, xmlns, schema, **kwargs):
         super().__init__(**kwargs)
         self.app_id = app_id
-        self._cursor_value = datetime.strptime(
-            start_date, "%Y-%m-%dT%H:%M:%SZ")
+        self._cursor_value = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
         self.streamname = name
         self.xmlns = xmlns
         self.schema = schema
@@ -258,14 +252,12 @@ class Form(IncrementalStream):
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         upd = {"streamname": self.streamname, "xmlns": self.xmlns}
         for record in super().read_records(*args, **kwargs):
-            self._cursor_value = datetime.strptime(
-                record[self.cursor_field], self.dateformat)
+            self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
             CommcareStream.forms.add(record["id"])
             form = record["form"]
             form.update(upd)
             # Append Z to make it timezone aware
-            form.update(
-                {"id": record["id"], "indexed_on": record["indexed_on"] + "Z"})
+            form.update({"id": record["id"], "indexed_on": record["indexed_on"] + "Z"})
             newform = self.scrubUnwantedFields(form)
             yield flatten(newform)
         if self._cursor_value.microsecond == 0:
@@ -287,15 +279,7 @@ class SourceCommcare(AbstractSource):
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "indexed_on": {
-                    "type": "string",
-                    "format": "date-time"
-                }
-            }
+            "properties": {"id": {"type": "string"}, "indexed_on": {"type": "string", "format": "date-time"}},
         }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -312,8 +296,7 @@ class SourceCommcare(AbstractSource):
         return streams
 
     def generate_streams(self, args, config, appdata):
-        form_args = {"app_id": config["app_id"], "start_date": config["start_date"],
-                     "project_space": config["project_space"], **args}
+        form_args = {"app_id": config["app_id"], "start_date": config["start_date"], "project_space": config["project_space"], **args}
         streams = []
         name2xmlns = {}
 
@@ -339,8 +322,7 @@ class SourceCommcare(AbstractSource):
         # Sorted by name
         for k in sorted(name2xmlns):
             key = name2xmlns[k]
-            stream = Form(name=k, xmlns=key,
-                          schema=self.base_schema(), **form_args)
+            stream = Form(name=k, xmlns=key, schema=self.base_schema(), **form_args)
             streams.append(stream)
 
         stream = Case(
