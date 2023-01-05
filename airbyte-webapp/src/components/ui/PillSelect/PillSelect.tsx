@@ -9,11 +9,11 @@ type PickedPopoutProps = Pick<PopoutProps, "value" | "options" | "isMulti" | "on
 interface PillSelectProps extends PickedPopoutProps {
   variant?: PillButtonVariant;
   disabled?: boolean;
-  renderDisabledState?: () => React.ReactNode;
+  disabledLabel?: React.ReactNode;
   hasError?: boolean;
 }
 
-export const PillSelect: React.FC<PillSelectProps> = ({ className, renderDisabledState, ...props }) => {
+export const PillSelect: React.FC<PillSelectProps> = ({ className, disabledLabel, ...props }) => {
   const { isMulti, variant, disabled } = props;
   return (
     <Popout
@@ -39,7 +39,7 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, renderDisable
                 className={className}
                 hasError={props?.hasError}
               >
-                {disabled && !!renderDisabledState ? renderDisabledState() : label}
+                {(disabled && disabledLabel) || label}
               </PillButton>
             }
             placement="bottom-start"
