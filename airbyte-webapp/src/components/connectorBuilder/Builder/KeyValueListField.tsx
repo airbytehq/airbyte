@@ -1,5 +1,3 @@
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
 
@@ -11,6 +9,7 @@ import { Text } from "components/ui/Text";
 
 import { UserInputHelper } from "./BuilderFieldWithInputs";
 import styles from "./KeyValueListField.module.scss";
+import { RemoveButton } from "./RemoveButton";
 
 interface KeyValueInputProps {
   keyValue: [string, string];
@@ -47,9 +46,7 @@ const KeyValueInput: React.FC<KeyValueInputProps> = ({ keyValue, onChange, onRem
           className={styles.inputWithHelper}
         />
       </div>
-      <button type="button" className={styles.removeButton} onClick={onRemove}>
-        <FontAwesomeIcon icon={faXmark} size="1x" />
-      </button>
+      <RemoveButton onClick={onRemove} />
     </div>
   );
 };
