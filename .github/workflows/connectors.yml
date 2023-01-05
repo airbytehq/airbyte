@@ -201,6 +201,7 @@ jobs:
           PGPASSWORD: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_PASSWORD }}
           PGDATABASE: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_DATABASE }}
         run: |
+          source tools/lib/lib.sh
           export VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector }}/Dockerfile)
           echo "UPDATE connector_tags SET job_status='{\"type\": \"queued\"}'
                   WHERE connector_id IN (
