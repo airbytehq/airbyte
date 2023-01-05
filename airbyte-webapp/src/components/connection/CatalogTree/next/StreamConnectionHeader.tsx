@@ -1,8 +1,7 @@
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { FormattedMessage } from "react-intl";
 
+import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { Heading } from "components/ui/Heading";
 
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -31,7 +30,7 @@ export const StreamConnectionHeader: React.FC = () => {
         </Heading>
       </div>
       <div className={styles.arrowContainer}>
-        <FontAwesomeIcon icon={faArrowRight} />
+        <ArrowRightIcon />
       </div>
       <div className={destinationStyles}>
         {renderIcon(destinationDefinition.icon)}{" "}
