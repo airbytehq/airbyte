@@ -88,10 +88,10 @@ class FeatureFlagClientTest {
             val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
             val client: FeatureFlagClient = PlatformClient(cfg)
 
-            val evTrue = EnvVar(envVar = "env-true", fetcher = { _ -> "true" })
-            val evFalse = EnvVar(envVar = "env-true", fetcher = { _ -> "false" })
-            val evEmpty = EnvVar(envVar = "env-true", fetcher = { _ -> "" })
-            val evNull = EnvVar(envVar = "env-true", fetcher = { _ -> null })
+            val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
+            val evFalse = EnvVar(envVar = "env-true") { _ -> "false" }
+            val evEmpty = EnvVar(envVar = "env-true") { _ -> "" }
+            val evNull = EnvVar(envVar = "env-true") { _ -> null }
 
             val ctx = User("test")
 
@@ -145,10 +145,10 @@ class FeatureFlagClientTest {
             val ldClient: LDClient = mockk()
             val client: FeatureFlagClient = CloudClient(ldClient)
 
-            val evTrue = EnvVar(envVar = "env-true", fetcher = { _ -> "true" })
-            val evFalse = EnvVar(envVar = "env-false", fetcher = { _ -> "false" })
-            val evEmpty = EnvVar(envVar = "env-empty", fetcher = { _ -> "" })
-            val evNull = EnvVar(envVar = "env-null", fetcher = { _ -> null })
+            val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
+            val evFalse = EnvVar(envVar = "env-false") { _ -> "false" }
+            val evEmpty = EnvVar(envVar = "env-empty") { _ -> "" }
+            val evNull = EnvVar(envVar = "env-null") { _ -> null }
 
             val ctx = User("test")
 

@@ -9,11 +9,10 @@ package io.airbyte.featureflag
  *
  * This is a permanent flag and would implement the [Flag] type once converted from an environment-variable.
  */
-
 object LogConnectorMessages : EnvVar(envVar = "LOG_CONNECTOR_MESSAGES", team = Team.PLATFORM_MOVE)
 
 object StreamCapableState : EnvVar(envVar = "USE_STREAM_CAPABLE_STATE")
-object AutoDetectSchema : EnvVar(team = Team.PLATFORM_MOVE, envVar = "AUTO_DETECT_SCHEMA")
+object AutoDetectSchema : EnvVar(envVar = "AUTO_DETECT_SCHEMA", team = Team.PLATFORM_MOVE)
 object NeedStateValidation : EnvVar(envVar = "NEED_STATE_VALIDATION")
 object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
 
@@ -39,9 +38,9 @@ enum class Team {
  * @param [default] is the default value of the flag.
  */
 sealed class Flag(
-    internal val team: Team = Team.UNKNOWN,
     internal val key: String,
     internal val default: Boolean = false,
+    internal val team: Team = Team.UNKNOWN,
 )
 
 /**
@@ -55,10 +54,10 @@ sealed class Flag(
  * @param [default] is the default value of the flag.
  */
 open class Temporary @JvmOverloads constructor(
-    team: Team = Team.UNKNOWN,
     key: String,
     default: Boolean = false,
-) : Flag(team = team, key = key, default = default)
+    team: Team = Team.UNKNOWN,
+) : Flag(key = key, default = default, team = team)
 
 /**
  * Environment Variable based feature-flag.
@@ -73,11 +72,11 @@ open class Temporary @JvmOverloads constructor(
  * @constructor an internal constructor for testing purposes, users must be the public constructor
  */
 open class EnvVar internal constructor(
-    team: Team = Team.UNKNOWN,
     envVar: String,
     default: Boolean = false,
+    team: Team = Team.UNKNOWN,
     private val fetcher: (String) -> String?,
-) : Flag(team = team, key = envVar, default = default) {
+) : Flag(key = envVar, default = default, team = team) {
 
     /**
      * Constructs an EnvVar flag
@@ -88,10 +87,10 @@ open class EnvVar internal constructor(
      */
     @JvmOverloads
     constructor(
-        team: Team = Team.UNKNOWN,
         envVar: String,
         default: Boolean = false,
-    ) : this(team, envVar, default, { s -> System.getenv(s) })
+        team: Team = Team.UNKNOWN,
+    ) : this(envVar, default, team, { s -> System.getenv(s) })
 
     /**
      * Returns true if, and only if, the environment-variable is defined and evaluates to "true".  Otherwise, returns false.

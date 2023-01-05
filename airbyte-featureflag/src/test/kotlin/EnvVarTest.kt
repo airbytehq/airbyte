@@ -9,11 +9,11 @@ class EnvVarTest {
     @Test
     fun `verify undefined flag returns default`() {
         // defaults to false, undefined in env-var
-        EnvVar(envVar = "undefined", fetcher = { _ -> null }).also {
+        EnvVar(envVar = "undefined") { _ -> null }.also {
             assert(!it.enabled())
         }
         // defaults to true, undefined in env-var
-        EnvVar(envVar = "undefined", fetcher = { _ -> null }, default = true).also {
+        EnvVar(envVar = "undefined", default = true) { _ -> null }.also {
             assert(it.enabled())
         }
     }
@@ -36,7 +36,7 @@ class EnvVarTest {
             assert(!it.enabled())
         }
         // defaults to true, but defined as false in the env-var
-        EnvVar(envVar = envFalse.first, fetcher = fetcher, default = true).also {
+        EnvVar(envVar = envFalse.first, default = true, fetcher = fetcher).also {
             assert(!it.enabled())
         }
         // defaults to false, but defined incorrectly in env-var
@@ -44,7 +44,7 @@ class EnvVarTest {
             assert(!it.enabled())
         }
         // defaults to true, but defined incorrectly in env-var
-        EnvVar(envVar = envX.first, fetcher = fetcher, default = true).also {
+        EnvVar(envVar = envX.first, default = true, fetcher = fetcher).also {
             // any value that is defined but not defined explicitly as "true" will return false
             assert(!it.enabled())
         }
