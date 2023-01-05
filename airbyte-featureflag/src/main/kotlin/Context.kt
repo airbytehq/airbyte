@@ -26,7 +26,10 @@ sealed interface Context {
  * @param [key] the unique identifying value of this workspace
  * @param [user] an optional user identifier
  */
-data class Workspace(override val key: String, val user: String? = null) : Context {
+data class Workspace @JvmOverloads constructor(
+    override val key: String,
+    val user: String? = null
+) : Context {
     override val kind = "workspace"
 }
 
