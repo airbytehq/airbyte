@@ -30,7 +30,7 @@ import kotlin.io.path.isRegularFile
  */
 
 /**
- * Feature-Flag Client interfaced.
+ * Feature-Flag Client interface.
  */
 sealed interface FeatureFlagClient {
     /**
