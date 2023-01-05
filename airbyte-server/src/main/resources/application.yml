@@ -11,6 +11,10 @@ micronaut:
         httpMethod: POST
         access:
           - isAnonymous()
+      - pattern: /**
+        httpMethod: HEAD
+        access:
+          - isAnonymous()
   server:
     port: 8001
 airbyte:
