@@ -35,4 +35,5 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
 }
