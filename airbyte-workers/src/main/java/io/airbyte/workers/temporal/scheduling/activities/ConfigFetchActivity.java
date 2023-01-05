@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.activity.ActivityInterface;
@@ -25,7 +25,7 @@ public interface ConfigFetchActivity {
   Optional<UUID> getSourceId(UUID connectionId);
 
   @ActivityMethod
-  Optional<Status> getStatus(UUID connectionId);
+  Optional<ConnectionStatus> getStatus(UUID connectionId);
 
   @Data
   @NoArgsConstructor
