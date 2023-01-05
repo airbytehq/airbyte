@@ -51,20 +51,20 @@ public class Bootloader {
   private final SecretMigrator secretMigrator;
 
   public Bootloader(
-             @Value("${airbyte.bootloader.auto-upgrade-connectors}") final boolean autoUpgradeConnectors,
-             final ConfigRepository configRepository,
-             @Named("configsDatabaseInitializer") final DatabaseInitializer configsDatabaseInitializer,
-             @Named("configsDatabaseMigrator") final DatabaseMigrator configsDatabaseMigrator,
-             final AirbyteVersion currentAirbyteVersion,
-             final Optional<DefinitionsProvider> definitionsProvider,
-             final FeatureFlags featureFlags,
-             @Named("jobsDatabaseInitializer") final DatabaseInitializer jobsDatabaseInitializer,
-             @Named("jobsDatabaseMigrator") final DatabaseMigrator jobsDatabaseMigrator,
-             final JobPersistence jobPersistence,
-             final ProtocolVersionChecker protocolVersionChecker,
-             @Value("${airbyte.run-migration-on-startup}") final boolean runMigrationOnStartup,
-             final SecretMigrator secretMigrator,
-             final PostLoadExecutor postLoadExecution) {
+                    @Value("${airbyte.bootloader.auto-upgrade-connectors}") final boolean autoUpgradeConnectors,
+                    final ConfigRepository configRepository,
+                    @Named("configsDatabaseInitializer") final DatabaseInitializer configsDatabaseInitializer,
+                    @Named("configsDatabaseMigrator") final DatabaseMigrator configsDatabaseMigrator,
+                    final AirbyteVersion currentAirbyteVersion,
+                    final Optional<DefinitionsProvider> definitionsProvider,
+                    final FeatureFlags featureFlags,
+                    @Named("jobsDatabaseInitializer") final DatabaseInitializer jobsDatabaseInitializer,
+                    @Named("jobsDatabaseMigrator") final DatabaseMigrator jobsDatabaseMigrator,
+                    final JobPersistence jobPersistence,
+                    final ProtocolVersionChecker protocolVersionChecker,
+                    @Value("${airbyte.run-migration-on-startup}") final boolean runMigrationOnStartup,
+                    final SecretMigrator secretMigrator,
+                    final PostLoadExecutor postLoadExecution) {
     this.autoUpgradeConnectors = autoUpgradeConnectors;
     this.configRepository = configRepository;
     this.configsDatabaseInitializer = configsDatabaseInitializer;

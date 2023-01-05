@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.bootloader;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -28,7 +32,8 @@ class DefaultPostLoadExecutorTest {
 
   @ParameterizedTest
   @CsvSource({"true,true,1", "true,false,1", "false,true,0", "false,false,1"})
-  void testPostLoadExecution(final boolean forceSecretMigration, final boolean isSecretMigration, final int expectedTimes) throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testPostLoadExecution(final boolean forceSecretMigration, final boolean isSecretMigration, final int expectedTimes)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConfigRepository configRepository = mock(ConfigRepository.class);
     final DefinitionsProvider definitionsProvider = mock(DefinitionsProvider.class);
     final FeatureFlags featureFlags = mock(FeatureFlags.class);
@@ -38,7 +43,8 @@ class DefaultPostLoadExecutorTest {
     when(featureFlags.forceSecretMigration()).thenReturn(forceSecretMigration);
     when(jobPersistence.isSecretMigrated()).thenReturn(isSecretMigration);
 
-    final DefaultPostLoadExecutor postLoadExecution = new DefaultPostLoadExecutor(configRepository, Optional.of(definitionsProvider), featureFlags, jobPersistence, secretMigrator);
+    final DefaultPostLoadExecutor postLoadExecution =
+        new DefaultPostLoadExecutor(configRepository, Optional.of(definitionsProvider), featureFlags, jobPersistence, secretMigrator);
 
     assertDoesNotThrow(() -> postLoadExecution.execute());
     verify(secretMigrator, times(expectedTimes)).migrateSecrets();
@@ -53,7 +59,8 @@ class DefaultPostLoadExecutorTest {
 
     when(featureFlags.forceSecretMigration()).thenReturn(true);
 
-    final DefaultPostLoadExecutor postLoadExecution = new DefaultPostLoadExecutor(configRepository, Optional.of(definitionsProvider), featureFlags, jobPersistence, null);
+    final DefaultPostLoadExecutor postLoadExecution =
+        new DefaultPostLoadExecutor(configRepository, Optional.of(definitionsProvider), featureFlags, jobPersistence, null);
 
     assertDoesNotThrow(() -> postLoadExecution.execute());
   }
@@ -68,8 +75,10 @@ class DefaultPostLoadExecutorTest {
 
     doThrow(new IOException("test")).when(configRepository).seedActorDefinitions(any(), any());
 
-    final DefaultPostLoadExecutor postLoadExecution = new DefaultPostLoadExecutor(configRepository, Optional.of(definitionsProvider), featureFlags, jobPersistence, secretMigrator);
+    final DefaultPostLoadExecutor postLoadExecution =
+        new DefaultPostLoadExecutor(configRepository, Optional.of(definitionsProvider), featureFlags, jobPersistence, secretMigrator);
 
     assertThrows(IOException.class, () -> postLoadExecution.execute());
   }
+
 }

@@ -132,7 +132,8 @@ class BootloaderTest {
       val jobsDatabaseMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       val protocolVersionChecker = new ProtocolVersionChecker(jobsPersistence, airbyteProtocolRange, configRepository, definitionsProvider);
-      val postLoadExecutor = new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
+      val postLoadExecutor =
+          new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
 
       val bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
@@ -317,7 +318,8 @@ class BootloaderTest {
       val jobsDatabaseMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       val protocolVersionChecker = new ProtocolVersionChecker(jobsPersistence, airbyteProtocolRange, configRepository, definitionsProvider);
-      val postLoadExecutor = new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
+      val postLoadExecutor =
+          new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
 
       val bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
@@ -376,15 +378,17 @@ class BootloaderTest {
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       val protocolVersionChecker = new ProtocolVersionChecker(jobsPersistence, airbyteProtocolRange, configRepository, definitionsProvider);
       val postLoadExecutor = new PostLoadExecutor() {
+
         @Override
         public void execute() {
           testTriggered.set(true);
         }
+
       };
       val bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
               definitionsProvider, mockedFeatureFlags, jobsDatabaseInitializer, jobsDatabaseMigrator, jobsPersistence, protocolVersionChecker,
-              runMigrationOnStartup, mockedSecretMigrator,postLoadExecutor);
+              runMigrationOnStartup, mockedSecretMigrator, postLoadExecutor);
       bootloader.load();
       assertTrue(testTriggered.get());
     }
