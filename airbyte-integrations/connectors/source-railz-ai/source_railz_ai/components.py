@@ -11,12 +11,12 @@ import requests
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.auth.token import AbstractHeaderAuthenticator
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer, SingleSlice
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 from dataclasses_jsonschema import JsonSchemaMixin
@@ -293,7 +293,6 @@ class RailzAiIncrementalServiceReportsSlicer(RailzAiIncrementalServiceSlicer):
 
 @dataclass
 class RailzAiServiceRetriever(SimpleRetriever):
-    
     def __post_init__(self, options: Mapping[str, Any]):
         super().__post_init__(options)
         self._failed_services = set()
@@ -305,14 +304,14 @@ class RailzAiServiceRetriever(SimpleRetriever):
         stream_slice: Optional[StreamSlice] = None,
         stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
-        if stream_slice['serviceName'] in self._failed_services:
+        if stream_slice["serviceName"] in self._failed_services:
             yield from []
             return
 
         try:
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         except ReadException as e:
-            self._failed_services.add(stream_slice['serviceName'])
+            self._failed_services.add(stream_slice["serviceName"])
             self.logger.warning(e)
             yield from []
 
@@ -372,7 +371,6 @@ class RailzAiIncrementalReportsRetriever(RailzAiReportsRetriever):
 
 @dataclass
 class RailzAiIncrementalServiceReportsRetriever(RailzAiServiceRetriever, RailzAiIncrementalReportsRetriever):
-
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -381,13 +379,13 @@ class RailzAiIncrementalServiceReportsRetriever(RailzAiServiceRetriever, RailzAi
         stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
 
-        if stream_slice['serviceName'] in self._failed_services or stream_slice is None:
+        if stream_slice["serviceName"] in self._failed_services or stream_slice is None:
             yield from []
             return
 
         try:
             yield from super(RailzAiServiceRetriever, self).read_records(sync_mode, cursor_field, stream_slice, stream_state)
         except ReadException as e:
-            self._failed_services.add(stream_slice['serviceName'])
+            self._failed_services.add(stream_slice["serviceName"])
             self.logger.warning(e)
             yield from []
