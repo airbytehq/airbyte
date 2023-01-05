@@ -12,21 +12,14 @@ import com.launchdarkly.sdk.ContextKind
 import com.launchdarkly.sdk.LDContext
 import com.launchdarkly.sdk.LDUser
 import com.launchdarkly.sdk.server.LDClient
+import java.lang.Thread.MIN_PRIORITY
 import java.nio.file.Path
+import java.nio.file.StandardWatchEventKinds
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
-
-///**
-// * How I'm envisioning this working (currently, still very much a POC/rough):
-// */
-//class ExampleController(private val ffClient: Client) {
-//    fun get(userId: String): String {
-//        if (ffClient.enabled(Flag.FeatureOne, User(userId), false)) {
-//            return "feature enabled"
-//        }
-//        return "feature not enabled"
-//    }
-//}
+import kotlin.concurrent.thread
+import kotlin.concurrent.write
+import kotlin.io.path.isRegularFile
 
 /**
  * Open Questions:
@@ -37,50 +30,117 @@ import kotlin.concurrent.read
  */
 
 /**
- * Flag contains all the feature-flags utilized by the code.
- */
-//sealed class Flag(internal val key: String) {
-//    object FeatureOne : Flag("feature-one")
-//    object FeatureTwo : Flag("feature-two")
-//    class Temp(key: String) : Flag(key)
-//}
-
-/**
- * Context abstraction around LaunchDarkly v6 context idea
- *
- * I'm still playing around with this.  Basically the idea is to define our own custom context types
- * (by implementing this sealed interface) to ensure that we are consistently using the same identifiers
- * throughout the code.
- */
-sealed interface Context {
-    val kind: String
-    val key: String
-}
-
-/**
- * Workspace context example object
- *   where key is the unique identifier of the workspace and the account can be optionally passed as an attribute
- */
-data class Workspace(override val key: String, val account: String? = null) : Context {
-    override val kind = "workspace"
-}
-
-/**
- * User context example object where key is the unique identifier of the user.
- */
-data class User(override val key: String) : Context {
-    override val kind = "user"
-}
-
-
-/**
  * Feature Flag Client interfaced.
  */
 sealed interface Client {
     /**
      * Returns true if the flag with the provided context should be enabled. Returns false otherwise.
      */
-    fun enabled(key: Flag, ctx: Context): Boolean
+    fun enabled(flag: Flag, ctx: Context): Boolean
+}
+
+/**
+ * Platform feature-flag client. Feature-flag are derived from a yaml config file.
+ * Also supports flags defined via environment-variables via the [EnvVar] class.
+ *
+ * @param [config] the location of the yaml config file that contains the feature-flag definitions.
+ * The [config] will be watched for changes and the internal representation of the [config] will be updated to match.
+ */
+class Platform(config: Path) : Client {
+    /** [flags] holds the mappings of the flag-name to the flag properties */
+    private var flags: Map<String, PlatformFlag> = readConfig(config)
+
+    /** lock is used for ensuring access to the flags map is handled correctly when the map is being updated. */
+    private val lock = ReentrantReadWriteLock()
+
+    init {
+        if (!config.isRegularFile()) {
+            throw IllegalArgumentException("config must reference a file")
+        }
+
+        config.onChange {
+            val tempFlags = readConfig(config)
+            lock.write { flags = tempFlags }
+        }
+    }
+
+    override fun enabled(flag: Flag, ctx: Context): Boolean {
+        return when (flag) {
+            is EnvVar -> flag.enabled()
+            else -> lock.read { flags[flag.key]?.enabled ?: flag.default }
+        }
+    }
+}
+
+/**
+ * Cloud feature-flag client. Feature-flags are derived from an external source (the LDClient).
+ * Also supports flags defined via environment-variables via the [EnvVar] class.
+ *
+ * @param [client] the Launch-Darkly client for interfacing with Launch-Darkly.
+ */
+class Cloud(private val client: LDClient) : Client {
+    override fun enabled(flag: Flag, ctx: Context): Boolean {
+        return when (flag) {
+            is EnvVar -> flag.enabled()
+            else -> client.boolVariation(flag.key, ctx.toLDUser(), flag.default)
+        }
+    }
+}
+
+
+/**
+ * Data wrapper around OSS feature-flag configuration file.
+ *
+ * The file has the format of:
+ * flags:
+ *  - name: feature-one
+ *    enabled: true
+ *  - name: feature-two
+ *    enabled: false
+ */
+private data class PlatformFlags(val flags: List<PlatformFlag>)
+
+/**
+ * Data wrapper around an individual flag read from the configuration file.
+ */
+private data class PlatformFlag(val name: String, val enabled: Boolean)
+
+
+/** The yaml mapper is used for reading the feature-flag configuration file. */
+private val yamlMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
+
+/**
+ * Reads a yaml configuration file, converting it into a map of flag name to flag configuration.
+ *
+ * @param [path] to yaml config file
+ * @return map of feature-flag name to feature-flag config
+ */
+//private fun readConfig(path: Path): Map<String, OSSFlag> = yamlMapper.readValue<List<OSSFlag>>(path.toFile())
+//    .associateBy { it.name }
+private fun readConfig(path: Path): Map<String, PlatformFlag> = yamlMapper.readValue<PlatformFlags>(path.toFile())
+    .let { it.flags }
+    .associateBy { it.name }
+
+/**
+ * Monitors a [Path] for changes, calling [block] when a change is detected.
+ *
+ * @receiver Path
+ * @param [block] function called anytime a change is detected on this [Path]
+ */
+private fun Path.onChange(block: () -> Unit) {
+    val watcher = fileSystem.newWatchService()
+    // The watcher services requires a directory to be provided, hence the `parent` reference here as `this` path should be a file.
+    parent.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_CREATE)
+
+    thread(isDaemon = true, name = "feature-flag-watcher", priority = MIN_PRIORITY) {
+        val key = watcher.take()
+        // The context on the poll-events for ENTRY_MODIFY events should not be null, this is a sanity check more than anything else
+        key.pollEvents().mapNotNull { it.context() as? Path }
+            .filter { this.endsWith(it) }
+            .forEach { _ -> block() }
+
+        key.reset()
+    }
 }
 
 /**
@@ -110,52 +170,4 @@ private fun Context.toLDContext(): LDContext {
         is User -> Unit
     }
     return builder.build()
-}
-
-/**
- * LaunchDarkly implementation
- *   currently accepts a sdkKey, should instead have the LDClient provided
- */
-class LD(private val client: LDClient) : Client {
-    override fun enabled(flag: Flag, ctx: Context): Boolean {
-        return when (flag) {
-            is EnvVar -> flag.enabled()
-            else -> client.boolVariation(flag.key, ctx.toLDUser(), flag.default)
-        }
-    }
-}
-
-
-/**
- * Data wrapper around OSS feature-flag configuration file.
- *
- * Files has the format of
- * flags:
- *  - name: feature-one
- *    enabled: true
- *  - name: feature-two
- *    enabled: false
- */
-private data class OSSFlag(val name: String, val enabled: Boolean)
-
-/** The yaml mapper is used for reading the feature-flag configuration file. */
-private val yamlMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
-
-/**
- * OSS implementation
- *   need to set up a file-watcher on the config to ensure changes are picked up without requiring a restart of the app
- */
-class OSS(config: Path) : Client {
-    /** flags contains a mapping of the flag-name to the flag properties */
-    private var flags: Map<String, OSSFlag> = yamlMapper.readValue<List<OSSFlag>>(config.toFile()).associateBy { it.name }
-
-    /** lock is used for ensuring access to the flags map is handled correctly when the map is being updated. */
-    private val lock = ReentrantReadWriteLock()
-
-    override fun enabled(flag: Flag, ctx: Context): Boolean {
-        return when (flag) {
-            is EnvVar -> flag.enabled()
-            else -> lock.read { flags[flag.key]?.enabled ?: flag.default }
-        }
-    }
 }

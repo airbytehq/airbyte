@@ -1,0 +1,3 @@
+airbyte:
+  feature-flag:
+    path: /test.yaml
