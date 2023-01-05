@@ -10,11 +10,7 @@ import { CodeEditor } from "components/ui/CodeEditor";
 import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import {
-  BuilderView,
-  useConnectorBuilderFormState,
-  useConnectorBuilderTestState,
-} from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderStream } from "../types";
 import { AddStreamButton } from "./AddStreamButton";
@@ -38,7 +34,6 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, h
   const [selectedTab, setSelectedTab] = useState<"configuration" | "schema">("configuration");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { setSelectedView } = useConnectorBuilderFormState();
-  const { setTestStreamIndex } = useConnectorBuilderTestState();
 
   const streamPath = `streams[${streamNum}]`;
   const streamFieldPath = (fieldPath: string) => `${streamPath}.${fieldPath}`;
@@ -54,7 +49,6 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, h
         const viewToSelect: BuilderView = updatedStreams.length === 0 ? "global" : streamToSelect;
         helpers.setValue(updatedStreams);
         setSelectedView(viewToSelect);
-        setTestStreamIndex(streamToSelect);
         closeConfirmationModal();
       },
     });
@@ -85,7 +79,6 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, h
         <AddStreamButton
           onAddStream={(addedStreamNum) => {
             setSelectedView(addedStreamNum);
-            setTestStreamIndex(addedStreamNum);
           }}
           initialValues={field.value[streamNum]}
           button={
