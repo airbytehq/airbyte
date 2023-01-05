@@ -805,68 +805,6 @@
       }
     }
   },
-  "bank_transactions": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_xero": {
-      "xero": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_wave": {
-      "wave": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_square": {
-      "square": {
-          "start_time" : "2999-12-31"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-          "start_time" : "2999-12-31"
-      }
-    }
-  },
   "commerce_disputes": {
     "b_quickbooksDesktop": {
       "quickbooksDesktop": {
