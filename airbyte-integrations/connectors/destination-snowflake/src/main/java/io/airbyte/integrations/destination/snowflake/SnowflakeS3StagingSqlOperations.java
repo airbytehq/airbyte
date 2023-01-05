@@ -92,12 +92,12 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
                                         final List<String> stagedFiles,
                                         final String targetTableName,
                                         final String schemaName) {
-    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .",
+    LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
         targetTableName, stagingPath, schemaName);
     // Print actual SQL query if user needs to manually force reload from staging
     Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles,
         targetTableName, schemaName)));
-    LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, targetTableName);
+    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, targetTableName);
   }
 
   protected String getCopyQuery(final String stagingPath,
