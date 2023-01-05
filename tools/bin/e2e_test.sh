@@ -24,7 +24,7 @@ docker run --rm -d -p 5434:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES
 
 echo "Waiting for health API to be available..."
 # Retry loading the health API of the server to check that the server is fully available
-until $(curl --output /dev/null --fail --silent --max-time 5 --head localhost:8001/api/v1/health); do
+until $(curl --output /dev/null --fail --silent --max-time 5 localhost:8001/api/v1/health); do
   echo "Health API not available yet. Retrying in 10 seconds..."
   sleep 10
 done
