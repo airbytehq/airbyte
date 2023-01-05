@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/local-csv",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/csv",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
