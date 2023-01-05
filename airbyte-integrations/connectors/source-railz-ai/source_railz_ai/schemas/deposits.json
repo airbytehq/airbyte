@@ -53,7 +53,7 @@
             "type": ["null", "number"]
           },
           "totalAmount": {
-            "type": "number"
+            "type": ["number", "string"]
           },
           "accountRef": {
             "type": ["null", "object"],
@@ -129,7 +129,7 @@
       "type": ["null", "number"]
     },
     "totalAmount": {
-      "type": "number"
+      "type": ["number", "string"]
     },
     "status": {
       "type": "string"

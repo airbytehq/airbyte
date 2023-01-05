@@ -12,7 +12,7 @@
       "type": "string"
     },
     "totalAmount": {
-      "type": "number"
+      "type": ["number", "string"]
     },
     "status": {
       "type": "string"

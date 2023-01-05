@@ -91,7 +91,7 @@
       "type": ["null", "number"]
     },
     "totalAmount": {
-      "type": "number"
+      "type": ["number", "string"]
     }
   }
 }

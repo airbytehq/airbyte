@@ -33,7 +33,7 @@
       "type": "number"
     },
     "totalAmount": {
-      "type": ["null", "number"]
+      "type": ["null", "number", "string"]
     },
     "fromAccountRef": {
       "type": "object",

@@ -79,7 +79,7 @@
             "type": ["null", "number"]
           },
           "totalAmount": {
-            "type": "number"
+            "type": ["number", "string"]
           },
           "discountPercentage": {
             "type": ["null", "number", "string"]
@@ -156,7 +156,7 @@
       "type": ["null", "number"]
     },
     "totalAmount": {
-      "type": "number"
+      "type": ["number", "string"]
     },
     "status": {
       "type": "string"

@@ -72,7 +72,7 @@
             "type": ["string", "integer"]
           },
           "totalAmount": {
-            "type": "number"
+            "type": ["number", "string"]
           }
         }
       }
@@ -89,7 +89,7 @@
             "type": "string"
           },
           "totalAmount": {
-            "type": ["string", "number"]
+            "type": ["number", "string"]
           }
         }
       }

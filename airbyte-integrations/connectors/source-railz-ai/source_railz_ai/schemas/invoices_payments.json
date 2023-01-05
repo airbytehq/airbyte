@@ -34,7 +34,7 @@
       }
     },
     "totalAmount": {
-      "type": "number"
+      "type": ["number", "string"]
     },
     "currencyRef": {
       "type": ["null", "object"],
