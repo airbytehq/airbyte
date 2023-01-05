@@ -1,4 +1,5 @@
 import { useField } from "formik";
+import { useIntl } from "react-intl";
 
 import { ControlLabels } from "components/LabeledControl";
 
@@ -15,9 +16,11 @@ import { ToggleGroupField } from "./ToggleGroupField";
 
 interface StreamSlicerSectionProps {
   streamFieldPath: (fieldPath: string) => string;
+  currentStreamIndex: number;
 }
 
-export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ streamFieldPath }) => {
+export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ streamFieldPath, currentStreamIndex }) => {
+  const { formatMessage } = useIntl();
   const [field, , helpers] = useField<SimpleRetrieverStreamSlicer | undefined>(streamFieldPath("streamSlicer"));
 
   const handleToggle = (newToggleValue: boolean) => {
@@ -44,6 +47,12 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
         ),
         toggledOn,
         onToggle: handleToggle,
+      }}
+      copyConfig={{
+        path: "streamSlicer",
+        currentStreamIndex,
+        copyFromLabel: formatMessage({ id: "connectorBuilder.copyFromSlicerTitle" }),
+        copyToLabel: formatMessage({ id: "connectorBuilder.copyToSlicerTitle" }),
       }}
     >
       <BuilderOneOf

@@ -2,7 +2,12 @@ import { faTrashCan, faCopy } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useField } from "formik";
-import { useIntl } from "react-intl";
+import { useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+
+import Indicator from "components/Indicator";
+import { CodeEditor } from "components/ui/CodeEditor";
+import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
@@ -21,11 +26,13 @@ import { StreamSlicerSection } from "./StreamSlicerSection";
 
 interface StreamConfigViewProps {
   streamNum: number;
+  hasMultipleStreams: boolean;
 }
 
-export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum }) => {
+export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, hasMultipleStreams }) => {
   const { formatMessage } = useIntl();
   const [field, , helpers] = useField<BuilderStream[]>("streams");
+  const [selectedTab, setSelectedTab] = useState<"configuration" | "schema">("configuration");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
 
@@ -49,11 +56,28 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
     });
   };
 
+  const [, meta] = useField<string | undefined>(streamFieldPath("schema"));
+  const hasSchemaErrors = Boolean(meta.error);
+
   return (
-    <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.stream" })}>
+    <BuilderConfigView
+      heading={formatMessage({ id: "connectorBuilder.stream" })}
+      className={hasMultipleStreams ? styles.multiStreams : undefined}
+    >
       {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderTitle path={streamFieldPath("name")} label="Stream Name" size="md" />
       <div className={styles.controls}>
+        <StreamTab
+          label={formatMessage({ id: "connectorBuilder.streamConfiguration" })}
+          selected={selectedTab === "configuration"}
+          onSelect={() => setSelectedTab("configuration")}
+        />
+        <StreamTab
+          label={formatMessage({ id: "connectorBuilder.streamSchema" })}
+          selected={selectedTab === "schema"}
+          onSelect={() => setSelectedTab("schema")}
+          showErrorIndicator={hasSchemaErrors}
+        />
         <AddStreamButton
           onAddStream={(addedStreamNum) => {
             setSelectedView(addedStreamNum);
@@ -70,53 +94,96 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           <FontAwesomeIcon icon={faTrashCan} />
         </button>
       </div>
-      <BuilderCard>
-        <BuilderFieldWithInputs
-          type="string"
-          path={streamFieldPath("urlPath")}
-          label="Path URL"
-          tooltip="Path of the endpoint that this stream represents."
-        />
-        <BuilderField
-          type="enum"
-          path={streamFieldPath("httpMethod")}
-          options={["GET", "POST"]}
-          label="HTTP Method"
-          tooltip="HTTP method to use for requests sent to the API"
-        />
-        <BuilderField
-          type="array"
-          path={streamFieldPath("fieldPointer")}
-          label="Record selector"
-          tooltip="Pointer into the response that should be extracted as the final record"
-        />
-        <BuilderField
-          type="array"
-          path={streamFieldPath("primaryKey")}
-          label="Primary key"
-          tooltip="Pointer into the response that should be used as the primary key when deduplicating records in the destination"
-          optional
-        />
-      </BuilderCard>
-      <PaginationSection streamFieldPath={streamFieldPath} />
-      <StreamSlicerSection streamFieldPath={streamFieldPath} />
-      <BuilderCard>
-        <KeyValueListField
-          path={streamFieldPath("requestOptions.requestParameters")}
-          label="Request Parameters"
-          tooltip="Parameters to attach to API requests"
-        />
-        <KeyValueListField
-          path={streamFieldPath("requestOptions.requestHeaders")}
-          label="Request Headers"
-          tooltip="Headers to attach to API requests"
-        />
-        <KeyValueListField
-          path={streamFieldPath("requestOptions.requestBody")}
-          label="Request Body"
-          tooltip="Body to attach to API requests as url-encoded form values"
-        />
-      </BuilderCard>
+      {selectedTab === "configuration" ? (
+        <>
+          <BuilderCard>
+            <BuilderFieldWithInputs
+              type="string"
+              path={streamFieldPath("urlPath")}
+              label="Path URL"
+              tooltip="Path of the endpoint that this stream represents."
+            />
+            <BuilderField
+              type="enum"
+              path={streamFieldPath("httpMethod")}
+              options={["GET", "POST"]}
+              label="HTTP Method"
+              tooltip="HTTP method to use for requests sent to the API"
+            />
+            <BuilderField
+              type="array"
+              path={streamFieldPath("fieldPointer")}
+              label="Record selector"
+              tooltip="Pointer into the response that should be extracted as the final record"
+            />
+            <BuilderField
+              type="array"
+              path={streamFieldPath("primaryKey")}
+              label="Primary key"
+              tooltip="Pointer into the response that should be used as the primary key when deduplicating records in the destination"
+              optional
+            />
+          </BuilderCard>
+          <PaginationSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
+          <StreamSlicerSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
+          <BuilderCard>
+            <KeyValueListField
+              path={streamFieldPath("requestOptions.requestParameters")}
+              label="Request Parameters"
+              tooltip="Parameters to attach to API requests"
+            />
+            <KeyValueListField
+              path={streamFieldPath("requestOptions.requestHeaders")}
+              label="Request Headers"
+              tooltip="Headers to attach to API requests"
+            />
+            <KeyValueListField
+              path={streamFieldPath("requestOptions.requestBody")}
+              label="Request Body"
+              tooltip="Body to attach to API requests as url-encoded form values"
+            />
+          </BuilderCard>
+        </>
+      ) : (
+        <BuilderCard className={styles.schemaEditor}>
+          <SchemaEditor streamFieldPath={streamFieldPath} />
+        </BuilderCard>
+      )}
     </BuilderConfigView>
+  );
+};
+
+const StreamTab = ({
+  selected,
+  label,
+  onSelect,
+  showErrorIndicator,
+}: {
+  selected: boolean;
+  label: string;
+  onSelect: () => void;
+  showErrorIndicator?: boolean;
+}) => (
+  <button type="button" className={classNames(styles.tab, { [styles.selectedTab]: selected })} onClick={onSelect}>
+    {label}
+    {showErrorIndicator && <Indicator />}
+  </button>
+);
+
+const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string) => string }) => {
+  const [field, meta, helpers] = useField<string | undefined>(streamFieldPath("schema"));
+
+  return (
+    <>
+      <CodeEditor
+        value={field.value || ""}
+        language="json"
+        theme="airbyte-light"
+        onChange={(val: string | undefined) => {
+          helpers.setValue(val);
+        }}
+      />
+      <Text className={styles.errorMessage}>{meta.error && <FormattedMessage id={meta.error} />}</Text>
+    </>
   );
 };
