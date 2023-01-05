@@ -6,6 +6,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { pathDisplayName } from "components/connection/CatalogTree/PathPopout";
 import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { CheckBox } from "components/ui/CheckBox";
+import { FlexContainer } from "components/ui/Flex";
 import { NextTable } from "components/ui/NextTable";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
@@ -107,15 +108,15 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
             columnHelper.accessor("sync", {
               id: "sourceSyncField",
               header: () => (
-                <>
+                <FlexContainer gap="md">
                   <CheckBox
                     checkboxSize="sm"
                     indeterminate={config?.fieldSelectionEnabled && !!config?.selectedFields?.length}
                     checked={!config?.fieldSelectionEnabled}
                     onClick={toggleAllFieldsSelected}
-                  />{" "}
+                  />
                   <FormattedMessage id="form.field.sync" />
-                </>
+                </FlexContainer>
               ),
               cell: ({ getValue }) => (
                 <SyncFieldCell
@@ -128,6 +129,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
                 />
               ),
               meta: {
+                thClassName: styles.headerCell,
                 tdClassName: styles.textCell,
               },
             }),
