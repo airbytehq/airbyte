@@ -51,7 +51,7 @@ public class Bootloader {
   private final SecretMigrator secretMigrator;
 
   public Bootloader(
-             @Value("${airbyte.platform.auto-upgrade-connectors}") final boolean autoUpgradeConnectors,
+             @Value("${airbyte.bootloader.auto-upgrade-connectors}") final boolean autoUpgradeConnectors,
              final ConfigRepository configRepository,
              @Named("configsDatabaseInitializer") final DatabaseInitializer configsDatabaseInitializer,
              @Named("configsDatabaseMigrator") final DatabaseMigrator configsDatabaseMigrator,
