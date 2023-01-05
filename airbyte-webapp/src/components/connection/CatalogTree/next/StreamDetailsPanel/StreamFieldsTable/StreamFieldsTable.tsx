@@ -54,7 +54,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   syncSchemaFields,
 }) => {
   const { formatMessage } = useIntl();
-  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", true);
+  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", false);
   const isCursor = useMemo(() => (path: string[]) => equal(config?.cursorField, path), [config?.cursorField]);
   const isPrimaryKey = useMemo(
     () => (path: string[]) => !!config?.primaryKey?.some((p) => equal(p, path)),
