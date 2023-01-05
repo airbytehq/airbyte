@@ -41,10 +41,19 @@ function setDefaultValues(
         setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>, options);
         break;
       case "formCondition":
-        // implicitly select the first option (do not respect a potential default value)
-        values[property.fieldKey] =
-          options.respectExistingValues && values[property.fieldKey] ? values[property.fieldKey] : {};
-        setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>, options);
+        values[property.fieldKey] = {};
+        let chosenCondition = property.conditions[0];
+        // if default is set, try to find it in the list of possible selection const values.
+        // if there is a match, default to this condition.
+        // In all other cases, go with the first one.
+        if (property.default) {
+          const matchingConditionIndex = property.selectionConstValues.indexOf(property.default);
+          if (matchingConditionIndex !== -1) {
+            chosenCondition = property.conditions[matchingConditionIndex];
+          }
+        }
+
+        setDefaultValues(chosenCondition, values[property.fieldKey] as Record<string, unknown>);
     }
   });
 }
