@@ -10,7 +10,13 @@ definitions:
   requester:
     url_base: "https://graph.facebook.com/v15.0"
     http_method: "GET"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - http_codes: [ 400 ]
+          action: RETRY
     authenticator:
+      type: CustomAuthenticator
       class_name: source_facebook_pages.components.AuthenticatorFacebookPageAccessToken
       page_id: "{{ config['page_id'] }}"
       access_token: "{{ config['access_token'] }}"
