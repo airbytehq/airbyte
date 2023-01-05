@@ -24,9 +24,9 @@ sealed interface Context {
  * Context for representing a workspace.
  *
  * @param [key] the unique identifying value of this workspace
- * @param [account] an optional account identifier
+ * @param [user] an optional user identifier
  */
-data class Workspace(override val key: String, val account: String? = null) : Context {
+data class Workspace(override val key: String, val user: String? = null) : Context {
     override val kind = "workspace"
 }
 

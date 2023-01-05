@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test
 class WorkspaceTest {
     @Test
     fun `verify data`() {
-        Workspace("workspace key", "account").also {
+        Workspace("workspace key", "user").also {
             assert(it.kind == "workspace")
             assert(it.key == "workspace key")
-            assert(it.account == "account")
+            assert(it.user == "account")
         }
     }
 }
