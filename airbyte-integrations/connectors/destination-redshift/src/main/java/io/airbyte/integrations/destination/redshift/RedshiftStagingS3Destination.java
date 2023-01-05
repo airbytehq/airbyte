@@ -58,46 +58,48 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
-    final EncryptionConfig encryptionConfig =
-        config.has("uploading_method") ? EncryptionConfig.fromJson(config.get("uploading_method").get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
-    if (isEphemeralKeysAndPurgingStagingData(config, encryptionConfig)) {
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage(
-              "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
-    }
-    S3BaseChecks.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config,
-        s3Config.getBucketPath());
-
-    final NamingConventionTransformer nameTransformer = getNamingResolver();
-    final RedshiftS3StagingSqlOperations redshiftS3StagingSqlOperations =
-        new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
-    final DataSource dataSource = getDataSource(config);
     try {
-      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
-      final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations);
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (final ConnectionErrorException e) {
-      final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
-      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage(message);
-    } catch (final Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    } finally {
-      try {
-        DataSourceFactory.close(dataSource);
-      } catch (final Exception e) {
-        LOGGER.warn("Unable to close data source.", e);
+      final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
+      final EncryptionConfig encryptionConfig =
+              config.has("uploading_method") ? EncryptionConfig.fromJson(config.get("uploading_method").get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+      if (isEphemeralKeysAndPurgingStagingData(config, encryptionConfig)) {
+        return new AirbyteConnectionStatus()
+                .withStatus(Status.FAILED)
+                .withMessage(
+                        "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
       }
-    }
+      S3BaseChecks.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config,
+              s3Config.getBucketPath());
+
+      final NamingConventionTransformer nameTransformer = getNamingResolver();
+      final RedshiftS3StagingSqlOperations redshiftS3StagingSqlOperations =
+              new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
+      final DataSource dataSource = getDataSource(config);
+      try {
+        final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
+        final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
+        attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations);
+        return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+      } catch (final ConnectionErrorException e) {
+        final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+        AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
+        return new AirbyteConnectionStatus()
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(message);
+      } finally {
+        try {
+          DataSourceFactory.close(dataSource);
+        } catch (final Exception e) {
+          LOGGER.warn("Unable to close data source.", e);
+        }
+      }
+  } catch (final Exception e) {
+    LOGGER.error("Exception while checking connection: ", e);
+    return new AirbyteConnectionStatus()
+            .withStatus(AirbyteConnectionStatus.Status.FAILED)
+            .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
   }
+}
 
   @Override
   public DataSource getDataSource(final JsonNode config) {

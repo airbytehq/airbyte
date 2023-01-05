@@ -82,7 +82,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) {
-    s3StorageOperations.createBucketObjectIfNotExists(stageName);
+    s3StorageOperations.createBucketIfNotExists();
   }
 
   @Override

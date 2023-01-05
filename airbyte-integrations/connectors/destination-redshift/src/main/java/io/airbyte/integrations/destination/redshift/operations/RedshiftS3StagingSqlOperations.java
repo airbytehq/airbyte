@@ -77,7 +77,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   public void createStageIfNotExists(JdbcDatabase database, String stageName) throws Exception {
     final String bucketPath = s3Config.getBucketPath();
     final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    s3StorageOperations.createBucketObjectIfNotExists(prefix + stageName);
+    s3StorageOperations.createBucketIfNotExists();
   }
 
   @Override

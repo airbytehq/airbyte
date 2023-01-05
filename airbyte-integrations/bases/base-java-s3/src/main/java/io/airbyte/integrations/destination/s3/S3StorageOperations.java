@@ -95,22 +95,14 @@ public class S3StorageOperations extends BlobStorageOperations {
 
   /**
    * Create a directory object at the specified location. Creates the bucket if necessary.
-   *
-   * @param objectPath The directory to create. Must be a nonempty string.
    */
   @Override
-  public void createBucketObjectIfNotExists(final String objectPath) {
+  public void createBucketIfNotExists() {
     final String bucket = s3Config.getBucketName();
-    final String folderPath = objectPath.endsWith("/") ? objectPath : objectPath + "/";
     if (!doesBucketExist(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
       LOGGER.info("Bucket {} has been created.", bucket);
-    }
-    if (!s3Client.doesObjectExist(bucket, folderPath)) {
-      LOGGER.info("Storage Object {}/{} does not exist in bucket; creating...", bucket, objectPath);
-      s3Client.putObject(bucket, folderPath, "");
-      LOGGER.info("Storage Object {}/{} has been created in bucket.", bucket, objectPath);
     }
   }
 

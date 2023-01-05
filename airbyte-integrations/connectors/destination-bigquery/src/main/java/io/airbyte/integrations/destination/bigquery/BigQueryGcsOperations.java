@@ -99,7 +99,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public void createStageIfNotExists(final String datasetId, final String stream) {
     final String objectPath = getStagingFullPath(datasetId, stream);
     LOGGER.info("Creating staging path for stream {} (dataset {}): {}", stream, datasetId, objectPath);
-    gcsStorageOperations.createBucketObjectIfNotExists(objectPath);
+    gcsStorageOperations.createBucketIfNotExists();
   }
 
   @Override
