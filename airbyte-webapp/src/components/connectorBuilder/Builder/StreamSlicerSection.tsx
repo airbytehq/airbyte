@@ -205,22 +205,6 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
             label="Parent stream"
             tooltip="The stream to read records from. Make sure there are no cyclic dependencies between streams"
           />
-          <ToggleGroupField<RequestOption>
-            label="Request option"
-            tooltip="How to inject the slice value on an outgoing HTTP request"
-            fieldPath={buildPath("request_option")}
-            initialValues={{
-              inject_into: "request_parameter",
-              type: "RequestOption",
-              field_name: "",
-            }}
-          >
-            <InjectRequestOptionFields
-              path={buildPath("request_option")}
-              descriptor="slice value"
-              excludeInjectIntoValues={["path"]}
-            />
-          </ToggleGroupField>
         </>
       ),
     },
