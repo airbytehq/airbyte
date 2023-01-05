@@ -138,8 +138,8 @@ export const createConnectionValidationSchema = ({
       namespaceDefinition: yup
         .string()
         .oneOf([
-          NamespaceDefinitionType.source,
           NamespaceDefinitionType.destination,
+          NamespaceDefinitionType.source,
           NamespaceDefinitionType.customformat,
         ])
         .required("form.empty.error"),
@@ -365,7 +365,7 @@ export const useInitialValues = (
       scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
       nonBreakingChangesPreference: connection.nonBreakingChangesPreference ?? NonBreakingChangesPreference.ignore,
       prefix: connection.prefix || "",
-      namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
+      namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.destination,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
       geography: connection.geography || workspace.defaultGeography || "auto",
     };
