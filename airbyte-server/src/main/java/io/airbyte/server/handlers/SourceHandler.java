@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.SourceCloneConfiguration;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
@@ -34,6 +35,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -136,6 +138,17 @@ public class SourceHandler {
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
+  }
+
+  public ActorCatalogWithUpdatedAt getMostRecentSourceActorCatalogWithUpdatedAt(final SourceIdRequestBody sourceIdRequestBody)
+      throws IOException {
+    Optional<io.airbyte.config.ActorCatalogWithUpdatedAt> actorCatalog =
+        configRepository.getMostRecentSourceActorCatalog(sourceIdRequestBody.getSourceId());
+    if (actorCatalog.isEmpty()) {
+      return new ActorCatalogWithUpdatedAt();
+    } else {
+      return new ActorCatalogWithUpdatedAt().updatedAt(actorCatalog.get().getUpdatedAt()).catalog(actorCatalog.get().getCatalog());
+    }
   }
 
   public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
