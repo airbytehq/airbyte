@@ -215,7 +215,11 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
               field_name: "",
             }}
           >
-            <InjectRequestOptionFields path={buildPath("request_option")} descriptor="slice value" />
+            <InjectRequestOptionFields
+              path={buildPath("request_option")}
+              descriptor="slice value"
+              excludeInjectIntoValues={["path"]}
+            />
           </ToggleGroupField>
         </>
       ),
