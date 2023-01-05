@@ -1,5 +1,6 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import React, { useMemo } from "react";
+import isEqual from "lodash/isEqual";
+import React, { useCallback, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { pathDisplayName } from "components/connection/CatalogTree/PathPopout";
@@ -9,6 +10,7 @@ import { NextTable } from "components/ui/NextTable";
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { useExperiment } from "hooks/services/Experiment";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { equal } from "utils/objects";
@@ -18,8 +20,10 @@ import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
 import { CursorCell } from "./CursorCell";
 import { PKCell } from "./PKCell";
 import styles from "./StreamFieldsTable.module.scss";
+import { SyncFieldCell } from "./SyncFieldCell";
 
 export interface TableStream {
+  sync: { isSelected: boolean; field: SyncSchemaField };
   path: string[];
   dataType: string;
   cursorDefined?: boolean;
@@ -28,6 +32,7 @@ export interface TableStream {
 
 export interface StreamFieldsTableProps {
   config?: AirbyteStreamConfiguration;
+  handleFieldToggle: (fieldPath: string[], isSelected: boolean) => void;
   onCursorSelect: (cursorPath: string[]) => void;
   onPkSelect: (pkPath: string[]) => void;
   shouldDefinePk: boolean;
@@ -39,6 +44,7 @@ export interface StreamFieldsTableProps {
 
 export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   config,
+  handleFieldToggle,
   onPkSelect,
   onCursorSelect,
   shouldDefineCursor,
@@ -48,11 +54,23 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   syncSchemaFields,
 }) => {
   const { formatMessage } = useIntl();
-
+  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", true);
   const isCursor = useMemo(() => (path: string[]) => equal(config?.cursorField, path), [config?.cursorField]);
   const isPrimaryKey = useMemo(
     () => (path: string[]) => !!config?.primaryKey?.some((p) => equal(p, path)),
     [config?.primaryKey]
+  );
+  const isFieldSelected = useCallback(
+    (field: SyncSchemaField): boolean => {
+      // All fields are implicitly selected if field selection is disabled
+      if (!config?.fieldSelectionEnabled) {
+        return true;
+      }
+
+      // path[0] is the top-level field name for all nested fields
+      return !!config?.selectedFields?.find((f) => isEqual(f.fieldPath, [field.path[0]]));
+    },
+    [config]
   );
 
   // header group icons:
@@ -66,18 +84,42 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   const tableData: TableStream[] = useMemo(
     () =>
       syncSchemaFields.map((stream) => ({
+        sync: { field: stream, isSelected: isFieldSelected(stream), shouldDefinePk, shouldDefineCursor },
         path: stream.path,
         dataType: getDataType(stream),
         cursorDefined: shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(stream),
         primaryKeyDefined: shouldDefinePk && SyncSchemaFieldObject.isPrimitive(stream),
       })),
-    [shouldDefineCursor, shouldDefinePk, syncSchemaFields]
+    [shouldDefineCursor, shouldDefinePk, syncSchemaFields, isFieldSelected]
   );
 
   const columnHelper = createColumnHelper<TableStream>();
 
+  console.log(handleFieldToggle);
+
   const sourceColumns = useMemo(
     () => [
+      ...(isColumnSelectionEnabled
+        ? [
+            columnHelper.accessor("sync", {
+              id: "sourceSyncField",
+              header: () => "Sync",
+              cell: ({ getValue }) => (
+                <SyncFieldCell
+                  {...getValue()}
+                  handleFieldToggle={handleFieldToggle}
+                  checkIsCursor={isCursor}
+                  checkIsPrimaryKey={isPrimaryKey}
+                  shouldDefineCursor={shouldDefineCursor}
+                  shouldDefinePrimaryKey={shouldDefinePk}
+                />
+              ),
+              meta: {
+                tdClassName: styles.textCell,
+              },
+            }),
+          ]
+        : []),
       columnHelper.accessor("path", {
         id: "sourcePath",
         header: () => <FormattedMessage id="form.field.name" />,
@@ -135,12 +177,16 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     [
       columnHelper,
       formatMessage,
+      handleFieldToggle,
+      isColumnSelectionEnabled,
       isCursor,
       isPrimaryKey,
       isCursorDefinitionSupported,
       isPKDefinitionSupported,
       onCursorSelect,
       onPkSelect,
+      shouldDefineCursor,
+      shouldDefinePk,
     ]
   );
 

@@ -207,6 +207,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             onCursorSelect={onCursorSelect}
             onPkSelect={onPkSelect}
             onSelectedChange={onSelectStream}
+            handleFieldToggle={onSelectedFieldsUpdate}
             shouldDefinePk={shouldDefinePk}
             shouldDefineCursor={shouldDefineCursor}
             isCursorDefinitionSupported={cursorRequired}
