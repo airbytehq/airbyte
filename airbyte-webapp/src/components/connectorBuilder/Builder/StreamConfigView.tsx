@@ -20,9 +20,10 @@ import { StreamSlicerSection } from "./StreamSlicerSection";
 
 interface StreamConfigViewProps {
   streamNum: number;
+  hasMultipleStreams: boolean;
 }
 
-export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum }) => {
+export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, hasMultipleStreams }) => {
   const { formatMessage } = useIntl();
   const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
@@ -49,7 +50,10 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
   };
 
   return (
-    <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.stream" })}>
+    <BuilderConfigView
+      heading={formatMessage({ id: "connectorBuilder.stream" })}
+      className={hasMultipleStreams ? styles.multiStreams : undefined}
+    >
       {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderTitle path={streamFieldPath("name")} label="Stream Name" size="md" />
       <div className={styles.controls}>
@@ -97,8 +101,8 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           optional
         />
       </BuilderCard>
-      <PaginationSection streamFieldPath={streamFieldPath} />
-      <StreamSlicerSection streamFieldPath={streamFieldPath} />
+      <PaginationSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
+      <StreamSlicerSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
       <BuilderCard>
         <KeyValueListField
           path={streamFieldPath("requestOptions.requestParameters")}
