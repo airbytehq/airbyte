@@ -35,10 +35,6 @@
     @include header-background(colors.$blue-30, colors.$blue-40);
   }
 
-  &.error {
-    border: 1px solid colors.$red;
-  }
-
   &.disabled {
     background-color: colors.$grey-50;
   }
