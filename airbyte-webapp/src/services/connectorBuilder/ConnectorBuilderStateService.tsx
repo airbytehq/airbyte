@@ -193,7 +193,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
 export const useConnectorBuilderTestState = (): TestStateContext => {
   const connectorBuilderState = useContext(ConnectorBuilderTestStateContext);
   if (!connectorBuilderState) {
-    throw new Error("useConnectorBuilderAPI must be used within a ConnectorBuilderAPIProvider.");
+    throw new Error("useConnectorBuilderTestStae must be used within a ConnectorBuilderTestStateProvider.");
   }
 
   return connectorBuilderState;
@@ -202,7 +202,7 @@ export const useConnectorBuilderTestState = (): TestStateContext => {
 export const useConnectorBuilderFormState = (): FormStateContext => {
   const connectorBuilderState = useContext(ConnectorBuilderFormStateContext);
   if (!connectorBuilderState) {
-    throw new Error("useConnectorBuilderState must be used within a ConnectorBuilderStateProvider.");
+    throw new Error("useConnectorBuilderFormState must be used within a ConnectorBuilderFormStateProvider.");
   }
 
   return connectorBuilderState;
