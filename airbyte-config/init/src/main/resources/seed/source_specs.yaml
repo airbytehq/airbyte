@@ -719,7 +719,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.25"
+- dockerImage: "airbyte/source-amazon-ads:0.1.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -3474,7 +3474,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.79"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.81"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -3840,7 +3840,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-facebook-pages:0.2.0"
+- dockerImage: "airbyte/source-facebook-pages:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-pages"
     connectionSpecification:
@@ -3866,7 +3866,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-faker:1.0.0"
+- dockerImage: "airbyte/source-faker:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -3907,8 +3907,17 @@
             \ before a state message is emitted?"
           type: "integer"
           minimum: 1
-          default: 100
+          default: 1000
           order: 3
+        parallelism:
+          title: "Parallelism"
+          description: "How many parallel workers should we use to generate fake data?\
+            \  Choose a value equal to the number of CPUs you will allocate to this\
+            \ source."
+          type: "integer"
+          minimum: 1
+          default: 4
+          order: 4
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4032,7 +4041,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.31"
+- dockerImage: "airbyte/source-file:0.2.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4746,7 +4755,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-gnews:0.1.0"
+- dockerImage: "airbyte/source-gnews:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gnews"
     connectionSpecification:
@@ -5218,7 +5227,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.32"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
@@ -6057,7 +6066,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-harvest:0.1.12"
+- dockerImage: "airbyte/source-harvest:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/harvest"
     connectionSpecification:
@@ -6668,7 +6677,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.3.1"
+- dockerImage: "airbyte/source-jira:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -8521,7 +8530,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-monday:0.2.1"
+- dockerImage: "airbyte/source-monday:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/monday"
     connectionSpecification:
@@ -9196,7 +9205,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-netsuite:0.1.1"
+- dockerImage: "airbyte/source-netsuite:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -11355,7 +11364,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.34"
+- dockerImage: "airbyte/source-postgres:1.0.35"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11583,6 +11592,7 @@
             - "method"
             - "replication_slot"
             - "publication"
+            additionalProperties: true
             properties:
               method:
                 type: "string"
@@ -11627,6 +11637,19 @@
                 order: 5
                 min: 120
                 max: 1200
+              lsn_commit_behaviour:
+                type: "string"
+                title: "LSN commit behaviour"
+                description: "Determines when Airbtye should flush the LSN of processed\
+                  \ WAL logs in the source database. `After loading Data in the destination`\
+                  \ is default. If `While reading Data` is selected, in case of a\
+                  \ downstream failure (while loading data into the destination),\
+                  \ next sync would result in a full sync."
+                enum:
+                - "While reading Data"
+                - "After loading Data in the destination"
+                default: "After loading Data in the destination"
+                order: 6
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -12834,7 +12857,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.27"
+- dockerImage: "airbyte/source-salesforce:1.0.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -13594,7 +13617,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.10"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -14664,7 +14687,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:1.0.0"
+- dockerImage: "airbyte/source-tiktok-marketing:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -16467,7 +16490,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sentry:0.1.7"
+- dockerImage: "airbyte/source-sentry:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sentry"
     connectionSpecification:
@@ -16501,6 +16524,11 @@
           type: "string"
           title: "Project"
           description: "The name (slug) of the Project you want to sync."
+        discover_fields:
+          type: "array"
+          item: "string"
+          title: "Discover Event Fields"
+          description: "Fields to retrieve when fetching discover events"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

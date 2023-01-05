@@ -118,7 +118,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
           <Switch
-            small
+            size="sm"
             checked={stream.config?.selected}
             onChange={onSelectStream}
             disabled={disabled}
