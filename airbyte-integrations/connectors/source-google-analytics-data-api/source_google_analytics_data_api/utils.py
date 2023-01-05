@@ -13,8 +13,8 @@ def datetime_to_secs(dt: datetime.datetime) -> int:
 
 
 def string_to_date(d: str, f: str = "%Y-%m-%d", old_format=None) -> datetime.date:
-    # To convert old STATE date format "YYYY-MM-DD" to the new format "YYYYMMDD" we need this `old_format` additional param.
-    # As soon all current cloud sync will be converted to the new format we can remove this double format support.
+    # To convert the old STATE date format "YYYY-MM-DD" to the new format "YYYYMMDD" we need this `old_format` additional param.
+    # As soon as all current cloud sync will be converted to the new format we can remove this double format support.
     if old_format:
         try:
             return datetime.datetime.strptime(d, old_format).date()
