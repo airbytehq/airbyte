@@ -30,9 +30,9 @@ import kotlin.io.path.isRegularFile
  */
 
 /**
- * Feature Flag Client interfaced.
+ * Featur-Flag Client interfaced.
  */
-sealed interface Client {
+sealed interface FeatureFlagClient {
     /**
      * Returns true if the flag with the provided context should be enabled. Returns false otherwise.
      */
@@ -46,7 +46,7 @@ sealed interface Client {
  * @param [config] the location of the yaml config file that contains the feature-flag definitions.
  * The [config] will be watched for changes and the internal representation of the [config] will be updated to match.
  */
-class PlatformClient(config: Path) : Client {
+class PlatformClient(config: Path) : FeatureFlagClient {
     /** [flags] holds the mappings of the flag-name to the flag properties */
     private var flags: Map<String, PlatformFlag> = readConfig(config)
 
@@ -78,7 +78,7 @@ class PlatformClient(config: Path) : Client {
  *
  * @param [client] the Launch-Darkly client for interfacing with Launch-Darkly.
  */
-class CloudClient(private val client: LDClient) : Client {
+class CloudClient(private val client: LDClient) : FeatureFlagClient {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {
             is EnvVar -> flag.enabled()
@@ -94,7 +94,7 @@ class CloudClient(private val client: LDClient) : Client {
  *
  * @param [values] is a map of [Flag.key] to enabled/disabled status.
  */
-class TestClient(val values: Map<String, Boolean>) : Client {
+class TestClient(val values: Map<String, Boolean>) : FeatureFlagClient {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {
             is EnvVar -> {

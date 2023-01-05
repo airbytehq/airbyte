@@ -15,13 +15,13 @@ import kotlin.io.path.writeText
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class ClientTest {
+class FeatureFlagClientTest {
     @Nested
     inner class PlatformClient {
         @Test
         fun `verify platform functionality`() {
             val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
-            val client: Client = PlatformClient(cfg)
+            val client: FeatureFlagClient = PlatformClient(cfg)
 
             val testTrue = Temporary(key = "test-true")
             val testFalse = Temporary(key = "test-false", default = true)
@@ -56,7 +56,7 @@ class ClientTest {
                 writeText(contents0)
             }
 
-            val client: Client = PlatformClient(tmpConfig)
+            val client: FeatureFlagClient = PlatformClient(tmpConfig)
 
             // define the feature-flags
             val testTrue = Temporary(key = "reload-test-true")
@@ -86,7 +86,7 @@ class ClientTest {
         @Test
         fun `verify env-var flag support`() {
             val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
-            val client: Client = PlatformClient(cfg)
+            val client: FeatureFlagClient = PlatformClient(cfg)
 
             val evTrue = EnvVar(envVar = "env-true", fetcher = { _ -> "true" })
             val evFalse = EnvVar(envVar = "env-true", fetcher = { _ -> "false" })
@@ -126,7 +126,7 @@ class ClientTest {
                 }
             }
 
-            val client: Client = CloudClient(ldClient)
+            val client: FeatureFlagClient = CloudClient(ldClient)
             with(client) {
                 assertTrue { enabled(testTrue, ctx) }
                 assertFalse { enabled(testFalse, ctx) }
@@ -143,7 +143,7 @@ class ClientTest {
         @Test
         fun `verify env-var flag support`() {
             val ldClient: LDClient = mockk()
-            val client: Client = CloudClient(ldClient)
+            val client: FeatureFlagClient = CloudClient(ldClient)
 
             val evTrue = EnvVar(envVar = "env-true", fetcher = { _ -> "true" })
             val evFalse = EnvVar(envVar = "env-false", fetcher = { _ -> "false" })
@@ -177,7 +177,7 @@ class ClientTest {
                 .mapKeys { it.key.key }
                 .toMutableMap()
 
-            val client: Client = TestClient(values)
+            val client: FeatureFlagClient = TestClient(values)
             with(client) {
                 assertTrue { enabled(testTrue.first, ctx) }
                 assertFalse { enabled(testFalse.first, ctx) }
@@ -207,7 +207,7 @@ class ClientTest {
                 evTrue.key to true,
                 evFalse.key to false,
             )
-            val client: Client = TestClient(values)
+            val client: FeatureFlagClient = TestClient(values)
 
             with(client) {
                 assertTrue { enabled(evTrue, ctx) }
