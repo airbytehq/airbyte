@@ -79,7 +79,7 @@ public class JsonSchemaReferenceTypes {
           """),
       INTEGER_REFERENCE, (ObjectNode) Jsons.deserialize(
           """
-          {"type": "number", "airbyte_type", "integer"}
+          {"type": "number", "airbyte_type": "integer"}
           """),
       NUMBER_REFERENCE, (ObjectNode) Jsons.deserialize(
           """
