@@ -6,26 +6,28 @@ package io.airbyte.persistence.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.version.Version;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 public interface JobCreator {
 
   /**
-   *
    * @param source db model representing where data comes from
    * @param destination db model representing where data goes
    * @param standardSync sync options
    * @param sourceDockerImage docker image to use for the source
    * @param destinationDockerImage docker image to use for the destination
+   * @param workspaceId
    * @return the new job if no other conflicting job was running, otherwise empty
    * @throws IOException if something wrong happens
    */
@@ -38,8 +40,9 @@ public interface JobCreator {
                                Version destinationProtocolVersion,
                                List<StandardSyncOperation> standardSyncOperations,
                                @Nullable JsonNode webhookOperationConfigs,
-                               @Nullable ActorDefinitionResourceRequirements sourceResourceReqs,
-                               @Nullable ActorDefinitionResourceRequirements destinationResourceReqs)
+                               StandardSourceDefinition sourceDefinition,
+                               StandardDestinationDefinition destinationDefinition,
+                               UUID workspaceId)
       throws IOException;
 
   /**
@@ -55,6 +58,7 @@ public interface JobCreator {
                                           StandardSync standardSync,
                                           String destinationDockerImage,
                                           Version destinationProtocolVersion,
+                                          boolean isCustom,
                                           List<StandardSyncOperation> standardSyncOperations,
                                           List<StreamDescriptor> streamsToReset)
       throws IOException;

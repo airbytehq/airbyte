@@ -19,17 +19,17 @@ public class SchedulerApiController implements SchedulerApi {
 
   @Override
   public CheckConnectionRead executeDestinationCheckConnection(final DestinationCoreConfig destinationCoreConfig) {
-    return ConfigurationApi.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationCoreConfig));
+    return ApiHelper.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationCoreConfig));
   }
 
   @Override
   public CheckConnectionRead executeSourceCheckConnection(final SourceCoreConfig sourceCoreConfig) {
-    return ConfigurationApi.execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceCoreConfig));
+    return ApiHelper.execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceCoreConfig));
   }
 
   @Override
   public SourceDiscoverSchemaRead executeSourceDiscoverSchema(final SourceCoreConfig sourceCoreConfig) {
-    return ConfigurationApi.execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig));
+    return ApiHelper.execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig));
   }
 
 }

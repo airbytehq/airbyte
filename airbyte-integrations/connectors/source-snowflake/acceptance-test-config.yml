@@ -1,0 +1,29 @@
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-snowflake:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "src/test-integration/resources/expected_spec.json"
+        config_path: "secrets/config.json"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_inc.json"

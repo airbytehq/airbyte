@@ -72,7 +72,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
    * @param colIndex 1-based column index.
    */
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final ResultSetMetaData metaData = (ResultSetMetaData) resultSet.getMetaData();
     final Field field = metaData.getFields()[colIndex - 1];
     final String columnName = field.getName();
@@ -89,7 +89,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
         }
       }
       case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-      case TINYINT, TINYINT_UNSIGNED -> {
+      case TINYINT -> {
         if (field.getLength() == 1L) {
           // TINYINT(1) is boolean
           putBoolean(json, columnName, resultSet, colIndex);
@@ -97,6 +97,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
           putShortInt(json, columnName, resultSet, colIndex);
         }
       }
+      case TINYINT_UNSIGNED -> putShortInt(json, columnName, resultSet, colIndex);
       case SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> putInteger(json, columnName, resultSet, colIndex);
       case INT, INT_UNSIGNED -> {
         if (field.isUnsigned()) {
@@ -149,10 +150,10 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public void setStatementField(final PreparedStatement preparedStatement,
-                                final int parameterIndex,
-                                final MysqlType cursorFieldType,
-                                final String value)
+  public void setCursorField(final PreparedStatement preparedStatement,
+                             final int parameterIndex,
+                             final MysqlType cursorFieldType,
+                             final String value)
       throws SQLException {
     switch (cursorFieldType) {
       case BIT -> setBit(preparedStatement, parameterIndex, value);
@@ -175,7 +176,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public MysqlType getFieldType(final JsonNode field) {
+  public MysqlType getDatabaseFieldType(final JsonNode field) {
     try {
       // MysqlType#getByName can handle the full MySQL type name
       // e.g. MEDIUMINT UNSIGNED
@@ -184,7 +185,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
       switch (literalType) {
         // BIT(1) and TINYINT(1) are interpreted as boolean
-        case BIT, TINYINT, TINYINT_UNSIGNED -> {
+        case BIT, TINYINT -> {
           if (columnSize == 1) {
             return MysqlType.BOOLEAN;
           }
@@ -207,7 +208,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public boolean isCursorType(MysqlType type) {
+  public boolean isCursorType(final MysqlType type) {
     return ALLOWED_CURSOR_TYPES.contains(type);
   }
 
@@ -227,7 +228,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public JsonSchemaType getJsonType(final MysqlType mysqlType) {
+  public JsonSchemaType getAirbyteType(final MysqlType mysqlType) {
     return switch (mysqlType) {
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
@@ -259,7 +260,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  protected void setTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
+  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     } catch (final DateTimeParseException e) {

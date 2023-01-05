@@ -1,0 +1,48 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["results"]
+    record_filter:
+      condition: "{{ record['bounce_rate'] is not none }}"
+  requester:
+    url_base: "https://plausible.io/api/v1/stats"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+    request_options_provider:
+      request_parameters:
+        site_id: "{{ config['site_id'] }}"
+        period: "custom"
+        # Retrieves all available metrics.
+        # See https://plausible.io/docs/stats-api#metrics
+        metrics: "visitors,pageviews,bounce_rate,visit_duration,visits"
+        # Plausible does not provide a way for "all time" data retrieval.
+        # Default start date: Plausible was launched in January 2019.
+        # See (https://plausible.io/about)
+        date: "{{ config['start_date'] or '2019-01-01' }},{{ today_utc() }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  stats_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stats"
+      primary_key: "date"
+      path: "/timeseries"
+
+streams:
+  - "*ref(definitions.stats_stream)"
+
+check:
+  stream_names:
+    - "stats"

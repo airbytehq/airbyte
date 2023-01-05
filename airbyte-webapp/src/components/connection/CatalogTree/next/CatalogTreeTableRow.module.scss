@@ -1,48 +1,73 @@
 @use "scss/colors";
 @use "scss/variables";
 
-.icon {
-  margin-right: 7px;
-  margin-top: -1px;
+@mixin header-background($color, $hoverColor) {
+  background-color: $color;
 
-  &.plus {
-    color: colors.$green;
-  }
-
-  &.minus {
-    color: colors.$red;
+  &:hover {
+    background-color: $hoverColor;
+    cursor: pointer;
   }
 }
 
 .streamHeaderContent {
-  background: colors.$white;
+  @include header-background(colors.$white, colors.$grey-30);
+
   border-bottom: 1px solid colors.$grey-50;
+  padding: 0 variables.$spacing-md;
+  margin-bottom: 1px;
+  gap: variables.$spacing-sm;
+  min-height: 50px;
+  height: 50px;
+  align-items: center;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 
-  &:hover {
-    background: colors.$grey-30;
-    cursor: pointer;
+  &.removed {
+    @include header-background(colors.$red-30, colors.$red-40);
   }
 
-  &.disabledChange {
-    background-color: colors.$red-50;
+  &.added {
+    @include header-background(colors.$green-30, colors.$green-40);
   }
 
-  &.enabledChange {
-    background-color: colors.$green-50;
+  &.changed {
+    @include header-background(colors.$blue-30, colors.$blue-40);
   }
 
   &.error {
     border: 1px solid colors.$red;
   }
 
-  &.selected {
-    background-color: colors.$blue-transparent;
+  &.disabled {
+    background-color: colors.$grey-50;
   }
 }
 
 .streamRowCheckboxCell {
+  margin-right: variables.$spacing-sm;
+  max-width: 43px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 13px;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding-left: 27px;
+  padding-left: variables.$spacing-xl + variables.$spacing-sm;
+  align-items: center;
+}
+
+.arrowCell {
+  width: 20px;
+}
+
+.cellText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.syncModeCell {
+  width: variables.$width-wide-menu;
+  min-width: variables.$width-wide-menu;
 }

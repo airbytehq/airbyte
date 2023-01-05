@@ -10,9 +10,9 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 public abstract class AzureBlobStorageStreamCopierFactory implements StreamCopierFactory<AzureBlobStorageConfig> {
 

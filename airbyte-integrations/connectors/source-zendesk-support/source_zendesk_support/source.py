@@ -3,9 +3,11 @@
 #
 
 import base64
+import logging
 from typing import Any, List, Mapping, Tuple
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -31,12 +33,9 @@ from .streams import (
     Tickets,
     Users,
     UserSettingsStream,
-    UserSubscriptionStream,
 )
 
-# The Zendesk Subscription Plan gains complete access to all the streams
-FULL_ACCESS_PLAN = "Enterprise"
-FULL_ACCESS_ONLY_STREAMS = ["ticket_forms"]
+logger = logging.getLogger("airbyte")
 
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
@@ -109,32 +108,34 @@ class SourceZendeskSupport(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         args = self.convert_config2stream_args(config)
-        all_streams_mapping = {
-            # sorted in alphabet order
-            "group_membership": GroupMemberships(**args),
-            "groups": Groups(**args),
-            "macros": Macros(**args),
-            "organizations": Organizations(**args),
-            "satisfaction_ratings": SatisfactionRatings(**args),
-            "sla_policies": SlaPolicies(**args),
-            "tags": Tags(**args),
-            "ticket_audits": TicketAudits(**args),
-            "ticket_comments": TicketComments(**args),
-            "ticket_fields": TicketFields(**args),
-            "ticket_forms": TicketForms(**args),
-            "ticket_metrics": TicketMetrics(**args),
-            "ticket_metric_events": TicketMetricEvents(**args),
-            "tickets": Tickets(**args),
-            "users": Users(**args),
-            "brands": Brands(**args),
-            "custom_roles": CustomRoles(**args),
-            "schedules": Schedules(**args),
-        }
-        # check the users Zendesk Subscription Plan
-        subscription_plan = UserSubscriptionStream(**args).get_subscription_plan()
-        if subscription_plan != FULL_ACCESS_PLAN:
-            # only those the streams that are not listed in FULL_ACCESS_ONLY_STREAMS should be available
-            return [stream_cls for stream_name, stream_cls in all_streams_mapping.items() if stream_name not in FULL_ACCESS_ONLY_STREAMS]
-        else:
-            # all streams should be available for user, otherwise
-            return [stream_cls for stream_cls in all_streams_mapping.values()]
+        streams = [
+            GroupMemberships(**args),
+            Groups(**args),
+            Macros(**args),
+            Organizations(**args),
+            SatisfactionRatings(**args),
+            SlaPolicies(**args),
+            Tags(**args),
+            TicketAudits(**args),
+            TicketComments(**args),
+            TicketFields(**args),
+            TicketMetrics(**args),
+            TicketMetricEvents(**args),
+            Tickets(**args),
+            Users(**args),
+            Brands(**args),
+            CustomRoles(**args),
+            Schedules(**args),
+        ]
+        ticket_forms_stream = TicketForms(**args)
+        # TicketForms stream is only available for Enterprise Plan users but Zendesk API does not provide
+        # a public API to get user's subscription plan. That's why we try to read at least one record and expose this stream
+        # in case of success or skip it otherwise
+        try:
+            for stream_slice in ticket_forms_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                for _ in ticket_forms_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                    streams.append(ticket_forms_stream)
+                    break
+        except Exception as e:
+            logger.warning(f"An exception occurred while trying to access TicketForms stream: {str(e)}. Skipping this stream.")
+        return streams

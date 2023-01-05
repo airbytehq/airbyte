@@ -7,6 +7,7 @@ package io.airbyte.persistence.job;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.STREAM_STATS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,6 +25,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Sqls;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
@@ -37,12 +40,14 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
+import io.airbyte.persistence.job.JobPersistence.AttemptStats;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptStatus;
 import io.airbyte.persistence.job.models.AttemptWithJobInfo;
@@ -86,7 +91,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert", "PMD.AvoidDuplicateLiterals"})
 @DisplayName("DefaultJobPersistance")
 class DefaultJobPersistenceTest {
 
@@ -286,7 +291,7 @@ class DefaultJobPersistenceTest {
     assertEquals(Optional.of(jobOutput), updated.getAttempts().get(0).getOutput());
     assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
 
-    final SyncStats storedSyncStats = jobPersistence.getSyncStats(jobId, attemptNumber).stream().findFirst().get();
+    final SyncStats storedSyncStats = jobPersistence.getAttemptStats(jobId, attemptNumber).combinedStats();
     assertEquals(100L, storedSyncStats.getBytesEmitted());
     assertEquals(9L, storedSyncStats.getRecordsEmitted());
     assertEquals(10L, storedSyncStats.getRecordsCommitted());
@@ -318,6 +323,138 @@ class DefaultJobPersistenceTest {
     final Job updated = jobPersistence.getJob(jobId);
     assertEquals(Optional.of(failureSummary), updated.getAttempts().get(0).getFailureSummary());
     assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
+  }
+
+  @Nested
+  @DisplayName("Test writing in progress stats")
+  class WriteStats {
+
+    @Test
+    @DisplayName("Writing stats the first time should only write record and bytes information correctly")
+    void testWriteStatsFirst() throws IOException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+      final var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)),
+          new StreamSyncStats().withStreamName("name2").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, streamStats);
+
+      final AttemptStats stats = jobPersistence.getAttemptStats(jobId, attemptNumber);
+      final var combined = stats.combinedStats();
+      assertEquals(1000, combined.getBytesEmitted());
+      assertEquals(1000, combined.getRecordsEmitted());
+      assertEquals(1000, combined.getEstimatedBytes());
+      assertEquals(1000, combined.getEstimatedRecords());
+
+      // As of this writing, committed and state messages are not expected.
+      assertEquals(null, combined.getRecordsCommitted());
+      assertEquals(null, combined.getDestinationStateMessagesEmitted());
+
+      final var actStreamStats = stats.perStreamStats();
+      assertEquals(2, actStreamStats.size());
+      assertEquals(streamStats, actStreamStats);
+    }
+
+    @Test
+    @DisplayName("Writing stats multiple times should write record and bytes information correctly without exceptions")
+    void testWriteStatsRepeated() throws IOException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      // First write.
+      var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, streamStats);
+
+      // Second write.
+      when(timeSupplier.get()).thenReturn(Instant.now());
+      streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(1000L).withRecordsEmitted(1000L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, streamStats);
+
+      final AttemptStats stats = jobPersistence.getAttemptStats(jobId, attemptNumber);
+      final var combined = stats.combinedStats();
+      assertEquals(2000, combined.getBytesEmitted());
+      assertEquals(2000, combined.getRecordsEmitted());
+      assertEquals(2000, combined.getEstimatedBytes());
+      assertEquals(2000, combined.getEstimatedRecords());
+
+      final var actStreamStats = stats.perStreamStats();
+      assertEquals(1, actStreamStats.size());
+      assertEquals(streamStats, actStreamStats);
+
+    }
+
+    @Test
+    @DisplayName("Writing multiple stats of the same attempt id, stream name and namespace should update the previous record")
+    void testWriteStatsUpsert() throws IOException, SQLException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      // First write.
+      var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, streamStats);
+
+      // Second write.
+      when(timeSupplier.get()).thenReturn(Instant.now());
+      streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(1000L).withRecordsEmitted(1000L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, streamStats);
+
+      final var syncStatsRec = jobDatabase.query(ctx -> {
+        final var attemptId = DefaultJobPersistence.getAttemptId(jobId, attemptNumber, ctx);
+        return ctx.fetch("SELECT * from sync_stats where attempt_id = ?", attemptId).stream().findFirst().get();
+      });
+
+      // Check time stamps to confirm upsert.
+      assertNotEquals(syncStatsRec.get(SYNC_STATS.CREATED_AT), syncStatsRec.get(SYNC_STATS.UPDATED_AT));
+
+      final var streamStatsRec = jobDatabase.query(ctx -> {
+        final var attemptId = DefaultJobPersistence.getAttemptId(jobId, attemptNumber, ctx);
+        return ctx.fetch("SELECT * from stream_stats where attempt_id = ?", attemptId).stream().findFirst().get();
+      });
+      // Check time stamps to confirm upsert.
+      assertNotEquals(streamStatsRec.get(STREAM_STATS.CREATED_AT), streamStatsRec.get(STREAM_STATS.UPDATED_AT));
+    }
+
+    @Test
+    @DisplayName("Writing multiple stats a stream with null namespace should write correctly without exceptions")
+    void testWriteNullNamespace() throws IOException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      // First write.
+      var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, streamStats);
+
+      // Second write.
+      when(timeSupplier.get()).thenReturn(Instant.now());
+      streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1")
+              .withStats(new SyncStats().withBytesEmitted(1000L).withRecordsEmitted(1000L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, streamStats);
+
+      final AttemptStats stats = jobPersistence.getAttemptStats(jobId, attemptNumber);
+      final var combined = stats.combinedStats();
+      assertEquals(2000, combined.getBytesEmitted());
+      assertEquals(2000, combined.getRecordsEmitted());
+      assertEquals(2000, combined.getEstimatedBytes());
+      assertEquals(2000, combined.getEstimatedRecords());
+
+      final var actStreamStats = stats.perStreamStats();
+      assertEquals(1, actStreamStats.size());
+      assertEquals(streamStats, actStreamStats);
+    }
+
   }
 
   @Test
@@ -594,6 +731,22 @@ class DefaultJobPersistenceTest {
     jobPersistence.setAirbyteProtocolVersionMin(minVersion2);
     final Optional<Version> minVersion2read = jobPersistence.getAirbyteProtocolVersionMin();
     assertEquals(minVersion2, minVersion2read.orElseThrow());
+  }
+
+  @Test
+  void testAirbyteProtocolVersionRange() throws IOException {
+    final Version v1 = new Version("1.5.0");
+    final Version v2 = new Version("2.5.0");
+    final Optional<AirbyteProtocolVersionRange> range = jobPersistence.getCurrentProtocolVersionRange();
+    assertEquals(Optional.empty(), range);
+
+    jobPersistence.setAirbyteProtocolVersionMax(v2);
+    final Optional<AirbyteProtocolVersionRange> range2 = jobPersistence.getCurrentProtocolVersionRange();
+    assertEquals(Optional.of(new AirbyteProtocolVersionRange(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION, v2)), range2);
+
+    jobPersistence.setAirbyteProtocolVersionMin(v1);
+    final Optional<AirbyteProtocolVersionRange> range3 = jobPersistence.getCurrentProtocolVersionRange();
+    assertEquals(Optional.of(new AirbyteProtocolVersionRange(v1, v2)), range3);
   }
 
   private long createJobAt(final Instant created_at) throws IOException {

@@ -6,6 +6,7 @@ const databaseInput = "input[name='connectionConfiguration.database']";
 const usernameInput = "input[name='connectionConfiguration.username']";
 const passwordInput = "input[name='connectionConfiguration.password']";
 const pokemonNameInput = "input[name='connectionConfiguration.pokemon_name']";
+const schemaInput = "[data-testid='tag-input'] input";
 const destinationPathInput = "input[name='connectionConfiguration.destination_path']";
 
 export const selectServiceType = (type: string) => {
@@ -22,7 +23,7 @@ export const enterHost = (host: string) => {
 };
 
 export const enterPort = (port: string) => {
-  cy.get(portInput).type(port);
+  cy.get(portInput).type("{selectAll}{del}").type(port);
 };
 
 export const enterDatabase = (database: string) => {
@@ -43,4 +44,18 @@ export const enterPokemonName = (pokeName: string) => {
 
 export const enterDestinationPath = (destinationPath: string) => {
   cy.get(destinationPathInput).type(destinationPath);
+};
+
+export const enterSchema = (value: string) => {
+  if (!value) {
+    return;
+  }
+  cy.get(schemaInput).first().type(value, { force: true }).type("{enter}", { force: true });
+};
+
+export const removeSchema = (value = "Remove public") => {
+  if (!value) {
+    return;
+  }
+  cy.get(`[aria-label*="${value}"]`).click();
 };

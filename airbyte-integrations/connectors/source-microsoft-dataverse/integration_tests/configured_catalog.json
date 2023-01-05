@@ -1,0 +1,15 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "<entity_name>",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "cursor_field": ["modifiedon"],
+      "primary_key": [["<entity_primary_key>"]],
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    }
+  ]
+}
