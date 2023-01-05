@@ -15,6 +15,7 @@ import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.SourceSearch;
+import io.airbyte.api.model.generated.SourceSnippetRead;
 import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.config.SourceConnection;
@@ -213,11 +214,15 @@ public class SourceHandler {
     final var workspaceIdRequestBody = new WorkspaceIdRequestBody()
         .workspaceId(source.getWorkspaceId());
 
-    connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)
+    final List<UUID> uuidsToDelete = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)
         .getConnections().stream()
         .filter(con -> con.getSourceId().equals(source.getSourceId()))
         .map(ConnectionRead::getConnectionId)
-        .forEach(connectionsHandler::deleteConnection);
+        .toList();
+
+    for (final UUID uuidToDelete : uuidsToDelete) {
+      connectionsHandler.deleteConnection(uuidToDelete);
+    }
 
     final var spec = getSpecFromSourceId(source.getSourceId());
     final var fullConfig = secretsRepositoryReader.getSourceConnectionWithSecrets(source.getSourceId()).getConfiguration();
@@ -313,6 +318,15 @@ public class SourceHandler {
         .connectionConfiguration(sourceConnection.getConfiguration())
         .name(sourceConnection.getName())
         .icon(SourceDefinitionsHandler.loadIcon(standardSourceDefinition.getIcon()));
+  }
+
+  protected static SourceSnippetRead toSourceSnippetRead(final SourceConnection source, final StandardSourceDefinition sourceDefinition) {
+    return new SourceSnippetRead()
+        .sourceId(source.getSourceId())
+        .name(source.getName())
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .sourceName(sourceDefinition.getName())
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()));
   }
 
 }

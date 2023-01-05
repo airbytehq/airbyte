@@ -7,26 +7,27 @@ import copy
 import json
 import logging
 import os
+from glob import glob
 from logging import Logger
 from pathlib import Path
 from subprocess import STDOUT, check_output, run
 from typing import Any, List, MutableMapping, Optional, Set
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    ConnectorSpecification,
-    DestinationSyncMode,
-    Type,
-)
+from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from docker import errors
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import Config, EmptyStreamConfiguration
+from source_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig
 from source_acceptance_test.tests import TestBasicRead
-from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, load_config, load_yaml_or_json_path
+from source_acceptance_test.utils import (
+    ConnectorRunner,
+    SecretDict,
+    build_configured_catalog_from_custom_catalog,
+    build_configured_catalog_from_discovered_catalog_and_empty_streams,
+    filter_output,
+    load_config,
+    load_yaml_or_json_path,
+)
 
 
 @pytest.fixture(name="acceptance_test_config", scope="session")
@@ -44,14 +45,30 @@ def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
 
 
 @pytest.fixture(name="test_strictness_level", scope="session")
-def test_strictness_level_fixture(acceptance_test_config: Config):
+def test_strictness_level_fixture(acceptance_test_config: Config) -> Config.TestStrictnessLevel:
     return acceptance_test_config.test_strictness_level
+
+
+@pytest.fixture(name="cache_discovered_catalog", scope="session")
+def cache_discovered_catalog_fixture(acceptance_test_config: Config) -> bool:
+    return acceptance_test_config.cache_discovered_catalog
 
 
 @pytest.fixture(name="connector_config_path")
 def connector_config_path_fixture(inputs, base_path) -> Path:
-    """Fixture with connector's config path"""
-    return Path(base_path) / getattr(inputs, "config_path")
+    """Fixture with connector's config path. The path to the latest updated configurations will be returned if any."""
+    original_configuration_path = Path(base_path) / getattr(inputs, "config_path")
+    updated_configurations_glob = f"{original_configuration_path.parent}/updated_configurations/{original_configuration_path.stem}|**{original_configuration_path.suffix}"
+    existing_configurations_path_creation_time = [
+        (config_file_path, os.path.getctime(config_file_path)) for config_file_path in glob(updated_configurations_glob)
+    ]
+    if existing_configurations_path_creation_time:
+        existing_configurations_path_creation_time.sort(key=lambda x: x[1])
+        most_recent_configuration_path = existing_configurations_path_creation_time[-1][0]
+    else:
+        most_recent_configuration_path = original_configuration_path
+    logging.info(f"Using {most_recent_configuration_path} as configuration. It is the most recent version.")
+    return Path(most_recent_configuration_path)
 
 
 @pytest.fixture(name="invalid_connector_config_path")
@@ -75,24 +92,17 @@ def configured_catalog_path_fixture(inputs, base_path) -> Optional[str]:
 
 
 @pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture(configured_catalog_path, discovered_catalog) -> ConfiguredAirbyteCatalog:
-    """Take ConfiguredAirbyteCatalog from discover command by default"""
+def configured_catalog_fixture(
+    configured_catalog_path: Optional[str],
+    discovered_catalog: MutableMapping[str, AirbyteStream],
+) -> ConfiguredAirbyteCatalog:
+    """Build a configured catalog.
+    If a configured catalog path is given we build a configured catalog from it, we build it from the discovered catalog otherwise.
+    """
     if configured_catalog_path:
-        catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
-        for configured_stream in catalog.streams:
-            configured_stream.stream = discovered_catalog.get(configured_stream.stream.name, configured_stream.stream)
-        return catalog
-    streams = [
-        ConfiguredAirbyteStream(
-            stream=stream,
-            sync_mode=stream.supported_sync_modes[0],
-            destination_sync_mode=DestinationSyncMode.append,
-            cursor_field=stream.default_cursor_field,
-            primary_key=stream.source_defined_primary_key,
-        )
-        for _, stream in discovered_catalog.items()
-    ]
-    return ConfiguredAirbyteCatalog(streams=streams)
+        return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
+    else:
+        return build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, set())
 
 
 @pytest.fixture(name="image_tag")
@@ -129,8 +139,8 @@ def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
 
 
 @pytest.fixture(name="docker_runner")
-def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
-    return ConnectorRunner(image_tag, volume=tmp_path)
+def docker_runner_fixture(image_tag, tmp_path, connector_config_path) -> ConnectorRunner:
+    return ConnectorRunner(image_tag, volume=tmp_path, connector_configuration_path=connector_config_path)
 
 
 @pytest.fixture(name="previous_connector_image_name")
@@ -178,12 +188,17 @@ def empty_streams_fixture(inputs, test_strictness_level) -> Set[EmptyStreamConfi
     return empty_streams
 
 
+@pytest.fixture(name="expect_records_config")
+def expect_records_config_fixture(inputs):
+    return inputs.expect_records
+
+
 @pytest.fixture(name="expected_records_by_stream")
 def expected_records_by_stream_fixture(
     test_strictness_level: Config.TestStrictnessLevel,
     configured_catalog: ConfiguredAirbyteCatalog,
     empty_streams: Set[EmptyStreamConfiguration],
-    inputs,
+    expect_records_config: ExpectedRecordsConfig,
     base_path,
 ) -> MutableMapping[str, List[MutableMapping]]:
     def enforce_high_strictness_level_rules(expect_records_config, configured_catalog, empty_streams, records_by_stream) -> Optional[str]:
@@ -197,8 +212,9 @@ def expected_records_by_stream_fixture(
                     error_prefix
                     + f"{', '.join(not_seeded_streams)} streams are declared in the catalog but do not have expected records. Please add expected records to {expect_records_config.path} or declare these streams in empty_streams."
                 )
-
-    expect_records_config = inputs.expect_records
+        else:
+            if not getattr(expect_records_config, "bypass_reason", None):
+                pytest.fail(error_prefix / "A bypass reason must be filled if no path to expected records is provided.")
 
     expected_records_by_stream = {}
     if expect_records_config:
@@ -239,14 +255,15 @@ def previous_cached_schemas_fixture() -> MutableMapping[str, AirbyteStream]:
 
 
 @pytest.fixture(name="discovered_catalog")
-def discovered_catalog_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, AirbyteStream]:
+def discovered_catalog_fixture(
+    connector_config, docker_runner: ConnectorRunner, cached_schemas, cache_discovered_catalog: bool
+) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
-    if not cached_schemas:
+    if not cached_schemas or not cache_discovered_catalog:
         output = docker_runner.call_discover(config=connector_config)
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
         for stream in catalogs[-1].streams:
             cached_schemas[stream.name] = stream
-
     return cached_schemas
 
 
@@ -255,6 +272,11 @@ def previous_discovered_catalog_fixture(
     connector_config, previous_connector_docker_runner: ConnectorRunner, previous_cached_schemas
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
+    if previous_connector_docker_runner is None:
+        logging.warning(
+            "\n We could not retrieve the previous discovered catalog as a connector runner for the previous connector version could not be instantiated."
+        )
+        return None
     if not previous_cached_schemas:
         output = previous_connector_docker_runner.call_discover(config=connector_config)
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]

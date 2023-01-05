@@ -34,9 +34,9 @@ import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.SQLException;
 import java.util.List;
@@ -161,7 +161,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     return "CREATE SCHEMA " + schemaName;
   }
 
-  //TODO : Delete this Override when MSSQL supports individual table snapshot
+  // TODO : Delete this Override when MSSQL supports individual table snapshot
   @Override
   public void newTableSnapshotTest() throws Exception {
     // Do nothing

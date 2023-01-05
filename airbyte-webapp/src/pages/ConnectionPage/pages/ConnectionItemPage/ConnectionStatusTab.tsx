@@ -13,8 +13,7 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
-import { ConnectionStatus, JobWithAttemptsRead } from "core/request/AirbyteClient";
-import Status from "core/statuses";
+import { ConnectionStatus, JobStatus, JobWithAttemptsRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
@@ -41,7 +40,7 @@ interface ActiveJob {
 const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
   return jobs.find((jobWithAttempts) => {
     const jobStatus = jobWithAttempts?.job?.status;
-    return jobStatus === Status.PENDING || jobStatus === Status.RUNNING || jobStatus === Status.INCOMPLETE;
+    return jobStatus === JobStatus.pending || jobStatus === JobStatus.running || jobStatus === JobStatus.incomplete;
   });
 };
 
@@ -148,10 +147,10 @@ export const ConnectionStatusTab: React.FC = () => {
 
   const cancelJobBtn = (
     <Button
-      className={styles.cancelButton}
+      variant="danger"
       disabled={!activeJob?.id || activeJob.isCanceling}
       onClick={onCancelJob}
-      icon={<FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />}
+      icon={<FontAwesomeIcon icon={faXmark} />}
     >
       {label}
     </Button>

@@ -1,0 +1,13 @@
+@use "scss/variables";
+
+.card {
+  padding: variables.$spacing-xl;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xl;
+}
+
+.toggleContainer {
+  display: flex;
+  gap: variables.$spacing-md;
+}

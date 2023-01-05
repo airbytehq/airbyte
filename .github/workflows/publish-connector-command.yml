@@ -26,46 +26,35 @@ on:
         required: false
 
 jobs:
-  find_valid_pat:
-    name: "Find a PAT with room for actions"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      pat: ${{ steps.variables.outputs.pat }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Check PAT rate limits
-        id: variables
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
   ## Gradle Build
   # In case of self-hosted EC2 errors, remove this block.
 
 #  start-bump-build-test-connector-runner:
 #    name: Start Build EC2 Runner
 #    runs-on: ubuntu-latest
-#    needs: find_valid_pat
 #    outputs:
 #      label: ${{ steps.start-ec2-runner.outputs.label }}
 #      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
 #    steps:
 #      - name: Checkout Airbyte
-#        uses: actions/checkout@v2
+#        uses: actions/checkout@v3
 #        with:
 #          repository: ${{ github.event.inputs.repo }}
 #          ref: ${{ github.event.inputs.gitref }}
+#      - name: Check PAT rate limits
+#        run: |
+#          ./tools/bin/find_non_rate_limited_PAT \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.SUPERTOPHER_PAT }} \
+#            ${{ secrets.DAVINCHIA_PAT }}
 #      - name: Start AWS Runner
 #        id: start-ec2-runner
 #        uses: ./.github/actions/start-aws-runner
 #        with:
 #          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
 #          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-#          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+#          github-token: ${{ env.PAT }}
 #          # 80 gb disk
 #          ec2-image-id: ami-06cf12549e3d9c522
 #  bump-build-test-connector:
@@ -99,17 +88,18 @@ jobs:
 #          body: |
 #            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
 #      - name: Checkout Airbyte
-#        uses: actions/checkout@v2
+#        uses: actions/checkout@v3
 #        with:
 #          repository: ${{ github.event.inputs.repo }}
 #          ref: ${{ github.event.inputs.gitref }}
 #          token: ${{ secrets.OCTAVIA_PAT }}
 #      - name: Install Java
-#        uses: actions/setup-java@v1
+#        uses: actions/setup-java@v3
 #        with:
+#          distribution: "zulu"
 #          java-version: "17"
 #      - name: Install Python
-#        uses: actions/setup-python@v2
+#        uses: actions/setup-python@v4
 #        with:
 #          python-version: "3.9"
 #      - name: Install Pyenv and Tox
@@ -191,7 +181,6 @@ jobs:
 #    needs:
 #      - start-bump-build-test-connector-runner # required to get output from the start-runner job
 #      - bump-build-test-connector # required to wait when the main job is done
-#      - find_valid_pat
 #    runs-on: ubuntu-latest
 #    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
 #    steps:
@@ -201,10 +190,19 @@ jobs:
 #          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
 #          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 #          aws-region: us-east-2
+#      - name: Checkout Airbyte
+#        uses: actions/checkout@v3
+#      - name: Check PAT rate limits
+#        run: |
+#          ./tools/bin/find_non_rate_limited_PAT \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.SUPERTOPHER_PAT }} \
+#            ${{ secrets.DAVINCHIA_PAT }}
 #      - name: Stop EC2 runner
 #        uses: supertopher/ec2-github-runner@base64v1.0.10
 #        with:
 #          mode: stop
-#          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+#          github-token: ${{ env.PAT }}
 #          label: ${{ needs.start-bump-build-test-connector-runner.outputs.label }}
 #          ec2-instance-id: ${{ needs.start-bump-build-test-connector-runner.outputs.ec2-instance-id }}

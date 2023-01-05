@@ -19,7 +19,7 @@ public class LogsApiController implements LogsApi {
 
   @Override
   public File getLogs(final LogsRequestBody logsRequestBody) {
-    return ConfigurationApi.execute(() -> logsHandler.getLogs(logsRequestBody));
+    return ApiHelper.execute(() -> logsHandler.getLogs(logsRequestBody));
   }
 
 }

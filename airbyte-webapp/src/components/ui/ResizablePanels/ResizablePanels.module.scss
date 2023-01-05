@@ -40,16 +40,35 @@
   transform: rotate(180deg);
 }
 
-.panelGrabber {
+.panelGrabberVertical {
   height: 100vh;
-  padding: variables.$spacing-sm;
+  width: 10px;
   display: flex;
+  flex-direction: row;
 }
 
-.grabberHandleIcon {
-  margin: auto;
-  height: 25px;
-  color: colors.$grey-100;
+.panelGrabberHorizontal {
+  width: 100%;
+  height: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.handleIcon {
+  background-color: colors.$grey-100;
+  border-radius: variables.$border-radius-md;
+}
+
+.handleIconVertical {
+  margin: auto 0 auto auto;
+  height: 30px;
+  width: 3px;
+}
+
+.handleIconHorizontal {
+  margin: 0 auto auto;
+  width: 30px;
+  height: 3px;
 }
 
 .splitter {

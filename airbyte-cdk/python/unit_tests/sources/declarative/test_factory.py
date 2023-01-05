@@ -15,7 +15,7 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilte
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
-from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.requesters.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
     ConstantBackoffStrategy,
@@ -40,11 +40,13 @@ from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer impor
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from dateutil.relativedelta import relativedelta
 from jsonschema import ValidationError
 
 factory = DeclarativeComponentFactory()
 
-parser = YamlParser()
+resolver = ManifestReferenceResolver()
 
 input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}
 
@@ -63,7 +65,7 @@ def test_factory():
       request_body_json:
         body_offset: "{{ next_page_token['offset'] }}"
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["request_options"], input_config, False)
 
@@ -88,7 +90,7 @@ def test_interpolate_config():
         body_field: "yoyoyo"
         interpolated_body_field: "{{ config['apikey'] }}"
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["authenticator"], input_config, False)
 
@@ -110,7 +112,7 @@ def test_list_based_stream_slicer_with_values_refd():
       slice_values: "*ref(repositories)"
       cursor_field: repository
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["stream_slicer"], input_config, False)
 
@@ -128,7 +130,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
         inject_into: header
         field_name: repository
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["stream_slicer"], input_config, False)
 
@@ -180,7 +182,7 @@ def test_create_substream_slicer():
           parent_key: someid
           stream_slice_field: word_id
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     parent_stream_configs = stream_slicer.parent_stream_configs
@@ -215,7 +217,7 @@ def test_create_cartesian_stream_slicer():
         - "*ref(stream_slicer_A)"
         - "*ref(stream_slicer_B)"
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["stream_slicer"], input_config, False)
 
@@ -247,7 +249,7 @@ def test_datetime_stream_slicer():
           field_name: created[gte]
     """
 
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["stream_slicer"], input_config, False)
 
@@ -261,7 +263,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
-    assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._step == relativedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
     assert stream_slicer.lookback_window.string == "5d"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
@@ -344,8 +346,24 @@ list_stream:
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
+spec:
+  class_name: airbyte_cdk.sources.declarative.spec.Spec
+  documentation_url: https://airbyte.com/#yaml-from-manifest
+  connection_specification:
+    title: Test Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: false
+    properties:
+      api_key:
+        type: string
+        airbyte_secret: true
+        title: API Key
+        description: Test API Key
+        order: 0
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["list_stream"], input_config, False)
 
@@ -376,6 +394,20 @@ check:
     assert len(streams_to_check) == 1
     assert list(streams_to_check)[0] == "list_stream"
 
+    spec = factory.create_component(config["spec"], input_config)()
+    documentation_url = spec.documentation_url
+    connection_specification = spec.connection_specification
+    assert documentation_url == "https://airbyte.com/#yaml-from-manifest"
+    assert connection_specification["title"] == "Test Spec"
+    assert connection_specification["required"] == ["api_key"]
+    assert connection_specification["properties"]["api_key"] == {
+        "type": "string",
+        "airbyte_secret": True,
+        "title": "API Key",
+        "description": "Test API Key",
+        "order": 0,
+    }
+
     assert stream.retriever.requester.path.default == "marketing/lists"
 
 
@@ -398,7 +430,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         $ref: "*ref(extractor)"
         field_pointer: ["{record_selector}"]
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["selector"], input_config, False)
 
@@ -445,7 +477,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
     ],
 )
 def test_options_propagation(test_name, content, expected_field_pointer_value):
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     selector = factory.create_component(config["selector"], input_config, True)()
     assert selector.extractor.field_pointer[0].eval(input_config) == expected_field_pointer_value
@@ -515,7 +547,7 @@ def test_create_requester(test_name, error_handler):
         header: header_value
     {error_handler}
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["requester"], input_config, False)
 
@@ -545,7 +577,7 @@ def test_create_composite_error_handler():
                 - http_codes: [ 403 ]
                   action: RETRY
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["error_handler"], input_config, False)
 
@@ -594,7 +626,7 @@ def test_config_with_defaults():
     streams:
       - "*ref(lists_stream)"
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["lists_stream"], input_config, False)
 
@@ -631,7 +663,7 @@ def test_create_default_paginator():
           page_size: 50
           cursor_value: "{{ response._metadata.next }}"
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
     factory.create_component(config["paginator"], input_config, False)
 
@@ -670,7 +702,7 @@ class TestCreateTransformations:
             $options:
                 {self.base_options}
         """
-        config = parser.parse(content)
+        config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
         factory.create_component(config["the_stream"], input_config, False)
 
@@ -690,7 +722,7 @@ class TestCreateTransformations:
                         - ["path", "to", "field1"]
                         - ["path2"]
         """
-        config = parser.parse(content)
+        config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
         factory.create_component(config["the_stream"], input_config, False)
 
@@ -711,7 +743,7 @@ class TestCreateTransformations:
                         - path: ["field1"]
                           value: "static_value"
         """
-        config = parser.parse(content)
+        config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
 
         factory.create_component(config["the_stream"], input_config, False)
 
@@ -743,7 +775,7 @@ def test_validation_wrong_input_type():
         $ref: "*ref(extractor)"
         field_pointer: 408
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
     with pytest.raises(ValidationError):
         factory.create_component(config["selector"], input_config, False)
 
@@ -766,7 +798,7 @@ def test_validation_type_missing_required_fields():
         field_name: created[gte]
     """
 
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
     with pytest.raises(ValidationError):
         factory.create_component(config["stream_slicer"], input_config, False)
 
@@ -786,7 +818,7 @@ def test_validation_wrong_interface_type():
         type: "MinMaxDatetime"
         datetime: "{{ response._metadata.next }}"
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
     with pytest.raises(ValidationError):
         factory.create_component(config["paginator"], input_config, False)
 
@@ -802,7 +834,7 @@ def test_validation_create_composite_error_handler():
             - response_filters:
                 - http_codes: [ 403 ]
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
     with pytest.raises(ValidationError):
         factory.create_component(config["error_handler"], input_config, False)
 
@@ -827,7 +859,7 @@ def test_validation_wrong_object_type():
           type: "MinMaxDatetime"
           datetime: "{{ response._metadata.next }}"
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
     factory.create_component(config["paginator"], input_config, False)
 
 
@@ -841,7 +873,7 @@ def test_validate_types_nested_in_list():
         - type: DpathExtractor
           field_pointer: ["result"]
     """
-    config = parser.parse(content)
+    config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content), {}, "")
     factory.create_component(config["error_handler"], input_config, False)
 
 

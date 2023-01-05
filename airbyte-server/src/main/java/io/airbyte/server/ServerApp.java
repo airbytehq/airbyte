@@ -7,6 +7,7 @@ package io.airbyte.server;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
@@ -21,6 +22,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -49,7 +51,6 @@ import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
@@ -61,12 +62,17 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
+import io.airbyte.server.handlers.WebBackendConnectionsHandler;
+import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -208,6 +214,8 @@ public class ServerApp implements ServerRunnable {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
+    final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
+
     final WebUrlHelper webUrlHelper = new WebUrlHelper(configs.getWebappUrl());
     final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
     final JobErrorReporter jobErrorReporter =
@@ -215,8 +223,6 @@ public class ServerApp implements ServerRunnable {
             configRepository,
             configs.getDeploymentMode(),
             configs.getAirbyteVersionOrWarning(),
-            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
-            NormalizationRunnerFactory.NORMALIZATION_VERSION,
             webUrlHelper,
             jobErrorReportingClient);
 
@@ -254,11 +260,14 @@ public class ServerApp implements ServerRunnable {
 
     final AttemptHandler attemptHandler = new AttemptHandler(jobPersistence);
 
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
+
     final ConnectionsHandler connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        eventRunner);
+        eventRunner,
+        connectionHelper);
 
     final DestinationHandler destinationHandler = new DestinationHandler(
         configRepository,
@@ -278,16 +287,15 @@ public class ServerApp implements ServerRunnable {
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         eventRunner,
-        connectionsHandler);
-
-    final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
+        connectionsHandler,
+        envVariableFeatureFlags);
 
     final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
         destinationHandler);
 
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
 
-    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
+    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader);
 
     final SourceHandler sourceHandler = new SourceHandler(
         configRepository,
@@ -307,7 +315,8 @@ public class ServerApp implements ServerRunnable {
         sourceDefinitionsHandler,
         destinationHandler,
         destinationDefinitionsHandler,
-        configs.getAirbyteVersion());
+        configs.getAirbyteVersion(),
+        temporalClient);
 
     final LogsHandler logsHandler = new LogsHandler(configs);
 
@@ -319,6 +328,26 @@ public class ServerApp implements ServerRunnable {
         sourceHandler);
 
     final OpenApiConfigHandler openApiConfigHandler = new OpenApiConfigHandler();
+
+    final StatePersistence statePersistence = new StatePersistence(configsDatabase);
+
+    final StateHandler stateHandler = new StateHandler(statePersistence);
+
+    final WebBackendConnectionsHandler webBackendConnectionsHandler = new WebBackendConnectionsHandler(
+        connectionsHandler,
+        stateHandler,
+        sourceHandler,
+        destinationHandler,
+        jobHistoryHandler,
+        schedulerHandler,
+        operationsHandler,
+        eventRunner,
+        configRepository);
+
+    final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
+
+    final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler =
+        new WebBackendCheckUpdatesHandler(configRepository, AirbyteGithubStore.production());
 
     LOGGER.info("Starting server...");
 
@@ -341,7 +370,6 @@ public class ServerApp implements ServerRunnable {
         jobsFlyway,
         attemptHandler,
         connectionsHandler,
-        dbMigrationHandler,
         destinationDefinitionsHandler,
         destinationHandler,
         healthCheckHandler,
@@ -352,7 +380,12 @@ public class ServerApp implements ServerRunnable {
         operationsHandler,
         schedulerHandler,
         sourceHandler,
-        workspacesHandler);
+        sourceDefinitionsHandler,
+        stateHandler,
+        workspacesHandler,
+        webBackendConnectionsHandler,
+        webBackendGeographiesHandler,
+        webBackendCheckUpdatesHandler);
   }
 
   public static void main(final String[] args) {
@@ -372,9 +405,9 @@ public class ServerApp implements ServerRunnable {
         // Ensure that the database resources are closed on application shutdown
         CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
-        final Flyway configsFlyway = FlywayFactory.create(configsDataSource, DbMigrationHandler.class.getSimpleName(),
+        final Flyway configsFlyway = FlywayFactory.create(configsDataSource, ServerApp.class.getSimpleName(),
             ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-        final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+        final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, ServerApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
             JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
         getServer(new ServerFactory.Api(), configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();

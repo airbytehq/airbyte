@@ -25,17 +25,17 @@ public class OperationApiController implements OperationApi {
 
   @Override
   public CheckOperationRead checkOperation(final OperatorConfiguration operatorConfiguration) {
-    return ConfigurationApi.execute(() -> operationsHandler.checkOperation(operatorConfiguration));
+    return ApiHelper.execute(() -> operationsHandler.checkOperation(operatorConfiguration));
   }
 
   @Override
   public OperationRead createOperation(final OperationCreate operationCreate) {
-    return ConfigurationApi.execute(() -> operationsHandler.createOperation(operationCreate));
+    return ApiHelper.execute(() -> operationsHandler.createOperation(operationCreate));
   }
 
   @Override
   public void deleteOperation(final OperationIdRequestBody operationIdRequestBody) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       operationsHandler.deleteOperation(operationIdRequestBody);
       return null;
     });
@@ -43,17 +43,17 @@ public class OperationApiController implements OperationApi {
 
   @Override
   public OperationRead getOperation(final OperationIdRequestBody operationIdRequestBody) {
-    return ConfigurationApi.execute(() -> operationsHandler.getOperation(operationIdRequestBody));
+    return ApiHelper.execute(() -> operationsHandler.getOperation(operationIdRequestBody));
   }
 
   @Override
   public OperationReadList listOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return ConfigurationApi.execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
+    return ApiHelper.execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
   }
 
   @Override
   public OperationRead updateOperation(final OperationUpdate operationUpdate) {
-    return ConfigurationApi.execute(() -> operationsHandler.updateOperation(operationUpdate));
+    return ApiHelper.execute(() -> operationsHandler.updateOperation(operationUpdate));
   }
 
 }

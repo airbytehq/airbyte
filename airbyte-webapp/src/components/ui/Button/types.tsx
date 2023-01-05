@@ -1,7 +1,7 @@
 import React from "react";
 
 type ButtonSize = "xs" | "sm" | "lg";
-type ButtonVariant = "primary" | "secondary" | "danger" | "light" | "clear";
+type ButtonVariant = "primary" | "secondary" | "danger" | "light" | "clear" | "dark";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   clickable?: boolean;

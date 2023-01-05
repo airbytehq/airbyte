@@ -21,13 +21,13 @@ public class AttemptApiController implements AttemptApi {
   }
 
   @Override
-  public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
-    throw new UnsupportedOperationException();
+  public InternalOperationResult saveStats(final SaveStatsRequestBody requestBody) {
+    return ApiHelper.execute(() -> attemptHandler.saveStats(requestBody));
   }
 
   @Override
   public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
-    return ConfigurationApi.execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
+    return ApiHelper.execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
   }
 
 }

@@ -17,6 +17,7 @@ import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/componen
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
 import { OAuthLogin } from "../OAuthLogin";
+import { Separator } from "../SignupPage/components/Separator";
 import { Disclaimer } from "../SignupPage/components/SignupForm";
 import styles from "./LoginPage.module.scss";
 
@@ -112,6 +113,8 @@ const LoginPage: React.FC = () => {
           </Form>
         )}
       </Formik>
+
+      <Separator />
       <OAuthLogin />
       <Disclaimer />
     </div>

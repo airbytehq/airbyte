@@ -32,7 +32,7 @@
 
 .card {
   margin-left: variables.$width-size-menu;
-  max-width: calc(100vw - variables.$width-size-menu - variables.$spacing-lg * 2);
+  max-width: calc(100vw - #{variables.$width-size-menu} - #{variables.$spacing-lg} * 2);
 
   &.sm {
     width: variables.$width-modal-sm;

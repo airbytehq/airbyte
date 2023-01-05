@@ -28,27 +28,27 @@ public class DestinationApiController implements DestinationApi {
 
   @Override
   public CheckConnectionRead checkConnectionToDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return ConfigurationApi.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
+    return ApiHelper.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
   }
 
   @Override
   public CheckConnectionRead checkConnectionToDestinationForUpdate(final DestinationUpdate destinationUpdate) {
-    return ConfigurationApi.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
+    return ApiHelper.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
   }
 
   @Override
   public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody) {
-    return ConfigurationApi.execute(() -> destinationHandler.cloneDestination(destinationCloneRequestBody));
+    return ApiHelper.execute(() -> destinationHandler.cloneDestination(destinationCloneRequestBody));
   }
 
   @Override
   public DestinationRead createDestination(final DestinationCreate destinationCreate) {
-    return ConfigurationApi.execute(() -> destinationHandler.createDestination(destinationCreate));
+    return ApiHelper.execute(() -> destinationHandler.createDestination(destinationCreate));
   }
 
   @Override
   public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       destinationHandler.deleteDestination(destinationIdRequestBody);
       return null;
     });
@@ -56,22 +56,22 @@ public class DestinationApiController implements DestinationApi {
 
   @Override
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return ConfigurationApi.execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
+    return ApiHelper.execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
   }
 
   @Override
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return ConfigurationApi.execute(() -> destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody));
+    return ApiHelper.execute(() -> destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
-    return ConfigurationApi.execute(() -> destinationHandler.searchDestinations(destinationSearch));
+    return ApiHelper.execute(() -> destinationHandler.searchDestinations(destinationSearch));
   }
 
   @Override
   public DestinationRead updateDestination(final DestinationUpdate destinationUpdate) {
-    return ConfigurationApi.execute(() -> destinationHandler.updateDestination(destinationUpdate));
+    return ApiHelper.execute(() -> destinationHandler.updateDestination(destinationUpdate));
   }
 
 }

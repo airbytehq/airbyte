@@ -1,34 +1,39 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-ads:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_google_ads/spec.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.45"
+    tests:
+      - spec_path: "source_google_ads/spec.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.45"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.4"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams:
-        [
-          "geographic_report",
-          "keyword_report",
-          "display_keyword_performance_report",
-          "display_topics_performance_report",
-          "shopping_performance_report",
-          "unhappytable",
-          "click_view",
-        ]
-      timeout_seconds: 600
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_protobuf_msg.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "geographic_report"
+          - name: "keyword_report"
+          - name: "display_keyword_performance_report"
+          - name: "display_topics_performance_report"
+          - name: "shopping_performance_report"
+          - name: "unhappytable"
+          - name: "click_view"
+        timeout_seconds: 600
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_protobuf_msg.json"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

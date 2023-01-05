@@ -37,11 +37,12 @@ public class SnowflakeDestinationResolver {
         && config.get("loading_method").has("azure_blob_storage_account_name");
   }
 
-  public static Map<DestinationType, Destination> getTypeToDestination() {
-    final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination();
-    final SnowflakeGcsStagingDestination gcsStagingDestination = new SnowflakeGcsStagingDestination();
-    final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination();
-    final SnowflakeCopyAzureBlobStorageDestination azureBlobStorageDestination = new SnowflakeCopyAzureBlobStorageDestination();
+  public static Map<DestinationType, Destination> getTypeToDestination(
+                                                                       final String airbyteEnvironment) {
+    final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination(airbyteEnvironment);
+    final SnowflakeGcsStagingDestination gcsStagingDestination = new SnowflakeGcsStagingDestination(airbyteEnvironment);
+    final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination(airbyteEnvironment);
+    final SnowflakeCopyAzureBlobStorageDestination azureBlobStorageDestination = new SnowflakeCopyAzureBlobStorageDestination(airbyteEnvironment);
 
     return ImmutableMap.of(
         DestinationType.COPY_S3, s3StagingDestination,

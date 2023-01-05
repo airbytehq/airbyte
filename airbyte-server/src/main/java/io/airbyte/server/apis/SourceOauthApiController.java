@@ -22,17 +22,17 @@ public class SourceOauthApiController implements SourceOauthApi {
 
   @Override
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest) {
-    return ConfigurationApi.execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
+    return ApiHelper.execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
   }
 
   @Override
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest) {
-    return ConfigurationApi.execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
+    return ApiHelper.execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
   }
 
   @Override
   public void setInstancewideSourceOauthParams(final SetInstancewideSourceOauthParamsRequestBody setInstancewideSourceOauthParamsRequestBody) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       oAuthHandler.setSourceInstancewideOauthParams(setInstancewideSourceOauthParamsRequestBody);
       return null;
     });

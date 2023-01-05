@@ -22,24 +22,23 @@ function pageRangeDisplayed(numPages: number, selectedPageIndex: number): number
   return 3;
 }
 
-export const Paginator: React.FC<PaginatorProps> = ({ className, numPages, onPageChange, selectedPage }) => {
-  return (
-    <ReactPaginate
-      pageCount={numPages}
-      onPageChange={(event) => {
-        onPageChange(event.selected);
-      }}
-      breakLabel="…"
-      nextLabel=">"
-      previousLabel="<"
-      pageRangeDisplayed={pageRangeDisplayed(numPages, selectedPage)}
-      marginPagesDisplayed={2}
-      containerClassName={classNames(className, styles.container)}
-      pageClassName={classNames(styles.button, styles.page)}
-      breakClassName={classNames(styles.button, styles.break)}
-      activeClassName={styles.active}
-      previousClassName={classNames(styles.button, styles.previous)}
-      nextClassName={classNames(styles.button, styles.next)}
-    />
-  );
-};
+export const Paginator: React.FC<PaginatorProps> = ({ className, numPages, onPageChange, selectedPage }) => (
+  <ReactPaginate
+    pageCount={numPages}
+    onPageChange={(event) => {
+      onPageChange(event.selected);
+    }}
+    forcePage={selectedPage}
+    breakLabel="…"
+    nextLabel=">"
+    previousLabel="<"
+    pageRangeDisplayed={pageRangeDisplayed(numPages, selectedPage)}
+    marginPagesDisplayed={2}
+    containerClassName={classNames(className, styles.container)}
+    pageClassName={classNames(styles.button, styles.page)}
+    breakClassName={classNames(styles.button, styles.break)}
+    activeClassName={styles.active}
+    previousClassName={classNames(styles.button, styles.previous)}
+    nextClassName={classNames(styles.button, styles.next)}
+  />
+);
