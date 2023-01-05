@@ -258,7 +258,7 @@ exports[`CreateConnectionForm should render 1`] = `
                               <div
                                 class="<removed-for-snapshot-test>"
                               >
-                                Mirror source structure
+                                Destination default
                               </div>
                             </div>
                           </div>
@@ -303,7 +303,7 @@ exports[`CreateConnectionForm should render 1`] = `
                       <input
                         name="namespaceDefinition"
                         type="hidden"
-                        value="source"
+                        value="destination"
                       />
                     </div>
                   </div>
@@ -796,9 +796,9 @@ exports[`CreateConnectionForm should render 1`] = `
                           />
                           <div
                             class="<removed-for-snapshot-test>"
-                            title="'<source schema>"
+                            title="'<destination schema>"
                           >
-                            '&lt;source schema&gt;
+                            '&lt;destination schema&gt;
                           </div>
                           <div
                             class="<removed-for-snapshot-test>"
