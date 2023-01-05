@@ -51,18 +51,11 @@ class DestinationConvex(Destination):
 
         streams = {}
         for s in configured_catalog.streams:
-            if s.cursor_field is None:
-                cursor = []
-            else:
-                cursor = s.cursor_field
-            if s.primary_key is None:
-                primary_key = [[]]
-            else:
-                primary_key = s.primary_key
+            # Only send a primary key for dedup sync
+            if s.destination_sync_mode != DestinationSyncMode.append_dedup:
+                s.primary_key = None
             stream = {
-                "destinationSyncMode": str(s.destination_sync_mode.name),
-                "cursor": cursor,  # need some logic to combine here
-                "primaryKey": primary_key,
+                "primaryKey": s.primary_key,
                 "jsonSchema": str(s.stream.json_schema),  # FIXME
             }
             streams[s.stream.name] = stream
