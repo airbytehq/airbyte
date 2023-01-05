@@ -3,18 +3,13 @@ import { FormikErrors, useFormikContext } from "formik";
 import intersection from "lodash/intersection";
 import { useCallback } from "react";
 
-import {
-  BuilderView,
-  useConnectorBuilderFormState,
-  useConnectorBuilderTestState,
-} from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderFormValues } from "./types";
 
 export const useBuilderErrors = () => {
   const { touched, errors, validateForm, setFieldTouched } = useFormikContext<BuilderFormValues>();
   const { setSelectedView } = useConnectorBuilderFormState();
-  const { setTestStreamIndex } = useConnectorBuilderTestState();
 
   const invalidViews = useCallback(
     (ignoreUntouched: boolean, limitToViews?: BuilderView[], inputErrors?: FormikErrors<BuilderFormValues>) => {
@@ -92,14 +87,13 @@ export const useBuilderErrors = () => {
             setSelectedView("global");
           } else {
             setSelectedView(invalidBuilderViews[0]);
-            setTestStreamIndex(invalidBuilderViews[0] as number);
           }
         } else {
           callback();
         }
       });
     },
-    [invalidViews, setFieldTouched, setSelectedView, setTestStreamIndex, validateForm]
+    [invalidViews, setFieldTouched, setSelectedView, validateForm]
   );
 
   return { hasErrors, validateAndTouch };
