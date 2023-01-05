@@ -48,7 +48,7 @@
       "type": ["null", "number"]
     },
     "taskListName": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "taskId": {
       "type": ["null", "number"]
@@ -153,7 +153,7 @@
       "type": ["null", "string"]
     },
     "teams": {
-      "type": ["null", "number"],
+      "type": ["null", "array"],
       "items": {
         "type": ["string"]
       }
