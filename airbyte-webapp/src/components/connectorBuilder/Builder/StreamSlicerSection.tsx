@@ -199,7 +199,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
             type="string"
             path={buildPath("stream_slice_field")}
             label="Stream slice field"
-            tooltip="The stream slice key"
+            tooltip="The name of the field on the stream_slice object that will be set to value of the Parent key"
           />
           <StreamReferenceField
             currentStreamIndex={currentStreamIndex}
