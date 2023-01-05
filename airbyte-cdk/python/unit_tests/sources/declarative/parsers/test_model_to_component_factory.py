@@ -65,6 +65,26 @@ transformer = ManifestComponentTransformer()
 input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}
 
 
+def test_create_check_stream():
+    manifest = {"check": {"type": "CheckStream", "stream_names": ["list_stream"]}}
+
+    factory = ModelToComponentFactory()
+
+    check = factory.create_component(CheckStreamModel, manifest["check"], {})
+
+    assert isinstance(check, CheckStream)
+    assert check.stream_names == ["list_stream"]
+
+
+def test_create_component_type_mismatch():
+    manifest = {"check": {"type": "MismatchType", "stream_names": ["list_stream"]}}
+
+    factory = ModelToComponentFactory()
+
+    with pytest.raises(ValueError):
+        factory.create_component(CheckStreamModel, manifest["check"], {})
+
+
 def test_full_config_stream():
     content = """
 decoder:

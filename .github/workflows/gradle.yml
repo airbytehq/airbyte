@@ -10,7 +10,11 @@ on:
     inputs:
       debug_mode:
         description: "Enable or disable tmate session for debug during helm ac tests"
+        type: choice
         default: 'false'
+        options: 
+          - 'true'
+          - 'false'
         required: false
   schedule:
     - cron: "0 */1 * * *"
@@ -811,6 +815,16 @@ jobs:
         with:
           python-version: "3.9"
 
+      - name: Install unzip
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+          token: ${{ secrets.GITHUB_TOKEN }}
+        id: install
+
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /home/runner
@@ -862,6 +876,8 @@ jobs:
           HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         uses: Wandalen/wretry.action@master
@@ -998,6 +1014,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
+          iam-role-name: ${{ secrets.AWS_ASSUME_ROLE_NAME }}
 
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
@@ -1028,12 +1045,8 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: |
-            sudo rm /var/lib/dpkg/lock
-            sudo rm /var/lib/dpkg/lock-frontend
             sudo apt-get remove docker.io || sudo apt-get remove docker
             curl -fsSL https://get.docker.com | bash -
-            sudo rm -f /var/lib/dpkg/lock
-            sudo rm -f /var/lib/dpkg/lock-frontend
           attempt_limit: 3
           attempt_delay: 2000 # in ms
 
@@ -1070,11 +1083,7 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: |
-            sudo rm /var/lib/dpkg/lock
-            sudo rm /var/lib/dpkg/lock-frontend
             sudo apt-get -y install tmate
-            sudo rm -f /var/lib/dpkg/lock
-            sudo rm -f /var/lib/dpkg/lock-frontend
           attempt_limit: 3
           attempt_delay: 2000 # in ms
       
@@ -1129,6 +1138,8 @@ jobs:
           # HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         timeout-minutes: 20
@@ -1219,6 +1230,14 @@ jobs:
       # - helm-acceptance-test
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Match GitHub User to Slack User
+        id: match-github-to-slack-user
+        uses: ./.github/actions/match-github-to-slack-user
+        env:
+          AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to OSS Build Failure Slack Channel
         uses: abinoda/slack-action@master
         env:
@@ -1229,6 +1248,7 @@ jobs:
             {\"type\":\"divider\"},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Merge to OSS Master failed! :bangbang: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
             {\"type\":\"divider\"}]}
 

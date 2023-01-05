@@ -79,9 +79,9 @@ public class MockData {
   public static final UUID SOURCE_ID_1 = UUID.randomUUID();
   public static final UUID SOURCE_ID_2 = UUID.randomUUID();
   private static final UUID SOURCE_ID_3 = UUID.randomUUID();
-  private static final UUID DESTINATION_ID_1 = UUID.randomUUID();
-  private static final UUID DESTINATION_ID_2 = UUID.randomUUID();
-  private static final UUID DESTINATION_ID_3 = UUID.randomUUID();
+  public static final UUID DESTINATION_ID_1 = UUID.randomUUID();
+  public static final UUID DESTINATION_ID_2 = UUID.randomUUID();
+  public static final UUID DESTINATION_ID_3 = UUID.randomUUID();
   private static final UUID OPERATION_ID_1 = UUID.randomUUID();
   private static final UUID OPERATION_ID_2 = UUID.randomUUID();
   private static final UUID OPERATION_ID_3 = UUID.randomUUID();
