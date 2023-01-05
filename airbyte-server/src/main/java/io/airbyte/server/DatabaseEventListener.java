@@ -7,10 +7,7 @@ package io.airbyte.server;
 import io.airbyte.db.check.DatabaseCheckException;
 import io.airbyte.db.check.DatabaseMigrationCheck;
 import io.micronaut.context.event.ApplicationEventListener;
-import io.micronaut.context.event.StartupEvent;
-import io.micronaut.core.annotation.Order;
 import io.micronaut.discovery.event.ServiceReadyEvent;
-import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.lang.invoke.MethodHandles;
@@ -18,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class DatabaseEventListener  implements ApplicationEventListener<ServiceReadyEvent> {
+public class DatabaseEventListener implements ApplicationEventListener<ServiceReadyEvent> {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -33,7 +30,8 @@ public class DatabaseEventListener  implements ApplicationEventListener<ServiceR
     this.jobsMigrationCheck = jobsMigrationCheck;
   }
 
-  @Override public void onApplicationEvent(final ServiceReadyEvent event) {
+  @Override
+  public void onApplicationEvent(final ServiceReadyEvent event) {
     log.info("Checking configs database flyway migration version...");
     try {
       configsMigrationCheck.check();
@@ -48,4 +46,5 @@ public class DatabaseEventListener  implements ApplicationEventListener<ServiceR
       throw new RuntimeException(e);
     }
   }
+
 }
