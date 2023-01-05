@@ -164,7 +164,7 @@ private fun Context.toLDContext(): LDContext {
     val builder = LDContext.builder(ContextKind.of(kind), key)
     when (this) {
         is Workspace -> {
-            account?.let { builder.set("account", it) }
+            user?.let { builder.set("user", it) }
         }
 
         is User -> Unit
