@@ -19,7 +19,7 @@ import { ExampleSettingsTable } from "./ExampleSettingsTable";
 const destinationNamespaceValidationSchema = yup.object().shape({
   namespaceDefinition: yup
     .string()
-    .oneOf([NamespaceDefinitionType.source, NamespaceDefinitionType.destination, NamespaceDefinitionType.customformat])
+    .oneOf([NamespaceDefinitionType.destination, NamespaceDefinitionType.source, NamespaceDefinitionType.customformat])
     .required("form.empty.error"),
   namespaceFormat: yup.string().when("namespaceDefinition", {
     is: NamespaceDefinitionType.customformat,
@@ -48,7 +48,7 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
   return (
     <Formik
       initialValues={{
-        namespaceDefinition: initialValues?.namespaceDefinition ?? NamespaceDefinitionType.source,
+        namespaceDefinition: initialValues?.namespaceDefinition ?? NamespaceDefinitionType.destination,
         namespaceFormat: initialValues.namespaceFormat,
       }}
       enableReinitialize
