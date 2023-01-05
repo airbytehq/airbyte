@@ -8,6 +8,9 @@ airbyte:
   bootloader:
     auto-upgrade-connectors: ${AUTO_UPGRADE_CONNECTORS_PROTOCOL:false}
     migration-baseline-version: ${BOOTLOADER_MIGRATION_BASELINE_VERSION}
+    remote-connector-catalog:
+      timeout-ms: ${REMOTE_CONNECTOR_CATALOG_MS:10000}
+      url: ${REMOTE_CONNECTOR_CATALOG_URL:}
   flyway:
     configs:
       initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
