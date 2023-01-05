@@ -23,6 +23,9 @@ from destination_convex.config import ConvexConfig
 from destination_convex.destination import DestinationConvex
 import pytest
 
+DEDUP_TABLE_NAME = "dedup_stream"
+DEDUP_INDEX_FIELD = "int_col"
+
 
 @pytest.fixture(name="config")
 def config_fixture() -> ConvexConfig:
@@ -37,7 +40,7 @@ def client_fixture(config) -> ConvexClient:
 
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
-    stream_schema = {"type": "object", "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}}}
+    stream_schema = {"type": "object", "properties": {"string_col": {"type": "str"}, DEDUP_INDEX_FIELD: {"type": "integer"}}}
 
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name="append_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
@@ -51,7 +54,18 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
 
-    return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream])
+    dedup_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(
+            name=DEDUP_TABLE_NAME,
+            json_schema=stream_schema,
+            supported_sync_modes=[SyncMode.incremental],
+        ),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append_dedup,
+        primary_key=[[DEDUP_INDEX_FIELD]],
+    )
+
+    return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream, dedup_stream])
 
 
 def _state(data: Dict[str, Any]) -> AirbyteMessage:
@@ -60,7 +74,8 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
 
 def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, DEDUP_INDEX_FIELD: int_value}, emitted_at=0),
     )
 
 
@@ -68,6 +83,15 @@ def setup_responses(config):
     responses.add(responses.PUT, f"{config['deployment_url']}/api/clear_tables", status=200)
     responses.add(responses.POST, f"{config['deployment_url']}/api/airbyte_ingress", status=200)
     responses.add(responses.GET, f"{config['deployment_url']}/version", status=200)
+    responses.add(responses.PUT, f"{config['deployment_url']}/api/add_indexes", status=200)
+    responses.add(
+        responses.GET,
+        f"{config['deployment_url']}/api/get_indexes",
+        status=200,
+        json={
+            "indexes": [{"table": DEDUP_TABLE_NAME, "name": "by_primary_key", "fields": [DEDUP_INDEX_FIELD], "backfill": {"state": "done"}}]
+        },
+    )
 
 
 @responses.activate
