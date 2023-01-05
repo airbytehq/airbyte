@@ -2,15 +2,20 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-import io.airbyte.featureflag.Client
-import io.airbyte.featureflag.Platform
-import io.airbyte.featureflag.Temporary
-import io.airbyte.featureflag.User
+import com.launchdarkly.sdk.LDUser
+import com.launchdarkly.sdk.server.LDClient
+import io.airbyte.featureflag.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class ClientTest {
     @Test
@@ -25,9 +30,9 @@ class ClientTest {
         val ctx = User("test")
 
         with(client) {
-            assert(enabled(testTrue, ctx))
-            assert(!enabled(testFalse, ctx))
-            assert(!enabled(testDne, ctx))
+            assertTrue { enabled(testTrue, ctx) }
+            assertFalse { enabled(testFalse, ctx) }
+            assertFalse { enabled(testDne, ctx) }
         }
     }
 
@@ -39,7 +44,7 @@ class ClientTest {
             |  - name: reload-test-false
             |    enabled: false
             |    """.trimMargin()
-        val contents1 = """ flags:
+        val contents1 = """flags:
             |  - name: reload-test-true
             |    enabled: false
             |  - name: reload-test-false
@@ -47,8 +52,8 @@ class ClientTest {
             |    """.trimMargin()
 
         // write to a temp config
-        val tmpConfig = createTempFile(prefix = "reload-config", suffix = "yml").also {
-            it.writeText(contents0)
+        val tmpConfig = createTempFile(prefix = "reload-config", suffix = "yml").apply {
+            writeText(contents0)
         }
 
         val client: Client = Platform(tmpConfig)
@@ -62,18 +67,53 @@ class ClientTest {
 
         // verify pre-updated values
         with(client) {
-            assert(enabled(testTrue, ctx))
-            assert(!enabled(testFalse, ctx))
-            assert(!enabled(testDne, ctx))
+            assertTrue { enabled(testTrue, ctx) }
+            assertFalse { enabled(testFalse, ctx) }
+            assertFalse { enabled(testDne, ctx) }
         }
-        // update the config and wait for 5 seconds (enough time for the file-watcher to pick up the change)
-        tmpConfig.writeText(contents1).also { TimeUnit.SECONDS.sleep(5) }
+        // update the config and wait a few seconds (enough time for the file-watcher to pick up the change)
+        tmpConfig.writeText(contents1)
+        TimeUnit.SECONDS.sleep(2)
 
         // verify post-updated values
         with(client) {
-            assert(!enabled(testTrue, ctx))
-            assert(enabled(testFalse, ctx))
-            assert(!enabled(testDne, ctx))
+            assertFalse { enabled(testTrue, ctx) }
+            assertTrue { enabled(testFalse, ctx) }
+            assertFalse("undefined flag should still be false") { enabled(testDne, ctx) }
+        }
+    }
+
+    @Test
+    fun `verify cloud functionality`() {
+        val testTrue = Temporary(key = "test-true")
+        val testFalse = Temporary(key = "test-false", default = true)
+        val testDne = Temporary(key = "test-dne")
+
+        val ctx = User("test")
+
+        val ldClient: LDClient = mockk()
+        val flag = slot<String>()
+        every {
+            ldClient.boolVariation(capture(flag), any<LDUser>(), any())
+        } answers {
+            when (flag.captured) {
+                testTrue.key -> true
+                testFalse.key, testDne.key -> false
+                else -> throw IllegalArgumentException("${flag.captured} was unexpected")
+            }
+        }
+
+        val client: Client = Cloud(ldClient)
+        with(client) {
+            assertTrue { enabled(testTrue, ctx) }
+            assertFalse { enabled(testFalse, ctx) }
+            assertFalse { enabled(testDne, ctx) }
+        }
+
+        verify {
+            ldClient.boolVariation(testTrue.key, any<LDUser>(), testTrue.default)
+            ldClient.boolVariation(testFalse.key, any<LDUser>(), testFalse.default)
+            ldClient.boolVariation(testDne.key, any<LDUser>(), testDne.default)
         }
     }
 }
