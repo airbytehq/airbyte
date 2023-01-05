@@ -8,20 +8,32 @@
     "name": {
       "type": ["null", "string"]
     },
-    "archived": {
-      "type": ["null", "boolean"]
-    },
-    "dateArchived": {
-      "type": ["null", "string"]
-    },
-    "active": {
-      "type": ["null", "boolean"]
-    },
-    "accountOwner": {
-      "type": ["null", "boolean"]
-    },
     "email": {
       "type": ["null", "string"]
+    },
+    "roletype": {
+      "type": ["null", "number"]
+    },
+    "canOnlyManageTeam": {
+      "type": ["null", "boolean"]
+    },
+    "canEditLogsForOthers": {
+      "type": ["null", "boolean"]
+    },
+    "canApproveLogsForOthers": {
+      "type": ["null", "boolean"]
+    },
+    "canManageProjects": {
+      "type": ["null", "boolean"]
+    },
+    "canManageLaborCostsForOthers": {
+      "type": ["null", "boolean"]
+    },
+    "canManageBillableRatesAndBudgets": {
+      "type": ["null", "boolean"]
+    },
+    "approved": {
+      "type": ["null", "boolean"]
     },
     "rate": {
       "type": ["null", "number"]
@@ -29,10 +41,31 @@
     "billableRate": {
       "type": ["null", "number"]
     },
-    "admin": {
+    "assignToFutureProjects": {
       "type": ["null", "boolean"]
     },
-    "isProjectManager": {
+    "firstLogDate": {
+      "type": ["null", "string"]
+    },
+    "externalEntityId": {
+      "type": ["null", "string"]
+    },
+    "notes": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "dateArchived": {
+      "type": ["null", "string"]
+    },
+    "roleType": {
+      "type": ["null", "integer"]
+    },
+    "accountOwner": {
+      "type": ["null", "boolean"]
+    },
+    "active": {
       "type": ["null", "boolean"]
     }
   }

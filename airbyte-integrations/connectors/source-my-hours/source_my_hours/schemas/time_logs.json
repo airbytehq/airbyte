@@ -11,6 +11,9 @@
     "date": {
       "type": ["null", "string"]
     },
+    "teamsNames": {
+      "type": ["null", "string"]
+    },
     "userName": {
       "type": ["null", "string"]
     },
@@ -26,13 +29,40 @@
     "projectName": {
       "type": ["null", "string"]
     },
-    "projectInvoiceMethod": {
+    "projectStartDate": {
+      "type": ["null", "string"]
+    },
+    "projectDueDate": {
+      "type": ["null", "string"]
+    },
+    "projectBudgetType": {
+      "type": ["null", "number"]
+    },
+    "projectBudgetTarget": {
+      "type": ["null", "number"]
+    },
+    "projectBudgetPeriodType": {
+      "type": ["null", "number"]
+    },
+    "projectBudgetValue": {
+      "type": ["null", "number"]
+    },
+    "taskListName": {
       "type": ["null", "number"]
     },
     "taskId": {
       "type": ["null", "number"]
     },
     "taskName": {
+      "type": ["null", "string"]
+    },
+    "taskStartDate": {
+      "type": ["null", "string"]
+    },
+    "taskDueDate": {
+      "type": ["null", "string"]
+    },
+    "taskCompleted": {
       "type": ["null", "string"]
     },
     "tags": {
@@ -65,7 +95,16 @@
     "logDuration": {
       "type": ["null", "number"]
     },
+    "logDurationBillable": {
+      "type": ["null", "number"]
+    },
+    "startEndTime": {
+      "type": ["null", "string"]
+    },
     "expense": {
+      "type": ["null", "number"]
+    },
+    "billableExpense": {
       "type": ["null", "number"]
     },
     "cost": {
@@ -86,6 +125,9 @@
     "billableHours": {
       "type": ["null", "number"]
     },
+    "billableHoursLogBillable": {
+      "type": ["null", "number"]
+    },
     "laborHours": {
       "type": ["null", "number"]
     },
@@ -98,6 +140,9 @@
     "customField3": {
       "type": ["null", "number"]
     },
+    "balance": {
+      "type": ["null", "number"]
+    },
     "monthOfYear": {
       "type": ["null", "string"]
     },
@@ -106,6 +151,12 @@
     },
     "weekOfYear": {
       "type": ["null", "string"]
+    },
+    "teams": {
+      "type": ["null", "number"],
+      "items": {
+        "type": ["string"]
+      }
     },
     "times": {
       "type": ["null", "array"],
@@ -134,6 +185,12 @@
       }
     },
     "roundtype": {
+      "type": ["null", "number"]
+    },
+    "invoicedAmount": {
+      "type": ["null", "number"]
+    },
+    "uninvoicedAmount": {
       "type": ["null", "number"]
     }
   }

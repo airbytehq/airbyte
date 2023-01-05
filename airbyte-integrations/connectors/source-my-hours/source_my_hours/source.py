@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
@@ -12,6 +12,8 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_my_hours.auth import MyHoursAuthenticator
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import StreamData
 from source_my_hours.stream import MyHoursStream
 
 from .constants import REQUEST_HEADERS, URL_BASE
@@ -101,6 +103,29 @@ class Users(MyHoursStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "Users/getAll"
+
+    def read_records(self, 
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[StreamData]:
+        records = super().read_records(sync_mode,cursor_field,stream_slice,stream_state)
+        for record in records:
+            request_headers = self.request_headers(stream_state)
+            request = self._create_prepared_request(
+                path=f"Users/{record['id']}/get",
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=self.request_params(stream_state),
+            )
+            response = self._send_request(
+                request, 
+                self.request_kwargs(stream_state=stream_state)
+            )
+            userDetails = response.json()
+            record.update(userDetails);
+
+            yield record
 
 
 # Source
