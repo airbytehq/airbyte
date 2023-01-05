@@ -88,6 +88,7 @@ export interface BuilderStream {
     | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
     | BuilderSubstreamSlicer
     | BuilderCartesianProductSlicer;
+  schema?: string;
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -370,6 +371,20 @@ export const builderFormValidationSchema = yup.object().shape({
         requestHeaders: yup.array().of(yup.array().of(yup.string())),
         requestBody: yup.array().of(yup.array().of(yup.string())),
       }),
+      schema: yup.string().test({
+        test: (val: string | undefined) => {
+          if (!val) {
+            return true;
+          }
+          try {
+            JSON.parse(val);
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        message: "connectorBuilder.invalidSchema",
+      }),
       paginator: yup
         .object()
         .shape({
@@ -491,6 +506,17 @@ function builderFormStreamSlicerToStreamSlicer(
   };
 }
 
+function parseSchemaString(schema?: string) {
+  if (!schema) {
+    return undefined;
+  }
+  try {
+    return { type: "InlineSchemaLoader", schema: JSON.parse(schema) };
+  } catch {
+    return undefined;
+  }
+}
+
 function builderStreamToDeclarativeSteam(
   values: BuilderFormValues,
   stream: BuilderStream,
@@ -500,6 +526,7 @@ function builderStreamToDeclarativeSteam(
     type: "DeclarativeStream",
     name: stream.name,
     primary_key: stream.primaryKey,
+    schema_loader: parseSchemaString(stream.schema),
     retriever: {
       type: "SimpleRetriever",
       name: stream.name,
