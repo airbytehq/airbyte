@@ -108,7 +108,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
         # In theory, it does not have to get such an error because the connector correctly calculates the start date,
         # but from practice, we can still catch such errors from time to time.
-        (406, "Report date is too far in the past."),
+        (406, re.compile(r"^Report date is too far in the past\.")),
     ]
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):

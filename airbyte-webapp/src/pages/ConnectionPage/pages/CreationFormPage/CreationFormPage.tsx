@@ -211,13 +211,16 @@ export const CreationFormPage: React.FC = () => {
           },
         ];
 
-  const titleId: string = (
-    {
-      [EntityStepsTypes.CONNECTION]: "connection.newConnectionTitle",
-      [EntityStepsTypes.DESTINATION]: "destinations.newDestinationTitle",
-      [EntityStepsTypes.SOURCE]: "sources.newSourceTitle",
-    } as Record<EntityStepsTypes, string>
-  )[type];
+  const titleId: string =
+    currentStep === "createConnection"
+      ? "connection.newConnectionTitle"
+      : (
+          {
+            [EntityStepsTypes.CONNECTION]: "connection.newConnectionTitle",
+            [EntityStepsTypes.DESTINATION]: "destinations.newDestinationTitle",
+            [EntityStepsTypes.SOURCE]: "sources.newSourceTitle",
+          } as Record<EntityStepsTypes, string>
+        )[type];
 
   return (
     <>
