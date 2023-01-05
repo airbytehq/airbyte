@@ -1,1 +1,3 @@
-export * from "./ConnectionReplicationPage";
+import { ConnectionReplicationPage } from "./ConnectionReplicationPage";
+
+export default ConnectionReplicationPage;

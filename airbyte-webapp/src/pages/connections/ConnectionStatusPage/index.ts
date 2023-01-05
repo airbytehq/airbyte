@@ -1,1 +1,3 @@
-export * from "./ConnectionStatusPage";
+import { ConnectionStatusPage } from "./ConnectionStatusPage";
+
+export default ConnectionStatusPage;

@@ -4,14 +4,15 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { LoadingPage } from "components";
 
 import { RoutePaths } from "../routePaths";
-import { AllConnectionsPage } from "./AllConnectionsPage";
-import { ConnectionPage } from "./ConnectionPage/ConnectionPage";
-import { ConnectionReplicationPage } from "./ConnectionReplicationPage";
-import { ConnectionSettingsPage } from "./ConnectionSettingsPage";
-import { ConnectionStatusPage } from "./ConnectionStatusPage";
-import { ConnectionTransformationPage } from "./ConnectionTransformationPage";
-import { CreateConnectionPage } from "./CreateConnectionPage/CreateConnectionPage";
 import { ConnectionRoutePaths } from "./types";
+
+const CreateConnectionPage = React.lazy(() => import("./CreateConnectionPage"));
+const ConnectionPage = React.lazy(() => import("./ConnectionPage"));
+const ConnectionReplicationPage = React.lazy(() => import("./ConnectionReplicationPage"));
+const ConnectionSettingsPage = React.lazy(() => import("./ConnectionSettingsPage"));
+const ConnectionStatusPage = React.lazy(() => import("./ConnectionStatusPage"));
+const ConnectionTransformationPage = React.lazy(() => import("./ConnectionTransformationPage"));
+const AllConnectionsPage = React.lazy(() => import("./AllConnectionsPage"));
 
 export const ConnectionsRoutes: React.FC = () => (
   <Suspense fallback={<LoadingPage />}>
@@ -28,3 +29,5 @@ export const ConnectionsRoutes: React.FC = () => (
     </Routes>
   </Suspense>
 );
+
+export default ConnectionsRoutes;

@@ -1,1 +1,3 @@
-export * from "./ConnectionPage";
+import { ConnectionPage } from "./ConnectionPage";
+
+export default ConnectionPage;

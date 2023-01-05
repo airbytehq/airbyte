@@ -1,1 +1,3 @@
-export * from "./ConnectionSettingsPage";
+import { ConnectionSettingsPage } from "./ConnectionSettingsPage";
+
+export default ConnectionSettingsPage;

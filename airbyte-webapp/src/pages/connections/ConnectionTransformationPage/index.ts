@@ -1,1 +1,3 @@
-export * from "./ConnectionTransformationPage";
+import { ConnectionTransformationPage } from "./ConnectionTransformationPage";
+
+export default ConnectionTransformationPage;
