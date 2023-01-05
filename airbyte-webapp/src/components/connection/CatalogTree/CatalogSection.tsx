@@ -236,7 +236,9 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
               onCursorSelect={onCursorSelect}
               onPkSelect={onPkSelect}
               handleFieldToggle={onSelectedFieldsUpdate}
-              shouldDefinePk={shouldDefinePk}
+              primaryKeyIndexerType={pkType}
+              cursorIndexerType={cursorType}
+              shouldDefinePrimaryKey={shouldDefinePk}
               shouldDefineCursor={shouldDefineCursor}
             />
           </div>
