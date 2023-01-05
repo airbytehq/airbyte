@@ -33,9 +33,9 @@ enum class Team {
  * There are two types of feature-flags; permanent and temporary. Permanent flags should inherit from the Flag class directly
  * while temporary flags should inherit from the Temporary class (which it itself inherits from the Flag class).
  *
- * @param [team] is the team that is responsible for the feature-flag, defaults to Unknown.
  * @param [key] is the globally unique identifier for identifying this specific feature-flag.
  * @param [default] is the default value of the flag.
+ * @param [team] is the team that is responsible for the feature-flag, defaults to Unknown.
  */
 sealed class Flag(
     internal val key: String,
