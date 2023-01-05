@@ -1771,7 +1771,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+              $ref: "#/components/schemas/WebBackendConnectionListRequestBody"
         required: true
       responses:
         "200":
@@ -2738,6 +2738,24 @@ components:
           type: string
         icon:
           type: string
+    SourceSnippetRead:
+      type: object
+      required:
+        - sourceId
+        - name
+        - sourceDefinitionId
+        - sourceName
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        name:
+          type: string
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        sourceName:
+          type: string
+        icon:
+          type: string
     SourceReadList:
       type: object
       required:
@@ -3031,6 +3049,24 @@ components:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
           type: string
+        destinationName:
+          type: string
+        icon:
+          type: string
+    DestinationSnippetRead:
+      type: object
+      required:
+        - destinationId
+        - name
+        - destinationDefinitionId
+        - destinationName
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        name:
+          type: string
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
         destinationName:
           type: string
         icon:
@@ -3970,6 +4006,8 @@ components:
       properties:
         streamName:
           type: string
+        streamNamespace:
+          type: string
         stats:
           $ref: "#/components/schemas/AttemptStats"
     AttemptFailureSummary:
@@ -4622,14 +4660,23 @@ components:
           type: integer
         sourceDefinitions:
           type: integer
+    WebBackendConnectionListRequestBody:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.
       required:
         - connectionId
         - name
-        - sourceId
-        - destinationId
         - source
         - destination
         - status
@@ -4640,10 +4687,6 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
         scheduleType:
           $ref: "#/components/schemas/ConnectionScheduleType"
         scheduleData:
@@ -4651,9 +4694,9 @@ components:
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
-          $ref: "#/components/schemas/SourceRead"
+          $ref: "#/components/schemas/SourceSnippetRead"
         destination:
-          $ref: "#/components/schemas/DestinationRead"
+          $ref: "#/components/schemas/DestinationSnippetRead"
         latestSyncJobCreatedAt:
           $ref: "#/components/schemas/JobCreatedAt"
         latestSyncJobStatus:
