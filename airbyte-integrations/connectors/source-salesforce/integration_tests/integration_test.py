@@ -127,29 +127,24 @@ def test_deleted_record(stream):
     assert record["TextPreview"] == UPDATED_NOTE_CONTENT and record["TextPreview"] != NOTE_CONTENT, "Note Content was not updated"
 
 
-# TODO: this test should be investigated and fixed deeper.
-# https://github.com/airbytehq/airbyte/issues/20432
-# Commented out for a while since it's a custom integration test that fails only when running in CI.
-#
-# def test_parallel_discover(input_sandbox_config):
-#     sf = Salesforce(**input_sandbox_config)
-#     sf.login()
-#     stream_objects = sf.get_validated_streams(config=input_sandbox_config)
-#
-#     start_time = datetime.now()
-#     parallel_schemas = sf.generate_schemas(stream_objects)
-#     parallel_loading_time = (datetime.now() - start_time).total_seconds()
-#
-#     # try to load all schema with the old consecutive logic
-#     consecutive_schemas = {}
-#     start_time = datetime.now()
-#     for stream_name, sobject_options in stream_objects.items():
-#         consecutive_schemas[stream_name] = sf.generate_schema(stream_name, sobject_options)
-#     consecutive_loading_time = (datetime.now() - start_time).total_seconds()
-#
-#     print(f"\nparallel discover ~ {round(consecutive_loading_time/parallel_loading_time, 1)}x faster over traditional.\n")
-#
-#     assert parallel_loading_time < consecutive_loading_time, "parallel should be more than 10x faster"
-#     assert set(consecutive_schemas.keys()) == set(parallel_schemas.keys())
-#     for stream_name, schema in consecutive_schemas.items():
-#         assert schema == parallel_schemas[stream_name]
+def test_parallel_discover(input_sandbox_config):
+    sf = Salesforce(**input_sandbox_config)
+    sf.login()
+    stream_objects = sf.get_validated_streams(config=input_sandbox_config)
+
+    # try to load all schema with the old consecutive logic
+    consecutive_schemas = {}
+    start_time = datetime.now()
+    for stream_name, sobject_options in stream_objects.items():
+        consecutive_schemas[stream_name] = sf.generate_schema(stream_name, sobject_options)
+    consecutive_loading_time = (datetime.now() - start_time).total_seconds()
+    start_time = datetime.now()
+    parallel_schemas = sf.generate_schemas(stream_objects)
+    parallel_loading_time = (datetime.now() - start_time).total_seconds()
+
+    print(f"\nparallel discover ~ {round(consecutive_loading_time/parallel_loading_time, 1)}x faster over traditional.\n")
+
+    assert parallel_loading_time < consecutive_loading_time, "parallel should be more than 10x faster"
+    assert set(consecutive_schemas.keys()) == set(parallel_schemas.keys())
+    for stream_name, schema in consecutive_schemas.items():
+        assert schema == parallel_schemas[stream_name]
