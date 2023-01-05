@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import io.airbyte.commons.enums.Enums;
@@ -72,6 +73,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
@@ -509,6 +511,55 @@ public class DefaultJobPersistence implements JobPersistence {
               .fetch(getStreamStatsRecordsMapper());
           return new AttemptStats(syncStats, perStreamStats);
         });
+  }
+
+  @Override
+  public Map<JobAttemptPair, AttemptStats> getAttemptStats(final List<Long> jobIds) throws IOException {
+    final var jobIdsStr = StringUtils.join(jobIds, ',');
+    return jobDatabase.query(ctx -> {
+      final var attemptStats = new HashMap<JobAttemptPair, AttemptStats>();
+      final var syncResults = ctx.fetch(
+          "SELECT atmpt.attempt_number, atmpt.job_id,"
+              + "stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted "
+              + "FROM sync_stats stats "
+              + "INNER JOIN attempts atmpt ON stats.attempt_id = atmpt.id "
+              + "WHERE job_id IN ( " + jobIdsStr + ");");
+      syncResults.forEach(r -> {
+        final var key = new JobAttemptPair(r.get(ATTEMPTS.JOB_ID), r.get(ATTEMPTS.ATTEMPT_NUMBER));
+        final var syncStats = new SyncStats()
+            .withBytesEmitted(r.get(SYNC_STATS.BYTES_EMITTED))
+            .withRecordsEmitted(r.get(SYNC_STATS.RECORDS_EMITTED))
+            .withEstimatedRecords(r.get(SYNC_STATS.ESTIMATED_RECORDS))
+            .withEstimatedBytes(r.get(SYNC_STATS.ESTIMATED_BYTES));
+        attemptStats.put(key, new AttemptStats(syncStats, Lists.newArrayList()));
+      });
+
+      final var streamResults = ctx.fetch(
+          "SELECT atmpt.attempt_number, atmpt.job_id, "
+              + "stats.stream_name, stats.stream_namespace, stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted "
+              + "FROM stream_stats stats "
+              + "INNER JOIN attempts atmpt ON atmpt.id = stats.attempt_id "
+              + "WHERE attempt_id IN "
+              + "( SELECT id FROM attempts WHERE job_id IN ( " + jobIdsStr + "));");
+
+      streamResults.forEach(r -> {
+        final var streamSyncStats = new StreamSyncStats()
+            .withStreamNamespace(r.get(STREAM_STATS.STREAM_NAMESPACE))
+            .withStreamName(r.get(STREAM_STATS.STREAM_NAME))
+            .withStats(new SyncStats()
+                .withBytesEmitted(r.get(STREAM_STATS.BYTES_EMITTED))
+                .withRecordsEmitted(r.get(STREAM_STATS.RECORDS_EMITTED))
+                .withEstimatedRecords(r.get(STREAM_STATS.ESTIMATED_RECORDS))
+                .withEstimatedBytes(r.get(STREAM_STATS.ESTIMATED_BYTES)));
+
+        final var key = new JobAttemptPair(r.get(ATTEMPTS.JOB_ID), r.get(ATTEMPTS.ATTEMPT_NUMBER));
+        if (!attemptStats.containsKey(key)) {
+          throw new RuntimeException("there are stream stats without sync stats entries suggesting the database is in a bad state");
+        }
+        attemptStats.get(key).perStreamStats().add(streamSyncStats);
+      });
+      return attemptStats;
+    });
   }
 
   @Override

@@ -468,6 +468,33 @@ class DefaultJobPersistenceTest {
 
     }
 
+    @Test
+    @DisplayName("Retrieving all attempts stats for a job should return the right information")
+    void testGetMultipleStats() throws IOException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumberOne = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      // First write for first attempt.
+      var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumberOne, 1000, 1000, 1000, 1000, streamStats);
+
+      // Second write for first attempt.
+      when(timeSupplier.get()).thenReturn(Instant.now());
+      streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1")
+              .withStats(new SyncStats().withBytesEmitted(1000L).withRecordsEmitted(1000L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumberOne, 2000, 2000, 2000, 2000, streamStats);
+      jobPersistence.failAttempt(jobId, attemptNumberOne);
+
+      final int attemptNumberTwo = jobPersistence.createAttempt(jobId, LOG_PATH);
+      jobPersistence.writeStats(jobId, attemptNumberTwo, 1000, 1000, 1000, 1000, streamStats);
+
+      final var stats = jobPersistence.getAttemptStats(List.of(jobId));
+
+    }
+
   }
 
   @Test
