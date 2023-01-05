@@ -5,6 +5,7 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.SourceApi;
+import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
@@ -64,6 +65,11 @@ public class SourceApiController implements SourceApi {
   @Override
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody) {
     return ApiHelper.execute(() -> sourceHandler.getSource(sourceIdRequestBody));
+  }
+
+  @Override
+  public ActorCatalogWithUpdatedAt getMostRecentSourceActorCatalog(final SourceIdRequestBody sourceIdRequestBody) {
+    return ApiHelper.execute(() -> sourceHandler.getMostRecentSourceActorCatalogWithUpdatedAt(sourceIdRequestBody));
   }
 
   @Override
