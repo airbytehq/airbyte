@@ -100,6 +100,10 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
 
   const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
 
+  const toggleAllFieldsSelected = () => {
+    updateStreamWithConfig({ fieldSelectionEnabled: !config?.fieldSelectionEnabled, selectedFields: [] });
+  };
+
   const onSelectedFieldsUpdate = (fieldPath: string[], isSelected: boolean) => {
     const previouslySelectedFields = config?.selectedFields || [];
 
@@ -213,6 +217,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             isCursorDefinitionSupported={cursorRequired}
             isPKDefinitionSupported={pkRequired}
             stream={stream}
+            toggleAllFieldsSelected={toggleAllFieldsSelected}
           />
         ) : (
           <div className={styles.streamFieldTableContainer}>

@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { pathDisplayName } from "components/connection/CatalogTree/PathPopout";
 import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
+import { CheckBox } from "components/ui/CheckBox";
 import { NextTable } from "components/ui/NextTable";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
@@ -40,6 +41,7 @@ export interface StreamFieldsTableProps {
   isCursorDefinitionSupported: boolean;
   isPKDefinitionSupported: boolean;
   syncSchemaFields: SyncSchemaField[];
+  toggleAllFieldsSelected: () => void;
 }
 
 export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
@@ -52,6 +54,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   isCursorDefinitionSupported,
   isPKDefinitionSupported,
   syncSchemaFields,
+  toggleAllFieldsSelected,
 }) => {
   const { formatMessage } = useIntl();
   const isColumnSelectionEnabled = useExperiment("connection.columnSelection", false);
@@ -103,7 +106,17 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         ? [
             columnHelper.accessor("sync", {
               id: "sourceSyncField",
-              header: () => "Sync",
+              header: () => (
+                <>
+                  <CheckBox
+                    checkboxSize="sm"
+                    indeterminate={config?.fieldSelectionEnabled && !!config?.selectedFields?.length}
+                    checked={!config?.fieldSelectionEnabled}
+                    onClick={toggleAllFieldsSelected}
+                  />{" "}
+                  <FormattedMessage id="form.field.sync" />
+                </>
+              ),
               cell: ({ getValue }) => (
                 <SyncFieldCell
                   {...getValue()}
