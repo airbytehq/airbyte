@@ -10,10 +10,10 @@ package io.airbyte.featureflag
  * This is a permanent flag and would implement the [Flag] type once converted from an environment-variable.
  */
 
-object LogConnectorMessages : EnvVar(envVar = "LOG_CONNECTOR_MESSAGES", team = Team.PLATFORM_WORKFLOW)
+object LogConnectorMessages : EnvVar(envVar = "LOG_CONNECTOR_MESSAGES", team = Team.PLATFORM_MOVE)
 
 object StreamCapableState : EnvVar(envVar = "USE_STREAM_CAPABLE_STATE")
-object AutoDetectSchema : EnvVar(team = Team.PLATFORM_WORKFLOW, envVar = "AUTO_DETECT_SCHEMA")
+object AutoDetectSchema : EnvVar(team = Team.PLATFORM_MOVE, envVar = "AUTO_DETECT_SCHEMA")
 object NeedStateValidation : EnvVar(envVar = "NEED_STATE_VALIDATION")
 object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
 
@@ -23,9 +23,8 @@ object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
  */
 enum class Team {
     UNKNOWN,
-    DESTINATIONS,
-    PLATFORM_WORKFLOW,
-    CLOUD,
+    PLATFORM_MOVE,
+    PLATFORM_COMPOSE,
     FRONTEND,
 }
 
