@@ -2,13 +2,14 @@ import { renderHook } from "@testing-library/react-hooks";
 import { Formik } from "formik";
 import React from "react";
 import { act } from "react-dom/test-utils";
+import { TestWrapper } from "test-utils/testutils";
 
-import { SyncSchemaStream } from "../../../core/domain/catalog";
-import { DestinationSyncMode, SyncMode } from "../../../core/request/AirbyteClient";
-import { TestWrapper } from "../../../test-utils/testutils";
+import { SyncSchemaStream } from "core/domain/catalog";
+import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
+
 import { BulkEditServiceProvider, useBulkEditSelect, useBulkEditService } from "./BulkEditService";
 
-const MOCK_NODES = [
+const MOCK_NODES: SyncSchemaStream[] = [
   {
     id: "1",
     stream: {
@@ -71,7 +72,7 @@ describe("BulkEditServiceProvider", () => {
   beforeEach(() => {
     mockUpdate.mockClear();
   });
-  it("isActive should work correctly", () => {
+  it("isActive should be true when toggleNode is changed", () => {
     const wrapper = provider(MOCK_NODES, mockUpdate);
     const { result } = renderHook(() => useBulkEditService(), { wrapper });
     expect(result.current.isActive).toBe(false);
@@ -80,7 +81,7 @@ describe("BulkEditServiceProvider", () => {
     });
     expect(result.current.isActive).toBe(true);
   });
-  it("onCheckAll and selectedBatchNodes should work correctly", () => {
+  it("onCheckAll should change content of selectedBatchNodes", () => {
     const wrapper = provider(MOCK_NODES, mockUpdate);
     const { result } = renderHook(() => useBulkEditService(), { wrapper });
     act(() => {
@@ -103,7 +104,7 @@ describe("BulkEditServiceProvider", () => {
     });
     expect(result.current.selectedBatchNodes).toEqual(MOCK_NODES);
   });
-  it("allChecked should work correctly", () => {
+  it("allChecked should be true while all nodes are toggled (either toggling one by one or by onCheckAll)", () => {
     const wrapper = provider(MOCK_NODES, mockUpdate);
     const { result } = renderHook(() => useBulkEditService(), { wrapper });
     act(() => {
@@ -126,7 +127,7 @@ describe("BulkEditServiceProvider", () => {
     });
     expect(result.current.allChecked).toEqual(true);
   });
-  it("selectedBatchNodeIds should work correctly", () => {
+  it("selectedBatchNodeIds should container all ids of toggled nodes", () => {
     const wrapper = provider(MOCK_NODES, mockUpdate);
     const { result } = renderHook(() => useBulkEditService(), { wrapper });
     act(() => {
@@ -149,7 +150,7 @@ describe("BulkEditServiceProvider", () => {
     });
     expect(result.current.selectedBatchNodeIds).toEqual(["1", "2"]);
   });
-  it("options and onChangeOption should work correctly", () => {
+  it("onChangeOption should update options accordingly", () => {
     const wrapper = provider(MOCK_NODES, mockUpdate);
     const { result } = renderHook(() => useBulkEditService(), { wrapper });
     expect(result.current.options).toEqual({
@@ -169,7 +170,7 @@ describe("BulkEditServiceProvider", () => {
       primaryKey: [["test_pk"]],
     });
   });
-  it("onApply should work correctly", () => {
+  it("onApply should should populate all parameters to the toggled nodes and clear useBulkEditService state to the default values", () => {
     const wrapper = provider(MOCK_NODES, mockUpdate);
     const { result } = renderHook(() => useBulkEditService(), { wrapper });
     act(() => {
@@ -203,7 +204,7 @@ describe("BulkEditServiceProvider", () => {
     expect(result.current.options).toEqual({ selected: false });
     expect(result.current.selectedBatchNodes).toEqual([]);
   });
-  it("onCancel should work correctly", () => {
+  it("onCancel should clear useBulkEditService state to the default values", () => {
     const wrapper = provider(MOCK_NODES, mockUpdate);
     const { result } = renderHook(() => useBulkEditService(), { wrapper });
     act(() => {
@@ -224,7 +225,7 @@ describe("BulkEditServiceProvider", () => {
 });
 
 describe("useBulkEditSelect", () => {
-  it("should work correctly", () => {
+  it("hook result is array, first value should be true if node is toggled and second is toggle function that should change first value accordingly", () => {
     const wrapper = provider(MOCK_NODES, mockUpdate);
     const { result: selectResult } = renderHook(() => useBulkEditSelect("1"), { wrapper });
     expect(selectResult.current[0]).toEqual(false);
