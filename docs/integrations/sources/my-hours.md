@@ -33,5 +33,6 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                           | Subject |
 | :------ | :--------- | :----------------------------------------------------- | :------ |
+| 0.1.2   | 2023-01-05 | [21062](https://github.com/airbytehq/airbyte/pull/21062) | Update schema for time_logs stream and add user details call |
 | 0.1.1   | 2022-06-08 | [12964](https://github.com/airbytehq/airbyte/pull/12964) | Update schema for time_logs stream |
 | 0.1.0   | 2021-11-26 | [8270](https://github.com/airbytehq/airbyte/pull/8270) | New Source: My Hours |
