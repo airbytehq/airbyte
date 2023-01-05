@@ -18,6 +18,10 @@ const Link = styled.a`
 `;
 
 const ImageCell: React.FC<ImageCellProps> = ({ imageName, link }) => {
+  if (!link || !link.length) {
+    return <>{imageName}</>;
+  }
+
   return (
     <Link href={link} target="_blank">
       {imageName}

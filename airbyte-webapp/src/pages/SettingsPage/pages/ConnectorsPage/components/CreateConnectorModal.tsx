@@ -79,15 +79,11 @@ const ErrorText = styled.div`
   color: ${({ theme }) => theme.dangerColor};
   max-width: 400px;
 `;
-const standardValidationSchema = yup.object().shape({
+const validationSchema = yup.object().shape({
   name: yup.string().trim().required("form.empty.error"),
-  documentationUrl: yup.string().trim().required("form.empty.error"),
+  documentationUrl: yup.string().trim().url("form.url.error").notRequired(),
   dockerImageTag: yup.string().trim().required("form.empty.error"),
   dockerRepository: yup.string().trim().required("form.empty.error"),
-});
-
-const customConnectorValidationSchema = standardValidationSchema.shape({
-  documentationUrl: yup.string().trim().url("form.url.error").notRequired(),
 });
 
 const Label: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
@@ -125,7 +121,7 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
           }}
           validateOnBlur
           validateOnChange={false}
-          validationSchema={isCloudApp() ? customConnectorValidationSchema : standardValidationSchema}
+          validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
             await onSubmit(values);
             setSubmitting(false);
