@@ -57,10 +57,3 @@ services:
       context: .
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
-  normalization-databend:
-    image: airbyte/normalization-databend:${VERSION}
-    build:
-      dockerfile: databend.Dockerfile
-      context: .
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}

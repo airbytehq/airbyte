@@ -7,7 +7,6 @@
     - MySQL: JSON_EXTRACT(json_doc, 'path' [, 'path'] ...) -> https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html
     - ClickHouse: JSONExtractString(json_doc, 'path' [, 'path'] ...) -> https://clickhouse.com/docs/en/sql-reference/functions/json-functions/
     - TiDB: JSON_EXTRACT(json_doc, 'path' [, 'path'] ...) -> https://docs.pingcap.com/tidb/stable/json-functions
-    - Databend: json_extract_path_text( <expr>, <path_name> ) -> https://databend.rs/doc/sql-functions/semi-structured-functions/json_extract_path_text
 #}
 
 {# format_json_path --------------------------------------------------     #}
@@ -104,14 +103,6 @@
     {{ "'$.\"" ~ json_path_list|join(".") ~ "\"'" }}
 {%- endmacro %}
 
-{% macro databend__format_json_path(json_path_list) -%}
-    {%- set str_list = [] -%}
-    {%- for json_path in json_path_list -%}
-        {%- if str_list.append(json_path.replace("'", "''").replace('"', '""')) -%} {%- endif -%}
-    {%- endfor -%}
-    {{ "'\"" ~ str_list|join('"."') ~ "\"'" }}
-{%- endmacro %}
-
 {# json_extract -------------------------------------------------     #}
 
 {% macro json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
@@ -189,14 +180,6 @@
     {% endif -%}
 {%- endmacro %}
 
-{% macro databend__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    {%- if from_table|string() == '' %}
-        get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }})
-    {% else %}
-        get_path(parse_json({{ from_table }}.{{ json_column }}), {{ format_json_path(json_path_list) }})
-    {% endif -%}
-{%- endmacro %}
-
 {# json_extract_scalar -------------------------------------------------     #}
 
 {% macro json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
@@ -251,10 +234,6 @@
     )
 {%- endmacro %}
 
-{% macro databend__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
-    to_varchar(get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }}))
-{%- endmacro %}
-
 {# json_extract_array -------------------------------------------------     #}
 
 {% macro json_extract_array(json_column, json_path_list, normalized_json_path) -%}
@@ -303,10 +282,6 @@
 
 {% macro tidb__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
     json_extract({{ json_column }}, {{ format_json_path(normalized_json_path) }})
-{%- endmacro %}
-
-{% macro databend__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
-    get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_string_array -------------------------------------------------     #}

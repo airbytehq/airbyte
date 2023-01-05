@@ -44,10 +44,6 @@
     json
 {%- endmacro -%}
 
-{%- macro databend__type_json() -%}
-    json
-{%- endmacro -%}
-
 
 {# string ------------------------------------------------- #}
 
@@ -160,10 +156,6 @@
     float
 {% endmacro %}
 
-{% macro databend__type_numeric() %}
-    DOUBLE
-{% endmacro %}
-
 {# very_large_integer --------------------------------------- --#}
 {#
 Most databases don't have a true unbounded numeric datatype, so we use a really big numeric field.
@@ -194,10 +186,6 @@ so this macro needs to be called very_large_integer.
     decimal(38, 0)
 {% endmacro %}
 
-{% macro databend__type_very_large_integer() %}
-    numeric
-{% endmacro %}
-
 {# timestamp ------------------------------------------------- --#}
 {% macro mysql__type_timestamp() %}
     time
@@ -215,10 +203,6 @@ so this macro needs to be called very_large_integer.
 
 {% macro tidb__type_timestamp() %}
     time
-{% endmacro %}
-
-{% macro databend__type_timestamp() %}
-    timestamp
 {% endmacro %}
 
 {# timestamp with time zone  -------------------------------------------------     #}
@@ -261,10 +245,6 @@ so this macro needs to be called very_large_integer.
     char(1000)
 {%- endmacro -%}
 
-{% macro databend__type_timestamp_with_timezone() %}
-    TIMESTAMP
-{% endmacro %}
-
 {# timestamp without time zone  -------------------------------------------------     #}
 
 {%- macro type_timestamp_without_timezone() -%}
@@ -297,10 +277,6 @@ so this macro needs to be called very_large_integer.
     datetime
 {% endmacro %}
 
-{% macro databend__type_timestamp_without_timezone() %}
-    timestamp
-{% endmacro %}
-
 {# time without time zone  -------------------------------------------------     #}
 
 {%- macro type_time_without_timezone() -%}
@@ -325,10 +301,6 @@ so this macro needs to be called very_large_integer.
 
 {% macro tidb__type_time_without_timezone() %}
     time
-{% endmacro %}
-
-{% macro databend__type_time_without_timezone() %}
-    String
 {% endmacro %}
 
 
@@ -374,10 +346,6 @@ so this macro needs to be called very_large_integer.
     char(1000)
 {%- endmacro -%}
 
-{% macro databend__type_time_with_timezone() %}
-    String
-{% endmacro %}
-
 {# date  -------------------------------------------------     #}
 
 {%- macro type_date() -%}
@@ -398,8 +366,4 @@ so this macro needs to be called very_large_integer.
 
 {% macro clickhouse__type_date() %}
     Date32
-{% endmacro %}
-
-{% macro databend__type_date() %}
-    DATE
 {% endmacro %}

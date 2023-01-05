@@ -139,7 +139,6 @@ Note that normalization is only relevant for the following relational database &
 * Oracle
 * MySQL
 * MSSQL
-* DATABEND
 
 Other destinations do not support normalization as described in this section, though they may normalize data in a format that makes sense for them. For example, the S3 destination connector offers the option of writing JSON files in S3, but also offers the option of writing statically typed files such as Parquet or Avro. 
 

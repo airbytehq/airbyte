@@ -146,7 +146,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-mssql'
     include ':airbyte-integrations:connectors:destination-clickhouse'
     include ':airbyte-integrations:connectors:destination-tidb'
-    include ':airbyte-integrations:connectors:destination-databend'
 
     //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'

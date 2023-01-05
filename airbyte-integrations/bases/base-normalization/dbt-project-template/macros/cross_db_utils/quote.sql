@@ -14,7 +14,3 @@
 {% macro clickhouse__quote(column_name) -%}
   {{ '\"' ~ column_name ~ '\"'}}
 {%- endmacro %}
-
-{% macro databend__quote(column_name) -%}
-  {{ '\"' ~ column_name ~ '\"'}}
-{%- endmacro %}
