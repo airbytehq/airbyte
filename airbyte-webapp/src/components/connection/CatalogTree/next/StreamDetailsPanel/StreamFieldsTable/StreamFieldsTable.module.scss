@@ -38,6 +38,11 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   line-height: 15px;
   text-transform: capitalize;
 
+  &--syncCell {
+    width: 0; /** Collapses the th to the exact size of its content **/
+    padding-right: variables.$spacing-lg;
+  }
+
   &:first-child {
     padding-left: $cell-left-padding;
     border-radius: 0;

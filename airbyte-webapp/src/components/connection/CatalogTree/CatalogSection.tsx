@@ -101,7 +101,24 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
 
   const toggleAllFieldsSelected = () => {
-    updateStreamWithConfig({ fieldSelectionEnabled: !config?.fieldSelectionEnabled, selectedFields: [] });
+    const wasFieldSelectionEnabled = config?.fieldSelectionEnabled;
+    const fieldSelectionEnabled = !wasFieldSelectionEnabled;
+    const selectedFields: string[][] = [];
+
+    // When deselecting all fields, we need to be careful not to deselect any primary keys or the cursor field
+    if (!wasFieldSelectionEnabled) {
+      if (config?.primaryKey) {
+        selectedFields.push(...config.primaryKey);
+      }
+      if (config?.cursorField) {
+        selectedFields.push(config.cursorField);
+      }
+    }
+
+    updateStreamWithConfig({
+      fieldSelectionEnabled,
+      selectedFields: selectedFields.map((fieldPath) => ({ fieldPath })),
+    });
   };
 
   const onSelectedFieldsUpdate = (fieldPath: string[], isSelected: boolean) => {

@@ -1,4 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
+import classNames from "classnames";
 import isEqual from "lodash/isEqual";
 import React, { useCallback, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -25,7 +26,8 @@ import styles from "./StreamFieldsTable.module.scss";
 import { SyncFieldCell } from "./SyncFieldCell";
 
 export interface TableStream {
-  sync: { isSelected: boolean; field: SyncSchemaField };
+  field: SyncSchemaField;
+  isFieldSelected: boolean;
   path: string[];
   dataType: string;
   cursorDefined?: boolean;
@@ -64,7 +66,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     () => (path: string[]) => !!config?.primaryKey?.some((p) => equal(p, path)),
     [config?.primaryKey]
   );
-  const isFieldSelected = useCallback(
+  const checkIsFieldSelected = useCallback(
     (field: SyncSchemaField): boolean => {
       // All fields are implicitly selected if field selection is disabled
       if (!config?.fieldSelectionEnabled) {
@@ -88,13 +90,14 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   const tableData: TableStream[] = useMemo(
     () =>
       syncSchemaFields.map((stream) => ({
-        sync: { field: stream, isSelected: isFieldSelected(stream), shouldDefinePk, shouldDefineCursor },
+        field: stream,
+        isFieldSelected: checkIsFieldSelected(stream),
         path: stream.path,
         dataType: getDataType(stream),
         cursorDefined: shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(stream),
         primaryKeyDefined: shouldDefinePk && SyncSchemaFieldObject.isPrimitive(stream),
       })),
-    [shouldDefineCursor, shouldDefinePk, syncSchemaFields, isFieldSelected]
+    [shouldDefineCursor, shouldDefinePk, syncSchemaFields, checkIsFieldSelected]
   );
 
   const columnHelper = createColumnHelper<TableStream>();
@@ -103,7 +106,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     () => [
       ...(isColumnSelectionEnabled
         ? [
-            columnHelper.accessor("sync", {
+            columnHelper.display({
               id: "sourceSyncField",
               header: () => (
                 <FlexContainer gap="md">
@@ -116,9 +119,10 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
                   <FormattedMessage id="form.field.sync" />
                 </FlexContainer>
               ),
-              cell: ({ getValue }) => (
+              cell: (props) => (
                 <SyncFieldCell
-                  {...getValue()}
+                  field={props.row.original.field}
+                  isFieldSelected={props.row.original.isFieldSelected}
                   handleFieldToggle={handleFieldToggle}
                   checkIsCursor={isCursor}
                   checkIsPrimaryKey={isPrimaryKey}
@@ -127,7 +131,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
                 />
               ),
               meta: {
-                thClassName: styles.headerCell,
+                thClassName: classNames(styles.headerCell, styles["headerCell--syncCell"]),
                 tdClassName: styles.textCell,
               },
             }),

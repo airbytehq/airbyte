@@ -10,7 +10,7 @@ interface SyncFieldCellProps {
   field: SyncSchemaField;
   checkIsCursor: (path: string[]) => boolean;
   checkIsPrimaryKey: (path: string[]) => boolean;
-  isSelected: boolean;
+  isFieldSelected: boolean;
   handleFieldToggle: (fieldPath: string[], isSelected: boolean) => void;
   shouldDefineCursor: boolean;
   shouldDefinePrimaryKey: boolean;
@@ -19,7 +19,7 @@ interface SyncFieldCellProps {
 export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
   checkIsCursor,
   checkIsPrimaryKey,
-  isSelected,
+  isFieldSelected,
   field,
   handleFieldToggle,
   shouldDefineCursor,
@@ -46,10 +46,14 @@ export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
   return (
     <>
       {!isDisabled && (
-        <CheckBox checkboxSize="sm" checked={isSelected} onChange={() => handleFieldToggle(field.path, !isSelected)} />
+        <CheckBox
+          checkboxSize="sm"
+          checked={isFieldSelected}
+          onChange={() => handleFieldToggle(field.path, !isFieldSelected)}
+        />
       )}
       {isDisabled && (
-        <Tooltip control={<CheckBox checkboxSize="sm" disabled checked={isSelected} readOnly />}>
+        <Tooltip control={<CheckBox checkboxSize="sm" disabled checked={isFieldSelected} readOnly />}>
           {renderDisabledReasonMessage()}
         </Tooltip>
       )}
