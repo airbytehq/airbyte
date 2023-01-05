@@ -27,7 +27,7 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
     destDefinition: { normalizationConfig, supportsDbt },
   } = useConnectionFormService();
 
-  const supportsNormalization = Boolean(normalizationConfig);
+  const supportsNormalization = normalizationConfig.supported;
   const supportsTransformations = useFeature(FeatureItem.AllowCustomDBT) && supportsDbt;
 
   if (!supportsNormalization && !supportsTransformations) {

@@ -11,6 +11,7 @@ export const mockDestinationDefinition: DestinationDefinitionRead = {
   releaseStage: "alpha",
   supportsDbt: true,
   normalizationConfig: {
+    supported: true,
     normalizationRepository: "airbyte/normalization",
     normalizationTag: "0.2.25",
     normalizationIntegrationType: "postgres",

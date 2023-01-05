@@ -48,10 +48,10 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
 
 @SuppressWarnings("PMD.AvoidCatchingNPE")
 public class DestinationDefinitionsHandler {
@@ -100,7 +100,7 @@ public class DestinationDefinitionsHandler {
           .protocolVersion(standardDestinationDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardDestinationDefinition))
           .releaseDate(getReleaseDate(standardDestinationDefinition))
-          .supportsDbt(standardDestinationDefinition.getSupportsDbt())
+          .supportsDbt(Objects.requireNonNullElse(standardDestinationDefinition.getSupportsDbt(), false))
           .normalizationConfig(
               ApiPojoConverters.normalizationDestinationDefinitionConfigToApi(standardDestinationDefinition.getNormalizationConfig()))
           .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardDestinationDefinition.getResourceRequirements()));
@@ -136,8 +136,7 @@ public class DestinationDefinitionsHandler {
   }
 
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
-    final DestinationDefinitionReadList output = toDestinationDefinitionReadList(getLatestDestinations());
-    return output;
+    return toDestinationDefinitionReadList(getLatestDestinations());
   }
 
   private List<StandardDestinationDefinition> getLatestDestinations() {

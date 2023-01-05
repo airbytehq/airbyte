@@ -84,9 +84,10 @@ public class ApiPojoConverters {
 
   public static NormalizationDestinationDefinitionConfig normalizationDestinationDefinitionConfigToApi(final io.airbyte.config.NormalizationDestinationDefinitionConfig normalizationDestinationDefinitionConfig) {
     if (normalizationDestinationDefinitionConfig == null) {
-      return null;
+      return new NormalizationDestinationDefinitionConfig().supported(false);
     }
     return new NormalizationDestinationDefinitionConfig()
+        .supported(true)
         .normalizationRepository(normalizationDestinationDefinitionConfig.getNormalizationRepository())
         .normalizationTag(normalizationDestinationDefinitionConfig.getNormalizationTag())
         .normalizationIntegrationType(normalizationDestinationDefinitionConfig.getNormalizationIntegrationType());
