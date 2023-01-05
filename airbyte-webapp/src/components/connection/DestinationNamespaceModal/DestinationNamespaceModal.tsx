@@ -69,22 +69,6 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
                   <LabeledRadioButton
                     {...field}
                     className={styles.radioButton}
-                    id="destinationNamespace.source"
-                    label={
-                      <Text as="span">
-                        <FormattedMessage id="connectionForm.modal.destinationNamespace.option.source" />
-                      </Text>
-                    }
-                    value={NamespaceDefinitionType.source}
-                    checked={field.value === NamespaceDefinitionType.source}
-                  />
-                )}
-              </Field>
-              <Field name="namespaceDefinition">
-                {({ field }: FieldProps<string>) => (
-                  <LabeledRadioButton
-                    {...field}
-                    className={styles.radioButton}
                     id="destinationNamespace.destination"
                     label={
                       <Text as="span">
@@ -93,6 +77,22 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
                     }
                     value={NamespaceDefinitionType.destination}
                     checked={field.value === NamespaceDefinitionType.destination}
+                  />
+                )}
+              </Field>
+              <Field name="namespaceDefinition">
+                {({ field }: FieldProps<string>) => (
+                  <LabeledRadioButton
+                    {...field}
+                    className={styles.radioButton}
+                    id="destinationNamespace.source"
+                    label={
+                      <Text as="span">
+                        <FormattedMessage id="connectionForm.modal.destinationNamespace.option.source" />
+                      </Text>
+                    }
+                    value={NamespaceDefinitionType.source}
+                    checked={field.value === NamespaceDefinitionType.source}
                   />
                 )}
               </Field>
