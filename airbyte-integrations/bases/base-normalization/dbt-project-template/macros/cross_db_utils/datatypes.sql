@@ -72,10 +72,6 @@
     char(1000)
 {%- endmacro -%}
 
-{%- macro databend__type_string() -%}
-    String
-{%- endmacro -%}
-
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
     float
@@ -90,10 +86,6 @@
 {% endmacro %}
 
 {% macro tidb__type_float() %}
-    float
-{% endmacro %}
-
-{% macro databend__type_float() %}
     float
 {% endmacro %}
 
@@ -118,10 +110,6 @@
     signed
 {% endmacro %}
 
-{% macro databend__type_int() %}
-    INT
-{% endmacro %}
-
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
     signed
@@ -137,10 +125,6 @@
 
 {% macro tidb__type_bigint() %}
     signed
-{% endmacro %}
-
-{% macro databend__type_bigint() %}
-    BIGINT
 {% endmacro %}
 
 {# numeric ------------------------------------------------- --#}

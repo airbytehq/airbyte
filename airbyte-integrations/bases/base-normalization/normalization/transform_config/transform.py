@@ -59,7 +59,6 @@ class TransformConfig:
             DestinationType.MSSQL.value: self.transform_mssql,
             DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
             DestinationType.TIDB.value: self.transform_tidb,
-            DestinationType.DATABEND.value: self.transform_databend,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -343,19 +342,6 @@ class TransformConfig:
             "database": config["database"],
             "username": config["username"],
             "password": config.get("password", ""),
-        }
-        return dbt_config
-
-    @staticmethod
-    def transform_databend(config: Dict[str, Any]):
-        print("transform_databend")
-        dbt_config = {
-            "type": "databend",
-            "host": config["host"],
-            "port": config["port"],
-            "schema": config["database"],
-            "user": config["username"],
-            "pass": config.get("password", ""),
         }
         return dbt_config
 
