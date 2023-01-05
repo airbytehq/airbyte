@@ -13,6 +13,7 @@ import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useDestinationList } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
@@ -35,6 +36,7 @@ const SourceItemPage: React.FC = () => {
   const source = useGetSource(params.id || "");
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
 
+  // We load only connections attached to this source to be shown in the connections grid
   const { connections } = useConnectionList({ sourceId: source.sourceId });
 
   const breadcrumbsData = [
@@ -45,18 +47,20 @@ const SourceItemPage: React.FC = () => {
     { label: source.name },
   ];
 
+  // We load all destinations so the add destination button has a pre-filled list of options.
+  const { destinations } = useDestinationList();
   const destinationDropdownOptions: DropdownMenuOptionType[] = useMemo(
     () =>
-      connections.map((conn) => {
+      destinations.map((destination) => {
         return {
           as: "button",
-          icon: <ConnectorIcon icon={conn.destination.icon} />,
+          icon: <ConnectorIcon icon={destination.icon} />,
           iconPosition: "right",
-          displayName: conn.destination.name,
-          value: conn.destination.destinationId,
+          displayName: destination.name,
+          value: destination.destinationId,
         };
       }),
-    [connections]
+    [destinations]
   );
 
   const onSelectStep = (id: string) => {

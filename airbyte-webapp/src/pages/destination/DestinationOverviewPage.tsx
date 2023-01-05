@@ -9,6 +9,7 @@ import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useGetDestination } from "hooks/services/useDestinationHook";
+import { useSourceList } from "hooks/services/useSourceHook";
 import { DestinationPaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 
@@ -18,20 +19,23 @@ export const DestinationOverviewPage = () => {
 
   const destination = useGetDestination(params.id);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
+  // We load only connections attached to this destination to be shown in the connections grid
   const { connections } = useConnectionList({ destinationId: destination.destinationId });
 
-  const sourceDropdownOptions: DropdownMenuOptionType[] = useMemo(
+  // We load all sources so the add source button has a pre-filled list of options.
+  const { sources } = useSourceList();
+  const sourceDropdownOptions = useMemo<DropdownMenuOptionType[]>(
     () =>
-      connections.map((conn) => {
+      sources.map((source) => {
         return {
           as: "button",
-          icon: <ConnectorIcon icon={conn.source.icon} />,
+          icon: <ConnectorIcon icon={source.icon} />,
           iconPosition: "right",
-          displayName: conn.source.name,
-          value: conn.source.sourceId,
+          displayName: source.name,
+          value: source.sourceId,
         };
       }),
-    [connections]
+    [sources]
   );
 
   const onSelect = (data: DropdownMenuOptionType) => {
