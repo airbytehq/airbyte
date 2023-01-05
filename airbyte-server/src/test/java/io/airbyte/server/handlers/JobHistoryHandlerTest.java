@@ -51,6 +51,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.JobPersistence.AttemptStats;
+import io.airbyte.persistence.job.JobPersistence.JobAttemptPair;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
 import io.airbyte.persistence.job.models.AttemptStatus;
@@ -69,6 +70,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -195,7 +197,9 @@ class JobHistoryHandlerTest {
       when(jobPersistence.listJobs(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, pagesize, rowOffset))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
       when(jobPersistence.getJobCount(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID)).thenReturn(2L);
-      when(jobPersistence.getAttemptStats(anyLong(), anyInt())).thenReturn(ATTEMPT_STATS);
+      when(jobPersistence.getAttemptStats(List.of(200L, 100L))).thenReturn(Map.of(
+          new JobAttemptPair(100, 0), ATTEMPT_STATS,
+          new JobAttemptPair(jobId2, 0), ATTEMPT_STATS));
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
@@ -237,7 +241,10 @@ class JobHistoryHandlerTest {
 
       when(jobPersistence.listJobs(configTypes, JOB_CONFIG_ID, pagesize, rowOffset)).thenReturn(List.of(latestJob, secondJob, firstJob));
       when(jobPersistence.getJobCount(configTypes, JOB_CONFIG_ID)).thenReturn(3L);
-      when(jobPersistence.getAttemptStats(anyLong(), anyInt())).thenReturn(ATTEMPT_STATS);
+      when(jobPersistence.getAttemptStats(List.of(300L, 200L, 100L))).thenReturn(Map.of(
+          new JobAttemptPair(100, 0), ATTEMPT_STATS,
+          new JobAttemptPair(secondJobId, 0), ATTEMPT_STATS,
+          new JobAttemptPair(latestJobId, 0), ATTEMPT_STATS));
 
       final JobListRequestBody requestBody = new JobListRequestBody()
           .configTypes(List.of(CONFIG_TYPE_FOR_API, JobConfigType.SYNC, JobConfigType.DISCOVER_SCHEMA))
@@ -274,7 +281,9 @@ class JobHistoryHandlerTest {
       when(jobPersistence.listJobsIncludingId(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, jobId2, pagesize))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
       when(jobPersistence.getJobCount(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID)).thenReturn(2L);
-      when(jobPersistence.getAttemptStats(anyLong(), anyInt())).thenReturn(ATTEMPT_STATS);
+      when(jobPersistence.getAttemptStats(List.of(200L, 100L))).thenReturn(Map.of(
+          new JobAttemptPair(100, 0), ATTEMPT_STATS,
+          new JobAttemptPair(jobId2, 0), ATTEMPT_STATS));
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))

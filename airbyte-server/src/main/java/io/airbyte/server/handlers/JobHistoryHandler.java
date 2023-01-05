@@ -37,6 +37,7 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence.JobAttemptPair;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.server.converters.JobConverter;
@@ -45,11 +46,14 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class JobHistoryHandler {
 
   private final ConnectionsHandler connectionsHandler;
@@ -123,9 +127,17 @@ public class JobHistoryHandler {
     }
 
     final List<JobWithAttemptsRead> jobReads = jobs.stream().map(JobConverter::getJobWithAttemptsRead).collect(Collectors.toList());
+    final var jobIds = jobReads.stream().map(r -> r.getJob().getId()).toList();
+    final Map<JobAttemptPair, JobPersistence.AttemptStats> stats = jobPersistence.getAttemptStats(jobIds);
     for (final JobWithAttemptsRead jwar : jobReads) {
       for (final AttemptRead a : jwar.getAttempts()) {
-        hydrateWithStats(jwar.getJob().getId(), a);
+        final var stat = stats.get(new JobAttemptPair(jwar.getJob().getId(), a.getId().intValue()));
+        if (stat == null) {
+          log.error("Missing stats for job {} attempt {}", jwar.getJob().getId(), a.getId().intValue());
+          continue;
+        }
+
+        hydrateWithStats(a, stat);
       }
     }
 
@@ -141,10 +153,9 @@ public class JobHistoryHandler {
    * @param a the attempt to hydrate stats for.
    * @throws IOException
    */
-  private void hydrateWithStats(final long jobId, final AttemptRead a) throws IOException {
+  private void hydrateWithStats(final AttemptRead a, final JobPersistence.AttemptStats attemptStats) throws IOException {
     a.setTotalStats(new AttemptStats());
 
-    final var attemptStats = jobPersistence.getAttemptStats(jobId, a.getId().intValue());
     final var combinedStats = attemptStats.combinedStats();
     if (combinedStats == null) {
       // If overall stats are missing, assume stream stats are also missing, since overall stats are
@@ -186,7 +197,9 @@ public class JobHistoryHandler {
     final JobInfoRead jobinfoRead = jobConverter.getJobInfoRead(job);
 
     for (final AttemptInfoRead a : jobinfoRead.getAttempts()) {
-      hydrateWithStats(job.getId(), a.getAttempt());
+      final int attemptNumber = a.getAttempt().getId().intValue();
+      final var attemptStats = jobPersistence.getAttemptStats(job.getId(), attemptNumber);
+      hydrateWithStats(a.getAttempt(), attemptStats);
     }
 
     final JobDebugInfoRead jobDebugInfoRead = buildJobDebugInfoRead(jobinfoRead);
