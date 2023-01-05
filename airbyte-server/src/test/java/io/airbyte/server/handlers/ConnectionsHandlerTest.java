@@ -4,6 +4,8 @@
 
 package io.airbyte.server.handlers;
 
+import static io.airbyte.server.helpers.ConnectionHelpers.FIELD_NAME;
+import static io.airbyte.server.helpers.ConnectionHelpers.SECOND_FIELD_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,6 +36,7 @@ import io.airbyte.api.model.generated.DestinationSearch;
 import io.airbyte.api.model.generated.DestinationSyncMode;
 import io.airbyte.api.model.generated.NamespaceDefinitionType;
 import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SelectedFieldInfo;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.SyncMode;
@@ -45,6 +48,7 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Cron;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.FieldSelectionData;
 import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schedule;
@@ -66,6 +70,7 @@ import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -98,6 +103,7 @@ class ConnectionsHandlerTest {
   private WorkspaceHelper workspaceHelper;
   private TrackingClient trackingClient;
   private EventRunner eventRunner;
+  private ConnectionHelper connectionHelper;
 
   private static final String PRESTO_TO_HUDI = "presto to hudi";
   private static final String PRESTO_TO_HUDI_PREFIX = "presto_to_hudi";
@@ -141,6 +147,7 @@ class ConnectionsHandlerTest {
         .withPrefix(PRESTO_TO_HUDI_PREFIX)
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog())
+        .withFieldSelectionData(new FieldSelectionData().withAdditionalProperty("null/users-data0", false))
         .withSourceId(sourceId)
         .withDestinationId(destinationId)
         .withOperationIds(List.of(operationId))
@@ -150,7 +157,8 @@ class ConnectionsHandlerTest {
         .withScheduleData(ConnectionHelpers.generateBasicScheduleData())
         .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
         .withSourceCatalogId(UUID.randomUUID())
-        .withGeography(Geography.AUTO);
+        .withGeography(Geography.AUTO)
+        .withBreakingChange(false);
     standardSyncDeleted = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi2")
@@ -172,7 +180,7 @@ class ConnectionsHandlerTest {
     workspaceHelper = mock(WorkspaceHelper.class);
     trackingClient = mock(TrackingClient.class);
     eventRunner = mock(EventRunner.class);
-
+    connectionHelper = mock(ConnectionHelper.class);
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(workspaceId);
@@ -189,7 +197,8 @@ class ConnectionsHandlerTest {
           uuidGenerator,
           workspaceHelper,
           trackingClient,
-          eventRunner);
+          eventRunner,
+          connectionHelper);
 
       when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
       final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
@@ -304,6 +313,89 @@ class ConnectionsHandlerTest {
       }
 
       @Test
+      void testCreateConnectionWithSelectedFields() throws IOException, JsonValidationException, ConfigNotFoundException {
+        final StandardWorkspace workspace = new StandardWorkspace()
+            .withWorkspaceId(workspaceId)
+            .withDefaultGeography(Geography.AUTO);
+        when(configRepository.getStandardWorkspaceNoSecrets(workspaceId, true)).thenReturn(workspace);
+
+        final AirbyteCatalog catalog = ConnectionHelpers.generateApiCatalogWithTwoFields();
+        // Only select one of the two fields.
+        catalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true)
+            .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)));
+
+        final ConnectionCreate connectionCreate = new ConnectionCreate()
+            .sourceId(standardSync.getSourceId())
+            .destinationId(standardSync.getDestinationId())
+            .operationIds(standardSync.getOperationIds())
+            .name(PRESTO_TO_HUDI)
+            .namespaceDefinition(NamespaceDefinitionType.SOURCE)
+            .namespaceFormat(null)
+            .prefix(PRESTO_TO_HUDI_PREFIX)
+            .status(ConnectionStatus.ACTIVE)
+            .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
+            .syncCatalog(catalog)
+            .resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()
+                .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+                .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+                .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
+                .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()))
+            .sourceCatalogId(standardSync.getSourceCatalogId())
+            .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()));
+
+        final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
+
+        final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+
+        assertEquals(expectedConnectionRead, actualConnectionRead);
+
+        standardSync.withFieldSelectionData(new FieldSelectionData().withAdditionalProperty("null/users-data0", true));
+
+        verify(configRepository).writeStandardSync(standardSync);
+      }
+
+      @Test
+      void testFieldSelectionRemoveCursorFails() throws JsonValidationException, ConfigNotFoundException, IOException {
+        // Test that if we try to de-select a field that's being used for the cursor, the request will fail.
+        // The connection initially has a catalog with one stream, and two fields in that stream.
+        standardSync.setCatalog(ConnectionHelpers.generateAirbyteCatalogWithTwoFields());
+
+        // Send an update that sets a cursor but de-selects that field.
+        final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateApiCatalogWithTwoFields();
+        catalogForUpdate.getStreams().get(0).getConfig()
+            .fieldSelectionEnabled(true)
+            .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)))
+            .cursorField(List.of(SECOND_FIELD_NAME));
+
+        final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+            .connectionId(standardSync.getConnectionId())
+            .syncCatalog(catalogForUpdate);
+
+        assertThrows(JsonValidationException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
+      }
+
+      @Test
+      void testFieldSelectionRemovePrimaryKeyFails() throws JsonValidationException, ConfigNotFoundException, IOException {
+        // Test that if we try to de-select a field that's being used for the primary key, the request will
+        // fail.
+        // The connection initially has a catalog with one stream, and two fields in that stream.
+        standardSync.setCatalog(ConnectionHelpers.generateAirbyteCatalogWithTwoFields());
+
+        // Send an update that sets a primary key but deselects that field.
+        final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateApiCatalogWithTwoFields();
+        catalogForUpdate.getStreams().get(0).getConfig()
+            .fieldSelectionEnabled(true)
+            .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)))
+            .primaryKey(List.of(List.of(SECOND_FIELD_NAME)));
+
+        final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+            .connectionId(standardSync.getConnectionId())
+            .syncCatalog(catalogForUpdate);
+
+        assertThrows(JsonValidationException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
+      }
+
+      @Test
       void testValidateConnectionCreateSourceAndDestinationInDifferenceWorkspace() {
 
         when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(UUID.randomUUID());
@@ -382,13 +474,7 @@ class ConnectionsHandlerTest {
             .connectionId(standardSync.getConnectionId())
             .name("newName");
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .name("newName");
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync).withName("newName");
 
@@ -407,13 +493,7 @@ class ConnectionsHandlerTest {
             .connectionId(standardSync.getConnectionId())
             .scheduleType(ConnectionScheduleType.MANUAL);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .schedule(null)
             .scheduleType(ConnectionScheduleType.MANUAL)
             .scheduleData(null);
@@ -444,13 +524,7 @@ class ConnectionsHandlerTest {
             .scheduleType(ConnectionScheduleType.CRON)
             .scheduleData(cronScheduleData);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .schedule(null)
             .scheduleType(ConnectionScheduleType.CRON)
             .scheduleData(cronScheduleData);
@@ -481,13 +555,7 @@ class ConnectionsHandlerTest {
             .scheduleType(ConnectionScheduleType.BASIC) // update route requires this to be set even if it isn't changing
             .scheduleData(newScheduleData);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .schedule(new ConnectionSchedule().timeUnit(ConnectionSchedule.TimeUnitEnum.DAYS).units(10L)) // still dual-writing to legacy field
             .scheduleType(ConnectionScheduleType.BASIC)
             .scheduleData(newScheduleData);
@@ -531,17 +599,12 @@ class ConnectionsHandlerTest {
             .connectionId(standardSync.getConnectionId())
             .syncCatalog(catalogForUpdate);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .syncCatalog(catalogForUpdate);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
-            .withCatalog(expectedPersistedCatalog);
+            .withCatalog(expectedPersistedCatalog)
+            .withFieldSelectionData(CatalogConverter.getFieldSelectionData(catalogForUpdate));
 
         when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
 
@@ -574,17 +637,45 @@ class ConnectionsHandlerTest {
             .connectionId(standardSync.getConnectionId())
             .syncCatalog(catalogForUpdate);
 
-        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(
-            standardSync.getConnectionId(),
-            standardSync.getSourceId(),
-            standardSync.getDestinationId(),
-            standardSync.getOperationIds(),
-            standardSync.getSourceCatalogId(),
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
             .syncCatalog(catalogForUpdate);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
-            .withCatalog(expectedPersistedCatalog);
+            .withCatalog(expectedPersistedCatalog)
+            .withFieldSelectionData(CatalogConverter.getFieldSelectionData(catalogForUpdate));
+
+        when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
+
+        final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
+
+        assertEquals(expectedRead, actualConnectionRead);
+        verify(configRepository).writeStandardSync(expectedPersistedSync);
+        verify(eventRunner).update(connectionUpdate.getConnectionId());
+      }
+
+      @Test
+      void testUpdateConnectionPatchColumnSelection() throws Exception {
+        // The connection initially has a catalog with one stream, and two fields in that stream.
+        standardSync.setCatalog(ConnectionHelpers.generateAirbyteCatalogWithTwoFields());
+
+        // Send an update that only selects one of the fields.
+        final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateApiCatalogWithTwoFields();
+        catalogForUpdate.getStreams().get(0).getConfig().fieldSelectionEnabled(true)
+            .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)));
+
+        // Expect one column in the final persisted catalog
+        final ConfiguredAirbyteCatalog expectedPersistedCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
+
+        final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+            .connectionId(standardSync.getConnectionId())
+            .syncCatalog(catalogForUpdate);
+
+        final ConnectionRead expectedRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync)
+            .syncCatalog(catalogForUpdate);
+
+        final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
+            .withCatalog(expectedPersistedCatalog)
+            .withFieldSelectionData(CatalogConverter.getFieldSelectionData(catalogForUpdate));
 
         when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
 
@@ -621,7 +712,8 @@ class ConnectionsHandlerTest {
             .syncCatalog(catalogForUpdate)
             .resourceRequirements(resourceRequirements)
             .sourceCatalogId(newSourceCatalogId)
-            .operationIds(List.of(operationId, otherOperationId));
+            .operationIds(List.of(operationId, otherOperationId))
+            .geography(io.airbyte.api.model.generated.Geography.EU);
 
         final ConfiguredAirbyteCatalog expectedPersistedCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
         expectedPersistedCatalog.getStreams().get(0).getStream().withName(AZKABAN_USERS);
@@ -633,9 +725,11 @@ class ConnectionsHandlerTest {
             .withSchedule(null)
             .withManual(true)
             .withCatalog(expectedPersistedCatalog)
+            .withFieldSelectionData(CatalogConverter.getFieldSelectionData(catalogForUpdate))
             .withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(resourceRequirements))
             .withSourceCatalogId(newSourceCatalogId)
-            .withOperationIds(List.of(operationId, otherOperationId));
+            .withOperationIds(List.of(operationId, otherOperationId))
+            .withGeography(Geography.EU);
 
         when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
 
@@ -651,7 +745,7 @@ class ConnectionsHandlerTest {
             standardSync.getDestinationId(),
             standardSync.getOperationIds(),
             newSourceCatalogId,
-            ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+            ApiPojoConverters.toApiGeography(standardSync.getGeography()), false)
             .status(ConnectionStatus.INACTIVE)
             .scheduleType(ConnectionScheduleType.MANUAL)
             .scheduleData(null)
@@ -672,7 +766,7 @@ class ConnectionsHandlerTest {
         final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
             .connectionId(standardSync.getConnectionId())
             .operationIds(Collections.singletonList(operationId))
-            .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+            .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionData()));
 
         assertThrows(IllegalArgumentException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
       }
@@ -745,7 +839,8 @@ class ConnectionsHandlerTest {
           .withOperationIds(List.of(operationId))
           .withManual(true)
           .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
-          .withGeography(Geography.US);
+          .withGeography(Geography.US)
+          .withBreakingChange(false);
       final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
       final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
           .withName(SOURCE_TEST)
@@ -863,10 +958,10 @@ class ConnectionsHandlerTest {
     }
 
     @Test
-    void testDeleteConnection() {
+    void testDeleteConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
       connectionsHandler.deleteConnection(connectionId);
 
-      verify(eventRunner).deleteConnection(connectionId);
+      verify(connectionHelper).deleteConnection(connectionId);
     }
 
     @Test
@@ -936,7 +1031,8 @@ class ConnectionsHandlerTest {
           uuidGenerator,
           workspaceHelper,
           trackingClient,
-          eventRunner);
+          eventRunner,
+          connectionHelper);
     }
 
     @Test

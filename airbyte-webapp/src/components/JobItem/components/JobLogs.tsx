@@ -1,16 +1,18 @@
-import { clamp } from "lodash";
+import clamp from "lodash/clamp";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation } from "react-router-dom";
 
-import StatusIcon from "components/StatusIcon";
-import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
+import { StatusIcon } from "components/ui/StatusIcon";
+import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
+import { Text } from "components/ui/Text";
 
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { useGetDebugInfoJob } from "services/job/JobService";
 
 import { AttemptRead, AttemptStatus, SynchronousJobRead } from "../../../core/request/AirbyteClient";
 import { parseAttemptLink } from "../attemptLinkUtils";
+import styles from "./JobLogs.module.scss";
 import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";
 import Tabs, { TabsData } from "./Tabs";
@@ -83,22 +85,28 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
 
   return (
     <>
-      {attempts > 1 ? (
+      {attempts > 1 && (
         <Tabs
           activeStep={attemptNumber.toString()}
           onSelect={(at) => setAttemptNumber(parseInt(at))}
           data={attemptsTabs}
           isFailed={jobIsFailed}
         />
-      ) : null}
-      <LogsDetails
-        id={job.job.id}
-        path={path}
-        currentAttempt={currentAttempt}
-        jobDebugInfo={debugInfo}
-        showAttemptStats={attempts > 1}
-        logs={debugInfo?.attempts[attemptNumber]?.logs.logLines}
-      />
+      )}
+      {attempts ? (
+        <LogsDetails
+          id={job.job.id}
+          path={path}
+          currentAttempt={currentAttempt}
+          jobDebugInfo={debugInfo}
+          showAttemptStats={attempts > 1}
+          logs={debugInfo?.attempts[attemptNumber]?.logs.logLines}
+        />
+      ) : (
+        <Text size="md" className={styles.jobStartFailure}>
+          <FormattedMessage id="jobs.noAttemptsFailure" />
+        </Text>
+      )}
     </>
   );
 };

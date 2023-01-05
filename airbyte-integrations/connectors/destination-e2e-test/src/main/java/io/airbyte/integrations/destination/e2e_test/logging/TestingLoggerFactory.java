@@ -5,8 +5,8 @@
 package io.airbyte.integrations.destination.e2e_test.logging;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.e2e_test.logging.TestingLogger.LoggingType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 
 public class TestingLoggerFactory {
 

@@ -65,6 +65,7 @@ airbyte:
   local:
     docker-mount: ${LOCAL_DOCKER_MOUNT:}
     root: ${LOCAL_ROOT}
+  remote-connector-catalog-url: ${REMOTE_CONNECTOR_CATALOG_URL:}
   role: ${AIRBYTE_ROLE:}
   temporal:
     worker:

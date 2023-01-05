@@ -1,6 +1,6 @@
-import { uniqueId } from "lodash";
+import uniqueId from "lodash/uniqueId";
 import { KeyboardEventHandler, useMemo, useState } from "react";
-import { ActionMeta, MultiValue, OnChangeValue } from "react-select";
+import { ActionMeta, GroupBase, MultiValue, OnChangeValue, StylesConfig } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
 import styles from "./TagInput.module.scss";
@@ -9,9 +9,8 @@ const components = {
   DropdownIndicator: null,
 };
 
-const customStyles = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- react-select's typing is lacking here
-  multiValue: (provided: any) => ({
+const customStyles: StylesConfig<Tag, true, GroupBase<Tag>> = {
+  multiValue: (provided) => ({
     ...provided,
     maxWidth: "100%",
     display: "flex",
@@ -20,17 +19,35 @@ const customStyles = {
     borderRadius: `${styles.borderRadius}`,
     paddingLeft: `${styles.paddingLeft}`,
   }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same as above
-  multiValueLabel: (provided: any) => ({
+  multiValueLabel: (provided) => ({
     ...provided,
     color: `${styles.fontColor}`,
     fontWeight: 500,
   }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same as above
-  multiValueRemove: (provided: any) => ({
+  multiValueRemove: (provided) => ({
     ...provided,
     borderRadius: `${styles.borderRadius}`,
+    cursor: "pointer",
   }),
+  clearIndicator: (provided) => ({
+    ...provided,
+    cursor: "pointer",
+  }),
+  control: (provided, state) => {
+    const isInvalid = state.selectProps["aria-invalid"];
+    const regularBorderColor = isInvalid ? styles.errorBorderColor : "transparent";
+    const hoveredBorderColor = isInvalid ? styles.errorHoveredBorderColor : styles.hoveredBorderColor;
+    return {
+      ...provided,
+      backgroundColor: styles.inputBackgroundColor,
+      boxShadow: "none",
+      borderColor: state.isFocused ? styles.focusedBorderColor : regularBorderColor,
+      ":hover": {
+        cursor: "text",
+        borderColor: state.isFocused ? styles.focusedBorderColor : hoveredBorderColor,
+      },
+    };
+  },
 };
 
 interface Tag {
@@ -56,7 +73,7 @@ const generateStringFromTag = (tag: Tag): string => tag.label;
 
 const delimiters = [",", ";"];
 
-export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, disabled, id }) => {
+export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, disabled, id, error }) => {
   const tags = useMemo(() => fieldValue.map(generateTagFromString), [fieldValue]);
 
   // input value is a tag draft
@@ -113,13 +130,26 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
     }
   };
 
+  /**
+   * Add current input value as new tag when leaving the control.
+   * This needs to be implemented outside of the onBlur prop of react-select because it's not default behavior.
+   */
+  const onBlurControl = () => {
+    if (inputValue) {
+      onChange([...fieldValue, inputValue]);
+      setInputValue("");
+    }
+  };
+
   return (
-    <div data-testid="tag-input">
+    <div data-testid="tag-input" onBlur={onBlurControl}>
       <CreatableSelect
         inputId={id}
         name={name}
         components={components}
         inputValue={inputValue}
+        placeholder=""
+        aria-invalid={Boolean(error)}
         isClearable
         isMulti
         onBlur={() => handleDelete}

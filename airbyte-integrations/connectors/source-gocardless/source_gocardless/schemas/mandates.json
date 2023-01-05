@@ -1,0 +1,47 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "reference": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "scheme": {
+      "type": ["null", "string"]
+    },
+    "next_possible_charge_date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "contract": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "customer_bank_account": {
+          "type": ["null", "string"]
+        },
+        "creditor": {
+          "type": ["null", "string"]
+        },
+        "customer": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

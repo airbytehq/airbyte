@@ -1,4 +1,4 @@
-@use "../../scss/variables";
+@use "scss/variables";
 
 .content {
   display: flex;
@@ -7,6 +7,6 @@
 }
 
 .mainView {
-  width: 100%;
+  flex-grow: 1;
   margin-left: variables.$spacing-2xl;
 }

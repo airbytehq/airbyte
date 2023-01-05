@@ -9,8 +9,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
-import vcr
-import vcr.cassette as Cassette
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -135,15 +133,6 @@ class IncrementalIntercomSearchStream(IncrementalIntercomStream):
     http_method = "POST"
     sort_order = "ascending"
     use_cache = True
-
-    def request_cache(self) -> Cassette:
-        """
-        Override the default `request_cache` method, due to `match_on` is different for POST requests.
-        We should check additional criteria like ['query', 'body'] instead of default ['uri', 'method']
-        """
-        match_on = ["uri", "query", "method", "body"]
-        cassette = vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml", match_on=match_on)
-        return cassette
 
     @stream_state_cache.cache_stream_state
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:

@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "ARTICLE_ID": {
+      "type": "integer"
+    },
+    "CATEGORY_ID": {
+      "type": ["integer", "null"]
+    },
+    "FOLDER_ID": {
+      "type": ["integer", "null"]
+    },
+    "ARTICLE_NO": {
+      "type": ["integer", "null"]
+    },
+    "ArticleVersion": {
+      "type": ["string", "null"]
+    },
+    "Status": {
+      "type": ["string", "null"]
+    },
+    "Language": {
+      "type": ["string", "null"]
+    },
+    "Title": {
+      "type": ["string", "null"]
+    },
+    "Body": {
+      "type": ["string", "null"]
+    },
+    "URL_SLUG": {
+      "type": ["string", "null"]
+    },
+    "DOWNVOTE_COUNT": {
+      "type": ["integer", "null"]
+    },
+    "UPVOTE_COUNT": {
+      "type": ["integer", "null"]
+    },
+    "PROMOTED": {
+      "type": ["boolean", "null"]
+    },
+    "FIRST_PUBLISHED_DATE_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "LAST_PUBLISHED_DATE_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "ARCHIVED_DATE_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "DATE_CREATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "OWNER_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "CREATED_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "ExternalLinkCount": {
+      "type": ["string", "null"]
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "FIELD_NAME": {
+            "type": ["string", "null"]
+          },
+          "FIELD_VALUE": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "TAGS": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "TAG_NAME": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    }
+  }
+}

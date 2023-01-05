@@ -100,9 +100,6 @@ export const OAuthLogin: React.FC<OAuthLoginProps> = ({ isSignUpPage }) => {
 
   return (
     <div>
-      <div className={styles.separator}>
-        <FormattedMessage id="login.oauth.or" />
-      </div>
       {isLoading && (
         <div className={styles.spinner}>
           <Spinner />

@@ -7,7 +7,15 @@ from typing import Dict, List
 
 import pytest
 from _pytest.outcomes import Failed
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    SyncMode,
+    Type,
+)
 from source_acceptance_test.config import ConnectionTestConfig
 from source_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
 
@@ -37,7 +45,7 @@ def get_default_catalog(schema, **kwargs):
                 stream=AirbyteStream(
                     name="test_stream",
                     json_schema=schema,
-                    supported_sync_modes=["full_refresh"],
+                    supported_sync_modes=[SyncMode.full_refresh],
                 ),
                 **configured_catalog_kwargs,
             )

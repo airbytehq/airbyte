@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,6 +16,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public abstract class SshElasticsearchDestinationAcceptanceTest extends ElasticsearchDestinationAcceptanceTest {
+
   private static final Network network = Network.newNetwork();
   private static final SshBastionContainer bastion = new SshBastionContainer();
   private static ElasticsearchContainer container;
@@ -61,4 +66,5 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
     container.close();
     bastion.getContainer().close();
   }
+
 }

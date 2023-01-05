@@ -19,10 +19,6 @@ public class V0_40_3_002__RemoveActorForeignKeyFromOauthParamsTable extends Base
   @Override
   public void migrate(final Context context) throws Exception {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
-
-    // Warning: please do not use any jOOQ generated code to write a migration.
-    // As database schema changes, the generated jOOQ code can be deprecated. So
-    // old migration may not compile if there is any generated code.
     final DSLContext ctx = DSL.using(context.getConnection());
     removeActorDefinitionForeignKey(ctx);
   }

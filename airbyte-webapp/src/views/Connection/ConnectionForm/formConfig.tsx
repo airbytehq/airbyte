@@ -17,16 +17,20 @@ import {
   ConnectionScheduleType,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
+  Geography,
   NamespaceDefinitionType,
+  NonBreakingChangesPreference,
   OperationCreate,
   OperationRead,
   OperatorType,
+  SchemaChange,
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ConnectionFormMode, ConnectionOrPartialConnection } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { validateCronExpression, validateCronFrequencyOneHourOrMore } from "utils/cron";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
 
@@ -34,12 +38,14 @@ export interface FormikConnectionFormValues {
   name?: string;
   scheduleType?: ConnectionScheduleType | null;
   scheduleData?: ConnectionScheduleData | null;
+  nonBreakingChangesPreference?: NonBreakingChangesPreference | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition?: NamespaceDefinitionType;
   namespaceFormat: string;
   transformations?: OperationRead[];
   normalization?: NormalizationType;
+  geography: Geography;
 }
 
 export type ConnectionFormValues = ValuesProps;
@@ -74,11 +80,24 @@ export function useDefaultTransformation(): OperationCreate {
   };
 }
 
-export const connectionValidationSchema = (mode: ConnectionFormMode) =>
-  yup
+interface CreateConnectionValidationSchemaArgs {
+  allowSubOneHourCronExpressions: boolean;
+  mode: ConnectionFormMode;
+  allowAutoDetectSchema: boolean;
+}
+
+export const createConnectionValidationSchema = ({
+  mode,
+  allowSubOneHourCronExpressions,
+  allowAutoDetectSchema,
+}: CreateConnectionValidationSchemaArgs) => {
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
+  return yup
     .object({
       // The connection name during Editing is handled separately from the form
       name: mode === "create" ? yup.string().required("form.empty.error") : yup.string().notRequired(),
+      geography: yup.mixed<Geography>().oneOf(Object.values(Geography)),
       scheduleType: yup
         .string()
         .oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic, ConnectionScheduleType.cron]),
@@ -95,21 +114,32 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
         } else if (scheduleType === ConnectionScheduleType.manual) {
           return yup.mixed().notRequired();
         }
-
         return yup.object({
           cron: yup
             .object({
-              cronExpression: yup.string().required("form.empty.error"),
+              cronExpression: yup
+                .string()
+                .trim()
+                .required("form.empty.error")
+                .test("validCron", "form.cronExpression.error", validateCronExpression)
+                .test(
+                  "validCronFrequency",
+                  "form.cronExpression.underOneHourNotAllowed",
+                  (expression) => allowSubOneHourCronExpressions || validateCronFrequencyOneHourOrMore(expression)
+                ),
               cronTimeZone: yup.string().required("form.empty.error"),
             })
             .defined("form.empty.error"),
         });
       }),
+      nonBreakingChangesPreference: allowAutoDetectSchema
+        ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
+        : yup.mixed().notRequired(),
       namespaceDefinition: yup
         .string()
         .oneOf([
-          NamespaceDefinitionType.source,
           NamespaceDefinitionType.destination,
+          NamespaceDefinitionType.source,
           NamespaceDefinitionType.customformat,
         ])
         .required("form.empty.error"),
@@ -118,64 +148,105 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
         then: yup.string().trim().required("form.empty.error"),
       }),
       prefix: yup.string(),
-      syncCatalog: yup.object({
-        streams: yup.array().of(
-          yup.object({
-            id: yup
-              .string()
-              // This is required to get rid of id fields we are using to detect stream for edition
-              .when("$isRequest", (isRequest: boolean, schema: yup.StringSchema) =>
-                isRequest ? schema.strip(true) : schema
-              ),
-            stream: yup.object(),
-            config: yup
-              .object({
-                selected: yup.boolean(),
-                syncMode: yup.string(),
-                destinationSyncMode: yup.string(),
-                primaryKey: yup.array().of(yup.array().of(yup.string())),
-                cursorField: yup.array().of(yup.string()).defined(),
+      syncCatalog: isNewStreamsTableEnabled
+        ? yup.object({
+            streams: yup.array().of(
+              yup.object({
+                id: yup
+                  .string()
+                  // This is required to get rid of id fields we are using to detect stream for edition
+                  .when("$isRequest", (isRequest: boolean, schema: yup.StringSchema) =>
+                    isRequest ? schema.strip(true) : schema
+                  ),
+                stream: yup.object(),
+                config: yup.object({
+                  selected: yup.boolean(),
+                  syncMode: yup.string(),
+                  destinationSyncMode: yup.string(),
+                  primaryKey: yup
+                    .array()
+                    .of(yup.array().of(yup.string()))
+                    .when(["syncMode", "destinationSyncMode", "selected"], {
+                      is: (syncMode: SyncMode, destinationSyncMode: DestinationSyncMode, selected: boolean) =>
+                        syncMode === SyncMode.incremental &&
+                        destinationSyncMode === DestinationSyncMode.append_dedup &&
+                        selected,
+                      then: yup.array().of(yup.array().of(yup.string())).min(1, "form.empty.error"),
+                    }),
+                  cursorField: yup
+                    .array()
+                    .of(yup.string())
+                    .when(["syncMode", "destinationSyncMode", "selected"], {
+                      is: (syncMode: SyncMode, destinationSyncMode: DestinationSyncMode, selected: boolean) =>
+                        (destinationSyncMode === DestinationSyncMode.append ||
+                          destinationSyncMode === DestinationSyncMode.append_dedup) &&
+                        syncMode === SyncMode.incremental &&
+                        selected,
+                      then: yup.array().of(yup.string()).min(1, "form.empty.error"),
+                    }),
+                }),
               })
-              .test({
-                name: "connectionSchema.config.validator",
-                // eslint-disable-next-line no-template-curly-in-string
-                message: "${path} is wrong",
-                test(value) {
-                  if (!value.selected) {
-                    return true;
-                  }
-                  if (DestinationSyncMode.append_dedup === value.destinationSyncMode) {
-                    // it's possible that primaryKey array is always present
-                    // however yup couldn't determine type correctly even with .required() call
-                    if (value.primaryKey?.length === 0) {
-                      return this.createError({
-                        message: "connectionForm.primaryKey.required",
-                        path: `schema.streams[${this.parent.id}].config.primaryKey`,
-                      });
-                    }
-                  }
-
-                  if (SyncMode.incremental === value.syncMode) {
-                    if (
-                      !this.parent.stream.sourceDefinedCursor &&
-                      // it's possible that cursorField array is always present
-                      // however yup couldn't determine type correctly even with .required() call
-                      value.cursorField?.length === 0
-                    ) {
-                      return this.createError({
-                        message: "connectionForm.cursorField.required",
-                        path: `schema.streams[${this.parent.id}].config.cursorField`,
-                      });
-                    }
-                  }
-                  return true;
-                },
-              }),
+            ),
           })
-        ),
-      }),
+        : yup.object({
+            streams: yup.array().of(
+              yup.object({
+                id: yup
+                  .string()
+                  // This is required to get rid of id fields we are using to detect stream for edition
+                  .when("$isRequest", (isRequest: boolean, schema: yup.StringSchema) =>
+                    isRequest ? schema.strip(true) : schema
+                  ),
+                stream: yup.object(),
+                config: yup
+                  .object({
+                    selected: yup.boolean(),
+                    syncMode: yup.string(),
+                    destinationSyncMode: yup.string(),
+                    primaryKey: yup.array().of(yup.array().of(yup.string())),
+                    cursorField: yup.array().of(yup.string()).defined(),
+                  })
+                  .test({
+                    name: "connectionSchema.config.validator",
+                    // eslint-disable-next-line no-template-curly-in-string
+                    message: "${path} is wrong",
+                    test(value) {
+                      if (!value.selected) {
+                        return true;
+                      }
+                      if (DestinationSyncMode.append_dedup === value.destinationSyncMode) {
+                        // it's possible that primaryKey array is always present
+                        // however yup couldn't determine type correctly even with .required() call
+                        if (value.primaryKey?.length === 0) {
+                          return this.createError({
+                            message: "connectionForm.primaryKey.required",
+                            path: `schema.streams[${this.parent.id}].config.primaryKey`,
+                          });
+                        }
+                      }
+
+                      if (SyncMode.incremental === value.syncMode) {
+                        if (
+                          !this.parent.stream.sourceDefinedCursor &&
+                          // it's possible that cursorField array is always present
+                          // however yup couldn't determine type correctly even with .required() call
+                          value.cursorField?.length === 0
+                        ) {
+                          return this.createError({
+                            message: "connectionForm.cursorField.required",
+                            path: `schema.streams[${this.parent.id}].config.cursorField`,
+                          });
+                        }
+                      }
+                      return true;
+                    },
+                  }),
+              })
+            ),
+          }),
     })
     .noUnknown();
+};
 
 /**
  * Returns {@link Operation}[]
@@ -248,14 +319,43 @@ export const useInitialValues = (
   destDefinition: DestinationDefinitionSpecificationRead,
   isNotCreateMode?: boolean
 ): FormikConnectionFormValues => {
+  const workspace = useCurrentWorkspace();
+  const { catalogDiff } = connection;
+
+  // used to determine if we should calculate optimal sync mode
+  const newStreamDescriptors = catalogDiff?.transforms
+    .filter((transform) => transform.transformType === "add_stream")
+    .map((stream) => stream.streamDescriptor);
+
+  // used to determine if we need to clear any primary keys or cursor fields that were removed
+  const streamTransformsWithBreakingChange = useMemo(() => {
+    if (connection.schemaChange === SchemaChange.breaking) {
+      return catalogDiff?.transforms.filter((streamTransform) => {
+        if (streamTransform.transformType === "update_stream") {
+          return streamTransform.updateStream?.filter((fieldTransform) => fieldTransform.breaking === true);
+        }
+        return false;
+      });
+    }
+    return undefined;
+  }, [catalogDiff?.transforms, connection]);
+
   const initialSchema = useMemo(
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
         destDefinition?.supportedDestinationSyncModes || [],
-        isNotCreateMode
+        streamTransformsWithBreakingChange,
+        isNotCreateMode,
+        newStreamDescriptors
       ),
-    [connection.syncCatalog, destDefinition, isNotCreateMode]
+    [
+      streamTransformsWithBreakingChange,
+      connection.syncCatalog,
+      destDefinition?.supportedDestinationSyncModes,
+      isNotCreateMode,
+      newStreamDescriptors,
+    ]
   );
 
   return useMemo(() => {
@@ -263,9 +363,11 @@ export const useInitialValues = (
       syncCatalog: initialSchema,
       scheduleType: connection.connectionId ? connection.scheduleType : ConnectionScheduleType.basic,
       scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
+      nonBreakingChangesPreference: connection.nonBreakingChangesPreference ?? NonBreakingChangesPreference.ignore,
       prefix: connection.prefix || "",
-      namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
+      namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.destination,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
+      geography: connection.geography || workspace.defaultGeography || "auto",
     };
 
     // Is Create Mode
@@ -287,9 +389,11 @@ export const useInitialValues = (
   }, [
     connection.connectionId,
     connection.destination.name,
+    connection.geography,
     connection.name,
     connection.namespaceDefinition,
     connection.namespaceFormat,
+    connection.nonBreakingChangesPreference,
     connection.operations,
     connection.prefix,
     connection.scheduleData,
@@ -299,6 +403,7 @@ export const useInitialValues = (
     destDefinition.supportsNormalization,
     initialSchema,
     isNotCreateMode,
+    workspace,
   ]);
 };
 

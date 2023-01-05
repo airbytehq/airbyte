@@ -1,21 +1,14 @@
-@use "../../../scss/variables";
+@use "scss/variables";
 
 .formContainer {
   display: flex;
   flex-direction: column;
   gap: variables.$spacing-md;
+  position: relative;
 }
 
 .readonly {
   pointer-events: none;
-}
-
-.flexRow {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: variables.$spacing-md;
 }
 
 .leftFieldCol {
@@ -41,4 +34,9 @@
 
   // used to control svg size
   font-size: 14px;
+}
+
+.flush {
+  padding: 0;
+  gap: 0;
 }

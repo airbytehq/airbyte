@@ -7,7 +7,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=admin
     volumes:
-      - ${AIRBYTE_SAT_CONNECTOR_DIR:-.}/integration_tests:/docker-entrypoint-initdb.d/
+      - ${INTEGRATION_TESTS_DIR:-.}:/docker-entrypoint-initdb.d/
     networks:
       - prestashop-net
 

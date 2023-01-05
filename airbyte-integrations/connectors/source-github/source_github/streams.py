@@ -75,14 +75,26 @@ class GithubStream(HttpStream, ABC):
             (response.headers.get("X-RateLimit-Resource") == "graphql" and self.check_graphql_rate_limited(response.json()))
             # Rate limit HTTP headers
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-            or response.headers.get("X-RateLimit-Remaining") == "0"
+            or (response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0")
             # Secondary rate limits
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
             or "Retry-After" in response.headers
         )
         if retry_flag:
+            headers = [
+                "X-RateLimit-Resource",
+                "X-RateLimit-Remaining",
+                "X-RateLimit-Reset",
+                "X-RateLimit-Limit",
+                "X-RateLimit-Used",
+                "Retry-After",
+            ]
+            headers = ", ".join([f"{h}: {response.headers[h]}" for h in headers if h in response.headers])
+            if headers:
+                headers = f"HTTP headers: {headers},"
+
             self.logger.info(
-                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
+                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code, {headers} with message: {response.text}"
             )
 
         return retry_flag

@@ -21,9 +21,16 @@ from .errors import HTTP_ERROR_CODES, error_msg_from_status
 
 
 class AmplitudeStream(HttpStream, ABC):
-
-    url_base = "https://amplitude.com/api/"
     api_version = 2
+
+    def __init__(self, data_region: str, **kwargs):
+        self.data_region = data_region
+        super().__init__(**kwargs)
+
+    @property
+    def url_base(self) -> str:
+        subdomain = "analytics.eu." if self.data_region == "EU Residency Server" else ""
+        return f"https://{subdomain}amplitude.com/api/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -252,9 +259,11 @@ class AverageSessionLength(IncrementalAmplitudeStream):
             # From the Amplitude documentation it follows that "series" is an array with one element which is itself
             # an array that contains the average session length for each day.
             # https://developers.amplitude.com/docs/dashboard-rest-api#returns-2
-            series = response_data["series"][0]
-            for i, date in enumerate(response_data["xValues"]):
-                yield {"date": date, "length": series[i]}
+            series = response_data.get("series", [])
+            if len(series) > 0:
+                series = series[0]  # get the nested list
+                for i, date in enumerate(response_data["xValues"]):
+                    yield {"date": date, "length": series[i]}
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/sessions/average"

@@ -32,7 +32,7 @@ runs:
         REPORT_FOLDER="${{ inputs.module-folder }}/coverage/"
         ./gradlew --no-daemon -Preports_folder=${REPORT_FOLDER} ${GRADLE_JOB}
 
-        echo "::set-output name=coverage-paths::coverage/coverage.xml"
+        echo "coverage-paths=coverage/coverage.xml" >> $GITHUB_OUTPUT
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
@@ -48,7 +48,7 @@ runs:
         REPORT_FOLDER="${{ inputs.module-folder }}/reports/"
         ./gradlew --no-daemon -Preports_folder=${REPORT_FOLDER} ${GRADLE_JOB}
 
-        echo "::set-output name=mypy-logs::reports/mypy.log"
-        echo "::set-output name=black-diff::reports/black.diff"
-        echo "::set-output name=isort-diff::reports/isort.diff"
-        echo "::set-output name=flake8-logs::reports/flake.txt"
+        echo "mypy-logs=reports/mypy.log" >> $GITHUB_OUTPUT
+        echo "black-diff=reports/black.diff" >> $GITHUB_OUTPUT
+        echo "isort-diff=reports/isort.diff" >> $GITHUB_OUTPUT
+        echo "flake8-logs=reports/flake.txt" >> $GITHUB_OUTPUT
