@@ -623,6 +623,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                               class="<removed-for-snapshot-test>"
                             >
                               <input
+                                aria-checked="true"
                                 checked=""
                                 class="<removed-for-snapshot-test>"
                                 data-testid="pokemon-stream-sync-switch"
