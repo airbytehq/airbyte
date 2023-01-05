@@ -49,7 +49,7 @@ export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
         <CheckBox checkboxSize="sm" checked={isSelected} onChange={() => handleFieldToggle(field.path, !isSelected)} />
       )}
       {isDisabled && (
-        <Tooltip control={<CheckBox checkboxSize="sm" disabled checked={isSelected} />}>
+        <Tooltip control={<CheckBox checkboxSize="sm" disabled checked={isSelected} readOnly />}>
           {renderDisabledReasonMessage()}
         </Tooltip>
       )}

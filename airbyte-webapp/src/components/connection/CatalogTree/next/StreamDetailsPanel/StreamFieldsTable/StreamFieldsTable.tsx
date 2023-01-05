@@ -99,8 +99,6 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
 
   const columnHelper = createColumnHelper<TableStream>();
 
-  console.log(handleFieldToggle);
-
   const sourceColumns = useMemo(
     () => [
       ...(isColumnSelectionEnabled
@@ -113,7 +111,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
                     checkboxSize="sm"
                     indeterminate={config?.fieldSelectionEnabled && !!config?.selectedFields?.length}
                     checked={!config?.fieldSelectionEnabled}
-                    onClick={toggleAllFieldsSelected}
+                    onChange={toggleAllFieldsSelected}
                   />
                   <FormattedMessage id="form.field.sync" />
                 </FlexContainer>
