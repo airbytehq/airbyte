@@ -43,7 +43,7 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => 
     if (selectedStreamIndex >= 0) {
       setTestStreamIndex(selectedStreamIndex);
 
-      if (selectedView !== "global" && selectedStreamIndex >= 0) {
+      if (selectedView !== "global") {
         setSelectedView(selectedStreamIndex);
       }
     }
