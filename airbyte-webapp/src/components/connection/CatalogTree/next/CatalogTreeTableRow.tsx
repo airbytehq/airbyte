@@ -1,9 +1,8 @@
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { Cell, Row } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { Switch } from "components/ui/Switch";
@@ -66,7 +65,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         </div>
       )}
       <Cell flex={0.5} flush>
-        <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
+        <Switch size="sm" checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </Cell>
       {/* <Cell>{fieldCount}</Cell> */}
       <Cell flex={1} title={stream.stream?.namespace || ""}>
@@ -119,7 +118,9 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </Cell>
-      <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
+      <div className={styles.arrowCell}>
+        <ArrowRightIcon />
+      </div>
       <Cell flex={1} title={destNamespace}>
         <Text size="md" className={styles.cellText}>
           {destNamespace}

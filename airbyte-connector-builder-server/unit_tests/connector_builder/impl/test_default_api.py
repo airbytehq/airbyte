@@ -155,6 +155,7 @@ def test_read_stream():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
+        "http_method": "GET",
         "body": {"custom": "field"},
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
@@ -165,6 +166,7 @@ def test_read_stream():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
@@ -175,6 +177,7 @@ def test_read_stream():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[{"name": "Mitsuri Kanroji"}],
@@ -210,6 +213,7 @@ def test_read_stream_with_logs():
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
         "body": {"custom": "field"},
+        "http_method": "GET",
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
     expected_pages = [
@@ -219,6 +223,7 @@ def test_read_stream_with_logs():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
@@ -229,6 +234,7 @@ def test_read_stream_with_logs():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[{"name": "Mitsuri Kanroji"}],
@@ -272,6 +278,7 @@ def test_read_stream_no_records():
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
         "body": {"custom": "field"},
+        "http_method": "GET",
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
     expected_pages = [
@@ -281,6 +288,7 @@ def test_read_stream_no_records():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[],
@@ -291,6 +299,7 @@ def test_read_stream_no_records():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[],
@@ -388,15 +397,19 @@ def test_read_stream_returns_error_if_stream_does_not_exist():
         pytest.param(
             'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "PUT", "headers": {"field": "name"}, "body":{"key": "value"}}',
             HttpRequest(
-                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, body={"key": "value"},
+                url="https://nichirin.com/v1/swords",
+                parameters={"color": ["orange"]},
+                headers={"field": "name"},
+                body={"key": "value"},
                 http_method="PUT",
             ),
             id="test_create_request_with_all_fields",
         ),
         pytest.param(
             'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "GET", "headers": {"field": "name"}}',
-            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"},
-                        http_method="GET"),
+            HttpRequest(
+                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, http_method="GET"
+            ),
             id="test_create_request_with_no_body",
         ),
         pytest.param(
@@ -408,6 +421,11 @@ def test_read_stream_returns_error_if_stream_does_not_exist():
             'request:{"url": "https://nichirin.com/v1/swords", "http_method": "PUT", "headers": {"field": "name"}, "body":{"key": "value"}}',
             HttpRequest(url="https://nichirin.com/v1/swords", headers={"field": "name"}, body={"key": "value"}, http_method="PUT"),
             id="test_create_request_with_no_parameters",
+        ),
+        pytest.param(
+            'request:{"url": "https://nichirin.com/v1/swords", "http_method": "POST", "headers": {"field": "name"}, "body":null}',
+            HttpRequest(url="https://nichirin.com/v1/swords", headers={"field": "name"}, body=None, http_method="POST"),
+            id="test_create_request_with_null_body",
         ),
         pytest.param("request:{invalid_json: }", None, id="test_invalid_json_still_does_not_crash"),
         pytest.param("just a regular log message", None, id="test_no_request:_prefix_does_not_crash"),
