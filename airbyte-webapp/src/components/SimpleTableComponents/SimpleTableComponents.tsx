@@ -25,15 +25,14 @@ export const Header = styled(Row)`
 export const Cell = styled.div<{
   flex?: number;
   light?: boolean;
-  lighter?: boolean;
   ellipsis?: boolean;
   flush?: boolean;
 }>`
   flex: ${({ flex }) => (flex !== undefined ? flex : 1)} 0 0;
   padding-right: ${({ flush }) => (flush ? 0 : 10)}px;
   word-break: break-word;
-  color: ${({ theme, light, lighter }) => (light ? theme.greyColor40 : lighter ? theme.greyColor60 : "inherit")};
-  font-weight: ${({ light, lighter }) => (light || lighter ? "normal" : "inherit")};
+  color: ${({ theme, light }) => (light ? theme.greyColor60 : "inherit")};
+  font-weight: ${({ light }) => (light ? "normal" : "inherit")};
 
   overflow: ${({ ellipsis }) => (ellipsis ? "hidden" : "inherit")};
   text-overflow: ${({ ellipsis }) => (ellipsis ? "ellipsis" : "inherit")};
