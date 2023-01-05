@@ -132,12 +132,12 @@ class BootloaderTest {
       val jobsDatabaseMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       val protocolVersionChecker = new ProtocolVersionChecker(jobsPersistence, airbyteProtocolRange, configRepository, definitionsProvider);
+      val postLoadExecutor = new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
 
       val bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
               definitionsProvider, mockedFeatureFlags, jobsDatabaseInitializer, jobsDatabaseMigrator, jobsPersistence, protocolVersionChecker,
-              runMigrationOnStartup, mockedSecretMigrator);
-      bootloader.afterInitialization();
+              runMigrationOnStartup, mockedSecretMigrator, postLoadExecutor);
       bootloader.load();
 
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
@@ -197,12 +197,13 @@ class BootloaderTest {
       val spiedSecretMigrator =
           spy(new SecretMigrator(secretsReader, secretsWriter, configRepository, jobsPersistence, secretsPersistence));
 
+      var postLoadExecutor = new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, null);
+
       // Bootstrap the database for the test
       val initBootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
               definitionsProvider, mockedFeatureFlags, jobsDatabaseInitializer, jobsDatabaseMigrator, jobsPersistence, protocolVersionChecker,
-              runMigrationOnStartup, null);
-      initBootloader.afterInitialization();
+              runMigrationOnStartup, null, postLoadExecutor);
       initBootloader.load();
 
       final DefinitionsProvider localDefinitions = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
@@ -241,16 +242,17 @@ class BootloaderTest {
 
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);
 
+      postLoadExecutor = new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, spiedSecretMigrator);
+
       // Perform secrets migration
       var bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
               definitionsProvider, mockedFeatureFlags, jobsDatabaseInitializer, jobsDatabaseMigrator, jobsPersistence, protocolVersionChecker,
-              runMigrationOnStartup, spiedSecretMigrator);
+              runMigrationOnStartup, spiedSecretMigrator, postLoadExecutor);
       boolean isMigrated = jobsPersistence.isSecretMigrated();
 
       assertFalse(isMigrated);
 
-      bootloader.afterInitialization();
       bootloader.load();
       verify(spiedSecretMigrator).migrateSecrets();
 
@@ -268,8 +270,7 @@ class BootloaderTest {
       bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
               definitionsProvider, mockedFeatureFlags, jobsDatabaseInitializer, jobsDatabaseMigrator, jobsPersistence, protocolVersionChecker,
-              runMigrationOnStartup, spiedSecretMigrator);
-      bootloader.afterInitialization();
+              runMigrationOnStartup, spiedSecretMigrator, postLoadExecutor);
       bootloader.load();
       verifyNoInteractions(spiedSecretMigrator);
 
@@ -280,8 +281,7 @@ class BootloaderTest {
       bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
               definitionsProvider, mockedFeatureFlags, jobsDatabaseInitializer, jobsDatabaseMigrator, jobsPersistence, protocolVersionChecker,
-              runMigrationOnStartup, spiedSecretMigrator);
-      bootloader.afterInitialization();
+              runMigrationOnStartup, spiedSecretMigrator, postLoadExecutor);
       bootloader.load();
       verify(spiedSecretMigrator).migrateSecrets();
     }
@@ -317,11 +317,12 @@ class BootloaderTest {
       val jobsDatabaseMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       val protocolVersionChecker = new ProtocolVersionChecker(jobsPersistence, airbyteProtocolRange, configRepository, definitionsProvider);
+      val postLoadExecutor = new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
 
       val bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
               definitionsProvider, mockedFeatureFlags, jobsDatabaseInitializer, jobsDatabaseMigrator, jobsPersistence, protocolVersionChecker,
-              runMigrationOnStartup, mockedSecretMigrator);
+              runMigrationOnStartup, mockedSecretMigrator, postLoadExecutor);
 
       // starting from no previous version is always legal.
       assertTrue(bootloader.isLegalUpgrade(null, new AirbyteVersion("0.17.1-alpha")));
@@ -374,10 +375,16 @@ class BootloaderTest {
       val jobsDatabaseMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       val protocolVersionChecker = new ProtocolVersionChecker(jobsPersistence, airbyteProtocolRange, configRepository, definitionsProvider);
+      val postLoadExecutor = new PostLoadExecutor() {
+        @Override
+        public void execute() {
+          testTriggered.set(true);
+        }
+      };
       val bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
               definitionsProvider, mockedFeatureFlags, jobsDatabaseInitializer, jobsDatabaseMigrator, jobsPersistence, protocolVersionChecker,
-              runMigrationOnStartup, mockedSecretMigrator, () -> testTriggered.set(true));
+              runMigrationOnStartup, mockedSecretMigrator,postLoadExecutor);
       bootloader.load();
       assertTrue(testTriggered.get());
     }

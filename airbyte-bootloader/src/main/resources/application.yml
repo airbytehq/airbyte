@@ -12,8 +12,9 @@ airbyte:
       initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
     jobs:
       initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
-  protocol:
+  platform:
     auto-upgrade-connectors: ${AUTO_UPGRADE_CONNECTORS_PROTOCOL:false}
+  protocol:
     target:
       range:
         min-version: ${AIRBYTE_PROTOCOL_VERSION_MIN:0.0.0}

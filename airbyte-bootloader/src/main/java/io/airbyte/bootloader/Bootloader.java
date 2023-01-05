@@ -11,9 +11,7 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Geography;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.DefinitionsProvider;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.init.DatabaseInitializer;
@@ -21,22 +19,20 @@ import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import io.micronaut.context.annotation.Value;
-import jakarta.annotation.PostConstruct;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Ensures that the databases are migrated to the appropriate level.
  */
 @Singleton
+@Slf4j
 public class Bootloader {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Bootloader.class);
   private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.32.0-alpha");
 
   private final boolean autoUpgradeConnectors;
@@ -49,33 +45,13 @@ public class Bootloader {
   private final DatabaseInitializer jobsDatabaseInitializer;
   private final DatabaseMigrator jobsDatabaseMigrator;
   private final JobPersistence jobPersistence;
-  private Runnable postLoadExecution;
+  private final PostLoadExecutor postLoadExecution;
   private final ProtocolVersionChecker protocolVersionChecker;
   private final boolean runMigrationOnStartup;
   private final SecretMigrator secretMigrator;
 
   public Bootloader(
-                    @Value("${airbyte.protocol.auto-upgrade-connectors}") final boolean autoUpgradeConnectors,
-                    final ConfigRepository configRepository,
-                    @Named("configsDatabaseInitializer") final DatabaseInitializer configsDatabaseInitializer,
-                    @Named("configsDatabaseMigrator") final DatabaseMigrator configsDatabaseMigrator,
-                    final AirbyteVersion currentAirbyteVersion,
-                    final Optional<DefinitionsProvider> definitionsProvider,
-                    final FeatureFlags featureFlags,
-                    @Named("jobsDatabaseInitializer") final DatabaseInitializer jobsDatabaseInitializer,
-                    @Named("jobsDatabaseMigrator") final DatabaseMigrator jobsDatabaseMigrator,
-                    final JobPersistence jobPersistence,
-                    final ProtocolVersionChecker protocolVersionChecker,
-                    @Value("${airbyte.run-migration-on-startup}") final boolean runMigrationOnStartup,
-                    final SecretMigrator secretMigrator) {
-    this(autoUpgradeConnectors, configRepository, configsDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
-        definitionsProvider, featureFlags, jobsDatabaseInitializer, jobsDatabaseMigrator, jobPersistence, protocolVersionChecker,
-        runMigrationOnStartup, secretMigrator, null);
-  }
-
-  @VisibleForTesting
-  Bootloader(
-             @Value("${airbyte.protocol.auto-upgrade-connectors}") final boolean autoUpgradeConnectors,
+             @Value("${airbyte.platform.auto-upgrade-connectors}") final boolean autoUpgradeConnectors,
              final ConfigRepository configRepository,
              @Named("configsDatabaseInitializer") final DatabaseInitializer configsDatabaseInitializer,
              @Named("configsDatabaseMigrator") final DatabaseMigrator configsDatabaseMigrator,
@@ -88,7 +64,7 @@ public class Bootloader {
              final ProtocolVersionChecker protocolVersionChecker,
              @Value("${airbyte.run-migration-on-startup}") final boolean runMigrationOnStartup,
              final SecretMigrator secretMigrator,
-             final Runnable postLoadExecution) {
+             final PostLoadExecutor postLoadExecution) {
     this.autoUpgradeConnectors = autoUpgradeConnectors;
     this.configRepository = configRepository;
     this.configsDatabaseInitializer = configsDatabaseInitializer;
@@ -106,30 +82,6 @@ public class Bootloader {
   }
 
   /**
-   * Ensures additional initialization is performed after all dependency injection has completed.
-   */
-  @PostConstruct
-  public void afterInitialization() {
-    postLoadExecution = () -> {
-      try {
-        final ApplyDefinitionsHelper applyDefinitionsHelper =
-            new ApplyDefinitionsHelper(configRepository, this.definitionsProvider.get(), jobPersistence);
-        applyDefinitionsHelper.apply();
-
-        if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
-          if (this.secretMigrator != null) {
-            this.secretMigrator.migrateSecrets();
-            LOGGER.info("Secrets successfully migrated.");
-          }
-        }
-        LOGGER.info("Loaded seed data..");
-      } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-    };
-  }
-
-  /**
    * Performs all required bootstrapping for the Airbyte environment. This includes the following:
    * <ul>
    * <li>Initializes the databases</li>
@@ -144,46 +96,46 @@ public class Bootloader {
    * @throws Exception if unable to perform any of the bootstrap operations.
    */
   public void load() throws Exception {
-    LOGGER.info("Initializing databases...");
+    log.info("Initializing databases...");
     initializeDatabases();
 
-    LOGGER.info("Checking migration compatibility...");
+    log.info("Checking migration compatibility...");
     assertNonBreakingMigration(jobPersistence, currentAirbyteVersion);
 
-    LOGGER.info("Checking protocol version constraints...");
+    log.info("Checking protocol version constraints...");
     assertNonBreakingProtocolVersionConstraints(protocolVersionChecker, jobPersistence, autoUpgradeConnectors);
 
-    LOGGER.info("Running database migrations...");
+    log.info("Running database migrations...");
     runFlywayMigration(runMigrationOnStartup, configsDatabaseMigrator, jobsDatabaseMigrator);
 
-    LOGGER.info("Creating workspace (if none exists)...");
+    log.info("Creating workspace (if none exists)...");
     createWorkspaceIfNoneExists(configRepository);
 
-    LOGGER.info("Creating deployment (if none exists)...");
+    log.info("Creating deployment (if none exists)...");
     createDeploymentIfNoneExists(jobPersistence);
 
     final String airbyteVersion = currentAirbyteVersion.serialize();
-    LOGGER.info("Setting Airbyte version to '{}'...", airbyteVersion);
+    log.info("Setting Airbyte version to '{}'...", airbyteVersion);
     jobPersistence.setVersion(airbyteVersion);
-    LOGGER.info("Set version to '{}'", airbyteVersion);
+    log.info("Set version to '{}'", airbyteVersion);
 
     if (postLoadExecution != null) {
-      postLoadExecution.run();
-      LOGGER.info("Finished running post load Execution.");
+      postLoadExecution.execute();
+      log.info("Finished running post load Execution.");
     }
 
-    LOGGER.info("Finished bootstrapping Airbyte environment.");
+    log.info("Finished bootstrapping Airbyte environment.");
   }
 
   private void assertNonBreakingMigration(final JobPersistence jobPersistence, final AirbyteVersion airbyteVersion)
       throws IOException {
     // version in the database when the server main method is called. may be empty if this is the first
     // time the server is started.
-    LOGGER.info("Checking illegal upgrade...");
+    log.info("Checking for illegal upgrade...");
     final Optional<AirbyteVersion> initialAirbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
     if (!isLegalUpgrade(initialAirbyteDatabaseVersion.orElse(null), airbyteVersion)) {
       final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");
-      LOGGER.error(attentionBanner);
+      log.error(attentionBanner);
       final String message = String.format(
           "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
           initialAirbyteDatabaseVersion.get().serialize(),
@@ -191,7 +143,7 @@ public class Bootloader {
           VERSION_BREAK.serialize(),
           airbyteVersion.serialize());
 
-      LOGGER.error(message);
+      log.error(message);
       throw new RuntimeException(message);
     }
   }
@@ -212,17 +164,17 @@ public class Bootloader {
   private void createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {
     final Optional<UUID> deploymentOptional = jobPersistence.getDeployment();
     if (deploymentOptional.isPresent()) {
-      LOGGER.info("running deployment: {}", deploymentOptional.get());
+      log.info("Running deployment: {}", deploymentOptional.get());
     } else {
       final UUID deploymentId = UUID.randomUUID();
       jobPersistence.setDeployment(deploymentId);
-      LOGGER.info("created deployment: {}", deploymentId);
+      log.info("Created deployment: {}", deploymentId);
     }
   }
 
   private void createWorkspaceIfNoneExists(final ConfigRepository configRepository) throws JsonValidationException, IOException {
     if (!configRepository.listStandardWorkspaces(true).isEmpty()) {
-      LOGGER.info("workspace already exists for the deployment.");
+      log.info("Workspace already exists for the deployment.");
       return;
     }
 
@@ -242,22 +194,22 @@ public class Bootloader {
   }
 
   private void initializeDatabases() throws DatabaseInitializationException {
-    LOGGER.info("Initializing databases...");
+    log.info("Initializing databases...");
     configsDatabaseInitializer.initialize();
     jobsDatabaseInitializer.initialize();
-    LOGGER.info("Databases initialized.");
+    log.info("Databases initialized.");
   }
 
   @VisibleForTesting
   boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
     // means there was no previous version so upgrade even needs to happen. always legal.
     if (airbyteDatabaseVersion == null) {
-      LOGGER.info("No previous Airbyte Version set.");
+      log.info("No previous Airbyte Version set.");
       return true;
     }
 
-    LOGGER.info("Current Airbyte version: {}", airbyteDatabaseVersion);
-    LOGGER.info("Future Airbyte version: {}", airbyteVersion);
+    log.info("Current Airbyte version: {}", airbyteDatabaseVersion);
+    log.info("Future Airbyte version: {}", airbyteVersion);
     final var futureVersionIsAfterVersionBreak = airbyteVersion.greaterThan(VERSION_BREAK) || airbyteVersion.isDev();
     final var isUpgradingThroughVersionBreak = airbyteDatabaseVersion.lessThan(VERSION_BREAK) && futureVersionIsAfterVersionBreak;
     return !isUpgradingThroughVersionBreak;
@@ -266,18 +218,18 @@ public class Bootloader {
   private void runFlywayMigration(final boolean runDatabaseMigrationOnStartup,
                                   final DatabaseMigrator configDbMigrator,
                                   final DatabaseMigrator jobDbMigrator) {
-    LOGGER.info("Creating baseline for config database...");
+    log.info("Creating baseline for config database...");
     configDbMigrator.createBaseline();
-    LOGGER.info("Creating baseline for job database...");
+    log.info("Creating baseline for job database...");
     jobDbMigrator.createBaseline();
 
     if (runDatabaseMigrationOnStartup) {
-      LOGGER.info("Migrating configs database");
+      log.info("Migrating configs database...");
       configDbMigrator.migrate();
-      LOGGER.info("Migrating jobs database");
+      log.info("Migrating jobs database...");
       jobDbMigrator.migrate();
     } else {
-      LOGGER.info("Auto database migration is skipped");
+      log.info("Auto database migration has been skipped.");
     }
   }
 
@@ -285,7 +237,7 @@ public class Bootloader {
       throws IOException {
     jobPersistence.setAirbyteProtocolVersionMin(protocolVersionRange.min());
     jobPersistence.setAirbyteProtocolVersionMax(protocolVersionRange.max());
-    LOGGER.info("AirbyteProtocol version support range [{}:{}]", protocolVersionRange.min().serialize(), protocolVersionRange.max().serialize());
+    log.info("AirbyteProtocol version support range: [{}:{}]", protocolVersionRange.min().serialize(), protocolVersionRange.max().serialize());
   }
 
 }
