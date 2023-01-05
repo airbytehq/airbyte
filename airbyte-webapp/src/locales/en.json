@@ -718,6 +718,7 @@
   "connectorBuilder.setInUserInput": "This setting is configured as part of the user inputs in the testing panel",
   "connectorBuilder.optionalFieldsLabel": "Optional fields",
   "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
+  "connectorBuilder.addNewSlicer": "Add new slicer",
   "connectorBuilder.streamConfiguration": "Configuration",
   "connectorBuilder.streamSchema": "Schema",
   "connectorBuilder.invalidSchema": "Invalid JSON - please fix schema to have it applied",
