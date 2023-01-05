@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 import { ListBox, ListBoxControlButtonProps, Option } from "components/ui/ListBox";
 
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { getInferredInputs } from "../types";
 import { BuilderField, BuilderFieldProps } from "./BuilderField";
@@ -32,7 +32,7 @@ export const UserInputHelper = ({
   currentValue: string;
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
-  const { builderFormValues } = useConnectorBuilderState();
+  const { builderFormValues } = useConnectorBuilderFormState();
   const listOptions = useMemo(() => {
     const options: Array<Option<string | undefined>> = [
       ...builderFormValues.inputs,
