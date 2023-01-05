@@ -17,11 +17,11 @@ import kotlin.test.assertTrue
 
 class ClientTest {
     @Nested
-    inner class Platform {
+    inner class PlatformClient {
         @Test
         fun `verify platform functionality`() {
             val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
-            val client: Client = Platform(cfg)
+            val client: Client = PlatformClient(cfg)
 
             val testTrue = Temporary(key = "test-true")
             val testFalse = Temporary(key = "test-false", default = true)
@@ -56,7 +56,7 @@ class ClientTest {
                 writeText(contents0)
             }
 
-            val client: Client = Platform(tmpConfig)
+            val client: Client = PlatformClient(tmpConfig)
 
             // define the feature-flags
             val testTrue = Temporary(key = "reload-test-true")
@@ -86,7 +86,7 @@ class ClientTest {
         @Test
         fun `verify env-var flag support`() {
             val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
-            val client: Client = Platform(cfg)
+            val client: Client = PlatformClient(cfg)
 
             val evTrue = EnvVar(envVar = "env-true", fetcher = { _ -> "true" })
             val evFalse = EnvVar(envVar = "env-true", fetcher = { _ -> "false" })
@@ -105,7 +105,7 @@ class ClientTest {
     }
 
     @Nested
-    inner class Cloud {
+    inner class CloudClient {
         @Test
         fun `verify cloud functionality`() {
             val testTrue = Temporary(key = "test-true")
@@ -126,7 +126,7 @@ class ClientTest {
                 }
             }
 
-            val client: Client = Cloud(ldClient)
+            val client: Client = CloudClient(ldClient)
             with(client) {
                 assertTrue { enabled(testTrue, ctx) }
                 assertFalse { enabled(testFalse, ctx) }
@@ -143,12 +143,12 @@ class ClientTest {
         @Test
         fun `verify env-var flag support`() {
             val ldClient: LDClient = mockk()
-            val client: Client = Cloud(ldClient)
+            val client: Client = CloudClient(ldClient)
 
             val evTrue = EnvVar(envVar = "env-true", fetcher = { _ -> "true" })
-            val evFalse = EnvVar(envVar = "env-true", fetcher = { _ -> "false" })
-            val evEmpty = EnvVar(envVar = "env-true", fetcher = { _ -> "" })
-            val evNull = EnvVar(envVar = "env-true", fetcher = { _ -> null })
+            val evFalse = EnvVar(envVar = "env-false", fetcher = { _ -> "false" })
+            val evEmpty = EnvVar(envVar = "env-empty", fetcher = { _ -> "" })
+            val evNull = EnvVar(envVar = "env-null", fetcher = { _ -> null })
 
             val ctx = User("test")
 
@@ -161,6 +161,69 @@ class ClientTest {
 
             // EnvVar flags should not interact with the LDClient
             verify { ldClient wasNot called }
+        }
+    }
+
+    @Nested
+    inner class TestClient {
+        @Test
+        fun `verify functionality`() {
+            val testTrue = Pair(Temporary(key = "test-true"), true)
+            val testFalse = Pair(Temporary(key = "test-false", default = true), false)
+            val testDne = Temporary(key = "test-dne")
+
+            val ctx = User("test")
+            val values: MutableMap<String, Boolean> = mutableMapOf<Flag, Boolean>(testTrue, testFalse)
+                .mapKeys { it.key.key }
+                .toMutableMap()
+
+            val client: Client = TestClient(values)
+            with(client) {
+                assertTrue { enabled(testTrue.first, ctx) }
+                assertFalse { enabled(testFalse.first, ctx) }
+                assertFalse { enabled(testDne, ctx) }
+            }
+
+            // modify the value, ensure the client reports the new modified value
+            values[testTrue.first.key] = false
+            values[testFalse.first.key] = true
+
+            with(client) {
+                assertFalse { enabled(testTrue.first, ctx) }
+                assertTrue { enabled(testFalse.first, ctx) }
+                assertFalse("undefined flags should always return false") { enabled(testDne, ctx) }
+            }
+        }
+
+        @Test
+        fun `verify env-var flag support`() {
+            val evTrue = EnvVar(envVar = "env-true")
+            val evFalse = EnvVar(envVar = "env-false")
+            val evEmpty = EnvVar(envVar = "env-empty")
+
+            val ctx = User("test")
+
+            val values = mutableMapOf(
+                evTrue.key to true,
+                evFalse.key to false,
+            )
+            val client: Client = TestClient(values)
+
+            with(client) {
+                assertTrue { enabled(evTrue, ctx) }
+                assertFalse { enabled(evFalse, ctx) }
+                assertFalse { enabled(evEmpty, ctx) }
+            }
+
+            // modify the value, ensure the client reports the new modified value
+            values[evTrue.key] = false
+            values[evFalse.key] = true
+
+            with(client) {
+                assertFalse { enabled(evTrue, ctx) }
+                assertTrue { enabled(evFalse, ctx) }
+                assertFalse("undefined flags should always return false") { enabled(evEmpty, ctx) }
+            }
         }
     }
 }

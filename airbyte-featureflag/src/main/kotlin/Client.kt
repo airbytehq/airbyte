@@ -46,7 +46,7 @@ sealed interface Client {
  * @param [config] the location of the yaml config file that contains the feature-flag definitions.
  * The [config] will be watched for changes and the internal representation of the [config] will be updated to match.
  */
-class Platform(config: Path) : Client {
+class PlatformClient(config: Path) : Client {
     /** [flags] holds the mappings of the flag-name to the flag properties */
     private var flags: Map<String, PlatformFlag> = readConfig(config)
 
@@ -78,11 +78,34 @@ class Platform(config: Path) : Client {
  *
  * @param [client] the Launch-Darkly client for interfacing with Launch-Darkly.
  */
-class Cloud(private val client: LDClient) : Client {
+class CloudClient(private val client: LDClient) : Client {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {
             is EnvVar -> flag.enabled()
             else -> client.boolVariation(flag.key, ctx.toLDUser(), flag.default)
+        }
+    }
+}
+
+/**
+ * Test feature-flag client. Intended only for usage in testing scenarios.
+ *
+ * All [Flag] instances will use the provided [values] map as their source of truth, including [EnvVar] flags.
+ *
+ * @param [values] is a map of [Flag.key] to enabled/disabled status.
+ */
+class TestClient(val values: Map<String, Boolean>) : Client {
+    override fun enabled(flag: Flag, ctx: Context): Boolean {
+        return when (flag) {
+            is EnvVar -> {
+                // convert to a EnvVar flag with a custom fetcher that uses the [values] of this Test class
+                // instead of fetching from the environment variables
+                EnvVar(team = flag.team, envVar = flag.key, default = flag.default) {
+                    values[flag.key]?.toString() ?: flag.default.toString()
+                }.enabled()
+            }
+
+            else -> values[flag.key] ?: flag.default
         }
     }
 }
