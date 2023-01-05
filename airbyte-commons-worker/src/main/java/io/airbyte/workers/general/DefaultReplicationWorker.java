@@ -325,6 +325,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
           if (messageOptional.isPresent()) {
             final AirbyteMessage airbyteMessage = messageOptional.get();
+            LOGGER.info("worker got message {}", airbyteMessage);
             if (fieldSelectionEnabled) {
               filterSelectedFields(streamToSelectedFields, airbyteMessage);
             }

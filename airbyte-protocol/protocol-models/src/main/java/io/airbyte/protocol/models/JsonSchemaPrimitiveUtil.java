@@ -26,11 +26,11 @@ public class JsonSchemaPrimitiveUtil {
     // V0 schema primitives
     STRING,
     NUMBER,
+    INTEGER,
     OBJECT,
     ARRAY,
     BOOLEAN,
     NULL,
-    INTEGER,
     // V1 schema primitives
     STRING_V1,
     BINARY_DATA_V1,

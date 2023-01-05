@@ -21,6 +21,8 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SchemaMigrationV1 {
 
@@ -162,6 +164,8 @@ public class SchemaMigrationV1 {
     }
   }
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(SchemaMigrationV1.class);
+
   /**
    * Modifies the schema in-place to downgrade from the new-style $ref declaration to the old-style
    * type declaration. Assumes that the schema is an ObjectNode containing a primitive declaration,
@@ -179,6 +183,7 @@ public class SchemaMigrationV1 {
       // If this is a direct type declaration, then we can just replace it with the old-style declaration
       String referenceType = schema.get(REF_KEY).asText();
       ((ObjectNode) schema).removeAll();
+      LOGGER.info("got reference type {}", referenceType);
       ((ObjectNode) schema).setAll(JsonSchemaReferenceTypes.REFERENCE_TYPE_TO_OLD_TYPE.get(referenceType));
     } else if (schema.hasNonNull(ONEOF_KEY)) {
       // If this is a oneOf, then we need to check whether we can recombine it into a single type

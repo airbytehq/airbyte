@@ -575,8 +575,10 @@ public class AirbyteAcceptanceTestHarness {
           // The protocol requires converting numbers to strings. source-postgres does that internally,
           // but we're querying the DB directly, so we have to do it manually.
           Map<String, Object> stringifiedNumbers = new HashMap<>();
+          LOGGER.info("---");
           for (String key : rec.keySet()) {
             Object o = rec.get(key);
+            LOGGER.info("got thing {} {} {}", key, o, o.getClass());
             if (o instanceof Number) {
               o = o.toString();
             }
@@ -592,6 +594,9 @@ public class AirbyteAcceptanceTestHarness {
     return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
+        .peek(rec -> {
+          LOGGER.info("got destination record {}", rec);
+        })
         .map(r -> r.get(COLUMN_NAME_DATA))
         .map(f -> (JSONB) f)
         .map(JSONB::data)
