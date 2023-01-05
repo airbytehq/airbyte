@@ -94,3 +94,5 @@ export const AcceptEmailInvite: React.FC = () => {
     </>
   );
 };
+
+export default AcceptEmailInvite;
