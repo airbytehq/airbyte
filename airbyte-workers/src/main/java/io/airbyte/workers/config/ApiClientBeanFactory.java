@@ -11,6 +11,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.micronaut.context.BeanProvider;
@@ -71,6 +72,11 @@ public class ApiClientBeanFactory {
   @Singleton
   public ConnectionApi connectionApi(final ApiClient apiClient) {
     return new ConnectionApi(apiClient);
+  }
+
+  @Singleton
+  public WorkspaceApi workspaceApi(final ApiClient apiClient) {
+    return new WorkspaceApi(apiClient);
   }
 
   @Singleton
