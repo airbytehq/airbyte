@@ -9,7 +9,7 @@ package config
  * @MicronautTest used on test but no bean definition for the test present. This error indicates a misconfigured build or IDE.
  * Please add the 'micronaut-inject-java' annotation processor to your test processor path
  *
- * I have verified that _should_ be configured as expected, but I cannot get around this issue, so punting on it for now.
+ * I have verified that everything _should_ be configured as expected, but I cannot get around this issue, so punting on it for now.
  */
 //@MicronautTest(propertySources = ["classpath:app-cloud.yml"])
 //class FactoryTest {
