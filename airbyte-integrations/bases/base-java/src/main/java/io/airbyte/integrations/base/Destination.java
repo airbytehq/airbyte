@@ -26,8 +26,7 @@ public interface Destination extends Integration {
    */
   AirbyteMessageConsumer getConsumer(JsonNode config,
                                      ConfiguredAirbyteCatalog catalog,
-                                     Consumer<AirbyteMessage> outputRecordCollector)
-      throws Exception;
+                                     Consumer<AirbyteMessage> outputRecordCollector) throws Exception;
 
   static void defaultOutputRecordCollector(final AirbyteMessage message) {
     System.out.println(Jsons.serialize(message));
