@@ -348,11 +348,6 @@ definitions:
     $options:
       name: "bank_transactions"
       path: "/bankTransactions"
-  bank_reconciliation_stream:
-    $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream)"
-    $options:
-      name: "bank_reconciliation"
-      path: "/bankReconciliation"
   business_valuations_stream:
     $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream)"
     $options:
@@ -704,7 +699,6 @@ streams:
   - "*ref(definitions.commerce_transactions_stream)"
 # Incremental Service Reports Without Parameter:
   - "*ref(definitions.bank_transactions_stream)"
-  - "*ref(definitions.bank_reconciliation_stream)"
   - "*ref(definitions.business_valuations_stream)"
   - "*ref(definitions.credit_ratings_stream)"
   - "*ref(definitions.credit_scores_stream)"
