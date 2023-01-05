@@ -462,7 +462,7 @@ class IntegrationRunnerTest {
 
     Assertions.assertThrows(IllegalStateException.class, () -> {
       try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
-        IntegrationRunner.consumeMessage(consumer, invalidStateMessage);
+        IntegrationRunner.consumeMessage(consumer, invalidStateMessage, Long.MAX_VALUE);
       }
     });
   }
@@ -482,10 +482,29 @@ class IntegrationRunnerTest {
 
     Assertions.assertDoesNotThrow(() -> {
       try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
-        IntegrationRunner.consumeMessage(consumer, invalidNonStateMessage);
+        IntegrationRunner.consumeMessage(consumer, invalidNonStateMessage, Long.MAX_VALUE);
         verify(consumer, times(0)).accept(any(AirbyteMessage.class));
       }
     });
   }
 
+  @Test
+  void testConsumptionOfValidRecordMessageWithoutEnoughMemory() {
+    final String invalidNonStateMessage = """
+                                          {
+                                            "type" : "RECORD",
+                                            "record" : {
+                                              "namespace": "namespace",
+                                              "stream": "stream",
+                                              "emittedAt": 123456789
+                                            }
+                                          }
+                                          """;
+
+    Assertions.assertThrows(IllegalStateException.class, () -> {
+      try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
+        IntegrationRunner.consumeMessage(consumer, invalidNonStateMessage, 10L);
+      }
+    });
+  }
 }
