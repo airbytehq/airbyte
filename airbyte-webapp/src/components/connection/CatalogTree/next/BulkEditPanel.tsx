@@ -142,7 +142,7 @@ export const BulkEditPanel: React.FC = () => {
         </p>
         <div className={styles.syncCellContent}>
           <StreamPathSelect
-            pillIfChangeUnavailable
+            withSourceDefinedPill
             disabled={!cursorType}
             variant="strong-blue"
             isMulti={false}
@@ -159,7 +159,7 @@ export const BulkEditPanel: React.FC = () => {
         </p>
         <div className={styles.syncCellContent}>
           <StreamPathSelect
-            pillIfChangeUnavailable
+            withSourceDefinedPill
             disabled={!pkType}
             variant="strong-blue"
             isMulti

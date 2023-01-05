@@ -1,4 +1,4 @@
-import { FormattedMessage } from "react-intl";
+import React from "react";
 
 import { Popout, PopoutProps } from "../Popout";
 import { Tooltip } from "../Tooltip";
@@ -9,9 +9,10 @@ type PickedPopoutProps = Pick<PopoutProps, "value" | "options" | "isMulti" | "on
 interface PillSelectProps extends PickedPopoutProps {
   variant?: PillButtonVariant;
   disabled?: boolean;
+  renderDisabledState?: () => React.ReactNode;
 }
 
-export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) => {
+export const PillSelect: React.FC<PillSelectProps> = ({ className, renderDisabledState, ...props }) => {
   const { isMulti, variant, disabled } = props;
   return (
     <Popout
@@ -36,7 +37,7 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
                 active={isOpen}
                 className={className}
               >
-                {disabled ? <FormattedMessage id="connectionForm.bulkEdit.pillButtonLabel.notAvailable" /> : label}
+                {disabled && !!renderDisabledState ? renderDisabledState() : label}
               </PillButton>
             }
             placement="bottom-start"

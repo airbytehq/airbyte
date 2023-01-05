@@ -21,7 +21,7 @@ interface StreamPathSelectBaseProps {
   // This property is used for cases when the path is defined by source, therefore
   // in some cases we need this path to render with pill background (BulkEditPanel) and
   // in some cases it should be only text (StreamsTable)
-  pillIfChangeUnavailable?: boolean;
+  withSourceDefinedPill?: boolean;
 }
 
 interface StreamPathSelectMultiProps {
@@ -39,7 +39,7 @@ interface StreamPathSelectProps {
 type PathPopoutProps = StreamPathSelectBaseProps & (StreamPathSelectMultiProps | StreamPathSelectProps);
 
 export const StreamPathSelect: React.FC<PathPopoutProps> = ({
-  pillIfChangeUnavailable = false,
+  withSourceDefinedPill = false,
   variant = "grey",
   ...props
 }) => {
@@ -50,7 +50,7 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = ({
     return <FormattedMessage id="connection.catalogTree.sourceDefined" />;
   }, [props.isMulti, props.path]);
   if (props.pathType === "sourceDefined") {
-    if (pillIfChangeUnavailable) {
+    if (withSourceDefinedPill) {
       return (
         <PillButton disabled variant={variant} className={styles.streamPathSelect}>
           {SourceDefinedNode}
@@ -71,6 +71,7 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = ({
 
   return (
     <PillSelect
+      renderDisabledState={() => <FormattedMessage id="connectionForm.bulkEdit.pillButtonLabel.notAvailable" />}
       disabled={props.disabled}
       variant={variant}
       options={options}
