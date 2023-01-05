@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Buffering Strategy used to convert {@link io.airbyte.protocol.models.AirbyteRecordMessage} into
- * a stream of bytes to more readily save and transmit information
+ * Buffering Strategy used to convert {@link io.airbyte.protocol.models.AirbyteRecordMessage} into a
+ * stream of bytes to more readily save and transmit information
  *
  * <p>
  * This class is meant to be used in conjunction with {@link SerializableBuffer}

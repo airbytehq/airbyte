@@ -173,8 +173,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * After marking states as committed, emit the state message to platform then mark state
-   * messages as emitted to avoid resending the same state message to the platform
+   * After marking states as committed, emit the state message to platform then mark state messages as
+   * emitted to avoid resending the same state message to the platform
    */
   private void markStatesAsFlushedToDestination() {
     stateManager.markPendingAsCommitted();
@@ -190,9 +190,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   /**
    * Cleans up buffer based on whether the sync was successful or some exception occurred. In the case
-   * where a failure occurred we do a simple clean up any lingering data. Otherwise, flush any remaining
-   * data that has been stored. This is fine even if the state has not been received since this Airbyte
-   * promises at least once delivery
+   * where a failure occurred we do a simple clean up any lingering data. Otherwise, flush any
+   * remaining data that has been stored. This is fine even if the state has not been received since
+   * this Airbyte promises at least once delivery
    *
    * @param hasFailed true if the stream replication failed partway through, false otherwise
    * @throws Exception
@@ -220,14 +220,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
     try {
       /*
-       * TODO: (ryankfu) Remove usage of hasFailed with onClose after all destination connectors
-       * have been updated to support checkpointing
+       * TODO: (ryankfu) Remove usage of hasFailed with onClose after all destination connectors have been
+       * updated to support checkpointing
        *
-       * flushed is empty in 2 cases:
-       * 1. either it is full refresh (no state is emitted necessarily)
-       * 2. it is stream but no states were flushed
-       * in both of these cases, if there was a failure, we should not bother committing. otherwise
-       * attempt to commit
+       * flushed is empty in 2 cases: 1. either it is full refresh (no state is emitted necessarily) 2. it
+       * is stream but no states were flushed in both of these cases, if there was a failure, we should
+       * not bother committing. otherwise attempt to commit
        */
       if (stateManager.listFlushed().isEmpty()) {
         onClose.accept(hasFailed);

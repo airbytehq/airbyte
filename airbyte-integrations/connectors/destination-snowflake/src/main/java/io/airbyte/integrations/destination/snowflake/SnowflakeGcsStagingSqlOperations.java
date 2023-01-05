@@ -142,7 +142,7 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
     // Print actual SQL query if user needs to manually force reload from staging
     Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles,
         targetTableName, schemaName)));
-    LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, targetTableName);
+    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, targetTableName);
   }
 
   private String getCopyQuery(final String stagingPath, final List<String> stagedFiles, final String dstTableName, final String schemaName) {
