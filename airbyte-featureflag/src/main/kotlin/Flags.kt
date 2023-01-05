@@ -6,8 +6,11 @@ package io.airbyte.featureflag
 
 /**
  * If enabled, all messages from the source to the destination will be logged in 1 second intervals.
+ *
+ * This is a permanent flag and would implement the [Flag] type once converted from an environment-variable.
  */
-object LogConnectorMessages : Flag(team = Team.PLATFORM_WORKFLOW, key = "log_connector_messages")
+
+object LogConnectorMessages : EnvVar(envVar = "LOG_CONNECTOR_MESSAGES", team = Team.PLATFORM_WORKFLOW)
 
 object StreamCapableState : EnvVar(envVar = "USE_STREAM_CAPABLE_STATE")
 object AutoDetectSchema : EnvVar(team = Team.PLATFORM_WORKFLOW, envVar = "AUTO_DETECT_SCHEMA")
