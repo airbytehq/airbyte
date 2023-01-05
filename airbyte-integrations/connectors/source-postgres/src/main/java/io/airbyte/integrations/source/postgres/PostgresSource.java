@@ -26,7 +26,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -560,18 +559,21 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName);
 
-      final long syncRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
-      final long syncByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
+      if (!tableEstimateResult.isEmpty() && tableEstimateResult.get(0).has(ROW_COUNT_RESULT_COL) &&
+          tableEstimateResult.get(0).has(TOTAL_BYTES_RESULT_COL)) {
+        final long syncRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
+        final long syncByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
 
-      // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
-      // is to
-      // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
-      // However, this approach doesn't account for different row sizes.
-      AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
-      LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
-          fullTableName, syncRowCount, syncByteCount, syncRowCount, syncByteCount));
+        // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
+        // is to
+        // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
+        // However, this approach doesn't account for different row sizes.
+        AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
+        LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+            fullTableName, syncRowCount, syncByteCount, syncRowCount, syncByteCount));
+      }
     } catch (final SQLException e) {
-      throw new ConfigErrorException("Error occurred while attempting to estimate sync size", e);
+      LOGGER.warn("Error occurred while attempting to estimate sync size", e);
     }
   }
 
@@ -595,7 +597,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final long syncByteCount;
 
       syncRowCount = getIncrementalTableRowCount(database, fullTableName, cursorInfo, cursorFieldType);
-      syncByteCount = (tableByteCount / tableRowCount) * syncRowCount;
+      if (tableRowCount == 0) {
+        syncByteCount = 0;
+      } else {
+        syncByteCount = (tableByteCount / tableRowCount) * syncRowCount;
+      }
 
       // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
       // is to
@@ -605,7 +611,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
           fullTableName, syncRowCount, syncByteCount, tableRowCount, tableRowCount));
     } catch (final SQLException e) {
-      throw new ConfigErrorException("Error occurred while attempting to estimate sync size", e);
+      LOGGER.warn("Error occurred while attempting to estimate sync size", e);
     }
   }
 
@@ -623,45 +629,42 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private long getIncrementalTableRowCount(final JdbcDatabase database,
                                            final String fullTableName,
                                            final CursorInfo cursorInfo,
-                                           final PostgresType cursorFieldType) {
-    try {
-      final String quotedCursorField = getIdentifierWithQuoting(cursorInfo.getCursorField(), getQuoteString());
+                                           final PostgresType cursorFieldType)
+      throws SQLException {
+    final String quotedCursorField = getIdentifierWithQuoting(cursorInfo.getCursorField(), getQuoteString());
 
-      // Calculate actual number of rows to sync here.
-      final List<JsonNode> result = database.queryJsons(
-          connection -> {
-            LOGGER.info("Preparing query for table: {}", fullTableName);
-            final String operator;
-            if (cursorInfo.getCursorRecordCount() <= 0L) {
+    // Calculate actual number of rows to sync here.
+    final List<JsonNode> result = database.queryJsons(
+        connection -> {
+          LOGGER.info("Preparing query for table: {}", fullTableName);
+          final String operator;
+          if (cursorInfo.getCursorRecordCount() <= 0L) {
+            operator = ">";
+          } else {
+            final long actualRecordCount = getActualCursorRecordCount(
+                connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
+            LOGGER.info("Table {} cursor count: expected {}, actual {}", fullTableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
+            if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
               operator = ">";
             } else {
-              final long actualRecordCount = getActualCursorRecordCount(
-                  connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
-              LOGGER.info("Table {} cursor count: expected {}, actual {}", fullTableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
-              if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
-                operator = ">";
-              } else {
-                operator = ">=";
-              }
+              operator = ">=";
             }
+          }
 
-            final StringBuilder sql = new StringBuilder(String.format("SELECT COUNT(*) FROM %s WHERE %s %s ?",
-                fullTableName,
-                quotedCursorField,
-                operator));
+          final StringBuilder sql = new StringBuilder(String.format("SELECT COUNT(*) FROM %s WHERE %s %s ?",
+              fullTableName,
+              quotedCursorField,
+              operator));
 
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-            LOGGER.info("Executing query for table {}: {}", fullTableName, preparedStatement);
-            sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
-            return preparedStatement;
-          },
-          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+          LOGGER.info("Executing query for table {}: {}", fullTableName, preparedStatement);
+          sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
+          return preparedStatement;
+        },
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
 
-      Preconditions.checkState(result.size() == 1);
-      return result.get(0).get("count").asLong();
-    } catch (final SQLException e) {
-      throw new ConfigErrorException("Error occurred while attempting to estimate sync size", e);
-    }
+    Preconditions.checkState(result.size() == 1);
+    return result.get(0).get("count").asLong();
   }
 
 }

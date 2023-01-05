@@ -42,7 +42,6 @@ public class PostgresUtils {
   public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
   public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
 
-
   public static String getPluginValue(final JsonNode field) {
     return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
   }
