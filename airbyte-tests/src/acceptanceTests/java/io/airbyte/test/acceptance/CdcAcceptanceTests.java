@@ -194,11 +194,11 @@ class CdcAcceptanceTests {
     // new value and an updated_at time corresponding to this update query
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, "geralt").build()),
         beforeFirstUpdate,
         Optional.empty()));
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 2).put(COLUMN_NAME, "yennefer").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "2").put(COLUMN_NAME, "yennefer").build()),
         beforeFirstUpdate,
         Optional.empty()));
 
@@ -206,11 +206,11 @@ class CdcAcceptanceTests {
     source.query(ctx -> ctx.execute("INSERT INTO color_palette(id, color) VALUES(4, 'yellow')"));
     source.query(ctx -> ctx.execute("UPDATE color_palette SET color='purple' WHERE id=2"));
     expectedColorPaletteRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 4).put(COLUMN_COLOR, "yellow").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "4").put(COLUMN_COLOR, "yellow").build()),
         beforeFirstUpdate,
         Optional.empty()));
     expectedColorPaletteRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 2).put(COLUMN_COLOR, "purple").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "2").put(COLUMN_COLOR, "purple").build()),
         beforeFirstUpdate,
         Optional.empty()));
 
@@ -298,7 +298,7 @@ class CdcAcceptanceTests {
     source.query(ctx -> ctx.execute("DELETE FROM id_and_name WHERE id=1"));
 
     final Map<String, Object> deletedRecordMap = new HashMap<>();
-    deletedRecordMap.put(COLUMN_ID, 1);
+    deletedRecordMap.put(COLUMN_ID, "1");
     deletedRecordMap.put(COLUMN_NAME, null);
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
         Jsons.jsonNode(deletedRecordMap),
@@ -431,13 +431,13 @@ class CdcAcceptanceTests {
     final Instant beforeInsert = Instant.now();
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, "geralt").build()),
         beforeInsert,
         Optional.empty()));
 
     source.query(ctx -> ctx.execute("INSERT INTO color_palette(id, color) VALUES(4, 'yellow')"));
     expectedColorPaletteRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 4).put(COLUMN_COLOR, "yellow").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "4").put(COLUMN_COLOR, "yellow").build()),
         beforeInsert,
         Optional.empty()));
 
