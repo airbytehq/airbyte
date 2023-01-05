@@ -191,6 +191,8 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     ],
     [
       columnHelper,
+      config?.fieldSelectionEnabled,
+      config?.selectedFields?.length,
       formatMessage,
       handleFieldToggle,
       isColumnSelectionEnabled,
@@ -202,6 +204,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       onPkSelect,
       shouldDefineCursor,
       shouldDefinePk,
+      toggleAllFieldsSelected,
     ]
   );
 
