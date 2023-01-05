@@ -98,7 +98,7 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 |:------------------------------------|:--------------|:---------------------------|
 | DATE                                | DATE          | DATE                       |
 | STRING (BASE64)                     | STRING        | STRING                     |
-| NUMBER                              | FLOAT         | FLOAT                      |
+| NUMBER                              | FLOAT         | NUMBER                     |
 | OBJECT                              | STRING        | RECORD                     |
 | STRING                              | STRING        | STRING                     |
 | BOOLEAN                             | BOOLEAN       | BOOLEAN                    |
@@ -191,6 +191,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                  |
 |:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.2.10  | 2023-01-04 | [#20730](https://github.com/airbytehq/airbyte/pull/20730) | An incoming source Number type will create a big query integer rather than a float.                                      |
 | 1.2.9   | 2022-12-14 | [#20501](https://github.com/airbytehq/airbyte/pull/20501) | Report GCS staging failures that occur during connection check                                                           |
 | 1.2.8   | 2022-11-22 | [#19489](https://github.com/airbytehq/airbyte/pull/19489) | Added non-billable projects handle to check connection stage                                                             |
 | 1.2.7   | 2022-11-11 | [#19358](https://github.com/airbytehq/airbyte/pull/19358) | Fixed check method to capture mismatch dataset location                                                                  |
