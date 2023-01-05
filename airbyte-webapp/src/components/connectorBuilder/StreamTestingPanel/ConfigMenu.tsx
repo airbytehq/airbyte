@@ -59,7 +59,10 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJson
               size="sm"
               variant="secondary"
               onClick={() => setIsOpen(true)}
-              disabled={!jsonManifest.spec}
+              disabled={
+                !jsonManifest.spec ||
+                Object.keys(jsonManifest.spec.connection_specification.properties || {}).length === 0
+              }
               icon={<FontAwesomeIcon className={styles.icon} icon={faUser} />}
             >
               <FormattedMessage id="connectorBuilder.inputsButton" />
