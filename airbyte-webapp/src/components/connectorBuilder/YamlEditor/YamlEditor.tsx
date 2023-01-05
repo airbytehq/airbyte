@@ -1,4 +1,5 @@
 import { useMonaco } from "@monaco-editor/react";
+import { useFormikContext } from "formik";
 import { load, YAMLException } from "js-yaml";
 import debounce from "lodash/debounce";
 import isMatch from "lodash/isMatch";
@@ -20,6 +21,7 @@ interface YamlEditorProps {
 }
 
 export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
+  const { setValues } = useFormikContext();
   // const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
   const {
@@ -30,7 +32,6 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
     setYamlEditorIsMounted,
     setYamlIsValid,
     setJsonManifest,
-    setBuilderFormValues,
   } = useConnectorBuilderState();
   const [yamlValue, setYamlValue] = useState(yamlManifest);
 
@@ -92,7 +93,8 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
       //     closeConfirmationModal();
       //   },
       // });
-      setBuilderFormValues(convertToBuilderFormValues(jsonManifest), false);
+      // setBuilderFormValues(convertToBuilderFormValues(jsonManifest), false);
+      setValues(convertToBuilderFormValues(jsonManifest));
     } else {
       setYamlIsValid(true);
       toggleYamlEditor();
