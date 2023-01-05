@@ -11,7 +11,6 @@ export interface Experiments {
   "connector.inviteUsersHint.linkToUsersPage": boolean;
   "connector.orderOverwrite": Record<string, number>;
   "connector.frequentlyUsedDestinationIds": string[];
-  "connector.startWithDestinationId": string;
   "connector.form.useDatepicker": boolean;
   "authPage.rightSideUrl": string | undefined;
   "authPage.hideSelfHostedCTA": boolean;
@@ -26,4 +25,6 @@ export interface Experiments {
   "authPage.oauth.position": "top" | "bottom";
   "connection.onboarding.sources": string;
   "connection.onboarding.destinations": string;
+  "connection.autoDetectSchemaChanges": boolean;
+  "connection.columnSelection": boolean;
 }

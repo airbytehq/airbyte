@@ -197,6 +197,14 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .addInsertValues("'NaN'", "'inf'", "'-inf'")
             .addExpectedValues("NaN", "Infinity", "-Infinity")
             .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("NUMBER")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMBER(38,0)")
+            .addInsertValues("9", "990", "9990", "999000", "999000000", "999000000000")
+            .addExpectedValues("9", "990", "9990", "999000", "999000000", "999000000000")
+            .build());
 
     // Data Types for Text Strings
     addDataTypeTestData(

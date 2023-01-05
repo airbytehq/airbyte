@@ -31,6 +31,7 @@
 .connectorNameText {
   margin-left: auto;
   margin-right: auto;
+  margin-bottom: variables.$spacing-lg;
 }
 
 .streamsHeader {
@@ -83,7 +84,7 @@
 }
 
 .globalConfigButton {
-  margin-top: variables.$spacing-xl;
+  margin-top: variables.$spacing-sm;
 }
 
 .streamList {
@@ -93,6 +94,19 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+}
+
+.viewLabel {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  gap: variables.$spacing-sm;
+  align-items: center;
+}
+
+.errorIndicator {
+  flex: 0 0 auto;
+  margin-right: variables.$spacing-xs;
 }
 
 .streamViewText {

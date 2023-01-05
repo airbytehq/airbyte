@@ -1,12 +1,13 @@
 import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
-import * as yup from "yup";
 
 import { ControlLabels } from "components/LabeledControl";
+import { LabeledSwitch } from "components/LabeledSwitch";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { TagInput } from "components/ui/TagInput";
 import { Text } from "components/ui/Text";
+import { InfoTooltip } from "components/ui/Tooltip/InfoTooltip";
 
 import styles from "./BuilderField.module.scss";
 
@@ -29,10 +30,18 @@ interface BaseFieldProps {
   path: string;
   label: string;
   tooltip?: string;
+  readOnly?: boolean;
   optional?: boolean;
+  pattern?: RegExp;
 }
 
-type BuilderFieldProps = BaseFieldProps & ({ type: "text" } | { type: "array" } | { type: "enum"; options: string[] });
+type BuilderFieldProps = BaseFieldProps &
+  (
+    | { type: "string" | "number" | "integer"; onChange?: (newValue: string) => void }
+    | { type: "boolean"; onChange?: (newValue: boolean) => void }
+    | { type: "array"; onChange?: (newValue: string[]) => void }
+    | { type: "enum"; onChange?: (newValue: string) => void; options: string[] }
+  );
 
 const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, ...props }) => {
   return (
@@ -52,45 +61,67 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error })
   return <TagInput name={name} fieldValue={value} onChange={(value) => setValue(value)} error={error} />;
 };
 
-export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip, optional = false, ...props }) => {
-  let yupSchema = props.type === "array" ? yup.array().of(yup.string()) : yup.string();
-  if (!optional) {
-    yupSchema = yupSchema.required("form.empty.error");
-  }
-  const fieldConfig = {
-    name: path,
-    validate: (value: string) => {
-      try {
-        yupSchema.validateSync(value);
-        return undefined;
-      } catch (err) {
-        if (err instanceof yup.ValidationError) {
-          return err.errors.join(", ");
-        }
-        throw err;
-      }
-    },
-  };
-  const [field, meta, helpers] = useField(fieldConfig);
+export const BuilderField: React.FC<BuilderFieldProps> = ({
+  path,
+  label,
+  tooltip,
+  optional = false,
+  readOnly,
+  pattern,
+  ...props
+}) => {
+  const [field, meta, helpers] = useField(path);
   const hasError = !!meta.error && meta.touched;
+
+  if (props.type === "boolean") {
+    return (
+      <LabeledSwitch
+        {...field}
+        checked={field.value}
+        label={
+          <>
+            {label} {tooltip && <InfoTooltip placement="top-start">{tooltip}</InfoTooltip>}
+          </>
+        }
+      />
+    );
+  }
+
+  const setValue = (newValue: unknown) => {
+    props.onChange?.(newValue as string & string[]);
+    helpers.setValue(newValue);
+  };
 
   return (
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>
-      {props.type === "text" && <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} />}
+      {(props.type === "number" || props.type === "string" || props.type === "integer") && (
+        <Input
+          {...field}
+          onChange={(e) => {
+            field.onChange(e);
+            if (e.target.value === "") {
+              helpers.setValue(undefined);
+            }
+            props.onChange?.(e.target.value);
+          }}
+          type={props.type}
+          value={field.value ?? ""}
+          error={hasError}
+          readOnly={readOnly}
+        />
+      )}
       {props.type === "array" && (
-        <ArrayField name={path} value={field.value ?? []} setValue={helpers.setValue} error={hasError} />
+        <ArrayField name={path} value={field.value ?? []} setValue={setValue} error={hasError} />
       )}
       {props.type === "enum" && (
-        <EnumField
-          options={props.options}
-          value={field.value ?? props.options[0]}
-          setValue={helpers.setValue}
-          error={hasError}
-        />
+        <EnumField options={props.options} value={field.value} setValue={setValue} error={hasError} />
       )}
       {hasError && (
         <Text className={styles.error}>
-          <FormattedMessage id={meta.error} />
+          <FormattedMessage
+            id={meta.error}
+            values={meta.error === "form.pattern.error" && pattern ? { pattern: String(pattern) } : undefined}
+          />
         </Text>
       )}
     </ControlLabels>

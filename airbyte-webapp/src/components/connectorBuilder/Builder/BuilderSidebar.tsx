@@ -1,22 +1,20 @@
-import { faSliders } from "@fortawesome/free-solid-svg-icons";
+import { faSliders, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useFormikContext } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import Indicator from "components/Indicator";
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import {
-  BuilderView,
-  DEFAULT_BUILDER_FORM_VALUES,
-  useConnectorBuilderState,
-} from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "../DownloadYamlButton";
-import { BuilderFormValues } from "../types";
+import { BuilderFormValues, DEFAULT_BUILDER_FORM_VALUES, getInferredInputs } from "../types";
+import { useBuilderErrors } from "../useBuilderErrors";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
 import { UiYamlToggleButton } from "./UiYamlToggleButton";
@@ -24,6 +22,7 @@ import { UiYamlToggleButton } from "./UiYamlToggleButton";
 interface ViewSelectButtonProps {
   className?: string;
   selected: boolean;
+  showErrorIndicator: boolean;
   onClick: () => void;
 }
 
@@ -31,6 +30,7 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
   children,
   className,
   selected,
+  showErrorIndicator,
   onClick,
 }) => {
   return (
@@ -41,7 +41,8 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
       })}
       onClick={onClick}
     >
-      {children}
+      <div className={styles.viewLabel}>{children}</div>
+      {showErrorIndicator && <Indicator className={styles.errorIndicator} />}
     </button>
   );
 };
@@ -53,6 +54,7 @@ interface BuilderSidebarProps {
 
 export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggleYamlEditor }) => {
   const { formatMessage } = useIntl();
+  const { hasErrors } = useBuilderErrors();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { yamlManifest, selectedView, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
@@ -70,7 +72,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
   };
   const handleViewSelect = (selectedView: BuilderView) => {
     setSelectedView(selectedView);
-    if (selectedView !== "global") {
+    if (selectedView !== "global" && selectedView !== "inputs") {
       setTestStreamIndex(selectedView);
     }
   };
@@ -95,10 +97,24 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       <ViewSelectButton
         className={styles.globalConfigButton}
         selected={selectedView === "global"}
+        showErrorIndicator={hasErrors(true, ["global"])}
         onClick={() => handleViewSelect("global")}
       >
         <FontAwesomeIcon icon={faSliders} />
         <FormattedMessage id="connectorBuilder.globalConfiguration" />
+      </ViewSelectButton>
+
+      <ViewSelectButton
+        showErrorIndicator={false}
+        className={styles.globalConfigButton}
+        selected={selectedView === "inputs"}
+        onClick={() => handleViewSelect("inputs")}
+      >
+        <FontAwesomeIcon icon={faUser} />
+        <FormattedMessage
+          id="connectorBuilder.userInputs"
+          values={{ number: values.inputs.length + getInferredInputs(values).length }}
+        />
       </ViewSelectButton>
 
       <div className={styles.streamsHeader}>
@@ -111,7 +127,12 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
 
       <div className={styles.streamList}>
         {values.streams.map(({ name }, num) => (
-          <ViewSelectButton key={num} selected={selectedView === num} onClick={() => handleViewSelect(num)}>
+          <ViewSelectButton
+            key={num}
+            selected={selectedView === num}
+            showErrorIndicator={hasErrors(true, [num])}
+            onClick={() => handleViewSelect(num)}
+          >
             {name && name.trim() ? (
               <Text className={styles.streamViewText}>{name}</Text>
             ) : (

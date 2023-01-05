@@ -34,6 +34,7 @@ import io.airbyte.api.client.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.DestinationSyncMode;
+import io.airbyte.api.client.model.generated.Geography;
 import io.airbyte.api.client.model.generated.JobConfigType;
 import io.airbyte.api.client.model.generated.JobDebugInfoRead;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -173,7 +174,7 @@ public class AirbyteAcceptanceTestHarness {
   private final UUID defaultWorkspaceId;
   private final String postgresSqlInitFile;
 
-  private KubernetesClient kubernetesClient = null;
+  private KubernetesClient kubernetesClient;
 
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
@@ -459,6 +460,29 @@ public class AirbyteAcceptanceTestHarness {
     }
   }
 
+  /**
+   * Assert that the normalized destination matches the input records, only expecting a single id
+   * column.
+   *
+   * @param sourceRecords
+   * @throws Exception
+   */
+  public void assertNormalizedDestinationContainsIdColumn(final List<JsonNode> sourceRecords) throws Exception {
+    final Database destination = getDestinationDatabase();
+    final String finalDestinationTable = String.format("%spublic.%s%s", OUTPUT_NAMESPACE_PREFIX, OUTPUT_STREAM_PREFIX, STREAM_NAME.replace(".", "_"));
+    final List<JsonNode> destinationRecords = retrieveSourceRecords(destination, finalDestinationTable);
+
+    assertEquals(sourceRecords.size(), destinationRecords.size(),
+        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
+
+    for (final JsonNode sourceStreamRecord : sourceRecords) {
+      assertTrue(
+          destinationRecords.stream()
+              .anyMatch(r -> r.get(COLUMN_ID).asInt() == sourceStreamRecord.get(COLUMN_ID).asInt()),
+          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
+    }
+  }
+
   public ConnectionRead createConnection(final String name,
                                          final UUID sourceId,
                                          final UUID destinationId,
@@ -466,6 +490,18 @@ public class AirbyteAcceptanceTestHarness {
                                          final AirbyteCatalog catalog,
                                          final ConnectionScheduleType scheduleType,
                                          final ConnectionScheduleData scheduleData)
+      throws ApiException {
+    return createConnectionWithGeography(name, sourceId, destinationId, operationIds, catalog, scheduleType, scheduleData, Geography.AUTO);
+  }
+
+  public ConnectionRead createConnectionWithGeography(final String name,
+                                                      final UUID sourceId,
+                                                      final UUID destinationId,
+                                                      final List<UUID> operationIds,
+                                                      final AirbyteCatalog catalog,
+                                                      final ConnectionScheduleType scheduleType,
+                                                      final ConnectionScheduleData scheduleData,
+                                                      final Geography geography)
       throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
@@ -479,7 +515,8 @@ public class AirbyteAcceptanceTestHarness {
             .name(name)
             .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
             .namespaceFormat(OUTPUT_NAMESPACE)
-            .prefix(OUTPUT_STREAM_PREFIX));
+            .prefix(OUTPUT_STREAM_PREFIX)
+            .geography(geography));
     connectionIds.add(connection.getConnectionId());
     return connection;
   }
@@ -494,6 +531,13 @@ public class AirbyteAcceptanceTestHarness {
             .connectionId(connectionId)
             .scheduleType(newScheduleType)
             .scheduleData(newScheduleData));
+  }
+
+  public void updateConnectionCatalog(final UUID connectionId, final AirbyteCatalog catalog) throws ApiException {
+    apiClient.getConnectionApi().updateConnection(
+        new ConnectionUpdate()
+            .connectionId(connectionId)
+            .syncCatalog(catalog));
   }
 
   public DestinationRead createPostgresDestination(final boolean isLegacy) throws ApiException {
