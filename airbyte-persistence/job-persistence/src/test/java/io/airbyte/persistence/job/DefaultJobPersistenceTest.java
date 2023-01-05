@@ -49,6 +49,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.persistence.job.JobPersistence.AttemptStats;
+import io.airbyte.persistence.job.JobPersistence.JobAttemptPair;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptStatus;
 import io.airbyte.persistence.job.models.AttemptWithJobInfo;
@@ -471,27 +472,51 @@ class DefaultJobPersistenceTest {
     @Test
     @DisplayName("Retrieving all attempts stats for a job should return the right information")
     void testGetMultipleStats() throws IOException {
-      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
-      final int attemptNumberOne = jobPersistence.createAttempt(jobId, LOG_PATH);
+      final long jobOneId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int jobOneAttemptNumberOne = jobPersistence.createAttempt(jobOneId, LOG_PATH);
 
       // First write for first attempt.
       var streamStats = List.of(
           new StreamSyncStats().withStreamName("name1")
               .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
-      jobPersistence.writeStats(jobId, attemptNumberOne, 1000, 1000, 1000, 1000, streamStats);
+      jobPersistence.writeStats(jobOneId, jobOneAttemptNumberOne, 1000, 1000, 1000, 1000, streamStats);
 
-      // Second write for first attempt.
+      // Second write for first attempt. This is the record that should be returned.
       when(timeSupplier.get()).thenReturn(Instant.now());
       streamStats = List.of(
           new StreamSyncStats().withStreamName("name1")
               .withStats(new SyncStats().withBytesEmitted(1000L).withRecordsEmitted(1000L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
-      jobPersistence.writeStats(jobId, attemptNumberOne, 2000, 2000, 2000, 2000, streamStats);
-      jobPersistence.failAttempt(jobId, attemptNumberOne);
+      jobPersistence.writeStats(jobOneId, jobOneAttemptNumberOne, 2000, 2000, 2000, 2000, streamStats);
+      jobPersistence.failAttempt(jobOneId, jobOneAttemptNumberOne);
 
-      final int attemptNumberTwo = jobPersistence.createAttempt(jobId, LOG_PATH);
-      jobPersistence.writeStats(jobId, attemptNumberTwo, 1000, 1000, 1000, 1000, streamStats);
+      // Second attempt for first job.
+      final int jobOneAttemptNumberTwo = jobPersistence.createAttempt(jobOneId, LOG_PATH);
+      jobPersistence.writeStats(jobOneId, jobOneAttemptNumberTwo, 1000, 1000, 1000, 1000, streamStats);
 
-      final var stats = jobPersistence.getAttemptStats(List.of(jobId));
+      // First attempt for second job.
+      final long jobTwoId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int jobTwoAttemptNumberOne = jobPersistence.createAttempt(jobTwoId, LOG_PATH);
+      jobPersistence.writeStats(jobTwoId, jobTwoAttemptNumberOne, 1000, 1000, 1000, 1000, streamStats);
+
+      final var stats = jobPersistence.getAttemptStats(List.of(jobOneId, jobTwoId));
+      final var exp = Map.of(
+          new JobAttemptPair(jobOneId, jobOneAttemptNumberOne),
+          new AttemptStats(
+              new SyncStats().withRecordsEmitted(2000L).withBytesEmitted(2000L).withEstimatedBytes(2000L).withEstimatedRecords(2000L),
+              List.of(new StreamSyncStats().withStreamName("name1").withStats(
+                  new SyncStats().withEstimatedBytes(10000L).withEstimatedRecords(2000L).withBytesEmitted(1000L).withRecordsEmitted(1000L)))),
+          new JobAttemptPair(jobOneId, jobOneAttemptNumberTwo),
+          new AttemptStats(
+              new SyncStats().withRecordsEmitted(1000L).withBytesEmitted(1000L).withEstimatedBytes(1000L).withEstimatedRecords(1000L),
+              List.of(new StreamSyncStats().withStreamName("name1").withStats(
+                  new SyncStats().withEstimatedBytes(10000L).withEstimatedRecords(2000L).withBytesEmitted(1000L).withRecordsEmitted(1000L)))),
+          new JobAttemptPair(jobTwoId, jobTwoAttemptNumberOne),
+          new AttemptStats(
+              new SyncStats().withRecordsEmitted(1000L).withBytesEmitted(1000L).withEstimatedBytes(1000L).withEstimatedRecords(1000L),
+              List.of(new StreamSyncStats().withStreamName("name1").withStats(
+                  new SyncStats().withEstimatedBytes(10000L).withEstimatedRecords(2000L).withBytesEmitted(1000L).withRecordsEmitted(1000L)))));
+
+      assertEquals(exp, stats);
 
     }
 
