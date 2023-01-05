@@ -49,6 +49,8 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
                 .withSlackConfiguration(slackConfig.get());
         final SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
         return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, breakingChange.get());
+      } else {
+        return false;
       }
     } else {
       return false;
