@@ -30,8 +30,9 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
 
 export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
   const { formatMessage } = useIntl();
-  const { selectedView, testStreamIndex, setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
-  const { streams } = useConnectorBuilderTestState();
+  const { selectedView, setSelectedView } = useConnectorBuilderFormState();
+  const { streams, testStreamIndex, setTestStreamIndex } = useConnectorBuilderTestState();
+  console.log("selector", testStreamIndex);
   const options = streams.map((stream) => {
     const label =
       stream.name && stream.name.trim() ? capitalize(stream.name) : formatMessage({ id: "connectorBuilder.emptyName" });

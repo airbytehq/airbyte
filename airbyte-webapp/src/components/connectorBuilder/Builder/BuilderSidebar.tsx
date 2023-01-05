@@ -57,7 +57,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
   const { formatMessage } = useIntl();
   const { hasErrors } = useBuilderErrors();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { yamlManifest, selectedView, setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
+  const { yamlManifest, selectedView, setSelectedView } = useConnectorBuilderFormState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
   const handleResetForm = () => {
     openConfirmationModal({
@@ -73,9 +73,6 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
   };
   const handleViewSelect = (selectedView: BuilderView) => {
     setSelectedView(selectedView);
-    if (selectedView !== "global" && selectedView !== "inputs") {
-      setTestStreamIndex(selectedView);
-    }
   };
 
   return (

@@ -21,8 +21,8 @@ export const StreamTester: React.FC<{
   setTestInputOpen: (open: boolean) => void;
 }> = ({ hasTestInputJsonErrors, setTestInputOpen }) => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, testStreamIndex } = useConnectorBuilderFormState();
-  const { streams, testInputJson } = useConnectorBuilderTestState();
+  const { jsonManifest } = useConnectorBuilderFormState();
+  const { streams, testInputJson, testStreamIndex } = useConnectorBuilderTestState();
   const {
     data: streamReadData,
     refetch: readStream,

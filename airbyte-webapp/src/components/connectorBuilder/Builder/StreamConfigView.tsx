@@ -5,7 +5,11 @@ import { useField } from "formik";
 import { useIntl } from "react-intl";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  BuilderView,
+  useConnectorBuilderFormState,
+  useConnectorBuilderTestState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderStream } from "../types";
 import { AddStreamButton } from "./AddStreamButton";
@@ -27,7 +31,8 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, h
   const { formatMessage } = useIntl();
   const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
+  const { setSelectedView } = useConnectorBuilderFormState();
+  const { setTestStreamIndex } = useConnectorBuilderTestState();
 
   const streamPath = `streams[${streamNum}]`;
   const streamFieldPath = (fieldPath: string) => `${streamPath}.${fieldPath}`;
