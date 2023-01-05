@@ -8,12 +8,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CodeEditor } from "components/ui/CodeEditor";
 
 import { ConnectorManifest } from "core/request/ConnectorManifest";
-import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "../DownloadYamlButton";
-import { convertToManifest } from "../types";
+import { convertToBuilderFormValues, convertToManifest } from "../types";
 import styles from "./YamlEditor.module.scss";
 
 interface YamlEditorProps {
@@ -21,7 +20,7 @@ interface YamlEditorProps {
 }
 
 export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  // const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
   const {
     yamlManifest,
@@ -31,6 +30,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
     setYamlEditorIsMounted,
     setYamlIsValid,
     setJsonManifest,
+    setBuilderFormValues,
   } = useConnectorBuilderState();
   const [yamlValue, setYamlValue] = useState(yamlManifest);
 
@@ -82,16 +82,17 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
 
   const handleToggleYamlEditor = () => {
     if (yamlIsDirty) {
-      openConfirmationModal({
-        text: "connectorBuilder.toggleModal.text",
-        title: "connectorBuilder.toggleModal.title",
-        submitButtonText: "connectorBuilder.toggleModal.submitButton",
-        onSubmit: () => {
-          setYamlIsValid(true);
-          toggleYamlEditor();
-          closeConfirmationModal();
-        },
-      });
+      // openConfirmationModal({
+      //   text: "connectorBuilder.toggleModal.text",
+      //   title: "connectorBuilder.toggleModal.title",
+      //   submitButtonText: "connectorBuilder.toggleModal.submitButton",
+      //   onSubmit: () => {
+      //     setYamlIsValid(true);
+      //     toggleYamlEditor();
+      //     closeConfirmationModal();
+      //   },
+      // });
+      setBuilderFormValues(convertToBuilderFormValues(jsonManifest), false);
     } else {
       setYamlIsValid(true);
       toggleYamlEditor();

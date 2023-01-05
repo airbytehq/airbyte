@@ -477,7 +477,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
   };
 };
 
-const convertToBuilderFormValues = (manifest: ConnectorManifest) => {
+export const convertToBuilderFormValues = (manifest: ConnectorManifest) => {
   const builderFormValues = DEFAULT_BUILDER_FORM_VALUES;
 
   const spec = manifest.spec;
@@ -506,31 +506,64 @@ const convertToBuilderFormValues = (manifest: ConnectorManifest) => {
     )?.retriever?.requester?.authenticator;
 
     builderFormValues.streams = streams.map((stream) => {
-      let primary_key = [];
-      if (stream.primary_key && Array.isArray(stream.primary_key)) {
+      let primaryKey: string[];
+      if (stream.primary_key === undefined) {
+        primaryKey = [];
+      } else if (Array.isArray(stream.primary_key)) {
         // if primary key is nested array, grab just the first nested value to use as the primary key
         if (stream.primary_key.length > 0 && Array.isArray(stream.primary_key[0])) {
-          [primary_key] = stream.primary_key;
+          [primaryKey] = stream.primary_key as string[][];
+        } else {
+          primaryKey = stream.primary_key as string[];
         }
+      } else {
+        primaryKey = [stream.primary_key];
       }
 
       const builderStream = {
         ...DEFAULT_BUILDER_STREAM_VALUES,
         name: stream.name ?? "",
-        primaryKey: Array.isArray(stream.primary_key) ?? [],
+        primaryKey,
       };
 
       // if stream uses a CustomRetriever, only the name and primary key are pulled out, as everything else comes from the SimpleRetriever in the normal case
       if (stream.retriever.type === "SimpleRetriever") {
+        const retriever = stream.retriever;
+        const requester = retriever.requester;
         return {
           ...builderStream,
-          urlPath: stream.retriever.requester.path,
-          fieldPointer: stream.retriever.record_selector.extractor.field_pointer,
-          httpMethod: stream.retriever.requester.http_method,
+          urlPath: requester.path,
+          fieldPointer: retriever.record_selector.extractor.field_pointer,
+          httpMethod: (requester.http_method as "GET" | "POST") ?? "GET",
+          requestOptions: {
+            requestParameters: Object.entries(requester.request_options_provider?.request_parameters ?? {}),
+            requestHeaders: Object.entries(requester.request_options_provider?.request_headers ?? {}),
+            // try getting this from request_body_data first, and if not set then pull from request_body_json
+            requestBody: Object.entries(
+              requester.request_options_provider?.request_body_data ??
+                requester.request_options_provider?.request_body_json ??
+                {}
+            ),
+          },
+          paginator:
+            retriever.paginator && retriever.paginator.type === "DefaultPaginator"
+              ? {
+                  strategy: retriever.paginator.pagination_strategy,
+                  // page token option is actually required despite what the manifest schema says, so if not set then create a default value
+                  pageTokenOption: retriever.paginator.page_token_option ?? {
+                    type: "RequestOption",
+                    inject_into: "request_parameter",
+                  },
+                  pageSizeOption: retriever.paginator.page_size_option,
+                }
+              : undefined,
+          streamSlicer: retriever.stream_slicer,
         };
       }
 
       return builderStream;
     });
   }
+
+  return builderFormValues;
 };
