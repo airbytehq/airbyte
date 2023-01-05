@@ -17,14 +17,14 @@ interface BuilderProps {
   toggleYamlEditor: () => void;
 }
 
-function getView(selectedView: BuilderView) {
+function getView(selectedView: BuilderView, hasMultipleStreams: boolean) {
   switch (selectedView) {
     case "global":
       return <GlobalConfigView />;
     case "inputs":
       return <InputsView />;
     default:
-      return <StreamConfigView streamNum={selectedView} />;
+      return <StreamConfigView streamNum={selectedView} hasMultipleStreams={hasMultipleStreams} />;
   }
 }
 
@@ -47,7 +47,7 @@ export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor, vali
   return (
     <div className={styles.container}>
       <BuilderSidebar className={styles.sidebar} toggleYamlEditor={toggleYamlEditor} />
-      <Form className={styles.form}>{getView(selectedView)}</Form>
+      <Form className={styles.form}>{getView(selectedView, values.streams.length > 1)}</Form>
     </div>
   );
 };
