@@ -23,7 +23,7 @@ import {
   selectPrimaryKeyField,
   checkPreFilledPrimaryKeyField,
   checkStreamFields,
-  expandStreamDetails
+  expandStreamDetails,
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
@@ -154,11 +154,6 @@ describe("Connection - main actions", () => {
     const destName = appendRandomString("Test connection destination cypress");
 
     createTestConnection(sourceName, destName);
-
-    cy.get("div").contains(sourceName).should("exist");
-    cy.get("div").contains(destName).should("exist");
-
-    openSourceDestinationFromGrid(sourceName);
 
     goToReplicationTab();
 
@@ -558,7 +553,6 @@ describe("Connection - detect changes in source", () => {
     cy.get("div").contains(destName).should("exist");
 
     makeChangesInDBSource();
-    openSourceDestinationFromGrid(sourceName);
     goToReplicationTab();
     refreshSourceSchemaBtnClick();
 
