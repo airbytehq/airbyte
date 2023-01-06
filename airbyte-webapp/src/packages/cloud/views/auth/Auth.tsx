@@ -11,10 +11,11 @@ import { FirebaseActionRoute } from "packages/cloud/views/FirebaseActionRoute";
 
 import styles from "./Auth.module.scss";
 import FormContent from "./components/FormContent";
-import { PersonQuoteCover } from "./components/PersonQuoteCover";
-import { LoginPage } from "./LoginPage";
-import { ResetPasswordPage } from "./ResetPasswordPage";
-import { SignupPage } from "./SignupPage";
+
+const PersonQuoteCover = React.lazy(() => import("./components/PersonQuoteCover"));
+const LoginPage = React.lazy(() => import("./LoginPage"));
+const ResetPasswordPage = React.lazy(() => import("./ResetPasswordPage"));
+const SignupPage = React.lazy(() => import("./SignupPage"));
 
 const hasValidRightSideUrl = (url?: string): boolean => {
   if (url) {
@@ -33,7 +34,7 @@ const hasValidRightSideUrl = (url?: string): boolean => {
   return false;
 };
 
-const Auth: React.FC = () => {
+export const Auth: React.FC = () => {
   const { pathname } = useLocation();
   const { formatMessage } = useIntl();
   const { loggedOut } = useAuthService();
@@ -74,5 +75,3 @@ const Auth: React.FC = () => {
     </div>
   );
 };
-
-export default Auth;
