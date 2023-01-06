@@ -5,33 +5,39 @@
 from typing import Any, List, Mapping
 
 import requests
-from destination_convex.config import ConvexConfig, StreamMetadata
+from destination_convex.config import ConvexConfig
 
 
 class ConvexClient:
-    def __init__(self, config: ConvexConfig):
+    def __init__(self, config: ConvexConfig, stream_metadata: Mapping):
         self.deployment_url = config["deployment_url"]
         self.access_key = config["access_key"]
-        self.stream_metadata = None
+        self.stream_metadata = stream_metadata
 
-    def batch_write(self, records: List[Mapping], stream_metadata: List[StreamMetadata]):
+    def batch_write(self, records: List[Mapping]):
         """
-        TODO: link to convex docs here
+        See Convex docs: https://docs.convex.dev/http-api/#post-apiairbyte_ingress
         """
-        request_body = {"streams": stream_metadata, "messages": records}
+        request_body = {"streams": self.stream_metadata, "messages": records}
         return self._request("POST", endpoint="airbyte_ingress", json=request_body)
 
     def delete(self, keys: List[str]):
         """
-        TODO: link to convex docs here
+        See Convex docs: https://docs.convex.dev/http-api/#put-apiclear_tables
         """
         request_body = {"tableNames": keys}
         return self._request("PUT", endpoint="clear_tables", json=request_body)
 
     def add_indexes(self, indexes: Mapping):
+        """
+        See Convex docs: https://docs.convex.dev/http-api/#put-apiadd_indexes
+        """
         return self._request("PUT", "add_indexes", json={"indexes": indexes})
 
     def get_indexes(self):
+        """
+        See Convex docs: https://docs.convex.dev/http-api/#get-apiget_indexes
+        """
         return self._request("GET", "get_indexes")
 
     def _get_auth_headers(self) -> Mapping[str, Any]:

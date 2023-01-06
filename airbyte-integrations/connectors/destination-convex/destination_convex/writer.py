@@ -19,7 +19,6 @@ class ConvexWriter:
 
     def __init__(self, client: ConvexClient):
         self.client = client
-        self.stream_metadata = None
 
     def delete_stream_entries(self, stream_names: List[str]):
         """Deletes all the records belonging to the input stream"""
@@ -28,8 +27,9 @@ class ConvexWriter:
 
     def add_indexes(self, indexes: Mapping[str, List[List[str]]]):
         self.client.add_indexes(indexes)
+        self.__poll_for_indexes(indexes)
 
-    def poll_for_indexes(self, indexes: Mapping[str, List[List[str]]]):
+    def __poll_for_indexes(self, indexes: Mapping[str, List[List[str]]]):
         """Polls until the indexes specified are ready"""
         while len(indexes) > 0:
             resp = self.client.get_indexes()
@@ -49,7 +49,6 @@ class ConvexWriter:
 
     def flush(self):
         """Writes to Convex"""
-        if self.stream_metadata is None:
-            raise Exception("Stream metadata must be added before flushing.")
-        self.client.batch_write(self.write_buffer, self.stream_metadata)
+
+        self.client.batch_write(self.write_buffer)
         self.write_buffer.clear()

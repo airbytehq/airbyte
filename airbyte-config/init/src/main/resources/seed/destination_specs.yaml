@@ -1602,6 +1602,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
+    - "append_dedup"
 - dockerImage: "airbyte/destination-databricks:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databricks"

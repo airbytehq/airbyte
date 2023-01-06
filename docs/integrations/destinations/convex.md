@@ -7,7 +7,7 @@ See your data on the [Convex dashboard](https://dashboard.convex.dev/).
 
 ## Overview
 
-The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, and Incremental Append.
+The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Append Dedup.
 
 ### Output schema
 
@@ -22,13 +22,13 @@ Each record is a [document](https://docs.convex.dev/using/types) in Convex and i
 | Full Refresh Sync             | Yes        |
 | Incremental - Append Sync     | Yes        |
 | Incremental - Dedupe Sync     | Yes        |
-| Replicate Incremental Deletes | No         |
+| Replicate Incremental Deletes | Yes        |
 | Change Data Capture           | Yes        |
-| Namespaces                    | No         |
+| Namespaces                    | Yes        |
 
 ### Performance considerations
 
-Take care to use the appropriate sync method and frequency for the quantity of data streaming from the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental Append mode when possible.
+Take care to use the appropriate sync method and frequency for the quantity of data streaming from the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental modes when possible.
 If you see performance issues,please reach via email to [Convex support](mailto:support@convex.dev) or on [Discord](https://convex.dev/community).
 
 ## Getting started
@@ -41,7 +41,7 @@ If you see performance issues,please reach via email to [Convex support](mailto:
 
 ### Setup guide
 
-Airbyte integration is available to Convex teams on Professional [plans](https://www.convex.dev/plans).
+Airbyte integration is available to all Convex developers.
 
 On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project that you want to sync.
 Note only "Production" deployments should be synced.

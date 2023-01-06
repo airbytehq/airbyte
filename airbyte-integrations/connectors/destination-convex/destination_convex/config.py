@@ -2,25 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional, TypedDict
+from typing import TypedDict
 
 ConvexConfig = TypedDict(
     "ConvexConfig",
     {
         "deployment_url": str,
         "access_key": str,
-    },
-)
-
-StreamMetadata = TypedDict(
-    "StreamMetadata",
-    {
-        "stream": str,
-        "syncMode": str,
-        "cursor": List[str],
-        "destinationSyncMode": str,
-        "primaryKey": List[List[str]],
-        "jsonSchema": str,
-        "namespace": Optional[str],
     },
 )

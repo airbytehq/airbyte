@@ -3,12 +3,20 @@
 #
 
 
-from typing import Iterable
+from typing import Iterable, List
 
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 from destination_convex.client import ConvexClient
 from destination_convex.config import ConvexConfig
 from destination_convex.writer import ConvexWriter
@@ -19,7 +27,6 @@ class DestinationConvex(Destination):
         self, config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -34,8 +41,9 @@ class DestinationConvex(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
 
-        writer = ConvexWriter(ConvexClient(config))
-        # TODO put the stream metadata in the writer on initialization
+        writer = ConvexWriter(ConvexClient(config, self.__stream_metadata(configured_catalog.streams)))
+
+        # Setup: Clear tables if in overwrite mode; add indexes if in append_dedup mode.
         streams_to_delete = []
         indexes_to_add = {}
         for configured_stream in configured_catalog.streams:
@@ -47,20 +55,8 @@ class DestinationConvex(Destination):
             writer.delete_stream_entries(streams_to_delete)
         if len(indexes_to_add) != 0:
             writer.add_indexes(indexes_to_add)
-            writer.poll_for_indexes(indexes_to_add)
 
-        streams = {}
-        for s in configured_catalog.streams:
-            # Only send a primary key for dedup sync
-            if s.destination_sync_mode != DestinationSyncMode.append_dedup:
-                s.primary_key = None
-            stream = {
-                "primaryKey": s.primary_key,
-                "jsonSchema": str(s.stream.json_schema),  # FIXME
-            }
-            streams[s.stream.name] = stream
-        writer.stream_metadata = streams
-
+        # Process records
         for message in input_messages:
             if message.type == Type.STATE:
                 # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
@@ -76,6 +72,23 @@ class DestinationConvex(Destination):
 
         # Make sure to flush any records still in the queue
         writer.flush()
+
+    def __stream_metadata(self, streams: List[ConfiguredAirbyteStream]):
+        stream_metadata = {}
+        for s in streams:
+            # Only send a primary key for dedup sync
+            if s.destination_sync_mode != DestinationSyncMode.append_dedup:
+                s.primary_key = None
+            stream = {
+                "primaryKey": s.primary_key,
+                "jsonSchema": s.stream.json_schema,
+            }
+            if s.stream.namespace is not None:
+                name = f"{s.stream.namespace}_{s.stream.name}"
+            else:
+                name = s.stream.name
+            stream_metadata[name] = stream
+        return stream_metadata
 
     def check(self, logger: AirbyteLogger, config: ConvexConfig) -> AirbyteConnectionStatus:
         """
