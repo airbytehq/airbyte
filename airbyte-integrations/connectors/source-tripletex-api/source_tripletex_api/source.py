@@ -2,12 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import base64
-import pendulum
+import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -85,7 +85,7 @@ class PostingStream(TripletexApiStream, ABC):
         params = {
             "dateFrom": self.start_date,
             "dateTo": pendulum.parse(self.start_date).add(days=7).format("YYYY-MM-DD"),
-            "count": 100000
+            "count": 10000
         }
 
         if next_page_token:
