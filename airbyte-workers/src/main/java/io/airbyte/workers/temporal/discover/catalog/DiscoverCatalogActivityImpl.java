@@ -29,6 +29,7 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
@@ -127,7 +128,9 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
               processFactory, workerConfigs.getResourceRequirements(), launcherConfig.getIsCustomConnector());
       final AirbyteStreamFactory streamFactory =
           new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion());
-      return new DefaultDiscoverCatalogWorker(configRepository, integrationLauncher, streamFactory);
+      final ConnectorConfigUpdater connectorConfigUpdater =
+          new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi());
+      return new DefaultDiscoverCatalogWorker(configRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
     };
   }
 
