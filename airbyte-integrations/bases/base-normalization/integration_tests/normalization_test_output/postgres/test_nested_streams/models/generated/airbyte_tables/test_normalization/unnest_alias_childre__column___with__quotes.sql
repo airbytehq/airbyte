@@ -1,6 +1,22 @@
 {{ config(
     indexes = [{'columns':['_airbyte_emitted_at'],'type':'btree'}],
     schema = "test_normalization",
+    post_hook = ["
+                    {%
+                        set scd_table_relation = adapter.get_relation(
+                            database=this.database,
+                            schema=this.schema,
+                            identifier='unnest_alias_childre__column___with__quotes_scd'
+                        )
+                    %}
+                    {%
+                        if scd_table_relation is not none
+                    %}
+                    {%
+                            do adapter.drop_relation(scd_table_relation)
+                    %}
+                    {% endif %}
+                        "],
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model

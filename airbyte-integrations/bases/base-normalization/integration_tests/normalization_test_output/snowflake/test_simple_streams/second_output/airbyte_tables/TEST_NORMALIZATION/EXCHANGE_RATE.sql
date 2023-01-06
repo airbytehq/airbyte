@@ -21,6 +21,7 @@ select
     to_varchar(get_path(parse_json(_airbyte_data), '"datetime_no_tz"')) as DATETIME_NO_TZ,
     to_varchar(get_path(parse_json(_airbyte_data), '"time_tz"')) as TIME_TZ,
     to_varchar(get_path(parse_json(_airbyte_data), '"time_no_tz"')) as TIME_NO_TZ,
+    to_varchar(get_path(parse_json(_airbyte_data), '"property_binary_data"')) as PROPERTY_BINARY_DATA,
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT
@@ -87,6 +88,7 @@ select
     cast(nullif(TIME_NO_TZ, '') as 
     time
 ) as TIME_NO_TZ,
+    cast(BASE64_DECODE_BINARY(PROPERTY_BINARY_DATA) as VARBINARY) as PROPERTY_BINARY_DATA,
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT
@@ -124,6 +126,8 @@ select
     varchar
 ), '') || '-' || coalesce(cast(TIME_NO_TZ as 
     varchar
+), '') || '-' || coalesce(cast(PROPERTY_BINARY_DATA as 
+    varchar
 ), '') as 
     varchar
 )) as _AIRBYTE_EXCHANGE_RATE_HASHID,
@@ -147,6 +151,7 @@ select
     DATETIME_NO_TZ,
     TIME_TZ,
     TIME_NO_TZ,
+    PROPERTY_BINARY_DATA,
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT,

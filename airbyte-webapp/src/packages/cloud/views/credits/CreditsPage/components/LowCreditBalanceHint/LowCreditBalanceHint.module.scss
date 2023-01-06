@@ -1,0 +1,12 @@
+@use "scss/colors";
+
+.container {
+  width: 100%;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
