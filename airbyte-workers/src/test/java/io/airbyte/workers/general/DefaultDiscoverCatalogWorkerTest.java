@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,10 +35,12 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.Config;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
@@ -52,6 +55,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 class DefaultDiscoverCatalogWorkerTest {
 
   @Mock
@@ -77,6 +81,7 @@ class DefaultDiscoverCatalogWorkerTest {
   private IntegrationLauncher integrationLauncher;
   private Process process;
   private AirbyteStreamFactory streamFactory;
+  private ConnectorConfigUpdater connectorConfigUpdater;
 
   private UUID CATALOG_ID;
 
@@ -86,6 +91,7 @@ class DefaultDiscoverCatalogWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
     mConfigRepository = mock(ConfigRepository.class);
+    connectorConfigUpdater = mock(ConnectorConfigUpdater.class);
 
     CATALOG_ID = UUID.randomUUID();
     when(mConfigRepository.writeActorCatalogFetchEvent(any(), any(), any(), any())).thenReturn(CATALOG_ID);
@@ -103,13 +109,44 @@ class DefaultDiscoverCatalogWorkerTest {
   @SuppressWarnings("BusyWait")
   @Test
   void testDiscoverSchema() throws Exception {
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
 
     assertNull(output.getFailureReason());
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
     verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
+    verifyNoInteractions(connectorConfigUpdater);
+
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+
+    verify(process).exitValue();
+  }
+
+  @SuppressWarnings("BusyWait")
+  @Test
+  void testDiscoverSchemaWithConfigUpdate() throws Exception {
+    final Config connectorConfig1 = new Config().withAdditionalProperty("apiKey", "123");
+    final Config connectorConfig2 = new Config().withAdditionalProperty("apiKey", "321");
+    final AirbyteStreamFactory configMsgStreamFactory = noop -> Lists.newArrayList(
+        AirbyteMessageUtils.createConfigControlMessage(connectorConfig1, 1D),
+        AirbyteMessageUtils.createConfigControlMessage(connectorConfig2, 2D),
+        new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
+
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, configMsgStreamFactory);
+    final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
+
+    assertNull(output.getFailureReason());
+    assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
+    assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
+    verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
+    verify(connectorConfigUpdater).updateSource(SOURCE_ID, connectorConfig2);
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
@@ -125,7 +162,8 @@ class DefaultDiscoverCatalogWorkerTest {
   void testDiscoverSchemaProcessFail() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
@@ -145,7 +183,8 @@ class DefaultDiscoverCatalogWorkerTest {
 
     when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, traceStreamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, traceStreamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
     // assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
     // assertNull(output.getDiscoverCatalog());
@@ -168,13 +207,15 @@ class DefaultDiscoverCatalogWorkerTest {
     when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS)))
         .thenThrow(new RuntimeException());
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
   }
 
   @Test
   void testCancel() throws WorkerException {
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
     worker.run(INPUT, jobRoot);
 
     worker.cancel();
