@@ -17,11 +17,11 @@ import kotlin.test.assertTrue
 
 class FeatureFlagClientTest {
     @Nested
-    inner class PlatformClient {
+    inner class ConfigFileClient {
         @Test
         fun `verify platform functionality`() {
             val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
-            val client: FeatureFlagClient = PlatformClient(cfg)
+            val client: FeatureFlagClient = ConfigFileClient(cfg)
 
             val testTrue = Temporary(key = "test-true")
             val testFalse = Temporary(key = "test-false", default = true)
@@ -56,7 +56,7 @@ class FeatureFlagClientTest {
                 writeText(contents0)
             }
 
-            val client: FeatureFlagClient = PlatformClient(tmpConfig)
+            val client: FeatureFlagClient = ConfigFileClient(tmpConfig)
 
             // define the feature-flags
             val testTrue = Temporary(key = "reload-test-true")
@@ -86,7 +86,7 @@ class FeatureFlagClientTest {
         @Test
         fun `verify env-var flag support`() {
             val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
-            val client: FeatureFlagClient = PlatformClient(cfg)
+            val client: FeatureFlagClient = ConfigFileClient(cfg)
 
             val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
             val evFalse = EnvVar(envVar = "env-true") { _ -> "false" }
@@ -105,7 +105,7 @@ class FeatureFlagClientTest {
     }
 
     @Nested
-    inner class CloudClient {
+    inner class LaunchDarklyClient {
         @Test
         fun `verify cloud functionality`() {
             val testTrue = Temporary(key = "test-true")
@@ -126,7 +126,7 @@ class FeatureFlagClientTest {
                 }
             }
 
-            val client: FeatureFlagClient = CloudClient(ldClient)
+            val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
             with(client) {
                 assertTrue { enabled(testTrue, ctx) }
                 assertFalse { enabled(testFalse, ctx) }
@@ -143,7 +143,7 @@ class FeatureFlagClientTest {
         @Test
         fun `verify env-var flag support`() {
             val ldClient: LDClient = mockk()
-            val client: FeatureFlagClient = CloudClient(ldClient)
+            val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
 
             val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
             val evFalse = EnvVar(envVar = "env-false") { _ -> "false" }

@@ -5,9 +5,9 @@
 package io.airbyte.featureflag.config
 
 import com.launchdarkly.sdk.server.LDClient
-import io.airbyte.featureflag.CloudClient
+import io.airbyte.featureflag.ConfigFileClient
 import io.airbyte.featureflag.FeatureFlagClient
-import io.airbyte.featureflag.PlatformClient
+import io.airbyte.featureflag.LaunchDarklyClient
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requirements
@@ -27,7 +27,7 @@ class Factory {
     @Singleton
     fun Cloud(@Property(name = CONFIG_LD_KEY) apiKey: String): FeatureFlagClient {
         val client = LDClient(apiKey)
-        return CloudClient(client)
+        return LaunchDarklyClient(client)
     }
 
     @Requirements(
@@ -36,6 +36,6 @@ class Factory {
     )
     fun Platform(@Property(name = CONFIG_OSS_KEY) configPath: String): FeatureFlagClient {
         val path = Path.of(configPath)
-        return PlatformClient(path)
+        return ConfigFileClient(path)
     }
 }

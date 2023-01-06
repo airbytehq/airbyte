@@ -40,13 +40,13 @@ sealed interface FeatureFlagClient {
 }
 
 /**
- * Platform feature-flag client. Feature-flag are derived from a yaml config file.
+ * Config file based feature-flag client. Feature-flag are derived from a yaml config file.
  * Also supports flags defined via environment-variables via the [EnvVar] class.
  *
  * @param [config] the location of the yaml config file that contains the feature-flag definitions.
  * The [config] will be watched for changes and the internal representation of the [config] will be updated to match.
  */
-class PlatformClient(config: Path) : FeatureFlagClient {
+class ConfigFileClient(config: Path) : FeatureFlagClient {
     /** [flags] holds the mappings of the flag-name to the flag properties */
     private var flags: Map<String, PlatformFlag> = readConfig(config)
 
@@ -73,12 +73,12 @@ class PlatformClient(config: Path) : FeatureFlagClient {
 }
 
 /**
- * Cloud feature-flag client. Feature-flags are derived from an external source (the LDClient).
+ * LaunchDarkly based feature-flag client. Feature-flags are derived from an external source (the LDClient).
  * Also supports flags defined via environment-variables via the [EnvVar] class.
  *
  * @param [client] the Launch-Darkly client for interfacing with Launch-Darkly.
  */
-class CloudClient(private val client: LDClient) : FeatureFlagClient {
+class LaunchDarklyClient(private val client: LDClient) : FeatureFlagClient {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {
             is EnvVar -> flag.enabled()
