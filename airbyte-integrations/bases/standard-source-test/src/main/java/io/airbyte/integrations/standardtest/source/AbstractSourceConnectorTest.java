@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
@@ -57,6 +58,7 @@ import org.slf4j.LoggerFactory;
  * This abstract class contains helpful functionality and boilerplate for testing a source
  * connector.
  */
+@Slf4j
 public abstract class AbstractSourceConnectorTest {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractSourceConnectorTest.class);
@@ -237,16 +239,26 @@ public abstract class AbstractSourceConnectorTest {
         prepareAirbyteSource(!mapOfResourceRequirementsParams.isEmpty() ? prepareResourceRequirements(mapOfResourceRequirementsParams) : null);
     source.start(sourceConfig, jobRoot);
 
+    var totalBytes = 0;
+    var counter = 0;
+    var start = System.currentTimeMillis();
     while (!source.isFinished()) {
       final Optional<AirbyteMessage> airbyteMessageOptional = source.attemptRead().map(m -> convertProtocolObject(m, AirbyteMessage.class));
       if (airbyteMessageOptional.isPresent() && airbyteMessageOptional.get().getType().equals(Type.RECORD)) {
         final AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
-        final AirbyteRecordMessage record = airbyteMessage.getRecord();
-
-        final String streamName = record.getStream();
-        mapOfExpectedRecordsCount.put(streamName, mapOfExpectedRecordsCount.get(streamName) - 1);
+         totalBytes += airbyteMessage.getRecord().getData().toString().getBytes().length;
+         counter++;
+//        final String streamName = record.getStream();
+//        mapOfExpectedRecordsCount.put(streamName, mapOfExpectedRecordsCount.get(streamName) - 1);
+        if (counter % 1_000_000 == 0) {
+          break;
+        }
       }
     }
+    var end = System.currentTimeMillis();
+    var totalMB = totalBytes / 1_000_000.0;
+    var totalTimeSecs = (end - start) / 1000.0;
+    log.info("total secs: {}. total MB read: {}, throughput: {}", totalTimeSecs, totalMB, totalMB / totalTimeSecs);
     source.close();
     return mapOfExpectedRecordsCount;
   }

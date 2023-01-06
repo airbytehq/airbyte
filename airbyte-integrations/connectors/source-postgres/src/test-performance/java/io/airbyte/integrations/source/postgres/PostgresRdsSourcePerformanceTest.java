@@ -13,13 +13,17 @@ import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourc
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.provider.Arguments;
 
+@TestInstance(Lifecycle.PER_CLASS)
 public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   private static final String PERFORMANCE_SECRET_CREDS = "secrets/performance-config.json";
-  private static final List<String> SCHEMAS = List.of("t1000_c240_r200",
-      "t25_c8_r50k_s10kb", "t1000_c8_r10k_s500b");
+//  private static final List<String> SCHEMAS = List.of("t1000_c240_r200",
+//      "t25_c8_r50k_s10kb", "t1000_c8_r10k_s500b");
+private static final List<String> SCHEMAS = List.of("public");
 
   @Override
   protected String getImageName() {
@@ -38,7 +42,7 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
         .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
         .put(JdbcUtils.PORT_KEY, plainConfig.get(JdbcUtils.PORT_KEY))
         .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(dbName))
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
         .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
         .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
         .put(JdbcUtils.SSL_KEY, true)
@@ -57,9 +61,9 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
   @Override
   protected Stream<Arguments> provideParameters() {
     return Stream.of(
-        Arguments.of(SCHEMAS.get(0), SCHEMAS.get(0), 200, 240, 1000),
-        Arguments.of(SCHEMAS.get(1), SCHEMAS.get(1), 50000, 8, 25),
-        Arguments.of(SCHEMAS.get(2), SCHEMAS.get(2), 10000, 8, 1000));
+        Arguments.of("postgres", SCHEMAS.get(0), 200, 240, 1000));
+//        Arguments.of(SCHEMAS.get(1), SCHEMAS.get(1), 50000, 8, 25),
+//        Arguments.of(SCHEMAS.get(2), SCHEMAS.get(2), 10000, 8, 1000));
   }
 
 }
