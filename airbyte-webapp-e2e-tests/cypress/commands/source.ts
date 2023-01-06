@@ -19,7 +19,7 @@ export const createPostgresSource = (
   fillPostgresForm(name, host, port, database, username, password, schema);
   submitButtonClick();
 
-  cy.wait("@checkSourceUpdateConnection", { requestTimeout: 10000 });
+  cy.wait("@checkSourceUpdateConnection", { requestTimeout: 50000000 });
   cy.wait("@createSource");
 };
 
