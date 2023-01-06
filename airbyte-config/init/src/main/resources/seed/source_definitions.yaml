@@ -890,7 +890,7 @@
 - name: Looker
   sourceDefinitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
   dockerRepository: airbyte/source-looker
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/looker
   icon: looker.svg
   sourceType: api
