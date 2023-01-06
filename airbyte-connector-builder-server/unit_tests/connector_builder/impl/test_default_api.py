@@ -21,19 +21,19 @@ from fastapi import HTTPException
 
 MANIFEST = {
     "version": "0.1.0",
-    "type" : "DeclarativeSource",
+    "type": "DeclarativeSource",
     "definitions": {
         "selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
-        "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type" : "DeclarativeSource" },
+        "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "DeclarativeSource"},
         "retriever": {
-                "type" : "DeclarativeSource",
+            "type": "DeclarativeSource",
             "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
             "paginator": {"type": "NoPagination"},
             "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
         },
         "hashiras_stream": {
             "retriever": {
-                "type" : "DeclarativeSource",
+                "type": "DeclarativeSource",
                 "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
@@ -42,7 +42,7 @@ MANIFEST = {
         },
         "breathing_techniques_stream": {
             "retriever": {
-                "type" : "DeclarativeSource",
+                "type": "DeclarativeSource",
                 "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
@@ -52,9 +52,9 @@ MANIFEST = {
     },
     "streams": [
         {
-            "type" : "DeclarativeStream",
+            "type": "DeclarativeStream",
             "retriever": {
-                "type" : "SimpleRetriever",
+                "type": "SimpleRetriever",
                 "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
@@ -62,9 +62,9 @@ MANIFEST = {
             "$options": {"name": "hashiras", "path": "/hashiras"},
         },
         {
-            "type" : "DeclarativeStream",
+            "type": "DeclarativeStream",
             "retriever": {
-                "type" : "SimpleRetriever",
+                "type": "SimpleRetriever",
                 "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
@@ -108,15 +108,19 @@ def test_list_streams():
 def test_list_streams_with_interpolated_urls():
     manifest = {
         "version": "0.1.0",
-        "type" : "DeclarativeSource",
+        "type": "DeclarativeSource",
         "streams": [
             {
-                "type" : "DeclarativeStream",
+                "type": "DeclarativeStream",
                 "retriever": {
-                    "type" : "SimpleRetriever",
+                    "type": "SimpleRetriever",
                     "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                     "paginator": {"type": "NoPagination"},
-                    "requester": {"url_base": "https://{{ config['rank'] }}.muzan.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
+                    "requester": {
+                        "url_base": "https://{{ config['rank'] }}.muzan.com/api/v1/",
+                        "http_method": "GET",
+                        "type": "HttpRequester",
+                    },
                 },
                 "$options": {"name": "demons", "path": "/demons"},
             }
@@ -137,15 +141,19 @@ def test_list_streams_with_interpolated_urls():
 def test_list_streams_with_unresolved_interpolation():
     manifest = {
         "version": "0.1.0",
-        "type" : "DeclarativeSource",
+        "type": "DeclarativeSource",
         "streams": [
             {
-                "type" : "DeclarativeStream",
+                "type": "DeclarativeStream",
                 "retriever": {
-                    "type" : "SimpleRetriever",
+                    "type": "SimpleRetriever",
                     "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                     "paginator": {"type": "NoPagination"},
-                    "requester": {"url_base": "https://{{ config['not_in_config'] }}.muzan.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
+                    "requester": {
+                        "url_base": "https://{{ config['not_in_config'] }}.muzan.com/api/v1/",
+                        "http_method": "GET",
+                        "type": "HttpRequester",
+                    },
                 },
                 "$options": {"name": "demons", "path": "/demons"},
             }
