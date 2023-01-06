@@ -349,7 +349,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     final JobCheckFailureInput jobStateInput =
         new JobCheckFailureInput(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), connectionId);
-    boolean isLastJobOrAttemptFailure = runMandatoryActivityWithOutput(jobCreationAndStatusUpdateActivity::isLastJobOrAttemptFailure, jobStateInput);
+    final boolean isLastJobOrAttemptFailure =
+        runMandatoryActivityWithOutput(jobCreationAndStatusUpdateActivity::isLastJobOrAttemptFailure, jobStateInput);
     if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed() || !isLastJobOrAttemptFailure) {
       // reset jobs don't need to connect to any external source, so check connection is unnecessary
       log.info("SOURCE CHECK: Skipped");

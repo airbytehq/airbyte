@@ -719,7 +719,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.26"
+- dockerImage: "airbyte/source-amazon-ads:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -4386,7 +4386,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:1.0.0"
+- dockerImage: "airbyte/source-freshdesk:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshdesk"
     connectionSpecification:
@@ -7610,7 +7610,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-looker:0.2.7"
+- dockerImage: "airbyte/source-looker:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/looker"
     connectionSpecification:
@@ -7621,7 +7621,7 @@
       - "domain"
       - "client_id"
       - "client_secret"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         domain:
           type: "string"
@@ -7642,6 +7642,7 @@
           title: "Client Secret"
           type: "string"
           description: "The Client Secret is second part of an API3 key."
+          airbyte_secret: true
         run_look_ids:
           title: "Look IDs to Run"
           type: "array"
@@ -13427,7 +13428,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.19"
+- dockerImage: "airbyte/source-slack:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:
