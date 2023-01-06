@@ -7,10 +7,11 @@ micronaut:
 airbyte:
   bootloader:
     auto-upgrade-connectors: ${AUTO_UPGRADE_CONNECTORS_PROTOCOL:false}
-    migration-baseline-version: ${BOOTLOADER_MIGRATION_BASELINE_VERSION}
+    migration-baseline-version: ${BOOTLOADER_MIGRATION_BASELINE_VERSION:0.29.0.001}
     remote-connector-catalog:
       timeout-ms: ${REMOTE_CONNECTOR_CATALOG_MS:10000}
       url: ${REMOTE_CONNECTOR_CATALOG_URL:}
+    run-migration-on-startup: ${RUN_DATABASE_MIGRATION_ON_STARTUP:true}
   flyway:
     configs:
       initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
@@ -21,7 +22,6 @@ airbyte:
       range:
         min-version: ${AIRBYTE_PROTOCOL_VERSION_MIN:0.0.0}
         max-version: ${AIRBYTE_PROTOCOL_VERSION_MAX:0.3.0}
-  run-migration-on-startup: ${RUN_DATABASE_MIGRATION_ON_STARTUP:true}
   secret:
     persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
     store:

@@ -62,7 +62,7 @@ public class Bootloader {
                     @Named("jobsDatabaseMigrator") final DatabaseMigrator jobsDatabaseMigrator,
                     final JobPersistence jobPersistence,
                     final ProtocolVersionChecker protocolVersionChecker,
-                    @Value("${airbyte.run-migration-on-startup}") final boolean runMigrationOnStartup,
+                    @Value("${airbyte.bootloader.run-migration-on-startup}") final boolean runMigrationOnStartup,
                     final SecretMigrator secretMigrator,
                     final PostLoadExecutor postLoadExecution) {
     this.autoUpgradeConnectors = autoUpgradeConnectors;
