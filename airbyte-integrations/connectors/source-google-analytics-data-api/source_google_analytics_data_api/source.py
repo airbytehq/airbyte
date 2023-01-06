@@ -222,7 +222,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
 
 class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
-    _default_window_in_days = 1
     _record_date_format = "%Y%m%d"
 
     @property
@@ -278,7 +277,7 @@ class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
         else:
             start_date = self.config["date_ranges_start_date"]
 
-        timedelta: int = self.config["window_in_days"] or self._default_window_in_days
+        timedelta: int = self.config["window_in_days"]
 
         while start_date <= today:
             end_date: datetime.date = start_date + datetime.timedelta(days=timedelta)
@@ -358,6 +357,10 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             config["date_ranges_start_date"] = utils.string_to_date(config["date_ranges_start_date"])
         except ValueError as e:
             raise ConfigurationError(str(e))
+
+        if not config.get("window_in_days"):
+            source_spec = self.spec(logging.getLogger("airbyte"))
+            config["window_in_days"] = source_spec.connectionSpecification["properties"]["window_in_days"]["default"]
 
         return config
 
