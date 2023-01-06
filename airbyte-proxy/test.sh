@@ -19,7 +19,8 @@ function start_container () {
 }
 
 function start_container_with_proxy () {
-  CMD="docker run -d -p $PORT:8000 --env PROXY_PASS_WEB=$1 --env PROXY_PASS_API=$1 --name $NAME airbyte/proxy:$VERSION"
+  CMD="docker run -d -p $PORT:8000 --env PROXY_PASS_WEB=$1 --env PROXY_PASS_API=$1 --name $NAME
+  airbyte/proxy:$VERSION"
   echo $CMD
   eval $CMD
   wait_for_docker;

@@ -5,13 +5,17 @@
 package io.airbyte.server.errors;
 
 import io.airbyte.commons.json.Jsons;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.annotation.Produces;
+import jakarta.inject.Singleton;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Provider
+@Produces
+@Singleton
+@Requires(classes = KnownException.class)
 public class KnownExceptionMapper implements ExceptionMapper<KnownException> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KnownExceptionMapper.class);
