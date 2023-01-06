@@ -1,1 +1,1 @@
-export { AllDestinationsPage } from "./AllDestinationsPage";
+export { AllDestinationsPage as default } from "./AllDestinationsPage";

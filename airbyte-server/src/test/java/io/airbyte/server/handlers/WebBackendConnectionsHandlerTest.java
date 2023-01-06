@@ -123,7 +123,6 @@ class WebBackendConnectionsHandlerTest {
   private SchedulerHandler schedulerHandler;
   private StateHandler stateHandler;
   private WebBackendConnectionsHandler wbHandler;
-
   private SourceRead sourceRead;
   private ConnectionRead connectionRead;
   private ConnectionRead brokenConnectionRead;
@@ -1090,6 +1089,7 @@ class WebBackendConnectionsHandlerTest {
         new ConnectionRead().connectionId(expected.getConnectionId()).breakingChange(true).sourceId(sourceId));
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of());
+
     when(configRepository.getMostRecentActorCatalogForSource(sourceId)).thenReturn(Optional.of(new ActorCatalog().withCatalog(Jsons.deserialize(
         "{\"streams\": [{\"name\": \"cat_names\", \"namespace\": \"public\", \"json_schema\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"number\", \"airbyte_type\": \"integer\"}}}}]}"))));
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff, catalogDiff);
