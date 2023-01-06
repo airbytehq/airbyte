@@ -112,13 +112,11 @@ public class WorkerUtils {
   }
 
   public static Optional<AirbyteControlConnectorConfigMessage> getMostRecentConfigControlMessage(final Map<Type, List<AirbyteMessage>> messagesByType) {
-    final List<AirbyteControlConnectorConfigMessage> configMessages = messagesByType.getOrDefault(Type.CONTROL, new ArrayList<>()).stream()
+    return messagesByType.getOrDefault(Type.CONTROL, new ArrayList<>()).stream()
         .map(AirbyteMessage::getControl)
         .filter(control -> control.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG)
         .map(AirbyteControlMessage::getConnectorConfig)
-        .toList();
-
-    return configMessages.isEmpty() ? Optional.empty() : Optional.of(configMessages.get(configMessages.size() - 1));
+        .reduce((first, second) -> second);
   }
 
   public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,
