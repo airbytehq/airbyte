@@ -23,27 +23,32 @@ export const configureAuth = () => {
 }
 
 export const configurePagination = () => {
- goToView("0");
- togglePagination();
- configureOffsetPagination("2", "header", "offset");
+  goToView("0");
+  togglePagination();
+  configureOffsetPagination("2", "header", "offset");
+}
+
+const testPanelContains = (str: string) => {
+  cy.get("pre").contains(str).should("exist");
 }
 
 export const assertTestReadAuthFailure = () => {
-    cy.get("pre").contains('"error": "Bad credentials"').should("exist");
+  testPanelContains('"error": "Bad credentials"');
 };
 
 export const assertTestReadItems = () => {
-    cy.get("pre").contains('"name": "abc"').should("exist");
-    cy.get("pre").contains('"name": "def"').should("exist");
+  testPanelContains('"name": "abc"');
+  testPanelContains('"name": "def"');
 };
 
 export const assertMultiPageReadItems = () => {
   goToTestPage(1);
-  cy.get("pre").contains('"name": "abc"').should("exist");
-  cy.get("pre").contains('"name": "def"').should("exist");
+  assertTestReadItems();
+
   goToTestPage(2);
-  cy.get("pre").contains('"name": "xxx"').should("exist");
-  cy.get("pre").contains('"name": "yyy"').should("exist");
+  testPanelContains('"name": "xxx"');
+  testPanelContains('"name": "yyy"');
+
   goToTestPage(3);
-  cy.get("pre").contains('[]').should("exist");
+  testPanelContains('[]');
 };
