@@ -10,7 +10,7 @@ import {
   useConnectionValidationSchema,
 } from "components/connection/ConnectionForm/formConfig";
 import { SchemaChangeBackdrop } from "components/connection/ConnectionForm/SchemaChangeBackdrop";
-import { SchemaError } from "components/CreateConnection/SchemaError";
+import { SchemaError } from "components/connection/CreateConnection/SchemaError";
 import LoadingSchema from "components/LoadingSchema";
 
 import { Action, Namespace } from "core/analytics";
