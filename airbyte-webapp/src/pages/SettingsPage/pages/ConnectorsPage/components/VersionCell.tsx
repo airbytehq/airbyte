@@ -7,6 +7,7 @@ import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
 
 import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
+import { ConnectorIds } from "utils/connectors";
 
 import { useUpdatingState } from "./ConnectorsViewContext";
 import styles from "./VersionCell.module.scss";
@@ -36,6 +37,10 @@ const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, curren
   };
 
   const isConnectorUpdatable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
+
+  if (id === ConnectorIds.Sources.Postgres) {
+    console.log(version);
+  }
 
   return (
     <Formik
