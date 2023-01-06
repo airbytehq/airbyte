@@ -36,11 +36,10 @@ $border-width: variables.$border-thick;
   white-space: nowrap;
 }
 
-.dropdown {
+.control {
   margin-left: auto;
   padding: 0 variables.$spacing-xs;
   background-color: colors.$white;
-  min-width: calc(50% - 100px);
 }
 
 .content {
