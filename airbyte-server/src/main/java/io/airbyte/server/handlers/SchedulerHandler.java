@@ -170,6 +170,7 @@ public class SchedulerHandler {
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
+        .withSourceId(sourceConfig.getSourceId())
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
         .withConfiguration(partialConfig)
         .withWorkspaceId(sourceConfig.getWorkspaceId());
@@ -190,6 +191,7 @@ public class SchedulerHandler {
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedSource.getConfiguration());
 
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
+        .sourceId(updatedSource.getSourceId())
         .connectionConfiguration(updatedSource.getConfiguration())
         .sourceDefinitionId(updatedSource.getSourceDefinitionId());
 
@@ -218,6 +220,7 @@ public class SchedulerHandler {
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
+        .withDestinationId(destinationConfig.getDestinationId())
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
         .withConfiguration(partialConfig)
         .withWorkspaceId(destinationConfig.getWorkspaceId());
@@ -236,6 +239,7 @@ public class SchedulerHandler {
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedDestination.getConfiguration());
 
     final DestinationCoreConfig destinationCoreConfig = new DestinationCoreConfig()
+        .destinationId(updatedDestination.getDestinationId())
         .connectionConfiguration(updatedDestination.getConfiguration())
         .destinationDefinitionId(updatedDestination.getDestinationDefinitionId());
 

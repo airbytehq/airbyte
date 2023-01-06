@@ -2690,6 +2690,8 @@ components:
         - connectionConfiguration
         - workspaceId
       properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
@@ -3000,6 +3002,8 @@ components:
         - destinationDefinitionId
         - connectionConfiguration
       properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
