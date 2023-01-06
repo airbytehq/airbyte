@@ -1,5 +1,4 @@
-import { FastField, FieldHelperProps, FieldInputProps } from "formik";
-import { useField } from "formik";
+import { FastField, FastFieldProps } from "formik";
 import React from "react";
 
 import GroupControls from "components/GroupControls";
@@ -26,9 +25,14 @@ interface BuilderOneOfProps {
   tooltip: string;
 }
 
-const InnerBuilderOneOf: React.FC<
-  BuilderOneOfProps & { field: FieldInputProps<string>; helpers: FieldHelperProps<unknown> }
-> = React.memo(({ options, label, tooltip, field: typePathField, helpers: oneOfPathHelpers }) => {
+const InnerBuilderOneOf: React.FC<BuilderOneOfProps & FastFieldProps<string>> = ({
+  options,
+  label,
+  tooltip,
+  field: typePathField,
+  path,
+  form,
+}) => {
   const value = typePathField.value;
 
   const selectedOption = options.find((option) => option.typeValue === value);
@@ -48,7 +52,7 @@ const InnerBuilderOneOf: React.FC<
               return;
             }
             // clear all values for this oneOf and set selected option and default values
-            oneOfPathHelpers.setValue({
+            form.setFieldValue(path, {
               type: selectedOption.value,
               ...selectedOption.default,
             });
@@ -59,15 +63,11 @@ const InnerBuilderOneOf: React.FC<
       {selectedOption?.children}
     </GroupControls>
   );
-});
-
+};
 export const BuilderOneOf: React.FC<BuilderOneOfProps> = (props) => {
-  const [, , helpers] = useField(props.path);
   return (
     <FastField name={`${props.path}.type`}>
-      {({ field }: { field: FieldInputProps<string> }) => (
-        <InnerBuilderOneOf {...props} field={field} helpers={helpers} />
-      )}
+      {(fastFieldProps: FastFieldProps<string>) => <InnerBuilderOneOf {...props} {...fastFieldProps} />}
     </FastField>
   );
 };

@@ -30,7 +30,7 @@ interface StreamConfigViewProps {
   hasMultipleStreams: boolean;
 }
 
-export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, hasMultipleStreams }) => {
+export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ streamNum, hasMultipleStreams }) => {
   const { formatMessage } = useIntl();
 
   const [selectedTab, setSelectedTab] = useState<"configuration" | "schema">("configuration");
@@ -107,7 +107,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, h
       )}
     </BuilderConfigView>
   );
-};
+});
 
 const StreamControls = ({
   streamNum,
