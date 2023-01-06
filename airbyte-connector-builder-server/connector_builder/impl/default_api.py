@@ -4,6 +4,7 @@
 
 import json
 import logging
+import traceback
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
@@ -125,7 +126,10 @@ spec:
                     single_slice.pages.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {error.args[0]}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Could not perform read with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}",
+            )
 
         return StreamRead(logs=log_messages, slices=[single_slice], inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream))
 
@@ -212,4 +216,11 @@ spec:
             return LowCodeSourceAdapter(manifest=manifest)
         except ValidationError as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid connector manifest with error: {error.message} - {DefaultApiImpl._get_stacktrace_as_string(error)}",
+            )
+
+    @staticmethod
+    def _get_stacktrace_as_string(error) -> str:
+        return "".join(traceback.TracebackException.from_exception(error).format())

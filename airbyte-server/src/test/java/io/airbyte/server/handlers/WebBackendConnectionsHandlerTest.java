@@ -66,13 +66,13 @@ import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
+import io.airbyte.api.model.generated.WebBackendConnectionListRequestBody;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
@@ -88,6 +88,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.StandardSyncQuery;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
@@ -122,7 +123,6 @@ class WebBackendConnectionsHandlerTest {
   private SchedulerHandler schedulerHandler;
   private StateHandler stateHandler;
   private WebBackendConnectionsHandler wbHandler;
-
   private SourceRead sourceRead;
   private ConnectionRead connectionRead;
   private ConnectionRead brokenConnectionRead;
@@ -186,7 +186,7 @@ class WebBackendConnectionsHandlerTest {
     final StandardSync brokenStandardSync =
         ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), true, Status.INACTIVE);
 
-    when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
+    when(configRepository.listWorkspaceStandardSyncs(new StandardSyncQuery(sourceRead.getWorkspaceId(), null, null, false)))
         .thenReturn(Collections.singletonList(standardSync));
     when(configRepository.getSourceAndDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
         .thenReturn(Collections.singletonList(new SourceAndDefinition(source, sourceDefinition)));
@@ -366,11 +366,11 @@ class WebBackendConnectionsHandlerTest {
 
   @Test
   void testWebBackendListConnectionsForWorkspace() throws IOException, JsonValidationException, ConfigNotFoundException {
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
-    workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
+    final WebBackendConnectionListRequestBody webBackendConnectionListRequestBody = new WebBackendConnectionListRequestBody();
+    webBackendConnectionListRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
     final WebBackendConnectionReadList WebBackendConnectionReadList =
-        wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
+        wbHandler.webBackendListConnectionsForWorkspace(webBackendConnectionListRequestBody);
 
     assertEquals(1, WebBackendConnectionReadList.getConnections().size());
     assertEquals(expectedListItem, WebBackendConnectionReadList.getConnections().get(0));
@@ -1089,6 +1089,7 @@ class WebBackendConnectionsHandlerTest {
         new ConnectionRead().connectionId(expected.getConnectionId()).breakingChange(true).sourceId(sourceId));
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of());
+
     when(configRepository.getMostRecentActorCatalogForSource(sourceId)).thenReturn(Optional.of(new ActorCatalog().withCatalog(Jsons.deserialize(
         "{\"streams\": [{\"name\": \"cat_names\", \"namespace\": \"public\", \"json_schema\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"number\", \"airbyte_type\": \"integer\"}}}}]}"))));
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff, catalogDiff);

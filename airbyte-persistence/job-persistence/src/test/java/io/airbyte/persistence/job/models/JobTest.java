@@ -68,7 +68,7 @@ class JobTest {
 
     final Job job = jobWithAttemptWithStatus(AttemptStatus.FAILED, AttemptStatus.FAILED);
     assertTrue(job.getLastFailedAttempt().isPresent());
-    assertEquals(2, job.getLastFailedAttempt().get().getId());
+    assertEquals(2, job.getLastFailedAttempt().get().getAttemptNumber());
   }
 
   @Test

@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from collections import defaultdict
 from typing import Any, Dict, List, Optional, Union
 
 from airbyte_cdk.models import AirbyteRecordMessage
@@ -16,12 +17,8 @@ class NoRequiredObj(Object):
     """
 
     def to_schema(self):
-        schema = super(Object, self).to_schema()
-        schema["type"] = "object"
-        if self._properties:
-            schema["properties"] = self._properties_to_schema(self._properties)
-        if self._pattern_properties:
-            schema["patternProperties"] = self._properties_to_schema(self._pattern_properties)
+        schema = super(NoRequiredObj, self).to_schema()
+        schema.pop("required", None)
         return schema
 
 
@@ -29,6 +26,7 @@ class NoRequiredSchemaBuilder(SchemaBuilder):
     EXTRA_STRATEGIES = (NoRequiredObj,)
 
 
+# This type is inferred from the genson lib, but there is no alias provided for it - creating it here for type safety
 InferredSchema = Dict[str, Union[str, Any, List, List[Dict[str, Union[Any, List]]]]]
 
 
@@ -38,25 +36,18 @@ class SchemaInferrer:
     throughout its lifecycle via the accumulate method.
 
     Instances of this class are stateful, meaning they build their inferred schemas
-    from every record passed into the accumulate method until the reset() method is called.
+    from every record passed into the accumulate method.
 
     """
 
-    builders: Dict[str, SchemaBuilder]
+    stream_to_builder: Dict[str, SchemaBuilder]
 
     def __init__(self):
-        self.builders = {}
+        self.stream_to_builder = defaultdict(NoRequiredSchemaBuilder)
 
     def accumulate(self, record: AirbyteRecordMessage):
         """Uses the input record to add to the inferred schemas maintained by this object"""
-        stream_name = record.stream
-        builder = None
-        if stream_name not in self.builders:
-            builder = NoRequiredSchemaBuilder()
-            self.builders[stream_name] = builder
-        else:
-            builder = self.builders[stream_name]
-        builder.add_object(record.data)
+        self.stream_to_builder[record.stream].add_object(record.data)
 
     def get_inferred_schemas(self) -> Dict[str, InferredSchema]:
         """
@@ -64,7 +55,7 @@ class SchemaInferrer:
         passed via the accumulate method
         """
         schemas = {}
-        for stream_name, builder in self.builders.items():
+        for stream_name, builder in self.stream_to_builder.items():
             schemas[stream_name] = builder.to_schema()
         return schemas
 
@@ -72,7 +63,4 @@ class SchemaInferrer:
         """
         Returns the inferred JSON schema for the specified stream. Might be `None` if there were no records for the given stream name.
         """
-        if stream_name in self.builders:
-            return self.builders[stream_name].to_schema()
-        else:
-            return None
+        return self.stream_to_builder[stream_name].to_schema() if stream_name in self.stream_to_builder else None
