@@ -283,10 +283,12 @@ public class IntegrationRunner {
    *         provided message.
    */
   @VisibleForTesting
-  static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString, final long runnerMaximumMemoryInBytes) throws Exception {
+  static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString, final long runnerMaximumMemoryInBytes)
+      throws Exception {
 
     if (inputString.getBytes().length > (runnerMaximumMemoryInBytes * 0.6)) {
-      LOGGER.error("One messge is too big, the replication will fail in order to avoid OOM. The size of the message is: {} bytes", inputString.getBytes().length);
+      LOGGER.error("One messge is too big, the replication will fail in order to avoid OOM. The size of the message is: {} bytes",
+          inputString.getBytes().length);
       throw new IllegalStateException("Invalid message, the message is too big");
     }
     final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
