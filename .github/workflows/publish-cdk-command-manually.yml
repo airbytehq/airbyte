@@ -10,11 +10,11 @@ on:
         default: "airbytehq/airbyte"
       gitref:
         description: "The git ref to check out from the specified repository."
-        required: true
+        required: false
         default: issue-19981_avoid-race-condition-on-airbyte-cdk-release
       part-to-bump:
         description: "Choose the type of version upgrade : major|minor|patch"
-        required: true
+        required: false
         default: patch
   workflow_dispatch:
     inputs:
@@ -54,7 +54,6 @@ jobs:
         run: |
           pip install bumpversion
           cd airbyte-cdk/python
-          printenv
           echo part-to-bump=${{ github.event.inputs.part-to-bump }}
           bumpversion ${{ github.event.inputs.part-to-bump }}
       - name: Commit and Push Changes
