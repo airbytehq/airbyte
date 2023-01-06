@@ -1,4 +1,5 @@
 import { useField } from "formik";
+import React, { useRef } from "react";
 import { FormattedMessage } from "react-intl";
 
 import GroupControls from "components/GroupControls";
@@ -60,6 +61,10 @@ interface KeyValueListFieldProps {
 export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, label, tooltip }) => {
   const [{ value: keyValueList }, , { setValue: setKeyValueList }] = useField<Array<[string, string]>>(path);
 
+  // need to wrap the setter into a ref because it will be a new function on every formik state update
+  const setKeyValueListRef = useRef(setKeyValueList);
+  setKeyValueListRef.current = setKeyValueList;
+
   return (
     <GroupControls
       label={<ControlLabels label={label} infoTooltipContent={tooltip} />}
@@ -69,20 +74,36 @@ export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, labe
         </Button>
       }
     >
-      {keyValueList.map((keyValue, keyValueIndex) => (
-        <KeyValueInput
-          key={keyValueIndex}
-          keyValue={keyValue}
-          onChange={(newKeyValue) => {
-            const updatedList = keyValueList.map((entry, index) => (index === keyValueIndex ? newKeyValue : entry));
-            setKeyValueList(updatedList);
-          }}
-          onRemove={() => {
-            const updatedList = keyValueList.filter((_, index) => index !== keyValueIndex);
-            setKeyValueList(updatedList);
-          }}
-        />
-      ))}
+      <KeyValueList keyValueList={keyValueList} setKeyValueList={setKeyValueListRef} />
     </GroupControls>
   );
 };
+
+const KeyValueList = React.memo(
+  ({
+    keyValueList,
+    setKeyValueList,
+  }: {
+    keyValueList: Array<[string, string]>;
+    setKeyValueList: React.MutableRefObject<(val: Array<[string, string]>) => void>;
+  }) => {
+    return (
+      <>
+        {keyValueList.map((keyValue, keyValueIndex) => (
+          <KeyValueInput
+            key={keyValueIndex}
+            keyValue={keyValue}
+            onChange={(newKeyValue) => {
+              const updatedList = keyValueList.map((entry, index) => (index === keyValueIndex ? newKeyValue : entry));
+              setKeyValueList.current(updatedList);
+            }}
+            onRemove={() => {
+              const updatedList = keyValueList.filter((_, index) => index !== keyValueIndex);
+              setKeyValueList.current(updatedList);
+            }}
+          />
+        ))}
+      </>
+    );
+  }
+);
