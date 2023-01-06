@@ -55,6 +55,6 @@ In the Data tab, you should see the tables and a sample of the data that will be
 
 ## Changelog
 
-| Version | Date       | Pull Request          | Subject               |
-| :------ | :--------- | :-------------------- | :-------------------- |
-| 0.1.0   | 2023-01-05 | TODO: link to PR here | 🎉 New Source: Convex |
+| Version | Date       | Pull Request          | Subject                    |
+| :------ | :--------- | :-------------------- | :------------------------- |
+| 0.1.0   | 2023-01-05 | TODO: link to PR here | 🎉 New Destination: Convex |
