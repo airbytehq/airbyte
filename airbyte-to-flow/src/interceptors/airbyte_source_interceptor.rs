@@ -46,6 +46,7 @@ const DOC_URL_PATCH_FILE_NAME: &str = "documentation_url.patch.json";
 const STREAM_PATCH_DIR_NAME: &str = "streams";
 const STREAM_PK_SUFFIX: &str = ".pk.json";
 const STREAM_PATCH_SUFFIX: &str = ".patch.json";
+const SELECTED_STREAMS_FILE_NAME: &str = "selected_streams.json";
 
 pub struct AirbyteSourceInterceptor {
     validate_request: Arc<Mutex<Option<ValidateRequest>>>,
@@ -142,8 +143,17 @@ impl AirbyteSourceInterceptor {
             let message = get_airbyte_response(in_stream, |m| m.catalog.is_some(), "catalog").await?;
             let catalog = message.catalog.unwrap();
 
+            let selected_streams_option = std::fs::read_to_string(SELECTED_STREAMS_FILE_NAME).ok().map(|p| sj::from_str::<Vec<String>>(&p)).transpose()?;
+
             let mut resp = DiscoverResponse::default();
             for stream in catalog.streams {
+                if let Some(ref selected_streams) = selected_streams_option {
+                    if !selected_streams.contains(&stream.name) {
+                        continue;
+                    }
+                }
+
+
                 let has_incremental = stream
                     .supported_sync_modes
                     .map(|modes| modes.contains(&SyncMode::Incremental))
