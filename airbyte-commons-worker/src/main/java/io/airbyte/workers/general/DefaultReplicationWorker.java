@@ -164,6 +164,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .stream()
           .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
               s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
+      LOGGER.debug("field selection enabled: {}", fieldSelectionEnabled);
       final WorkerSourceConfig sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
 
       ApmTraceUtils.addTagsToTrace(generateTraceTags(destinationConfig, jobRoot));
@@ -330,7 +331,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      Long recordsRead = 0L;
+      long recordsRead = 0L;
       final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap<>();
       if (fieldSelectionEnabled) {
