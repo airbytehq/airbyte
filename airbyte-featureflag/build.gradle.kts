@@ -12,11 +12,10 @@ dependencies {
 
     implementation(platform(libs.micronaut.bom))
     implementation(libs.micronaut.inject)
-    implementation("com.jayway.jsonpath:json-path:2.7.0")
-    implementation("com.launchdarkly:launchdarkly-java-server-sdk:6.0.1")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.0")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.0")
+    implementation(libs.launchdarkly)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.dataformat)
+    implementation(libs.jackson.kotlin)
 
     testAnnotationProcessor(platform(libs.micronaut.bom))
     testAnnotationProcessor(libs.micronaut.inject)
@@ -25,7 +24,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.bundles.micronaut.test)
-    testImplementation("io.mockk:mockk:1.13.3")
+    testImplementation(libs.mockk)
     testImplementation(libs.bundles.junit)
 }
 
