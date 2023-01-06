@@ -27,6 +27,8 @@ from .streams import (
     Campaigns,
     CampaignsAudienceReportsByCountry,
     CampaignsReports,
+    AdsAudienceReportsByCountry,
+    AdsAudienceReportsByProvince,
     Daily,
     Hourly,
     Lifetime,
@@ -141,6 +143,8 @@ class SourceTiktokMarketing(AbstractSource):
                         AdsAudienceReports(**report_args),
                         AdGroupAudienceReports(**report_args),
                         CampaignsAudienceReportsByCountry(**report_args),
+                        AdsAudienceReportsByCountry(**report_args),
+                        AdsAudienceReportsByProvince(**report_args),
                     ]
                 )
 
@@ -177,4 +181,7 @@ class SourceTiktokMarketing(AbstractSource):
                 if Report == AdvertisersAudienceReports:
                     streams.append(get_report_stream(Report, Lifetime)(**args))
 
+            for Report in [AdsAudienceReportsByProvince]:
+                for Granularity in [Daily]:
+                    streams.append(get_report_stream(Report, Granularity)(**args))
         return streams
