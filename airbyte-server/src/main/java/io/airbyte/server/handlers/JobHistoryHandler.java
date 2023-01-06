@@ -151,9 +151,8 @@ public class JobHistoryHandler {
    *
    * @param jobId the job the attempt belongs to. Used as an index to retrieve stats.
    * @param a the attempt to hydrate stats for.
-   * @throws IOException
    */
-  private void hydrateWithStats(final AttemptRead a, final JobPersistence.AttemptStats attemptStats) throws IOException {
+  private void hydrateWithStats(final AttemptRead a, final JobPersistence.AttemptStats attemptStats) {
     a.setTotalStats(new AttemptStats());
 
     final var combinedStats = attemptStats.combinedStats();
