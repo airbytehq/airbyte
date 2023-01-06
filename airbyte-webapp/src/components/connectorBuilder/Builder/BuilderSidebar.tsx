@@ -120,7 +120,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
           <FormattedMessage id="connectorBuilder.streamsHeading" values={{ number: values.streams.length }} />
         </Text>
 
-        <AddStreamButton onAddStream={(addedStreamNum) => handleViewSelect(addedStreamNum)} />
+        <AddStreamButton onAddStream={(addedStreamNum) => handleViewSelect(addedStreamNum)} data-testid="add-stream" />
       </div>
 
       <div className={styles.streamList}>

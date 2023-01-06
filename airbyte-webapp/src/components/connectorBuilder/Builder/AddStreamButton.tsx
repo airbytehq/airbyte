@@ -25,9 +25,15 @@ interface AddStreamButtonProps {
   onAddStream: (addedStreamNum: number) => void;
   button?: React.ReactElement;
   initialValues?: Partial<BuilderStream>;
+  "data-testid"?: string;
 }
 
-export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, button, initialValues }) => {
+export const AddStreamButton: React.FC<AddStreamButtonProps> = ({
+  onAddStream,
+  button,
+  initialValues,
+  "data-testid": testId,
+}) => {
   const { formatMessage } = useIntl();
   const [isOpen, setIsOpen] = useState(false);
   const [streamsField, , helpers] = useField<BuilderStream[]>("streams");
@@ -42,6 +48,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, b
       {button ? (
         React.cloneElement(button, {
           onClick: buttonClickHandler,
+          "data-testid": testId,
         })
       ) : (
         <Button className={styles.addButton} onClick={buttonClickHandler} icon={<PlusIcon />} />

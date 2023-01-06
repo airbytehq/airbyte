@@ -1,20 +1,43 @@
-const newSource = "button[data-id='new-source']";
+const nameInput = "input[name=global.connectorName]";
+const urlBaseInput = "input[name=global.urlBase]";
+const addStreamButton = "button[data-testid=add-stream]";
 
-export const goToSourcePage = () => {
-  cy.intercept("/api/v1/sources/list").as("getSourcesList");
-  cy.visit("/source");
+const streamNameInput = "input[name=streamName]";
+const streamUrlPath = "input[name=urlPath]";
+
+const submit = "button[type=submit]"
+
+const testStreamButton = "button[data-testid=read-stream]";
+
+export const goToConnectorBuilderPage = () => {
+  cy.visit("/connector-builder");
   cy.wait(3000);
 };
 
-export const openSourceDestinationFromGrid = (value: string) => {
-  cy.get("div").contains(value).click();
+export const enterName = (name: string) => {
+  cy.get(nameInput).clear().type(name);
 };
 
-export const openNewSourceForm = () => {
-  cy.wait("@getSourcesList").then(({ response }) => {
-    if (response?.body.sources.length) {
-      cy.get(newSource).click();
-    }
-  });
-  cy.url().should("include", `/source/new-source`);
+export const enterUrlBase = (urlBase: string) => {
+  cy.get(urlBaseInput).clear().type(urlBase);
+};
+
+export const addStream = () => {
+  cy.get(addStreamButton).click();
+};
+
+export const enterStreamName = (streamName: string) => {
+  cy.get(streamNameInput).clear().type(streamName);
+};
+
+export const enterUrlPath = (urlPath: string) => {
+  cy.get(streamUrlPath).clear().type(urlPath);
+};
+
+export const submitForm = () => {
+  cy.get(submit).click();
+};
+
+export const testStream = () => {
+  cy.get(testStreamButton).click();
 };
