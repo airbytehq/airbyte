@@ -207,18 +207,10 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         metrics = [h["name"] for h in r["metricHeaders"]]
         metrics_type_map = {h["name"]: h["type"] for h in r["metricHeaders"]}
 
-        rows = []
-
         for row in r.get("rows", []):
-            rows.append(
-                self.add_primary_key()
-                | self.add_property_id(self.config["property_id"])
-                | self.add_dimensions(dimensions, row)
-                | self.add_metrics(metrics, metrics_type_map, row)
-            )
-        r["records"] = rows
-
-        yield r
+            yield self.add_primary_key() | self.add_property_id(self.config["property_id"]) | self.add_dimensions(
+                dimensions, row
+            ) | self.add_metrics(metrics, metrics_type_map, row)
 
 
 class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
@@ -248,20 +240,6 @@ class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
             "dateRanges": [stream_slice],
         }
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        if not stream_slice:
-            return []
-        records = super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
-        for record in records:
-            for row in record["records"]:
-                yield row
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -293,7 +271,7 @@ class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
 
             start_date: datetime.date = end_date + datetime.timedelta(days=1)
 
-        return dates or [None]
+        return dates
 
 
 class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream):

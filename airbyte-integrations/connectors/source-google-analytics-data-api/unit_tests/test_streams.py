@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import copy
 import datetime
 import random
 from http import HTTPStatus
@@ -196,8 +195,7 @@ def test_parse_response(patch_base_class):
         "kind": "analyticsData#runReport",
     }
 
-    expected_data = copy.deepcopy(response_data)
-    expected_data["records"] = [
+    expected_data = [
         {
             "property_id": "496180525",
             "date": "20220731",
@@ -233,8 +231,8 @@ def test_parse_response(patch_base_class):
     response = MagicMock()
     response.json.return_value = response_data
     inputs = {"response": response, "stream_state": {}}
-    actual_records: Mapping[str, Any] = next(iter(stream.parse_response(**inputs)))
-    for record in actual_records["records"]:
+    actual_records: Mapping[str, Any] = list(stream.parse_response(**inputs))
+    for record in actual_records:
         del record["uuid"]
     assert actual_records == expected_data
 
