@@ -3,6 +3,9 @@ micronaut:
     port: 9000
 
 airbyte:
+  acceptance:
+    test:
+      enabled: ${ACCEPTANCE_TEST_ENABLED:false}
   config-dir: /config
   control:
     plane:

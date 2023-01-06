@@ -6,6 +6,7 @@ package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.SourceCloneConfiguration;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
@@ -15,6 +16,7 @@ import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.SourceSearch;
+import io.airbyte.api.model.generated.SourceSnippetRead;
 import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.config.SourceConnection;
@@ -31,6 +33,7 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -135,6 +138,17 @@ public class SourceHandler {
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
+  }
+
+  public ActorCatalogWithUpdatedAt getMostRecentSourceActorCatalogWithUpdatedAt(final SourceIdRequestBody sourceIdRequestBody)
+      throws IOException {
+    Optional<io.airbyte.config.ActorCatalogWithUpdatedAt> actorCatalog =
+        configRepository.getMostRecentSourceActorCatalog(sourceIdRequestBody.getSourceId());
+    if (actorCatalog.isEmpty()) {
+      return new ActorCatalogWithUpdatedAt();
+    } else {
+      return new ActorCatalogWithUpdatedAt().updatedAt(actorCatalog.get().getUpdatedAt()).catalog(actorCatalog.get().getCatalog());
+    }
   }
 
   public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
@@ -323,6 +337,15 @@ public class SourceHandler {
         .connectionConfiguration(sourceConnection.getConfiguration())
         .name(sourceConnection.getName())
         .icon(SourceDefinitionsHandler.loadIcon(standardSourceDefinition.getIcon()));
+  }
+
+  protected static SourceSnippetRead toSourceSnippetRead(final SourceConnection source, final StandardSourceDefinition sourceDefinition) {
+    return new SourceSnippetRead()
+        .sourceId(source.getSourceId())
+        .name(source.getName())
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .sourceName(sourceDefinition.getName())
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()));
   }
 
 }
