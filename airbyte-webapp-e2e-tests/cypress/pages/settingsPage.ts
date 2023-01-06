@@ -12,7 +12,7 @@ export const goToSettingsDestinationTab = () => {
 
 export const editVersionByConnectorName = (connectorName: string, version: string) => {
   cy.get("[data-testid='connectorNameCell']")
-    .contains(connectorName) // div with icon and text
+    .contains(connectorName)
     .parents("tr")
     .find("[data-testid='version-input']")
     .type(`{selectall} {backspace} ${version}`, { force: true });
