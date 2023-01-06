@@ -1,9 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Spinner /> should render without crash 1`] = `
-<DocumentFragment>
-  <div
-    class="spinner"
-  />
-</DocumentFragment>
+<body>
+  <div>
+    <div
+      class="<removed-for-snapshot-test>"
+    />
+  </div>
+</body>
 `;

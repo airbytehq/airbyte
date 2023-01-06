@@ -130,6 +130,11 @@ class SalesforceStream(HttpStream, ABC):
                     return
             raise error
 
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if isinstance(exception, exceptions.ConnectionError):
+            return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
+        return super().get_error_display_message(exception)
+
 
 class BulkSalesforceStream(SalesforceStream):
     page_size = 15000
@@ -246,7 +251,7 @@ class BulkSalesforceStream(SalesforceStream):
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
             if not job_id:
-                return None, None
+                return None, job_status
             job_full_url = f"{url}/{job_id}"
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
@@ -279,7 +284,7 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
-            response_encoding = response.encoding or response.apparent_encoding or self.encoding
+            response_encoding = response.apparent_encoding or response.encoding or self.encoding
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
@@ -471,7 +476,11 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             page_token: str = last_record[self.cursor_field]
-            return {"next_token": page_token}
+            res = {"next_token": page_token}
+            # use primary key as additional filtering param, if cursor_field is not increased from previous page
+            if self.primary_key and self.prev_start_date == page_token:
+                res["primary_key"] = last_record[self.primary_key]
+            return res
         return None
 
     def request_params(
@@ -481,13 +490,19 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
 
         stream_date = stream_state.get(self.cursor_field)
         next_token = (next_page_token or {}).get("next_token")
+        primary_key = (next_page_token or {}).get("primary_key")
         start_date = next_token or stream_date or self.start_date
+        self.prev_start_date = start_date
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if start_date:
-            query += f"WHERE {self.cursor_field} >= {start_date} "
+            if primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
+                query += f"WHERE ({self.cursor_field} = {start_date} AND {self.primary_key} > '{primary_key}') OR ({self.cursor_field} > {start_date}) "
+            else:
+                query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
+            order_by_fields = [self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field]
+            query += f"ORDER BY {','.join(order_by_fields)} ASC LIMIT {self.page_size}"
         return {"q": query}
 
 

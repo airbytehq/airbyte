@@ -9,6 +9,7 @@ import io.airbyte.api.model.generated.AttemptFailureReason;
 import io.airbyte.api.model.generated.AttemptFailureSummary;
 import io.airbyte.api.model.generated.AttemptFailureType;
 import io.airbyte.api.model.generated.AttemptInfoRead;
+import io.airbyte.api.model.generated.AttemptNormalizationStatusRead;
 import io.airbyte.api.model.generated.AttemptRead;
 import io.airbyte.api.model.generated.AttemptStats;
 import io.airbyte.api.model.generated.AttemptStatus;
@@ -38,6 +39,7 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.persistence.job.models.Attempt;
+import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.server.scheduler.SynchronousJobMetadata;
 import io.airbyte.server.scheduler.SynchronousResponse;
@@ -135,7 +137,7 @@ public class JobConverter {
 
   public static AttemptRead getAttemptRead(final Attempt attempt) {
     return new AttemptRead()
-        .id(attempt.getId())
+        .id((long) attempt.getAttemptNumber())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
         .bytesSynced(attempt.getOutput() // TODO (parker) remove after frontend switches to totalStats
             .map(JobOutput::getSync)
@@ -238,6 +240,15 @@ public class JobConverter {
         .endedAt(metadata.getEndedAt())
         .succeeded(metadata.isSucceeded())
         .logs(getLogRead(metadata.getLogPath()));
+  }
+
+  public static AttemptNormalizationStatusRead convertAttemptNormalizationStatus(
+                                                                                 AttemptNormalizationStatus databaseStatus) {
+    return new AttemptNormalizationStatusRead()
+        .attemptNumber(databaseStatus.attemptNumber())
+        .hasRecordsCommitted(!databaseStatus.recordsCommitted().isEmpty())
+        .recordsCommitted(databaseStatus.recordsCommitted().orElse(0L))
+        .hasNormalizationFailed(databaseStatus.normalizationFailed());
   }
 
 }

@@ -8,7 +8,9 @@ import com.uber.m3.tally.RootScopeBuilder;
 import com.uber.m3.tally.Scope;
 import com.uber.m3.tally.StatsReporter;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Value;
@@ -32,6 +34,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -313,6 +316,26 @@ public class TemporalUtils {
       log.info("Stopping temporal heartbeating...");
       scheduledExecutor.shutdown();
     }
+  }
+
+  // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
+  // once we are fully on temporal.
+  public static Path getJobRoot(final Path workspaceRoot, final JobRunConfig jobRunConfig) {
+    return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+  }
+
+  public static Path getLogPath(final Path jobRoot) {
+    return jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+  }
+
+  public static Path getJobRoot(final Path workspaceRoot, final String jobId, final long attemptId) {
+    return getJobRoot(workspaceRoot, jobId, Math.toIntExact(attemptId));
+  }
+
+  public static Path getJobRoot(final Path workspaceRoot, final String jobId, final int attemptId) {
+    return workspaceRoot
+        .resolve(String.valueOf(jobId))
+        .resolve(String.valueOf(attemptId));
   }
 
 }

@@ -6,4 +6,4 @@ package io.airbyte.persistence.job.models;
 
 import java.util.Optional;
 
-public record AttemptNormalizationStatus(long attemptNumber, Optional<Long> recordsCommitted, boolean normalizationFailed) {}
+public record AttemptNormalizationStatus(int attemptNumber, Optional<Long> recordsCommitted, boolean normalizationFailed) {}

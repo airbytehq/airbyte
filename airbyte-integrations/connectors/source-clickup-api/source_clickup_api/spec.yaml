@@ -1,0 +1,36 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: ClickUp Api Spec
+  type: object
+  required:
+    - api_token
+  additionalProperties: true
+  properties:
+    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+    api_token:
+      type: string
+      description: >-
+        Every ClickUp API call required authentication. This field is your personal API token. See <a
+        href="https://clickup.com/api/developer-portal/authentication/#personal-token">here</a>.
+      airbyte_secret: true
+    team_id:
+      type: string
+      description: >-
+        The ID of your team in ClickUp. Retrieve it from the `/team` of the ClickUp API. See <a
+        href="https://clickup.com/api/clickupreference/operation/GetAuthorizedTeams/">here</a>.
+    space_id:
+      type: string
+      description: >-
+        The ID of your space in your workspace. Retrieve it from the `/team/{team_id}/space` of the ClickUp API. See <a
+        href="https://clickup.com/api/clickupreference/operation/GetSpaces/">here</a>.
+    folder_id:
+      type: string
+      description: >-
+        The ID of your folder in your space. Retrieve it from the `/space/{space_id}/folder` of the ClickUp API. See <a
+        href="https://clickup.com/api/clickupreference/operation/GetFolders/">here</a>.
+    list_id:
+      type: string
+      description: >-
+        The ID of your list in your folder. Retrieve it from the `/folder/{folder_id}/list` of the ClickUp API. See <a
+        href="https://clickup.com/api/clickupreference/operation/GetLists/">here</a>.

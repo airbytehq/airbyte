@@ -145,11 +145,11 @@ public class DateTimeConverter {
       return localTime.format(TIME_FORMATTER);
     } else if (time instanceof java.time.Duration) {
       long value = ((Duration) time).toNanos();
-      if (value >= 0 && value <= TimeUnit.DAYS.toNanos(1)) {
+      if (value >= 0 && value < TimeUnit.DAYS.toNanos(1)) {
         return LocalTime.ofNanoOfDay(value).format(TIME_FORMATTER);
       } else {
-        final long updatedValue = 0 > value ? Math.abs(value) : TimeUnit.DAYS.toNanos(1);
-        LOGGER.debug("Time values must use number of milliseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
+        final long updatedValue = Math.min(Math.abs(value), LocalTime.MAX.toNanoOfDay());
+        LOGGER.debug("Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
             updatedValue);
         return LocalTime.ofNanoOfDay(updatedValue).format(TIME_FORMATTER);
       }
@@ -158,7 +158,13 @@ public class DateTimeConverter {
         LOGGER.info("Unknown class for Time data type" + time.getClass());
         loggedUnknownTimeClass = true;
       }
-      return LocalTime.parse(time.toString()).format(TIME_FORMATTER);
+
+      final String valueAsString = time.toString();
+      if (valueAsString.startsWith("24")) {
+        LOGGER.debug("Time value {} is above range, converting to 23:59:59", valueAsString);
+        return LocalTime.MAX.format(TIME_FORMATTER);
+      }
+      return LocalTime.parse(valueAsString).format(TIME_FORMATTER);
     }
   }
 

@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "LEAD_ID": {
+      "type": "integer"
+    },
+    "SALUTATION": {
+      "type": ["string", "null"]
+    },
+    "FIRST_NAME": {
+      "type": ["string", "null"]
+    },
+    "LAST_NAME": {
+      "type": ["string", "null"]
+    },
+    "LEAD_SOURCE_ID": {
+      "type": ["integer", "null"]
+    },
+    "LEAD_STATUS_ID": {
+      "type": ["integer", "null"]
+    },
+    "TITLE": {
+      "type": ["string", "null"]
+    },
+    "CONVERTED": {
+      "type": ["boolean", "null"]
+    },
+    "CONVERTED_CONTACT_ID": {
+      "type": ["integer", "null"]
+    },
+    "CONVERTED_DATE_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "CONVERTED_OPPORTUNITY_ID": {
+      "type": ["integer", "null"]
+    },
+    "CONVERTED_ORGANISATION_ID": {
+      "type": ["integer", "null"]
+    },
+    "DATE_CREATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "EMAIL": {
+      "type": ["string", "null"]
+    },
+    "EMPLOYEE_COUNT": {
+      "type": ["integer", "null"]
+    },
+    "FAX": {
+      "type": ["string", "null"]
+    },
+    "INDUSTRY": {
+      "type": ["string", "null"]
+    },
+    "LEAD_DESCRIPTION": {
+      "type": ["string", "null"]
+    },
+    "LEAD_RATING": {
+      "type": ["integer", "null"]
+    },
+    "MOBILE": {
+      "type": ["string", "null"]
+    },
+    "OWNER_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "PHONE": {
+      "type": ["string", "null"]
+    },
+    "RESPONSIBLE_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "WEBSITE": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_STREET": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_CITY": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_STATE": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_POSTCODE": {
+      "type": ["string", "null"]
+    },
+    "ADDRESS_COUNTRY": {
+      "type": ["string", "null"]
+    },
+    "LAST_ACTIVITY_DATE_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "NEXT_ACTIVITY_DATE_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "ORGANISATION_NAME": {
+      "type": ["string", "null"]
+    },
+    "CREATED_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "IMAGE_URL": {
+      "type": ["string", "null"]
+    },
+    "EMAIL_OPTED_OUT": {
+      "type": ["boolean", "null"]
+    },
+    "CUSTOMFIELDS": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "FIELD_NAME": {
+            "type": ["string", "null"]
+          },
+          "FIELD_VALUE": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "TAGS": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "TAG_NAME": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "LINKS": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "LINK_ID": {
+            "type": ["integer", "null"]
+          },
+          "OBJECT_NAME": {
+            "type": ["string", "null"]
+          },
+          "OBJECT_ID": {
+            "type": ["integer", "null"]
+          },
+          "LINK_OBJECT_NAME": {
+            "type": ["string", "null"]
+          },
+          "LINK_OBJECT_ID": {
+            "type": ["integer", "null"]
+          },
+          "ROLE": {
+            "type": ["string", "null"]
+          },
+          "DETAILS": {
+            "type": ["string", "null"]
+          },
+          "RELATIONSHIP_ID": {
+            "type": ["integer", "null"]
+          },
+          "IS_FORWARD": {
+            "type": ["boolean", "null"]
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,7 +6,7 @@ package io.airbyte.commons.protocol;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
-import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
 import java.util.Collection;
@@ -27,7 +27,7 @@ public class AirbyteMessageMigrator {
 
   private final List<AirbyteMessageMigration<?, ?>> migrationsToRegister;
   private final SortedMap<String, AirbyteMessageMigration<?, ?>> migrations = new TreeMap<>();
-  private String mostRecentVersion = "";
+  private String mostRecentMajorVersion = "";
 
   public AirbyteMessageMigrator(List<AirbyteMessageMigration<?, ?>> migrations) {
     migrationsToRegister = migrations;
@@ -46,8 +46,8 @@ public class AirbyteMessageMigrator {
    * Downgrade a message from the most recent version to the target version by chaining all the
    * required migrations
    */
-  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message, final AirbyteVersion target) {
-    if (target.getMajorVersion().equals(mostRecentVersion)) {
+  public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message, final Version target) {
+    if (target.getMajorVersion().equals(mostRecentMajorVersion)) {
       return (PreviousVersion) message;
     }
 
@@ -63,8 +63,8 @@ public class AirbyteMessageMigrator {
    * Upgrade a message from the source version to the most recent version by chaining all the required
    * migrations
    */
-  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message, final AirbyteVersion source) {
-    if (source.getMajorVersion().equals(mostRecentVersion)) {
+  public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message, final Version source) {
+    if (source.getMajorVersion().equals(mostRecentMajorVersion)) {
       return (CurrentVersion) message;
     }
 
@@ -75,7 +75,11 @@ public class AirbyteMessageMigrator {
     return (CurrentVersion) result;
   }
 
-  private Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final AirbyteVersion version) {
+  public Version getMostRecentVersion() {
+    return new Version(mostRecentMajorVersion, "0", "0");
+  }
+
+  private Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final Version version) {
     final Collection<AirbyteMessageMigration<?, ?>> results = migrations.tailMap(version.getMajorVersion()).values();
     if (results.isEmpty()) {
       throw new RuntimeException("Unsupported migration version " + version.serialize());
@@ -107,8 +111,8 @@ public class AirbyteMessageMigrator {
     final String key = migration.getPreviousVersion().getMajorVersion();
     if (!migrations.containsKey(key)) {
       migrations.put(key, migration);
-      if (migration.getCurrentVersion().getMajorVersion().compareTo(mostRecentVersion) > 0) {
-        mostRecentVersion = migration.getCurrentVersion().getMajorVersion();
+      if (migration.getCurrentVersion().getMajorVersion().compareTo(mostRecentMajorVersion) > 0) {
+        mostRecentMajorVersion = migration.getCurrentVersion().getMajorVersion();
       }
     } else {
       throw new RuntimeException("Trying to register a duplicated migration " + migration.getClass().getName());

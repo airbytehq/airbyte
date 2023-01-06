@@ -3,41 +3,27 @@ import dayjs from "dayjs";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import Status from "core/statuses";
+import { formatBytes } from "utils/numberHelper";
 
-import { AttemptRead, JobConfigType } from "../../../core/request/AirbyteClient";
+import { AttemptRead, AttemptStatus } from "../../../core/request/AirbyteClient";
 import styles from "./AttemptDetails.module.scss";
 
-interface IProps {
+interface AttemptDetailsProps {
   className?: string;
   attempt: AttemptRead;
-  configType?: JobConfigType;
+  hasMultipleAttempts?: boolean;
 }
 
 const getFailureFromAttempt = (attempt: AttemptRead) => {
   return attempt.failureSummary && attempt.failureSummary.failures[0];
 };
 
-const AttemptDetails: React.FC<IProps> = ({ attempt, className }) => {
+const AttemptDetails: React.FC<AttemptDetailsProps> = ({ attempt, className, hasMultipleAttempts }) => {
   const { formatMessage } = useIntl();
 
-  if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
+  if (attempt.status !== AttemptStatus.succeeded && attempt.status !== AttemptStatus.failed) {
     return null;
   }
-
-  const formatBytes = (bytes?: number) => {
-    if (!bytes) {
-      return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
-    }
-
-    const k = 1024;
-    const dm = 2;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    const result = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
-
-    return <FormattedMessage id={`sources.count${sizes[i]}`} values={{ count: result }} />;
-  };
 
   const getFailureOrigin = (attempt: AttemptRead) => {
     const failure = getFailureFromAttempt(attempt);
@@ -62,11 +48,16 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className }) => {
   const hours = Math.abs(date2.diff(date1, "hour"));
   const minutes = Math.abs(date2.diff(date1, "minute")) - hours * 60;
   const seconds = Math.abs(date2.diff(date1, "second")) - minutes * 60 - hours * 3600;
-  const isFailed = attempt.status === Status.FAILED;
+  const isFailed = attempt.status === AttemptStatus.failed;
 
   return (
     <div className={classNames(styles.container, className)}>
       <div className={styles.details}>
+        {hasMultipleAttempts && (
+          <strong className={classNames(styles.lastAttempt, { [styles.failed]: isFailed })}>
+            <FormattedMessage id="sources.lastAttempt" />
+          </strong>
+        )}
         <span>{formatBytes(attempt?.totalStats?.bytesEmitted)}</span>
         <span>
           <FormattedMessage

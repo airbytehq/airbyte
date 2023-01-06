@@ -1,0 +1,38 @@
+micronaut:
+  application:
+    name: airbyte-metrics-reporter
+  security:
+    intercept-url-map:
+      - pattern: /**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+  server:
+    port: 9000
+
+datasources:
+  config:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    maximum-pool-size: 10
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+
+jooq:
+  datasources:
+    config:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
+
+endpoints:
+  all:
+    enabled: true
+
+logger:
+  levels:
+    io.airbyte.bootloader: DEBUG
+# Uncomment to help resolve issues with conditional beans
+#    io.micronaut.context.condition: DEBUG

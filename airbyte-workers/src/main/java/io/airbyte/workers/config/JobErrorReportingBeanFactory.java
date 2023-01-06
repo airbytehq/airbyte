@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.WebUrlHelper;
@@ -12,7 +13,6 @@ import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
 import io.airbyte.persistence.job.errorreporter.LoggingJobErrorReportingClient;
 import io.airbyte.persistence.job.errorreporter.SentryExceptionHelper;
 import io.airbyte.persistence.job.errorreporter.SentryJobErrorReportingClient;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
@@ -58,8 +58,6 @@ public class JobErrorReportingBeanFactory {
         configRepository,
         deploymentMode,
         airbyteVersion,
-        NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
-        NormalizationRunnerFactory.NORMALIZATION_VERSION,
         webUrlHelper,
         jobErrorReportingClient.orElseGet(() -> new LoggingJobErrorReportingClient()));
   }

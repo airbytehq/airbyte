@@ -3,8 +3,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { components, MenuListProps } from "react-select";
 import styled from "styled-components";
 
-import { Popout } from "components";
-import { IDataItem } from "components/ui/DropDown/components/Option";
+import { DropDownOptionDataItem } from "components/ui/DropDown";
+import { Popout } from "components/ui/Popout";
 
 import { useListCloudWorkspacesAsync } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { useCurrentWorkspace, useWorkspaceService } from "services/workspaces/WorkspacesService";
@@ -66,7 +66,7 @@ const List = styled.div`
   }
 `;
 
-type MenuWithRequestButtonProps = MenuListProps<IDataItem, boolean> & {
+type MenuWithRequestButtonProps = MenuListProps<DropDownOptionDataItem, boolean> & {
   selectedWorkspace: string;
 };
 

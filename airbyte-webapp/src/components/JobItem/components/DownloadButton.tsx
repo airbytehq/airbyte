@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
 import { JobDebugInfoRead } from "core/request/AirbyteClient";
 import { useCurrentWorkspaceId, useGetWorkspace } from "services/workspaces/WorkspacesService";

@@ -4,8 +4,8 @@ import { Spinner } from "./Spinner";
 
 describe("<Spinner />", () => {
   it("should render without crash", () => {
-    const { asFragment } = render(<Spinner />);
+    const component = render(<Spinner />);
 
-    expect(asFragment()).toMatchSnapshot();
+    expect(component).toMatchSnapshot();
   });
 });

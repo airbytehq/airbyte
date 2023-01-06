@@ -31,12 +31,12 @@ public interface WorkflowStateChangedListener {
     FAILED,
     RESET,
     CONTINUE_AS_RESET,
-    RETRY_FAILED_ACTIVITY,
     QUARANTINED,
     SUCCESS,
     CANCELLED_FOR_RESET,
     RESET_WITH_SCHEDULING,
     DONE_WAITING,
+    SKIP_SCHEDULING_NEXT_WORKFLOW,
   }
 
   @Value

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "dt": {
+      "type": "string"
+    },
+    "all_auctions_lots_count": {
+      "type": "integer"
+    },
+    "auction_slug": {
+      "type": "string"
+    },
+    "auction_lots_count": {
+      "type": "integer"
+    },
+    "auction_name": {
+      "type": "string"
+    },
+    "winning_bid_min": {
+      "type": "number"
+    },
+    "auction_trading_volume": {
+      "type": "number"
+    },
+    "winning_bid_max": {
+      "type": "number"
+    },
+    "winning_bid_mean": {
+      "type": "number"
+    }
+  }
+}

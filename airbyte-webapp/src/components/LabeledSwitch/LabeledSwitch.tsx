@@ -1,11 +1,12 @@
 import classNames from "classnames";
 import React from "react";
 
-import { CheckBox, Switch } from "components/ui";
+import { CheckBox } from "components/ui/CheckBox";
+import { Switch } from "components/ui/Switch";
 
 import styles from "./LabeledSwitch.module.scss";
 
-interface LabeledSwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface LabeledSwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   message?: React.ReactNode;
   label?: React.ReactNode;
   checkbox?: boolean;

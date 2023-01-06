@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/outreach",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/outreach",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Outreach Spec",

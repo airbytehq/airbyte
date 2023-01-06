@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "symbol": {
+      "type": ["null", "string"]
+    },
+    "slug": {
+      "type": ["null", "string"]
+    },
+    "num_market_pairs": {
+      "type": ["null", "integer"]
+    },
+    "date_added": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "max_supply": {
+      "type": ["null", "number"]
+    },
+    "circulating_supply": {
+      "type": ["null", "number"]
+    },
+    "total_supply": {
+      "type": ["null", "number"]
+    },
+    "platform": {
+      "type": ["null", "object"]
+    },
+    "cmc_rank": {
+      "type": ["null", "integer"]
+    },
+    "self_reported_circulating_supply": {
+      "type": ["null", "number"]
+    },
+    "self_reported_market_cap": {
+      "type": ["null", "number"]
+    },
+    "tvl_ratio": {
+      "type": ["null", "number"]
+    },
+    "last_updated": {
+      "type": ["null", "string"]
+    },
+    "quote": {
+      "type": ["null", "object"]
+    }
+  }
+}

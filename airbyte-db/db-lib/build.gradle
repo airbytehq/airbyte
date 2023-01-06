@@ -9,6 +9,10 @@ configurations {
     migrations.extendsFrom implementation
 }
 
+configurations.all {
+    exclude group: 'io.micronaut.flyway'
+}
+
 dependencies {
     api libs.hikaricp
     api libs.jooq.meta
@@ -47,40 +51,44 @@ dependencies {
 
     // MongoDB
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
+
+    // MySQL
+    implementation 'mysql:mysql-connector-java:8.0.30'
+
 }
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
     classpath = files(configurations.migrations.files)
     args 'configs', 'create'
 }
 
 task(runConfigsMigration, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
     classpath = files(configurations.migrations.files)
     args 'configs', 'migrate'
 }
 
 task(dumpConfigsSchema, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
     classpath = files(configurations.migrations.files)
     args 'configs', 'dump_schema'
 }
 
 task(newJobsMigration, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
     classpath = files(configurations.migrations.files)
     args 'jobs', 'create'
 }
 
 task(runJobsMigration, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
     classpath = files(configurations.migrations.files)
     args 'jobs', 'migrate'
 }
 
 task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    mainClass = 'io.airbyte.db.instance.development.MigrationDevCenter'
     classpath = files(configurations.migrations.files)
     args 'jobs', 'dump_schema'
 }

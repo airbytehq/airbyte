@@ -1,0 +1,44 @@
+{
+  "properties": {
+    "owner_id": {
+      "type": ["null", "integer"]
+    },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
+    "owner_resource": {
+      "type": ["null", "string"]
+    },
+    "value_type": {
+      "type": ["null", "string"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "namespace": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shop_url": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "type": ["null", "object"]
+}

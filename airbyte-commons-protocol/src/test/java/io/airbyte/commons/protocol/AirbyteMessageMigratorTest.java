@@ -8,15 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
-import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class AirbyteMessageMigratorTest {
 
-  static final AirbyteVersion v0 = new AirbyteVersion("0.0.0");
-  static final AirbyteVersion v1 = new AirbyteVersion("1.0.0");
-  static final AirbyteVersion v2 = new AirbyteVersion("2.0.0");
+  static final Version v0 = new Version("0.0.0");
+  static final Version v1 = new Version("1.0.0");
+  static final Version v2 = new Version("2.0.0");
 
   record ObjectV0(String name0) {}
 
@@ -37,12 +37,12 @@ class AirbyteMessageMigratorTest {
     }
 
     @Override
-    public AirbyteVersion getPreviousVersion() {
+    public Version getPreviousVersion() {
       return v0;
     }
 
     @Override
-    public AirbyteVersion getCurrentVersion() {
+    public Version getCurrentVersion() {
       return v1;
     }
 
@@ -61,12 +61,12 @@ class AirbyteMessageMigratorTest {
     }
 
     @Override
-    public AirbyteVersion getPreviousVersion() {
+    public Version getPreviousVersion() {
       return v1;
     }
 
     @Override
-    public AirbyteVersion getCurrentVersion() {
+    public Version getCurrentVersion() {
       return v2;
     }
 
@@ -113,14 +113,14 @@ class AirbyteMessageMigratorTest {
   @Test
   void testUnsupportedDowngradeShouldFailExplicitly() {
     assertThrows(RuntimeException.class, () -> {
-      migrator.downgrade(new ObjectV2("woot"), new AirbyteVersion("5.0.0"));
+      migrator.downgrade(new ObjectV2("woot"), new Version("5.0.0"));
     });
   }
 
   @Test
   void testUnsupportedUpgradeShouldFailExplicitly() {
     assertThrows(RuntimeException.class, () -> {
-      migrator.upgrade(new ObjectV0("woot"), new AirbyteVersion("4.0.0"));
+      migrator.upgrade(new ObjectV0("woot"), new Version("4.0.0"));
     });
   }
 

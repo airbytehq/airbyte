@@ -6,7 +6,14 @@ package io.airbyte.server.scheduler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Charsets;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.commons.temporal.TemporalResponse;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -20,10 +27,7 @@ import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.persistence.job.tracker.JobTracker.JobState;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
@@ -37,6 +41,8 @@ import org.slf4j.LoggerFactory;
 public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSynchronousSchedulerClient.class);
+
+  private static final HashFunction HASH_FUNCTION = Hashing.md5();
 
   private final TemporalClient temporalClient;
   private final JobTracker jobTracker;
@@ -54,7 +60,10 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage)
+  public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source,
+                                                                                           final String dockerImage,
+                                                                                           final Version protocolVersion,
+                                                                                           final boolean isCustomConnector)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
@@ -62,7 +71,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         source.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(sourceConfiguration)
-        .withDockerImage(dockerImage);
+        .withDockerImage(dockerImage)
+        .withProtocolVersion(protocolVersion)
+        .withIsCustomConnector(isCustomConnector);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
@@ -78,7 +89,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(final DestinationConnection destination,
-                                                                                                final String dockerImage)
+                                                                                                final String dockerImage,
+                                                                                                final Version protocolVersion,
+                                                                                                final boolean isCustomConnector)
       throws IOException {
     final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
         destination.getDestinationDefinitionId(),
@@ -86,7 +99,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         destination.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destinationConfiguration)
-        .withDockerImage(dockerImage);
+        .withDockerImage(dockerImage)
+        .withProtocolVersion(protocolVersion)
+        .withIsCustomConnector(isCustomConnector);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
@@ -101,7 +116,11 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage)
+  public SynchronousResponse<UUID> createDiscoverSchemaJob(final SourceConnection source,
+                                                           final String dockerImage,
+                                                           final String connectorVersion,
+                                                           final Version protocolVersion,
+                                                           final boolean isCustomConnector)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
@@ -109,7 +128,13 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         source.getConfiguration());
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(sourceConfiguration)
-        .withDockerImage(dockerImage);
+        .withDockerImage(dockerImage)
+        .withProtocolVersion(protocolVersion)
+        .withSourceId(source.getSourceId().toString())
+        .withConfigHash(HASH_FUNCTION.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
+            Charsets.UTF_8)).toString())
+        .withConnectorVersion(connectorVersion)
+        .withIsCustomConnector(isCustomConnector);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
@@ -119,13 +144,13 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         jobReportingContext,
         source.getSourceDefinitionId(),
         () -> temporalClient.submitDiscoverSchema(jobId, 0, jobDiscoverCatalogConfig),
-        ConnectorJobOutput::getDiscoverCatalog,
+        ConnectorJobOutput::getDiscoverCatalogId,
         source.getWorkspaceId());
   }
 
   @Override
-  public SynchronousResponse<ConnectorSpecification> createGetSpecJob(final String dockerImage) throws IOException {
-    final JobGetSpecConfig jobSpecConfig = new JobGetSpecConfig().withDockerImage(dockerImage);
+  public SynchronousResponse<ConnectorSpecification> createGetSpecJob(final String dockerImage, final boolean isCustomConnector) throws IOException {
+    final JobGetSpecConfig jobSpecConfig = new JobGetSpecConfig().withDockerImage(dockerImage).withIsCustomConnector(isCustomConnector);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);

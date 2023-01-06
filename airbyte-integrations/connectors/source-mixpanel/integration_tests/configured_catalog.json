@@ -18,7 +18,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": false,
-        "default_cursor_field": null,
+        "default_cursor_field": ["last_seen"],
         "source_defined_primary_key": [["distinct_id"]]
       },
       "sync_mode": "incremental",
@@ -63,7 +63,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": false,
-        "default_cursor_field": null,
+        "default_cursor_field": ["last_seen"],
         "source_defined_primary_key": [["distinct_id"]]
       },
       "sync_mode": "incremental",

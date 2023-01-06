@@ -25,7 +25,7 @@ TEST_MESSAGE = {"name": "cat"}
 def _configured_catalog() -> ConfiguredAirbyteCatalog:
     stream_schema = {"type": "object", "properties": {"name": {"type": "string"}}}
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name=TEST_STREAM, json_schema=stream_schema),
+        stream=AirbyteStream(name=TEST_STREAM, json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )

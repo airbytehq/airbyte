@@ -38,7 +38,7 @@ const useSelectWorkspace = (): ((workspace?: string | null | Workspace) => void)
       } else {
         navigate(`/${RoutePaths.Workspaces}/${workspace}`);
       }
-      await queryClient.removeQueries(SCOPE_WORKSPACE);
+      queryClient.removeQueries(SCOPE_WORKSPACE);
     },
     [navigate, queryClient]
   );

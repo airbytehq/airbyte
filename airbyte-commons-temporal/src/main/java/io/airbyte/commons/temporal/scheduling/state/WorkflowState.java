@@ -32,13 +32,13 @@ public class WorkflowState {
   private final boolean resetConnection = false;
   @Deprecated
   private final boolean continueAsReset = false;
-  private boolean retryFailedActivity = false;
   private boolean quarantined = false;
   private boolean success = true;
   private boolean cancelledForReset = false;
   @Deprecated
   private final boolean resetWithScheduling = false;
   private boolean doneWaiting = false;
+  private boolean skipSchedulingNextWorkflow = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -88,14 +88,6 @@ public class WorkflowState {
     this.failed = failed;
   }
 
-  public void setRetryFailedActivity(final boolean retryFailedActivity) {
-    final ChangedStateEvent event = new ChangedStateEvent(
-        StateField.RETRY_FAILED_ACTIVITY,
-        retryFailedActivity);
-    stateChangedListener.addEvent(id, event);
-    this.retryFailedActivity = retryFailedActivity;
-  }
-
   public void setQuarantined(final boolean quarantined) {
     final ChangedStateEvent event = new ChangedStateEvent(
         StateField.QUARANTINED,
@@ -128,6 +120,14 @@ public class WorkflowState {
     this.doneWaiting = doneWaiting;
   }
 
+  public void setSkipSchedulingNextWorkflow(final boolean skipSchedulingNextWorkflow) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.SKIP_SCHEDULING_NEXT_WORKFLOW,
+        skipSchedulingNextWorkflow);
+    stateChangedListener.addEvent(id, event);
+    this.skipSchedulingNextWorkflow = skipSchedulingNextWorkflow;
+  }
+
   // TODO: bmoric -> This is noisy when inpecting the list of event, it should be just a single reset
   // event.
   public void reset() {
@@ -137,10 +137,10 @@ public class WorkflowState {
     this.setUpdated(false);
     this.setCancelled(false);
     this.setFailed(false);
-    this.setRetryFailedActivity(false);
     this.setSuccess(false);
     this.setQuarantined(false);
     this.setDoneWaiting(false);
+    this.setSkipSchedulingNextWorkflow(false);
   }
 
 }

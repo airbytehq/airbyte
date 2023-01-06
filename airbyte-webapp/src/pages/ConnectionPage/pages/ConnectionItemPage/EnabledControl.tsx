@@ -1,50 +1,32 @@
+import classNames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useUpdateEffect } from "react-use";
-import styled from "styled-components";
+import { useAsyncFn } from "react-use";
 
-import { Switch } from "components";
+import { Switch } from "components/ui/Switch";
 
 import { Action, Namespace } from "core/analytics";
-import { buildConnectionUpdate } from "core/domain/connection";
-import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { getFrequencyFromScheduleData } from "core/analytics/utils";
+import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 
-const ToggleLabel = styled.label`
-  text-transform: uppercase;
-  font-size: 14px;
-  line-height: 19px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.greyColor40};
-  display: inline-block;
-  min-width: 75px;
-  text-align: left;
-  cursor: pointer;
-`;
-
-const Content = styled.div`
-  display: flex;
-  align-items: center;
-`;
+import styles from "./EnabledControl.module.scss";
 
 interface EnabledControlProps {
-  connection: WebBackendConnectionRead;
   disabled?: boolean;
-  frequencyType?: string;
-  onStatusUpdating?: (updating: boolean) => void;
 }
 
-const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
-  const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
+export const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
   const analyticsService = useAnalyticsService();
 
-  const onChangeStatus = async () => {
-    await updateConnection(
-      buildConnectionUpdate(connection, {
-        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-      })
-    );
+  const { connection, updateConnection, connectionUpdating } = useConnectionEditService();
+
+  const [{ loading }, onChangeStatus] = useAsyncFn(async () => {
+    await updateConnection({
+      connectionId: connection.connectionId,
+      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+    });
 
     const trackableAction = connection.status === ConnectionStatus.active ? Action.DISABLE : Action.REENABLE;
 
@@ -54,28 +36,37 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
       connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequencyType,
+      frequency: getFrequencyFromScheduleData(connection.scheduleData),
     });
-  };
+  }, [
+    analyticsService,
+    connection.connectionId,
+    connection.destination?.destinationDefinitionId,
+    connection.destination?.destinationName,
+    connection.source?.sourceDefinitionId,
+    connection.source?.sourceName,
+    connection.status,
+    updateConnection,
+  ]);
 
-  useUpdateEffect(() => {
-    onStatusUpdating?.(isLoading);
-  }, [isLoading]);
+  const isSwitchDisabled = disabled || connectionUpdating;
 
   return (
-    <Content>
-      <ToggleLabel htmlFor="toggle-enabled-source">
+    <div className={styles.container} data-testid="enabledControl">
+      <label
+        htmlFor="toggle-enabled-source"
+        className={classNames(styles.label, { [styles.disabled]: isSwitchDisabled })}
+      >
         <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
-      </ToggleLabel>
+      </label>
       <Switch
-        disabled={disabled}
+        disabled={isSwitchDisabled}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}
-        loading={isLoading}
+        loading={loading}
         id="toggle-enabled-source"
+        data-testid="enabledControl-switch"
       />
-    </Content>
+    </div>
   );
 };
-
-export default EnabledControl;

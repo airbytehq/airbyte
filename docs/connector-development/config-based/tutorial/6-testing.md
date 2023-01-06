@@ -25,7 +25,6 @@ and `integration_tests/abnormal_state.json` with
     "date": "2999-12-31"
   }
 }
-
 ```
 
 You can run the acceptance tests with the following commands:
@@ -41,8 +40,8 @@ Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com
 
 ## Read more:
 
-- [Error handling](../error-handling.md)
-- [Pagination](../pagination.md)
+- [Error handling](../understanding-the-yaml-file/error-handling.md)
+- [Pagination](../understanding-the-yaml-file/pagination.md)
 - [Testing connectors](../../testing-connectors/README.md)
 - [Contribution guide](../../../contributing-to-airbyte/README.md)
 - [Greenhouse source](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)
