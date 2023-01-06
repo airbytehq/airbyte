@@ -10,6 +10,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.generated.ConnectionApi;
+import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
@@ -19,16 +20,12 @@ import io.airbyte.api.client.model.generated.ConnectionScheduleDataBasicSchedule
 import io.airbyte.api.client.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
+import io.airbyte.api.client.model.generated.WorkspaceRead;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.persistence.job.models.Job;
-import io.airbyte.validation.json.JsonValidationException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import jakarta.inject.Named;
@@ -67,41 +64,23 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
       UUID.fromString("226edbc1-4a9c-4401-95a9-90435d667d9d"));
   private static final long SCHEDULING_NOISE_CONSTANT = 15;
 
-  private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
-  private final WorkspaceHelper workspaceHelper;
+  private final WorkspaceApi workspaceApi;
   private final Integer syncJobMaxAttempts;
   private final Supplier<Long> currentSecondsSupplier;
   private final ConnectionApi connectionApi;
 
-  public ConfigFetchActivityImpl(final ConfigRepository configRepository,
-                                 final JobPersistence jobPersistence,
-                                 @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
-                                 @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier,
-                                 final ConnectionApi connectionApi) {
-    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), syncJobMaxAttempts, currentSecondsSupplier,
-        connectionApi);
-  }
-
   @VisibleForTesting
-  protected ConfigFetchActivityImpl(final ConfigRepository configRepository,
-                                    final JobPersistence jobPersistence,
-                                    final WorkspaceHelper workspaceHelper,
+  protected ConfigFetchActivityImpl(final JobPersistence jobPersistence,
+                                    final WorkspaceApi workspaceApi,
                                     @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
                                     @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier,
                                     final ConnectionApi connectionApi) {
-    this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
-    this.workspaceHelper = workspaceHelper;
+    this.workspaceApi = workspaceApi;
     this.syncJobMaxAttempts = syncJobMaxAttempts;
     this.currentSecondsSupplier = currentSecondsSupplier;
     this.connectionApi = connectionApi;
-  }
-
-  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
-  @Override
-  public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    return configRepository.getStandardSync(connectionId);
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -176,10 +155,12 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   }
 
   private Duration addSchedulingNoiseForAllowListedWorkspace(Duration timeToWait, ConnectionRead connectionRead) {
-    final UUID workspaceId;
+    UUID workspaceId;
     try {
-      workspaceId = workspaceHelper.getWorkspaceForConnectionId(connectionRead.getConnectionId());
-    } catch (JsonValidationException | ConfigNotFoundException e) {
+      ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
+      final WorkspaceRead workspaceRead = workspaceApi.getWorkspaceByConnectionId(connectionIdRequestBody);
+      workspaceId = workspaceRead.getWorkspaceId();
+    } catch (ApiException e) {
       // We tolerate exceptions and fail open by doing nothing.
       return timeToWait;
     }
@@ -260,6 +241,19 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
       return Optional.ofNullable(connectionRead.getStatus());
     } catch (ApiException e) {
       log.info("Encountered an error fetching the connection's status: ", e);
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public Optional<Boolean> getBreakingChange(final UUID connectionId) {
+    try {
+      final io.airbyte.api.client.model.generated.ConnectionIdRequestBody requestBody =
+          new io.airbyte.api.client.model.generated.ConnectionIdRequestBody().connectionId(connectionId);
+      final ConnectionRead connectionRead = connectionApi.getConnection(requestBody);
+      return Optional.ofNullable(connectionRead.getBreakingChange());
+    } catch (ApiException e) {
+      log.info("Encountered an error fetching the connection's breaking change status: ", e);
       return Optional.empty();
     }
   }

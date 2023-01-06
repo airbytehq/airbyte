@@ -26,12 +26,6 @@
   padding: variables.$spacing-xs;
 }
 
-.inputForm {
-  gap: variables.$spacing-lg;
-  display: flex;
-  flex-direction: column;
-}
-
 .inputsDescription {
   margin-top: variables.$spacing-xl;
   margin-bottom: variables.$spacing-lg;
@@ -43,8 +37,4 @@
 
 .inputsCard {
   align-self: stretch;
-}
-
-.deleteButtonContainer {
-  flex-grow: 1;
 }
