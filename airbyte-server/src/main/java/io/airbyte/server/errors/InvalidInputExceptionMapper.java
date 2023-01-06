@@ -7,26 +7,19 @@ package io.airbyte.server.errors;
 import io.airbyte.api.model.generated.InvalidInputExceptionInfo;
 import io.airbyte.api.model.generated.InvalidInputProperty;
 import io.airbyte.commons.json.Jsons;
-import io.micronaut.context.annotation.Requires;
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.HttpResponse;
-import io.micronaut.http.HttpStatus;
-import io.micronaut.http.MediaType;
-import io.micronaut.http.annotation.Produces;
-import io.micronaut.http.server.exceptions.ExceptionHandler;
-import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 import org.apache.logging.log4j.core.util.Throwables;
 
 // https://www.baeldung.com/jersey-bean-validation#custom-exception-handler
 // handles exceptions related to the request body not matching the openapi config.
-@Produces
-@Singleton
-@Requires(classes = ConstraintViolationException.class)
-public class InvalidInputExceptionMapper implements ExceptionHandler<ConstraintViolationException, HttpResponse> {
+@Provider
+public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
   public static InvalidInputExceptionInfo infoFromConstraints(final ConstraintViolationException cve) {
     final InvalidInputExceptionInfo exceptionInfo = new InvalidInputExceptionInfo()
@@ -46,10 +39,11 @@ public class InvalidInputExceptionMapper implements ExceptionHandler<ConstraintV
   }
 
   @Override
-  public HttpResponse handle(final HttpRequest request, final ConstraintViolationException exception) {
-    return HttpResponse.status(HttpStatus.BAD_REQUEST)
-        .body(Jsons.serialize(InvalidInputExceptionMapper.infoFromConstraints(exception)))
-        .contentType(MediaType.APPLICATION_JSON_TYPE);
+  public Response toResponse(final ConstraintViolationException e) {
+    return Response.status(Response.Status.BAD_REQUEST)
+        .entity(Jsons.serialize(InvalidInputExceptionMapper.infoFromConstraints(e)))
+        .type("application/json")
+        .build();
   }
 
 }
