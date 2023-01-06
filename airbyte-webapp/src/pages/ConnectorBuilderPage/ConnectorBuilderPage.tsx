@@ -29,16 +29,25 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
   const initialFormValues = useRef(builderFormValues);
   return useMemo(
     () => (
-      <Formik initialValues={initialFormValues.current} onSubmit={noop} validationSchema={builderFormValidationSchema}>
-        {({ values, validateForm }) => (
-          <Panels
-            editorView={editorView}
-            validateForm={validateForm}
-            switchToUI={switchToUI}
-            values={values}
-            switchToYaml={switchToYaml}
-          />
-        )}
+      <Formik
+        initialValues={initialFormValues.current}
+        validateOnBlur={false}
+        validateOnChange={false}
+        validateOnMount={false}
+        onSubmit={noop}
+        validationSchema={builderFormValidationSchema}
+      >
+        {(props) => {
+          return (
+            <Panels
+              editorView={editorView}
+              validateForm={props.validateForm}
+              switchToUI={switchToUI}
+              values={props.values}
+              switchToYaml={switchToYaml}
+            />
+          );
+        }}
       </Formik>
     ),
     [editorView, switchToUI, switchToYaml]
