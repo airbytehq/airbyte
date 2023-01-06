@@ -41,6 +41,8 @@ export const updatePrimaryKey = (
     config?.fieldSelectionEnabled &&
     !compositePrimaryKey.some((fieldPath) => previouslySelectedFields.find((field) => isEqual(field, fieldPath)))
   ) {
+    // If the fieldPath being added to the primaryKey is the only unselected field,
+    // we can actually just disable field selection, since all fields are now selected.
     if (previouslySelectedFields.length === numberOfFieldsInStream - 1) {
       return { primaryKey: compositePrimaryKey, selectedFields: [], fieldSelectionEnabled: false };
     }
