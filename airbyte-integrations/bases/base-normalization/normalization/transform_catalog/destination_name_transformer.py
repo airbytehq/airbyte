@@ -239,8 +239,6 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.TIDB.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
-        elif self.destination_type.value == DestinationType.DATABEND.value:
-            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

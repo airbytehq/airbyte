@@ -3110,8 +3110,6 @@ TIDB = {
     "ZEROFILL",
 }
 
-DATABEND: Set[str] = set()
-
 RESERVED_KEYWORDS = {
     DestinationType.BIGQUERY.value: BIGQUERY,
     DestinationType.POSTGRES.value: POSTGRES,
@@ -3121,8 +3119,7 @@ RESERVED_KEYWORDS = {
     DestinationType.ORACLE.value: ORACLE,
     DestinationType.MSSQL.value: MSSQL,
     DestinationType.CLICKHOUSE.value: CLICKHOUSE,
-    DestinationType.TIDB.value: TIDB,
-    DestinationType.DATABEND.value: DATABEND,
+    DestinationType.TIDB.value: TIDB
 }
 
 
