@@ -64,13 +64,13 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
 @pytest.mark.parametrize(
     "primary_key, column_type, expecting_exception, expected_primary_keys, expected_final_primary_key_string",
     [
-        ([["id"]], "string", False, ["id"], "{{ adapter.quote('id') }}"),
-        ([["id"]], "number", False, ["id"], "cast({{ adapter.quote('id') }} as {{ dbt_utils.type_string() }})"),
-        ([["first_name"], ["last_name"]], "string", False, ["first_name", "last_name"], "first_name, last_name"),
-        ([["float_id"]], "number", False, ["float_id"], "cast(float_id as {{ dbt_utils.type_string() }})"),
-        ([["_airbyte_emitted_at"]], "string", False, [], "cast(_airbyte_emitted_at as {{ dbt_utils.type_string() }})"),
-        (None, "string", True, [], ""),
-        ([["parent", "nested_field"]], "string", True, [], ""),
+        ([["id"]], "WellKnownTypes.json#/definitions/String", False, ["id"], "{{ adapter.quote('id') }}"),
+        ([["id"]], "WellKnownTypes.json#/definitions/Number", False, ["id"], "cast({{ adapter.quote('id') }} as {{ dbt_utils.type_string() }})"),
+        ([["first_name"], ["last_name"]], "WellKnownTypes.json#/definitions/String", False, ["first_name", "last_name"], "first_name, last_name"),
+        ([["float_id"]], "WellKnownTypes.json#/definitions/Number", False, ["float_id"], "cast(float_id as {{ dbt_utils.type_string() }})"),
+        ([["_airbyte_emitted_at"]], "WellKnownTypes.json#/definitions/String", False, [], "cast(_airbyte_emitted_at as {{ dbt_utils.type_string() }})"),
+        (None, "WellKnownTypes.json#/definitions/String", True, [], ""),
+        ([["parent", "nested_field"]], "WellKnownTypes.json#/definitions/String", True, [], ""),
     ],
 )
 def test_primary_key(
@@ -91,7 +91,7 @@ def test_primary_key(
         cursor_field=[],
         primary_key=primary_key,
         json_column_name="json_column_name",
-        properties={key: {"type": column_type} for key in expected_primary_keys},
+        properties={key: {"$ref": column_type} for key in expected_primary_keys},
         tables_registry=TableNameRegistry(DestinationType.POSTGRES),
         from_table="",
     )

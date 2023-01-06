@@ -7,9 +7,10 @@ import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundError
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { RoutePaths } from "../routePaths";
-import AllConnectionsPage from "./pages/AllConnectionsPage";
-import { ConnectionItemPage } from "./pages/ConnectionItemPage/ConnectionItemPage";
-import { CreationFormPage } from "./pages/CreationFormPage/CreationFormPage";
+
+const CreationFormPage = React.lazy(() => import("./pages/CreationFormPage/CreationFormPage"));
+const ConnectionItemPage = React.lazy(() => import("./pages/ConnectionItemPage/ConnectionItemPage"));
+const AllConnectionsPage = React.lazy(() => import("./pages/AllConnectionsPage"));
 
 export const ConnectionPage: React.FC = () => (
   <Suspense fallback={<LoadingPage />}>

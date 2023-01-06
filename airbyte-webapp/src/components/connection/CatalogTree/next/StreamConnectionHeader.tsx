@@ -1,8 +1,7 @@
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { FormattedMessage } from "react-intl";
 
+import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { Heading } from "components/ui/Heading";
 
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -13,6 +12,7 @@ import { getIcon } from "utils/imageUtils";
 import styles from "./StreamConnectionHeader.module.scss";
 
 export const renderIcon = (icon?: string): JSX.Element => <div className={styles.icon}>{getIcon(icon)}</div>;
+const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
 export const StreamConnectionHeader: React.FC = () => {
   const {
@@ -22,22 +22,25 @@ export const StreamConnectionHeader: React.FC = () => {
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
   const sourceStyles = classnames(styles.connector, styles.source);
   const destinationStyles = classnames(styles.connector, styles.destination);
+
   return (
-    <div className={styles.container}>
+    <div className={classnames(styles.container, { [styles.newTableContainer]: !!isNewStreamsTableEnabled })}>
       <div className={sourceStyles}>
         {renderIcon(sourceDefinition.icon)}{" "}
         <Heading as="h5" size="sm">
           <FormattedMessage id="connectionForm.sourceTitle" />
         </Heading>
       </div>
-      <div className={styles.arrowContainer}>
-        <FontAwesomeIcon icon={faArrowRight} />
-      </div>
-      <div className={destinationStyles}>
-        {renderIcon(destinationDefinition.icon)}{" "}
-        <Heading as="h5" size="sm">
-          <FormattedMessage id="connectionForm.destinationTitle" />
-        </Heading>
+      <div className={styles.destination}>
+        <div className={styles.arrowContainer}>
+          <ArrowRightIcon />
+        </div>
+        <div className={destinationStyles}>
+          {renderIcon(destinationDefinition.icon)}{" "}
+          <Heading as="h5" size="sm">
+            <FormattedMessage id="connectionForm.destinationTitle" />
+          </Heading>
+        </div>
       </div>
     </div>
   );

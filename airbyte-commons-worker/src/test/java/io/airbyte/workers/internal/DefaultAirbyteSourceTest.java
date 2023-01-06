@@ -209,6 +209,18 @@ class DefaultAirbyteSourceTest {
   }
 
   @Test
+  void testIgnoredExitCodes() throws Exception {
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    tap.start(SOURCE_CONFIG, jobRoot);
+    when(process.isAlive()).thenReturn(false);
+
+    DefaultAirbyteSource.IGNORED_EXIT_CODES.forEach(exitCode -> {
+      when(process.exitValue()).thenReturn(exitCode);
+      Assertions.assertDoesNotThrow(tap::close);
+    });
+  }
+
+  @Test
   void testGetExitValue() throws Exception {
     final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, protocolSerializer, heartbeatMonitor);
     source.start(SOURCE_CONFIG, jobRoot);
