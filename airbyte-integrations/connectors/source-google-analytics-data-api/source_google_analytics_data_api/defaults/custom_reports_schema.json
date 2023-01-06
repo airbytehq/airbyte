@@ -9,12 +9,14 @@
       },
       "dimensions": {
         "type": "array",
+        "minItems": 1,
         "items": {
           "type": "string"
         }
       },
       "metrics": {
         "type": "array",
+        "minItems": 1,
         "items": {
           "type": "string"
         }

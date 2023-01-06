@@ -76,7 +76,7 @@ def test_check(requests_mock, config_gen):
     assert source.check(logger, config_gen(custom_reports="{}")) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports: {} is not of type \'array\'"')
     assert source.check(logger, config_gen(custom_reports="[{}]")) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0: \'name\' is a required property"')
     assert source.check(logger, config_gen(custom_reports='[{"name": "name"}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0: \'dimensions\' is a required property"')
-    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": [], "metrics": []}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports.0: dimensions or metrics is required'")
+    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": [], "metrics": []}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports.0.dimensions: [] is too short'")
     assert source.check(logger, config_gen(custom_reports='[{"name": "daily_active_users", "dimensions": ["date"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: daily_active_users already exist as a default reports.'")
     assert source.check(logger, config_gen(credentials={"auth_type": "Service", "credentials_json": "invalid"})) == AirbyteConnectionStatus(status=Status.FAILED, message="'credentials.credentials_json is not valid JSON'")
     assert source.check(logger, config_gen(date_ranges_start_date="2022-20-20")) == AirbyteConnectionStatus(status=Status.FAILED, message='"time data \'2022-20-20\' does not match format \'%Y-%m-%d\'"')
