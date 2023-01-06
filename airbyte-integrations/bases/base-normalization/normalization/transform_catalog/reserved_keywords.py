@@ -2048,6 +2048,7 @@ ORACLE = {
     "WITH",
 }
 
+
 # https://docs.microsoft.com/en-us/sql/t-sql/language-elements/reserved-keywords-transact-sql?view=sql-server-ver15
 MSSQL = {
     "ADD",
@@ -3119,7 +3120,7 @@ RESERVED_KEYWORDS = {
     DestinationType.ORACLE.value: ORACLE,
     DestinationType.MSSQL.value: MSSQL,
     DestinationType.CLICKHOUSE.value: CLICKHOUSE,
-    DestinationType.TIDB.value: TIDB
+    DestinationType.TIDB.value: TIDB,
 }
 
 
