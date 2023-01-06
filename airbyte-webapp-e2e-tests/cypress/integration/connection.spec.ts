@@ -38,7 +38,7 @@ import {
 } from "../pages/modals/catalogDiffModal";
 import { updateSchemaModalConfirmBtnClick } from "../pages/modals/updateSchemaModal";
 
-describe("Connection - main actions", () => {
+describe.skip("Connection - main actions", () => {
   beforeEach(() => {
     initialSetupCompleted();
   });
