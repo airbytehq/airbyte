@@ -23,6 +23,7 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
@@ -30,25 +31,27 @@ import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.BasicTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DbtTransformationRunner;
@@ -57,8 +60,8 @@ import io.airbyte.workers.general.DefaultGetSpecWorker;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
+import io.airbyte.workers.normalization.DefaultNormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationRunner;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -72,6 +75,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -119,6 +123,29 @@ public abstract class DestinationAcceptanceTest {
    * @return docker image name
    */
   protected abstract String getImageName();
+
+  private String getImageNameWithoutTag() {
+    return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
+  }
+
+  private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
+    try {
+      LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+      return provider.getDestinationDefinitions().stream()
+          .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
+          .findFirst();
+    } catch (IOException e) {
+      return Optional.empty();
+    }
+  }
+
+  protected String getNormalizationImageName() {
+    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":"
+            + NORMALIZATION_VERSION)
+        .orElse(null);
+  }
 
   /**
    * Configuration specific to the integration. Will be passed to integration where appropriate in
@@ -199,24 +226,26 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  protected boolean normalizationFromSpec() throws Exception {
-    final ConnectorSpecification spec = runSpec();
-    assertNotNull(spec);
-    if (spec.getSupportsNormalization() != null) {
-      return spec.getSupportsNormalization();
-    } else {
-      return false;
-    }
+  protected boolean normalizationFromDefinition() {
+    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository())
+            && Objects.nonNull(standardDestinationDefinition.getNormalizationConfig().getNormalizationTag()))
+        .orElse(false);
   }
 
-  protected boolean dbtFromSpec() throws WorkerException {
-    final ConnectorSpecification spec = runSpec();
-    assertNotNull(spec);
-    if (spec.getSupportsDBT() != null) {
-      return spec.getSupportsDBT();
-    } else {
-      return false;
-    }
+  protected boolean dbtFromDefinition() {
+    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getSupportsDbt())
+            && standardDestinationDefinition.getSupportsDbt())
+        .orElse(false);
+  }
+
+  protected String getNormalizationIntegrationType() {
+    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
+        .orElse(null);
   }
 
   /**
@@ -277,7 +306,7 @@ public abstract class DestinationAcceptanceTest {
    * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String, JsonNode)}. Except this
    * method should pull records from the table that contains the normalized records and convert them
    * back into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override
-   * this method if {@link #normalizationFromSpec} returns true.
+   * this method if {@link #normalizationFromDefinition} returns true.
    *
    * @param testEnv - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
@@ -536,23 +565,26 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void specNormalizationValueShouldBeCorrect() throws Exception {
-    final boolean normalizationFromSpec = normalizationFromSpec();
-    assertEquals(normalizationFromSpec, supportsNormalization());
-    if (normalizationFromSpec) {
+    final boolean normalizationFromDefinition = normalizationFromDefinition();
+    assertEquals(normalizationFromDefinition, supportsNormalization());
+    if (normalizationFromDefinition) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
-        NormalizationRunnerFactory.create(getImageName(), processFactory, NORMALIZATION_VERSION, "");
+        new DefaultNormalizationRunner(
+            processFactory,
+            getNormalizationImageName(),
+            getNormalizationIntegrationType());
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
       }
-      assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
+      assertEquals(normalizationFromDefinition, normalizationRunnerFactorySupportsDestinationImage);
     }
   }
 
   @Test
-  public void specDBTValueShouldBeCorrect() throws WorkerException {
-    assertEquals(dbtFromSpec(), supportsDBT());
+  public void specDBTValueShouldBeCorrect() {
+    assertEquals(dbtFromDefinition(), supportsDBT());
   }
 
   /**
@@ -688,7 +720,7 @@ public abstract class DestinationAcceptanceTest {
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename)
       throws Exception {
-    if (!normalizationFromSpec()) {
+    if (!normalizationFromDefinition()) {
       return;
     }
 
@@ -895,7 +927,7 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void testCustomDbtTransformations() throws Exception {
-    if (!dbtFromSpec()) {
+    if (!dbtFromDefinition()) {
       return;
     }
 
@@ -911,10 +943,10 @@ public abstract class DestinationAcceptanceTest {
     // 'profiles.yml'
     // (we don't actually rely on normalization running anything else here though)
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory,
-        NormalizationRunnerFactory.create(
-            getImageName(),
+        new DefaultNormalizationRunner(
             processFactory,
-            NORMALIZATION_VERSION, ""));
+            getNormalizationImageName(),
+            getNormalizationIntegrationType()));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -927,9 +959,7 @@ public abstract class DestinationAcceptanceTest {
         // TODO once we're on DBT 1.x, switch this back to using the main branch
         .withGitRepoUrl("https://github.com/airbytehq/jaffle_shop.git")
         .withGitRepoBranch("pre_dbt_upgrade")
-        .withDockerImage(
-            NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft()
-                + ":" + NORMALIZATION_VERSION);
+        .withDockerImage(getNormalizationImageName());
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
     //
@@ -979,7 +1009,7 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
-    if (!normalizationFromSpec() || !dbtFromSpec()) {
+    if (!normalizationFromDefinition() || !dbtFromDefinition()) {
       // we require normalization implementation for this destination, because we make sure to install
       // required dbt dependency in the normalization docker image in order to run this test successfully
       // (we don't actually rely on normalization running anything here though)
@@ -989,10 +1019,10 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory,
-        NormalizationRunnerFactory.create(
-            getImageName(),
+        new DefaultNormalizationRunner(
             processFactory,
-            NORMALIZATION_VERSION, ""));
+            getNormalizationImageName(),
+            getNormalizationIntegrationType()));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -1023,7 +1053,10 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    final String namespace = "sourcenamespace";
+    // A randomized namespace is required otherwise you can generate a "false success" with data from a
+    // previous run.
+    final String namespace = Strings.addRandomSuffix("airbyte_source_namespace", "_", 8);
+
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
@@ -1234,9 +1267,11 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
-    return new DefaultGetSpecWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
-            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
+    return convertProtocolObject(
+        new DefaultGetSpecWorker(
+            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
+                .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec(),
+        ConnectorSpecification.class);
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
@@ -1316,18 +1351,19 @@ public abstract class DestinationAcceptanceTest {
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
-        .withCatalog(catalog)
+        .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
         .withDestinationConnectionConfiguration(config);
 
     final AirbyteDestination destination = getDestination();
 
     destination.start(destinationConfig, jobRoot);
-    messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
+    messages.forEach(
+        message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
     destination.notifyEndOfInput();
 
     final List<AirbyteMessage> destinationOutput = new ArrayList<>();
     while (!destination.isFinished()) {
-      destination.attemptRead().ifPresent(destinationOutput::add);
+      destination.attemptRead().ifPresent(m -> destinationOutput.add(convertProtocolObject(m, AirbyteMessage.class)));
     }
 
     destination.close();
@@ -1336,10 +1372,10 @@ public abstract class DestinationAcceptanceTest {
       return destinationOutput;
     }
 
-    final NormalizationRunner runner = NormalizationRunnerFactory.create(
-        getImageName(),
+    final NormalizationRunner runner = new DefaultNormalizationRunner(
         processFactory,
-        NORMALIZATION_VERSION, "");
+        getNormalizationImageName(),
+        getNormalizationIntegrationType());
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot,
@@ -1517,7 +1553,7 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
-        .withCatalog(configuredTestCatalog)
+        .withCatalog(convertProtocolObject(configuredTestCatalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
         .withDestinationConnectionConfiguration(config);
     final AirbyteDestination destination = getDestination();
 
@@ -1559,7 +1595,7 @@ public abstract class DestinationAcceptanceTest {
                             .build()))
                 .withEmittedAt(Instant.now().toEpochMilli()));
         try {
-          destination.accept(msg);
+          destination.accept(convertProtocolObject(msg, io.airbyte.protocol.models.AirbyteMessage.class));
         } catch (final Exception e) {
           LOGGER.error("Failed to write a RECORD message: " + e);
           throw new RuntimeException(e);
@@ -1575,7 +1611,7 @@ public abstract class DestinationAcceptanceTest {
               .withData(
                   Jsons.jsonNode(ImmutableMap.builder().put("start_date", "2020-09-02").build())));
       try {
-        destination.accept(msgState);
+        destination.accept(convertProtocolObject(msgState, io.airbyte.protocol.models.AirbyteMessage.class));
       } catch (final Exception e) {
         LOGGER.error("Failed to write a STATE message: " + e);
         throw new RuntimeException(e);
@@ -1827,6 +1863,10 @@ public abstract class DestinationAcceptanceTest {
               testCase.get("normalized").asText()));
     }
 
+  }
+
+  private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
+    return Jsons.object(Jsons.jsonNode(v1), klass);
   }
 
 }

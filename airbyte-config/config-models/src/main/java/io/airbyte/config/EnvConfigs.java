@@ -115,6 +115,7 @@ public class EnvConfigs implements Configs {
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
+  private static final String CONTAINER_ORCHESTRATOR_ENABLED = "CONTAINER_ORCHESTRATOR_ENABLED";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
@@ -203,6 +204,8 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
+  private static final String AWS_ACCESS_KEY = "AWS_ACCESS_KEY";
+  private static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
   private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.3-r0";
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
@@ -214,6 +217,8 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
   private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
+  private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
+  private static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -417,6 +422,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getVaultToken() {
     return getEnv(VAULT_AUTH_TOKEN);
+  }
+
+  @Override
+  public String getAwsAccessKey() {
+    return getEnv(AWS_ACCESS_KEY);
+  }
+
+  @Override
+  public String getAwsSecretAccessKey() {
+    return getEnv(AWS_SECRET_ACCESS_KEY);
   }
 
   // Database
@@ -1046,6 +1061,11 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public boolean getContainerOrchestratorEnabled() {
+    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_ENABLED, false, Boolean::valueOf);
+  }
+
+  @Override
   public String getContainerOrchestratorSecretName() {
     return getEnvOrDefault(CONTAINER_ORCHESTRATOR_SECRET_NAME, null);
   }
@@ -1103,6 +1123,16 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean getAutoDetectSchema() {
     return getEnvOrDefault(AUTO_DETECT_SCHEMA, false);
+  }
+
+  @Override
+  public boolean getApplyFieldSelection() {
+    return getEnvOrDefault(APPLY_FIELD_SELECTION, false);
+  }
+
+  @Override
+  public String getFieldSelectionWorkspaces() {
+    return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "");
   }
 
   @Override

@@ -39,14 +39,14 @@ export const tidyConnectionFormValues = (
   workspaceId: string,
   mode: ConnectionFormMode,
   allowSubOneHourCronExpressions: boolean,
-  isAutoDetectSchemaChangesEnabled: boolean,
+  allowAutoDetectSchema: boolean,
   operations?: OperationRead[]
 ): ValuesProps => {
   // TODO (https://github.com/airbytehq/airbyte/issues/17279): We should try to fix the types so we don't need the casting.
   const formValues: ConnectionFormValues = createConnectionValidationSchema({
     mode,
     allowSubOneHourCronExpressions,
-    isAutoDetectSchemaChangesEnabled,
+    allowAutoDetectSchema,
   }).cast(values, {
     context: { isRequest: true },
   }) as unknown as ConnectionFormValues;
@@ -85,12 +85,23 @@ const useConnectionForm = ({
   const formId = useUniqueFormId();
 
   const getErrorMessage = useCallback(
-    (formValid: boolean, connectionDirty: boolean) =>
-      submitError
+    (formValid: boolean, connectionDirty: boolean) => {
+      const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
+      if (isNewStreamsTableEnabled) {
+        // There is a case when some fields could be dropped in the database. We need to validate the form without property dirty
+        return submitError
+          ? generateMessageFromError(submitError)
+          : !formValid
+          ? formatMessage({ id: "connectionForm.validation.error" })
+          : null;
+      }
+      return submitError
         ? generateMessageFromError(submitError)
         : connectionDirty && !formValid
         ? formatMessage({ id: "connectionForm.validation.error" })
-        : null,
+        : null;
+    },
     [formatMessage, submitError]
   );
 
