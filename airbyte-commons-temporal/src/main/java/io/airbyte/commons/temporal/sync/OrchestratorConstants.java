@@ -68,7 +68,9 @@ public class OrchestratorConstants {
           EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
           EnvConfigs.STATE_STORAGE_S3_REGION,
           EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE,
-          EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA))
+          EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA,
+          EnvVariableFeatureFlags.APPLY_FIELD_SELECTION,
+          EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES))
       .build();
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";

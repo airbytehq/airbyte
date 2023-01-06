@@ -31,12 +31,11 @@ module.exports = {
     {
       type: 'category',
       label: 'Connector Catalog',
+      link: {
+        type: 'doc',
+        id: 'integrations/README',
+      },
       items: [
-          {
-            type: 'doc',
-            label: 'Overview',
-            id: 'integrations/README',
-          },
           {
             type: 'category',
             label: 'Sources',
