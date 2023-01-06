@@ -85,7 +85,7 @@ class DateRequiredStream(TripletexApiStream, ABC):
         params = {
             "dateFrom": self.start_date,
             "dateTo": pendulum.parse(self.start_date).add(days=7).format("YYYY-MM-DD"),
-            "count": 100000
+            "count": 10000
         }
 
         if next_page_token:
