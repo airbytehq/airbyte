@@ -4,7 +4,10 @@ import userEvent from "@testing-library/user-event";
 import React from "react";
 import selectEvent from "react-select-event";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
-import { mockDestinationDefinitionSpecification } from "test-utils/mock-data/mockDestination";
+import {
+  mockDestinationDefinition,
+  mockDestinationDefinitionSpecification,
+} from "test-utils/mock-data/mockDestination";
 import { TestWrapper } from "test-utils/testutils";
 
 import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
@@ -14,6 +17,10 @@ import { CreateConnectionForm } from "./CreateConnectionForm";
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDestinationDefinitionSpecification,
+}));
+
+jest.mock("services/connector/DestinationDefinitionService", () => ({
+  useDestinationDefinition: () => mockDestinationDefinition,
 }));
 
 jest.mock("services/workspaces/WorkspacesService", () => ({
