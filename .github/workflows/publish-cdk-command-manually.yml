@@ -1,6 +1,8 @@
 name: Publish CDK Manually
 on:
   push:
+    paths:
+      - '**.yml'
     branches:
       - issue-19981_avoid-race-condition-on-airbyte-cdk-release
     inputs:
@@ -10,12 +12,12 @@ on:
         default: "airbytehq/airbyte"
       gitref:
         description: "The git ref to check out from the specified repository."
-        required: false
+        required: true
         default: issue-19981_avoid-race-condition-on-airbyte-cdk-release
       part-to-bump:
         description: "Choose the type of version upgrade : major|minor|patch"
-        required: false
-        default: patch
+        required: true
+        default: minor
   workflow_dispatch:
     inputs:
       repo:
@@ -42,6 +44,11 @@ jobs:
   bump-version:
     runs-on: ubuntu-latest
     steps:
+      - name: "Debug"
+        run: |
+          echo ${{ github.event.inputs.repo }}
+          echo ${{ github.event.inputs.gitref }}
+          echo ${{ github.event.inputs.part-to-bump }}
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
@@ -54,14 +61,13 @@ jobs:
         run: |
           pip install bumpversion
           cd airbyte-cdk/python
-          echo part-to-bump=${{ github.event.inputs.part-to-bump }}
-          bumpversion ${{ github.event.inputs.part-to-bump }}
+          bumpversion patch
       - name: Commit and Push Changes
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           file_pattern: airbyte-cdk/python/setup.py
-          commit_message: 🤖 Bump version of Airbyte CDK
+          commit_message: 🤖 Bump patch version of Airbyte CDK
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
