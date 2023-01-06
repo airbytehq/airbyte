@@ -352,7 +352,7 @@ class TransformConfig:
         print("transform_duckdb")
         dbt_config = {
             "type": "duckdb",
-            "destination_path": config["destination_path"],
+            "path": config["destination_path"],
             "schema": config["schema"] if "schema" in config else "main",
         }
         return dbt_config
