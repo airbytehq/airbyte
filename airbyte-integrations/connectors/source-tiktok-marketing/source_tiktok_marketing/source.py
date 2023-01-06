@@ -162,7 +162,7 @@ class SourceTiktokMarketing(AbstractSource):
 
             # 2. Basic report streams:
             reports = [AdsReports, AdGroupsReports, CampaignsReports]
-            audience_reports = [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]
+            audience_reports = [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry, AdsAudienceReportsByCountry]
             if is_production:
                 # 2.1 streams work only in prod env
                 reports.append(AdvertisersReports)
