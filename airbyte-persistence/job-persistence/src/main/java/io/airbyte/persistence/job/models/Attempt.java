@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 public class Attempt {
 
-  private final int attemptNumber;
+  private final long id;
   private final long jobId;
   private final JobOutput output;
   private final AttemptStatus status;
@@ -23,7 +23,7 @@ public class Attempt {
   private final long createdAtInSecond;
   private final Long endedAtInSecond;
 
-  public Attempt(final int attemptNumber,
+  public Attempt(final long id,
                  final long jobId,
                  final Path logPath,
                  final @Nullable JobOutput output,
@@ -32,7 +32,7 @@ public class Attempt {
                  final long createdAtInSecond,
                  final long updatedAtInSecond,
                  final @Nullable Long endedAtInSecond) {
-    this.attemptNumber = attemptNumber;
+    this.id = id;
     this.jobId = jobId;
     this.output = output;
     this.status = status;
@@ -43,8 +43,8 @@ public class Attempt {
     this.endedAtInSecond = endedAtInSecond;
   }
 
-  public int getAttemptNumber() {
-    return attemptNumber;
+  public long getId() {
+    return id;
   }
 
   public long getJobId() {
@@ -92,7 +92,7 @@ public class Attempt {
       return false;
     }
     final Attempt attempt = (Attempt) o;
-    return attemptNumber == attempt.attemptNumber &&
+    return id == attempt.id &&
         jobId == attempt.jobId &&
         updatedAtInSecond == attempt.updatedAtInSecond &&
         createdAtInSecond == attempt.createdAtInSecond &&
@@ -105,13 +105,13 @@ public class Attempt {
 
   @Override
   public int hashCode() {
-    return Objects.hash(attemptNumber, jobId, output, status, failureSummary, logPath, updatedAtInSecond, createdAtInSecond, endedAtInSecond);
+    return Objects.hash(id, jobId, output, status, failureSummary, logPath, updatedAtInSecond, createdAtInSecond, endedAtInSecond);
   }
 
   @Override
   public String toString() {
     return "Attempt{" +
-        "id=" + attemptNumber +
+        "id=" + id +
         ", jobId=" + jobId +
         ", output=" + output +
         ", status=" + status +
