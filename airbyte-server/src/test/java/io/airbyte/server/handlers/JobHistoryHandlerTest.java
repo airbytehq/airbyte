@@ -6,8 +6,6 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -16,7 +14,6 @@ import io.airbyte.api.model.generated.AttemptInfoRead;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusRead;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.AttemptRead;
-import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
@@ -45,13 +42,9 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StreamSyncStats;
-import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.persistence.job.JobPersistence.AttemptStats;
-import io.airbyte.persistence.job.JobPersistence.JobAttemptPair;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
 import io.airbyte.persistence.job.models.AttemptStatus;
@@ -70,7 +63,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -85,7 +77,7 @@ import org.junit.jupiter.api.Test;
 class JobHistoryHandlerTest {
 
   private static final long JOB_ID = 100L;
-  private static final int ATTEMPT_NUMBER = 0;
+  private static final long ATTEMPT_ID = 1002L;
   private static final String JOB_CONFIG_ID = "ef296385-6796-413f-ac1b-49c4caba3f2b";
   private static final JobStatus JOB_STATUS = JobStatus.SUCCEEDED;
   private static final JobConfig.ConfigType CONFIG_TYPE = JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
@@ -97,24 +89,17 @@ class JobHistoryHandlerTest {
   private static final LogRead EMPTY_LOG_READ = new LogRead().logLines(new ArrayList<>());
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
 
-  private static final AttemptStats ATTEMPT_STATS = new AttemptStats(new SyncStats().withBytesEmitted(10L).withRecordsEmitted(10L),
-      List.of(
-          new StreamSyncStats().withStreamNamespace("ns1").withStreamName("stream1")
-              .withStats(new SyncStats().withRecordsEmitted(5L).withBytesEmitted(5L)),
-          new StreamSyncStats().withStreamName("stream2")
-              .withStats(new SyncStats().withRecordsEmitted(5L).withBytesEmitted(5L))));
-
-  private static final io.airbyte.api.model.generated.AttemptStats ATTEMPT_STATS_API = new io.airbyte.api.model.generated.AttemptStats()
-      .bytesEmitted(10L).recordsEmitted(10L);
-
-  private static final List<AttemptStreamStats> ATTEMPT_STREAM_STATS = List.of(
-      new AttemptStreamStats().streamNamespace("ns1").streamName("stream1")
-          .stats(new io.airbyte.api.model.generated.AttemptStats().recordsEmitted(5L).bytesEmitted(5L)),
-      new AttemptStreamStats().streamName("stream2").stats(new io.airbyte.api.model.generated.AttemptStats().recordsEmitted(5L).bytesEmitted(5L)));
-
+  private SourceRead sourceRead;
+  private ConnectionRead connectionRead;
+  private DestinationRead destinationRead;
   private ConnectionsHandler connectionsHandler;
   private SourceHandler sourceHandler;
   private DestinationHandler destinationHandler;
+  private SourceDefinitionsHandler sourceDefinitionsHandler;
+  private DestinationDefinitionsHandler destinationDefinitionsHandler;
+  private StandardDestinationDefinition standardDestinationDefinition;
+  private StandardSourceDefinition standardSourceDefinition;
+  private AirbyteVersion airbyteVersion;
   private Job testJob;
   private Attempt testJobAttempt;
   private JobPersistence jobPersistence;
@@ -149,7 +134,7 @@ class JobHistoryHandlerTest {
 
   private static AttemptRead toAttemptRead(final Attempt a) {
     return new AttemptRead()
-        .id((long) a.getAttemptNumber())
+        .id(a.getId())
         .status(Enums.convertTo(a.getStatus(), io.airbyte.api.model.generated.AttemptStatus.class))
         .createdAt(a.getCreatedAtInSecond())
         .updatedAt(a.getUpdatedAtInSecond())
@@ -157,22 +142,22 @@ class JobHistoryHandlerTest {
   }
 
   private static Attempt createAttempt(final long jobId, final long timestamps, final AttemptStatus status) {
-    return new Attempt(ATTEMPT_NUMBER, jobId, LOG_PATH, null, status, null, timestamps, timestamps, timestamps);
+    return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, status, null, timestamps, timestamps, timestamps);
   }
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
     testJobAttempt = createAttempt(JOB_ID, CREATED_AT, AttemptStatus.SUCCEEDED);
     testJob = new Job(JOB_ID, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, ImmutableList.of(testJobAttempt), JOB_STATUS, null, CREATED_AT,
         CREATED_AT);
 
     connectionsHandler = mock(ConnectionsHandler.class);
     sourceHandler = mock(SourceHandler.class);
+    sourceDefinitionsHandler = mock(SourceDefinitionsHandler.class);
     destinationHandler = mock(DestinationHandler.class);
+    destinationDefinitionsHandler = mock(DestinationDefinitionsHandler.class);
+    airbyteVersion = mock(AirbyteVersion.class);
     jobPersistence = mock(JobPersistence.class);
-    final SourceDefinitionsHandler sourceDefinitionsHandler = mock(SourceDefinitionsHandler.class);
-    final DestinationDefinitionsHandler destinationDefinitionsHandler = mock(DestinationDefinitionsHandler.class);
-    final AirbyteVersion airbyteVersion = mock(AirbyteVersion.class);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, WorkerEnvironment.DOCKER, LogConfigs.EMPTY, connectionsHandler, sourceHandler,
         sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
   }
@@ -197,9 +182,6 @@ class JobHistoryHandlerTest {
       when(jobPersistence.listJobs(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, pagesize, rowOffset))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
       when(jobPersistence.getJobCount(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID)).thenReturn(2L);
-      when(jobPersistence.getAttemptStats(List.of(200L, 100L))).thenReturn(Map.of(
-          new JobAttemptPair(100, 0), ATTEMPT_STATS,
-          new JobAttemptPair(jobId2, 0), ATTEMPT_STATS));
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
@@ -207,8 +189,8 @@ class JobHistoryHandlerTest {
           .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
       final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
-      final var expAttemptRead = toAttemptRead(testJobAttempt).totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS);
-      final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(expAttemptRead));
+      final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
+          testJobAttempt)));
       final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJobNoAttempt)).attempts(Collections.emptyList());
       final JobReadList expectedJobReadList =
           new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead)).totalJobCount(2L);
@@ -241,10 +223,6 @@ class JobHistoryHandlerTest {
 
       when(jobPersistence.listJobs(configTypes, JOB_CONFIG_ID, pagesize, rowOffset)).thenReturn(List.of(latestJob, secondJob, firstJob));
       when(jobPersistence.getJobCount(configTypes, JOB_CONFIG_ID)).thenReturn(3L);
-      when(jobPersistence.getAttemptStats(List.of(300L, 200L, 100L))).thenReturn(Map.of(
-          new JobAttemptPair(100, 0), ATTEMPT_STATS,
-          new JobAttemptPair(secondJobId, 0), ATTEMPT_STATS,
-          new JobAttemptPair(latestJobId, 0), ATTEMPT_STATS));
 
       final JobListRequestBody requestBody = new JobListRequestBody()
           .configTypes(List.of(CONFIG_TYPE_FOR_API, JobConfigType.SYNC, JobConfigType.DISCOVER_SCHEMA))
@@ -253,11 +231,9 @@ class JobHistoryHandlerTest {
       final JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var firstJobWithAttemptRead =
-          new JobWithAttemptsRead().job(toJobInfo(firstJob))
-              .attempts(ImmutableList.of(toAttemptRead(testJobAttempt).totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS)));
+          new JobWithAttemptsRead().job(toJobInfo(firstJob)).attempts(ImmutableList.of(toAttemptRead(testJobAttempt)));
       final var secondJobWithAttemptRead =
-          new JobWithAttemptsRead().job(toJobInfo(secondJob))
-              .attempts(ImmutableList.of(toAttemptRead(secondJobAttempt).totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS)));
+          new JobWithAttemptsRead().job(toJobInfo(secondJob)).attempts(ImmutableList.of(toAttemptRead(secondJobAttempt)));
       final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJob)).attempts(Collections.emptyList());
       final JobReadList expectedJobReadList =
           new JobReadList().jobs(List.of(latestJobWithAttemptRead, secondJobWithAttemptRead, firstJobWithAttemptRead)).totalJobCount(3L);
@@ -281,9 +257,6 @@ class JobHistoryHandlerTest {
       when(jobPersistence.listJobsIncludingId(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, jobId2, pagesize))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
       when(jobPersistence.getJobCount(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID)).thenReturn(2L);
-      when(jobPersistence.getAttemptStats(List.of(200L, 100L))).thenReturn(Map.of(
-          new JobAttemptPair(100, 0), ATTEMPT_STATS,
-          new JobAttemptPair(jobId2, 0), ATTEMPT_STATS));
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
@@ -293,7 +266,7 @@ class JobHistoryHandlerTest {
       final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
-          testJobAttempt).totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS)));
+          testJobAttempt)));
       final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJobNoAttempt)).attempts(Collections.emptyList());
       final JobReadList expectedJobReadList =
           new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead)).totalJobCount(2L);
@@ -332,16 +305,16 @@ class JobHistoryHandlerTest {
   @Test
   @DisplayName("Should return the right info to debug this job")
   void testGetDebugJobInfo() throws IOException, JsonValidationException, ConfigNotFoundException, URISyntaxException {
-    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
+    standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
-    final SourceRead sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
+    sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
-    final StandardDestinationDefinition standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
+    standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
     final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
-    final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
+    destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
-    final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     when(connectionsHandler.getConnection(UUID.fromString(testJob.getScope()))).thenReturn(connectionRead);
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
@@ -352,13 +325,10 @@ class JobHistoryHandlerTest {
     destinationIdRequestBody.setDestinationId(connectionRead.getDestinationId());
     when(destinationHandler.getDestination(destinationIdRequestBody)).thenReturn(destinationRead);
     when(jobPersistence.getJob(JOB_ID)).thenReturn(testJob);
-    when(jobPersistence.getAttemptStats(anyLong(), anyInt())).thenReturn(ATTEMPT_STATS);
 
     final JobIdRequestBody requestBody = new JobIdRequestBody().id(JOB_ID);
     final JobDebugInfoRead jobDebugInfoActual = jobHistoryHandler.getJobDebugInfo(requestBody);
-    final List<AttemptInfoRead> attemptInfoReads = toAttemptInfoList(ImmutableList.of(testJobAttempt));
-    attemptInfoReads.forEach(read -> read.getAttempt().totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS));
-    final JobDebugInfoRead exp = new JobDebugInfoRead().job(toDebugJobInfo(testJob)).attempts(attemptInfoReads);
+    final JobDebugInfoRead exp = new JobDebugInfoRead().job(toDebugJobInfo(testJob)).attempts(toAttemptInfoList(ImmutableList.of(testJobAttempt)));
 
     assertEquals(exp, jobDebugInfoActual);
   }
