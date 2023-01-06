@@ -256,10 +256,13 @@ class Salesforce:
         """
         stream_objects = {}
         for stream_object in self.describe()["sobjects"]:
+            if stream_object["name"].lower() == "activitymetric":
+                self.logger.warning(f"Stream {stream_object['name']} can not be used without object ID therefore will be ignored.")
+                continue
             if stream_object["queryable"]:
                 stream_objects[stream_object.pop("name")] = stream_object
             else:
-                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+                self.logger.warning(f"Stream {stream_object['name']} is not queryable and will be ignored.")
 
         if catalog:
             return {
@@ -343,7 +346,7 @@ class Salesforce:
         stream_schemas = {}
         for i in range(0, len(stream_names), self.parallel_tasks_size):
             chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
-            with concurrent.futures.ThreadPoolExecutor(max_workers=len(chunk_stream_names)) as executor:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
                 for stream_name, schema, err in executor.map(
                     lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
                 ):
