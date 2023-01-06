@@ -47,7 +47,7 @@ export const UpdateConnectionDataResidency: React.FC = () => {
           <ControlLabels
             nextLine
             label={<FormattedMessage id="connection.geographyTitle" />}
-            message={
+            infoTooltipContent={
               <FormattedMessage
                 id="connection.geographyDescription"
                 values={{
