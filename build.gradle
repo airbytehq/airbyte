@@ -43,6 +43,9 @@ apply from: "$rootDir/publish-repositories.gradle"
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+    }
 }
 
 Properties env = new Properties()
@@ -291,7 +294,7 @@ subprojects { subproj ->
             url 'https://jitpack.io'
         }
         maven {
-            url 'https://maven.twttr.com'
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
         }
     }
 

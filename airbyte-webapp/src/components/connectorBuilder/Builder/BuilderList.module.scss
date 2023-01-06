@@ -1,0 +1,13 @@
+@use "scss/variables";
+@use "scss/colors";
+
+$removeButtonWidth: 20px;
+
+.itemWrapper {
+  display: flex;
+  gap: variables.$spacing-md;
+}
+
+.itemContainer {
+  flex-grow: 1;
+}
