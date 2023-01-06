@@ -87,11 +87,6 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  public HttpClient httpClient() {
-    return HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-  }
-
-  @Singleton
   public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
     return JsonSecretsProcessor.builder()
         .copySecrets(false)

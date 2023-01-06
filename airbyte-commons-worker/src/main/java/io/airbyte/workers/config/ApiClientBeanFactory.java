@@ -46,7 +46,7 @@ public class ApiClientBeanFactory {
                              @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
                              @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
                              @Named("internalApiScheme") final String internalApiScheme) {
-    return new io.airbyte.api.client.invoker.generated.ApiClient()
+    return new ApiClient()
         .setScheme(internalApiScheme)
         .setHost(parseHostName(airbyteApiHost))
         .setPort(parsePort(airbyteApiHost))
@@ -89,7 +89,7 @@ public class ApiClientBeanFactory {
 
   @Singleton
   public HttpClient httpClient() {
-    return HttpClient.newHttpClient();
+    return HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
   }
 
   @Singleton
