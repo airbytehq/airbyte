@@ -163,7 +163,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
 
     final TableResult queryResults = BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
-    BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
+    final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
     return Streams.stream(queryResults.iterateAll())
         .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());

@@ -116,7 +116,7 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
   }
 
   @Override
-  public JsonSchemaType getJsonType(final StandardSQLTypeName bigQueryType) {
+  public JsonSchemaType getAirbyteType(final StandardSQLTypeName bigQueryType) {
     return switch (bigQueryType) {
       case BOOL -> JsonSchemaType.BOOLEAN;
       case INT64 -> JsonSchemaType.INTEGER;

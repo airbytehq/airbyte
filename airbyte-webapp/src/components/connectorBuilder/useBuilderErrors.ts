@@ -9,7 +9,7 @@ import { BuilderFormValues } from "./types";
 
 export const useBuilderErrors = () => {
   const { touched, errors, validateForm, setFieldTouched } = useFormikContext<BuilderFormValues>();
-  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
+  const { setSelectedView } = useConnectorBuilderFormState();
 
   const invalidViews = useCallback(
     (ignoreUntouched: boolean, limitToViews?: BuilderView[], inputErrors?: FormikErrors<BuilderFormValues>) => {
@@ -87,14 +87,13 @@ export const useBuilderErrors = () => {
             setSelectedView("global");
           } else {
             setSelectedView(invalidBuilderViews[0]);
-            setTestStreamIndex(invalidBuilderViews[0] as number);
           }
         } else {
           callback();
         }
       });
     },
-    [invalidViews, setFieldTouched, setSelectedView, setTestStreamIndex, validateForm]
+    [invalidViews, setFieldTouched, setSelectedView, validateForm]
   );
 
   return { hasErrors, validateAndTouch };

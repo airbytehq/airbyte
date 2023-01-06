@@ -31,14 +31,12 @@ interface FormStateContext {
   yamlManifest: string;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
-  testStreamIndex: number;
   selectedView: BuilderView;
   editorView: EditorView;
   setBuilderFormValues: (values: BuilderFormValues, isInvalid: boolean) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
-  setTestStreamIndex: (streamIndex: number) => void;
   setSelectedView: (view: BuilderView) => void;
   setEditorView: (editorView: EditorView) => void;
 }
@@ -48,6 +46,8 @@ interface TestStateContext {
   streamListErrorMessage: string | undefined;
   testInputJson: StreamReadRequestBodyConfig;
   setTestInputJson: (value: StreamReadRequestBodyConfig) => void;
+  setTestStreamIndex: (streamIndex: number) => void;
+  testStreamIndex: number;
 }
 
 export const ConnectorBuilderFormStateContext = React.createContext<FormStateContext | null>(null);
@@ -64,10 +64,11 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
 
   const setBuilderFormValues = useCallback(
     (values: BuilderFormValues, isValid: boolean) => {
-      setStoredBuilderFormValues(values);
       if (isValid) {
+        // update ref first because calling setStoredBuilderFormValues might synchronously kick off a react render cycle.
         lastValidBuilderFormValuesRef.current = values;
       }
+      setStoredBuilderFormValues(values);
     },
     [setStoredBuilderFormValues]
   );
@@ -123,8 +124,6 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
     [builderFormValues, editorView, jsonManifest, lastValidBuilderFormValues]
   );
 
-  const [testStreamIndex, setTestStreamIndex] = useState(0);
-
   const [selectedView, setSelectedView] = useState<BuilderView>("global");
 
   const ctx = {
@@ -134,14 +133,12 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
     yamlManifest,
     yamlEditorIsMounted,
     yamlIsValid,
-    testStreamIndex,
     selectedView,
     editorView: editorView || "ui",
     setBuilderFormValues,
     setJsonManifest,
     setYamlIsValid,
     setYamlEditorIsMounted,
-    setTestStreamIndex,
     setSelectedView,
     setEditorView,
   };
@@ -151,7 +148,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
 
 export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { formatMessage } = useIntl();
-  const { lastValidJsonManifest, testStreamIndex, setTestStreamIndex } = useConnectorBuilderFormState();
+  const { lastValidJsonManifest, selectedView } = useConnectorBuilderFormState();
 
   const manifest = lastValidJsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
 
@@ -174,17 +171,20 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     return streamListRead?.streams ?? [];
   }, [streamListRead]);
 
+  const [testStreamIndex, setTestStreamIndex] = useState(0);
   useEffect(() => {
-    if (testStreamIndex >= streams.length && streams.length > 0) {
-      setTestStreamIndex(streams.length - 1);
+    if (typeof selectedView === "number") {
+      setTestStreamIndex(selectedView);
     }
-  }, [streams, testStreamIndex, setTestStreamIndex]);
+  }, [selectedView]);
 
   const ctx = {
     streams,
     streamListErrorMessage,
     testInputJson,
     setTestInputJson,
+    testStreamIndex,
+    setTestStreamIndex,
   };
 
   return <ConnectorBuilderTestStateContext.Provider value={ctx}>{children}</ConnectorBuilderTestStateContext.Provider>;
@@ -193,7 +193,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
 export const useConnectorBuilderTestState = (): TestStateContext => {
   const connectorBuilderState = useContext(ConnectorBuilderTestStateContext);
   if (!connectorBuilderState) {
-    throw new Error("useConnectorBuilderAPI must be used within a ConnectorBuilderAPIProvider.");
+    throw new Error("useConnectorBuilderTestStae must be used within a ConnectorBuilderTestStateProvider.");
   }
 
   return connectorBuilderState;
@@ -202,15 +202,14 @@ export const useConnectorBuilderTestState = (): TestStateContext => {
 export const useConnectorBuilderFormState = (): FormStateContext => {
   const connectorBuilderState = useContext(ConnectorBuilderFormStateContext);
   if (!connectorBuilderState) {
-    throw new Error("useConnectorBuilderState must be used within a ConnectorBuilderStateProvider.");
+    throw new Error("useConnectorBuilderFormState must be used within a ConnectorBuilderFormStateProvider.");
   }
 
   return connectorBuilderState;
 };
 
 export const useSelectedPageAndSlice = () => {
-  const { testStreamIndex } = useConnectorBuilderFormState();
-  const { streams } = useConnectorBuilderTestState();
+  const { streams, testStreamIndex } = useConnectorBuilderTestState();
 
   const selectedStreamName = streams[testStreamIndex].name;
 

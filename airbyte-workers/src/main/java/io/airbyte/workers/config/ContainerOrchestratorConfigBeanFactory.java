@@ -77,6 +77,8 @@ public class ContainerOrchestratorConfigBeanFactory {
     environmentVariables.put(PUBLISH_METRICS_ENV_VAR, shouldPublishMetrics);
     environmentVariables.put(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(featureFlags.useStreamCapableState()));
     environmentVariables.put(EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, Boolean.toString(featureFlags.autoDetectSchema()));
+    environmentVariables.put(EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, Boolean.toString(featureFlags.applyFieldSelection()));
+    environmentVariables.put(EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
     environmentVariables.put(JAVA_OPTS_ENV_VAR, containerOrchestratorJavaOpts);
 
     if (System.getenv(DD_ENV_ENV_VAR) != null) {

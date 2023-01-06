@@ -59,6 +59,12 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
 
   return (
     <div className={styles.container}>
+      <ConfigMenu
+        className={styles.configButton}
+        testInputJsonErrors={testInputJsonErrors}
+        isOpen={isTestInputOpen}
+        setIsOpen={setTestInputOpen}
+      />
       {!hasStreams && (
         <div className={styles.addStreamMessage}>
           <Heading as="h2" className={styles.addStreamHeading}>
@@ -68,18 +74,10 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
         </div>
       )}
       {hasStreams && streamListErrorMessage === undefined && (
-        <>
-          <ConfigMenu
-            className={styles.configButton}
-            testInputJsonErrors={testInputJsonErrors}
-            isOpen={isTestInputOpen}
-            setIsOpen={setTestInputOpen}
-          />
-          <div className={styles.selectAndTestContainer}>
-            <StreamSelector className={styles.streamSelector} />
-            <StreamTester hasTestInputJsonErrors={testInputJsonErrors > 0} setTestInputOpen={setTestInputOpen} />
-          </div>
-        </>
+        <div className={styles.selectAndTestContainer}>
+          <StreamSelector className={styles.streamSelector} />
+          <StreamTester hasTestInputJsonErrors={testInputJsonErrors > 0} setTestInputOpen={setTestInputOpen} />
+        </div>
       )}
       {hasStreams && streamListErrorMessage !== undefined && (
         <div className={styles.listErrorDisplay}>

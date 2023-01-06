@@ -99,3 +99,5 @@ const Panels = React.memo(
     );
   }
 );
+
+export default ConnectorBuilderPage;

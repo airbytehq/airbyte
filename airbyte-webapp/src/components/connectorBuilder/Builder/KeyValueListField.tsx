@@ -1,5 +1,3 @@
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
 
@@ -9,7 +7,9 @@ import { Button } from "components/ui/Button";
 import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
+import { UserInputHelper } from "./BuilderFieldWithInputs";
 import styles from "./KeyValueListField.module.scss";
+import { RemoveButton } from "./RemoveButton";
 
 interface KeyValueInputProps {
   keyValue: [string, string];
@@ -24,17 +24,29 @@ const KeyValueInput: React.FC<KeyValueInputProps> = ({ keyValue, onChange, onRem
         <Text className={styles.kvLabel}>
           <FormattedMessage id="connectorBuilder.key" />
         </Text>
-        <Input value={keyValue[0]} onChange={(e) => onChange([e.target.value, keyValue[1]])} />
+        <Input
+          value={keyValue[0]}
+          onChange={(e) => onChange([e.target.value, keyValue[1]])}
+          adornment={
+            <UserInputHelper setValue={(newValue) => onChange([newValue, keyValue[1]])} currentValue={keyValue[0]} />
+          }
+          className={styles.inputWithHelper}
+        />
       </div>
       <div className={styles.labeledInput}>
         <Text className={styles.kvLabel}>
           <FormattedMessage id="connectorBuilder.value" />
         </Text>
-        <Input value={keyValue[1]} onChange={(e) => onChange([keyValue[0], e.target.value])} />
+        <Input
+          value={keyValue[1]}
+          onChange={(e) => onChange([keyValue[0], e.target.value])}
+          adornment={
+            <UserInputHelper setValue={(newValue) => onChange([keyValue[0], newValue])} currentValue={keyValue[1]} />
+          }
+          className={styles.inputWithHelper}
+        />
       </div>
-      <button type="button" className={styles.removeButton} onClick={onRemove}>
-        <FontAwesomeIcon icon={faXmark} size="1x" />
-      </button>
+      <RemoveButton onClick={onRemove} />
     </div>
   );
 };
@@ -52,7 +64,7 @@ export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, labe
     <GroupControls
       label={<ControlLabels label={label} infoTooltipContent={tooltip} />}
       control={
-        <Button variant="secondary" onClick={() => setKeyValueList([...keyValueList, ["", ""]])}>
+        <Button type="button" variant="secondary" onClick={() => setKeyValueList([...keyValueList, ["", ""]])}>
           <FormattedMessage id="connectorBuilder.addKeyValue" />
         </Button>
       }
