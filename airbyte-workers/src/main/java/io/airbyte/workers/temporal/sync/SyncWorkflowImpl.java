@@ -74,6 +74,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
+    LOGGER.info("inside run sync workflow impl");
 
     ApmTraceUtils
         .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), CONNECTION_ID_KEY, connectionId.toString(), JOB_ID_KEY,
@@ -86,9 +87,12 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
     final int autoDetectSchemaVersion =
         Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
+    LOGGER.info("version is " + autoDetectSchemaVersion);
+    LOGGER.info("constant version is " + AUTO_DETECT_SCHEMA_VERSION);
 
     if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
       final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
+      LOGGER.info("source id is: " + sourceId);
 
       if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
         LOGGER.info("Refreshing source schema...");
@@ -105,6 +109,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
       }
     }
 
+    LOGGER.info("Running replication");
     StandardSyncOutput syncOutput =
         replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);
 

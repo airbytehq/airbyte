@@ -188,6 +188,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // actively running, leaving that job in an orphaned and non-terminal state.
       ensureCleanJobState(connectionUpdaterInput);
 
+      log.info("passing into getTimeToWait: " + connectionUpdaterInput.getConnectionId());
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
       Workflow.await(timeToWait,
@@ -597,6 +598,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * Wait time is infinite If the workflow is manual or disabled since we never want to schedule this.
    */
   private Duration getTimeToWait(final UUID connectionId) {
+    log.info("getting time to wait for connection id: " + connectionId);
     // Scheduling
     final ScheduleRetrieverInput scheduleRetrieverInput = new ScheduleRetrieverInput(connectionId);
 

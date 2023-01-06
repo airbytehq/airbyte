@@ -86,6 +86,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
+    LOGGER.info("input is: " + input);
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
       final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(input.getConnectionId());
@@ -224,7 +225,9 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     try {
       final io.airbyte.api.client.model.generated.ConnectionIdRequestBody requestBody =
           new io.airbyte.api.client.model.generated.ConnectionIdRequestBody().connectionId(connectionId);
+      LOGGER.info("request body is: " + requestBody);
       final ConnectionRead connectionRead = connectionApi.getConnection(requestBody);
+      LOGGER.info("connection api get connection read: " + connectionRead);
       return Optional.ofNullable(connectionRead.getSourceId());
     } catch (ApiException e) {
       log.info("Encountered an error fetching the connection's Source ID: ", e);
