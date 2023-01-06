@@ -181,6 +181,7 @@ def test_read_stream():
         "body": {"custom": "field"},
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+    expected_schema = {"$schema": "http://json-schema.org/schema#", "properties": {"name": {"type": "string"}}, "type": "object"}
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
@@ -224,6 +225,8 @@ def test_read_stream():
         actual_response: StreamRead = loop.run_until_complete(
             api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
         )
+
+        assert actual_response.inferred_schema == expected_schema
 
         single_slice = actual_response.slices[0]
         for i, actual_page in enumerate(single_slice.pages):
