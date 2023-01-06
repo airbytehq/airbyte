@@ -345,14 +345,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final IntegrationLauncherConfig destinationLauncherConfig = jobInputs.getDestinationLauncherConfig();
     final SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
 
-    final int attemptCreationVersion =
-        Workflow.getVersion(CHECK_BEFORE_SYNC_TAG, Workflow.DEFAULT_VERSION, CHECK_BEFORE_SYNC_CURRENT_VERSION);
-
-    if (attemptCreationVersion < CHECK_BEFORE_SYNC_CURRENT_VERSION) {
-      // return early if this instance of the workflow was created beforehand
-      return checkFailure;
-    }
-
     final StandardCheckConnectionInput standardCheckInputSource = new StandardCheckConnectionInput()
         .withActorType(ActorType.SOURCE)
         .withActorId(syncInput.getSourceId())
