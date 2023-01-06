@@ -26,6 +26,8 @@ export interface Option<T> {
 
 interface ListBoxProps<T> {
   className?: string;
+  optionClassName?: string;
+  selectedOptionClassName?: string;
   options: Array<Option<T>>;
   selectedValue: T;
   onSelect: (selectedValue: T) => void;
@@ -40,6 +42,8 @@ export const ListBox = <T,>({
   onSelect,
   buttonClassName,
   controlButton: ControlButton = DefaultControlButton,
+  optionClassName,
+  selectedOptionClassName,
 }: ListBoxProps<T>) => {
   const selectedOption = options.find((option) => option.value === selectedValue) ?? {
     label: String(selectedValue),
@@ -56,10 +60,13 @@ export const ListBox = <T,>({
         <div className={styles.optionsContainer}>
           <Listbox.Options className={classNames(styles.optionsMenu)}>
             {options.map(({ label, value, icon }) => (
-              <Listbox.Option key={label} value={value} className={styles.option}>
+              <Listbox.Option key={label} value={value} className={classNames(styles.option, optionClassName)}>
                 {({ active, selected }) => (
                   <div
-                    className={classNames(styles.optionValue, { [styles.active]: active, [styles.selected]: selected })}
+                    className={classNames(styles.optionValue, selected && selectedOptionClassName, {
+                      [styles.active]: active,
+                      [styles.selected]: selected,
+                    })}
                   >
                     {icon && <span className={styles.icon}>{icon}</span>}
                     <span className={styles.label}>{label}</span>
