@@ -794,7 +794,8 @@ class AirbyteMessageMigrationV1Test {
                 "type": "number"
               },
               "example_integer": {
-                "type": "integer"
+                "type": "number",
+                "airbyte_type": "integer"
               },
               "example_boolean": {
                 "type": "boolean"
@@ -896,14 +897,14 @@ class AirbyteMessageMigrationV1Test {
               "tuple_array": {
                 "items": [
                   {"type": "string"},
-                  {"type": "integer"}
+                  {"type": "number", "airbyte_type": "integer"}
                 ],
                 "additionalItems": {"type": "string"},
-                "contains": {"type": "integer"}
+                "contains": {"type": "number", "airbyte_type": "integer"}
               },
               "nested_object": {
                 "properties": {
-                  "id": {"type": "integer"},
+                  "id": {"type": "number", "airbyte_type": "integer"},
                   "nested_oneof": {
                     "oneOf": [
                       {"type": "string"},
@@ -913,24 +914,24 @@ class AirbyteMessageMigrationV1Test {
                   "nested_anyof": {
                     "anyOf": [
                       {"type": "string"},
-                      {"type": "integer"}
+                      {"type": "number", "airbyte_type": "integer"}
                     ]
                   },
                   "nested_allof": {
                     "allOf": [
                       {"type": "string"},
-                      {"type": "integer"}
+                      {"type": "number", "airbyte_type": "integer"}
                     ]
                   },
                   "nested_not": {
                     "not": [
                       {"type": "string"},
-                      {"type": "integer"}
+                      {"type": "number", "airbyte_type": "integer"}
                     ]
                   }
                 },
                 "patternProperties": {
-                  "integer_.*": {"type": "integer"}
+                  "integer_.*": {"type": "number", "airbyte_type": "integer"}
                 },
                 "additionalProperties": {"type": "string"}
               }
@@ -1111,7 +1112,7 @@ class AirbyteMessageMigrationV1Test {
                   "id": {"type": "string"}
                 },
                 "patternProperties": {
-                  "integer_.*": {"type": "integer"}
+                  "integer_.*": {"type": "number", "airbyte_type": "integer"}
                 },
                 "additionalProperties": {"type": "string"},
                 "items": {"type": "string"},
@@ -1119,8 +1120,9 @@ class AirbyteMessageMigrationV1Test {
                 "contains": {"type": "string"}
               },
               "multityped_date_field": {
-                "type": ["string", "integer"],
-                "format": "date"
+                "type": ["string", "number"],
+                "format": "date",
+                "airbyte_type": "integer"
               },
               "boolean_field": {
                 "oneOf": [

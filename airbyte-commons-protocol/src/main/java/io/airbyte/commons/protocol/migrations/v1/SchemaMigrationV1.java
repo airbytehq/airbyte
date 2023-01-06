@@ -99,7 +99,7 @@ public class SchemaMigrationV1 {
 
     if (schemaNode.hasNonNull("airbyte_type")) {
       // If airbyte_type is defined, always respect it
-      String referenceType = JsonSchemaReferenceTypes.AIRBYTE_TYPE_TO_REFERENCE_TYPE.get(schemaNode.get("airbyte_type").asText());
+      String referenceType = JsonSchemaReferenceTypes.LEGACY_AIRBYTE_PROPERY_TO_REFERENCE.get(schemaNode.get("airbyte_type").asText());
       schemaNode.removeAll();
       schemaNode.put(REF_KEY, referenceType);
     } else {
