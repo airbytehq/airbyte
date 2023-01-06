@@ -4,7 +4,7 @@ export default defineConfig({
   api: {
     input: "../airbyte-api/src/main/openapi/config.yaml",
     output: {
-      target: "./src/core/request/AirbyteClient.ts",
+      target: "./src/core/request/AirbyteClient1.ts",
       prettier: true,
       override: {
         header: (info) => [
