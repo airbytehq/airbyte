@@ -1,4 +1,4 @@
-import { FastField } from "formik";
+import { FastField, FieldHelperProps, FieldInputProps } from "formik";
 import { useField } from "formik";
 import React from "react";
 
@@ -26,46 +26,48 @@ interface BuilderOneOfProps {
   tooltip: string;
 }
 
-const InnerBuilderOneOf: React.FC<BuilderOneOfProps & { field: any; helpers: any }> = React.memo(
-  ({ options, label, tooltip, field: typePathField, helpers: oneOfPathHelpers }) => {
-    const value = typePathField.value;
+const InnerBuilderOneOf: React.FC<
+  BuilderOneOfProps & { field: FieldInputProps<string>; helpers: FieldHelperProps<unknown> }
+> = React.memo(({ options, label, tooltip, field: typePathField, helpers: oneOfPathHelpers }) => {
+  const value = typePathField.value;
 
-    const selectedOption = options.find((option) => option.typeValue === value);
+  const selectedOption = options.find((option) => option.typeValue === value);
 
-    return (
-      <GroupControls
-        label={<ControlLabels label={label} infoTooltipContent={tooltip} />}
-        control={
-          <DropDown
-            {...typePathField}
-            options={options.map((option) => {
-              return { label: option.label, value: option.typeValue, default: option.default };
-            })}
-            value={value ?? options[0].typeValue}
-            onChange={(selectedOption: Option) => {
-              if (selectedOption.value === value) {
-                return;
-              }
-              // clear all values for this oneOf and set selected option and default values
-              oneOfPathHelpers.setValue({
-                type: selectedOption.value,
-                ...selectedOption.default,
-              });
-            }}
-          />
-        }
-      >
-        {selectedOption?.children}
-      </GroupControls>
-    );
-  }
-);
+  return (
+    <GroupControls
+      label={<ControlLabels label={label} infoTooltipContent={tooltip} />}
+      control={
+        <DropDown
+          {...typePathField}
+          options={options.map((option) => {
+            return { label: option.label, value: option.typeValue, default: option.default };
+          })}
+          value={value ?? options[0].typeValue}
+          onChange={(selectedOption: Option) => {
+            if (selectedOption.value === value) {
+              return;
+            }
+            // clear all values for this oneOf and set selected option and default values
+            oneOfPathHelpers.setValue({
+              type: selectedOption.value,
+              ...selectedOption.default,
+            });
+          }}
+        />
+      }
+    >
+      {selectedOption?.children}
+    </GroupControls>
+  );
+});
 
 export const BuilderOneOf: React.FC<BuilderOneOfProps> = (props) => {
   const [, , helpers] = useField(props.path);
   return (
     <FastField name={`${props.path}.type`}>
-      {({ field }: any) => <InnerBuilderOneOf {...props} field={field} helpers={helpers} />}
+      {({ field }: { field: FieldInputProps<string> }) => (
+        <InnerBuilderOneOf {...props} field={field} helpers={helpers} />
+      )}
     </FastField>
   );
 };
