@@ -78,12 +78,13 @@ public class SourceApiController implements SourceApi {
     return ApiHelper.execute(() -> sourceHandler.getSource(sourceIdRequestBody));
   }
 
-  @Post("/list")
+  @Post("/most_recent_source_actor_catalog")
   @Override
   public ActorCatalogWithUpdatedAt getMostRecentSourceActorCatalog(final SourceIdRequestBody sourceIdRequestBody) {
     return ApiHelper.execute(() -> sourceHandler.getMostRecentSourceActorCatalogWithUpdatedAt(sourceIdRequestBody));
   }
 
+  @Post("/list")
   @Override
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody));
