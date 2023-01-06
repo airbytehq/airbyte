@@ -38,7 +38,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
       return false;
     }
 
-    return !schemaRefreshRanRecently(sourceCatalogId);
+    return !schemaRefreshRanRecently(sourceCatalogId) || true;
   }
 
   @Override
