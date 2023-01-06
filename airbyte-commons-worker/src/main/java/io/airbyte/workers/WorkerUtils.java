@@ -91,6 +91,7 @@ public class WorkerUtils {
    */
   public static WorkerSourceConfig syncToWorkerSourceConfig(final StandardSyncInput sync) {
     return new WorkerSourceConfig()
+        .withSourceId(sync.getSourceId())
         .withSourceConnectionConfiguration(sync.getSourceConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
@@ -102,6 +103,7 @@ public class WorkerUtils {
    */
   public static WorkerDestinationConfig syncToWorkerDestinationConfig(final StandardSyncInput sync) {
     return new WorkerDestinationConfig()
+        .withDestinationId(sync.getDestinationId())
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
