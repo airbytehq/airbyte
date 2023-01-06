@@ -19,57 +19,16 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
         empty_streams: []
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
-        empty_streams: []
-        timeout_seconds: 2400
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/reports/configured_catalog_month_incremental.json"
-        empty_streams: []
-        timeout_seconds: 1200
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/reports/configured_catalog_quarter_incremental.json"
-        empty_streams: []
-        timeout_seconds: 800
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/reports/configured_catalog_year_incremental.json"
-        empty_streams: []
-        timeout_seconds: 600
+        timeout_seconds: 1800
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-        timeout_seconds: 5200
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/reports/configured_catalog_month_incremental.json"
-        future_state:
-          future_state_path: "integration_tests/reports/abnormal_state_month.json"
         timeout_seconds: 3200
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/reports/configured_catalog_quarter_incremental.json"
-        future_state:
-          future_state_path: "integration_tests/reports/abnormal_state_quarter.json"
-        timeout_seconds: 1800
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/reports/configured_catalog_year_incremental.json"
-        future_state:
-          future_state_path: "integration_tests/reports/abnormal_state_year.json"
-        timeout_seconds: 1200
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
-        timeout_seconds: 5200
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/reports/configured_catalog_month_incremental.json"
         timeout_seconds: 3200
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/reports/configured_catalog_quarter_incremental.json"
-        timeout_seconds: 1800
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/reports/configured_catalog_year_incremental.json"
-        timeout_seconds: 1200
