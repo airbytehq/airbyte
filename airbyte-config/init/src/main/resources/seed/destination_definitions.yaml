@@ -260,7 +260,7 @@
   releaseStage: alpha
   normalizationConfig:
     normalizationRepository: airbyte/normalization
-    normalizationTag: dev
+    normalizationTag: 0.2.25
     normalizationIntegrationType: postgres
   supportsDbt: true
 - name: Pulsar

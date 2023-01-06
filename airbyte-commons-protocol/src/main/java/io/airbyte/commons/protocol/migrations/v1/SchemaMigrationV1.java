@@ -162,7 +162,6 @@ public class SchemaMigrationV1 {
     }
   }
 
-
   /**
    * Modifies the schema in-place to downgrade from the new-style $ref declaration to the old-style
    * type declaration. Assumes that the schema is an ObjectNode containing a primitive declaration,
