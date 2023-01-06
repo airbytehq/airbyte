@@ -18,6 +18,7 @@ import { AddStreamButton } from "./AddStreamButton";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
+import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderTitle } from "./BuilderTitle";
 import { KeyValueListField } from "./KeyValueListField";
 import { PaginationSection } from "./PaginationSection";
@@ -29,7 +30,7 @@ interface StreamConfigViewProps {
   hasMultipleStreams: boolean;
 }
 
-export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ streamNum, hasMultipleStreams }) => {
+export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, hasMultipleStreams }) => {
   const { formatMessage } = useIntl();
 
   const [selectedTab, setSelectedTab] = useState<"configuration" | "schema">("configuration");
@@ -52,11 +53,18 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ s
       {selectedTab === "configuration" ? (
         <>
           <BuilderCard>
-            <BuilderField
+            <BuilderFieldWithInputs
               type="string"
               path={streamFieldPath("urlPath")}
               label="Path URL"
               tooltip="Path of the endpoint that this stream represents."
+            />
+            <BuilderField
+              type="enum"
+              path={streamFieldPath("httpMethod")}
+              options={["GET", "POST"]}
+              label="HTTP Method"
+              tooltip="HTTP method to use for requests sent to the API"
             />
             <BuilderField
               type="array"
@@ -90,7 +98,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ s
               label="Request Body"
               tooltip="Body to attach to API requests as url-encoded form values"
             />
-          </BuilderCard>{" "}
+          </BuilderCard>
         </>
       ) : (
         <BuilderCard className={styles.schemaEditor}>
@@ -99,7 +107,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ s
       )}
     </BuilderConfigView>
   );
-});
+};
 
 const StreamControls = ({
   streamNum,

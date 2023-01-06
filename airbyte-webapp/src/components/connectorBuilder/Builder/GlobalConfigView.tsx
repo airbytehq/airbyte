@@ -8,7 +8,7 @@ import { BuilderField } from "./BuilderField";
 import { BuilderTitle } from "./BuilderTitle";
 import styles from "./GlobalConfigView.module.scss";
 
-export const GlobalConfigView: React.FC = React.memo(() => {
+export const GlobalConfigView: React.FC = () => {
   const { formatMessage } = useIntl();
 
   return (
@@ -21,4 +21,4 @@ export const GlobalConfigView: React.FC = React.memo(() => {
       <AuthenticationSection />
     </BuilderConfigView>
   );
-});
+};
