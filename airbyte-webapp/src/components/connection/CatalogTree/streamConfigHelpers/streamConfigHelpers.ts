@@ -3,7 +3,7 @@ import isEqual from "lodash/isEqual";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 
 /**
- * Updates teh cursor field in AirbyteStreamConfiguration
+ * Updates the cursor field in AirbyteStreamConfiguration
  */
 export const updateCursorField = (
   config: AirbyteStreamConfiguration,
