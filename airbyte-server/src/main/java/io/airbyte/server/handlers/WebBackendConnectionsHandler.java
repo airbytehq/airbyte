@@ -61,7 +61,6 @@ import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ProtocolConverters;
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,10 +72,16 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Singleton
+@AllArgsConstructor
+@Slf4j
 public class WebBackendConnectionsHandler {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(WebBackendConnectionsHandler.class);
   private final ConnectionsHandler connectionsHandler;
   private final StateHandler stateHandler;
   private final SourceHandler sourceHandler;
@@ -87,26 +92,6 @@ public class WebBackendConnectionsHandler {
   private final EventRunner eventRunner;
   // todo (cgardens) - this handler should NOT have access to the db. only access via handler.
   private final ConfigRepository configRepository;
-
-  public WebBackendConnectionsHandler(final ConnectionsHandler connectionsHandler,
-                                      final StateHandler stateHandler,
-                                      final SourceHandler sourceHandler,
-                                      final DestinationHandler destinationHandler,
-                                      final JobHistoryHandler jobHistoryHandler,
-                                      final SchedulerHandler schedulerHandler,
-                                      final OperationsHandler operationsHandler,
-                                      final EventRunner eventRunner,
-                                      final ConfigRepository configRepository) {
-    this.connectionsHandler = connectionsHandler;
-    this.stateHandler = stateHandler;
-    this.sourceHandler = sourceHandler;
-    this.destinationHandler = destinationHandler;
-    this.jobHistoryHandler = jobHistoryHandler;
-    this.schedulerHandler = schedulerHandler;
-    this.operationsHandler = operationsHandler;
-    this.eventRunner = eventRunner;
-    this.configRepository = configRepository;
-  }
 
   public WebBackendWorkspaceStateResult getWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) throws IOException {
     final var workspaceId = webBackendWorkspaceState.getWorkspaceId();
@@ -395,8 +380,7 @@ public class WebBackendConnectionsHandler {
     return buildWebBackendConnectionRead(connection, currentSourceCatalogId).catalogDiff(diff);
   }
 
-  private AirbyteCatalog updateSchemaWithOriginalDiscoveredCatalog(final AirbyteCatalog configuredCatalog,
-                                                                   final AirbyteCatalog originalDiscoveredCatalog) {
+  private AirbyteCatalog updateSchemaWithOriginalDiscoveredCatalog(AirbyteCatalog configuredCatalog, AirbyteCatalog originalDiscoveredCatalog) {
     // We pass the original discovered catalog in as the "new" discovered catalog.
     return updateSchemaWithRefreshedDiscoveredCatalog(configuredCatalog, originalDiscoveredCatalog, originalDiscoveredCatalog);
   }
@@ -407,7 +391,7 @@ public class WebBackendConnectionsHandler {
         .sourceId(sourceId)
         .disableCache(true)
         .connectionId(connectionId);
-    final SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
+    SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
     return Optional.ofNullable(schemaRead);
   }
 
@@ -425,7 +409,7 @@ public class WebBackendConnectionsHandler {
    */
   @VisibleForTesting
   protected static AirbyteCatalog updateSchemaWithRefreshedDiscoveredCatalog(final AirbyteCatalog originalConfigured,
-                                                                             final AirbyteCatalog originalDiscovered,
+                                                                             AirbyteCatalog originalDiscovered,
                                                                              final AirbyteCatalog discovered) {
     /*
      * We can't directly use s.getStream() as the key, because it contains a bunch of other fields, so

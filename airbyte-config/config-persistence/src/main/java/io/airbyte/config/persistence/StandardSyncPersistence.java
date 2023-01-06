@@ -289,8 +289,7 @@ public class StandardSyncPersistence {
         .where(
             CONNECTION.UNSUPPORTED_PROTOCOL_VERSION.eq(true).and(
                 (actorType == ActorType.DESTINATION ? destDef : sourceDef).ID.eq(actorDefId)))
-        .fetch()
-        .stream()
+        .fetchStream()
         .map(r -> new StandardSyncIdsWithProtocolVersions(
             r.get(CONNECTION.ID),
             r.get(sourceDef.ID),
