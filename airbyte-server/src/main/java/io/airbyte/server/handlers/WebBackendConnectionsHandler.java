@@ -114,8 +114,8 @@ public class WebBackendConnectionsHandler {
 
     final StandardSyncQuery query = new StandardSyncQuery(
         webBackendConnectionListRequestBody.getWorkspaceId(),
-        webBackendConnectionListRequestBody.getSourceId(),
-        webBackendConnectionListRequestBody.getDestinationId(),
+        webBackendConnectionListRequestBody.getSourceId() != null ? List.of(webBackendConnectionListRequestBody.getSourceId()) : List.of(),
+        webBackendConnectionListRequestBody.getDestinationId() != null ? List.of(webBackendConnectionListRequestBody.getDestinationId()) : List.of(),
         // passing 'false' so that deleted connections are not included
         false);
 
