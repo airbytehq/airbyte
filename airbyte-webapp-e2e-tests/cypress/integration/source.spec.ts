@@ -84,7 +84,7 @@ describe("Unsaved changes modal", () => {
     fillPokeAPIForm("testName", "name");
     submitButtonClick();
 
-    cy.wait("@checkSourceUpdateConnection", { timeout: 50000000 });
+    cy.wait("@checkSourceUpdateConnection", { timeout: 5000 });
 
     openHomepage();
 
