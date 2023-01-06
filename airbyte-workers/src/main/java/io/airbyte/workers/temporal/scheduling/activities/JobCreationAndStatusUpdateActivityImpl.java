@@ -431,7 +431,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     if (activeJob.getAttempts().size() > minAttemptSize) {
       final Optional<Attempt> optionalAttempt = activeJob.getAttempts().stream()
-          .filter(attempt -> attempt.getId() == (attemptId - 1)).findFirst();
+          .filter(attempt -> attempt.getAttemptNumber() == (attemptId - 1)).findFirst();
       result = optionalAttempt.isPresent() && optionalAttempt.get().getStatus().equals(FAILED);
     }
 
@@ -451,8 +451,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
             continue;
           }
 
-          // the Attempt object 'id' is actually the value of the attempt_number column in the db
-          final int attemptNumber = (int) attempt.getId();
+          final int attemptNumber = attempt.getAttemptNumber();
           log.info("Failing non-terminal attempt {} for non-terminal job {}", attemptNumber, jobId);
           jobPersistence.failAttempt(jobId, attemptNumber);
           jobPersistence.writeAttemptFailureSummary(jobId, attemptNumber,

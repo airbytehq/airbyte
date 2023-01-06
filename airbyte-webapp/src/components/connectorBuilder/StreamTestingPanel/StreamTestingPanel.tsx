@@ -10,7 +10,10 @@ import { jsonSchemaToFormBlock } from "core/form/schemaToFormBlock";
 import { buildYupFormForJsonSchema } from "core/form/schemaToYup";
 import { StreamReadRequestBodyConfig } from "core/request/ConnectorBuilderClient";
 import { Spec } from "core/request/ConnectorManifest";
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  useConnectorBuilderTestState,
+  useConnectorBuilderFormState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 import { links } from "utils/links";
 
 import { ConfigMenu } from "./ConfigMenu";
@@ -20,13 +23,13 @@ import styles from "./StreamTestingPanel.module.scss";
 
 const EMPTY_SCHEMA = {};
 
-function useConfigJsonErrors(configJson: StreamReadRequestBodyConfig, spec?: Spec): number {
+function useTestInputJsonErrors(testInputJson: StreamReadRequestBodyConfig, spec?: Spec): number {
   return useMemo(() => {
     try {
       const jsonSchema = spec && spec.connection_specification ? spec.connection_specification : EMPTY_SCHEMA;
       const formFields = jsonSchemaToFormBlock(jsonSchema);
       const validationSchema = buildYupFormForJsonSchema(jsonSchema, formFields);
-      validationSchema.validateSync(configJson, { abortEarly: false });
+      validationSchema.validateSync(testInputJson, { abortEarly: false });
       return 0;
     } catch (e) {
       if (ValidationError.isError(e)) {
@@ -34,14 +37,15 @@ function useConfigJsonErrors(configJson: StreamReadRequestBodyConfig, spec?: Spe
       }
       return 1;
     }
-  }, [configJson, spec]);
+  }, [testInputJson, spec]);
 }
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
   const [isTestInputOpen, setTestInputOpen] = useState(false);
-  const { jsonManifest, configJson, streamListErrorMessage, yamlEditorIsMounted } = useConnectorBuilderState();
+  const { jsonManifest, yamlEditorIsMounted } = useConnectorBuilderFormState();
+  const { testInputJson, streamListErrorMessage } = useConnectorBuilderTestState();
 
-  const configJsonErrors = useConfigJsonErrors(configJson, jsonManifest.spec);
+  const testInputJsonErrors = useTestInputJsonErrors(testInputJson, jsonManifest.spec);
 
   if (!yamlEditorIsMounted) {
     return (
@@ -55,6 +59,12 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
 
   return (
     <div className={styles.container}>
+      <ConfigMenu
+        className={styles.configButton}
+        testInputJsonErrors={testInputJsonErrors}
+        isOpen={isTestInputOpen}
+        setIsOpen={setTestInputOpen}
+      />
       {!hasStreams && (
         <div className={styles.addStreamMessage}>
           <Heading as="h2" className={styles.addStreamHeading}>
@@ -64,18 +74,10 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
         </div>
       )}
       {hasStreams && streamListErrorMessage === undefined && (
-        <>
-          <ConfigMenu
-            className={styles.configButton}
-            configJsonErrors={configJsonErrors}
-            isOpen={isTestInputOpen}
-            setIsOpen={setTestInputOpen}
-          />
-          <div className={styles.selectAndTestContainer}>
-            <StreamSelector className={styles.streamSelector} />
-            <StreamTester hasConfigJsonErrors={configJsonErrors > 0} setTestInputOpen={setTestInputOpen} />
-          </div>
-        </>
+        <div className={styles.selectAndTestContainer}>
+          <StreamSelector className={styles.streamSelector} />
+          <StreamTester hasTestInputJsonErrors={testInputJsonErrors > 0} setTestInputOpen={setTestInputOpen} />
+        </div>
       )}
       {hasStreams && streamListErrorMessage !== undefined && (
         <div className={styles.listErrorDisplay}>

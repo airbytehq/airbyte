@@ -1,5 +1,6 @@
 import { useField } from "formik";
 import capitalize from "lodash/capitalize";
+import { useIntl } from "react-intl";
 
 import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
@@ -9,15 +10,18 @@ import { RequestOption } from "core/request/ConnectorManifest";
 import { BuilderPaginator } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
+import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { InjectRequestOptionFields } from "./InjectRequestOptionFields";
 import { ToggleGroupField } from "./ToggleGroupField";
 
 interface PaginationSectionProps {
   streamFieldPath: (fieldPath: string) => string;
+  currentStreamIndex: number;
 }
 
-export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFieldPath }) => {
+export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFieldPath, currentStreamIndex }) => {
+  const { formatMessage } = useIntl();
   const [field, , helpers] = useField<BuilderPaginator | undefined>(streamFieldPath("paginator"));
   const [pageSizeField] = useField(streamFieldPath("paginator.strategy.page_size"));
   const [, , pageSizeOptionHelpers] = useField(streamFieldPath("paginator.pageSizeOption"));
@@ -51,6 +55,12 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
         ),
         toggledOn,
         onToggle: handleToggle,
+      }}
+      copyConfig={{
+        path: "paginator",
+        currentStreamIndex,
+        copyFromLabel: formatMessage({ id: "connectorBuilder.copyFromPaginationTitle" }),
+        copyToLabel: formatMessage({ id: "connectorBuilder.copyToPaginationTitle" }),
       }}
     >
       <BuilderOneOf
@@ -102,13 +112,13 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
             typeValue: "CursorPagination",
             children: (
               <>
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path={streamFieldPath("paginator.strategy.cursor_value")}
                   label="Cursor value"
                   tooltip="Value of the cursor to send in requests to the API"
                 />
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path={streamFieldPath("paginator.strategy.stop_condition")}
                   label="Stop condition"
