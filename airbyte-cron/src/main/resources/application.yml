@@ -1,12 +1,6 @@
 micronaut:
   application:
     name: airbyte-cron
-  security:
-    intercept-url-map:
-      - pattern: /**
-        httpMethod: GET
-        access:
-          - isAnonymous()
   server:
     port: 9001
 
@@ -31,6 +25,32 @@ datasources:
     driverClassName: org.postgresql.Driver
     username: ${DATABASE_USER}
     password: ${DATABASE_PASSWORD}
+
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  env:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true
 
 flyway:
   enabled: true

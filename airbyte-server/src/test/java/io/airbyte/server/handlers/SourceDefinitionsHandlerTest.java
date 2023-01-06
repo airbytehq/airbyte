@@ -34,6 +34,7 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.ActorType;
 import io.airbyte.config.Configs;
@@ -77,6 +78,7 @@ class SourceDefinitionsHandlerTest {
   private AirbyteGithubStore githubStore;
   private SourceHandler sourceHandler;
   private UUID workspaceId;
+  private AirbyteProtocolVersionRange protocolVersionRange;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -90,7 +92,10 @@ class SourceDefinitionsHandlerTest {
 
     sourceDefinition = generateSourceDefinition();
 
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, uuidSupplier, schedulerSynchronousClient, githubStore, sourceHandler);
+    protocolVersionRange = new AirbyteProtocolVersionRange(new Version("0.0.0"), new Version("0.3.0"));
+
+    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, uuidSupplier, schedulerSynchronousClient, githubStore, sourceHandler,
+        protocolVersionRange);
   }
 
   private StandardSourceDefinition generateSourceDefinition() {
