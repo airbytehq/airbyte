@@ -95,6 +95,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
       // });
       // setBuilderFormValues(convertToBuilderFormValues(jsonManifest), false);
       setValues(convertToBuilderFormValues(jsonManifest));
+      toggleYamlEditor();
     } else {
       setYamlIsValid(true);
       toggleYamlEditor();
