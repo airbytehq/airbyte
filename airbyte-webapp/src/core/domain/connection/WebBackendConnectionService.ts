@@ -1,5 +1,6 @@
 import {
   WebBackendConnectionCreate,
+  WebBackendConnectionListRequestBody,
   WebBackendConnectionUpdate,
   webBackendCreateConnection,
   webBackendGetConnection,
@@ -13,8 +14,8 @@ export class WebBackendConnectionService extends AirbyteRequestService {
     return webBackendGetConnection({ connectionId, withRefreshedCatalog }, this.requestOptions);
   }
 
-  public list(workspaceId: string) {
-    return webBackendListConnectionsForWorkspace({ workspaceId }, this.requestOptions);
+  public list(payload: WebBackendConnectionListRequestBody) {
+    return webBackendListConnectionsForWorkspace(payload, this.requestOptions);
   }
 
   public update(payload: WebBackendConnectionUpdate) {

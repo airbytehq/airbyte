@@ -15,7 +15,7 @@ interface SourcesTableProps {
 const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
   const navigate = useNavigate();
 
-  const { connections } = useConnectionList();
+  const { connections } = useConnectionList({ sourceId: sources.map(({ sourceId }) => sourceId) });
 
   const data = getEntityTableData(sources, connections, "source");
 
