@@ -106,23 +106,29 @@ class FirestoreStream(HttpStream, ABC):
                 result = {
                     "name": entry["document"]["name"],
                     "json_data": json.dumps(entry["document"]["fields"]),
-                    self.cursor_key: entry["document"]["fields"][self.cursor_key]["timestampValue"] if self.cursor_key else None
                 }
+                if self.cursor_key:
+                    result[self.cursor_key] = entry["document"]["fields"][self.cursor_key]["timestampValue"]
+
                 results.append(result)
         return iter(results)
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return {
+        result = {
             "type": "object",
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": True,
             "required": ["name"],
             "properties": {
                 "name": { "type": ["string"] },
-                self.cursor_key: { "type": ["null", "string"] } if self.cursor_key else None,
                 "json_data": { "type": ["string"] }
             },
         }
+
+        if self.cursor_key:
+            result["properties"][self.cursor_key] = { "type": ["null", "string"] }
+
+        return result
 
 
 class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
