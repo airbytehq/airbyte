@@ -60,6 +60,9 @@ airbyte:
       java-opts: ${CONTAINER_ORCHESTRATOR_JAVA_OPTS:}
       secret-mount-path: ${CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH:}
       secret-name: ${CONTAINER_ORCHESTRATOR_SECRET_NAME:}
+      data-plane-creds:
+        secret-mount-path: ${CONTAINER_ORCHESTRATOR_DATA_PLANE_CREDS_SECRET_MOUNT_PATH:}
+        secret-name: ${CONTAINER_ORCHESTRATOR_DATA_PLANE_CREDS_SECRET_NAME:}
   control:
     plane:
       auth-endpoint: ${CONTROL_PLANE_AUTH_ENDPOINT:}

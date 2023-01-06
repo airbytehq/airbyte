@@ -159,6 +159,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.kubernetesClient(),
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
+            containerOrchestratorConfig.dataPlaneCredsSecretName(),
+            containerOrchestratorConfig.dataPlaneCredsSecretMountPath(),
             containerOrchestratorConfig.googleApplicationCredentials(),
             containerOrchestratorConfig.environmentVariables(),
             serverPort);
