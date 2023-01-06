@@ -17,6 +17,8 @@ micronaut:
           - isAnonymous()
   server:
     port: 8001
+    cors:
+      enabled: true
 airbyte:
   cloud:
     storage:
