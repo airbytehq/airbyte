@@ -20,6 +20,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.protocol.models.Field;
@@ -235,19 +236,19 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement().execute(
           String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME, Strings.addRandomSuffix(TABLE_NAME, "_", 4))));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME, Strings.addRandomSuffix(TABLE_NAME, "_", 4))));
     });
 
     JsonNode confWithSchema = ((ObjectNode) config).put("schema", SCHEMA_NAME);
