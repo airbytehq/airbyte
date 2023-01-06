@@ -1,13 +1,6 @@
 version: 2
 sources:
-- name: test_normalization_namespace
-  quoting:
-    database: true
-    schema: false
-    identifier: false
-  tables:
-  - name: _airbyte_raw_simple_stream_with_namespace_resulting_into_long_names
-- name: test_normalization_xjvlg
+- name: test_normalization_iprwf
   quoting:
     database: true
     schema: false
@@ -21,3 +14,10 @@ sources:
   - name: _airbyte_raw_non_nested_stream_without_namespace_resulting_into_long_names
   - name: _airbyte_raw_some_stream_that_was_empty
   - name: _airbyte_raw_unnest_alias
+- name: test_normalization_namespace
+  quoting:
+    database: true
+    schema: false
+    identifier: false
+  tables:
+  - name: _airbyte_raw_simple_stream_with_namespace_resulting_into_long_names
