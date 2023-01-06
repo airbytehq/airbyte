@@ -51,7 +51,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({
           "data-testid": testId,
         })
       ) : (
-        <Button className={styles.addButton} onClick={buttonClickHandler} icon={<PlusIcon />} />
+        <Button className={styles.addButton} onClick={buttonClickHandler} icon={<PlusIcon />} data-testid={testId} />
       )}
       {isOpen && (
         <Formik

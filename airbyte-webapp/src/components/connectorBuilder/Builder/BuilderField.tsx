@@ -120,7 +120,13 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
         <ArrayField name={path} value={field.value ?? []} setValue={setValue} error={hasError} />
       )}
       {props.type === "enum" && (
-        <EnumField options={props.options} value={field.value} setValue={setValue} error={hasError} />
+        <EnumField
+          options={props.options}
+          value={field.value}
+          setValue={setValue}
+          error={hasError}
+          data-testid={path}
+        />
       )}
       {hasError && (
         <Text className={styles.error}>
