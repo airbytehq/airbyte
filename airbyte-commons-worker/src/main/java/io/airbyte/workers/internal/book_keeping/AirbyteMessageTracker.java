@@ -252,12 +252,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   @SuppressWarnings("PMD") // until method is implemented
   private void handleEmittedOrchestratorConnectorConfig(final AirbyteControlConnectorConfigMessage configMessage,
                                                         final ConnectorType connectorType) {
-    // TODO: Update config here
-    /**
-     * Pseudocode: for (key in configMessage.getConfig()) { validateIsReallyConfig(key);
-     * persistConfigChange(connectorType, key, configMessage.getConfig().get(key)); // nuance here for
-     * secret storage or not. May need to be async over API for replication orchestrator }
-     */
+    // Config updates are being persisted as part of the DefaultReplicationWorker.
+    // In the future, we could add tracking of these kinds of messages here. Nothing to do for now.
   }
 
   /**

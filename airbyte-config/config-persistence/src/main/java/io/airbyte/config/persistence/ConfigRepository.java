@@ -126,7 +126,7 @@ public class ConfigRepository {
    */
   public boolean healthCheck() {
     try {
-      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch()).stream().count();
     } catch (final Exception e) {
       LOGGER.error("Health check error: ", e);
       return false;
@@ -294,7 +294,8 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source))
         .and(sourceDefId.map(ACTOR_DEFINITION.ID::eq).orElse(noCondition()))
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
-        .fetchStream())
+        .fetch())
+        .stream()
         .map(DbConverter::buildStandardSourceDefinition)
         // Ensure version is set. Needed for connectors not upgraded since we added versioning.
         .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
@@ -356,7 +357,8 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination))
         .and(destDefId.map(ACTOR_DEFINITION.ID::eq).orElse(noCondition()))
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
-        .fetchStream())
+        .fetch())
+        .stream()
         .map(DbConverter::buildStandardDestinationDefinition)
         // Ensure version is set. Needed for connectors not upgraded since we added versioning.
         .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
