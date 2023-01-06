@@ -1,18 +1,19 @@
+import { CellContext, ColumnDef } from "@tanstack/react-table";
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
-import { CellProps } from "react-table";
 import styled from "styled-components";
 
 import { SortOrderEnum } from "components/EntityTable/types";
-import { Table, SortableTableHeader } from "components/ui/Table";
+import { SortableTableHeader } from "components/ui/Table";
 
 import { useQuery } from "hooks/useQuery";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
+import { NextTable } from "../../../../../../components/ui/NextTable";
 import ConnectionCell from "./ConnectionCell";
 import UsageCell from "./UsageCell";
 
@@ -34,8 +35,8 @@ interface UsagePerConnectionTableProps {
 
 type FullTableProps = CreditConsumptionByConnector & {
   creditsConsumedPercent: number;
-  sourceIcon: string;
-  destinationIcon: string;
+  sourceIcon?: string;
+  destinationIcon?: string;
 };
 
 const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
@@ -44,7 +45,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const creditConsumptionWithPercent = React.useMemo(() => {
+  const creditConsumptionWithPercent = React.useMemo((): FullTableProps[] => {
     const sumCreditsConsumed = creditConsumption.reduce((a, b) => a + b.creditsConsumed, 0);
     return creditConsumption.map((item) => {
       const currentSourceDefinition = sourceDefinitions.find(
@@ -53,13 +54,14 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
       const currentDestinationDefinition = destinationDefinitions.find(
         (def) => def.destinationDefinitionId === item.destinationDefinitionId
       );
-
-      return {
+      const newItem: FullTableProps = {
         ...item,
         sourceIcon: currentSourceDefinition?.icon,
         destinationIcon: currentDestinationDefinition?.icon,
         creditsConsumedPercent: sumCreditsConsumed ? (item.creditsConsumed / sumCreditsConsumed) * 100 : 0,
       };
+
+      return newItem;
     });
   }, [creditConsumption, sourceDefinitions, destinationDefinitions]);
 
@@ -102,14 +104,14 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
   );
 
   const sortingData = React.useMemo(
-    () => creditConsumptionWithPercent.sort(sortData),
+    (): FullTableProps[] => creditConsumptionWithPercent.sort(sortData),
     [sortData, creditConsumptionWithPercent]
   );
 
   const columns = React.useMemo(
-    () => [
+    (): Array<ColumnDef<FullTableProps>> => [
       {
-        Header: (
+        header: () => (
           <SortableTableHeader
             onClick={() => onSortClick("connection")}
             isActive={sortBy === "connection"}
@@ -118,19 +120,23 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
             <FormattedMessage id="credits.connection" />
           </SortableTableHeader>
         ),
-        customWidth: 30,
-        accessor: "sourceDefinitionName",
-        Cell: ({ cell, row }: CellProps<FullTableProps>) => (
+        meta: {
+          customWidth: 30,
+        },
+        accessorKey: "sourceDefinitionName",
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        cell: (props: CellContext<FullTableProps, string>) => (
           <ConnectionCell
-            sourceDefinitionName={cell.value}
-            destinationDefinitionName={row.original.destinationDefinitionName}
-            sourceIcon={row.original.sourceIcon}
-            destinationIcon={row.original.destinationIcon}
+            sourceDefinitionName={props.cell.getValue()}
+            destinationDefinitionName={props.row.original.destinationDefinitionName}
+            sourceIcon={props.row.original.sourceIcon}
+            destinationIcon={props.row.original.destinationIcon}
           />
         ),
       },
       {
-        Header: (
+        header: () => (
           <SortableTableHeader
             onClick={() => onSortClick("usage")}
             isActive={sortBy === "usage"}
@@ -139,23 +145,37 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
             <FormattedMessage id="credits.usage" />
           </SortableTableHeader>
         ),
-        accessor: "creditsConsumed",
-        collapse: true,
-        customPadding: { right: 0 },
-        Cell: ({ cell }: CellProps<FullTableProps>) => <UsageValue>{cell.value}</UsageValue>,
+        accessorKey: "creditsConsumed",
+        meta: {
+          collapse: true,
+          customPadding: {
+            right: 0,
+          },
+        },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        cell: (props: CellContext<FullTableProps, string>) => <UsageValue>{props.cell.getValue()}</UsageValue>,
       },
       {
-        Header: "",
-        accessor: "creditsConsumedPercent",
-        customPadding: { left: 0 },
-        Cell: ({ cell }: CellProps<FullTableProps>) => <UsageCell percent={cell.value} />,
+        header: "",
+        accessorKey: "creditsConsumedPercent",
+        meta: {
+          customPadding: {
+            left: 0,
+          },
+        },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        cell: (props: CellContext<FullTableProps, number>) => <UsageCell percent={props.cell.getValue()} />,
       },
       // TODO: Replace to Grow column
       {
-        Header: "",
-        accessor: "connectionId",
-        Cell: <div />,
-        customWidth: 20,
+        header: "",
+        accessorKey: "connectionId",
+        cell: () => <div />,
+        meta: {
+          customWidth: 20,
+        },
       },
     ],
     [onSortClick, sortBy, sortOrder]
@@ -163,7 +183,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
 
   return (
     <Content>
-      <Table columns={columns} data={sortingData} light />
+      <NextTable<FullTableProps> columns={columns} data={sortingData} light />
     </Content>
   );
 };

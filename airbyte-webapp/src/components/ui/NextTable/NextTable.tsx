@@ -1,17 +1,45 @@
 import { ColumnDef, flexRender, useReactTable, getCoreRowModel } from "@tanstack/react-table";
+import { ColumnMeta } from "@tanstack/table-core";
 import classNames from "classnames";
-import { PropsWithChildren } from "react";
+import { CSSProperties, PropsWithChildren } from "react";
 
 import styles from "./NextTable.module.scss";
 
-export interface TableProps<TData> {
-  data: TData[];
-  columns: Array<ColumnDef<TData>>;
-  onClickRow?: (data: unknown) => void;
+type TData<T> = T & {
+  error?: unknown;
+};
+
+export interface TableProps<T> {
   className?: string;
+  columns: Array<ColumnDef<TData<T>>>;
+  data: Array<TData<T>>;
+  erroredRows?: boolean;
+  light?: boolean;
+  onClickRow?: (data: TData<T>) => void;
 }
 
-export const NextTable = <TData,>({ columns, data, onClickRow, className }: PropsWithChildren<TableProps<TData>>) => {
+const getStyleFromColumnMeta = <T,>(meta: ColumnMeta<T, unknown>): CSSProperties => {
+  const style: CSSProperties = {};
+  if (meta?.customWidth) {
+    style.width = `${meta?.customWidth}%`;
+  }
+  if (meta?.customPadding?.left) {
+    style.paddingLeft = `${meta?.customPadding?.left}px`;
+  }
+  if (meta?.customPadding?.right) {
+    style.paddingRight = `${meta?.customPadding?.right}px`;
+  }
+  return style;
+};
+
+export const NextTable = <T,>({
+  columns,
+  data,
+  onClickRow,
+  className,
+  erroredRows,
+  light,
+}: PropsWithChildren<TableProps<TData<T>>>) => {
   const table = useReactTable({
     columns,
     data,
@@ -19,25 +47,41 @@ export const NextTable = <TData,>({ columns, data, onClickRow, className }: Prop
   });
 
   return (
-    <table className={classNames(styles.table, className)}>
+    <table className={classNames(styles.table, className, { [styles.light]: light })}>
       <thead className={styles.thead}>
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={`table-header-${headerGroup.id}}`}>
-            {headerGroup.headers.map((header) => (
-              <th
-                colSpan={header.colSpan}
-                className={classNames(styles.th, header.column.columnDef.meta?.thClassName)}
-                key={`table-column-${headerGroup.id}-${header.id}`}
-              >
-                {flexRender(header.column.columnDef.header, header.getContext())}
-              </th>
-            ))}
+            {headerGroup.headers.map((header) => {
+              const { meta } = header.column.columnDef;
+              const style: CSSProperties = getStyleFromColumnMeta<TData<T>>(meta as ColumnMeta<T, unknown>);
+              return (
+                <th
+                  colSpan={header.colSpan}
+                  className={classNames(styles.th, meta?.thClassName, {
+                    [styles.highlighted]: meta?.headerHighlighted,
+                    [styles.light]: light,
+                    [styles.collapse]: meta?.collapse,
+                  })}
+                  key={`table-column-${headerGroup.id}-${header.id}`}
+                  style={style}
+                >
+                  {flexRender(header.column.columnDef.header, header.getContext())}
+                </th>
+              );
+            })}
           </tr>
         ))}
       </thead>
       <tbody>
         {table.getRowModel().rows.map((row) => (
-          <tr className={styles.tr} key={`table-row-${row.id}`} onClick={() => onClickRow?.(row.original)}>
+          <tr
+            className={classNames(styles.tr, {
+              [styles.withError]: erroredRows && !!row.original.error,
+              [styles.clickable]: !!onClickRow,
+            })}
+            key={`table-row-${row.id}`}
+            onClick={() => onClickRow?.(row.original)}
+          >
             {row.getVisibleCells().map((cell) => (
               <td
                 className={classNames(styles.td, cell.column.columnDef.meta?.tdClassName)}

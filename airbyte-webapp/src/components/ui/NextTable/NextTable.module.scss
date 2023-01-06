@@ -8,6 +8,11 @@
   width: 100%;
   max-width: 100%;
   border-radius: vars.$border-radius-md;
+  box-shadow: 0 2px 4px colors.$cardShadowColor;
+
+  &.light {
+    box-shadow: none;
+  }
 }
 
 .thead {
@@ -18,7 +23,7 @@
 
 // --------- <th/> ---------
 .th {
-  background: colors.$grey-50;
+  background: colors.$dark-blue;
   color: colors.$grey;
   text-transform: uppercase;
   border-bottom: none;
@@ -26,15 +31,40 @@
   font-size: 10px;
   line-height: 12px;
   font-weight: 600;
+  width: auto;
+  padding: 9px 13px 10px;
+
+  &.light {
+    background: none;
+    text-transform: capitalize;
+    border-bottom: none;
+    text-align: left;
+    font-size: 11px;
+    line-height: 12px;
+    font-weight: 400;
+  }
+
+  &.collapse {
+    /* stylelint-disable-next-line number-max-precision */
+    width: 0.0000000001%;
+  }
 
   &:first-child {
-    padding-left: calc(vars.$spacing-2xl + vars.$spacing-sm);
-    border-radius: vars.$border-radius-md 0 0;
+    padding-left: vars.$spacing-2xl;
+    border-radius: 10px 0 0;
+
+    &.light {
+      padding-left: vars.$spacing-lg;
+    }
   }
 
   &:last-child {
-    padding-left: vars.$spacing-lg;
-    border-radius: 0 vars.$border-radius-md 0 0;
+    padding-left: 15px;
+    border-radius: 0 10px 0 0;
+  }
+
+  &.highlighted {
+    color: colors.$white;
   }
 }
 
@@ -43,15 +73,23 @@
   background: colors.$white;
   cursor: auto;
 
+  &.clickable {
+    cursor: pointer;
+  }
+
   &:hover {
     background-color: colors.$grey-50;
+  }
+
+  &.withError {
+    background: colors.$red-50;
   }
 }
 
 // --------- <td/> ---------
 
 .td {
-  padding: vars.$spacing-lg calc(vars.$spacing-md + vars.$spacing-xs);
+  padding: 16px 13px;
   font-size: 12px;
   line-height: 15px;
   font-weight: normal;
