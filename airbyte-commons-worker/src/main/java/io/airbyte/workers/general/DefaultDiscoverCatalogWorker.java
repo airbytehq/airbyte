@@ -19,11 +19,13 @@ import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -48,20 +50,24 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
+  private final ConnectorConfigUpdater connectorConfigUpdater;
 
   private volatile Process process;
 
   public DefaultDiscoverCatalogWorker(final ConfigRepository configRepository,
                                       final IntegrationLauncher integrationLauncher,
+                                      final ConnectorConfigUpdater connectorConfigUpdater,
                                       final AirbyteStreamFactory streamFactory) {
     this.configRepository = configRepository;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
+    this.connectorConfigUpdater = connectorConfigUpdater;
   }
 
   public DefaultDiscoverCatalogWorker(final ConfigRepository configRepository,
-                                      final IntegrationLauncher integrationLauncher) {
-    this(configRepository, integrationLauncher, new DefaultAirbyteStreamFactory());
+                                      final IntegrationLauncher integrationLauncher,
+                                      final ConnectorConfigUpdater connectorConfigUpdater) {
+    this(configRepository, integrationLauncher, connectorConfigUpdater, new DefaultAirbyteStreamFactory());
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -89,6 +95,12 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           .getOrDefault(Type.CATALOG, new ArrayList<>()).stream()
           .map(AirbyteMessage::getCatalog)
           .findFirst();
+
+      final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getMostRecentConfigControlMessage(messagesByType);
+      optionalConfigMsg.ifPresent(
+          configMessage -> connectorConfigUpdater.updateSource(
+              UUID.fromString(discoverSchemaInput.getSourceId()),
+              configMessage.getConfig()));
 
       final int exitCode = process.exitValue();
       if (exitCode == 0) {
