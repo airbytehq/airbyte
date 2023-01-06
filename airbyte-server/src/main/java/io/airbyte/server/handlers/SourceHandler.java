@@ -31,15 +31,12 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-@Singleton
 public class SourceHandler {
 
   private final Supplier<UUID> uuidGenerator;
@@ -52,7 +49,6 @@ public class SourceHandler {
   private final JsonSecretsProcessor secretsProcessor;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  @Inject
   SourceHandler(final ConfigRepository configRepository,
                 final SecretsRepositoryReader secretsRepositoryReader,
                 final SecretsRepositoryWriter secretsRepositoryWriter,
