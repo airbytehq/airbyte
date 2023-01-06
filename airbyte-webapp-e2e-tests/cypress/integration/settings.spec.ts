@@ -13,7 +13,7 @@ describe("Source settings main actions", () => {
   });
   it("downgrades a source version and updates it through the input", () => {
     editVersionByConnectorName("Postgres", "0.1.0");
-    editVersionByConnectorName("Postgres", "0.1.1");
+    editVersionByConnectorName("Postgres", "0.1.25");
   });
   it("downgrades a source version and updates it through 'upgrade all' button", () => {
     editVersionByConnectorName("Postgres", "0.1.0");

@@ -69,6 +69,7 @@ const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, curren
               isLoading={(updatingAll && isConnectorUpdatable) || updatingCurrent}
               type="submit"
               disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
+              data-testid="versionButton"
             >
               <FormattedMessage id="form.change" />
             </Button>
