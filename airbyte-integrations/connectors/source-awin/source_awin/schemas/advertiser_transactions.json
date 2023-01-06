@@ -1,0 +1,311 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "type": "integer"
+        },
+        "url": {
+            "type": ["null","string"]
+        },
+        "advertiserId": {
+            "type": "integer"
+        },
+        "publisherId": {
+            "type": "integer"
+        },
+        "commissionSharingPublisherId": {
+            "type": ["null", "integer"]
+        },
+        "commissionSharing_selected_rate_publisher_id": {
+            "type": ["null", "integer"]
+        },
+        "campaign": {
+            "type": "string"
+        },
+        "siteName": {
+            "type": "string"
+        },
+        "commissionStatus": {
+            "type": "string",
+            "enum": ["pending", "approved", "declined", "deleted"]
+        },
+        "commissionAmount": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "currency": {
+                    "type": "string"
+                }
+            }
+        },
+        "saleAmount": {
+            "type": ["null","object"],
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "currency": {
+                    "type": "string"
+                }
+            }
+        },
+        "ipHash": {
+            "type": ["null","string"]
+        },
+        "customerCountry": {
+            "type": ["null","string"]
+        },
+        "clickRefs": {
+            "type": ["null","object"],
+            "additionalProperties": true,
+            "properties": {
+                "clickRef": {
+                    "type": ["null","string"]
+                },
+                "clickRef2": {
+                    "type": ["null","string"]
+                },
+                "clickRef3": {
+                    "type": ["null","string"]
+                },
+                "clickRef4": {
+                    "type": ["null","string"]
+                },
+                "clickRef5": {
+                    "type": ["null","string"]
+                },
+                "clickRef6": {
+                    "type": ["null","string"]
+                }
+            }
+        },
+        "clickDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "transactionDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "validationDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+        },
+        "type": {
+            "type": "string"
+        },
+        "declineReason": {
+            "type": ["null", "string"]
+        },
+        "voucherCodeUsed": {
+            "type": "boolean"
+        },
+        "voucherCode": {
+            "type": ["null", "string"]
+        },
+        "lapseTime": {
+            "type": "integer"
+        },
+        "amended": {
+            "type": "boolean"
+        },
+        "amendReason": {
+            "type": ["null", "string"]
+        },
+        "oldSaleAmount": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "currency": {
+                    "type": "string"
+                }
+            }
+        },
+        "oldCommissionAmount": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "currency": {
+                    "type": "string"
+                }
+            }
+        },
+        "clickDevice": {
+            "type": ["null","string"]
+        },
+        "transactionDevice": {
+            "type": ["null","string"]
+        },
+        "customerAcquisition":{
+            "type": ["null","string"]
+        },
+        "publisherUrl": {
+            "type": ["null","string"]
+        },
+        "advertiserCountry": {
+            "type": "string"
+        },
+        "orderRef": {
+            "type": ["null", "string"]
+        },
+        "customParameters": {
+            "type": ["null", "array"],
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "transactionParts": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "commissionGroupId": {
+                        "type": "integer"
+                    },
+                    "amount": {
+                        "type": "number"
+                    },
+                    "commissionAmount": {
+                        "type": "number"
+                    },
+                    "advertiserCost": {
+                        "type": ["null", "number"]
+                    },
+                    "commissionGroupCode": {
+                        "type": "string"
+                    },
+                    "commissionGroupName": {
+                        "type": "string"
+                    },
+                    "trackedParts": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "code": {
+                                    "type": "string"
+                                },
+                                "amount": {
+                                    "type": "number"
+                                },
+                                "currency": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "paidToPublisher": {
+            "type": "boolean"
+        },
+        "paymentId": {
+            "type": "integer"
+        },
+        "transactionQueryId": {
+            "type": "integer"
+        },
+        "trackedCurrencyAmount": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "currency": {
+                    "type": "string"
+                }
+            }
+        },
+        "originalSaleAmount": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "currency": {
+                    "type": "string"
+                }
+            }
+        },
+        "advertiserCost": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": ["null", "number"]
+                },
+                "currency": {
+                    "type": ["null", "string"]
+                }
+			}
+        },
+        "basketProducts": {
+            "type": ["null", "array"],
+            "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                    "productId": {
+                        "type": "string"
+                    },
+                    "productName": {
+                        "type": "string"
+                    },
+                    "unitPrice": {
+                        "type": "number"
+                    },
+                    "quantity": {
+                        "type": "number"
+                    },
+                    "skuCode": {
+                        "type": "string"
+                    },
+                    "commissionGroupCode": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "networkFee": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "amount": {
+                    "type": ["null", "number"]
+                },
+                "currency": {
+                    "type": ["null", "string"]
+                }
+			}
+        }
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "ID of the publisher"
+        },
+        "name": {
+            "type": "string",
+            "description": "name of the publisher"
+        },
+        "primaryRegion": {
+            "type": "string",
+            "description": "main/primary region of the publisher"
+        },
+        "salesRegions": {
+            "type": ["null","array"],
+            "items": {
+                "type": "string"
+            },
+            "description": "additional sales regions of the publisher (if defined)"
+        },
+        "primaryType": {
+            "type": "string",
+            "description": "primary promotion type of the publisher"
+        }
+    }
+  }

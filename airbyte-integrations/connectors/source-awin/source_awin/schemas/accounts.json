@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+      "accountId": {
+          "type": "integer",
+          "description": "ID of the account, as known from the frontend URLs (e.g. https://ui.awin.com/awin/affiliate/45628)"
+      },
+      "accountName": {
+          "type": ["null", "string"], 
+          "description": "programme name for an advertiser and company name for a publisher"
+      },
+      "accountType": {
+          "type": "string",
+          "description": "can be either publisher or advertiser",
+          "enum": ["publisher", "advertiser"]
+      },
+      "userRole": {
+          "type": "string",
+          "description": "the role your user account has for the account"
+      }
+  }
+}
