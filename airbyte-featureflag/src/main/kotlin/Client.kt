@@ -132,8 +132,7 @@ private val yamlMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
  */
 //private fun readConfig(path: Path): Map<String, OSSFlag> = yamlMapper.readValue<List<OSSFlag>>(path.toFile())
 //    .associateBy { it.name }
-private fun readConfig(path: Path): Map<String, PlatformFlag> = yamlMapper.readValue<PlatformFlags>(path.toFile())
-    .let { it.flags }
+private fun readConfig(path: Path): Map<String, PlatformFlag> = yamlMapper.readValue<PlatformFlags>(path.toFile()).flags
     .associateBy { it.name }
 
 /**
@@ -193,7 +192,7 @@ private fun Context.toLDContext(): LDContext {
             user?.let { builder.set("user", it) }
         }
 
-        is User -> Unit
+        else -> Unit
     }
     return builder.build()
 }

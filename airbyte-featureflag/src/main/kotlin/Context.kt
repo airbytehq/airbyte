@@ -36,8 +36,35 @@ data class Workspace @JvmOverloads constructor(
 /**
  * Context for representing a user.
  *
- * @param [key] the unique identifying value of this uer
+ * @param [key] the unique identifying value of this user
  */
 data class User(override val key: String) : Context {
     override val kind = "user"
+}
+
+/**
+ * Context for representing a connection.
+ *
+ * @param [key] the unique identifying value of this connection
+ */
+data class Connection(override val key: String) : Context {
+    override val kind = "connection"
+}
+
+/**
+ * Context for representing a source.
+ *
+ * @param [key] the unique identifying value of this source
+ */
+data class Source(override val key: String) : Context {
+    override val kind = "source"
+}
+
+/**
+ * Context for representing a destination.
+ *
+ * @param [key] the unique identifying value of this destination
+ */
+data class Destination(override val key: String) : Context {
+    override val kind = "destination"
 }
