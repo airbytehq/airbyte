@@ -2,8 +2,10 @@ import { faPlus, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useField } from "formik";
 import { useMemo, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { ListBox, ListBoxControlButtonProps, Option } from "components/ui/ListBox";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -31,6 +33,7 @@ export const UserInputHelper = ({
   setValue: (value: string) => void;
   currentValue: string;
 }) => {
+  const { formatMessage } = useIntl();
   const [modalOpen, setModalOpen] = useState(false);
   const { builderFormValues } = useConnectorBuilderFormState();
   const listOptions = useMemo(() => {
@@ -41,9 +44,13 @@ export const UserInputHelper = ({
       label: input.definition.title || input.key,
       value: input.key,
     }));
-    options.push({ value: undefined, label: "Add new input", icon: <FontAwesomeIcon icon={faPlus} /> });
+    options.push({
+      value: undefined,
+      label: formatMessage({ id: "connectorBuilder.inputModal.newTitle" }),
+      icon: <FontAwesomeIcon icon={faPlus} />,
+    });
     return options;
-  }, [builderFormValues]);
+  }, [builderFormValues, formatMessage]);
   return (
     <>
       <ListBox<string | undefined>
@@ -85,10 +92,17 @@ export const UserInputHelper = ({
 
 const UserInputHelperControlButton: React.FC<ListBoxControlButtonProps<string | undefined>> = () => {
   return (
-    <div className={styles.buttonContent}>
-      {"{{"}
-      <FontAwesomeIcon icon={faUser} />
-      {"}}"}
-    </div>
+    <Tooltip
+      control={
+        <div className={styles.buttonContent}>
+          {"{{"}
+          <FontAwesomeIcon icon={faUser} />
+          {"}}"}
+        </div>
+      }
+      placement="top"
+    >
+      <FormattedMessage id="connectorBuilder.interUserInputValue" />
+    </Tooltip>
   );
 };
