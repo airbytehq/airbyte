@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/no-autofocus */
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { ChangeEvent, useState } from "react";
@@ -77,6 +78,7 @@ export const ConnectionName: React.FC = () => {
               onEscape={onEscape}
               onEnter={onEnter}
               disabled={loading}
+              autoFocus
             />
           </div>
         </div>

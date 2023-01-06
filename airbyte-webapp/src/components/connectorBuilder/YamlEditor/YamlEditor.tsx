@@ -9,7 +9,7 @@ import { CodeEditor } from "components/ui/CodeEditor";
 
 import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "../DownloadYamlButton";
@@ -31,7 +31,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
     setYamlEditorIsMounted,
     setYamlIsValid,
     setJsonManifest,
-  } = useConnectorBuilderState();
+  } = useConnectorBuilderFormState();
   const [yamlValue, setYamlValue] = useState(yamlManifest);
 
   // debounce the setJsonManifest calls so that it doesnt result in a network call for every keystroke
