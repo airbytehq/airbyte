@@ -6,7 +6,7 @@ export const configureGlobals = () => {
   enterUrlBase("http://dummy_api:6767/");
 }
 
-export const configureStreamWithoutAuth = () => {
+export const configureStream = () => {
   addStream();
   enterStreamName("Items");
   enterUrlPath("items/");

@@ -1,6 +1,6 @@
 import { updateSchemaModalConfirmBtnClick } from "../pages/modals/updateSchemaModal";
 import { goToConnectorBuilderPage, testStream } from "pages/connectorBuilderPage";
-import { assertTestReadItems, assertTestReadAuthFailure, configureAuth, configureGlobals, configureStreamWithoutAuth, configurePagination, assertMultiPageReadItems } from "commands/connectorBuilder";
+import { assertTestReadItems, assertTestReadAuthFailure, configureAuth, configureGlobals, configureStream, configurePagination, assertMultiPageReadItems } from "commands/connectorBuilder";
 
 describe("Connector builder", () => {
   before(() => {
@@ -9,7 +9,7 @@ describe("Connector builder", () => {
 
   it("Configure basic connector", () => {
     configureGlobals();
-    configureStreamWithoutAuth();
+    configureStream();
   });
 
   it("Fail on missing auth", () => {
