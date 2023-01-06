@@ -109,6 +109,10 @@
     nullif({{ field }}, '')
 {%- endmacro %}
 
+{%- macro duckdb__empty_string_to_null(field) -%}
+    nullif(nullif({{ field }}, 'null'), '')
+{%- endmacro %}
+
 {%- macro redshift__empty_string_to_null(field) -%}
     nullif({{ field }}::varchar, '')
 {%- endmacro %}
