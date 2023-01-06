@@ -386,6 +386,7 @@ class ConnectionsHandlerTest {
         catalogForUpdate.getStreams().get(0).getConfig()
             .fieldSelectionEnabled(true)
             .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)))
+            .destinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .primaryKey(List.of(List.of(SECOND_FIELD_NAME)));
 
         final ConnectionUpdate connectionUpdate = new ConnectionUpdate()

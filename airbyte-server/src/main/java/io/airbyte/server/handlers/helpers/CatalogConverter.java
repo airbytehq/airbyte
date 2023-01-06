@@ -10,8 +10,10 @@ import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
+import io.airbyte.api.model.generated.DestinationSyncMode;
 import io.airbyte.api.model.generated.SelectedFieldInfo;
 import io.airbyte.api.model.generated.StreamDescriptor;
+import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
@@ -71,12 +73,12 @@ public class CatalogConverter {
           config.getSelectedFields().stream().map((field) -> field.getFieldPath().get(0)).collect(Collectors.toSet());
       // TODO(mfsiega-airbyte): we only check the top level of the cursor/primary key fields because we
       // don't support filtering nested fields yet.
-      if (!selectedFieldNames.contains(config.getCursorField().get(0))) {
-        throw new JsonValidationException("Cursor field cannot be de-selected");
+      if (!selectedFieldNames.contains(config.getCursorField().get(0)) && config.getSyncMode().equals(SyncMode.INCREMENTAL)) {
+        throw new JsonValidationException("Cursor field cannot be de-selected in INCREMENTAL syncs");
       }
       for (final List<String> primaryKeyComponent : config.getPrimaryKey()) {
-        if (!selectedFieldNames.contains(primaryKeyComponent.get(0))) {
-          throw new JsonValidationException("Primary key field cannot be de-selected");
+        if (!selectedFieldNames.contains(primaryKeyComponent.get(0)) && config.getDestinationSyncMode().equals(DestinationSyncMode.APPEND_DEDUP)) {
+          throw new JsonValidationException("Primary key field cannot be de-selected in DEDUP mode");
         }
       }
       for (final String selectedFieldName : selectedFieldNames) {
