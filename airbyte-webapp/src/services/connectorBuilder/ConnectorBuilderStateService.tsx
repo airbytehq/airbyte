@@ -120,9 +120,9 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
       editorView !== "ui"
         ? jsonManifest
         : builderFormValues === lastValidBuilderFormValues
-        ? jsonManifest
+        ? derivedJsonManifest
         : convertToManifest(lastValidBuilderFormValues),
-    [builderFormValues, editorView, jsonManifest, lastValidBuilderFormValues]
+    [builderFormValues, editorView, jsonManifest, derivedJsonManifest, lastValidBuilderFormValues]
   );
 
   const [selectedView, setSelectedView] = useState<BuilderView>("global");
