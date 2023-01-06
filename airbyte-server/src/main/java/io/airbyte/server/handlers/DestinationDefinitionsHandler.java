@@ -25,9 +25,7 @@ import io.airbyte.commons.util.MoreLists;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
-import io.airbyte.config.ActorType;
-import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.*;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -75,6 +73,20 @@ public class DestinationDefinitionsHandler {
     this.githubStore = githubStore;
     this.destinationHandler = destinationHandler;
     this.protocolVersionRange = protocolVersionRange;
+  }
+
+  // This should be deleted when cloud is migrated to micronaut
+  @Deprecated(forRemoval = true)
+  public DestinationDefinitionsHandler(final ConfigRepository configRepository,
+                                       final SynchronousSchedulerClient schedulerSynchronousClient,
+                                       final DestinationHandler destinationHandler) {
+    this.configRepository = configRepository;
+    this.uuidSupplier = UUID::randomUUID;
+    this.schedulerSynchronousClient = schedulerSynchronousClient;
+    this.githubStore = AirbyteGithubStore.production();
+    this.destinationHandler = destinationHandler;
+    final Configs configs = new EnvConfigs();
+    this.protocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
   }
 
   @VisibleForTesting

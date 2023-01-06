@@ -13,22 +13,7 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.handlers.AttemptHandler;
-import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DestinationDefinitionsHandler;
-import io.airbyte.server.handlers.DestinationHandler;
-import io.airbyte.server.handlers.HealthCheckHandler;
-import io.airbyte.server.handlers.JobHistoryHandler;
-import io.airbyte.server.handlers.LogsHandler;
-import io.airbyte.server.handlers.OAuthHandler;
-import io.airbyte.server.handlers.OperationsHandler;
-import io.airbyte.server.handlers.SchedulerHandler;
-import io.airbyte.server.handlers.SourceDefinitionsHandler;
-import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
-import io.airbyte.server.handlers.WebBackendConnectionsHandler;
-import io.airbyte.server.handlers.WebBackendGeographiesHandler;
-import io.airbyte.server.handlers.WorkspacesHandler;
+import io.airbyte.server.handlers.*;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.net.http.HttpClient;
@@ -57,15 +42,17 @@ public interface ServerFactory {
                         final AttemptHandler attemptHandler,
                         final ConnectionsHandler connectionsHandler,
                         final DestinationDefinitionsHandler destinationDefinitionsHandler,
-                        final DestinationHandler destinationApiHandler,
+                        final DestinationHandler destinationHandler,
                         final HealthCheckHandler healthCheckHandler,
                         final JobHistoryHandler jobHistoryHandler,
                         final LogsHandler logsHandler,
-                        final OAuthHandler oAuthHandler,
+                        final OAuthHandler ooAuthHandler,
+                        final OpenApiConfigHandler openApiConfigHandler,
                         final OperationsHandler operationsHandler,
                         final SchedulerHandler schedulerHandler,
                         final SourceHandler sourceHandler,
                         final SourceDefinitionsHandler sourceDefinitionsHandler,
+                        final StateHandler stateHandler,
                         final WorkspacesHandler workspacesHandler,
                         final WebBackendConnectionsHandler webBackendConnectionsHandler,
                         final WebBackendGeographiesHandler webBackendGeographiesHandler,
@@ -93,15 +80,17 @@ public interface ServerFactory {
                                  final AttemptHandler attemptHandler,
                                  final ConnectionsHandler connectionsHandler,
                                  final DestinationDefinitionsHandler destinationDefinitionsHandler,
-                                 final DestinationHandler destinationApiHandler,
+                                 final DestinationHandler destinationHandler,
                                  final HealthCheckHandler healthCheckHandler,
                                  final JobHistoryHandler jobHistoryHandler,
                                  final LogsHandler logsHandler,
-                                 final OAuthHandler oAuthHandler,
+                                 final OAuthHandler ooAuthHandler,
+                                 final OpenApiConfigHandler openApiConfigHandler,
                                  final OperationsHandler operationsHandler,
                                  final SchedulerHandler schedulerHandler,
                                  final SourceHandler sourceHandler,
                                  final SourceDefinitionsHandler sourceDefinitionsHandler,
+                                 final StateHandler stateHandler,
                                  final WorkspacesHandler workspacesHandler,
                                  final WebBackendConnectionsHandler webBackendConnectionsHandler,
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler,
