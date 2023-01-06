@@ -22,7 +22,7 @@ export interface BuildFormHook {
   validationSchema: AnySchema;
 }
 
-function setDefaultValues(
+export function setDefaultValues(
   formGroup: FormGroupItem,
   values: Record<string, unknown>,
   options: { respectExistingValues: boolean } = { respectExistingValues: false }
