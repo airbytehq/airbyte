@@ -91,7 +91,7 @@ class MetadataDescriptor:
 
     def __get__(self, instance, owner):
         if not self._metadata:
-            stream = GoogleAnalyticsDataApiTestConnectionStream(config=instance.config, authenticator=instance.config["authenticator"])
+            stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
             metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh))
             self._metadata = {
                 "dimensions": {m["apiName"]: m for m in metadata["dimensions"]},
@@ -297,7 +297,7 @@ class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
         return dates or [None]
 
 
-class GoogleAnalyticsDataApiTestConnectionStream(GoogleAnalyticsDataApiAbstractStream):
+class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream):
     primary_key = None
     http_method = "GET"
 
@@ -373,7 +373,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         except ConfigurationError as e:
             return False, str(e)
         config["authenticator"] = self.get_authenticator(config)
-        stream = GoogleAnalyticsDataApiTestConnectionStream(config=config, authenticator=config["authenticator"])
+        stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
         next(stream.read_records(sync_mode=SyncMode.full_refresh))
         return True, None
 
