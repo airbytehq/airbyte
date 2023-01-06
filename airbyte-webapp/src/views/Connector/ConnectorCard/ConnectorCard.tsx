@@ -1,3 +1,5 @@
+import { faChevronDown, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -233,16 +235,16 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
               connectorId={isEditMode ? getConnectorId(props.connector) : undefined}
             />
           )}
-          {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
           {job && (
             <div className={styles.connectionTestLogs}>
               <Button
-                variant="secondary"
+                variant="clear"
+                icon={<FontAwesomeIcon icon={logsVisible ? faChevronDown : faChevronRight} />}
                 onClick={() => {
                   setLogsVisible(!logsVisible);
                 }}
               >
-                <FormattedMessage id={logsVisible ? "connector.hideLogs" : "connector.showLogs"} />
+                <FormattedMessage id="connector.testLogs" />
               </Button>
               {logsVisible && <JobLogs job={job} jobIsFailed />}
             </div>
