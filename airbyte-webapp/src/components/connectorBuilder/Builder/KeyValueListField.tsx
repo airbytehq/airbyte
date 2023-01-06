@@ -66,16 +66,7 @@ export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, labe
   setKeyValueListRef.current = setKeyValueList;
 
   return (
-    <GroupControls
-      label={<ControlLabels label={label} infoTooltipContent={tooltip} />}
-      control={
-        <Button type="button" variant="secondary" onClick={() => setKeyValueList([...keyValueList, ["", ""]])}>
-          <FormattedMessage id="connectorBuilder.addKeyValue" />
-        </Button>
-      }
-    >
-      <KeyValueList keyValueList={keyValueList} setKeyValueList={setKeyValueListRef} />
-    </GroupControls>
+    <KeyValueList label={label} tooltip={tooltip} keyValueList={keyValueList} setKeyValueList={setKeyValueListRef} />
   );
 };
 
@@ -83,12 +74,25 @@ const KeyValueList = React.memo(
   ({
     keyValueList,
     setKeyValueList,
-  }: {
+    label,
+    tooltip,
+  }: Omit<KeyValueListFieldProps, "path"> & {
     keyValueList: Array<[string, string]>;
     setKeyValueList: React.MutableRefObject<(val: Array<[string, string]>) => void>;
   }) => {
     return (
-      <>
+      <GroupControls
+        label={<ControlLabels label={label} infoTooltipContent={tooltip} />}
+        control={
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setKeyValueList.current([...keyValueList, ["", ""]])}
+          >
+            <FormattedMessage id="connectorBuilder.addKeyValue" />
+          </Button>
+        }
+      >
         {keyValueList.map((keyValue, keyValueIndex) => (
           <KeyValueInput
             key={keyValueIndex}
@@ -103,7 +107,7 @@ const KeyValueList = React.memo(
             }}
           />
         ))}
-      </>
+      </GroupControls>
     );
   }
 );
