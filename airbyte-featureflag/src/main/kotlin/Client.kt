@@ -22,14 +22,6 @@ import kotlin.concurrent.write
 import kotlin.io.path.isRegularFile
 
 /**
- * Open Questions:
- * 1. Can the context and flag be combined into one class?
- *   - i.e. Does it make sense to one a feature-flag apply to two different context types?
- * 2. Should the default value be merged into the Flag type instead of specified on each check?
- *   - Or maybe still allow it to be specified, but make it an optional parameter
- */
-
-/**
  * Feature-Flag Client interface.
  */
 sealed interface FeatureFlagClient {
@@ -152,13 +144,24 @@ private fun readConfig(path: Path): Map<String, PlatformFlag> = yamlMapper.readV
  */
 private fun Path.onChange(block: () -> Unit) {
     val watcher = fileSystem.newWatchService()
-    // The watcher services requires a directory to be provided, hence the `parent` reference here as `this` path should be a file.
+    // The watcher service requires a directory to be registered and not an individual file. This Path is an individual file,
+    // hence the `parent` reference to register the parent of this file (which is the directory that contains this file).
+    // As all files within this directory could send events, any file that doesn't match this Path will need to be filtered out.
     parent.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_CREATE)
 
     thread(isDaemon = true, name = "feature-flag-watcher", priority = MIN_PRIORITY) {
         val key = watcher.take()
-        // The context on the poll-events for ENTRY_MODIFY events should not be null, this is a sanity check more than anything else
+        // The context on the poll-events for ENTRY_MODIFY and ENTRY_CREATE events should return a Path,
+        // however officially `Returns: the event context; may be null`, so there is a null check here
         key.pollEvents().mapNotNull { it.context() as? Path }
+            // As events are generated at the directory level and not the file level, any files that do not match the specific file
+            // this Path represents must be filtered out.
+            // E.g.
+            // If this path is "/tmp/dir/flags.yml",
+            // the directory registered with the WatchService was "/tmp/dir",
+            // and the event's path would be "flags.yml".
+            //
+            // This filter verifies that "/tmp/dir/flags.yml" ends with "flags.yml" before calling the block method.
             .filter { this.endsWith(it) }
             .forEach { _ -> block() }
 
