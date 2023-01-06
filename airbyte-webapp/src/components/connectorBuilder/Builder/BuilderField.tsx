@@ -1,4 +1,5 @@
 import { useField } from "formik";
+import { ReactNode } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ControlLabels } from "components/LabeledControl";
@@ -33,9 +34,11 @@ interface BaseFieldProps {
   readOnly?: boolean;
   optional?: boolean;
   pattern?: RegExp;
+  adornment?: ReactNode;
+  className?: string;
 }
 
-type BuilderFieldProps = BaseFieldProps &
+export type BuilderFieldProps = BaseFieldProps &
   (
     | { type: "string" | "number" | "integer"; onChange?: (newValue: string) => void }
     | { type: "boolean"; onChange?: (newValue: boolean) => void }
@@ -68,6 +71,7 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
   optional = false,
   readOnly,
   pattern,
+  adornment,
   ...props
 }) => {
   const [field, meta, helpers] = useField(path);
@@ -104,10 +108,12 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
             }
             props.onChange?.(e.target.value);
           }}
+          className={props.className}
           type={props.type}
           value={field.value ?? ""}
           error={hasError}
           readOnly={readOnly}
+          adornment={adornment}
         />
       )}
       {props.type === "array" && (

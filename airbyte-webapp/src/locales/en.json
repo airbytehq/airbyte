@@ -727,6 +727,7 @@
   "connectorBuilder.copyToSlicerTitle": "Copy slicing settings to...",
   "connectorBuilder.copyFromSlicerTitle": "Import slicing settings from...",
   "connectorBuilder.inputsButton": "Inputs",
+  "connectorBuilder.interUserInputValue": "Insert a user input value",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 

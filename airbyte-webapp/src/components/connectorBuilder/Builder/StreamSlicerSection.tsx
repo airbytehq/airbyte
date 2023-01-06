@@ -8,6 +8,7 @@ import { RequestOption, SimpleRetrieverStreamSlicer } from "core/request/Connect
 import { timeDeltaRegex } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
+import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderList } from "./BuilderList";
 import { BuilderOneOf, OneOfOption } from "./BuilderOneOf";
 import { BuilderOptional } from "./BuilderOptional";
@@ -53,7 +54,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
             label="Slice values"
             tooltip="List of values to iterate over"
           />
-          <BuilderField
+          <BuilderFieldWithInputs
             type="string"
             path={buildPath("cursor_field")}
             label="Cursor field"
@@ -90,39 +91,39 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
       },
       children: (
         <>
-          <BuilderField
+          <BuilderFieldWithInputs
             type="string"
             path={buildPath("datetime_format")}
             label="Datetime format"
             tooltip="Specify the format of the start and end time, e.g. %Y-%m-%d"
           />
-          <BuilderField
+          <BuilderFieldWithInputs
             type="string"
             path={buildPath("start_datetime")}
             label="Start datetime"
             tooltip="Start time to start slicing"
           />
-          <BuilderField
+          <BuilderFieldWithInputs
             type="string"
             path={buildPath("end_datetime")}
             label="End datetime"
             tooltip="End time to end slicing"
           />
-          <BuilderField
+          <BuilderFieldWithInputs
             type="string"
             path={buildPath("step")}
             label="Step"
             tooltip="Time interval for which to break up stream into slices, e.g. 1d"
             pattern={timeDeltaRegex}
           />
-          <BuilderField
+          <BuilderFieldWithInputs
             type="string"
             path={buildPath("cursor_field")}
             label="Cursor field"
             tooltip="Field on record to use as the cursor"
           />
           <BuilderOptional>
-            <BuilderField
+            <BuilderFieldWithInputs
               type="string"
               path={buildPath("lookback_window")}
               label="Lookback window"
@@ -161,14 +162,14 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
                 excludeInjectIntoValues={["path"]}
               />
             </ToggleGroupField>
-            <BuilderField
+            <BuilderFieldWithInputs
               type="string"
               path={buildPath("stream_state_field_start")}
               label="Stream state field start"
               tooltip="Set which field on the stream state to use to determine the starting point"
               optional
             />
-            <BuilderField
+            <BuilderFieldWithInputs
               type="string"
               path={buildPath("stream_state_field_end")}
               label="Stream state field end"
@@ -189,13 +190,13 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
       },
       children: (
         <>
-          <BuilderField
+          <BuilderFieldWithInputs
             type="string"
             path={buildPath("parent_key")}
             label="Parent key"
             tooltip="The key of the parent stream's records that will be the stream slice key"
           />
-          <BuilderField
+          <BuilderFieldWithInputs
             type="string"
             path={buildPath("stream_slice_field")}
             label="Stream slice field"

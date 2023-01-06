@@ -17,6 +17,7 @@ import { AddStreamButton } from "./AddStreamButton";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
+import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderTitle } from "./BuilderTitle";
 import { KeyValueListField } from "./KeyValueListField";
 import { PaginationSection } from "./PaginationSection";
@@ -94,7 +95,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, h
       {selectedTab === "configuration" ? (
         <>
           <BuilderCard>
-            <BuilderField
+            <BuilderFieldWithInputs
               type="string"
               path={streamFieldPath("urlPath")}
               label="Path URL"

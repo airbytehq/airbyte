@@ -7,6 +7,7 @@ import { Button } from "components/ui/Button";
 import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
+import { UserInputHelper } from "./BuilderFieldWithInputs";
 import styles from "./KeyValueListField.module.scss";
 import { RemoveButton } from "./RemoveButton";
 
@@ -23,13 +24,27 @@ const KeyValueInput: React.FC<KeyValueInputProps> = ({ keyValue, onChange, onRem
         <Text className={styles.kvLabel}>
           <FormattedMessage id="connectorBuilder.key" />
         </Text>
-        <Input value={keyValue[0]} onChange={(e) => onChange([e.target.value, keyValue[1]])} />
+        <Input
+          value={keyValue[0]}
+          onChange={(e) => onChange([e.target.value, keyValue[1]])}
+          adornment={
+            <UserInputHelper setValue={(newValue) => onChange([newValue, keyValue[1]])} currentValue={keyValue[0]} />
+          }
+          className={styles.inputWithHelper}
+        />
       </div>
       <div className={styles.labeledInput}>
         <Text className={styles.kvLabel}>
           <FormattedMessage id="connectorBuilder.value" />
         </Text>
-        <Input value={keyValue[1]} onChange={(e) => onChange([keyValue[0], e.target.value])} />
+        <Input
+          value={keyValue[1]}
+          onChange={(e) => onChange([keyValue[0], e.target.value])}
+          adornment={
+            <UserInputHelper setValue={(newValue) => onChange([keyValue[0], newValue])} currentValue={keyValue[1]} />
+          }
+          className={styles.inputWithHelper}
+        />
       </div>
       <RemoveButton onClick={onRemove} />
     </div>
