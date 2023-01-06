@@ -268,7 +268,7 @@
             "nullable_airbyte_integer_column": {
               "$ref": "WellKnownTypes.json#/definitions/Integer"
             },
-             "property_binary_data": {
+            "property_binary_data": {
               "$ref": "WellKnownTypes.json#/definitions/BinaryData"
             }
           }
