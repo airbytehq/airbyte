@@ -55,5 +55,5 @@ spec:
       base_url:
         type: string
         description: "URL of your Dremio instance"
-        pattern: "^https://"
+        # pattern: "^https://" # temporary solution, till we have a stable sandbox with HTTPS
         default: "https://app.dremio.cloud"
