@@ -4,13 +4,13 @@ import { useIntl } from "react-intl";
 import { useMutation } from "react-query";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
+import { CollapsibleCardProps, CollapsibleCard } from "components/ui/CollapsibleCard";
 
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { generateMessageFromError } from "utils/errorStatusMessage";
-import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
-import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 
-import styles from "./FormCard.module.scss";
+import EditControls from "../ConnectionForm/EditControls";
+import styles from "./ConnectionEditFormCard.module.scss";
 
 interface FormCardProps<T> extends CollapsibleCardProps {
   bottomSeparator?: boolean;
@@ -18,7 +18,7 @@ interface FormCardProps<T> extends CollapsibleCardProps {
   submitDisabled?: boolean;
 }
 
-export const FormCard = <T extends object>({
+export const ConnectionEditFormCard = <T extends object>({
   children,
   form,
   bottomSeparator = true,

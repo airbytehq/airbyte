@@ -3,13 +3,13 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
+import { Section } from "components/connection/ConnectionForm/Section";
 import { ControlLabels } from "components/LabeledControl";
 import { FlexContainer } from "components/ui/Flex";
 
 import { Geography } from "core/request/AirbyteClient";
 import { useAvailableGeographies } from "packages/cloud/services/geographies/GeographiesService";
 import { links } from "utils/links";
-import { Section } from "views/Connection/ConnectionForm/components/Section";
 
 import styles from "./DataResidency.module.scss";
 
