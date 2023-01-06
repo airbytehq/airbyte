@@ -52,3 +52,9 @@ In the Data tab, you should see the tables and a sample of the data that will be
 2. Copy the "Deployment URL" from the settings page to the `deployment_url` field in Airbyte.
 3. Click "Generate a deploy key".
 4. Copy the generated deploy key into the `access_key` field in Airbyte.
+
+## Changelog
+
+| Version | Date       | Pull Request          | Subject               |
+| :------ | :--------- | :-------------------- | :-------------------- |
+| 0.1.0   | 2023-01-05 | TODO: link to PR here | 🎉 New Source: Convex |
