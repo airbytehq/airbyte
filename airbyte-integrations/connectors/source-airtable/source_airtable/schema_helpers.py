@@ -3,13 +3,29 @@
 #
 
 
-from typing import Any, Dict
+from typing import Any, Dict, Iterable, Mapping
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 
 
-class Helpers:
+class SchemaHelpers:
+
+    streams_catalog: Iterable[Mapping[str, Any]] = []
+
+    def get_streams_from_base(self, base_id: str, base_name: str, base_tables: list):
+        for table in base_tables:
+            if table not in self.streams_catalog:
+                self.streams_catalog.append(
+                    {
+                        "stream_path": f"{base_id}/{table.get('id')}",
+                        "stream": self.get_airbyte_stream(
+                            f"{base_name}/{self.clean_name(table.get('name'))}",
+                            self.get_json_schema(table),
+                        ),
+                    }
+                )
+
     @staticmethod
     def clean_name(name_str: str) -> str:
         return name_str.replace(" ", "_").lower().strip()
@@ -23,12 +39,13 @@ class Helpers:
         }
 
         for field in fields:
-            field_name = Helpers.clean_name(field.get("name"))
+            field_name = SchemaHelpers.clean_name(field.get("name"))
             properties[field_name] = {"type": ["null", "string"]}
 
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "additionalProperties": True,
             "properties": properties,
         }
         return json_schema

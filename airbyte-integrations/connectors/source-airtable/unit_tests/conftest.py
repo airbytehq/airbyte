@@ -104,6 +104,7 @@ def streams_processed_response():
 def expected_json_schema():
     return {
         "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": True,
         "properties": {
             "_airtable_created_time": {"type": ["null", "string"]},
             "_airtable_id": {"type": ["null", "string"]},
@@ -122,6 +123,7 @@ def prepared_stream():
             json_schema={
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": True,
                 "properties": {
                     "_airtable_id": {
                         "type": [
