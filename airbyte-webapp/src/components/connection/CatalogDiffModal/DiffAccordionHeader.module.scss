@@ -1,0 +1,11 @@
+@forward "./StreamRow.module.scss";
+@forward "./DiffSection.module.scss";
+@use "scss/variables";
+
+.row {
+  padding: 0 0 0 variables.$spacing-sm;
+}
+
+.namespace {
+  padding-left: variables.$spacing-sm;
+}

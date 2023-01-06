@@ -1,8 +1,10 @@
 import { Field, FieldProps, useFormikContext } from "formik";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
 import { ControlLabels } from "components/LabeledControl";
+import { FlexContainer } from "components/ui/Flex";
 
 import { Geography } from "core/request/AirbyteClient";
 import { useAvailableGeographies } from "packages/cloud/services/geographies/GeographiesService";
@@ -24,7 +26,7 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
     <Section title={formatMessage({ id: "connection.geographyTitle" })}>
       <Field name={name}>
         {({ field, form }: FieldProps<Geography>) => (
-          <div className={styles.flexRow}>
+          <FlexContainer alignItems="flex-start">
             <div className={styles.leftFieldCol}>
               <ControlLabels
                 nextLine
@@ -33,8 +35,13 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
                   <FormattedMessage
                     id="connection.geographyDescription"
                     values={{
-                      lnk: (node: React.ReactNode) => (
+                      ipLink: (node: React.ReactNode) => (
                         <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
+                          {node}
+                        </a>
+                      ),
+                      docLink: (node: React.ReactNode) => (
+                        <a href={links.connectionDataResidency} target="_blank" rel="noreferrer">
                           {node}
                         </a>
                       ),
@@ -51,7 +58,7 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
                 onChange={(geography) => setFieldValue(name, geography)}
               />
             </div>
-          </div>
+          </FlexContainer>
         )}
       </Field>
     </Section>

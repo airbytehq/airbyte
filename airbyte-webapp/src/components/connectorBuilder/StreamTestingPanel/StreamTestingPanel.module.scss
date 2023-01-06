@@ -1,0 +1,65 @@
+@use "scss/variables";
+@use "scss/colors";
+
+$buttonHeight: 36px;
+
+.container {
+  padding: variables.$spacing-lg;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.configButton {
+  position: absolute;
+  top: variables.$spacing-lg;
+  left: variables.$spacing-lg;
+}
+
+.streamSelector {
+  flex: 0 0 auto;
+  height: $buttonHeight;
+}
+
+.selectAndTestContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-lg;
+  align-items: center;
+}
+
+.listErrorDisplay {
+  padding: variables.$spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  background-color: colors.$blue-50;
+  border-radius: variables.$border-radius-sm;
+
+  // leave room for config button
+  margin-top: 50px;
+}
+
+.loadingSpinner {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addStreamMessage {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: variables.$spacing-2xl;
+}
+
+.addStreamHeading {
+  color: colors.$dark-blue;
+}

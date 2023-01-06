@@ -16,6 +16,9 @@ airbyte:
     max-attempts: ${ACTIVITY_MAX_ATTEMPT:5}
     max-delay: ${ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS:600}
     max-timeout: ${ACTIVITY_MAX_TIMEOUT_SECOND:120}
+  acceptance:
+    test:
+      enabled: ${ACCEPTANCE_TEST_ENABLED:false}
   cloud:
     storage:
       logs:
@@ -102,6 +105,10 @@ airbyte:
           memory:
             limit: ${CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT:}
             request: ${CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
+    isolated:
+      kube:
+        use-custom-node-selector: ${USE_CUSTOM_NODE_SELECTOR:false}
+        node-selectors: ${JOB_ISOLATED_KUBE_NODE_SELECTORS:}
     connection:
       enabled: ${SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS:true}
     discover:

@@ -144,6 +144,7 @@ class FullRefreshConfig(BaseConfig):
 class FutureStateConfig(BaseConfig):
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
     missing_streams: List[EmptyStreamConfiguration] = Field(default=[], description="List of missings streams with valid bypass reasons.")
+    bypass_reason: Optional[str]
 
 
 class IncrementalConfig(BaseConfig):
@@ -189,6 +190,9 @@ class Config(BaseConfig):
         high = "high"
         low = "low"
 
+    cache_discovered_catalog: bool = Field(
+        default=True, description="Enable or disable caching of discovered catalog for reuse in multiple tests."
+    )
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")

@@ -97,7 +97,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             TEST_CONFIGURED_CATALOG,
             {EmptyStreamConfiguration(name="test_stream_b"), EmptyStreamConfiguration(name="test_stream_c")},
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
-            ExpectedRecordsConfig(path="expected_records.json"),
+            ExpectedRecordsConfig(path="expected_records.jsonl"),
             False,
             id="High strictness level: test_stream_b and test_stream_c are declared as empty streams, expected records only contains test_stream_a record -> Not failing",
         ),
@@ -106,7 +106,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             TEST_CONFIGURED_CATALOG,
             set(),
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
-            ExpectedRecordsConfig(path="expected_records.json"),
+            ExpectedRecordsConfig(path="expected_records.jsonl"),
             True,
             id="High strictness level: test_stream_b and test_stream_c are not declared as empty streams, expected records only contains test_stream_a record -> Failing",
         ),
@@ -115,7 +115,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             TEST_CONFIGURED_CATALOG,
             {EmptyStreamConfiguration(name="test_stream_b")},
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
-            ExpectedRecordsConfig(path="expected_records.json"),
+            ExpectedRecordsConfig(path="expected_records.jsonl"),
             True,
             id="High strictness level: test_stream_b is declared as an empty stream, test_stream_c is not declared as empty streams, expected records only contains test_stream_a record -> Failing",
         ),
@@ -142,7 +142,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             TEST_CONFIGURED_CATALOG,
             set(),
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
-            ExpectedRecordsConfig(path="expected_records.json"),
+            ExpectedRecordsConfig(path="expected_records.jsonl"),
             False,
             id="Low strictness level, no empty stream, incomplete expected records ->  Not failing",
         ),
@@ -154,7 +154,7 @@ def test_expected_records_by_stream_fixture(
     mocker.patch.object(conftest.pytest, "fail")
 
     base_path = tmp_path
-    with open(f"{base_path}/expected_records.json", "w") as expected_records_file:
+    with open(f"{base_path}/expected_records.jsonl", "w") as expected_records_file:
         for record in expected_records:
             expected_records_file.write(json.dumps(record) + "\n")
 
@@ -179,3 +179,23 @@ def test_configured_catalog_fixture(mocker, configured_catalog_path):
     else:
         assert configured_catalog == conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.return_value
         conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_called_once_with(mock_discovered_catalog, set())
+
+
+@pytest.mark.parametrize(
+    "updated_configurations", [[], ["config|created_last.json"], ["config|created_first.json", "config|created_last.json"]]
+)
+def test_connector_config_path_fixture(mocker, tmp_path, updated_configurations):
+    inputs = mocker.Mock(config_path="config.json")
+    base_path = tmp_path
+    if updated_configurations:
+        updated_configurations_dir = tmp_path / "updated_configurations"
+        updated_configurations_dir.mkdir()
+        for configuration_file_name in updated_configurations:
+            updated_configuration_path = updated_configurations_dir / configuration_file_name
+            updated_configuration_path.touch()
+
+    connector_config_path = conftest.connector_config_path_fixture.__wrapped__(inputs, base_path)
+    if not updated_configurations:
+        assert connector_config_path == base_path / "config.json"
+    else:
+        assert connector_config_path == base_path / "updated_configurations" / "config|created_last.json"

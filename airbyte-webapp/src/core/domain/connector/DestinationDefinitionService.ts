@@ -1,8 +1,8 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 import {
-  createDestinationDefinition,
-  DestinationDefinitionCreate,
+  createCustomDestinationDefinition,
+  CustomDestinationDefinitionCreate,
   DestinationDefinitionIdWithWorkspaceId,
   DestinationDefinitionUpdate,
   getDestinationDefinitionForWorkspace,
@@ -28,7 +28,7 @@ export class DestinationDefinitionService extends AirbyteRequestService {
     return updateDestinationDefinition(body, this.requestOptions);
   }
 
-  public create(body: DestinationDefinitionCreate) {
-    return createDestinationDefinition(body, this.requestOptions);
+  public createCustom(body: CustomDestinationDefinitionCreate) {
+    return createCustomDestinationDefinition(body, this.requestOptions);
   }
 }

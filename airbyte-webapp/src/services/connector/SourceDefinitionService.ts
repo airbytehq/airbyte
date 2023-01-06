@@ -9,6 +9,7 @@ import { isDefined } from "utils/common";
 
 import { SourceDefinitionCreate, SourceDefinitionRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
+import { connectorDefinitionKeys } from "./ConnectorDefinitions";
 import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const sourceDefinitionKeys = {
@@ -74,9 +75,10 @@ const useSourceDefinition = <T extends string | undefined>(
 const useCreateSourceDefinition = () => {
   const service = useGetSourceDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<SourceDefinitionRead, Error, SourceDefinitionCreate>(
-    (sourceDefinition) => service.create(sourceDefinition),
+    (sourceDefinition) => service.createCustom({ workspaceId, sourceDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(
@@ -113,6 +115,8 @@ const useUpdateSourceDefinition = () => {
             [],
         })
       );
+
+      queryClient.invalidateQueries(connectorDefinitionKeys.count());
     },
   });
 };

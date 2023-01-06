@@ -9,6 +9,10 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.ConnectionApi;
+import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.generated.WorkspaceApi;
+import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.micronaut.context.BeanProvider;
 import io.micronaut.context.annotation.Factory;
@@ -35,26 +39,44 @@ public class ApiClientBeanFactory {
   private static final int JWT_TTL_MINUTES = 5;
 
   @Singleton
-  public AirbyteApiClient airbyteApiClient(
-                                           @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
-                                           @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
-                                           @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
-                                           @Named("internalApiScheme") final String internalApiScheme) {
-    return new AirbyteApiClient(
-        new io.airbyte.api.client.invoker.generated.ApiClient()
-            .setScheme(internalApiScheme)
-            .setHost(parseHostName(airbyteApiHost))
-            .setPort(parsePort(airbyteApiHost))
-            .setBasePath("/api")
-            .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
-            .setRequestInterceptor(builder -> {
-              builder.setHeader("User-Agent", "WorkerApp");
-              // internalApiAuthToken is in BeanProvider because we want to create a new token each
-              // time we send a request.
-              if (!airbyteApiAuthHeaderName.isBlank()) {
-                builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken.get());
-              }
-            }));
+  public ApiClient apiClient(@Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
+                             @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
+                             @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
+                             @Named("internalApiScheme") final String internalApiScheme) {
+    return new io.airbyte.api.client.invoker.generated.ApiClient()
+        .setScheme(internalApiScheme)
+        .setHost(parseHostName(airbyteApiHost))
+        .setPort(parsePort(airbyteApiHost))
+        .setBasePath("/api")
+        .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
+        .setRequestInterceptor(builder -> {
+          builder.setHeader("User-Agent", "WorkerApp");
+          // internalApiAuthToken is in BeanProvider because we want to create a new token each
+          // time we send a request.
+          if (!airbyteApiAuthHeaderName.isBlank()) {
+            builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken.get());
+          }
+        });
+  }
+
+  @Singleton
+  public AirbyteApiClient airbyteApiClient(ApiClient apiClient) {
+    return new AirbyteApiClient(apiClient);
+  }
+
+  @Singleton
+  public SourceApi sourceApi(final ApiClient apiClient) {
+    return new SourceApi(apiClient);
+  }
+
+  @Singleton
+  public ConnectionApi connectionApi(final ApiClient apiClient) {
+    return new ConnectionApi(apiClient);
+  }
+
+  @Singleton
+  public WorkspaceApi workspaceApi(final ApiClient apiClient) {
+    return new WorkspaceApi(apiClient);
   }
 
   @Singleton
@@ -64,9 +86,12 @@ public class ApiClientBeanFactory {
 
   @Singleton
   @Named("internalApiScheme")
-  public String internalApiScheme(final Environment environment) {
+  public String internalApiScheme(@Value("${airbyte.acceptance.test.enabled}") final boolean isInTestMode, final Environment environment) {
     // control plane workers communicate with the Airbyte API within their internal network, so https
     // isn't needed
+    if (isInTestMode) {
+      return "http";
+    }
     return environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE) ? "http" : "https";
   }
 
@@ -87,8 +112,9 @@ public class ApiClientBeanFactory {
                                      @Value("${airbyte.control.plane.auth-endpoint}") final String controlPlaneAuthEndpoint,
                                      @Value("${airbyte.data.plane.service-account.email}") final String dataPlaneServiceAccountEmail,
                                      @Value("${airbyte.data.plane.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
+                                     @Value("${airbyte.acceptance.test.enabled}") final boolean isInTestMode,
                                      final Environment environment) {
-    if (environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
+    if (isInTestMode || environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
       // control plane workers communicate with the Airbyte API within their internal network, so a signed
       // JWT isn't needed
       return airbyteApiAuthHeaderValue;

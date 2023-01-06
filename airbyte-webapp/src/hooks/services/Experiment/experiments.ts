@@ -1,5 +1,7 @@
 /* eslint sort-keys: "error" */
 /**
+ * Experiments are short-term flags for A/B testing or staged rollouts of features.
+ *
  * When adding a new feature flag in LaunchDarkly to consume in code you'll need to make
  * sure to update the typing here.
  */
@@ -9,7 +11,7 @@ export interface Experiments {
   "connector.inviteUsersHint.linkToUsersPage": boolean;
   "connector.orderOverwrite": Record<string, number>;
   "connector.frequentlyUsedDestinationIds": string[];
-  "connector.startWithDestinationId": string;
+  "connector.form.useDatepicker": boolean;
   "authPage.rightSideUrl": string | undefined;
   "authPage.hideSelfHostedCTA": boolean;
   "authPage.signup.hideName": boolean;
@@ -23,4 +25,6 @@ export interface Experiments {
   "authPage.oauth.position": "top" | "bottom";
   "connection.onboarding.sources": string;
   "connection.onboarding.destinations": string;
+  "connection.autoDetectSchemaChanges": boolean;
+  "connection.columnSelection": boolean;
 }
