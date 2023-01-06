@@ -18,6 +18,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 // scheduler:persistence in order to get workspace ids for configs (e.g. source). Our options are to
 // split this helper by database or put it in a new module.
 @SuppressWarnings("PMD.AvoidCatchingThrowable")
+@Singleton
 public class WorkspaceHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkspaceHelper.class);
@@ -106,7 +108,7 @@ public class WorkspaceHelper {
    * There are generally two kinds of helper methods present here. The first kind propagate exceptions
    * for the method backing the cache. The second ignores them. The former is meant to be used with
    * proper api calls, while the latter is meant to be use with asserts and precondtions checks.
-   *
+   * <p>
    * In API calls, distinguishing between various exceptions helps return the correct status code.
    */
 
