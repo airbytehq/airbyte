@@ -5,12 +5,10 @@
 package io.airbyte.server.handlers;
 
 import io.airbyte.commons.resources.MoreResources;
-import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-@Singleton
 public class OpenApiConfigHandler {
 
   private static final File TMP_FILE;
