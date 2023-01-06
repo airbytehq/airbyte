@@ -82,7 +82,6 @@ public class LogClientSingleton {
     }
     final var cloudLogPath = sanitisePath(APP_LOGGING_CLOUD_PREFIX, getServerLogsRoot(workspaceRoot));
     try {
-      createCloudClientIfNull(logConfigs);
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
     } catch (final IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
@@ -96,7 +95,6 @@ public class LogClientSingleton {
 
     final var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + getSchedulerLogsRoot(workspaceRoot);
     try {
-      createCloudClientIfNull(logConfigs);
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
     } catch (final IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
@@ -113,7 +111,6 @@ public class LogClientSingleton {
     }
 
     final var cloudLogPath = sanitisePath(JOB_LOGGING_CLOUD_PREFIX, logPath);
-    createCloudClientIfNull(logConfigs);
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
@@ -130,7 +127,6 @@ public class LogClientSingleton {
       throw new NotImplementedException("Local log deletes not supported.");
     }
     final var cloudLogPath = sanitisePath(JOB_LOGGING_CLOUD_PREFIX, Path.of(logPath));
-    createCloudClientIfNull(logConfigs);
     logClient.deleteLogs(logConfigs, cloudLogPath);
   }
 

@@ -8,19 +8,15 @@ import io.airbyte.api.generated.SourceDefinitionSpecificationApi;
 import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
 import io.airbyte.server.handlers.SchedulerHandler;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Post;
+import javax.ws.rs.Path;
+import lombok.AllArgsConstructor;
 
-@Controller("/api/v1/source_definition_specifications")
+@Path("/v1/source_definition_specifications/get")
+@AllArgsConstructor
 public class SourceDefinitionSpecificationApiController implements SourceDefinitionSpecificationApi {
 
   private final SchedulerHandler schedulerHandler;
 
-  public SourceDefinitionSpecificationApiController(final SchedulerHandler schedulerHandler) {
-    this.schedulerHandler = schedulerHandler;
-  }
-
-  @Post("/get")
   @Override
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
     return ApiHelper.execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdWithWorkspaceId));

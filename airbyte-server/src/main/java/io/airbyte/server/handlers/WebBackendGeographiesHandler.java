@@ -6,11 +6,13 @@ package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.WebBackendGeographiesListResult;
-import jakarta.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collections;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@Singleton
+@AllArgsConstructor
+@Slf4j
 public class WebBackendGeographiesHandler {
 
   public WebBackendGeographiesListResult listGeographiesOSS() {

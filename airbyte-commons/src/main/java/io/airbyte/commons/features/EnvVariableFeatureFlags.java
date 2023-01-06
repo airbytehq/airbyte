@@ -5,12 +5,10 @@
 package io.airbyte.commons.features;
 
 import java.util.function.Function;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EnvVariableFeatureFlags implements FeatureFlags {
-
-  private static final Logger log = LoggerFactory.getLogger(EnvVariableFeatureFlags.class);
 
   public static final String USE_STREAM_CAPABLE_STATE = "USE_STREAM_CAPABLE_STATE";
   public static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
