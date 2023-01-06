@@ -5,19 +5,6 @@ on:
       - '**.yml'
     branches:
       - issue-19981_avoid-race-condition-on-airbyte-cdk-release
-    inputs:
-      repo:
-        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
-        required: false
-        default: "airbytehq/airbyte"
-      gitref:
-        description: "The git ref to check out from the specified repository."
-        required: true
-        default: issue-19981_avoid-race-condition-on-airbyte-cdk-release
-      part-to-bump:
-        description: "Choose the type of version upgrade : major|minor|patch"
-        required: true
-        default: minor
   workflow_dispatch:
     inputs:
       repo:
@@ -66,10 +53,19 @@ jobs:
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          file_pattern: airbyte-cdk/python/setup.py
+          file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg
           commit_message: 🤖 Bump patch version of Airbyte CDK
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
+      - name: Publish Failures to issue-19981_test-notification
+        uses: abinoda/slack-action@master
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          args: >-
+            {\"channel\":\"C04HDCD18J3\", \"blocks\":[
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"This is a test!\n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n\"}}]}
 
   build-cdk:
     needs: bump-version
