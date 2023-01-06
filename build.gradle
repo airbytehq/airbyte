@@ -294,7 +294,7 @@ subprojects { subproj ->
             url 'https://jitpack.io'
         }
         maven {
-            url 'https://maven.twttr.com'
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
         }
     }
 
