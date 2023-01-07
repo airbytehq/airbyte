@@ -114,6 +114,8 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         null,
         null,
         null,
+        null,
+        null,
         Map.of(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true", EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, "false"),
         serverPort);
 

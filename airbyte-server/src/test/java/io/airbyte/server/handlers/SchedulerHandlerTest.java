@@ -259,6 +259,7 @@ class SchedulerHandlerTest {
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
     when(configurationUpdate.source(source.getSourceId(), source.getName(), sourceUpdate.getConnectionConfiguration())).thenReturn(source);
     final SourceConnection submittedSource = new SourceConnection()
+        .withSourceId(source.getSourceId())
         .withSourceDefinitionId(source.getSourceDefinitionId())
         .withConfiguration(source.getConfiguration());
     when(synchronousSchedulerClient.createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE, protocolVersion, false))
@@ -383,6 +384,7 @@ class SchedulerHandlerTest {
     when(configurationUpdate.destination(destination.getDestinationId(), destination.getName(), destinationUpdate.getConnectionConfiguration()))
         .thenReturn(destination);
     final DestinationConnection submittedDestination = new DestinationConnection()
+        .withDestinationId(destination.getDestinationId())
         .withDestinationDefinitionId(destination.getDestinationDefinitionId())
         .withConfiguration(destination.getConfiguration());
     when(synchronousSchedulerClient.createDestinationCheckConnectionJob(submittedDestination, DESTINATION_DOCKER_IMAGE,

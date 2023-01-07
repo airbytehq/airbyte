@@ -273,6 +273,23 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  CustomRequester:
+    description: Requester component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRequester]
+      class_name:
+        type: string
+        additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
   CustomRetriever:
     description: Retriever component whose behavior is derived from a custom code implementation of the connector
     type: object
@@ -330,6 +347,7 @@ definitions:
       - cursor_field
       - end_datetime
       - datetime_format
+      - cursor_granularity
       - start_datetime
       - step
     properties:
@@ -339,6 +357,8 @@ definitions:
       cursor_field:
         type: string
       datetime_format:
+        type: string
+      cursor_granularity:
         type: string
       end_datetime:
         anyOf:
@@ -960,7 +980,9 @@ definitions:
       record_selector:
         "$ref": "#/definitions/RecordSelector"
       requester:
-        "$ref": "#/definitions/HttpRequester"
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
       name:
         type: string
         default: ""

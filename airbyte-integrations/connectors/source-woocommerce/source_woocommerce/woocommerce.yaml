@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: [ ]
+      field_pointer: []
   schema_loader:
     type: JsonFileSchemaLoader
     file_path: "./source_woocommerce/schemas/{{ options['name'] }}.json"
@@ -20,8 +20,8 @@ definitions:
         order: "asc"
         dates_are_gmt: "true"
   date_stream_slicer:
-    class_name: source_woocommerce.components.DatetimeStreamSlicerWoocommerce
-    lookback_window: "{{ config.get('conversion_window_days', 0) }}d"
+    type: DatetimeStreamSlicer
+    lookback_window: "P{{ config.get('conversion_window_days', 0) }}D"
     start_datetime:
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S"
@@ -29,7 +29,8 @@ definitions:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S"
     datetime_format: "%Y-%m-%dT%H:%M:%S"
-    step: 30d
+    cursor_granularity: PT1S
+    step: P30D
     start_time_option:
       field_name: modified_after
       inject_into: request_parameter
