@@ -137,7 +137,7 @@ public class JobConverter {
 
   public static AttemptRead getAttemptRead(final Attempt attempt) {
     return new AttemptRead()
-        .id(attempt.getId())
+        .id((long) attempt.getAttemptNumber())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
         .bytesSynced(attempt.getOutput() // TODO (parker) remove after frontend switches to totalStats
             .map(JobOutput::getSync)
