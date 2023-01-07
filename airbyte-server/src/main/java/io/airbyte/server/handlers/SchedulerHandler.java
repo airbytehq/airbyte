@@ -362,8 +362,6 @@ public class SchedulerHandler {
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
-        .supportsNormalization(spec.getSupportsNormalization())
-        .supportsDbt(spec.getSupportsDBT())
         .destinationDefinitionId(destinationDefinitionId);
 
     final Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
