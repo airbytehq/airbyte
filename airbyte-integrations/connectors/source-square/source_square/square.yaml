@@ -29,8 +29,8 @@ definitions:
 
     request_options_provider:
       request_headers:
-        Square-Version: '2022-10-19'
-        Content-Type: 'application/json'
+        Square-Version: "2022-10-19"
+        Content-Type: "application/json"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -89,8 +89,9 @@ definitions:
         end_datetime:
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        step: 30d
+        step: "P30D"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_granularity: "PT0.000001S"
         cursor_field: "created_at"
         start_time_option:
           field_name: begin_time
@@ -136,8 +137,9 @@ definitions:
         end_datetime:
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        step: 30d
+        step: "P30D"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_granularity: "PT0.000001S"
         cursor_field: "updated_at"
         start_time_option:
           field_name: begin_time
@@ -285,8 +287,9 @@ definitions:
         end_datetime:
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        step: 30d
+        step: P30D
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_granularity: "PT0.000001S"
         parent_stream: "*ref(definitions.locations_stream)"
         cursor_field: "updated_at"
         parent_key: "id"

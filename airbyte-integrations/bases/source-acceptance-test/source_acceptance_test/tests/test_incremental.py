@@ -118,7 +118,7 @@ def compare_cursor_with_threshold(record_value, state_value, threshold_days: int
                 return value
             if isinstance(value, (int, float)):
                 return pendulum.from_timestamp(value / 1000)
-            return pendulum.parse(value)
+            return pendulum.parse(value, strict=False)
 
         record_date_value = _parse_date_value(record_value)
         state_date_value = _parse_date_value(state_value)

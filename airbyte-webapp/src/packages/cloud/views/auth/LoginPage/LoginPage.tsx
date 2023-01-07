@@ -26,7 +26,7 @@ const LoginPageValidationSchema = yup.object().shape({
   password: yup.string().required("form.empty.error"),
 });
 
-const LoginPage: React.FC = () => {
+export const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
   const { login } = useAuthService();
   const query = useQuery<{ from?: string }>();
@@ -120,5 +120,3 @@ const LoginPage: React.FC = () => {
     </div>
   );
 };
-
-export default LoginPage;

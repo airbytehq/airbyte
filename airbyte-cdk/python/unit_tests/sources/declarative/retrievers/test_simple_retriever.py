@@ -122,7 +122,7 @@ def test_simple_retriever_with_request_response_logs(mock_http_stream):
     paginator = MagicMock()
     record_selector = MagicMock()
     iterator = DatetimeStreamSlicer(
-        start_datetime="", end_datetime="", step="1d", cursor_field="id", datetime_format="", config={}, options={}
+        start_datetime="", end_datetime="", step="P1D", cursor_field="id", datetime_format="", cursor_granularity="P1D", config={}, options={}
     )
 
     retriever = SimpleRetriever(
@@ -153,7 +153,7 @@ def test_simple_retriever_with_request_response_log_last_records(mock_http_strea
     record_selector.select_records.return_value = request_response_logs
     response = requests.Response()
     iterator = DatetimeStreamSlicer(
-        start_datetime="", end_datetime="", step="1d", cursor_field="id", datetime_format="", config={}, options={}
+        start_datetime="", end_datetime="", step="P1D", cursor_field="id", datetime_format="", cursor_granularity="P1D", config={}, options={}
     )
 
     retriever = SimpleRetriever(
