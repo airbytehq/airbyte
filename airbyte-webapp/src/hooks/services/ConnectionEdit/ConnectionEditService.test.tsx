@@ -2,7 +2,10 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
 import { mockCatalogDiff } from "test-utils/mock-data/mockCatalogDiff";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
-import { mockDestination } from "test-utils/mock-data/mockDestination";
+import {
+  mockDestinationDefinition,
+  mockDestinationDefinitionSpecification,
+} from "test-utils/mock-data/mockDestination";
 import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper } from "test-utils/testutils";
 
@@ -12,7 +15,11 @@ import { useConnectionFormService } from "../ConnectionForm/ConnectionFormServic
 import { ConnectionEditServiceProvider, useConnectionEditService } from "./ConnectionEditService";
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
-  useGetDestinationDefinitionSpecification: () => mockDestination,
+  useGetDestinationDefinitionSpecification: () => mockDestinationDefinitionSpecification,
+}));
+
+jest.mock("services/connector/DestinationDefinitionService", () => ({
+  useDestinationDefinition: () => mockDestinationDefinition,
 }));
 
 jest.mock("services/workspaces/WorkspacesService", () => ({
