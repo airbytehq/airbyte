@@ -1,5 +1,6 @@
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
+import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { BuilderOptional } from "./BuilderOptional";
 import { KeyValueListField } from "./KeyValueListField";
@@ -23,7 +24,7 @@ export const AuthenticationSection: React.FC = () => {
             },
             children: (
               <>
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path="global.authenticator.header"
                   label="Header"
@@ -75,7 +76,7 @@ export const AuthenticationSection: React.FC = () => {
             },
             children: (
               <>
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path="global.authenticator.token_refresh_endpoint"
                   label="Token refresh endpoint"
@@ -92,28 +93,28 @@ export const AuthenticationSection: React.FC = () => {
                     label="Scopes"
                     tooltip="Scopes to request"
                   />
-                  <BuilderField
+                  <BuilderFieldWithInputs
                     type="string"
                     path="global.authenticator.token_expiry_date_format"
                     optional
                     label="Token expiry date format"
                     tooltip="The format of the expiry date of the access token as obtained from the refresh endpoint"
                   />
-                  <BuilderField
+                  <BuilderFieldWithInputs
                     type="string"
                     path="global.authenticator.expires_in_name"
                     optional
                     label="Token expiry property name"
                     tooltip="The name of the property which contains the token exipiry date in the response from the token refresh endpoint"
                   />
-                  <BuilderField
+                  <BuilderFieldWithInputs
                     type="string"
                     path="global.authenticator.access_token_name"
                     optional
                     label="Access token property name"
                     tooltip="The name of the property which contains the access token in the response from the token refresh endpoint"
                   />
-                  <BuilderField
+                  <BuilderFieldWithInputs
                     type="string"
                     path="global.authenticator.grant_type"
                     optional
@@ -139,25 +140,25 @@ export const AuthenticationSection: React.FC = () => {
             },
             children: (
               <>
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path="global.authenticator.header"
                   label="Header"
                   tooltip="Specific HTTP header of source API for providing session token"
                 />
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path="global.authenticator.session_token_response_key"
                   label="Session token response key"
                   tooltip="Key for retrieving session token from api response"
                 />
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path="global.authenticator.login_url"
                   label="Login url"
                   tooltip="Url for getting a specific session token"
                 />
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path="global.authenticator.validate_session_url"
                   label="Validate session url"

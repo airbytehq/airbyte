@@ -599,6 +599,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/most_recent_source_actor_catalog:
+    post:
+      tags:
+        - source
+      summary: Get most recent ActorCatalog for source
+      operationId: getMostRecentSourceActorCatalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActorCatalogWithUpdatedAt"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/search:
     post:
       tags:
@@ -2667,6 +2690,8 @@ components:
         - connectionConfiguration
         - workspaceId
       properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
@@ -2977,6 +3002,8 @@ components:
         - destinationDefinitionId
         - connectionConfiguration
       properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
@@ -3692,6 +3719,16 @@ components:
       properties:
         logType:
           $ref: "#/components/schemas/LogType"
+    # ACTOR CATALOG
+    ActorCatalogWithUpdatedAt:
+      description: A source actor catalog with the timestamp it was mostly recently updated
+      type: object
+      properties:
+        updatedAt:
+          type: integer
+          format: int64
+        catalog:
+          type: object
     # SCHEMA CATALOG
     AirbyteCatalog:
       description: describes the available schema (catalog).

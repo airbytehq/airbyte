@@ -26,8 +26,9 @@ definitions:
         end_datetime:
           datetime: "{{ config['end_date'] or today_utc().strftime('%Y-%m') }}"
           datetime_format: "%Y-%m"
-        step: "1m"
+        step: "P1M"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        cursor_granularity: "PT1S"
         cursor_field: "{{ options['stream_cursor_field'] }}"
     $options:
       name: "archive"

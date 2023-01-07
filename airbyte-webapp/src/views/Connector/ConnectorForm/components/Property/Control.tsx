@@ -1,7 +1,6 @@
 import { Field, useField } from "formik";
 import React, { useCallback } from "react";
 
-import { DatePicker } from "components/ui/DatePicker";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
@@ -13,6 +12,8 @@ import { useExperiment } from "hooks/services/Experiment";
 import { isDefined } from "utils/common";
 
 import SecretConfirmationControl from "./SecretConfirmationControl";
+
+const DatePicker = React.lazy(() => import("components/ui/DatePicker"));
 
 interface ControlProps {
   property: FormBaseItem;
