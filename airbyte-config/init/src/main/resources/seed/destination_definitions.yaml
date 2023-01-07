@@ -425,4 +425,3 @@
   icon: databend.svg
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databend
   releaseStage: alpha
-
