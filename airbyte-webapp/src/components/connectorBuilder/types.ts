@@ -729,16 +729,16 @@ export const convertToBuilderFormValues = (
       }
 
       console.log("stream.primary_key", stream.primary_key);
-      if (stream.primary_key === undefined) {
+      if (retriever.primary_key === undefined) {
         builderStream.primaryKey = [];
-      } else if (Array.isArray(stream.primary_key)) {
-        if (stream.primary_key.length > 0 && Array.isArray(stream.primary_key[0])) {
+      } else if (Array.isArray(retriever.primary_key)) {
+        if (retriever.primary_key.length > 0 && Array.isArray(retriever.primary_key[0])) {
           throw new ManifestCompatibilityError(stream.name, "primary_key contains nested arrays");
         } else {
-          builderStream.primaryKey = stream.primary_key as string[];
+          builderStream.primaryKey = retriever.primary_key as string[];
         }
       } else {
-        builderStream.primaryKey = [stream.primary_key];
+        builderStream.primaryKey = [retriever.primary_key];
       }
 
       if (retriever.paginator && retriever.paginator.type === "DefaultPaginator") {
