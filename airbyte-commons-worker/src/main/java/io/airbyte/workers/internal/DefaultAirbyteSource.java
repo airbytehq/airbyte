@@ -80,6 +80,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
 
+    // is something here slowing things down?
     sourceProcess = integrationLauncher.read(jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
         Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
@@ -87,9 +88,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
         Jsons.serialize(sourceConfig.getCatalog()),
         sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
         sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
-    // stdout logs are logged elsewhere since stdout also contains data
+    // this line gobbler already uses a separate thread
     LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);
-
     logInitialStateAsJSON(sourceConfig);
 
     final List<Type> acceptedMessageTypes = List.of(Type.RECORD, Type.STATE, Type.TRACE, Type.CONTROL);

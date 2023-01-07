@@ -243,9 +243,9 @@ public abstract class AbstractSourceConnectorTest {
     var counter = 0;
     var start = System.currentTimeMillis();
     while (!source.isFinished()) {
-      final Optional<AirbyteMessage> airbyteMessageOptional = source.attemptRead().map(m -> convertProtocolObject(m, AirbyteMessage.class));
-      if (airbyteMessageOptional.isPresent() && airbyteMessageOptional.get().getType().equals(Type.RECORD)) {
-        final AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
+      final Optional<io.airbyte.protocol.models.AirbyteMessage> airbyteMessageOptional = source.attemptRead();
+//      if (airbyteMessageOptional.isPresent() && airbyteMessageOptional.get().getType().equals(Type.RECORD)) {
+        final io.airbyte.protocol.models.AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
          totalBytes += airbyteMessage.getRecord().getData().toString().getBytes().length;
          counter++;
 //        final String streamName = record.getStream();
@@ -253,8 +253,9 @@ public abstract class AbstractSourceConnectorTest {
         if (counter % 1_000_000 == 0) {
           break;
         }
-      }
+//      }
     }
+
     var end = System.currentTimeMillis();
     var totalMB = totalBytes / 1_000_000.0;
     var totalTimeSecs = (end - start) / 1000.0;
