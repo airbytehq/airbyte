@@ -311,6 +311,11 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             existing_names = ", ".join(existing_names)
             raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default reports.")
 
+        for report in config["custom_reports"]:
+            # "date" dimension is mandatory because it's cursor_field
+            if "date" not in report["dimensions"]:
+                report["dimensions"].append("date")
+
         if "credentials_json" in config["credentials"]:
             try:
                 config["credentials"]["credentials_json"] = json.loads(config["credentials"]["credentials_json"])
