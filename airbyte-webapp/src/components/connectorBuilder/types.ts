@@ -706,6 +706,13 @@ export const convertToBuilderFormValues = (
         throw new ManifestCompatibilityError(stream.name, "url_base does not match the first stream's");
       }
 
+      if (retriever.name !== stream.name || requester.name !== stream.name) {
+        throw new ManifestCompatibilityError(
+          stream.name,
+          "name is not consistent across stream, retriever, and requester levels"
+        );
+      }
+
       const builderStream = {
         ...DEFAULT_BUILDER_STREAM_VALUES,
         id: uuid(),
@@ -728,7 +735,12 @@ export const convertToBuilderFormValues = (
         builderStream.httpMethod = (requester.http_method as "GET" | "POST" | undefined) ?? "GET";
       }
 
-      console.log("stream.primary_key", stream.primary_key);
+      if (!isEqual(stream.primary_key, retriever.primary_key)) {
+        throw new ManifestCompatibilityError(
+          stream.name,
+          "primary_key is not consistent across stream and retriever levels"
+        );
+      }
       if (retriever.primary_key === undefined) {
         builderStream.primaryKey = [];
       } else if (Array.isArray(retriever.primary_key)) {
