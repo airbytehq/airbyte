@@ -3,18 +3,19 @@
 #
 
 import time
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional, Union, List
 
 import requests
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.auth.token import AbstractHeaderAuthenticator
-from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.declarative.extractors import RecordSelector
 from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer, SingleSlice
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream, StreamData
@@ -147,8 +148,20 @@ class RailzAiServiceSlicer(SingleSlice):
 
 
 @dataclass
-class RailzAiIncrementalReportsSlicer(DatetimeStreamSlicer):
+class RailzAiDatetimeStreamSlicer(DatetimeStreamSlicer):
+    cursor_format: str = '%Y-%m-%d'
+
+    def parse_date(self, date: str) -> datetime:
+        return self._parser.parse(date, self.cursor_format, self._timezone)
+
+
+@dataclass
+class RailzAiIncrementalReportsSlicer(RailzAiDatetimeStreamSlicer):
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        if last_record is None:
+            self._cursor = stream_slice.get(self.cursor_field.eval(self.config))
+            return
+
         stream_slice_value_end = stream_slice.get(self.stream_slice_field_end.eval(self.config))
         last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
         if self._cursor and last_record_value:
@@ -162,7 +175,6 @@ class RailzAiIncrementalReportsSlicer(DatetimeStreamSlicer):
 @dataclass
 class RailzAiIncrementalServiceSlicer(RailzAiServiceSlicer):
     base_datetime_stream_slicer_options: Mapping[str, Any]
-    _cursor_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         if last_record is None:
@@ -175,32 +187,32 @@ class RailzAiIncrementalServiceSlicer(RailzAiServiceSlicer):
             self._cursor[stream_slice["businessName"]][stream_slice["serviceName"]] = {}
         service = self._cursor[stream_slice["businessName"]][stream_slice["serviceName"]]
 
-        last_record_cursor_value = self._get_record_cursor_value(last_record)
+        last_record_cursor_value = last_record[self._datetime_cursor_field]
 
-        if self._datetime_state_start_field not in service or service[self._datetime_state_start_field] < last_record_cursor_value:
-            service[self._datetime_state_start_field] = last_record_cursor_value
-
-    def _get_record_cursor_value(self, record):
-        value_unformatted = record[self._datetime_cursor_field]
-        return datetime.strptime(value_unformatted, self._cursor_format).strftime("%Y-%m-%d")
+        if self._datetime_cursor_field not in service or service[self._datetime_cursor_field] < last_record_cursor_value:
+            service[self._datetime_cursor_field] = last_record_cursor_value
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
         for stream_slice in super().stream_slices(sync_mode, stream_state):
-            if stream_slice["businessName"] in stream_state and stream_slice["serviceName"] in stream_state[stream_slice["businessName"]]:
+            state_cursor_value = stream_state \
+                .get(stream_slice["businessName"], {}).get(stream_slice["serviceName"], {}).get(self._datetime_cursor_field, None)
+            if state_cursor_value:
+                start = self._datetime_parse_date(state_cursor_value) \
+                    .strftime(self.base_datetime_stream_slicer_options["start_datetime"]["datetime_format"])
                 datetime_stream_slicer = self._create_datetime_stream_slicer(
                     {
                         **self.base_datetime_stream_slicer_options,
                         "start_datetime": {
                             **self.base_datetime_stream_slicer_options["start_datetime"],
-                            "datetime": stream_state[stream_slice["businessName"]][stream_slice["serviceName"]][
-                                self._datetime_state_start_field
-                            ],
+                            "datetime": start,
                         },
                     }
                 )
             else:
                 datetime_stream_slicer = self._create_datetime_stream_slicer(self.base_datetime_stream_slicer_options)
-            for datetime_stream_slice in datetime_stream_slicer.stream_slices(sync_mode, stream_state):
+            for datetime_stream_slice in datetime_stream_slicer.stream_slices(
+                sync_mode, stream_state.get(stream_slice["businessName"], {}).get(stream_slice["serviceName"], {})
+            ):
                 yield {**stream_slice, **datetime_stream_slice}
 
     def get_request_params(
@@ -211,8 +223,8 @@ class RailzAiIncrementalServiceSlicer(RailzAiServiceSlicer):
     ) -> Mapping[str, Any]:
         options = {}
         if stream_slice:
-            start_date = (stream_slice[self._datetime_state_start_field],)
-            end_date = (stream_slice[self._datetime_state_end_field],)
+            start_date = (stream_slice[self._datetime_slice_field_start],)
+            end_date = (stream_slice[self._datetime_slice_field_end],)
             if isinstance(start_date, tuple):
                 start_date = start_date[0]
             if isinstance(end_date, tuple):
@@ -231,12 +243,12 @@ class RailzAiIncrementalServiceSlicer(RailzAiServiceSlicer):
         return datetime_stream_slicer.cursor_field.eval(self.config)
 
     @property
-    def _datetime_state_start_field(self):
+    def _datetime_slice_field_start(self):
         datetime_stream_slicer = self._create_datetime_stream_slicer(self.base_datetime_stream_slicer_options)
         return datetime_stream_slicer.stream_slice_field_start.eval(self.config)
 
     @property
-    def _datetime_state_end_field(self):
+    def _datetime_slice_field_end(self):
         datetime_stream_slicer = self._create_datetime_stream_slicer(self.base_datetime_stream_slicer_options)
         return datetime_stream_slicer.stream_slice_field_end.eval(self.config)
 
@@ -250,6 +262,10 @@ class RailzAiIncrementalServiceSlicer(RailzAiServiceSlicer):
         datetime_stream_slicer = self._create_datetime_stream_slicer(self.base_datetime_stream_slicer_options)
         return datetime_stream_slicer.end_time_option.field_name
 
+    def _datetime_parse_date(self, date):
+        datetime_stream_slicer = self._create_datetime_stream_slicer(self.base_datetime_stream_slicer_options)
+        return datetime_stream_slicer.parse_date(date)
+
     def _create_datetime_stream_slicer(self, options):
         args = {
             **options,
@@ -260,12 +276,11 @@ class RailzAiIncrementalServiceSlicer(RailzAiServiceSlicer):
             "options": self._options,
             "config": self.config,
         }
-        return DatetimeStreamSlicer(**args)
+        return RailzAiDatetimeStreamSlicer(**args)
 
 
 @dataclass
 class RailzAiIncrementalServiceReportsSlicer(RailzAiIncrementalServiceSlicer):
-    _cursor_format = "%Y-%m-%dT%H:%M:%S%z"
 
     def get_request_params(
         self,
@@ -275,8 +290,8 @@ class RailzAiIncrementalServiceReportsSlicer(RailzAiIncrementalServiceSlicer):
     ) -> Mapping[str, Any]:
         options = {}
         if stream_slice:
-            start_date = (stream_slice[self._datetime_state_start_field],)
-            end_date = (stream_slice[self._datetime_state_end_field],)
+            start_date = (stream_slice[self._datetime_slice_field_start],)
+            end_date = (stream_slice[self._datetime_slice_field_end],)
             if isinstance(start_date, tuple):
                 start_date = start_date[0]
             if isinstance(end_date, tuple):
@@ -298,11 +313,11 @@ class RailzAiServiceRetriever(SimpleRetriever):
         self._failed_services = set()
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: Optional[List[str]] = None,
+            stream_slice: Optional[StreamSlice] = None,
+            stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
         if stream_slice["serviceName"] in self._failed_services:
             yield from []
@@ -317,7 +332,8 @@ class RailzAiServiceRetriever(SimpleRetriever):
 
 
 @dataclass
-class RailzAiReportsRetriever(SimpleRetriever):
+class RailzAiReportsSelector(RecordSelector):
+    config: Config = field(default_factory=dict)
     meta_fields: Union[List[str], str, None] = None
     _default_meta_fields = ("reportId",)
 
@@ -329,63 +345,26 @@ class RailzAiReportsRetriever(SimpleRetriever):
             if not isinstance(self.meta_fields, List):
                 self.meta_fields = None
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
-    ) -> Iterable[StreamData]:
-        self.paginator.reset()
-        records_generator = self._read_pages(
-            self.parse_records_and_emit_request_and_responses,
-            stream_slice,
-            stream_state,
-        )
+    def select_records(
+            self,
+            response: requests.Response,
+            stream_state: StreamState,
+            stream_slice: Optional[StreamSlice] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> List[Record]:
+        records = super().select_records(response, stream_state, stream_slice, next_page_token)
 
-        def update_cursor_and_get_parsed_records(_record) -> Union[Iterable[Record], None]:
-            if isinstance(_record, Mapping):
-                meta_fields = self.meta_fields or self._default_meta_fields
-                data_set = _record["data"] if isinstance(_record["data"], list) else [_record["data"]]
-                for data_element in data_set:
-                    parsed_record = {**data_element, **{field: value for field, value in _record["meta"].items() if field in meta_fields}}
-                    self.stream_slicer.update_cursor(stream_slice, last_record=parsed_record)
-                    yield parsed_record
-            else:
-                return _record
+        selected_records = []
 
-        for record in records_generator:
-            yield from update_cursor_and_get_parsed_records(record)
-        else:
-            last_record = self._last_records[-1] if self._last_records else None
-            if last_record:
-                yield from update_cursor_and_get_parsed_records(last_record)
-            else:
-                yield from []
+        for record in records:
+            meta_fields = self.meta_fields or self._default_meta_fields
+            data_set = record["data"] if isinstance(record["data"], list) else [record["data"]]
+            for data_element in data_set:
+                selected_records.append({**data_element, **{_field: value for _field, value in record["meta"].items() if _field in meta_fields}})
+
+        return selected_records
 
 
 @dataclass
-class RailzAiIncrementalReportsRetriever(RailzAiReportsRetriever):
+class RailzAiIncrementalReportsSelector(RailzAiReportsSelector):
     _default_meta_fields = ("reportId", "startDate", "endDate")
-
-
-@dataclass
-class RailzAiIncrementalServiceReportsRetriever(RailzAiServiceRetriever, RailzAiIncrementalReportsRetriever):
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
-    ) -> Iterable[StreamData]:
-
-        if stream_slice["serviceName"] in self._failed_services or stream_slice is None:
-            yield from []
-            return
-
-        try:
-            yield from super(RailzAiServiceRetriever, self).read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        except ReadException as e:
-            self._failed_services.add(stream_slice["serviceName"])
-            self.logger.warning(e)
-            yield from []

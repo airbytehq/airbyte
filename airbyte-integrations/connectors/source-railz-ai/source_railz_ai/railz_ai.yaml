@@ -8,8 +8,15 @@ definitions:
     extractor:
       field_pointer: ['data']
   selector_reports:
+    class_name: source_railz_ai.components.RailzAiReportsSelector
+    meta_fields: "{{ options['meta_fields'] }}"
     extractor:
       field_pointer: ["{{ options['extractor_field'] or 'reports' }}"]
+  selector_incremental_reports:
+    $ref: "*ref(definitions.selector_reports)"
+    class_name: source_railz_ai.components.RailzAiIncrementalReportsSelector
+    extractor:
+      $ref: "*ref(definitions.selector_reports.extractor)"
   requester:
     url_base: "https://api.railz.ai/"
     http_method: "GET"
@@ -120,7 +127,9 @@ definitions:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
     datetime_format: "%Y-%m-%d"
-    step: 1m
+    cursor_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    step: P1M
+    cursor_granularity: PT0.000001S
     start_time_option:
       field_name: startDate
       inject_into: "request_parameter"
@@ -129,31 +138,22 @@ definitions:
       inject_into: "request_parameter"
     cursor_field: "{{ options['stream_cursor_field'] }}"
 
-# Incremental Base:
-  base_incremental_stream:
-    $ref: "*ref(definitions.base_stream)"
-    retriever:
-      $ref: "*ref(definitions.base_stream.retriever)"
-      stream_slicer:
-        $ref: "*ref(definitions.base_datetime_stream_slicer_options)"
-        class_name: source_railz_ai.components.RailzAiIncrementalSlicer
-    stream_cursor_field: "endDate"
-
 # Incremental Reports Without Parameter:
   base_incremental_reports_without_parameter_stream:
     $ref: "*ref(definitions.base_stream)"
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
-      class_name: source_railz_ai.components.RailzAiIncrementalReportsRetriever
-      meta_fields: "{{ options['meta_fields'] }}"
+      class_name: source_railz_ai.components.SimpleRetriever
       record_selector:
-        $ref: "*ref(definitions.selector_reports)"
+        $ref: "*ref(definitions.selector_incremental_reports)"
       stream_slicer:
         $ref: "*ref(definitions.base_datetime_stream_slicer_options)"
         class_name: source_railz_ai.components.RailzAiIncrementalReportsSlicer
-        step: 2m
+        cursor_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P2M
         cursor_field: "{{ options['stream_cursor_field'] or 'endDate' }}"
     primary_key: ""
+    stream_cursor_field: "endDate"
 
 # Incremental Reports:
   base_incremental_reports_month_stream:
@@ -171,7 +171,7 @@ definitions:
       $ref: "*ref(definitions.base_incremental_reports_month_stream.retriever)"
       stream_slicer:
         $ref: "*ref(definitions.base_incremental_reports_without_parameter_stream.retriever.stream_slicer)"
-        step: 6m
+        step: P6M
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
@@ -183,7 +183,7 @@ definitions:
       $ref: "*ref(definitions.base_incremental_reports_month_stream.retriever)"
       stream_slicer:
         $ref: "*ref(definitions.base_incremental_reports_without_parameter_stream.retriever.stream_slicer)"
-        step: 2y
+        step: P2Y
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
@@ -330,16 +330,16 @@ definitions:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     retriever:
       $ref: "*ref(definitions.base_incremental_service_stream.retriever)"
-      class_name: source_railz_ai.components.RailzAiIncrementalServiceReportsRetriever
-      meta_fields: "{{ options['meta_fields'] }}"
+      class_name: source_railz_ai.components.RailzAiServiceRetriever
       record_selector:
-        $ref: "*ref(definitions.selector_reports)"
+        $ref: "*ref(definitions.selector_incremental_reports)"
       stream_slicer:
         $ref: "*ref(definitions.base_incremental_service_stream.retriever.stream_slicer)"
         class_name: source_railz_ai.components.RailzAiIncrementalServiceReportsSlicer
         base_datetime_stream_slicer_options:
           $ref: "*ref(definitions.base_incremental_service_stream.retriever.stream_slicer.base_datetime_stream_slicer_options)"
-          step: 2m
+          cursor_format: "%Y-%m-%dT%H:%M:%S%z"
+          step: P2M
           cursor_field: "{{ options['stream_cursor_field'] or 'endDate' }}"
     primary_key: ""
     stream_cursor_field: "endDate"
@@ -387,7 +387,7 @@ definitions:
         $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer)"
         base_datetime_stream_slicer_options:
           $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer.base_datetime_stream_slicer_options)"
-          step: 6m
+          step: P6M
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
@@ -401,7 +401,7 @@ definitions:
         $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer)"
         base_datetime_stream_slicer_options:
           $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer.base_datetime_stream_slicer_options)"
-          step: 2y
+          step: P2Y
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
@@ -572,7 +572,7 @@ definitions:
         $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer)"
         base_datetime_stream_slicer_options:
           $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer.base_datetime_stream_slicer_options)"
-          step: 6m
+          step: P6M
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
@@ -588,7 +588,7 @@ definitions:
         $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer)"
         base_datetime_stream_slicer_options:
           $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer.base_datetime_stream_slicer_options)"
-          step: 2y
+          step: P2Y
       requester:
         $ref: "*ref(definitions.base_incremental_service_reports_month_with_financial_statement_type_parameter_stream.retriever.requester)"
         request_options_provider:
