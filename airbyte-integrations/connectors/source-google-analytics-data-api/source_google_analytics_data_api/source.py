@@ -8,7 +8,7 @@ import logging
 import pkgutil
 import uuid
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 
 import jsonschema
 import requests
@@ -115,13 +115,11 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
 
 
 class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
-    row_limit = 100000
+    _record_date_format = "%Y%m%d"
+    primary_key = "uuid"
+    cursor_field = "date"
 
     metadata = MetadataDescriptor()
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return "uuid"
 
     @staticmethod
     def add_primary_key() -> dict:
@@ -211,14 +209,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             yield self.add_primary_key() | self.add_property_id(self.config["property_id"]) | self.add_dimensions(
                 dimensions, row
             ) | self.add_metrics(metrics, metrics_type_map, row)
-
-
-class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
-    _record_date_format = "%Y%m%d"
-
-    @property
-    def cursor_field(self) -> Union[str, List[str]]:
-        return "date"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
@@ -360,7 +350,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         config["authenticator"] = self.get_authenticator(config)
 
         return [
-            type(report["name"], (GoogleAnalyticsDataApiGenericStream,), {})(
+            type(report["name"], (GoogleAnalyticsDataApiBaseStream,), {})(
                 config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=config["authenticator"]
             )
             for report in reports + config["custom_reports"]
