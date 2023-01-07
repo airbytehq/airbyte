@@ -78,11 +78,13 @@ class BigQueryDestinationTest {
       Path.of("secrets/credentials-standard-no-dataset-creation.json");
   protected static final Path CREDENTIALS_NON_BILLABLE_PROJECT_PATH =
       Path.of("secrets/credentials-standard-non-billable-project.json");
+  protected static final Path CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH =
+      Path.of("secrets/credentials-no-edit-public-schema-role.json");
   protected static final Path CREDENTIALS_WITH_GCS_STAGING_PATH =
       Path.of("secrets/credentials-gcs-staging.json");
 
   protected static final Path[] ALL_PATHS = {CREDENTIALS_WITH_GCS_STAGING_PATH, CREDENTIALS_BAD_PROJECT_PATH, CREDENTIALS_NO_DATASET_CREATION_PATH,
-      CREDENTIALS_NON_BILLABLE_PROJECT_PATH, CREDENTIALS_WITH_GCS_STAGING_PATH};
+      CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH,CREDENTIALS_NON_BILLABLE_PROJECT_PATH, CREDENTIALS_WITH_GCS_STAGING_PATH};
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
   private static final String DATASET_NAME_PREFIX = "bq_dest_integration_test";
 
@@ -116,6 +118,7 @@ class BigQueryDestinationTest {
   protected static JsonNode configWithProjectId;
   protected static JsonNode configWithBadProjectId;
   protected static JsonNode insufficientRoleConfig;
+  protected static JsonNode noEditPublicSchemaRoleConfig;
   protected static JsonNode nonBillableConfig;
   protected static JsonNode gcsStagingConfig; //default BigQuery config. Also used for setup/teardown
   protected BigQuery bigquery;
@@ -144,6 +147,7 @@ class BigQueryDestinationTest {
   private Stream<Arguments> failWriteTestConfigProvider() {
     return Stream.of(
         Arguments.of("configWithBadProjectId", "User does not have bigquery.datasets.create permission in project"),
+        Arguments.of("noEditPublicSchemaRoleConfig", "Failed to write to destination schema."), // (or it may not exist)
         Arguments.of("insufficientRoleConfig", "Permission bigquery.tables.create denied")
     );
   }
@@ -178,6 +182,8 @@ class BigQueryDestinationTest {
     insufficientRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NO_DATASET_CREATION_PATH, datasetId);
     //config that tries to write to a project with disabled billing (free tier)
     nonBillableConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NON_BILLABLE_PROJECT_PATH, "testnobilling");
+    //config that has no privileges to edit anything in Public schema
+    noEditPublicSchemaRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH, "public");
     //config with GCS staging
     gcsStagingConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_WITH_GCS_STAGING_PATH, datasetId);
 
@@ -199,6 +205,7 @@ class BigQueryDestinationTest {
       put("configWithProjectId", configWithProjectId);
       put("configWithBadProjectId", configWithBadProjectId);
       put("insufficientRoleConfig", insufficientRoleConfig);
+      put("noEditPublicSchemaRoleConfig", noEditPublicSchemaRoleConfig);
       put("nonBillableConfig", nonBillableConfig);
       put("gcsStagingConfig", gcsStagingConfig);
     }};

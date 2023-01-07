@@ -9,6 +9,7 @@ import static io.airbyte.integrations.destination.s3.avro.AvroConstants.JSON_CON
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
@@ -16,6 +17,7 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
@@ -29,6 +31,26 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class BigQueryUploaderFactory {
+
+  private static final String CONFIG_ERROR_MSG = """
+    \n
+    ********************************************************************************************
+    
+       Failed to write to destination schema.
+    
+      1. Make sure you have all required permissions for writing to the schema.
+      
+      2. Make sure that the actual destination schema's location corresponds to location provided
+        in connector's config.
+        
+      3. Try to change the "Destination schema" from "Mirror Source Structure" (if it's set) tp the
+      "Destination Default" option.
+    
+    *******************************************************************************************
+    
+    More details:
+    
+      """;
 
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
@@ -141,7 +163,13 @@ public class BigQueryUploaderFactory {
         .setProject(bigQuery.getOptions().getProjectId())
         .build();
 
-    final TableDataWriteChannel writer = bigQuery.writer(job, writeChannelConfiguration);
+    final TableDataWriteChannel writer;
+
+    try{
+      writer = bigQuery.writer(job, writeChannelConfiguration);
+    }catch (final BigQueryException e){
+      throw new ConfigErrorException(CONFIG_ERROR_MSG + e);
+  }
 
     // this this optional value. If not set - use default client's value (15MiG)
     final Integer bigQueryClientChunkSizeFomConfig =
