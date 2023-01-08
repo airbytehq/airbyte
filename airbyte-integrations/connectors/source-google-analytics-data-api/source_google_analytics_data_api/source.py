@@ -276,14 +276,7 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
     ) -> str:
         return f"properties/{self.config['property_id']}/metadata"
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
 
 
@@ -309,7 +302,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         existing_names = {r["name"] for r in config["custom_reports"]} & report_names
         if existing_names:
             existing_names = ", ".join(existing_names)
-            raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default reports.")
+            raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default report(s).")
 
         for report in config["custom_reports"]:
             # "date" dimension is mandatory because it's cursor_field
@@ -345,8 +338,21 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         except ConfigurationError as e:
             return False, str(e)
         config["authenticator"] = self.get_authenticator(config)
+
         stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
-        next(stream.read_records(sync_mode=SyncMode.full_refresh))
+        metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh))
+        dimensions = {d["apiName"] for d in metadata["dimensions"]}
+        metrics = {d["apiName"] for d in metadata["metrics"]}
+
+        for report in config["custom_reports"]:
+            invalid_dimensions = set(report["dimensions"]) - dimensions
+            if invalid_dimensions:
+                invalid_dimensions = ", ".join(invalid_dimensions)
+                return False, f"custom_reports: invalid dimension(s): {invalid_dimensions} for the custom report: {report['name']}"
+            invalid_metrics = set(report["metrics"]) - metrics
+            if invalid_metrics:
+                invalid_metrics = ", ".join(invalid_metrics)
+                return False, f"custom_reports: invalid metric(s): {invalid_metrics} for the custom report: {report['name']}"
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

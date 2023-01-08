@@ -64,7 +64,10 @@ def config_gen(config):
 
 def test_check(requests_mock, config_gen):
     requests_mock.register_uri("POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"})
-    requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata", json={})
+    requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata", json={
+        "dimensions": [{"apiName": "date"}, {"apiName": "country"}],
+        "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}],
+    })
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
@@ -77,7 +80,9 @@ def test_check(requests_mock, config_gen):
     assert source.check(logger, config_gen(custom_reports="[{}]")) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0: \'name\' is a required property"')
     assert source.check(logger, config_gen(custom_reports='[{"name": "name"}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0: \'dimensions\' is a required property"')
     assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": [], "metrics": []}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports.0.dimensions: [] is too short'")
-    assert source.check(logger, config_gen(custom_reports='[{"name": "daily_active_users", "dimensions": ["date"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: daily_active_users already exist as a default reports.'")
+    assert source.check(logger, config_gen(custom_reports='[{"name": "daily_active_users", "dimensions": ["date"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: daily_active_users already exist as a default report(s).'")
+    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": ["unknown"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: invalid dimension(s): unknown for the custom report: name'")
+    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": ["date"], "metrics": ["unknown"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: invalid metric(s): unknown for the custom report: name'")
     assert source.check(logger, config_gen(credentials={"auth_type": "Service", "credentials_json": "invalid"})) == AirbyteConnectionStatus(status=Status.FAILED, message="'credentials.credentials_json is not valid JSON'")
     assert source.check(logger, config_gen(date_ranges_start_date="2022-20-20")) == AirbyteConnectionStatus(status=Status.FAILED, message='"time data \'2022-20-20\' does not match format \'%Y-%m-%d\'"')
 
