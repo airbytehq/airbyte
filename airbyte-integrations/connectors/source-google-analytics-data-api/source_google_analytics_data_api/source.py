@@ -113,6 +113,18 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     def config(self):
         return self._config
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 429:
+            return False
+        return super().should_retry(response)
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(**kwargs)
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code != 429:
+                raise e
+
 
 class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     _record_date_format = "%Y%m%d"
@@ -340,7 +352,10 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         config["authenticator"] = self.get_authenticator(config)
 
         stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
-        metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh))
+        metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        if not metadata:
+            return False, "failed to get metadata, over quota, try later"
+
         dimensions = {d["apiName"] for d in metadata["dimensions"]}
         metrics = {d["apiName"] for d in metadata["metrics"]}
 
