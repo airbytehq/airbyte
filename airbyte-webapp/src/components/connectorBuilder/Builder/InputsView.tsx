@@ -19,7 +19,10 @@ export const InputsView: React.FC = () => {
   const { formatMessage } = useIntl();
   const { values } = useFormikContext<BuilderFormValues>();
   const [inputInEditing, setInputInEditing] = useState<InputInEditing | undefined>(undefined);
-  const inferredInputs = useMemo(() => getInferredInputs(values), [values]);
+  const inferredInputs = useMemo(
+    () => getInferredInputs(values.global, values.inferredInputOverrides),
+    [values.global, values.inferredInputOverrides]
+  );
 
   return (
     <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.inputsTitle" })}>
