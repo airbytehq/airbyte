@@ -75,7 +75,7 @@ export const getAvailableSyncModesOptions = (
 
 export const BulkEditPanel: React.FC = () => {
   const {
-    destDefinition: { supportedDestinationSyncModes },
+    destDefinitionSpecification: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEditService();
   const availableSyncModesOptions = useMemo(
