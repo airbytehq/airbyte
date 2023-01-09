@@ -57,6 +57,7 @@ import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DbtTransformationRunner;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.general.DefaultGetSpecWorker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
@@ -94,6 +95,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,6 +116,7 @@ public abstract class DestinationAcceptanceTest {
   private Path jobRoot;
   private ProcessFactory processFactory;
   private WorkerConfigs workerConfigs;
+  private ConnectorConfigUpdater mConnectorConfigUpdater;
 
   protected Path localRoot;
   protected TestDataComparator testDataComparator = getTestDataComparator();
@@ -131,11 +134,11 @@ public abstract class DestinationAcceptanceTest {
 
   private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
     try {
-      LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+      final LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
       return provider.getDestinationDefinitions().stream()
           .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
           .findFirst();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       return Optional.empty();
     }
   }
@@ -362,6 +365,7 @@ public abstract class DestinationAcceptanceTest {
     LOGGER.info("localRoot: {}", localRoot);
     testEnv = new TestDestinationEnv(localRoot);
     workerConfigs = new WorkerConfigs(new EnvConfigs());
+    mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
 
     setup(testEnv);
 
@@ -1210,7 +1214,8 @@ public abstract class DestinationAcceptanceTest {
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false),
+        mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .getCheckConnection();
   }
@@ -1219,7 +1224,8 @@ public abstract class DestinationAcceptanceTest {
                                                                               final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
-          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false),
+          mConnectorConfigUpdater)
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
               .getCheckConnection();
       return standardCheckConnectionOutput.getStatus();
@@ -1648,7 +1654,7 @@ public abstract class DestinationAcceptanceTest {
   @Test
   public void testSyncNumberNanDataType() throws Exception {
     // NaN/Infinity protocol supports started from V1 version or higher
-    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    final SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
     if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportNumberNan()) {
       return;
     }
@@ -1664,7 +1670,7 @@ public abstract class DestinationAcceptanceTest {
   @Test
   public void testSyncIntegerNanDataType() throws Exception {
     // NaN/Infinity protocol supports started from V1 version or higher
-    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    final SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
     if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportIntegerNan()) {
       return;
     }
@@ -1680,7 +1686,7 @@ public abstract class DestinationAcceptanceTest {
   @Test
   public void testSyncNumberInfinityDataType() throws Exception {
     // NaN/Infinity protocol supports started from V1 version or higher
-    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    final SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
     if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportNumberInfinity()) {
       return;
     }
@@ -1696,7 +1702,7 @@ public abstract class DestinationAcceptanceTest {
   @Test
   public void testSyncIntegerInfinityDataType() throws Exception {
     // NaN/Infinity protocol supports started from V1 version or higher
-    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    final SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
     if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportIntegerInfinity()) {
       return;
     }
@@ -1709,7 +1715,8 @@ public abstract class DestinationAcceptanceTest {
     runAndCheck(catalog, configuredCatalog, messages);
   }
 
-  private void runAndCheck(AirbyteCatalog catalog, ConfiguredAirbyteCatalog configuredCatalog, List<AirbyteMessage> messages) throws Exception {
+  private void runAndCheck(final AirbyteCatalog catalog, final ConfiguredAirbyteCatalog configuredCatalog, final List<AirbyteMessage> messages)
+      throws Exception {
     if (supportsNormalization()) {
       LOGGER.info("Normalization is supported! Run test with normalization.");
       runAndCheckWithNormalization(messages, configuredCatalog, catalog);
