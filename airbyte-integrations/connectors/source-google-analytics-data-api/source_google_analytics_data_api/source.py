@@ -92,7 +92,9 @@ class MetadataDescriptor:
     def __get__(self, instance, owner):
         if not self._metadata:
             stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
-            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh))
+            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+            if not metadata:
+                raise Exception("failed to get metadata, over quota, try later")
             self._metadata = {
                 "dimensions": {m["apiName"]: m for m in metadata["dimensions"]},
                 "metrics": {m["apiName"]: m for m in metadata["metrics"]},
