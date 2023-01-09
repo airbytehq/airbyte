@@ -1,13 +1,16 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
-import { EmptyResourceListView } from "components/EmptyResourceListView";
-import HeadTitle from "components/HeadTitle";
+import { LoadingPage, MainPageWithScroll } from "components";
+import { HeadTitle } from "components/common/HeadTitle";
+import { ConnectionOnboarding } from "components/connection/ConnectionOnboarding";
+import { Button } from "components/ui/Button";
+import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 
 import { RoutePaths } from "../../../routePaths";
@@ -18,9 +21,9 @@ const AllConnectionsPage: React.FC = () => {
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const { connections } = useConnectionList();
-  const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
-  const onCreateClick = () => navigate(`${RoutePaths.ConnectionNew}`);
+  const onCreateClick = (sourceDefinitionId?: string) =>
+    navigate(`${RoutePaths.ConnectionNew}`, { state: { sourceDefinitionId } });
 
   return (
     <Suspense fallback={<LoadingPage />}>
@@ -28,10 +31,15 @@ const AllConnectionsPage: React.FC = () => {
         <MainPageWithScroll
           headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
           pageTitle={
-            <PageTitle
+            <PageHeader
               title={<FormattedMessage id="sidebar.connections" />}
               endComponent={
-                <Button onClick={onCreateClick} disabled={!allowCreateConnection}>
+                <Button
+                  icon={<FontAwesomeIcon icon={faPlus} />}
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onCreateClick()}
+                >
                   <FormattedMessage id="connection.newConnection" />
                 </Button>
               }
@@ -41,11 +49,7 @@ const AllConnectionsPage: React.FC = () => {
           <ConnectionsTable connections={connections} />
         </MainPageWithScroll>
       ) : (
-        <EmptyResourceListView
-          resourceType="connections"
-          onCreateClick={onCreateClick}
-          disableCreateButton={!allowCreateConnection}
-        />
+        <ConnectionOnboarding onCreate={onCreateClick} />
       )}
     </Suspense>
   );

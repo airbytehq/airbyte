@@ -5,7 +5,14 @@
 import json
 
 import pytest
-from airbyte_cdk.models.airbyte_protocol import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, FailureType, TraceType
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteErrorTraceMessage,
+    AirbyteMessage,
+    AirbyteTraceMessage,
+    FailureType,
+    Status,
+    TraceType,
+)
 from airbyte_cdk.models.airbyte_protocol import Type as MessageType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -53,6 +60,23 @@ def test_existing_exception_as_airbyte_message(raised_exception):
     assert airbyte_message.trace.error.stack_trace.endswith(
         'raise RuntimeError("an error has occurred")\n' "RuntimeError: an error has occurred\n"
     )
+
+
+def test_config_error_as_connection_status_message():
+    traced_exc = AirbyteTracedException("an internal message", message="Config validation error", failure_type=FailureType.config_error)
+    airbyte_message = traced_exc.as_connection_status_message()
+
+    assert type(airbyte_message) == AirbyteMessage
+    assert airbyte_message.type == MessageType.CONNECTION_STATUS
+    assert airbyte_message.connectionStatus.status == Status.FAILED
+    assert airbyte_message.connectionStatus.message == "Config validation error"
+
+
+def test_other_error_as_connection_status_message():
+    traced_exc = AirbyteTracedException("an internal message", failure_type=FailureType.system_error)
+    airbyte_message = traced_exc.as_connection_status_message()
+
+    assert airbyte_message is None
 
 
 def test_emit_message(capsys):

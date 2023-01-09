@@ -18,7 +18,7 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -84,7 +84,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public void createSchemaIfNotExists(final String datasetId, final String datasetLocation) {
     if (!existingSchemas.contains(datasetId)) {
       LOGGER.info("Creating dataset {}", datasetId);
-      BigQueryUtils.createDataset(bigQuery, datasetId, datasetLocation);
+      BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
       existingSchemas.add(datasetId);
     }
   }

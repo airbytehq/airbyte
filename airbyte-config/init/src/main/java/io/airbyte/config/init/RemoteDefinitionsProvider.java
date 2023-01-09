@@ -5,6 +5,7 @@
 package io.airbyte.config.init;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.CombinedConnectorCatalog;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -50,10 +51,12 @@ final public class RemoteDefinitionsProvider implements DefinitionsProvider {
     final CombinedConnectorCatalog catalog = getRemoteDefinitionCatalog(this.remoteDefinitionCatalogUrl, this.timeout);
     this.sourceDefinitions = catalog.getSources().stream().collect(Collectors.toMap(
         StandardSourceDefinition::getSourceDefinitionId,
-        source -> source));
+        source -> source.withProtocolVersion(
+            AirbyteProtocolVersion.getWithDefault(source.getSpec() != null ? source.getSpec().getProtocolVersion() : null).serialize())));
     this.destinationDefinitions = catalog.getDestinations().stream().collect(Collectors.toMap(
         StandardDestinationDefinition::getDestinationDefinitionId,
-        destination -> destination));
+        destination -> destination.withProtocolVersion(
+            AirbyteProtocolVersion.getWithDefault(destination.getSpec() != null ? destination.getSpec().getProtocolVersion() : null).serialize())));
   }
 
   @Override

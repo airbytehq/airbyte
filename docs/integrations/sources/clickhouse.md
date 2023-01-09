@@ -78,6 +78,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request                                             | Subject                                                          |
 |:--------| :--- |:---------------------------------------------------------|:-----------------------------------------------------------------|
+| 0.1.14  | 2022-09-27 | [17031](https://github.com/airbytehq/airbyte/pull/17031) | Added custom jdbc url parameters field  |
 | 0.1.13  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
 | 0.1.12  | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
 | 0.1.10  | 2022-04-12 | [11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                         |
@@ -95,6 +96,8 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request                                             | Subject                                                                    |
 |:---| :---  |:---------------------------------------------------------|:---------------------------------------------------------------------------|
+|         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
+| 0.1.14  | 2022-09-27 | [17031](https://github.com/airbytehq/airbyte/pull/17031) | Added custom jdbc url parameters field  |
 | 0.1.13  | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
 | 0.1.9 | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
 | 0.1.6 | 2022-02-09 | [\#10214](https://github.com/airbytehq/airbyte/pull/10214) | Fix exception in case `password` field is not provided  |

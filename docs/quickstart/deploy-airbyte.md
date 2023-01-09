@@ -11,7 +11,7 @@ cd airbyte
 docker-compose up
 ```
 
-Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000](http://localhost:8000)!
+Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000](http://localhost:8000)! You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, **be sure to change these** in your `.env` file.
 
 Alternatively, if you have an Airbyte Cloud invite, just follow [these steps.](../deploying-airbyte/on-cloud.md)
 
@@ -19,9 +19,8 @@ Alternatively, if you have an Airbyte Cloud invite, just follow [these steps.](.
 
 If you have any questions about the Airbyte Open-Source setup and deployment process, head over to our [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our Discourse that answers the following questions and more:
 
-* How long does it take to set up Airbyte?
-* Where can I see my data once I've run a sync?
-* Can I set a start time for my sync?
+- How long does it take to set up Airbyte?
+- Where can I see my data once I've run a sync?
+- Can I set a start time for my sync?
 
 If there are any questions that we couldn't answer here, we'd love to help you get started. [Join our Slack](https://airbytehq.slack.com/ssb/redirect) and feel free to ask your questions in the \#getting-started channel.
-

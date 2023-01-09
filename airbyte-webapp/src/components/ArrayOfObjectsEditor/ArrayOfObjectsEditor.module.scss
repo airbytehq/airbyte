@@ -1,5 +1,5 @@
-@use "../../scss/colors";
-@use "../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
 
 .container {
   margin-bottom: variables.$spacing-xl;
@@ -7,5 +7,5 @@
 
 .list {
   background-color: colors.$grey-50;
-  border-radius: 4px;
+  border-radius: variables.$border-radius-xs;
 }

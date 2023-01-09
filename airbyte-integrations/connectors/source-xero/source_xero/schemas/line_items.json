@@ -1,0 +1,52 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Description": {
+      "type": ["null", "string"]
+    },
+    "Quantity": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "UnitAmount": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "AccountCode": {
+      "type": ["null", "string"]
+    },
+    "ItemCode": {
+      "type": ["null", "string"]
+    },
+    "LineItemID": {
+      "type": ["string"]
+    },
+    "TaxType": {
+      "type": ["null", "string"]
+    },
+    "LineAmount": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "TaxAmount": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "DiscountRate": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "Tracking": {
+      "items": {
+        "$ref": "tracking_categories.json"
+      },
+      "type": ["null", "array"]
+    }
+  },
+  "additionalProperties": true
+}

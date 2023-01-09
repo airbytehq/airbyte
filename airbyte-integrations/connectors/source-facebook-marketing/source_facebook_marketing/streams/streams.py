@@ -73,6 +73,7 @@ class CustomConversions(FBMarketingStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-conversion"""
 
     entity_prefix = "customconversion"
+    enable_deleted = False
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_custom_conversions(params=params)
@@ -178,6 +179,8 @@ class AdAccount(FBMarketingStream):
         # that specific ad account.
         if "funding_source_details" in properties and "MANAGE" not in self.get_task_permissions():
             properties.remove("funding_source_details")
+        if "is_prepay_account" in properties and "MANAGE" not in self.get_task_permissions():
+            properties.remove("is_prepay_account")
         return properties
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:

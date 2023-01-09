@@ -1,0 +1,27 @@
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-mailjet-sms:dev
+tests:
+  spec:
+    - spec_path: "source_mailjet_sms/spec.yaml"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 30
+  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
+  #      expect_records:
+  #        path: "integration_tests/expected_records.jsonl"
+  #        extra_fields: no
+  #        exact_order: no
+  #        extra_records: yes
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 30

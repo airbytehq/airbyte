@@ -15,7 +15,7 @@
         "examples": ["123456789"]
       },
       "credentials": {
-        "title": "Authentication *",
+        "title": "Authentication",
         "type": "object",
         "oneOf": [
           {

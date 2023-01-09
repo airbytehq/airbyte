@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest.setEnv;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
 import static io.airbyte.integrations.source.mysql.MySqlSource.DRIVER_CLASS;
@@ -33,28 +32,32 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import javax.sql.DataSource;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public class CdcMysqlSourceTest extends CdcSourceTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   private static final String DB_NAME = MODELS_SCHEMA;
   private MySQLContainer<?> container;
@@ -64,7 +67,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @BeforeEach
   public void setup() throws SQLException {
-    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     init();
     revokeAllPermissions();
     grantCorrectPermissions();
@@ -84,18 +87,29 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
             container.getFirstMappedPort()),
         SQLDialect.MYSQL));
 
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "CDC")
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+        .put("time_zone", "America/Los_Angeles")
+        .build());
+
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", DB_NAME)
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        .put("replication_method", "CDC")
+        .put("replication_method", replicationMethod)
+        .put("is_test", true)
         .build());
   }
 
   private void revokeAllPermissions() {
     executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
+  }
+
+  private void revokeReplicationClientPermission() {
+    executeQuery("REVOKE REPLICATION CLIENT ON *.* FROM " + container.getUsername() + "@'%';");
   }
 
   private void grantCorrectPermissions() {
@@ -110,14 +124,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   public void tearDown() {
     try {
       container.close();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
   protected CdcTargetPosition cdcLatestTargetPosition() {
-    DataSource dataSource = DataSourceFactory.create(
+    final DataSource dataSource = DataSourceFactory.create(
         "root",
         "test",
         DRIVER_CLASS,
@@ -125,18 +139,18 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
             container.getHost(),
             container.getFirstMappedPort()),
         Collections.emptyMap());
-    JdbcDatabase jdbcDatabase = new DefaultJdbcDatabase(dataSource);
+    final JdbcDatabase jdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
     return MySqlCdcTargetPosition.targetPosition(jdbcDatabase);
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(JsonNode record) {
+  protected CdcTargetPosition extractPosition(final JsonNode record) {
     return new MySqlCdcTargetPosition(record.get(CDC_LOG_FILE).asText(), record.get(CDC_LOG_POS).asInt());
   }
 
   @Override
-  protected void assertNullCdcMetaData(JsonNode data) {
+  protected void assertNullCdcMetaData(final JsonNode data) {
     assertNull(data.get(CDC_LOG_FILE));
     assertNull(data.get(CDC_LOG_POS));
     assertNull(data.get(CDC_UPDATED_AT));
@@ -144,7 +158,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void assertCdcMetaData(JsonNode data, boolean deletedAtNull) {
+  protected void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull) {
     assertNotNull(data.get(CDC_LOG_FILE));
     assertNotNull(data.get(CDC_LOG_POS));
     assertNotNull(data.get(CDC_UPDATED_AT));
@@ -156,7 +170,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void removeCDCColumns(ObjectNode data) {
+  protected void removeCDCColumns(final ObjectNode data) {
     data.remove(CDC_LOG_FILE);
     data.remove(CDC_LOG_POS);
     data.remove(CDC_UPDATED_AT);
@@ -164,9 +178,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void addCdcMetadataColumns(AirbyteStream stream) {
-    ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-    ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
+  protected void addCdcMetadataColumns(final AirbyteStream stream) {
+    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
 
@@ -193,38 +207,26 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  public void assertExpectedStateMessages(List<AirbyteStateMessage> stateMessages) {
-    for (AirbyteStateMessage stateMessage : stateMessages) {
+  public void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages) {
+    for (final AirbyteStateMessage stateMessage : stateMessages) {
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_CDC_OFFSET));
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_DB_HISTORY));
     }
   }
 
   @Override
-  protected AirbyteCatalog expectedCatalogForDiscover() {
-    final AirbyteCatalog expectedCatalog = Jsons.clone(CATALOG);
+  protected String randomTableSchema() {
+    return MODELS_SCHEMA;
+  }
 
-    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
-        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.empty()));
-
-    List<AirbyteStream> streams = expectedCatalog.getStreams();
-    // stream with PK
-    streams.get(0).setSourceDefinedCursor(true);
-    addCdcMetadataColumns(streams.get(0));
-
-    AirbyteStream streamWithoutPK = CatalogHelpers.createAirbyteStream(
-        MODELS_STREAM_NAME + "_2",
-        MODELS_SCHEMA,
-        Field.of(COL_ID, JsonSchemaType.INTEGER),
-        Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-        Field.of(COL_MODEL, JsonSchemaType.STRING));
-    streamWithoutPK.setSourceDefinedPrimaryKey(Collections.emptyList());
-    streamWithoutPK.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
-    addCdcMetadataColumns(streamWithoutPK);
-
-    streams.add(streamWithoutPK);
-    expectedCatalog.withStreams(streams);
-    return expectedCatalog;
+  @Test
+  protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
+    revokeReplicationClientPermission();
+    final AirbyteConnectionStatus status = getSource().check(getConfig());
+    final String expectedErrorMessage = "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
+        + " for CDC mode.";
+    assertTrue(status.getStatus().equals(Status.FAILED));
+    assertTrue(status.getMessage().contains(expectedErrorMessage));
   }
 
   @Test

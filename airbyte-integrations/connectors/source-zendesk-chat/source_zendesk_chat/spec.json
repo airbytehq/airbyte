@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk-chat",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-chat",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zendesk Chat Spec",
@@ -16,7 +16,7 @@
       },
       "subdomain": {
         "type": "string",
-        "title": "Subdomain (Optional)",
+        "title": "Subdomain",
         "description": "Required if you access Zendesk Chat from a Zendesk Support subdomain.",
         "default": ""
       },

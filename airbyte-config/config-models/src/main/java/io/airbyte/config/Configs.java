@@ -5,6 +5,7 @@
 package io.airbyte.config;
 
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import java.net.URI;
@@ -42,6 +43,16 @@ public interface Configs {
    * Defines the Airbyte deployment version.
    */
   AirbyteVersion getAirbyteVersion();
+
+  /**
+   * Defines the max supported Airbyte Protocol Version
+   */
+  Version getAirbyteProtocolVersionMax();
+
+  /**
+   * Defines the min supported Airbyte Protocol Version
+   */
+  Version getAirbyteProtocolVersionMin();
 
   String getAirbyteVersionOrWarning();
 
@@ -136,6 +147,16 @@ public interface Configs {
    * Alpha Support.
    */
   String getVaultToken();
+
+  /**
+   * Defines thw aws_access_key configuration to use AWSSecretManager.
+   */
+  String getAwsAccessKey();
+
+  /**
+   * Defines aws_secret_access_key to use for AWSSecretManager.
+   */
+  String getAwsSecretAccessKey();
 
   // Database
 
@@ -395,6 +416,16 @@ public interface Configs {
   Map<String, String> getJobKubeNodeSelectors();
 
   /**
+   * Define an isolated kube node selectors, so we can run risky images in it.
+   */
+  Map<String, String> getIsolatedJobKubeNodeSelectors();
+
+  /**
+   * Define if we want to run custom connector related jobs in a separate node pool.
+   */
+  boolean getUseCustomKubeNodeSelector();
+
+  /**
    * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
    */
   Map<String, String> getSpecJobKubeNodeSelectors();
@@ -443,12 +474,42 @@ public interface Configs {
   /**
    * Define the Job pod connector image pull secret. Useful when hosting private images.
    */
-  String getJobKubeMainContainerImagePullSecret();
+  List<String> getJobKubeMainContainerImagePullSecrets();
+
+  /**
+   * Define the Memory request for the Sidecar
+   */
+  String getSidecarMemoryRequest();
+
+  /**
+   * Define the Memory limit for the Sidecar
+   */
+  String getSidecarKubeMemoryLimit();
+
+  /**
+   * Define the CPU request for the Sidecar
+   */
+  String getSidecarKubeCpuRequest();
+
+  /**
+   * Define the CPU limit for the Sidecar
+   */
+  String getSidecarKubeCpuLimit();
+
+  /**
+   * Define the CPU request for the SOCAT Sidecar
+   */
+  String getJobKubeSocatImage();
+
+  /**
+   * Define the CPU limit for the SOCAT Sidecar
+   */
+  String getSocatSidecarKubeCpuLimit();
 
   /**
    * Define the Job pod socat image.
    */
-  String getJobKubeSocatImage();
+  String getSocatSidecarKubeCpuRequest();
 
   /**
    * Define the Job pod busybox image.
@@ -569,23 +630,9 @@ public interface Configs {
   boolean shouldRunConnectionManagerWorkflows();
 
   /**
-   * Define if the worker is operating within Airbyte's Control Plane, or within an external Data
-   * Plane. - Workers in the Control Plane process tasks related to control-flow, like scheduling and
-   * routing, as well as data syncing tasks that are enqueued for the Control Plane's default task
-   * queue. - Workers in a Data Plane process only tasks related to data syncing that are specifically
-   * enqueued for that worker's particular Data Plane.
+   * Define if the worker should run notification workflows. Defaults to true. Internal-use only.
    */
-  WorkerPlane getWorkerPlane();
-
-  // Worker - Control Plane configs
-
-  /**
-   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's MVP Data Plane. - This
-   * should only be set on Control-plane workers, since those workers decide which Data Plane task
-   * queue to use based on connectionId. - Will be removed in favor of the Routing Service in the
-   * future. Internal-use only.
-   */
-  Set<String> connectionIdsForMvpDataPlane();
+  public boolean shouldRunNotifyWorkflows();
 
   // Worker - Data Plane configs
 
@@ -625,7 +672,8 @@ public interface Configs {
   // Container Orchestrator
 
   /**
-   * Define if Airbyte should use the container orchestrator. Internal-use only.
+   * Define if Airbyte should use the container orchestrator. Internal-use only. Should always be set
+   * to true - otherwise causes syncs to be run on workers instead.
    */
   boolean getContainerOrchestratorEnabled();
 
@@ -690,6 +738,12 @@ public interface Configs {
    */
   int getActivityNumberOfAttempt();
 
+  boolean getAutoDetectSchema();
+
+  boolean getApplyFieldSelection();
+
+  String getFieldSelectionWorkspaces();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
@@ -714,12 +768,8 @@ public interface Configs {
     NONE,
     TESTING_CONFIG_DB_TABLE,
     GOOGLE_SECRET_MANAGER,
-    VAULT
-  }
-
-  enum WorkerPlane {
-    CONTROL_PLANE,
-    DATA_PLANE
+    VAULT,
+    AWS_SECRET_MANAGER
   }
 
 }

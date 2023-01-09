@@ -2,7 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, Spinner, StatusIcon } from "components";
+import { Button } from "components/ui/Button";
+import { Spinner } from "components/ui/Spinner";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 interface CreateControlsProps {
   isSubmitting: boolean;

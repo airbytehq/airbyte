@@ -1,12 +1,15 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
-import { RoutePaths } from "pages/routePaths";
+import { RoutePaths, DestinationPaths } from "pages/routePaths";
 import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 import CreateConnectorModal from "./CreateConnectorModal";
 
@@ -23,6 +26,7 @@ interface ICreateProps {
 
 const CreateConnector: React.FC<IProps> = ({ type }) => {
   const navigate = useNavigate();
+  const workspaceId = useCurrentWorkspaceId();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const onChangeModalState = () => {
@@ -43,7 +47,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
       navigate(
         {
-          pathname: `${RoutePaths.Source}${RoutePaths.SourceNew}`,
+          pathname: `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Source}/${RoutePaths.SourceNew}`,
         },
         { state: { sourceDefinitionId: result.sourceDefinitionId } }
       );
@@ -59,7 +63,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
       navigate(
         {
-          pathname: `${RoutePaths.Destination}${RoutePaths.DestinationNew}`,
+          pathname: `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Destination}/${DestinationPaths.NewDestination}`,
         },
         { state: { destinationDefinitionId: result.destinationDefinitionId } }
       );
@@ -74,7 +78,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
   return (
     <>
       {type === "configuration" ? null : (
-        <Button onClick={onChangeModalState}>
+        <Button size="xs" icon={<FontAwesomeIcon icon={faPlus} />} onClick={onChangeModalState}>
           <FormattedMessage id="admin.newConnector" />
         </Button>
       )}

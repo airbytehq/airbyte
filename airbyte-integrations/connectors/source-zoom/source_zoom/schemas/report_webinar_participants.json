@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "webinar_uuid": {
+      "type": "string"
+    },
+    "customer_key": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "number"
+    },
+    "failover": {
+      "type": "boolean"
+    },
+    "id": {
+      "type": "string"
+    },
+    "join_time": {
+      "type": "string"
+    },
+    "leave_time": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "registrant_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "customer_key",
+    "duration",
+    "failover",
+    "id",
+    "join_time",
+    "leave_time",
+    "name",
+    "registrant_id",
+    "status",
+    "user_email",
+    "user_id"
+  ]
+}

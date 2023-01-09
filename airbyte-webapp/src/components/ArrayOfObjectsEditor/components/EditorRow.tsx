@@ -1,10 +1,10 @@
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { Button } from "components";
-import { Tooltip } from "components/base/Tooltip";
 import { CrossIcon } from "components/icons/CrossIcon";
 import { PencilIcon } from "components/icons/PencilIcon";
+import { Button } from "components/ui/Button";
+import { Tooltip } from "components/ui/Tooltip";
 
 import styles from "./EditorRow.module.scss";
 
@@ -25,23 +25,23 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
       <div className={styles.name}>{name || id}</div>
       <div className={styles.actions}>
         <Button
+          size="xs"
           type="button"
-          iconOnly
+          variant="clear"
           arial-label={formatMessage({ id: "form.edit" })}
           onClick={() => onEdit(id)}
           disabled={disabled}
-        >
-          <PencilIcon />
-        </Button>
+          icon={<PencilIcon />}
+        />
         <Button
+          size="xs"
           type="button"
-          iconOnly
+          variant="clear"
           aria-label={formatMessage({ id: "form.delete" })}
           onClick={() => onRemove(id)}
           disabled={disabled}
-        >
-          <CrossIcon />
-        </Button>
+          icon={<CrossIcon />}
+        />
       </div>
     </div>
   );

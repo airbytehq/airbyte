@@ -7,6 +7,7 @@ dependencies {
 
     implementation project(':airbyte-commons')
     implementation project(':airbyte-commons-cli')
+    implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-json-validation')
@@ -21,6 +22,29 @@ task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
     args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
 }
 
-project(":airbyte-config:init").tasks.processResources.dependsOn(generateSeedConnectorSpecs)
+task generateConnectorSpecsMask(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    mainClass = 'io.airbyte.config.specs.ConnectorSpecMaskGenerator'
+
+    args '--specs-root'
+    args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
+}
+
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateConnectorSpecsMask)
+
+task generateCombinedConnectorCatalog(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    mainClass = 'io.airbyte.config.specs.CombinedConnectorCatalogGenerator'
+
+    args '--seed-root'
+    args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
+
+    args '--output-filename'
+    args 'oss_catalog.json'
+}
+
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateCombinedConnectorCatalog)
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

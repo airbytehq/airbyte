@@ -4,11 +4,14 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import com.google.common.annotations.VisibleForTesting;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.time.Duration;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -17,22 +20,20 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Singleton
-@Requires(property = "airbyte.worker.plane",
-          notEquals = "DATA_PLANE")
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class WorkflowConfigActivityImpl implements WorkflowConfigActivity {
 
-  @Property(name = "airbyte.workflow.failure.restart-delay",
-            defaultValue = "600")
-  private Long workflowRestartDelaySeconds;
+  private final Long workflowRestartDelaySeconds;
 
+  public WorkflowConfigActivityImpl(@Property(name = "airbyte.workflow.failure.restart-delay",
+                                              defaultValue = "600") final Long workflowRestartDelaySeconds) {
+    this.workflowRestartDelaySeconds = workflowRestartDelaySeconds;
+  }
+
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public Duration getWorkflowRestartDelaySeconds() {
     return Duration.ofSeconds(workflowRestartDelaySeconds);
-  }
-
-  @VisibleForTesting
-  void setWorkflowRestartDelaySeconds(final Long workflowRestartDelaySeconds) {
-    this.workflowRestartDelaySeconds = workflowRestartDelaySeconds;
   }
 
 }

@@ -1,0 +1,63 @@
+@use "scss/colors";
+@use "scss/variables";
+
+$title-height: 34px;
+$group-spacing: variables.$spacing-xl;
+$border-width: variables.$border-thick;
+
+.container {
+  min-height: $title-height;
+  position: relative;
+  padding-top: calc($title-height / 2);
+}
+
+.title {
+  padding-right: $group-spacing;
+  display: flex;
+  align-items: center;
+  height: $title-height;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+
+  label {
+    padding-bottom: 0;
+  }
+}
+
+.label {
+  width: auto;
+  height: 100%;
+  padding-right: variables.$spacing-md;
+  display: flex;
+  align-items: center;
+  background-color: colors.$white;
+  white-space: nowrap;
+}
+
+.control {
+  margin-left: auto;
+  padding: 0 variables.$spacing-xs;
+  background-color: colors.$white;
+}
+
+.content {
+  border-color: colors.$grey-100;
+  border-style: solid;
+  border-width: 0 $border-width $border-width;
+  border-radius: variables.$border-radius-lg;
+
+  // box-shadow is used for the top border, so that it overlaps with bottom border when height is 0
+  box-shadow: 0 $border-width colors.$grey-100 inset;
+  padding: 0 $group-spacing;
+
+  // only apply padding when there are children, so that empty group sections border is just a single line
+  > :first-child {
+    padding-top: calc($group-spacing + $title-height/2);
+  }
+
+  > div {
+    margin-bottom: $group-spacing;
+  }
+}

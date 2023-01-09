@@ -10,7 +10,8 @@ import pkgutil
 from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import jsonref
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import ConnectorSpecification, FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from jsonschema import RefResolver, validate
 from jsonschema.exceptions import ValidationError
 from pydantic import BaseModel, Field
@@ -128,9 +129,9 @@ class ResourceSchemaLoader:
         except ValueError as err:
             raise RuntimeError(f"Invalid JSON file format for file {schema_filename}") from err
 
-        return self.__resolve_schema_references(raw_schema)
+        return self._resolve_schema_references(raw_schema)
 
-    def __resolve_schema_references(self, raw_schema: dict) -> dict:
+    def _resolve_schema_references(self, raw_schema: dict) -> dict:
         """
         Resolve links to external references and move it to local "definitions" map.
 
@@ -157,7 +158,11 @@ def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: Connector
     try:
         validate(instance=config, schema=spec_schema)
     except ValidationError as validation_error:
-        raise Exception("Config validation error: " + validation_error.message) from None
+        raise AirbyteTracedException(
+            message="Config validation error: " + validation_error.message,
+            internal_message=validation_error.message,
+            failure_type=FailureType.config_error,
+        ) from None  # required to prevent logging config secrets from the ValidationError's stacktrace
 
 
 class InternalConfig(BaseModel):

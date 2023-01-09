@@ -24,6 +24,8 @@ properties:
     "$ref": OperatorNormalization.yaml
   operatorDbt:
     "$ref": OperatorDbt.yaml
+  operatorWebhook:
+    "$ref": OperatorWebhook.yaml
   tombstone:
     description:
       if not set or false, the configuration is active. if true, then this

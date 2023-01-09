@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { useIntercom as useIntercomProvider, IntercomContextValues } from "react-use-intercom";
 
-import { useAnalytics } from "hooks/services/Analytics";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 export const useIntercom = (): IntercomContextValues => {
   const intercomContextValues = useIntercomProvider();
 
   const user = useCurrentUser();
-  const { analyticsContext } = useAnalytics();
+  const workspaceId = useCurrentWorkspaceId();
 
   useEffect(() => {
     intercomContextValues.boot({
@@ -18,7 +18,7 @@ export const useIntercom = (): IntercomContextValues => {
       userHash: user.intercomHash,
 
       customAttributes: {
-        workspace_id: analyticsContext.workspaceId,
+        workspace_id: workspaceId,
       },
     });
 
@@ -29,11 +29,11 @@ export const useIntercom = (): IntercomContextValues => {
   useEffect(() => {
     intercomContextValues.update({
       customAttributes: {
-        workspace_id: analyticsContext.workspace_id,
+        workspace_id: workspaceId,
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [analyticsContext.workspace_id]);
+  }, [workspaceId]);
 
   return intercomContextValues;
 };

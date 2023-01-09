@@ -158,3 +158,19 @@ def test_number_of_streams():
     streams = source.streams({})
     assert len(streams) == 36
 
+
+def test_ignore_403(applications_stream):
+    response = requests.Response()
+    response.status_code = 403
+    response._content = b""
+    parsed_response = applications_stream.retriever.parse_response(response, stream_state={})
+    records = [record for record in parsed_response]
+    assert records == []
+
+
+def test_retry_429(applications_stream):
+    response = requests.Response()
+    response.status_code = 429
+    response._content = b"{}"
+    should_retry = applications_stream.retriever.should_retry(response)
+    assert should_retry is True

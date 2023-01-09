@@ -41,12 +41,13 @@ public class JdbcUtils {
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String PASSWORD_KEY = "password";
   public static final String PORT_KEY = "port";
-  public static final String TCP_PORT_KEY = "tcp-port";
+
   public static final List<String> PORT_LIST_KEY = List.of("port");
   public static final String SCHEMA_KEY = "schema";
   // NOTE: this is the plural version of SCHEMA_KEY
   public static final String SCHEMAS_KEY = "schemas";
   public static final String SSL_KEY = "ssl";
+  public static final List<String> SSL_MODE_DISABLE = List.of("disable", "disabled");
   public static final String SSL_MODE_KEY = "ssl_mode";
   public static final String TLS_KEY = "tls";
   public static final String USERNAME_KEY = "username";
@@ -111,10 +112,17 @@ public class JdbcUtils {
    * (e.g. non-zero integers, string true, etc)
    *
    * @param config A configuration used to check Jdbc connection
-   * @return true: if ssl has not been set or it has been set with true, false: in all other cases
+   * @return true: if ssl has not been set and ssl mode not equals disabled or it has been set with
+   *         true, false: in all other cases
    */
   public static boolean useSsl(final JsonNode config) {
-    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
+    if (!config.has(SSL_KEY)) {
+      if (config.has(SSL_MODE_KEY) && config.get(SSL_MODE_KEY).has(MODE_KEY)) {
+        return !SSL_MODE_DISABLE.contains(config.get(SSL_MODE_KEY).get(MODE_KEY).asText());
+      } else
+        return true;
+    } else
+      return config.get(SSL_KEY).asBoolean();
   }
 
 }

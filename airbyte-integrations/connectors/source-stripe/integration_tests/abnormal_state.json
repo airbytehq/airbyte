@@ -1,20 +1,128 @@
-{
-  "charges": { "created": 10000000000 },
-  "coupons": { "created": 10000000000 },
-  "events": { "created": 10000000000 },
-  "customers": { "created": 10000000000 },
-  "plans": { "created": 10000000000 },
-  "invoices": { "created": 10000000000 },
-  "invoice_items": { "date": 10000000000 },
-  "transfers": { "created": 10000000000 },
-  "subscriptions": { "created": 10000000000 },
-  "balance_transactions": { "created": 10000000000 },
-  "payouts": { "created": 10000000000 },
-  "disputes": { "created": 10000000000 },
-  "products": { "created": 10000000000 },
-  "refunds": { "created": 10000000000 },
-  "payment_intents": { "created": 10000000000 },
-  "promotion_codes": { "created": 10000000000 },
-  "checkout_sessions": { "expires_at": 10000000000 },
-  "checkout_sessions_line_items": { "checkout_session_expires_at": 10000000000 }
-}
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "charges" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "coupons" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "events" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "customers" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "plans" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "invoices" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": 10000000000 },
+      "stream_descriptor": { "name": "invoice_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "transfers" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "subscriptions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "balance_transactions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "payouts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "disputes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "products" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "refunds" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "payment_intents" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "promotion_codes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "expires_at": 10000000000 },
+      "stream_descriptor": { "name": "checkout_sessions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "checkout_session_expires_at": 10000000000 },
+      "stream_descriptor": { "name": "checkout_sessions_line_items" }
+    }
+  }
+]

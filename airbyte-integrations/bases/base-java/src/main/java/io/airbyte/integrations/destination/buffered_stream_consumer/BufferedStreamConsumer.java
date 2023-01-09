@@ -11,15 +11,15 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
 import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -135,6 +135,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       }
 
       // if the buffer flushes, update the states appropriately.
+      // TODO: ryankfu (if true, this is where bundling up logic to also commit to airbyte_raw table)
       if (bufferingStrategy.addRecord(stream, message)) {
         markStatesAsFlushedToTmpDestination();
       }
@@ -191,6 +192,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         onClose.accept(false);
       }
 
+      // TODO: (ryankfu) at this section for when we close the stream and mark stream as committed
       // if onClose succeeds without exception then we can emit the state record because it means its
       // records were not only flushed, but committed.
       stateManager.markFlushedAsCommitted();

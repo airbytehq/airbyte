@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { InfoTooltip } from "components/base/Tooltip";
+import { InfoTooltip } from "components/ui/Tooltip";
 
 const LineBlock = styled.div`
   text-transform: none;

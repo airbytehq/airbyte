@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/s3",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -18,7 +18,7 @@
       "access_key_id": {
         "type": "string",
         "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
-        "title": "S3 Key ID *",
+        "title": "S3 Key ID",
         "airbyte_secret": true,
         "examples": ["A012345678910EXAMPLE"],
         "order": 0
@@ -26,7 +26,7 @@
       "secret_access_key": {
         "type": "string",
         "description": "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
-        "title": "S3 Access Key *",
+        "title": "S3 Access Key",
         "airbyte_secret": true,
         "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
         "order": 1
@@ -81,7 +81,7 @@
         "order": 4
       },
       "format": {
-        "title": "Output Format *",
+        "title": "Output Format",
         "type": "object",
         "description": "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\">here</a> for more details",
         "oneOf": [
@@ -90,14 +90,14 @@
             "required": ["format_type", "compression_codec"],
             "properties": {
               "format_type": {
-                "title": "Format Type *",
+                "title": "Format Type",
                 "type": "string",
                 "enum": ["Avro"],
                 "default": "Avro",
                 "order": 0
               },
               "compression_codec": {
-                "title": "Compression Codec *",
+                "title": "Compression Codec",
                 "description": "The compression algorithm used to compress data. Default to no compression.",
                 "type": "object",
                 "oneOf": [
@@ -207,7 +207,7 @@
             "required": ["format_type", "flattening"],
             "properties": {
               "format_type": {
-                "title": "Format Type *",
+                "title": "Format Type",
                 "type": "string",
                 "enum": ["CSV"],
                 "default": "CSV"
@@ -255,7 +255,7 @@
             "required": ["format_type"],
             "properties": {
               "format_type": {
-                "title": "Format Type *",
+                "title": "Format Type",
                 "type": "string",
                 "enum": ["JSONL"],
                 "default": "JSONL"
@@ -296,13 +296,13 @@
             "required": ["format_type"],
             "properties": {
               "format_type": {
-                "title": "Format Type *",
+                "title": "Format Type",
                 "type": "string",
                 "enum": ["Parquet"],
                 "default": "Parquet"
               },
               "compression_codec": {
-                "title": "Compression Codec (Optional)",
+                "title": "Compression Codec",
                 "description": "The compression algorithm used to compress data pages.",
                 "type": "string",
                 "enum": [
@@ -317,35 +317,35 @@
                 "default": "UNCOMPRESSED"
               },
               "block_size_mb": {
-                "title": "Block Size (Row Group Size) (MB) (Optional)",
+                "title": "Block Size (Row Group Size) (MB)",
                 "description": "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB.",
                 "type": "integer",
                 "default": 128,
                 "examples": [128]
               },
               "max_padding_size_mb": {
-                "title": "Max Padding Size (MB) (Optional)",
+                "title": "Max Padding Size (MB)",
                 "description": "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB.",
                 "type": "integer",
                 "default": 8,
                 "examples": [8]
               },
               "page_size_kb": {
-                "title": "Page Size (KB) (Optional)",
+                "title": "Page Size (KB)",
                 "description": "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB.",
                 "type": "integer",
                 "default": 1024,
                 "examples": [1024]
               },
               "dictionary_page_size_kb": {
-                "title": "Dictionary Page Size (KB) (Optional)",
+                "title": "Dictionary Page Size (KB)",
                 "description": "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB.",
                 "type": "integer",
                 "default": 1024,
                 "examples": [1024]
               },
               "dictionary_encoding": {
-                "title": "Dictionary Encoding (Optional)",
+                "title": "Dictionary Encoding",
                 "description": "Default: true.",
                 "type": "boolean",
                 "default": true
@@ -356,7 +356,7 @@
         "order": 5
       },
       "s3_endpoint": {
-        "title": "Endpoint (Optional)",
+        "title": "Endpoint",
         "type": "string",
         "default": "",
         "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
@@ -364,7 +364,7 @@
         "order": 6
       },
       "s3_path_format": {
-        "title": "S3 Path Format (Optional)",
+        "title": "S3 Path Format",
         "description": "Format string on how data will be organized inside the S3 bucket directory. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/s3#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format\">here</a>",
         "type": "string",
         "examples": [
@@ -375,7 +375,7 @@
       "file_name_pattern": {
         "type": "string",
         "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
-        "title": "S3 Filename pattern (Optional)",
+        "title": "S3 Filename pattern",
         "examples": [
           "{date}",
           "{date:yyyy_MM}",

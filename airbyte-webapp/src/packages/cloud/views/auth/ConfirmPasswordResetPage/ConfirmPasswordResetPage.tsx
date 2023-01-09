@@ -5,7 +5,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { LabeledInput, Link, LoadingButton } from "components";
+import { LabeledInput, Link } from "components";
+import { Button } from "components/ui/Button";
+import { ToastType } from "components/ui/Toast";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useQuery } from "hooks/useQuery";
@@ -45,8 +47,8 @@ const ResetPasswordConfirmPage: React.FC = () => {
             await confirmPasswordReset(query.oobCode, newPassword);
             registerNotification({
               id: "confirmResetPassword.success",
-              title: formatMessage({ id: "confirmResetPassword.success" }),
-              isError: false,
+              text: formatMessage({ id: "confirmResetPassword.success" }),
+              type: ToastType.SUCCESS,
             });
             navigate(CloudRoutes.Login);
           } catch (err) {
@@ -56,37 +58,37 @@ const ResetPasswordConfirmPage: React.FC = () => {
               case AuthErrorCodes.EXPIRED_OOB_CODE:
                 registerNotification({
                   id: "confirmResetPassword.error.expiredActionCode",
-                  title: formatMessage({
+                  text: formatMessage({
                     id: "confirmResetPassword.error.expiredActionCode",
                   }),
-                  isError: true,
+                  type: ToastType.ERROR,
                 });
                 break;
               case AuthErrorCodes.INVALID_OOB_CODE:
                 registerNotification({
                   id: "confirmResetPassword.error.invalidActionCode",
-                  title: formatMessage({
+                  text: formatMessage({
                     id: "confirmResetPassword.error.invalidActionCode",
                   }),
-                  isError: true,
+                  type: ToastType.ERROR,
                 });
                 break;
               case AuthErrorCodes.WEAK_PASSWORD:
                 registerNotification({
                   id: "confirmResetPassword.error.weakPassword",
-                  title: formatMessage({
+                  text: formatMessage({
                     id: "confirmResetPassword.error.weakPassword",
                   }),
-                  isError: true,
+                  type: ToastType.WARNING,
                 });
                 break;
               default:
                 registerNotification({
                   id: "confirmResetPassword.error.default",
-                  title: formatMessage({
+                  text: formatMessage({
                     id: "confirmResetPassword.error.default",
                   }),
-                  isError: true,
+                  type: ToastType.ERROR,
                 });
             }
           }
@@ -113,9 +115,9 @@ const ResetPasswordConfirmPage: React.FC = () => {
               <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
+              <Button type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
                 <FormattedMessage id="login.resetPassword" />
-              </LoadingButton>
+              </Button>
             </BottomBlock>
           </Form>
         )}

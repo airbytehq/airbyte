@@ -171,7 +171,7 @@ class SSLCertificateUtilsTest {
     final KeyStore ks = KeyStore.getInstance("PKCS12");
     final InputStream inputStream = Files.newInputStream(Path.of(ksUri));
     ks.load(inputStream, KEY_STORE_PASSWORD.toCharArray());
-    assertTrue(ks.isKeyEntry("ab_"));
+    assertTrue(ks.isKeyEntry(SSLCertificateUtils.KEYSTORE_ENTRY_PREFIX));
     assertFalse(ks.isKeyEntry("cd_"));
     assertEquals(1, ks.size());
     Files.delete(Path.of(ksUri));

@@ -14,6 +14,7 @@ import com.google.common.io.Resources;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -31,6 +32,11 @@ import java.util.stream.Collectors;
  * This provider contains all definitions according to the local yaml files.
  */
 final public class LocalDefinitionsProvider implements DefinitionsProvider {
+
+  public static final Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
+
+  private final static String PROTOCOL_VERSION = "protocol_version";
+  private final static String SPEC = "spec";
 
   private Map<UUID, StandardSourceDefinition> sourceDefinitions;
   private Map<UUID, StandardDestinationDefinition> destinationDefinitions;
@@ -97,7 +103,10 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
     return rawDefinitions.entrySet().stream()
         .collect(Collectors.toMap(e -> UUID.fromString(e.getKey()), e -> {
           final JsonNode withMissingFields = addMissingFields(e.getValue());
-          final JsonNode withSpec = mergeSpecIntoDefinition(withMissingFields, rawSpecs);
+          final ObjectNode withSpec = (ObjectNode) mergeSpecIntoDefinition(withMissingFields, rawSpecs);
+          final String protocolVersion =
+              withSpec.has(SPEC) && withSpec.get(SPEC).has(PROTOCOL_VERSION) ? withSpec.get(SPEC).get(PROTOCOL_VERSION).asText() : null;
+          withSpec.put("protocolVersion", AirbyteProtocolVersion.getWithDefault(protocolVersion).serialize());
           return Jsons.object(withSpec, definitionModel);
         }));
 
@@ -126,10 +135,10 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
         definitionJson.get("dockerRepository").asText(),
         definitionJson.get("dockerImageTag").asText());
     final JsonNode specConfigJson = specConfigs.get(dockerImage);
-    if (specConfigJson == null || specConfigJson.get("spec") == null) {
+    if (specConfigJson == null || specConfigJson.get(SPEC) == null) {
       throw new UnsupportedOperationException(String.format("There is no seed spec for docker image %s", dockerImage));
     }
-    ((ObjectNode) definitionJson).set("spec", specConfigJson.get("spec"));
+    ((ObjectNode) definitionJson).set(SPEC, specConfigJson.get(SPEC));
     return definitionJson;
   }
 

@@ -6,7 +6,7 @@ describe("Preferences actions", () => {
     initialSetupCompleted(false);
   });
 
-  it("Should redirect to onboarding after email is entered", () => {
+  it("Should redirect to connections page after email is entered", () => {
     cy.visit("/preferences");
     cy.url().should("include", `/preferences`);
 
@@ -15,6 +15,6 @@ describe("Preferences actions", () => {
 
     submitButtonClick();
 
-    cy.url().should("match", /.*\/onboarding/);
+    cy.url().should("match", /.*\/connections/);
   });
 });

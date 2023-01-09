@@ -1,20 +1,23 @@
-import * as Sentry from "@sentry/react";
-import { Integrations } from "@sentry/tracing";
 import { lazy, Suspense } from "react";
 import ReactDOM from "react-dom";
 
 import "react-reflex/styles.css";
 import { isCloudApp } from "utils/app";
+import { loadDatadog } from "utils/datadog";
+import { loadOsano } from "utils/dataPrivacy";
+import { loadSentry } from "utils/sentry";
 
 import "./globals";
+import "./scss/global.scss";
 
-// We do not follow default config approach since we want to init sentry asap
-Sentry.init({
-  dsn: process.env.REACT_APP_SENTRY_DSN || window.REACT_APP_SENTRY_DSN,
-  release: process.env.REACT_APP_WEBAPP_TAG || window.REACT_APP_WEBAPP_TAG || "dev",
-  integrations: [new Integrations.BrowserTracing()],
-  tracesSampleRate: 1.0, // may need to adjust this in the future
-});
+// We do not follow default config approach since we want to init sentry/datadog asap
+loadSentry();
+loadDatadog();
+
+// In Cloud load the Osano script (GDPR consent tool before anything else)
+if (isCloudApp()) {
+  loadOsano();
+}
 
 const CloudApp = lazy(() => import(`packages/cloud/App`));
 const App = lazy(() => import(`./App`));

@@ -20,7 +20,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.JDBCType;
 import java.util.function.Function;
 import javax.sql.DataSource;
@@ -38,6 +38,10 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
 
   @BeforeAll
   static void init() {
+    // In mssql, timestamp is generated automatically, so we need to use
+    // the datetime type instead so that we can set the value manually.
+    COL_TIMESTAMP_TYPE = "DATETIME";
+
     dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     dbContainer.start();
   }

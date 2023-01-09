@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "target": {
+      "type": ["null", "string"]
+    },
+    "port": {
+      "type": ["null", "integer"]
+    },
+    "extra_info": {
+      "type": ["null", "object"]
+    },
+    "age": {
+      "type": ["null", "string"]
+    },
+    "snoozed": {
+      "type": ["null", "boolean"]
+    },
+    "snooze_reason": {
+      "type": ["null", "string"]
+    },
+    "snooze_until": {
+      "type": ["null", "string"]
+    }
+  }
+}

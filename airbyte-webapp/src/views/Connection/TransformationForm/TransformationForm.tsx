@@ -3,19 +3,23 @@ import type { FormikErrors } from "formik/dist/types";
 import { getIn, useFormik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import * as yup from "yup";
 
-import { Button, ControlLabels, DropDown, Input, ModalBody, ModalFooter } from "components";
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
+import { ControlLabels } from "components/LabeledControl";
+import { Button } from "components/ui/Button";
+import { DropDown } from "components/ui/DropDown";
+import { Input } from "components/ui/Input";
+import { ModalBody, ModalFooter } from "components/ui/Modal";
 
-import { useConfig } from "config";
 import { OperationService } from "core/domain/connection";
 import { OperationCreate, OperationRead } from "core/request/AirbyteClient";
 import { useGetService } from "core/servicesProvider";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { links } from "utils/links";
 import { equal } from "utils/objects";
 
 import styles from "./TransformationForm.module.scss";
+import { validationSchema } from "./utils";
 
 interface TransformationProps {
   transformation: OperationCreate;
@@ -23,18 +27,6 @@ interface TransformationProps {
   onDone: (tr: OperationCreate) => void;
   isNewTransformation?: boolean;
 }
-
-const validationSchema = yup.object({
-  name: yup.string().required("form.empty.error"),
-  operatorConfiguration: yup.object({
-    dbt: yup.object({
-      gitRepoUrl: yup.string().required("form.empty.error"),
-      dockerImage: yup.string().required("form.empty.error"),
-      dbtArguments: yup.string().required("form.empty.error"),
-      gitRepoBranch: yup.string().nullable(),
-    }),
-  }),
-});
 
 function prepareLabelFields(
   errors: FormikErrors<OperationRead>,
@@ -62,7 +54,6 @@ const TransformationForm: React.FC<TransformationProps> = ({
   isNewTransformation,
 }) => {
   const { formatMessage } = useIntl();
-  const config = useConfig();
   const operationService = useGetService<OperationService>("OperationService");
   const { clearFormChange } = useFormChangeTrackerService();
   const formId = useUniqueFormId();
@@ -136,7 +127,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
                   id="form.entrypoint.linked"
                   values={{
                     a: (node: React.ReactNode) => (
-                      <a href={config.links.dbtCommandsReference} target="_blank" rel="noreferrer">
+                      <a href={links.dbtCommandsReference} target="_blank" rel="noreferrer">
                         {node}
                       </a>
                     ),
@@ -153,7 +144,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={onFormCancel} type="button" secondary>
+        <Button onClick={onFormCancel} type="button" variant="secondary">
           <FormattedMessage id="form.cancel" />
         </Button>
         <Button

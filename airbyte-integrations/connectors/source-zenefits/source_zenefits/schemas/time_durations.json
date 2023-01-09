@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "is_overnight": {
+      "type": ["boolean", "null"]
+    },
+    "is_approved": {
+      "type": ["boolean", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "end": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "person": {
+      "type": "object",
+      "properties": {
+        "ref_object": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        },
+        "url": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "url": {
+      "type": ["string", "null"]
+    },
+    "approver": {
+      "type": "object",
+      "properties": {
+        "ref_object": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        },
+        "url": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "labor_group_ids": {
+      "type": ["string", "null"]
+    },
+    "hours": {
+      "type": ["string", "null"]
+    },
+    "start": {
+      "type": ["string", "null"]
+    },
+    "state": {
+      "type": ["string", "null"]
+    },
+    "approved_datetime": {
+      "type": ["string", "null"]
+    },
+    "valid_status": {
+      "type": ["string", "null"]
+    },
+    "date": {
+      "type": ["string", "null"]
+    },
+    "activity": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    }
+  }
+}

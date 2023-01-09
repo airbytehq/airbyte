@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ID": {
+      "type": "string"
+    },
+    "From": {
+      "type": "string"
+    },
+    "To": {
+      "type": "string"
+    },
+    "Status": {
+      "type": "object",
+      "properties": {
+        "Code": {
+          "type": "number"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        }
+      }
+    },
+    "Cost": {
+      "type": "object",
+      "properties": {
+        "Value": {
+          "type": "number"
+        },
+        "Currency": {
+          "type": "string"
+        }
+      }
+    },
+    "CreationTS": {
+      "type": "integer"
+    },
+    "SmsCount": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "title": "Seller Sales and Traffic Business Report - By Asin",
+  "description": "Seller retail analytics reports - Sales and Traffic Business Report",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "queryEndDate": {
+      "type": ["null", "string"]
+    },
+    "parentAsin": {
+      "type": ["null", "string"]
+    },
+    "childAsin": {
+      "type": ["null", "string"]
+    },
+    "salesByAsin": {
+      "type": "object",
+      "properties": {
+        "unitsOrdered": {
+          "type": ["null", "number"]
+        },
+        "orderedProductSales": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currencyCode": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "totalOrderItems": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "trafficByAsin": {
+      "type": "object",
+      "properties": {
+        "browserSessions": {
+          "type": ["null", "number"]
+        },
+        "mobileAppSessions": {
+          "type": ["null", "number"]
+        },
+        "sessions": {
+          "type": ["null", "number"]
+        },
+        "browserSessionPercentage": {
+          "type": ["null", "number"]
+        },
+        "mobileAppSessionPercentage": {
+          "type": ["null", "number"]
+        },
+        "sessionPercentage": {
+          "type": ["null", "number"]
+        },
+        "browserPageViews": {
+          "type": ["null", "number"]
+        },
+        "mobileAppPageViews": {
+          "type": ["null", "number"]
+        },
+        "pageViews": {
+          "type": ["null", "number"]
+        },
+        "browserPageViewsPercentage": {
+          "type": ["null", "number"]
+        },
+        "mobileAppPageViewsPercentage": {
+          "type": ["null", "number"]
+        },
+        "pageViewsPercentage": {
+          "type": ["null", "number"]
+        },
+        "buyBoxPercentage": {
+          "type": ["null", "number"]
+        },
+        "unitSessionPercentage": {
+          "type": ["null", "number"]
+        }
+      }
+    }
+  }
+}

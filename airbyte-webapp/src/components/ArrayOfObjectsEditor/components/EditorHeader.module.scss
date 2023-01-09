@@ -1,0 +1,13 @@
+@use "scss/colors";
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  color: colors.$dark-blue-900;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  margin: 5px 0 10px;
+}

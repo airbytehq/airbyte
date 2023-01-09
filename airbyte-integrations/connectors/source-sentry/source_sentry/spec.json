@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/sentry",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/sentry",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Sentry Spec",
@@ -28,6 +28,12 @@
         "type": "string",
         "title": "Project",
         "description": "The name (slug) of the Project you want to sync."
+      },
+      "discover_fields": {
+        "type": "array",
+        "item": "string",
+        "title": "Discover Event Fields",
+        "description": "Fields to retrieve when fetching discover events"
       }
     }
   }

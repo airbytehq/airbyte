@@ -1,0 +1,247 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 15px;
+  color: colors.$grey;
+  border-radius: variables.$border-radius-sm;
+  border: 0;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease-in;
+  white-space: nowrap;
+
+  &.full {
+    width: 100%;
+  }
+
+  &:disabled,
+  &.isLoading {
+    pointer-events: none;
+  }
+
+  &:focus-visible,
+  &:hover,
+  &:not(.typeLight) {
+    box-shadow: 0 3px 4px -2px rgba(26, 25, 77, 21%);
+  }
+
+  &:focus-visible {
+    outline: 3px solid colors.$blue-50;
+  }
+
+  &:disabled:not(.isLoading) {
+    opacity: 0.25;
+  }
+
+  .buttonIcon {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+
+    &.positionLeft {
+      &.withLabel {
+        margin-right: 7px;
+      }
+    }
+
+    &.positionRight {
+      &.withLabel {
+        margin-left: 7px;
+      }
+    }
+
+    &.typePrimary,
+    &.typeDanger {
+      color: colors.$white;
+    }
+
+    &.typeSecondary,
+    &.typeClear,
+    &.typeLight {
+      color: colors.$grey-300;
+    }
+
+    &.isRegularIcon {
+      &.typeSecondary,
+      &.typeClear {
+        &:hover {
+          color: colors.$grey-400;
+        }
+
+        &:active {
+          color: colors.$grey-400;
+        }
+      }
+
+      &.typeLight {
+        &:hover {
+          color: colors.$grey-500;
+        }
+
+        &:active {
+          color: colors.$grey-500;
+        }
+      }
+    }
+
+    &.isSpinnerIcon {
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      position: absolute;
+      animation: spin 1.5s linear 0s infinite;
+    }
+  }
+
+  &.sizeXS {
+    height: 32px;
+    font-size: 12px;
+    line-height: 15px;
+    padding: 10px;
+
+    .buttonIcon {
+      font-size: 14px;
+    }
+  }
+
+  &.sizeS {
+    height: 36px;
+    font-size: 12px;
+    line-height: 15px;
+    padding: 10px 14px;
+
+    .buttonIcon {
+      font-size: 15px;
+    }
+  }
+
+  &.sizeL {
+    height: 44px;
+    font-size: 16px;
+    line-height: 19px;
+    padding: 10px 14px;
+
+    .buttonIcon {
+      &.isSpinnerIcon {
+        margin-top: 3px;
+      }
+
+      font-size: 18px;
+    }
+  }
+
+  &.typePrimary {
+    background-color: colors.$blue-400;
+    color: colors.$white;
+
+    &:hover {
+      background-color: colors.$blue-500;
+    }
+
+    &:active {
+      background-color: colors.$blue-600;
+    }
+  }
+
+  &.typeSecondary {
+    background-color: colors.$transparentColor;
+    color: colors.$grey-300;
+    border: 1px solid colors.$grey-200;
+    box-shadow: none;
+
+    &:hover {
+      border-color: colors.$grey-300;
+      color: colors.$grey-400;
+    }
+
+    &:active {
+      border-color: colors.$grey-400;
+      color: colors.$grey-400;
+    }
+  }
+
+  &.typeClear {
+    background-color: colors.$transparentColor;
+    color: colors.$grey-300;
+    box-shadow: none;
+
+    &:hover {
+      color: colors.$grey-400;
+    }
+
+    &:active {
+      color: colors.$grey-400;
+    }
+  }
+
+  &.typeDanger {
+    background-color: colors.$red-300;
+    color: colors.$white;
+
+    &:hover {
+      background-color: colors.$red-400;
+    }
+
+    &:active {
+      background-color: colors.$red-600;
+    }
+  }
+
+  &.typeLight {
+    background-color: colors.$grey-50;
+    color: colors.$grey-300;
+
+    &:hover {
+      background-color: colors.$grey-100;
+      color: colors.$grey-500;
+    }
+
+    &:active {
+      background-color: colors.$grey-200;
+      color: colors.$grey-500;
+    }
+  }
+
+  &.typeDark {
+    background-color: colors.$dark-blue;
+    color: colors.$white;
+
+    &:hover {
+      background-color: colors.$dark-blue-800;
+      color: colors.$white;
+    }
+
+    &:active {
+      background-color: colors.$dark-blue-1000;
+      color: colors.$white;
+    }
+  }
+
+  &.isLoading {
+    position: relative;
+    align-content: center;
+    justify-content: center;
+
+    .childrenContainer {
+      color: colors.$transparentColor;
+    }
+
+    .buttonIcon {
+      &.isRegularIcon {
+        color: colors.$transparentColor;
+      }
+    }
+  }
+}

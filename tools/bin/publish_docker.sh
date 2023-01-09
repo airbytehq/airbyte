@@ -3,22 +3,23 @@ set -e
 
 # List of directories without "airbyte-" prefix.
 projectDir=(
-  "workers"
-  "cli"
+  "bootloader"
+  "config/init"
+  "container-orchestrator"
   "cron"
-  "webapp"
+  "connector-builder-server"
+  "db/db-lib"
+  "metrics/reporter"
+  "proxy"
   "server"
   "temporal"
-  "container-orchestrator"
-  "config/init"
-  "bootloader"
-  "metrics/reporter"
-  "db/db-lib"
+  "webapp"
+  "workers"
 )
 
 # Set default values to required vars. If set in env, values will be taken from there.
 # Primarily for testing.
-JDK_VERSION=${JDK_VERSION:-19-slim-bullseye}
+JDK_VERSION=${JDK_VERSION:-17.0.4}
 ALPINE_IMAGE=${ALPINE_IMAGE:-alpine:3.14}
 POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:13-alpine}
 

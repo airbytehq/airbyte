@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-import { H5 } from "components";
+import { H5 } from "components/base/Titles";
 
 const Title = styled(H5)`
   color: ${({ theme }) => theme.darkPrimaryColor};

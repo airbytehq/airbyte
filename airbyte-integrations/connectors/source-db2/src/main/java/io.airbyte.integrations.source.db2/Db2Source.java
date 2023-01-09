@@ -111,6 +111,11 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
+  @Override
+  protected String getCountColumnName() {
+    return "RECORD_COUNT";
+  }
+
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
     return connection -> connection.prepareStatement(
         "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");

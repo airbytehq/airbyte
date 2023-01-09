@@ -1,0 +1,20 @@
+@use "scss/colors";
+
+.rowWrapper {
+  height: 40px;
+  border-bottom: 1px solid colors.$grey-50;
+
+  &--noBorder {
+    border-bottom: none;
+  }
+
+  &--hasDepth:last-child {
+    border: none;
+  }
+}
+
+.rowContent {
+  height: 100%;
+  white-space: nowrap;
+  font-size: 12px;
+}

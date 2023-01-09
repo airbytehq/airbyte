@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from googleapiclient import discovery
@@ -60,7 +60,7 @@ class Helpers(object):
             "properties": {field: {"type": "string"} for field in fields},
         }
 
-        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema, supported_sync_modes=["full_refresh"])
+        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema, supported_sync_modes=[SyncMode.full_refresh])
 
     @staticmethod
     def get_valid_headers_and_duplicates(header_row_values: List[str]) -> (List[str], List[str]):
@@ -202,7 +202,7 @@ class Helpers(object):
         if re.match(r"(http://)|(https://)", id_or_url):
             # This is a URL
             m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
-            if m.group(2):
+            if m is not None and m.group(2):
                 return m.group(2)
         else:
             return id_or_url

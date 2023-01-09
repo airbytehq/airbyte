@@ -33,7 +33,7 @@ import org.apache.parquet.hadoop.ParquetReader;
 
 public class GcsParquetDestinationAcceptanceTest extends GcsAvroParquetDestinationAcceptanceTest {
 
-  protected GcsParquetDestinationAcceptanceTest() {
+  public GcsParquetDestinationAcceptanceTest() {
     super(S3Format.PARQUET);
   }
 
@@ -100,7 +100,7 @@ public class GcsParquetDestinationAcceptanceTest extends GcsAvroParquetDestinati
           .build()) {
         GenericData.Record record;
         while ((record = parquetReader.read()) != null) {
-          Map<String, Set<Type>> actualDataTypes = getTypes(record);
+          final Map<String, Set<Type>> actualDataTypes = getTypes(record);
           resultDataTypes.putAll(actualDataTypes);
         }
       }

@@ -79,7 +79,7 @@ connectionSpecification:
             type: string
             title: Search value
             order: 2
-      title: Filter Salesforce Objects (Optional)
+      title: Filter Salesforce Objects
       description: >-
         Filter streams relevant to you
 advanced_auth:

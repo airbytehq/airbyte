@@ -1,7 +1,7 @@
 import React, { useContext, useMemo, useRef, useState } from "react";
 import { firstValueFrom, Subject } from "rxjs";
 
-import { Modal } from "components";
+import { Modal } from "components/ui/Modal";
 
 import { ModalOptions, ModalResult, ModalServiceContext } from "./types";
 
@@ -45,6 +45,7 @@ export const ModalServiceProvider: React.FC<React.PropsWithChildren<unknown>> = 
         <Modal
           title={modalOptions.title}
           size={modalOptions.size}
+          testId={modalOptions.testId}
           onClose={modalOptions.preventCancel ? undefined : () => resultSubjectRef.current?.next({ type: "canceled" })}
         >
           <modalOptions.content

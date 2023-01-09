@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-youtube-analytics:dev
 tests:
@@ -23,6 +23,7 @@ tests:
       - channel_demographics_a1
       - channel_end_screens_a1
       - channel_sharing_service_a1
+      - channel_province_a2
       - playlist_basic_a1
       - playlist_combined_a1
       - playlist_device_os_a1

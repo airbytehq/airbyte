@@ -38,7 +38,7 @@ const useSelectWorkspace = (): ((workspace?: string | null | Workspace) => void)
       } else {
         navigate(`/${RoutePaths.Workspaces}/${workspace}`);
       }
-      await queryClient.removeQueries(SCOPE_WORKSPACE);
+      queryClient.removeQueries(SCOPE_WORKSPACE);
     },
     [navigate, queryClient]
   );
@@ -126,4 +126,13 @@ export const useUpdateWorkspace = () => {
       queryClient.setQueryData(workspaceKeys.detail(data.workspaceId), data);
     },
   });
+};
+
+export const useInvalidateWorkspace = (workspaceId: string) => {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    () => queryClient.invalidateQueries(workspaceKeys.detail(workspaceId)),
+    [queryClient, workspaceId]
+  );
 };

@@ -6,6 +6,10 @@ global:
   secretName: ""
   credVolumeOverride: ""
   extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
   database:
     secretName: ""
     secretValue: ""
@@ -74,6 +78,10 @@ image:
 ##
 podAnnotations: {}
 
+##  podLabels [object] Add extra labels to the server pod
+##
+podLabels: {}
+
 ##  containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:
@@ -139,6 +147,7 @@ resources:
 service:
   type: ClusterIP
   port: 8001
+  annotations: {}
 
 ##  nodeSelector [object] Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -399,3 +408,8 @@ secrets: {}
 #   USE_STREAM_CAPABLE_STATE: true
 env_vars: {}
 
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}

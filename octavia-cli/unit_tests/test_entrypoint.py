@@ -37,7 +37,14 @@ def test_set_context_object(mocker, option_based_api_http_headers, api_http_head
     mocker.patch.object(entrypoint, "get_anonymous_data_collection")
     mock_ctx = mocker.Mock(obj={})
     built_context = entrypoint.set_context_object(
-        mock_ctx, "my_airbyte_url", "my_workspace_id", "enable_telemetry", option_based_api_http_headers, api_http_headers_file_path
+        mock_ctx,
+        "my_airbyte_url",
+        "my_airbyte_username",
+        "my_airbyte_password",
+        "my_workspace_id",
+        "enable_telemetry",
+        option_based_api_http_headers,
+        api_http_headers_file_path,
     )
     entrypoint.TelemetryClient.assert_called_with("enable_telemetry")
     mock_ctx.ensure_object.assert_called_with(dict)
@@ -52,7 +59,11 @@ def test_set_context_object(mocker, option_based_api_http_headers, api_http_head
     entrypoint.build_user_agent.assert_called_with(built_context.obj["OCTAVIA_VERSION"])
     entrypoint.merge_api_headers.assert_called_with(option_based_api_http_headers, api_http_headers_file_path)
     entrypoint.get_api_client.assert_called_with(
-        "my_airbyte_url", entrypoint.build_user_agent.return_value, entrypoint.merge_api_headers.return_value
+        "my_airbyte_url",
+        "my_airbyte_username",
+        "my_airbyte_password",
+        entrypoint.build_user_agent.return_value,
+        entrypoint.merge_api_headers.return_value,
     )
 
 
@@ -62,7 +73,14 @@ def test_set_context_object_error(mocker):
     mock_ctx.ensure_object.side_effect = NotImplementedError()
     with pytest.raises(NotImplementedError):
         entrypoint.set_context_object(
-            mock_ctx, "my_airbyte_url", "my_workspace_id", "enable_telemetry", [("foo", "bar")], "api_http_headers_file_path"
+            mock_ctx,
+            "my_airbyte_url",
+            "my_airbyte_username",
+            "my_airbyte_password",
+            "my_workspace_id",
+            "enable_telemetry",
+            [("foo", "bar")],
+            "api_http_headers_file_path",
         )
         entrypoint.TelemetryClient.return_value.send_command_telemetry.assert_called_with(
             mock_ctx, error=mock_ctx.ensure_object.side_effect
@@ -154,10 +172,11 @@ def test_octavia_not_initialized(mocker):
 )
 def test_get_api_client(mocker, api_http_headers: Optional[List[str]]):
     mocker.patch.object(entrypoint, "airbyte_api_client")
+    entrypoint.airbyte_api_client.Configuration.return_value.get_basic_auth_token.return_value = "my_basic_auth_token"
     mocker.patch.object(entrypoint, "check_api_health")
     mocker.patch.object(entrypoint, "set_api_headers_on_api_client")
-    api_client = entrypoint.get_api_client("test-url", "test-user-agent", api_http_headers)
-    entrypoint.airbyte_api_client.Configuration.assert_called_with(host="test-url/api")
+    api_client = entrypoint.get_api_client("test-url", "test-username", "test-password", "test-user-agent", api_http_headers)
+    entrypoint.airbyte_api_client.Configuration.assert_called_with(host="test-url/api", username="test-username", password="test-password")
     entrypoint.airbyte_api_client.ApiClient.assert_called_with(entrypoint.airbyte_api_client.Configuration.return_value)
     assert entrypoint.airbyte_api_client.ApiClient.return_value.user_agent == "test-user-agent"
     if api_http_headers:

@@ -7,7 +7,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
-import io.airbyte.workers.temporal.StreamResetRecordsHelper;
+import io.airbyte.commons.temporal.StreamResetRecordsHelper;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity.DeleteStreamResetRecordsForJobInput;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

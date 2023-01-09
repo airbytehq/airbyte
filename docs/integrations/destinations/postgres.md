@@ -21,7 +21,7 @@ You'll need the following information to configure the Postgres destination:
 * **Database** - The database name. The default is to connect to a database with the same name as the user name.
 * **JDBC URL Params** (optional)
 
-[Refer to this guide for more details](https://jdbc.postgresql.org/documentation/head/connect.html)
+[Refer to this guide for more details](https://jdbc.postgresql.org/documentation/use/#connecting-to-the-database)
 
 #### Configure Network Access
 
@@ -40,7 +40,7 @@ You need a Postgres user with the following permissions:
 You can create such a user by running:
 
 ```
-CREATE USER airbyte_user PASSWORD <password>;
+CREATE USER airbyte_user WITH PASSWORD '<password>';
 GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
 ```
 
@@ -165,7 +165,8 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 0.3.24  | 2022-09-08 | [16046](https://github.com/airbytehq/airbyte/pull/16046) | Fix missing database name URL Encoding  |
+| 0.3.26  | 2022-09-27 | [17299](https://github.com/airbytehq/airbyte/pull/17299) | Improve error handling for strict-encrypt postgres destination                                      |
+| 0.3.24  | 2022-09-08 | [16046](https://github.com/airbytehq/airbyte/pull/16046) | Fix missing database name URL Encoding                                                              |
 | 0.3.23  | 2022-07-18 | [16260](https://github.com/airbytehq/airbyte/pull/16260) | Prevent traffic going on an unsecured channel in strict-encryption version of destination postgres  |
 | 0.3.22  | 2022-07-18 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates                         |
 | 0.3.21  | 2022-07-06 | [14479](https://github.com/airbytehq/airbyte/pull/14479) | Publish amd64 and arm64 versions of the connector                                                   |

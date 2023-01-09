@@ -8,6 +8,8 @@ describe("Error handling view", () => {
       },
     });
 
+    cy.on("uncaught:exception", () => false);
+
     cy.visit("/");
 
     cy.get("div").contains("Version mismatch between 0.0.1-ci and 0.0.2-ci.").should("exist");
@@ -18,6 +20,8 @@ describe("Error handling view", () => {
       statusCode: 502,
       body: "Failed to fetch",
     });
+
+    cy.on("uncaught:exception", () => false);
 
     cy.visit("/");
 

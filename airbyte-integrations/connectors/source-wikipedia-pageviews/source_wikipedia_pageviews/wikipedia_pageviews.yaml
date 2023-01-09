@@ -1,0 +1,85 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["items"]
+  requester:
+    url_base: "https://wikimedia.org/api/rest_v1/metrics/pageviews"
+    http_method: "GET"
+    request_options_provider:
+      request_headers:
+        "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
+  top_stream_slicer:
+    type: DatetimeStreamSlicer
+    start_datetime:
+      datetime: "{{config.start}}"
+      datetime_format: "%Y%m%d"
+    end_datetime:
+      datetime: "{{config.start}}"
+      datetime_format: "%Y%m%d"
+    step: "P1D"
+    cursor_field: "timestamp"
+    datetime_format: "%Y/%m/%d"
+    cursor_granularity: "P1D"
+  per_article_stream_slicer:
+    type: DatetimeStreamSlicer
+    start_datetime: "{{config.start}}"
+    end_datetime: "{{config.end}}"
+    step: "P1D"
+    cursor_field: "timestamp"
+    datetime_format: "%Y%m%d"
+    cursor_granularity: "P1D"
+
+  per_article_requester:
+    $options:
+      $ref: "*ref(definitions.requester)"
+    path: "/per-article/{{config.project}}/{{config.access}}/{{config.agent}}/{{config.article}}/daily/{{stream_slice.start_time}}/{{stream_slice.end_time}}"
+  top_requester:
+    $options:
+      $ref: "*ref(definitions.requester)"
+    path: "/top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}"
+  per_article_retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.per_article_requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.per_article_stream_slicer)"
+
+  top_retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.top_requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.top_stream_slicer)"
+  per_article_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_wikipedia_pageviews/schemas/{{ options['name'] }}.json"
+    retriever:
+      $ref: "*ref(definitions.per_article_retriever)"
+    $options:
+      name: "per-article"
+  top_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_wikipedia_pageviews/schemas/{{ options['name'] }}.json"
+    retriever:
+      $ref: "*ref(definitions.top_retriever)"
+    $options:
+      name: "top"
+
+streams:
+  - "*ref(definitions.per_article_stream)"
+  - "*ref(definitions.top_stream)"
+
+check:
+  stream_names:
+    - "per-article"
+    - "top"

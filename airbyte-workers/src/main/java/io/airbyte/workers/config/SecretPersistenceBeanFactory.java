@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
@@ -15,8 +16,8 @@ import io.airbyte.db.Database;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 /**
  * Micronaut bean factory for secret persistence-related singletons.
@@ -27,13 +28,12 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
-            notEquals = "TESTING_CONFIG_DB_TABLE")
+            pattern = "(?i)^(?!testing_config_db_table).*")
   @Requires(property = "airbyte.secret.persistence",
-            notEquals = "GOOGLE_SECRET_MANAGER")
+            pattern = "(?i)^(?!google_secret_manager).*")
   @Requires(property = "airbyte.secret.persistence",
-            notEquals = "VAULT")
-  @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^(?!vault).*")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
   public SecretPersistence defaultSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return localTestingSecretPersistence(configDatabase);
@@ -41,9 +41,8 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
-            value = "TESTING_CONFIG_DB_TABLE")
-  @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^testing_config_db_table$")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
   public SecretPersistence localTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return new LocalTestingSecretPersistence(configDatabase);
@@ -51,9 +50,7 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
-            value = "GOOGLE_SECRET_MANAGER")
-  @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^google_secret_manager$")
   @Named("secretPersistence")
   public SecretPersistence googleSecretPersistence(@Value("${airbyte.secret.store.gcp.credentials}") final String credentials,
                                                    @Value("${airbyte.secret.store.gcp.project-id}") final String projectId) {
@@ -62,9 +59,8 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
-            value = "VAULT")
-  @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
+            pattern = "(?i)^vault$")
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
   public SecretPersistence vaultSecretPersistence(@Value("${airbyte.secret.store.vault.address}") final String address,
                                                   @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
@@ -73,16 +69,17 @@ public class SecretPersistenceBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.worker.plane",
-            notEquals = "DATA_PLANE")
-  public SecretsHydrator secretsHydrator(@Named("secretPersistence") final SecretPersistence secretPersistence) {
-    return new RealSecretsHydrator(secretPersistence);
+  @Requires(property = "airbyte.acceptance.test.enabled",
+            value = "true")
+  public SecretsHydrator noOpSecretsHydrator() {
+    return new NoOpSecretsHydrator();
   }
 
   @Singleton
-  @Requires(env = "data")
-  public SecretsHydrator secretsHydrator() {
-    return new NoOpSecretsHydrator();
+  @Requires(property = "airbyte.acceptance.test.enabled",
+            value = "false")
+  public SecretsHydrator secretsHydrator(@Named("secretPersistence") final SecretPersistence secretPersistence) {
+    return new RealSecretsHydrator(secretPersistence);
   }
 
 }

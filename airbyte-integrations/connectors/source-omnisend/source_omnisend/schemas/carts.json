@@ -1,0 +1,74 @@
+{
+  "type": "object",
+  "properties": {
+    "contactID": {
+      "type": ["string", "null"]
+    },
+    "cartID": {
+      "type": "string"
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "phone": {
+      "type": ["string", "null"]
+    },
+    "createdAt": {
+      "type": ["string", "null"]
+    },
+    "updatedAt": {
+      "type": ["string", "null"]
+    },
+    "currency": {
+      "type": ["string", "null"]
+    },
+    "cartSum": {
+      "type": ["integer", "null"]
+    },
+    "cartRecoveryUrl": {
+      "type": ["string", "null"]
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cartProductID": {
+            "type": ["string", "null"]
+          },
+          "productID": {
+            "type": ["string", "null"]
+          },
+          "variantID": {
+            "type": ["string", "null"]
+          },
+          "title": {
+            "type": ["string", "null"]
+          },
+          "description": {
+            "type": ["string", "null"]
+          },
+          "quantity": {
+            "type": ["integer", "null"]
+          },
+          "price": {
+            "type": ["integer", "null"]
+          },
+          "oldPrice": {
+            "type": ["integer", "null"]
+          },
+          "discount": {
+            "type": ["integer", "null"]
+          },
+          "imageUrl": {
+            "type": ["string", "null"]
+          },
+          "productUrl": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    }
+  },
+  "required": ["cartID"]
+}

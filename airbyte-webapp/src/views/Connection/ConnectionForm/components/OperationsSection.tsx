@@ -2,13 +2,14 @@ import { Field, FieldArray } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { Card, H5 } from "components";
+import { Card } from "components/ui/Card";
+import { Heading } from "components/ui/Heading";
 
-import { useConnectionFormService } from "hooks/services/Connection/ConnectionFormService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
-import { StyledSection } from "../ConnectionForm";
 import { NormalizationField } from "./NormalizationField";
+import { Section } from "./Section";
 import { TransformationField } from "./TransformationField";
 
 interface OperationsSectionProps {
@@ -23,9 +24,10 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
   const { formatMessage } = useIntl();
 
   const {
-    destDefinition: { supportsNormalization, supportsDbt },
+    destDefinition: { normalizationConfig, supportsDbt },
   } = useConnectionFormService();
 
+  const supportsNormalization = normalizationConfig.supported;
   const supportsTransformations = useFeature(FeatureItem.AllowCustomDBT) && supportsDbt;
 
   if (!supportsNormalization && !supportsTransformations) {
@@ -34,16 +36,16 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
 
   return (
     <Card>
-      <StyledSection>
+      <Section>
         {supportsNormalization || supportsTransformations ? (
-          <H5 bold>
+          <Heading as="h5">
             {[
               supportsNormalization && formatMessage({ id: "connectionForm.normalization.title" }),
               supportsTransformations && formatMessage({ id: "connectionForm.transformation.title" }),
             ]
               .filter(Boolean)
               .join(" & ")}
-          </H5>
+          </Heading>
         ) : null}
         {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
         {supportsTransformations && (
@@ -57,7 +59,7 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
             )}
           </FieldArray>
         )}
-      </StyledSection>
+      </Section>
     </Card>
   );
 };

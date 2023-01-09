@@ -1,9 +1,24 @@
 import { Action, EventParams, Namespace } from "./types";
 
+type Context = Record<string, unknown>;
+
 export class AnalyticsService {
-  constructor(private context: Record<string, unknown>, private version?: string) {}
+  private context: Context = {};
+
+  constructor(private version?: string) {}
 
   private getSegmentAnalytics = (): SegmentAnalytics.AnalyticsJS | undefined => window.analytics;
+
+  public setContext(context: Context) {
+    this.context = {
+      ...this.context,
+      ...context,
+    };
+  }
+
+  public removeFromContext(...keys: string[]) {
+    keys.forEach((key) => delete this.context[key]);
+  }
 
   alias = (newId: string): void => this.getSegmentAnalytics()?.alias?.(newId);
 
@@ -26,4 +41,5 @@ export class AnalyticsService {
 
   group = (organisationId: string, traits: Record<string, unknown> = {}): void =>
     this.getSegmentAnalytics()?.group?.(organisationId, traits);
+  setAnonymousId = (anonymousId: string) => this.getSegmentAnalytics()?.setAnonymousId(anonymousId);
 }

@@ -1,0 +1,40 @@
+@use "../../../../../../../src/scss/variables";
+@use "../../../../../../../src/scss/colors";
+
+.container {
+  height: 43px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  z-index: 3;
+  font-size: 12px;
+  line-height: 15px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  background-color: colors.$blue;
+  color: colors.$white;
+
+  @media (min-width: 1280px) {
+    height: 50px;
+  }
+}
+
+.innerContainer {
+  display: flex;
+  width: 80%;
+  flex-direction: row;
+  gap: variables.$spacing-md;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  color: colors.$white;
+}
+
+.linkCta {
+  color: colors.$white;
+
+  p {
+    color: inherit;
+  }
+}

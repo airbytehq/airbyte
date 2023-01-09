@@ -1,0 +1,221 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "division": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "descriptions": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "dateCreated": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dateModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "modifiedBy": {
+      "type": ["null", "string"]
+    },
+    "createdBy": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "modifiedByApp": {
+      "type": ["null", "string"]
+    },
+    "createdByApp": {
+      "type": ["null", "string"]
+    },
+    "primarySites": {
+      "type": "array",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "secondarySites": {
+      "type": "array",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "primaryEdges": {
+      "type": "array",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "secondaryEdges": {
+      "type": "array",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "addraddressesess": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": ["null", "string"]
+        },
+        "display": {
+          "type": ["null", "string"]
+        },
+        "mediaType": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "extension": {
+          "type": ["null", "string"]
+        },
+        "countryCode": {
+          "type": ["null", "string"]
+        },
+        "integration": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "edgeAutoUpdateConfig": {
+      "type": "object",
+      "properties": {
+        "timeZone": {
+          "type": ["null", "string"]
+        },
+        "rrule": {
+          "type": ["null", "string"]
+        },
+        "start": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "end": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "mediaRegionsUseLatencyBased": {
+      "type": ["null", "boolean"]
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "managed": {
+      "type": ["null", "boolean"]
+    },
+    "ntpSettings": {
+      "type": "object",
+      "properties": {
+        "servers": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "mediaModel": {
+      "type": ["null", "string"]
+    },
+    "coreSite": {
+      "type": ["null", "boolean"]
+    },
+    "siteConnections": {
+      "type": "array",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "selfUri": {
+      "type": ["null", "string"]
+    }
+  }
+}

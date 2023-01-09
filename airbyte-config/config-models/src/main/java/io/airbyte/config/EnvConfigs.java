@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
@@ -41,11 +42,14 @@ public class EnvConfigs implements Configs {
   // env variable names
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
+  public static final String AIRBYTE_PROTOCOL_VERSION_MAX = "AIRBYTE_PROTOCOL_VERSION_MAX";
+  public static final String AIRBYTE_PROTOCOL_VERSION_MIN = "AIRBYTE_PROTOCOL_VERSION_MIN";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String AIRBYTE_API_AUTH_HEADER_NAME = "AIRBYTE_API_AUTH_HEADER_NAME";
   public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
+  public static final String GITHUB_STORE_BRANCH = "GITHUB_STORE_BRANCH";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
   public static final String LOCAL_ROOT = "LOCAL_ROOT";
@@ -68,8 +72,20 @@ public class EnvConfigs implements Configs {
   public static final String JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
   public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
+  public static final String JOB_ISOLATED_KUBE_NODE_SELECTORS = "JOB_ISOLATED_KUBE_NODE_SELECTORS";
+  public static final String USE_CUSTOM_NODE_SELECTOR = "USE_CUSTOM_NODE_SELECTOR";
   public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
+  private static final String DEFAULT_SIDECAR_MEMORY_REQUEST = "25Mi";
+  private static final String SIDECAR_MEMORY_REQUEST = "SIDECAR_MEMORY_REQUEST";
+  private static final String DEFAULT_SIDECAR_KUBE_MEMORY_LIMIT = "50Mi";
+  private static final String SIDECAR_KUBE_MEMORY_LIMIT = "SIDECAR_KUBE_MEMORY_LIMIT";
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_REQUEST = "0.1";
+  private static final String SIDECAR_KUBE_CPU_REQUEST = "SIDECAR_KUBE_CPU_REQUEST";
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "0.2";
+  private static final String SIDECAR_KUBE_CPU_LIMIT = "SIDECAR_KUBE_CPU_LIMIT";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
+  private static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
+  private static final String SOCAT_KUBE_CPU_REQUEST = "SOCAT_KUBE_CPU_REQUEST";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
@@ -79,6 +95,7 @@ public class EnvConfigs implements Configs {
   public static final String MAX_CHECK_WORKERS = "MAX_CHECK_WORKERS";
   public static final String MAX_DISCOVER_WORKERS = "MAX_DISCOVER_WORKERS";
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
+  public static final String MAX_NOTIFY_WORKERS = "MAX_NOTIFY_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String TEMPORAL_HISTORY_RETENTION_IN_DAYS = "TEMPORAL_HISTORY_RETENTION_IN_DAYS";
@@ -131,11 +148,10 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
-  private static final String WORKER_PLANE = "WORKER_PLANE";
+  private static final String SHOULD_RUN_NOTIFY_WORKFLOWS = "SHOULD_RUN_NOTIFY_WORKFLOWS";
 
   // Worker - Control plane configs
   private static final String DEFAULT_DATA_SYNC_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
-  private static final String CONNECTION_IDS_FOR_MVP_DATA_PLANE = "CONNECTION_IDS_FOR_MVP_DATA_PLANE";
 
   // Worker - Data Plane configs
   private static final String DATA_SYNC_TASK_QUEUES = "DATA_SYNC_TASK_QUEUES";
@@ -180,6 +196,7 @@ public class EnvConfigs implements Configs {
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
+  private static final String DEFAULT_GITHUB_STORE_BRANCH = "master";
   private static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_JOB_CPU_REQUIREMENT = null;
   private static final String DEFAULT_JOB_MEMORY_REQUIREMENT = null;
@@ -187,6 +204,8 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
+  private static final String AWS_ACCESS_KEY = "AWS_ACCESS_KEY";
+  private static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
   private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.3-r0";
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
@@ -195,7 +214,11 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_CHECK_WORKERS = 5;
   private static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
+  private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
+  private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
+  private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
+  private static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -229,8 +252,6 @@ public class EnvConfigs implements Configs {
     this.getAllEnvKeys = envMap::keySet;
     this.logConfigs = new LogConfigs(getLogConfiguration());
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
-
-    validateSyncWorkflowConfigs();
   }
 
   private Optional<CloudStorageConfigs> getLogConfiguration() {
@@ -290,8 +311,22 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public Version getAirbyteProtocolVersionMax() {
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MAX, "0.3.0"));
+  }
+
+  @Override
+  public Version getAirbyteProtocolVersionMin() {
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MIN, "0.0.0"));
+  }
+
+  @Override
   public String getAirbyteVersionOrWarning() {
     return Optional.ofNullable(getEnv(AIRBYTE_VERSION)).orElse("version not set");
+  }
+
+  public String getGithubStoreBranch() {
+    return getEnvOrDefault(GITHUB_STORE_BRANCH, DEFAULT_GITHUB_STORE_BRANCH);
   }
 
   @Override
@@ -387,6 +422,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getVaultToken() {
     return getEnv(VAULT_AUTH_TOKEN);
+  }
+
+  @Override
+  public String getAwsAccessKey() {
+    return getEnv(AWS_ACCESS_KEY);
+  }
+
+  @Override
+  public String getAwsSecretAccessKey() {
+    return getEnv(AWS_SECRET_ACCESS_KEY);
   }
 
   // Database
@@ -588,6 +633,16 @@ public class EnvConfigs implements Configs {
     return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
   }
 
+  @Override
+  public Map<String, String> getIsolatedJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(JOB_ISOLATED_KUBE_NODE_SELECTORS, ""));
+  }
+
+  @Override
+  public boolean getUseCustomKubeNodeSelector() {
+    return getEnvOrDefault(USE_CUSTOM_NODE_SELECTOR, false);
+  }
+
   /**
    * Returns a map of node selectors for Spec job pods specifically.
    *
@@ -698,17 +753,50 @@ public class EnvConfigs implements Configs {
 
   /**
    * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
-   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
-   * no-op value.
+   * injected in the KubePodProcess class and used in the job pod templates.
+   *
+   * Can provide multiple strings seperated by comma(,) to indicate pulling from different
+   * repositories. The empty string is a no-op value.
    */
   @Override
-  public String getJobKubeMainContainerImagePullSecret() {
-    return getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+  public List<String> getJobKubeMainContainerImagePullSecrets() {
+    String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+    return Arrays.stream(secrets.split(",")).collect(Collectors.toList());
+  }
+
+  @Override
+  public String getSidecarKubeCpuRequest() {
+    return getEnvOrDefault(SIDECAR_KUBE_CPU_REQUEST, DEFAULT_SIDECAR_KUBE_CPU_REQUEST);
+  }
+
+  @Override
+  public String getSidecarKubeCpuLimit() {
+    return getEnvOrDefault(SIDECAR_KUBE_CPU_LIMIT, DEFAULT_SIDECAR_KUBE_CPU_LIMIT);
+  }
+
+  @Override
+  public String getSidecarKubeMemoryLimit() {
+    return getEnvOrDefault(SIDECAR_KUBE_MEMORY_LIMIT, DEFAULT_SIDECAR_KUBE_MEMORY_LIMIT);
+  }
+
+  @Override
+  public String getSidecarMemoryRequest() {
+    return getEnvOrDefault(SIDECAR_MEMORY_REQUEST, DEFAULT_SIDECAR_MEMORY_REQUEST);
   }
 
   @Override
   public String getJobKubeSocatImage() {
     return getEnvOrDefault(JOB_KUBE_SOCAT_IMAGE, DEFAULT_JOB_KUBE_SOCAT_IMAGE);
+  }
+
+  @Override
+  public String getSocatSidecarKubeCpuRequest() {
+    return getEnvOrDefault(SOCAT_KUBE_CPU_REQUEST, getSidecarKubeCpuRequest());
+  }
+
+  @Override
+  public String getSocatSidecarKubeCpuLimit() {
+    return getEnvOrDefault(SOCAT_KUBE_CPU_LIMIT, getSidecarKubeCpuLimit());
   }
 
   @Override
@@ -903,7 +991,8 @@ public class EnvConfigs implements Configs {
         Math.toIntExact(getEnvOrDefault(MAX_SPEC_WORKERS, DEFAULT_MAX_SPEC_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_CHECK_WORKERS, DEFAULT_MAX_CHECK_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_DISCOVER_WORKERS, DEFAULT_MAX_DISCOVER_WORKERS)),
-        Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)));
+        Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_NOTIFY_WORKERS, DEFAULT_MAX_NOTIFY_WORKERS)));
   }
 
   @Override
@@ -932,19 +1021,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public WorkerPlane getWorkerPlane() {
-    return getEnvOrDefault(WORKER_PLANE, WorkerPlane.CONTROL_PLANE, s -> WorkerPlane.valueOf(s.toUpperCase()));
-  }
-
-  // Worker - Control plane
-
-  @Override
-  public Set<String> connectionIdsForMvpDataPlane() {
-    final var connectionIds = getEnvOrDefault(CONNECTION_IDS_FOR_MVP_DATA_PLANE, "");
-    if (connectionIds.isEmpty()) {
-      return new HashSet<>();
-    }
-    return Arrays.stream(connectionIds.split(",")).collect(Collectors.toSet());
+  public boolean shouldRunNotifyWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_NOTIFY_WORKFLOWS, false);
   }
 
   // Worker - Data plane
@@ -971,22 +1049,6 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDataPlaneServiceAccountEmail() {
     return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_EMAIL, "");
-  }
-
-  /**
-   * Ensures the user hasn't configured themselves into a corner by making sure that the worker is set
-   * up to properly process sync workflows. With sensible defaults, it should be hard to fail this
-   * validation, but this provides a safety net regardless.
-   */
-  private void validateSyncWorkflowConfigs() {
-    if (shouldRunSyncWorkflows()) {
-      if (getWorkerPlane().equals(WorkerPlane.DATA_PLANE) && getDataSyncTaskQueues().isEmpty()) {
-        throw new IllegalArgumentException(String.format(
-            "When %s is true, the worker must either be configured as a Control Plane worker, or %s must be non-empty.",
-            SHOULD_RUN_SYNC_WORKFLOWS,
-            DATA_SYNC_TASK_QUEUES));
-      }
-    }
   }
 
   @Override
@@ -1056,6 +1118,21 @@ public class EnvConfigs implements Configs {
   @Override
   public int getWorkflowFailureRestartDelaySeconds() {
     return Integer.parseInt(getEnvOrDefault(WORKFLOW_FAILURE_RESTART_DELAY_SECONDS, String.valueOf(10 * 60)));
+  }
+
+  @Override
+  public boolean getAutoDetectSchema() {
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false);
+  }
+
+  @Override
+  public boolean getApplyFieldSelection() {
+    return getEnvOrDefault(APPLY_FIELD_SELECTION, false);
+  }
+
+  @Override
+  public String getFieldSelectionWorkspaces() {
+    return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "");
   }
 
   @Override

@@ -1,0 +1,30 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+    implementation libs.bundles.temporal
+
+    testAnnotationProcessor platform(libs.micronaut.bom)
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-metrics:metrics-lib')
+    implementation project(':airbyte-persistence:job-persistence')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-worker-models')
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-json-validation')
+
+    testImplementation libs.temporal.testing
+    // Needed to be able to mock final class
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
+}
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

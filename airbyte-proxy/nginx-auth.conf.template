@@ -1,0 +1,82 @@
+events {}
+
+http {
+  server {
+    listen 8000 default_server;
+
+    location / {
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+      client_max_body_size 200M;
+
+      auth_basic "Welcome to Airbyte";
+      auth_basic_user_file /etc/nginx/.htpasswd;
+
+      proxy_pass "${PROXY_PASS_WEB}";
+
+      proxy_connect_timeout       ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_send_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
+
+      error_page 401 /etc/nginx/401.html;
+      location ~ (401.html)$ {
+        alias /etc/nginx/$1;
+        auth_basic off;
+      }
+    }
+  }
+
+  server {
+    listen 8001;
+
+    location / {
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+      client_max_body_size 200M;
+
+      auth_basic "Welcome to Airbyte";
+      auth_basic_user_file /etc/nginx/.htpasswd;
+
+      proxy_pass "${PROXY_PASS_API}";
+
+      proxy_connect_timeout       ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_send_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
+
+      error_page 401 /etc/nginx/401.html;
+      location ~ (401.html)$ {
+        alias /etc/nginx/$1;
+        auth_basic off;
+      }
+    }
+  }
+
+  server {
+    listen 8003;
+
+    location / {
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+      client_max_body_size 200M;
+
+      auth_basic "Welcome to Airbyte";
+      auth_basic_user_file /etc/nginx/.htpasswd;
+
+      proxy_pass "${CONNECTOR_BUILDER_SERVER_API}";
+
+      error_page 401 /etc/nginx/401.html;
+      location ~ (401.html)$ {
+        alias /etc/nginx/$1;
+        auth_basic off;
+      }
+    }
+  }
+}

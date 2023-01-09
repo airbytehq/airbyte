@@ -1,0 +1,18 @@
+@use "../../../../../scss/variables";
+
+.content {
+  height: 100%;
+}
+
+.emailVerificationHint {
+  margin-bottom: variables.$spacing-md;
+}
+
+.creditUsageLoading {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  justify-content: center;
+  align-items: center;
+  margin: variables.$spacing-2xl auto;
+}

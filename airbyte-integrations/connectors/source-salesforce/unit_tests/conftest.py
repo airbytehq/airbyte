@@ -11,9 +11,22 @@ from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 @pytest.fixture(scope="module")
-def configured_catalog():
-    with open("unit_tests/configured_catalog.json") as f:
+def bulk_catalog():
+    with open("unit_tests/bulk_catalog.json") as f:
+        data = json.loads(f.read())
+    return ConfiguredAirbyteCatalog.parse_obj(data)
+
+
+@pytest.fixture(scope="module")
+def rest_catalog():
+    with open("unit_tests/rest_catalog.json") as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 
@@ -86,5 +99,23 @@ def stream_api_v2(stream_config):
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
-def generate_stream(stream_name, stream_config, stream_api, state=None):
-    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api, state=state)[0]
+@pytest.fixture(scope="module")
+def stream_api_pk(stream_config):
+    describe_response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "Id", "type": "string"}]}
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
+
+
+def generate_stream(stream_name, stream_config, stream_api):
+    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api)[0]
+
+
+def encoding_symbols_parameters():
+    return [(x, "ISO-8859-1", b'"\xc4"\n,"4"\n\x00,"\xca \xfc"', [{"Ä": "4"}, {"Ä": "Ê ü"}]) for x in range(1, 11)] + [
+        (
+            x,
+            "utf-8",
+            b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
+            [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
+        )
+        for x in range(1, 11)
+    ]

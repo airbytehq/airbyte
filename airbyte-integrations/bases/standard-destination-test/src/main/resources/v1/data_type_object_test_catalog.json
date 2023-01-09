@@ -1,0 +1,36 @@
+{
+  "streams": [
+    {
+      "name": "object_test_1",
+      "json_schema": {
+        "type": ["object"],
+        "properties": {
+          "property_string": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          },
+          "property_date": {
+            "$ref": "WellKnownTypes.json#/definitions/Date"
+          },
+          "property_timestamp_with_timezone": {
+            "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+          },
+          "property_timestamp_without_timezone": {
+            "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+          },
+          "property_number": {
+            "$ref": "WellKnownTypes.json#/definitions/Number"
+          },
+          "property_integer": {
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
+          },
+          "property_boolean": {
+            "$ref": "WellKnownTypes.json#/definitions/Boolean"
+          },
+          "property_binary_data": {
+            "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,15 +1,15 @@
 import React, { Suspense, useCallback, useRef, useState } from "react";
 import styled from "styled-components";
 
-import { Spinner } from "components";
+import { Spinner } from "components/ui/Spinner";
 
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import ErrorDetails from "./components/ErrorDetails";
-import JobLogs from "./components/JobLogs";
+import { JobLogs } from "./components/JobLogs";
 import MainInfo from "./components/MainInfo";
 import styles from "./JobItem.module.scss";
 

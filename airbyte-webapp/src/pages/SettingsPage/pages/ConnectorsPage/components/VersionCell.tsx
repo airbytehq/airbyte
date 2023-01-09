@@ -3,18 +3,20 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Input, LoadingButton } from "components";
+import { Button } from "components/ui/Button";
+import { Input } from "components/ui/Input";
 
 import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
 
 import { FormContent } from "./PageComponents";
 
-interface IProps {
+interface VersionCellProps {
   version: string;
   currentVersion: string;
   id: string;
   onChange: ({ version, id }: { version: string; id: string }) => void;
   feedback?: "success" | string;
+  updating: boolean;
 }
 
 const VersionInput = styled(Input)`
@@ -63,7 +65,7 @@ const ErrorMessage = styled(SuccessMessage)`
   line-height: 14px;
 `;
 
-const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, currentVersion }) => {
+const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, feedback, currentVersion, updating }) => {
   const { formatMessage } = useIntl();
 
   const renderFeedback = (dirty: boolean, feedback?: string) => {
@@ -81,7 +83,7 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
     return null;
   };
 
-  const isConnectorUpdateable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
+  const isConnectorUpdatable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
 
   return (
     <FormContent>
@@ -106,13 +108,14 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
                 </InputField>
               )}
             </Field>
-            <LoadingButton
-              isLoading={isSubmitting}
+            <Button
+              size="xs"
+              isLoading={isSubmitting || updating}
               type="submit"
-              disabled={(isSubmitting || !dirty) && !isConnectorUpdateable}
+              disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
             >
               <FormattedMessage id="form.change" />
-            </LoadingButton>
+            </Button>
           </Form>
         )}
       </Formik>

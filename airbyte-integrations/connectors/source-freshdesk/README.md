@@ -88,6 +88,17 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
+#### Acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](../../../docs/connector-development/testing-connectors/source-acceptance-tests-reference.md) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+To run your integration tests with acceptance tests, from the connector root, run
+```
+docker build . --no-cache -t airbyte/source-freshdesk:dev \
+&& python -m pytest -p integration_tests.acceptance
+```
+To run your integration tests with docker
+
+
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
 

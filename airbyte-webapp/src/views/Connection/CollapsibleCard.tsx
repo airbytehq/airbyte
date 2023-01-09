@@ -5,7 +5,7 @@ import React from "react";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 
-import { Card } from "components/base/Card";
+import { Card } from "components/ui/Card";
 
 import styles from "./CollapsibleCard.module.scss";
 

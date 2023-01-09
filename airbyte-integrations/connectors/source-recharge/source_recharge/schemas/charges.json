@@ -226,34 +226,13 @@
       "type": ["null", "string"]
     },
     "tax_lines": {
-      "oneOf": [
-        {
-          "type": ["null", "number"]
-        },
-        {
-          "type": ["null", "string"]
-        }
-      ]
+      "type": ["null", "string"]
     },
     "total_discounts": {
-      "oneOf": [
-        {
-          "type": ["null", "number"]
-        },
-        {
-          "type": ["null", "string"]
-        }
-      ]
+      "type": ["null", "string"]
     },
     "total_line_items_price": {
-      "oneOf": [
-        {
-          "type": ["null", "number"]
-        },
-        {
-          "type": ["null", "string"]
-        }
-      ]
+      "type": ["null", "string"]
     },
     "total_price": {
       "type": ["null", "string"]
@@ -262,14 +241,7 @@
       "type": ["null", "string"]
     },
     "total_tax": {
-      "oneOf": [
-        {
-          "type": ["null", "number"]
-        },
-        {
-          "type": ["null", "string"]
-        }
-      ]
+      "type": ["null", "string"]
     },
     "total_weight": {
       "type": ["null", "integer"]

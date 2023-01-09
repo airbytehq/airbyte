@@ -22,7 +22,7 @@ const ContentWrapper: React.FC<React.PropsWithChildren<IProps>> = ({ children, i
           transition: { type: "tween" },
         },
         closed: {
-          height: "1px",
+          height: "0",
           opacity: 0,
           transition: { type: "tween" },
         },

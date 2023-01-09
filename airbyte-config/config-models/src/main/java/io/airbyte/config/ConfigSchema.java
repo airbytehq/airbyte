@@ -23,6 +23,9 @@ public enum ConfigSchema implements AirbyteConfig {
       workspaceServiceAccount -> workspaceServiceAccount.getWorkspaceId().toString(),
       "workspaceId"),
 
+  WORKSPACE_WEBHOOK_OPERATION_CONFIGS("WebhookOperationConfigs.yaml",
+      WebhookOperationConfigs.class),
+
   // source
   STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml",
       StandardSourceDefinition.class,

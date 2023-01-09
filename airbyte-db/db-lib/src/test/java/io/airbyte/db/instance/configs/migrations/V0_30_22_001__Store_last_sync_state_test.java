@@ -185,13 +185,17 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
         .where(COLUMN_CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC_STATE.name()))
         .execute());
 
-    final var migration = new V0_30_22_001__Store_last_sync_state(container.getUsername(), container.getPassword(), container.getJdbcUrl());
-    // this context is a flyway class; only the getConnection method is needed to run the migration
+    final var migration = new V0_30_22_001__Store_last_sync_state();
+    // this context is a flyway class
     final Context context = new Context() {
 
       @Override
       public Configuration getConfiguration() {
-        return null;
+        final Configuration configuration = mock(Configuration.class);
+        when(configuration.getUser()).thenReturn(container.getUsername());
+        when(configuration.getPassword()).thenReturn(container.getPassword());
+        when(configuration.getUrl()).thenReturn(container.getJdbcUrl());
+        return configuration;
       }
 
       @Override

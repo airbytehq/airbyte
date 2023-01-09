@@ -46,6 +46,7 @@ from .streams import (
     TeamMemberships,
     Teams,
     Users,
+    WorkflowJobs,
     WorkflowRuns,
     Workflows,
 )
@@ -175,6 +176,8 @@ class SourceGithub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
         organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+        if not any((organizations, repositories)):
+            raise Exception("No streams available. Please check permissions")
         page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
         organization_args = {"authenticator": authenticator, "organizations": organizations}
@@ -188,6 +191,7 @@ class SourceGithub(AbstractSource):
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
         teams_stream = Teams(**organization_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
+        workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
 
         return [
             Assignees(**repository_args),
@@ -223,6 +227,7 @@ class SourceGithub(AbstractSource):
             team_members_stream,
             Users(**organization_args),
             Workflows(**repository_args_with_start_date),
-            WorkflowRuns(**repository_args_with_start_date),
+            workflow_runs_stream,
+            WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]

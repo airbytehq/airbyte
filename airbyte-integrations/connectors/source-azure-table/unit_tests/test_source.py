@@ -6,7 +6,7 @@ import logging
 from unittest import mock
 
 import pytest
-from airbyte_cdk.models import AirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, SyncMode
 from source_azure_table.source import SourceAzureTable
 from source_azure_table.streams import AzureTableStream
 
@@ -49,7 +49,7 @@ def test_discover(mocker, config, tables):
         "type": "object",
         "properties": {"PartitionKey": {"type": "string"}},
     }
-    assert stream.supported_sync_modes == ["full_refresh", "incremental"]
+    assert stream.supported_sync_modes == [SyncMode.full_refresh, SyncMode.incremental]
     assert stream.source_defined_cursor is True
     assert stream.default_cursor_field == ["PartitionKey"]
 

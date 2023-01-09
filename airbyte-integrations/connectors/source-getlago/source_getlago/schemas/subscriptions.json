@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "lago_id": {
+      "type": ["null", "string"]
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    },
+    "lago_customer_id": {
+      "type": ["null", "string"]
+    },
+    "external_customer_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "plan_code": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "billing_time": {
+      "type": ["null", "string"]
+    },
+    "subscription_date": {
+      "type": ["null", "string"]
+    },
+    "started_at": {
+      "type": ["null", "string"]
+    },
+    "terminated_at": {
+      "type": ["null", "string"]
+    },
+    "canceled_at": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "previous_plan_code": {
+      "type": ["null", "string"]
+    },
+    "next_plan_code": {
+      "type": ["null", "string"]
+    },
+    "downgrade_plan_date": {
+      "type": ["null", "string"]
+    }
+  }
+}

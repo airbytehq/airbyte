@@ -4,7 +4,7 @@ This page will help you manage your Airbyte Cloud workspaces and understand Airb
 
 ## Manage your Airbyte Cloud workspace
 
-An Airbyte Workspace allows you to collaborate with other users and manage connections under a shared billing account.
+An Airbyte workspace allows you to collaborate with other users and manage connections under a shared billing account.
 
 :::info
 Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and cannot be transferred between workspaces.
@@ -14,44 +14,53 @@ Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and ca
 
 To add a user to your workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar. 
-2. In the Workspace Settings sidebar, click **Access Management**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+
+2. Click **Access Management**.
+
 3. Click **+ New user**.
-4. On the **Add new users** dialog, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
+
+4. On the **Add new users** dialog, enter the email address of the user you want to invite to your workspace. 
+
+5. Click **Send invitation**.
 
     :::info
-    The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.
+    The user will have access to only the workspace you invited them to. They will be added as a workspace admin by default.
     :::
 
-### Switch between multiple workspaces
+### Remove users from your workspace​
 
-To switch between workspaces:
+To remove a user from your workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
 
-2. Click **View all workspaces**.
+2. Click **Access Management**.
 
-3. Click the name of the workspace you want to switch to.
+3. Click **Remove** next to the user’s email.
+
+4. The **Remove user** dialog displays. Click **Remove**.
 
 ### Rename a workspace
 
 To rename a workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
 
-2. In the Workspace Settings sidebar, click **General Settings**.
+2. Click **General Settings**.
 
-3. In the Workspace name field, enter the new name for your workspace. Click **Save**.
+3. In the **Workspace name** field, enter the new name for your workspace. 
+
+4. Click **Save changes**.
 
 ### Delete a workspace
 
 To delete a workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
 
-2. In the Workspace Settings sidebar, click **General Settings**.
+2. Click **General Settings**.
 
-3. Click **Delete your workspace**.
+3. In the **Delete your workspace** section, click **Delete**.
 
 ### Single workspace vs. multiple workspaces
  
@@ -67,21 +76,67 @@ You can use one or multiple workspaces with Airbyte Cloud.
 | Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | You can use the same payment method for all purchases.                        | Credits pay for the use of resources in a workspace when you run a sync. Resource usage cannot be divided and paid for separately (for example, you cannot bill different departments in your organization for the usage of some credits in one workspace).                                     |
-| Multiple             | Workspaces are independent of each other, so you can use a different payment method card for each workspace (for example,  different credit cards per department in your organization). | You can use the same payment method for different workspaces, but each workspace is billed separately. Managing billing for each workspace can become complicated if you have many workspaces. |
+| Multiple             | Workspaces are independent of each other, so you can use a different payment method card for each workspace (for example, different credit cards per department in your organization). | You can use the same payment method for different workspaces, but each workspace is billed separately. Managing billing for each workspace can become complicated if you have many workspaces. |
+
+### Switch between multiple workspaces
+
+To switch between workspaces:
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
+
+2. Click **View all workspaces**.
+
+3. Click the name of the workspace you want to switch to.
+
+### Choose your default data residency
+
+Default data residency allows you to choose where your data is processed.
+
+:::note 
+
+Configuring default data residency only applies to new connections and does not affect existing connections.   
+
+:::
+
+For individual connections, you can choose a data residency that is different from the default through [connection settings](#choose-the-data-residency-for-a-connection) or when you create a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection).
+
+:::note 
+
+While the data is processed in a data plane in the chosen residency, the cursor and primary key data is stored in the US control plane. If you have data that cannot be stored in the US, do not use it as a cursor or primary key.
+
+:::
+
+To choose your default data residency:
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+
+2. Click **Data Residency**.
+
+3. Click the dropdown and choose the location for your default data residency.
+
+4. Click **Save changes**. 
+
+:::info 
+
+Depending on your network configuration, you may need to add [IP addresses](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud/#allowlist-ip-addresses) to your allowlist.   
+
+:::
 
 ## Manage Airbyte Cloud notifications
 
 To set up Slack notifications:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
 
-2. In the Workspace Settings sidebar, click **Notifications.**
+2. Click **Notifications**.
 
 3. [Create an Incoming Webhook for Slack](https://api.slack.com/messaging/webhooks).
 
-4. Navigate back to the Airbyte Cloud dashboard > Settings > Notifications and enter the Webhook URL. Click **Save changes**.
+4. Navigate back to the Airbyte Cloud dashboard > Settings > Notifications and enter the Webhook URL.
 
-5. Toggle the **Send notifications when sync fails** and **Send notifications when sync succeeds** buttons as required.
+5. Toggle the **When sync fails** and **When sync succeeds** buttons as required.
+
+6. Click **Save changes**.
 
 ## Understand Airbyte Cloud limits
 
@@ -90,87 +145,50 @@ Understanding the following limitations will help you better manage Airbyte Clou
 * Max number of workspaces per user: 100
 * Max number of sources in a workspace: 100
 * Max number of destinations in a workspace: 100
-* Max number of connection in a workspace: 100
+* Max number of connections in a workspace: 100
 * Max number of streams that can be returned by a source in a discover call: 1K
 * Max number of streams that can be configured to sync in a single connection: 1K
 * Size of a single record: 100MB
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
 
-## View the sync log summary
-The sync log summary shows if a sync succeeded, failed, cancelled, or is currently running.
+## View the sync summary
+The sync summary displays information about the data moved during a sync.
  
-To view the sync log summary:
-1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** in the navigation bar.   
-
-    The Connections page displays.
+To view the sync summary:
+1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections**.   
 
 2. Click a connection in the list to view its sync history.
 
-3. Under Sync History, a list of syncs for that connection is displayed.
+    Sync History displays the sync status or [reset](https://docs.airbyte.com/operator-guides/reset/) status (Succeeded, Partial Success, Failed, Cancelled, or Running) and the [sync summary](#sync-summary).  
 
-    The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](#sync-log-summary).  
-
-4. For more information about a sync, click the sync log dropdown.  
+    :::note 
+    
+    Airbyte will try to sync your data three times. After a third failure, it will stop attempting to sync.
+    
+    :::
+    
+3. To view the full sync log, click the sync summary dropdown.
  
-### Sync log summary
-#### Succeeded
-The log summary for a successful sync shows the following data.
-
-| Log                            | Description                                                                                                                                             |
+### Sync summary
+| Data                            | Description                                                                                                                                             |
 |--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | x GB (also measured in KB, MB) | Amount of data moved during the sync. If basic normalization is on, the amount of data would not change since normalization occurs in the destination.  |
 | x emitted records              | Number of records read from the source during the sync.                                                                                                 |
 | x committed records            | Number of records the destination confirmed it received.                                                                                                |
-| xh xm xs                   | Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.                                                     |
-| Sync or Reset                    | The action that was performed (either a sync or a [reset](https://docs.airbyte.com/operator-guides/reset/)).                                                                                               |
- 
+| xh xm xs                   | Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.                                                     | 
+
 :::note
 
 In a successful sync, the number of emitted records and committed records should be the same.
 
-:::  
-
-#### Cancelled
-The log summary for a cancelled sync may show the following data.
-
-| Log            | Description                                                                                     |
-|----------------|-------------------------------------------------------------------------------------------------|
-| NaN Bytes      | Since the sync was cancelled, the log does not show how much data was moved before cancelling.  |
-| No records     | Since the sync was cancelled, the log does not show emitted or committed records.               |
-| xh xm xs       | Total time (hours, minutes, seconds) between the beginning of sync and when it was cancelled.   |
-| Sync or Reset  | The action that was performed (either a sync or a reset).                                       |
-| Failure Origin | The cause of the sync cancellation.                                                             | 
-
-:::note 
-    
-Airbyte will try to sync your data three times. After a third failure, it will stop attempting to sync.
-    
-:::
-
-#### Failed
-The log summary for a failed sync may show the following data.
-
-| Log            | Description                                                                                 |
-|----------------|---------------------------------------------------------------------------------------------|
-| NaN Bytes      | Since the sync failed, the amount of data is zero.                                          |
-| No records     | Since the sync failed, there are no emitted or committed records.                           |
-| xh xm xs       | Total time (hours, minutes, seconds) between the beginning of the sync and when it failed.  |
-| Sync or Reset  | The action that was performed (either a sync or a reset).                                   |
-| Failure Origin | The cause of the sync failure.                                                              |
-
-#### Running
-The sync log summary displays **Running** when the sync is actively running.
+::: 
 
 ## Edit stream configuration
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** in the navigation bar and then click a connection in the list you want to change.  
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click a connection in the list you want to change.   
 
-    The **Connection** page displays.  
-
-2. Click **Replication**.
-
-    The **Replication** tab displays.
+2. Click the **Replication** tab.
 
 The **Transfer** and **Streams** settings include the following parameters:
 
@@ -183,6 +201,18 @@ The **Transfer** and **Streams** settings include the following parameters:
 :::note 
     
 These parameters apply to all streams in the connection.
+
+:::
+
+If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html):
+1. In the **Replication Frequency** dropdown, click **Cron**. 
+2. Enter a cron expression and choose a time zone to create a sync schedule.
+
+:::note
+
+* Only one sync per connection can run at a time. 
+* If cron schedules a sync to run before the last one finishes, the scheduled sync will start after the last sync completes.
+* Airbyte Cloud does not allow schedules that sync more than once per hour. 
 
 :::
 
@@ -235,7 +265,7 @@ To save the changes:
 
 :::caution
 
-Airbyte recommends that you reset the streams. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.
+Airbyte recommends that you reset streams. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping a reset is discouraged and might lead to unexpected behavior.
 
 :::
 
@@ -246,21 +276,55 @@ To refresh the source schema:
 
 2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
 
+## Display Connection State
+**Connection State** provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
+
+To display **Connection State**:
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+
+2. Click **General Settings**.
+
+3. Toggle **Enable advanced mode** and click **Save changes**.
+
+4. Click **Connections** in the navigation bar and then click the connection in the list you want to display.
+
+5. Click the **Settings** tab on the Connection page.
+
+    The **Connection State** displays. 
+
+## Choose the data residency for a connection
+You can choose the data residency for your connection in the connection settings. You can also choose data residency when creating a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection), or you can set the [default data residency](#choose-your-default-data-residency) for your workspace.
+
+To choose the data residency for your connection: 
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection that you want to change. 
+
+2. Click the **Settings** tab. 
+
+3. Click the **Data residency** dropdown and choose the location for your default data residency.
+
+4. Click **Save changes**
+
+:::note 
+
+Changes to data residency will not affect any sync in progress. 
+
+:::
+
 ## Buy credits
 
 This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://airbyte.com/pricing) is a unit of measure used to pay for Airbyte resources when you run a sync. 
 
  To buy credits:
 
-1. On the Airbyte Cloud dashboard, click the **coin icon** in the navigation bar.
-    
-    The Credits page displays.
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the **coin** icon in the navigation bar.
 
 2. If you are unsure of how many credits you need, click **Talk to Sales** to find the right amount for your team.
 
-3. Click **Buy credits**. The Stripe payment page displays.
+3. Click **Buy credits**.
 
-4. If you want to change the amount of credits, click Qty **200**. The **Update quantity** dialog displays, and you can either type the amount or use minus (**-**) or plus (**+**) to change the quantity. Click **Update**. 
+4. The Stripe payment page displays. If you want to change the amount of credits, click Qty **200**. The **Update quantity** dialog displays, and you can either type the amount or use minus (**-**) or plus (**+**) to change the quantity. Click **Update**. 
 
     :::note 
     Purchase limits:
@@ -276,7 +340,7 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
 
 6. Click **Pay**.
     
-    Your payment is processed, and the Credits page displays the updated quantity of credits, total credit usage, and the credit usage per connection. 
+    Your payment is processed. The Credits page displays the updated quantity of credits, total credit usage, and the credit usage per connection. 
 
     A receipt for your purchase is sent to your email. [Email us](mailto:ar@airbyte.io) for an invoice.
 

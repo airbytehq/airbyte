@@ -18,6 +18,7 @@ from source_linkedin_ads.source import (
     CampaignGroups,
     Campaigns,
     Creatives,
+    LinkedinAdsOAuth2Authenticator,
     SourceLinkedinAds,
 )
 
@@ -176,6 +177,19 @@ class TestLinkedinAdsStream:
         assert result == expected
 
 
+class TestAccountUsers:
+    stream: AccountUsers = AccountUsers(TEST_CONFIG)
+
+    def test_state_checkpoint_interval(self):
+        assert self.stream.state_checkpoint_interval == 500
+
+    def test_get_updated_state(self):
+        state = self.stream.get_updated_state(
+            current_stream_state={"lastModified": "2021-01-01"}, latest_record={"lastModified": "2021-08-01"}
+        )
+        assert state == {"lastModified": "2021-08-01"}
+
+
 class TestLinkedInAdsStreamSlicing:
     @pytest.mark.parametrize(
         "stream_cls, slice, expected",
@@ -320,3 +334,20 @@ class TestLinkedInAdsAnalyticsStream:
         stream = stream_cls(TEST_CONFIG)
         result = stream.request_params(stream_state={}, stream_slice=slice)
         assert expected == result
+
+
+def test_retry_get_access_token(requests_mock):
+    requests_mock.register_uri(
+        "POST",
+        "https://www.linkedin.com/oauth/v2/accessToken",
+        [{"status_code": 429}, {"status_code": 429}, {"status_code": 200, "json": {"access_token": "token", "expires_in": 3600}}],
+    )
+    auth = LinkedinAdsOAuth2Authenticator(
+        token_refresh_endpoint="https://www.linkedin.com/oauth/v2/accessToken",
+        client_id="client_id",
+        client_secret="client_secret",
+        refresh_token="refresh_token",
+    )
+    token = auth.get_access_token()
+    assert len(requests_mock.request_history) == 3
+    assert token == "token"

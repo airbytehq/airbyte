@@ -3,11 +3,10 @@ import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
-import styled from "styled-components";
 
-import Table from "components/Table";
+import { Table, SortableTableHeader } from "components/ui/Table";
 
-import { ConnectionScheduleType } from "core/request/AirbyteClient";
+import { ConnectionScheduleType, SchemaChange } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useQuery } from "hooks/useQuery";
 
@@ -16,25 +15,20 @@ import ConnectorCell from "./components/ConnectorCell";
 import FrequencyCell from "./components/FrequencyCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
-import SortButton from "./components/SortButton";
-import StatusCell from "./components/StatusCell";
+import { StatusCell } from "./components/StatusCell";
 import { ITableDataItem, SortOrderEnum } from "./types";
-
-const Content = styled.div`
-  margin: 0 32px 0 27px;
-`;
 
 interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
-  onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
 }
 
-const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeStatus, onSync }) => {
+const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync }) => {
   const navigate = useNavigate();
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
   const allowSync = useFeature(FeatureItem.AllowSync);
 
   const sortBy = query.sortBy || "entityName";
@@ -81,14 +75,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
     () => [
       {
         Header: (
-          <>
+          <SortableTableHeader
+            onClick={() => onSortClick("name")}
+            isActive={sortBy === "name"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
             <FormattedMessage id="tables.name" />
-            <SortButton
-              wasActive={sortBy === "name"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("name")}
-            />
-          </>
+          </SortableTableHeader>
         ),
         headerHighlighted: true,
         accessor: "name",
@@ -99,18 +92,15 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
       },
       {
         Header: (
-          <>
-            {entity === "connection" ? (
-              <FormattedMessage id="tables.destinationConnectionToName" />
-            ) : (
-              <FormattedMessage id={`tables.${entity}ConnectionToName`} />
-            )}
-            <SortButton
-              wasActive={sortBy === "entityName"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("entityName")}
+          <SortableTableHeader
+            onClick={() => onSortClick("entityName")}
+            isActive={sortBy === "entityName"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
+            <FormattedMessage
+              id={entity === "connection" ? "tables.destinationConnectionToName" : `tables.${entity}ConnectionToName`}
             />
-          </>
+          </SortableTableHeader>
         ),
         headerHighlighted: true,
         accessor: "entityName",
@@ -125,18 +115,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
       },
       {
         Header: (
-          <>
-            {entity === "connection" ? (
-              <FormattedMessage id="tables.sourceConnectionToName" />
-            ) : (
-              <FormattedMessage id="tables.connector" />
-            )}
-            <SortButton
-              wasActive={sortBy === "connectorName"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("connectorName")}
-            />
-          </>
+          <SortableTableHeader
+            onClick={() => onSortClick("connectorName")}
+            isActive={sortBy === "connectorName"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
+            <FormattedMessage id={entity === "connection" ? "tables.sourceConnectionToName" : "tables.connector"} />
+          </SortableTableHeader>
         ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
@@ -153,14 +138,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
       },
       {
         Header: (
-          <>
+          <SortableTableHeader
+            onClick={() => onSortClick("lastSync")}
+            isActive={sortBy === "lastSync"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
             <FormattedMessage id="tables.lastSync" />
-            <SortButton
-              wasActive={sortBy === "lastSync"}
-              lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("lastSync")}
-            />
-          </>
+          </SortableTableHeader>
         ),
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
@@ -173,12 +157,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         customWidth: 1,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <StatusCell
+            schemaChange={row.original.schemaChange}
             enabled={cell.value}
             id={row.original.connectionId}
             isSyncing={row.original.isSyncing}
             isManual={row.original.scheduleType === ConnectionScheduleType.manual}
-            onChangeStatus={onChangeStatus}
             onSync={onSync}
+            hasBreakingChange={allowAutoDetectSchema && row.original.schemaChange === SchemaChange.breaking}
             allowSync={allowSync}
           />
         ),
@@ -190,14 +175,10 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         Cell: ({ cell }: CellProps<ITableDataItem>) => <ConnectionSettingsCell id={cell.value} />,
       },
     ],
-    [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
+    [sortBy, sortOrder, entity, onSortClick, onSync, allowSync, allowAutoDetectSchema]
   );
 
-  return (
-    <Content>
-      <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />
-    </Content>
-  );
+  return <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />;
 };
 
 export default ConnectionTable;

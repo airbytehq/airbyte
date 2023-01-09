@@ -53,8 +53,10 @@ public class SnowflakeDatabase {
   public static final String PRIVATE_KEY_FILE_NAME = "rsa_key.p8";
   public static final String PRIVATE_KEY_FIELD_NAME = "private_key";
   public static final String PRIVATE_KEY_PASSWORD = "private_key_password";
+  private static final String CONNECTION_STRING_IDENTIFIER_KEY = "application";
+  private static final String CONNECTION_STRING_IDENTIFIER_VAL = "Airbyte_Connector";
 
-  public static HikariDataSource createDataSource(final JsonNode config) {
+  public static HikariDataSource createDataSource(final JsonNode config, final String airbyteEnvironment) {
     final HikariDataSource dataSource = new HikariDataSource();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
@@ -78,6 +80,7 @@ public class SnowflakeDatabase {
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
+      properties.put(CONNECTION_STRING_IDENTIFIER_KEY, CONNECTION_STRING_IDENTIFIER_VAL);
       properties.put("client_id", credentials.get("client_id").asText());
       properties.put("client_secret", credentials.get("client_secret").asText());
       properties.put("refresh_token", credentials.get("refresh_token").asText());
@@ -126,7 +129,7 @@ public class SnowflakeDatabase {
 
     // https://docs.snowflake.com/en/user-guide/jdbc-parameters.html#application
     // identify airbyte traffic to snowflake to enable partnership & optimization opportunities
-    properties.put("application", "airbyte");
+    properties.put("application", airbyteEnvironment); // see envs in OssCloudEnvVarConsts class
     // Needed for JDK17 - see
     // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
     properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");

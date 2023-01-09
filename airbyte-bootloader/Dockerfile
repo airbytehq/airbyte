@@ -1,8 +1,7 @@
-ARG JDK_VERSION=19-slim-bullseye
-ARG JDK_IMAGE=openjdk:${JDK_VERSION}
+ARG JDK_IMAGE=airbyte/airbyte-base-java-image:1.0
 FROM ${JDK_IMAGE}
 
-ARG VERSION=0.40.7
+ARG VERSION=0.40.27
 
 ENV APPLICATION airbyte-bootloader
 ENV VERSION ${VERSION}

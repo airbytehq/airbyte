@@ -2,7 +2,7 @@ version: "0.1.0"
 definitions:
   page_size: 50
   schema_loader:
-    type: JsonSchema
+    type: JsonFileSchemaLoader
     file_path: "./source_sentry/schemas/{{ options.name }}.json"
   selector:
     type: RecordSelector
@@ -18,7 +18,7 @@ definitions:
       type: "BearerAuthenticator"
       api_token: "{{ config.auth_token }}"
   paginator:
-    type: LimitPaginator
+    type: DefaultPaginator
     url_base: "*ref(definitions.requester.url_base)"
     page_size: "*ref(definitions.page_size)"
     limit_option:

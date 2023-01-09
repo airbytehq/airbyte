@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -90,9 +91,20 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
         config.get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 
+    final boolean isAdditionalParamsExists =
+        config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
+    final List<String> params = new ArrayList<>();
     // assume ssl if not explicitly mentioned.
     if (isSsl) {
-      jdbcUrl.append("?").append(SSL_MODE);
+      params.add(SSL_MODE);
+    }
+    if (isAdditionalParamsExists) {
+      params.add(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    }
+
+    if (isSsl || isAdditionalParamsExists) {
+      jdbcUrl.append("?");
+      jdbcUrl.append(String.join("&", params));
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

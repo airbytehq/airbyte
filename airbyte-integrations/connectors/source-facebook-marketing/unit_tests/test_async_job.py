@@ -329,17 +329,26 @@ class TestInsightAsyncJob:
     )
     def test_split_job(self, mocker, api, edge_class, next_edge_class, id_field):
         """Test that split will correctly downsize edge_object"""
-        interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2010, 1, 10))
+        today = pendulum.today().date()
+        start, end = today - pendulum.duration(days=365 * 3 + 20), today - pendulum.duration(days=365 * 3 + 10)
         params = {"time_increment": 1, "breakdowns": []}
-        job = InsightAsyncJob(api=api, edge_object=edge_class(1), interval=interval, params=params)
+        job = InsightAsyncJob(api=api, edge_object=edge_class(1), interval=pendulum.Period(start, end), params=params)
         mocker.patch.object(edge_class, "get_insights", return_value=[{id_field: 1}, {id_field: 2}, {id_field: 3}])
 
         small_jobs = job.split_job()
 
-        edge_class.get_insights.assert_called_once()
+        edge_class.get_insights.assert_called_once_with(
+            params={
+                "breakdowns": [],
+                "fields": [id_field],
+                "level": next_edge_class.__name__.lower(),
+                "time_range": {"since": (today - pendulum.duration(months=37)).to_date_string(), "until": end.to_date_string()},
+            }
+        )
         assert len(small_jobs) == 3
         assert all(j.interval == job.interval for j in small_jobs)
         for i, small_job in enumerate(small_jobs, start=1):
+            assert small_job._params["time_range"] == job._params["time_range"]
             assert str(small_job) == f"InsightAsyncJob(id=<None>, {next_edge_class(i)}, time_range={job.interval}, breakdowns={[]})"
 
     def test_split_job_smallest(self, mocker, api):

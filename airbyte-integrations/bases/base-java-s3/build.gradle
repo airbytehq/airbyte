@@ -1,0 +1,39 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+    implementation 'org.apache.commons:commons-csv:1.4'
+    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+
+    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+
+    // parquet
+    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    }
+    implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+
+    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+    }
+
+    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
+    testImplementation "org.mockito:mockito-inline:4.1.0"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
+}

@@ -6,15 +6,16 @@ package io.airbyte.integrations.destination.bigquery;
 
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,19 +41,35 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     // todo (cgardens) - move contents of #write into this method.
   }
 
+  /**
+   * Processes STATE and RECORD {@link AirbyteMessage} with all else logged as unexpected
+   *
+   * <li>For STATE messages emit messages back to the platform</li>
+   * <li>For RECORD messages upload message to associated Airbyte Stream. This means that RECORDS will be associated with their respective streams when
+   * more than one record exists</li>
+   *
+   * @param message {@link AirbyteMessage} to be processed
+   */
   @Override
   public void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
       outputRecordCollector.accept(message);
     } else if (message.getType() == Type.RECORD) {
-      message.getRecord().setNamespace(datasetId);
+      if (StringUtils.isEmpty(message.getRecord().getNamespace())) {
+        message.getRecord().setNamespace(datasetId);
+      }
       processRecord(message);
     } else {
       LOGGER.warn("Unexpected message: {}", message.getType());
     }
   }
 
+  /**
+   * Processes {@link io.airbyte.protocol.models.AirbyteRecordMessage} by writing Airbyte stream data to Big Query Writer
+   *
+   * @param message record to be written
+   */
   private void processRecord(final AirbyteMessage message) {
     final var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     uploaderMap.get(pair).upload(message);

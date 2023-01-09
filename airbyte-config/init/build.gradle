@@ -7,6 +7,7 @@ dependencies {
 
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-persistence:job-persistence')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-json-validation')
