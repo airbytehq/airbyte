@@ -215,9 +215,12 @@ public abstract class AbstractSourceConnectorTest {
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
+    final var featureFlags = new EnvVariableFeatureFlags();
+
     final AirbyteSource source = new DefaultAirbyteSource(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
-            new EnvVariableFeatureFlags()));
+            featureFlags),
+        featureFlags);
     final List<AirbyteMessage> messages = new ArrayList<>();
     source.start(sourceConfig, jobRoot);
     while (!source.isFinished()) {
@@ -271,7 +274,7 @@ public abstract class AbstractSourceConnectorTest {
         ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
             featureFlags)
         : new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, resourceRequirements, false, featureFlags);
-    return new DefaultAirbyteSource(integrationLauncher);
+    return new DefaultAirbyteSource(integrationLauncher, featureFlags);
   }
 
   private static Map<String, String> prepareResourceRequestMapBySystemProperties() {
