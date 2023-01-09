@@ -16,7 +16,13 @@ Install it in IntelliJ:
    2. Select the file we just downloaded
 3. Select `GoogleStyle` in the dropdown
 4. Change default `Hard wrap at` in `Wrapping and Braces` tab to **150**
-5. Use explicit imports (example: `import foo.bar.ClassName` over `import foo.bar.*`) even when importing multiple classes from the same package. This can be set by going to `Preferences > Code Style > Java > Imports` and changing `Class count to use import with '*'` to `9999` and `Names count to use static import with '\*'` to `9999`
+5. Use explicit imports 
+   1. Under `Preferences > Code Style > Java > Imports`
+      1. change `Class count to use import with '*'` to `9999` 
+      2. change `Names count to use static import with '*'` to `9999`
+   2. Under `Preferences > Code Style > Kotlin > Imports`
+      1. change `Top Level Symbols` to `Use single name import`
+      2. change `Java Statics and Enum Members` to `Use single name import`
 6. Add the `final` keyword wherever possible. You can either set this as the default for your IDE or you can set it just for the Airbyte project(s) that you are using
    1. Turn on the inspection. Go into `Preferences > Editor > Inspections`
       1. Search `"Field may be 'final'"` > check the box

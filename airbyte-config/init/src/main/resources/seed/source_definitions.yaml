@@ -561,7 +561,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.3.10
+  dockerImageTag: 0.3.11
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -606,7 +606,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -622,7 +622,7 @@
 - name: Google Analytics 4 (GA4)
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
   dockerRepository: airbyte/source-google-analytics-data-api
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
@@ -1073,7 +1073,7 @@
 - name: Okta
   sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerRepository: airbyte/source-okta
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/okta
   icon: okta.svg
   sourceType: api
@@ -1507,7 +1507,7 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   icon: slack.svg
   sourceType: api

@@ -48,7 +48,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
   const {
-    destDefinition: { supportedDestinationSyncModes },
+    destDefinitionSpecification: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { mode } = useConnectionFormService();
 
