@@ -67,5 +67,5 @@ class SourceMailchimp(AbstractSource):
         return [
             Lists(authenticator=authenticator),
             Campaigns(authenticator=authenticator),
-            EmailActivity(authenticator=authenticator, campaign_id=campaign_id)
+            EmailActivity(authenticator=authenticator, campaign_id=campaign_id),
         ]
