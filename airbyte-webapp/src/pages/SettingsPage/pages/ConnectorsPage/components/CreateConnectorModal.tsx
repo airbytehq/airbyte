@@ -227,7 +227,7 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                         </Label>
                       }
                       error={meta.touched && !!meta.error}
-                      message={meta.touched && meta.error && <FormattedMessage id={meta.error} />}
+                      message={meta.error && <FormattedMessage id={meta.error} />}
                     />
                   )}
                 </Field>
