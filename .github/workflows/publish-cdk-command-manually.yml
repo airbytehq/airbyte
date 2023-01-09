@@ -24,7 +24,7 @@ on:
         required: false
       changelog-message:
         description: "Changelog message to be added to CHANGELOG.md"
-        required: true
+        required: false
 
 concurrency:
   group: publish-airbyte-cdk
