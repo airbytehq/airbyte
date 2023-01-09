@@ -32,8 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * This provider pulls the definitions from a remotely hosted catalog.
  */
-@Primary
 @Singleton
+@Primary
 @Requires(property = "airbyte.platform.remote-connector-catalog.url",
           notEquals = "")
 @Slf4j

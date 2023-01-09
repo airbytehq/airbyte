@@ -116,4 +116,4 @@ jooq:
 logger:
   levels:
 # Uncomment to help resolve issues with conditional beans
-    io.micronaut.context.condition: DEBUG
+#    io.micronaut.context.condition: DEBUG
