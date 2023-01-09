@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.check.connection;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
@@ -28,6 +29,7 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
@@ -85,10 +87,14 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   @Override
   public ConnectorJobOutput runWithJobOutput(final CheckConnectionInput args) {
     ApmTraceUtils
-        .addTagsToTrace(Map.of(JOB_ID_KEY, args.getJobRunConfig().getJobId(), DOCKER_IMAGE_KEY, args.getLauncherConfig().getDockerImage()));
-    final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
+        .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, args.getJobRunConfig().getAttemptId(), JOB_ID_KEY, args.getJobRunConfig().getJobId(),
+            DOCKER_IMAGE_KEY, args.getLauncherConfig().getDockerImage()));
+    final StandardCheckConnectionInput rawInput = args.getConnectionConfiguration();
+    final JsonNode fullConfig = secretsHydrator.hydrate(rawInput.getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
+        .withActorId(rawInput.getActorId())
+        .withActorType(rawInput.getActorType())
         .withConnectionConfiguration(fullConfig);
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
@@ -128,12 +134,18 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           Math.toIntExact(launcherConfig.getAttemptId()),
           launcherConfig.getDockerImage(),
           processFactory,
-          workerConfigs.getResourceRequirements());
+          workerConfigs.getResourceRequirements(),
+          launcherConfig.getIsCustomConnector());
+
+      final ConnectorConfigUpdater connectorConfigUpdater = new ConnectorConfigUpdater(
+          airbyteApiClient.getSourceApi(),
+          airbyteApiClient.getDestinationApi());
+
       final AirbyteStreamFactory streamFactory = launcherConfig.getProtocolVersion() != null
           ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion())
           : new DefaultAirbyteStreamFactory();
 
-      return new DefaultCheckConnectionWorker(integrationLauncher, streamFactory);
+      return new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, streamFactory);
     };
   }
 

@@ -11,8 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 public class EnvVariableFeatureFlags implements FeatureFlags {
 
   public static final String USE_STREAM_CAPABLE_STATE = "USE_STREAM_CAPABLE_STATE";
+  public static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
+  // Set this value to true to see all messages from the source to destination, set to one second
+  // emission
   public static final String LOG_CONNECTOR_MESSAGES = "LOG_CONNECTOR_MESSAGES";
   public static final String NEED_STATE_VALIDATION = "NEED_STATE_VALIDATION";
+  public static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
+
+  public static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
   @Override
   public boolean autoDisablesFailingConnections() {
@@ -32,6 +38,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   }
 
   @Override
+  public boolean autoDetectSchema() {
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false, Boolean::parseBoolean);
+  }
+
+  @Override
   public boolean logConnectorMessages() {
     return getEnvOrDefault(LOG_CONNECTOR_MESSAGES, false, Boolean::parseBoolean);
   }
@@ -39,6 +50,16 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public boolean needStateValidation() {
     return getEnvOrDefault(NEED_STATE_VALIDATION, true, Boolean::parseBoolean);
+  }
+
+  @Override
+  public boolean applyFieldSelection() {
+    return getEnvOrDefault(APPLY_FIELD_SELECTION, false, Boolean::parseBoolean);
+  }
+
+  @Override
+  public String fieldSelectionWorkspaces() {
+    return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "", (arg) -> arg);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

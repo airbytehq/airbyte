@@ -35,14 +35,13 @@ public class ConfigsDatabaseTestProvider implements TestDatabaseProvider {
 
   @Override
   public Database create(final boolean runMigration) throws IOException, DatabaseInitializationException {
-    final String initalSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
+    final String initalSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_INITIAL_SCHEMA_PATH);
     DatabaseCheckFactory.createConfigsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initalSchema).initialize();
 
     final Database database = new Database(dslContext);
 
     if (runMigration) {
-      final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(
-          database, flyway);
+      final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, flyway);
       migrator.createBaseline();
       migrator.migrate();
     } else {

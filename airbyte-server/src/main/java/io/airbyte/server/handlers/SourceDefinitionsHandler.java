@@ -8,7 +8,6 @@ import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
-import io.airbyte.api.model.generated.CustomSourceDefinitionUpdate;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.generated.ReleaseStage;
@@ -28,6 +27,7 @@ import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.ActorType;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSourceDefinition;
@@ -189,19 +189,6 @@ public class SourceDefinitionsHandler {
     return getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId));
   }
 
-  public SourceDefinitionRead createPrivateSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
-      throws JsonValidationException, IOException {
-    final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(sourceDefinitionCreate)
-        .withPublic(false)
-        .withCustom(false);
-    if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
-      throw new UnsupportedProtocolVersionException(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
-    }
-    configRepository.writeStandardSourceDefinition(sourceDefinition);
-
-    return buildSourceDefinitionRead(sourceDefinition);
-  }
-
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate)
       throws IOException {
     final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(customSourceDefinitionCreate.getSourceDefinition())
@@ -217,7 +204,12 @@ public class SourceDefinitionsHandler {
 
   private StandardSourceDefinition sourceDefinitionFromCreate(final SourceDefinitionCreate sourceDefinitionCreate)
       throws IOException {
-    final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
+    final ConnectorSpecification spec =
+        getSpecForImage(
+            sourceDefinitionCreate.getDockerRepository(),
+            sourceDefinitionCreate.getDockerImageTag(),
+            // Only custom connectors can be created via handlers.
+            true);
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
 
@@ -246,7 +238,8 @@ public class SourceDefinitionsHandler {
     final boolean specNeedsUpdate = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag())
         || sourceDefinitionUpdate.getDockerImageTag().equals(DEV_IMAGE_TAG);
     final ConnectorSpecification spec = specNeedsUpdate
-        ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
+        ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag(),
+            currentSourceDefinition.getCustom())
         : currentSourceDefinition.getSpec();
     final ActorDefinitionResourceRequirements updatedResourceReqs = sourceDefinitionUpdate.getResourceRequirements() != null
         ? ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionUpdate.getResourceRequirements())
@@ -274,17 +267,9 @@ public class SourceDefinitionsHandler {
         .withResourceRequirements(updatedResourceReqs);
 
     configRepository.writeStandardSourceDefinition(newSource);
-    return buildSourceDefinitionRead(newSource);
-  }
+    configRepository.clearUnsupportedProtocolVersionFlag(newSource.getSourceDefinitionId(), ActorType.SOURCE, protocolVersionRange);
 
-  public SourceDefinitionRead updateCustomSourceDefinition(final CustomSourceDefinitionUpdate customSourceDefinitionUpdate)
-      throws IOException, JsonValidationException, ConfigNotFoundException {
-    final UUID definitionId = customSourceDefinitionUpdate.getSourceDefinition().getSourceDefinitionId();
-    final UUID workspaceId = customSourceDefinitionUpdate.getWorkspaceId();
-    if (!configRepository.workspaceCanUseCustomDefinition(definitionId, workspaceId)) {
-      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
-    }
-    return updateSourceDefinition(customSourceDefinitionUpdate.getSourceDefinition());
+    return buildSourceDefinitionRead(newSource);
   }
 
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
@@ -304,19 +289,10 @@ public class SourceDefinitionsHandler {
     configRepository.writeStandardSourceDefinition(persistedSourceDefinition);
   }
 
-  public void deleteCustomSourceDefinition(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
-      throws IOException, JsonValidationException, ConfigNotFoundException {
-    final UUID definitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
-    final UUID workspaceId = sourceDefinitionIdWithWorkspaceId.getWorkspaceId();
-    if (!configRepository.workspaceCanUseCustomDefinition(definitionId, workspaceId)) {
-      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
-    }
-    deleteSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId));
-  }
-
-  private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag) throws IOException {
+  private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag, final boolean isCustomConnector)
+      throws IOException {
     final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
-    final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName);
+    final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName, isCustomConnector);
     return SpecFetcher.getSpecFromJob(getSpecResponse);
   }
 

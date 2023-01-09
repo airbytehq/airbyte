@@ -17,6 +17,7 @@ import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/componen
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
 import { OAuthLogin } from "../OAuthLogin";
+import { Separator } from "../SignupPage/components/Separator";
 import { Disclaimer } from "../SignupPage/components/SignupForm";
 import styles from "./LoginPage.module.scss";
 
@@ -25,7 +26,7 @@ const LoginPageValidationSchema = yup.object().shape({
   password: yup.string().required("form.empty.error"),
 });
 
-const LoginPage: React.FC = () => {
+export const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
   const { login } = useAuthService();
   const query = useQuery<{ from?: string }>();
@@ -112,10 +113,10 @@ const LoginPage: React.FC = () => {
           </Form>
         )}
       </Formik>
+
+      <Separator />
       <OAuthLogin />
       <Disclaimer />
     </div>
   );
 };
-
-export default LoginPage;

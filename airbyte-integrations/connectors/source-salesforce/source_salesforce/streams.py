@@ -251,7 +251,7 @@ class BulkSalesforceStream(SalesforceStream):
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
             if not job_id:
-                return None, None
+                return None, job_status
             job_full_url = f"{url}/{job_id}"
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
@@ -284,7 +284,7 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
-            response_encoding = response.encoding or response.apparent_encoding or self.encoding
+            response_encoding = response.apparent_encoding or response.encoding or self.encoding
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists

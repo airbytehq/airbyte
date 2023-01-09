@@ -1,0 +1,71 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["data"]
+  requester:
+    url_base: "https://api.twitter.com/2/tweets"
+    http_method: "GET"
+    authenticator:
+      type: "BearerAuthenticator"
+      header: "apikey"
+      api_token: "{{ config['api_key'] }}"
+    request_options_provider:
+      request_parameters:
+        query: "{{ config['query'] }}"
+        start_time: "{{ config['start_time'] }}"
+        end_time: "{{ config['end_time'] }}"
+  stream_slicer:
+    type: DatetimeStreamSlicer
+    start_datetime:
+      datetime: "{{ config['start_time'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
+    end_datetime:
+      datetime: "{{ config['end_time'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_granularity: "PT1S"
+    step: "P1D"
+    start_time_option:
+      field_name: start_time
+      inject_into: request_parameter
+    end_time_option:
+      field_name: end_time
+      inject_into: request_parameter
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.meta.next_token }}"
+        stop_condition: "{{ 'next_token' not in response['meta'] }}"
+        page_size: 100
+      page_size_option:
+        field_name: "max_results"
+        inject_into: "request_parameter"
+      page_token_option:
+        field_name: "next_token"
+        inject_into: "request_parameter"
+      url_base: "*ref(definitions.requester.url_base)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  tweets_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tweets"
+      path: "/search/recent"
+
+streams:
+  - "*ref(definitions.tweets_stream)"
+
+check:
+  stream_names:
+    - "tweets"

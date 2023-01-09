@@ -1,0 +1,30 @@
+@use "scss/colors";
+@use "scss/variables";
+
+$icon-size: 20px;
+
+.icon {
+  width: $icon-size;
+  height: $icon-size;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity variables.$transition-out;
+  opacity: 0;
+
+  &.visible {
+    opacity: 1;
+  }
+
+  &.plus {
+    color: colors.$green;
+  }
+
+  &.minus {
+    color: colors.$red;
+  }
+
+  &.changed {
+    color: colors.$blue;
+  }
+}

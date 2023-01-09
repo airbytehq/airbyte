@@ -1,6 +1,5 @@
-{ 
-  "authorization": 
-  {
+{
+  "authorization": {
     "auth_type": "Client",
     "client_id": "fake-client-id",
     "client_secret": "fake-client-secret",

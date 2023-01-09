@@ -20,9 +20,8 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from source_acceptance_test.config import BasicReadTestConfig
-from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
-from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
+from source_acceptance_test.config import BasicReadTestConfig, Config, ExpectedRecordsConfig
+from source_acceptance_test.tests import test_core
 
 from .conftest import does_not_raise
 
@@ -39,7 +38,7 @@ from .conftest import does_not_raise
     ],
 )
 def test_discovery(schema, cursors, should_fail):
-    t = _TestDiscovery()
+    t = test_core.TestDiscovery()
     discovered_catalog = {
         "test_stream": AirbyteStream.parse_obj(
             {
@@ -79,7 +78,7 @@ def test_discovery(schema, cursors, should_fail):
     ],
 )
 def test_ref_in_discovery_schemas(schema, should_fail):
-    t = _TestDiscovery()
+    t = test_core.TestDiscovery()
     discovered_catalog = {
         "test_stream": AirbyteStream.parse_obj(
             {"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh", "incremental"]}
@@ -123,7 +122,7 @@ def test_ref_in_discovery_schemas(schema, should_fail):
     ],
 )
 def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
-    t = _TestDiscovery()
+    t = test_core.TestDiscovery()
     discovered_catalog = {
         "test_stream": AirbyteStream.parse_obj(
             {"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh", "incremental"]}
@@ -163,7 +162,7 @@ def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
     ],
 )
 def test_supported_sync_modes_in_stream(mocker, discovered_catalog, expectation):
-    t = _TestDiscovery()
+    t = test_core.TestDiscovery()
     with expectation:
         t.test_streams_has_sync_modes(discovered_catalog)
 
@@ -230,9 +229,51 @@ def test_supported_sync_modes_in_stream(mocker, discovered_catalog, expectation)
     ],
 )
 def test_additional_properties_is_true(discovered_catalog, expectation):
-    t = _TestDiscovery()
+    t = test_core.TestDiscovery()
     with expectation:
         t.test_additional_properties_is_true(discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "test_strictness_level, configured_catalog_path",
+    [
+        (Config.TestStrictnessLevel.high, None),
+        (Config.TestStrictnessLevel.high, "custom_configured_catalog_path"),
+        (Config.TestStrictnessLevel.low, None),
+        (Config.TestStrictnessLevel.low, "custom_configured_catalog_path"),
+    ],
+)
+def test_configured_catalog_fixture(mocker, test_strictness_level, configured_catalog_path):
+    mocker.patch.object(test_core, "build_configured_catalog_from_discovered_catalog_and_empty_streams")
+    mocker.patch.object(test_core, "build_configured_catalog_from_custom_catalog")
+    mocker.patch.object(test_core.pytest, "fail")
+
+    mock_discovered_catalog = mocker.Mock()
+    mock_empty_streams = mocker.Mock()
+    t = test_core.TestBasicRead()
+    configured_catalog = test_core.TestBasicRead.configured_catalog_fixture.__wrapped__(
+        t, test_strictness_level, configured_catalog_path, mock_discovered_catalog, mock_empty_streams
+    )
+    if test_strictness_level is Config.TestStrictnessLevel.high:
+        if configured_catalog_path:
+            test_core.pytest.fail.assert_called_once()
+        else:
+            test_core.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_called_once_with(
+                mock_discovered_catalog, mock_empty_streams
+            )
+            test_core.build_configured_catalog_from_custom_catalog.assert_not_called()
+            assert configured_catalog == test_core.build_configured_catalog_from_discovered_catalog_and_empty_streams.return_value
+    else:
+        if configured_catalog_path is None:
+            test_core.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_called_once_with(
+                mock_discovered_catalog, mock_empty_streams
+            )
+            test_core.build_configured_catalog_from_custom_catalog.assert_not_called()
+            assert configured_catalog == test_core.build_configured_catalog_from_discovered_catalog_and_empty_streams.return_value
+        else:
+            test_core.build_configured_catalog_from_custom_catalog.assert_called_once_with(configured_catalog_path, mock_discovered_catalog)
+            test_core.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_not_called()
+            assert configured_catalog == test_core.build_configured_catalog_from_custom_catalog.return_value
 
 
 @pytest.mark.parametrize(
@@ -260,7 +301,7 @@ def test_additional_properties_is_true(discovered_catalog, expectation):
     ],
 )
 def test_read(schema, record, expectation):
-    catalog = ConfiguredAirbyteCatalog(
+    configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
                 stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
@@ -269,14 +310,23 @@ def test_read(schema, record, expectation):
             )
         ]
     )
-    input_config = BasicReadTestConfig()
     docker_runner_mock = MagicMock()
     docker_runner_mock.call_read.return_value = [
         AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
     ]
-    t = _TestBasicRead()
+    t = test_core.TestBasicRead()
     with expectation:
-        t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
+        t.test_read(
+            connector_config=None,
+            configured_catalog=configured_catalog,
+            expect_records_config=ExpectedRecordsConfig(path="foobar"),
+            should_validate_schema=True,
+            should_validate_data_points=False,
+            empty_streams=set(),
+            expected_records_by_stream={},
+            docker_runner=docker_runner_mock,
+            detailed_logger=MagicMock(),
+        )
 
 
 @pytest.mark.parametrize(
@@ -355,7 +405,7 @@ def test_read(schema, record, expectation):
     ],
 )
 def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failure, should_fail):
-    t = _TestBasicRead()
+    t = test_core.TestBasicRead()
     input_config = BasicReadTestConfig(expect_trace_message_on_failure=expect_trace_message_on_failure)
     docker_runner_mock = MagicMock()
     docker_runner_mock.call_read.return_value = output
@@ -835,7 +885,7 @@ def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failur
     ],
 )
 def test_validate_field_appears_at_least_once(records, configured_catalog, expected_error):
-    t = _TestBasicRead()
+    t = test_core.TestBasicRead()
     if expected_error:
         with pytest.raises(AssertionError, match=expected_error):
             t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)

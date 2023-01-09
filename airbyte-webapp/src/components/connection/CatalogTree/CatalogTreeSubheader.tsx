@@ -9,7 +9,7 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 
 import styles from "./CatalogTreeSubheader.module.scss";
 
-const SubtitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
+const SubtitleCell = styled(Cell).attrs(() => ({ light: true }))`
   font-size: 10px;
   line-height: 12px;
   border-top: 1px solid ${({ theme }) => theme.greyColor0};
@@ -30,6 +30,7 @@ export const CatalogTreeSubheader: React.FC = () => {
 
   return (
     <Header className={catalogSubheaderStyle}>
+      <Cell flex={0.8} />
       <SubtitleCell>
         <FormattedMessage id="form.namespace" />
       </SubtitleCell>

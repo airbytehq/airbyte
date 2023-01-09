@@ -18,7 +18,7 @@ The BigQuery source does not alter the schema present in your database. Dependin
 
 The BigQuery data types mapping:
 
-| CockroachDb Type | Resulting Type | Notes |
+| BigQuery Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
 | `BOOL` | Boolean |  |
 | `INT64` | Number |  |
@@ -88,7 +88,7 @@ Once you've configured BigQuery as a source, delete the Service Account Key from
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-|       | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
+| 0.2.3 | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.2.2 | 2022-09-22 | [16902](https://github.com/airbytehq/airbyte/pull/16902) | Source BigQuery: added user agent header  |
 | 0.2.1 | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage  |
 | 0.2.0 | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields. |

@@ -10,7 +10,7 @@ interface AlertBannerProps {
 
 export const AlertBanner: React.FC<AlertBannerProps> = ({ color, message }) => {
   const bannerStyle = classnames(styles.alertBannerContainer, {
-    [styles.beige]: color === "default" || !color,
+    [styles.default]: color === "default" || !color,
     [styles.red]: color === "warning",
   });
 

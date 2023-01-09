@@ -1,0 +1,38 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://sandbox.api.sap.com/fieldglass/api/vc/connector"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "apikey"
+      api_token: "{{ config['api_key'] }}"
+    requrest_options_provider:
+      request_parameters:
+        base: "{{ config['base'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  data_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "data"
+      path: "/Active Worker Download"
+
+streams:
+  - "*ref(definitions.data_stream)"
+
+check:
+  stream_names:
+    - "data"

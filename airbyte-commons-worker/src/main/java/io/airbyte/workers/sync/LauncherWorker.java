@@ -9,6 +9,9 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.PROCESS_EXIT_VALUE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+import static io.airbyte.workers.process.Metadata.CONNECTION_ID_LABEL_KEY;
+import static io.airbyte.workers.process.Metadata.ORCHESTRATOR_STEP;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
 
 import com.google.common.base.Stopwatch;
 import datadog.trace.api.Trace;
@@ -21,6 +24,7 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
@@ -56,7 +60,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
-  private static final String CONNECTION_ID_LABEL_KEY = "connection_id";
   private static final Duration MAX_DELETION_TIMEOUT = Duration.ofSeconds(45);
 
   private final UUID connectionId;
@@ -70,7 +73,9 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final Supplier<ActivityExecutionContext> activityContext;
   private final Integer serverPort;
   private final TemporalUtils temporalUtils;
+  private final WorkerConfigs workerConfigs;
 
+  private final boolean isCustomConnector;
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
 
@@ -84,7 +89,9 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final Class<OUTPUT> outputClass,
                         final Supplier<ActivityExecutionContext> activityContext,
                         final Integer serverPort,
-                        final TemporalUtils temporalUtils) {
+                        final TemporalUtils temporalUtils,
+                        final WorkerConfigs workerConfigs,
+                        final boolean isCustomConnector) {
 
     this.connectionId = connectionId;
     this.application = application;
@@ -97,6 +104,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.activityContext = activityContext;
     this.serverPort = serverPort;
     this.temporalUtils = temporalUtils;
+    this.workerConfigs = workerConfigs;
+    this.isCustomConnector = isCustomConnector;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -131,7 +140,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         final var allLabels = KubeProcessFactory.getLabels(
             jobRunConfig.getJobId(),
             Math.toIntExact(jobRunConfig.getAttemptId()),
-            Map.of(CONNECTION_ID_LABEL_KEY, connectionId.toString()));
+            Map.of(CONNECTION_ID_LABEL_KEY, connectionId.toString(), SYNC_STEP_KEY, ORCHESTRATOR_STEP));
 
         final var podNameAndJobPrefix = podNamePrefix + "-job-" + jobRunConfig.getJobId() + "-attempt-";
         final var podName = podNameAndJobPrefix + jobRunConfig.getAttemptId();
@@ -150,6 +159,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.kubernetesClient(),
             containerOrchestratorConfig.secretName(),
             containerOrchestratorConfig.secretMountPath(),
+            containerOrchestratorConfig.dataPlaneCredsSecretName(),
+            containerOrchestratorConfig.dataPlaneCredsSecretMountPath(),
             containerOrchestratorConfig.googleApplicationCredentials(),
             containerOrchestratorConfig.environmentVariables(),
             serverPort);
@@ -169,12 +180,19 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           log.info("Creating " + podName + " for attempt number: " + jobRunConfig.getAttemptId());
           killRunningPodsForConnection();
 
+          // custom connectors run in an isolated node pool from airbyte-supported connectors
+          // to reduce the blast radius of any problems with custom connector code.
+          final var nodeSelectors =
+              isCustomConnector ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors())
+                  : workerConfigs.getworkerKubeNodeSelectors();
+
           try {
             process.create(
                 allLabels,
                 resourceRequirements,
                 fileMap,
-                portMap);
+                portMap,
+                nodeSelectors);
           } catch (final KubernetesClientException e) {
             ApmTraceUtils.addExceptionToTrace(e);
             throw new WorkerException(

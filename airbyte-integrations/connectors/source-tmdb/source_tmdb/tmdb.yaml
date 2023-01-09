@@ -1,0 +1,300 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://api.themoviedb.org/3/"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        api_key: "{{ config['api_key'] }}"
+        language: |
+          {{
+            config['language']
+            if options['name'] == 'search_collections' or 
+            options['name'] == 'search_movies' or 
+            options['name'] == 'search_multi' or 
+            options['name'] == 'search_people' or 
+            options['name'] == 'search_tv_shows'
+            else ''
+          }}
+        query: |
+          {{
+            config['query']
+            if options['name'] == 'search_collections' or 
+            options['name'] == 'search_companies' or 
+            options['name'] == 'search_keywords' or  
+            options['name'] == 'search_movies' or 
+            options['name'] == 'search_multi' or 
+            options['name'] == 'search_people' or 
+            options['name'] == 'search_tv_shows'
+            else ''
+          }}
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  base_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_tmdb/schemas/{{ options['name'] }}.json"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  page_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_tmdb/schemas/{{ options['name'] }}.json"
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "*ref(definitions.requester.url_base)"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+        page_token_option:
+          inject_into: "request_parameter"
+          field_name: "page"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: ""
+      requester:
+        $ref: "*ref(definitions.requester)"
+
+  certification_movie_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "certification_movie"
+      path: "/certification/movie/list"
+
+  certification_tv_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "certification_tv"
+      path: "/certification/tv/list"
+
+  changes_movie_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "changes_movie"
+      path: "/movie/changes"
+
+  changes_tv_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "changes_tv"
+      path: "/tv/changes"
+
+  changes_person_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "changes_person"
+      path: "/person/changes"
+
+  movies_details_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_details"
+      path: "/movie/{{ config['movie_id'] }}"
+
+  movies_alternative_titles_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_alternative_titles"
+      path: "/movie/{{ config['movie_id'] }}/alternative_titles"
+
+  movies_credits_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_credits"
+      path: "/movie/{{ config['movie_id'] }}/credits"
+
+  movies_external_ids_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_external_ids"
+      path: "/movie/{{ config['movie_id'] }}/external_ids"
+
+  movies_images_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_images"
+      path: "/movie/{{ config['movie_id'] }}/images"
+
+  movies_keywords_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_keywords"
+      path: "/movie/{{ config['movie_id'] }}/keywords"
+
+  movies_lists_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_lists"
+      path: "/movie/{{ config['movie_id'] }}/lists"
+
+  movies_recommendations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_recommendations"
+      path: "/movie/{{ config['movie_id'] }}/recommendations"
+
+  movies_releases_dates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_releases_dates"
+      path: "/movie/{{ config['movie_id'] }}/release_dates"
+
+  movies_reviews_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_reviews"
+      path: "/movie/{{ config['movie_id'] }}/reviews"
+
+  movies_similar_movies_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_similar_movies"
+      path: "/movie/{{ config['movie_id'] }}/similar"
+
+  movies_translations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_translations"
+      path: "/movie/{{ config['movie_id'] }}/translations"
+
+  movies_videos_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_videos"
+      path: "/movie/{{ config['movie_id'] }}/videos"
+
+  movies_watch_providers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_watch_providers"
+      path: "/movie/{{ config['movie_id'] }}/watch/providers"
+
+  movies_latest_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "movies_latest"
+      path: "/movie/latest"
+
+  movies_now_playing_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "movies_now_playing"
+      path: "/movie/now_playing"
+
+  movies_popular_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "movies_popular"
+      path: "/movie/popular"
+
+  movies_top_rated_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "movies_top_rated"
+      path: "/movie/top_rated"
+
+  movies_upcoming_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "movies_upcoming"
+      path: "/movie/upcoming"
+
+  trending_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "trending"
+      path: "/trending/all/day"
+
+  search_companies_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "search_companies"
+      path: "/search/company"
+
+  search_collections_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "search_collections"
+      path: "/search/collection"
+
+  search_keywords_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "search_keywords"
+      path: "/search/keyword"
+
+  search_movies_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "search_movies"
+      path: "/search/movie"
+
+  search_multi_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "search_multi"
+      path: "/search/multi"
+
+  search_people_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "search_people"
+      path: "/search/person"
+
+  search_tv_shows_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "search_tv_shows"
+      path: "/search/tv"
+
+streams:
+  - "*ref(definitions.certification_movie_stream)"
+  - "*ref(definitions.certification_tv_stream)"
+  - "*ref(definitions.changes_movie_stream)"
+  - "*ref(definitions.changes_tv_stream)"
+  - "*ref(definitions.changes_person_stream)"
+  - "*ref(definitions.movies_details_stream)"
+  - "*ref(definitions.movies_alternative_titles_stream)"
+  - "*ref(definitions.movies_credits_stream)"
+  - "*ref(definitions.movies_external_ids_stream)"
+  - "*ref(definitions.movies_images_stream)"
+  - "*ref(definitions.movies_keywords_stream)"
+  - "*ref(definitions.movies_latest_stream)"
+  - "*ref(definitions.movies_lists_stream)"
+  - "*ref(definitions.movies_now_playing_stream)"
+  - "*ref(definitions.movies_popular_stream)"
+  - "*ref(definitions.movies_recommendations_stream)"
+  - "*ref(definitions.movies_releases_dates_stream)"
+  - "*ref(definitions.movies_reviews_stream)"
+  - "*ref(definitions.movies_similar_movies_stream)"
+  - "*ref(definitions.movies_top_rated_stream)"
+  - "*ref(definitions.movies_translations_stream)"
+  - "*ref(definitions.movies_upcoming_stream)"
+  - "*ref(definitions.movies_videos_stream)"
+  - "*ref(definitions.movies_watch_providers_stream)"
+  - "*ref(definitions.trending_stream)"
+  - "*ref(definitions.search_collections_stream)"
+  - "*ref(definitions.search_companies_stream)"
+  - "*ref(definitions.search_keywords_stream)"
+  - "*ref(definitions.search_movies_stream)"
+  - "*ref(definitions.search_multi_stream)"
+  - "*ref(definitions.search_people_stream)"
+  - "*ref(definitions.search_tv_shows_stream)"
+
+check:
+  stream_names:
+    - "trending"

@@ -1,0 +1,279 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_woocommerce/schemas/{{ options['name'] }}.json"
+  requester:
+    url_base: "https://{{ config['shop'] }}/wp-json/wc/v3"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['api_secret'] }}"
+    request_options_provider:
+      request_parameters:
+        orderby: "id"
+        order: "asc"
+        dates_are_gmt: "true"
+  date_stream_slicer:
+    type: DatetimeStreamSlicer
+    lookback_window: "P{{ config.get('conversion_window_days', 0) }}D"
+    start_datetime:
+      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
+    datetime_format: "%Y-%m-%dT%H:%M:%S"
+    cursor_granularity: PT1S
+    step: P30D
+    start_time_option:
+      field_name: modified_after
+      inject_into: request_parameter
+    end_time_option:
+      field_name: modified_before
+      inject_into: request_parameter
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: DefaultPaginator
+      $options:
+        url_base: "*ref(definitions.requester.url_base)"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "page"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "per_page"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  base_incremental_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        $ref: "*ref(definitions.date_stream_slicer)"
+  customers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "customers"
+      primary_key: "id"
+      path: "/customers"
+  coupons_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "coupons"
+      stream_cursor_field: "date_modified_gmt"
+      primary_key: "id"
+      path: "/coupons"
+  orders_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "orders"
+      stream_cursor_field: "date_modified_gmt"
+      primary_key: "id"
+      path: "/orders"
+  order_notes_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.orders_stream)"
+            parent_key: id
+            stream_slice_field: id
+    $options:
+      name: "order_notes"
+      primary_key: "id"
+      path: "/orders/{{ stream_slice.id }}/notes"
+  products_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "products"
+      stream_cursor_field: "date_modified_gmt"
+      primary_key: "id"
+      path: "/products"
+  product_variations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.products_stream)"
+            parent_key: id
+            stream_slice_field: id
+    $options:
+      name: "product_variations"
+      primary_key: "id"
+      path: "/products/{{ stream_slice.id }}/variations"
+  payment_gateways_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "payment_gateways"
+      primary_key: "id"
+      path: "/payment_gateways"
+  product_attributes_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_attributes"
+      primary_key: "id"
+      path: "/products/attributes"
+  product_attribute_terms_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.product_attributes_stream)"
+            parent_key: id
+            stream_slice_field: id
+    $options:
+      name: "product_attribute_terms"
+      primary_key: "id"
+      path: "/products/attributes/{{ stream_slice.id }}/terms"
+  product_categories_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_categories"
+      primary_key: "id"
+      path: "/products/categories"
+  product_reviews_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        $ref: "*ref(definitions.date_stream_slicer)"
+        start_time_option:
+          field_name: after
+          inject_into: request_parameter
+        end_time_option:
+          field_name: before
+          inject_into: request_parameter
+    $options:
+      name: "product_reviews"
+      stream_cursor_field: "date_created_gmt"
+      primary_key: "id"
+      path: "/products/reviews"
+  product_shipping_classes_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_shipping_classes"
+      primary_key: "id"
+      path: "/products/shipping_classes"
+  product_tags_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "product_tags"
+      primary_key: "id"
+      path: "/products/tags"
+  refunds_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.orders_stream)"
+            parent_key: id
+            stream_slice_field: id
+    $options:
+      name: "refunds"
+      primary_key: "id"
+      path: "/orders/{{ stream_slice.id }}/refunds"
+  shipping_methods_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "shipping_methods"
+      primary_key: "id"
+      path: "/shipping_methods"
+  shipping_zones_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "shipping_zones"
+      primary_key: "id"
+      path: "/shipping/zones"
+  shipping_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.shipping_zones_stream)"
+        parent_key: id
+        stream_slice_field: id
+  shipping_zone_locations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        $ref: "*ref(definitions.shipping_stream_slicer)"
+    $options:
+      name: "shipping_zone_locations"
+      primary_key: ["code", "type"]
+      path: "/shipping/zones/{{ stream_slice.id }}/locations"
+  shipping_zone_methods_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        $ref: "*ref(definitions.shipping_stream_slicer)"
+    $options:
+      name: "shipping_zone_methods"
+      primary_key: "instance_id"
+      path: "/shipping/zones/{{ stream_slice.id }}/methods"
+  system_status_tools_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "system_status_tools"
+      primary_key: "id"
+      path: "/system_status/tools"
+  tax_classes_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tax_classes"
+      primary_key: ["slug", "name"]
+      path: "/taxes/classes"
+  tax_rates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tax_rates"
+      primary_key: "id"
+      path: "/taxes"
+
+streams:
+  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.coupons_stream)"
+  - "*ref(definitions.orders_stream)"
+  - "*ref(definitions.order_notes_stream)"
+  - "*ref(definitions.payment_gateways_stream)"
+  - "*ref(definitions.products_stream)"
+  - "*ref(definitions.product_attributes_stream)"
+  - "*ref(definitions.product_attribute_terms_stream)"
+  - "*ref(definitions.product_categories_stream)"
+  - "*ref(definitions.product_reviews_stream)"
+  - "*ref(definitions.product_shipping_classes_stream)"
+  - "*ref(definitions.product_tags_stream)"
+  - "*ref(definitions.product_variations_stream)"
+  - "*ref(definitions.refunds_stream)"
+  - "*ref(definitions.shipping_methods_stream)"
+  - "*ref(definitions.shipping_zone_locations_stream)"
+  - "*ref(definitions.shipping_zone_methods_stream)"
+  - "*ref(definitions.shipping_zones_stream)"
+  - "*ref(definitions.system_status_tools_stream)"
+  - "*ref(definitions.tax_classes_stream)"
+  - "*ref(definitions.tax_rates_stream)"
+
+check:
+  stream_names:
+    - "system_status_tools"
