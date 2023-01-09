@@ -66,8 +66,6 @@ export const configureOffsetPagination = (limit: string, into: string, fieldName
   cy.get(limitInput).type(limit);
   selectFromDropdown(injectOffsetInto, into);
   cy.get(injectOffsetFieldName).type(fieldName);
-  // wait for debounced form
-  cy.wait(250);
 }
 
 export const addStream = () => {
@@ -87,5 +85,7 @@ export const submitForm = () => {
 };
 
 export const testStream = () => {
+  // wait for debounced form
+  cy.wait(500);
   cy.get(testStreamButton).click();
 };
