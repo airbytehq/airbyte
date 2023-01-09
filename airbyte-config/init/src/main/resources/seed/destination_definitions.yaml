@@ -287,7 +287,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.52
+  dockerImageTag: 0.3.53
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   normalizationConfig:
@@ -417,4 +417,11 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/yugabytedb
   icon: yugabytedb.svg
+  releaseStage: alpha
+- name: Databend
+  destinationDefinitionId: 302e4d8e-08d3-4098-acd4-ac67ca365b88
+  dockerRepository: airbyte/destination-databend
+  dockerImageTag: 0.1.0
+  icon: databend.svg
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/databend
   releaseStage: alpha

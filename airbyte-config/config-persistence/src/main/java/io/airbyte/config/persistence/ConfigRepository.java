@@ -32,6 +32,7 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorCatalogWithUpdatedAt;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -125,7 +126,7 @@ public class ConfigRepository {
    */
   public boolean healthCheck() {
     try {
-      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch()).stream().count();
     } catch (final Exception e) {
       LOGGER.error("Health check error: ", e);
       return false;
@@ -293,7 +294,8 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source))
         .and(sourceDefId.map(ACTOR_DEFINITION.ID::eq).orElse(noCondition()))
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
-        .fetchStream())
+        .fetch())
+        .stream()
         .map(DbConverter::buildStandardSourceDefinition)
         // Ensure version is set. Needed for connectors not upgraded since we added versioning.
         .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
@@ -355,7 +357,8 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination))
         .and(destDefId.map(ACTOR_DEFINITION.ID::eq).orElse(noCondition()))
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
-        .fetchStream())
+        .fetch())
+        .stream()
         .map(DbConverter::buildStandardDestinationDefinition)
         // Ensure version is set. Needed for connectors not upgraded since we added versioning.
         .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
@@ -1314,6 +1317,16 @@ public class ConfigRepository {
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
 
     return records.stream().findFirst().map(DbConverter::buildActorCatalog);
+  }
+
+  public Optional<ActorCatalogWithUpdatedAt> getMostRecentSourceActorCatalog(final UUID sourceId) throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk(), ACTOR_CATALOG_FETCH_EVENT.CREATED_AT)
+        .from(ACTOR_CATALOG)
+        .join(ACTOR_CATALOG_FETCH_EVENT)
+        .on(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID.eq(ACTOR_CATALOG.ID))
+        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
+        .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
+    return records.stream().findFirst().map(DbConverter::buildActorCatalogWithUpdatedAt);
   }
 
   public Optional<ActorCatalog> getMostRecentActorCatalogForSource(final UUID sourceId) throws IOException {
