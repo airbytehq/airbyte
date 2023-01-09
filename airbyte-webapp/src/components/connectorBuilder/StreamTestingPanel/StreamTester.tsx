@@ -6,16 +6,23 @@ import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
 import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  useConnectorBuilderTestState,
+  useConnectorBuilderFormState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
 import { StreamTestButton } from "./StreamTestButton";
 import styles from "./StreamTester.module.scss";
 
-export const StreamTester: React.FC = () => {
+export const StreamTester: React.FC<{
+  hasTestInputJsonErrors: boolean;
+  setTestInputOpen: (open: boolean) => void;
+}> = ({ hasTestInputJsonErrors, setTestInputOpen }) => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, configJson, streams, testStreamIndex } = useConnectorBuilderState();
+  const { jsonManifest } = useConnectorBuilderFormState();
+  const { streams, testInputJson, testStreamIndex } = useConnectorBuilderTestState();
   const {
     data: streamReadData,
     refetch: readStream,
@@ -25,7 +32,7 @@ export const StreamTester: React.FC = () => {
   } = useReadStream({
     manifest: jsonManifest,
     stream: streams[testStreamIndex]?.name,
-    config: configJson,
+    config: testInputJson,
   });
 
   const [logsFlex, setLogsFlex] = useState(0);
@@ -55,7 +62,11 @@ export const StreamTester: React.FC = () => {
         {streams[testStreamIndex]?.url}
       </Text>
 
-      <StreamTestButton readStream={readStream} />
+      <StreamTestButton
+        readStream={readStream}
+        hasTestInputJsonErrors={hasTestInputJsonErrors}
+        setTestInputOpen={setTestInputOpen}
+      />
 
       {isFetching && (
         <div className={styles.fetchingSpinner}>

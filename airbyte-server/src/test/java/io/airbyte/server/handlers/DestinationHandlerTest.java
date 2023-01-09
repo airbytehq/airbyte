@@ -31,6 +31,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.helpers.ConnectorSpecificationHelpers;
@@ -58,6 +59,7 @@ class DestinationHandlerTest {
   private Supplier<UUID> uuidGenerator;
   private JsonSecretsProcessor secretsProcessor;
   private ConnectorSpecification connectorSpecification;
+  private OAuthConfigSupplier oAuthConfigSupplier;
 
   // needs to match name of file in src/test/resources/icons
   private static final String ICON = "test-destination.svg";
@@ -74,6 +76,7 @@ class DestinationHandlerTest {
     connectionsHandler = mock(ConnectionsHandler.class);
     configurationUpdate = mock(ConfigurationUpdate.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
+    oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
 
     connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
 
@@ -89,9 +92,7 @@ class DestinationHandlerTest {
     destinationDefinitionSpecificationRead = new DestinationDefinitionSpecificationRead()
         .connectionSpecification(connectorSpecification.getConnectionSpecification())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
-        .documentationUrl(connectorSpecification.getDocumentationUrl().toString())
-        .supportsDbt(connectorSpecification.getSupportsDBT())
-        .supportsNormalization(connectorSpecification.getSupportsNormalization());
+        .documentationUrl(connectorSpecification.getDocumentationUrl().toString());
 
     destinationConnection = DestinationHelpers.generateDestination(standardDestinationDefinition.getDestinationDefinitionId());
 
@@ -103,7 +104,8 @@ class DestinationHandlerTest {
             connectionsHandler,
             uuidGenerator,
             secretsProcessor,
-            configurationUpdate);
+            configurationUpdate,
+            oAuthConfigSupplier);
   }
 
   @Test
@@ -114,6 +116,9 @@ class DestinationHandlerTest {
         .thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
+    when(oAuthConfigSupplier.maskDestinationOAuthParameters(destinationDefinitionSpecificationRead.getDestinationDefinitionId(),
+        destinationConnection.getWorkspaceId(),
+        destinationConnection.getConfiguration())).thenReturn(destinationConnection.getConfiguration());
     when(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
         destinationDefinitionSpecificationRead.getConnectionSpecification()))
             .thenReturn(destinationConnection.getConfiguration());
@@ -140,6 +145,8 @@ class DestinationHandlerTest {
 
     verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), destinationConnection.getConfiguration());
     verify(secretsRepositoryWriter).writeDestinationConnection(destinationConnection, connectorSpecification);
+    verify(oAuthConfigSupplier).maskDestinationOAuthParameters(destinationDefinitionSpecificationRead.getDestinationDefinitionId(),
+        destinationConnection.getWorkspaceId(), destinationConnection.getConfiguration());
     verify(secretsProcessor)
         .prepareSecretsForOutput(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
   }
@@ -165,6 +172,9 @@ class DestinationHandlerTest {
             .thenReturn(newConfiguration);
     when(secretsProcessor.prepareSecretsForOutput(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(newConfiguration);
+    when(oAuthConfigSupplier.maskDestinationOAuthParameters(destinationDefinitionSpecificationRead.getDestinationDefinitionId(),
+        destinationConnection.getWorkspaceId(),
+        newConfiguration)).thenReturn(newConfiguration);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
     when(configRepository.getDestinationDefinitionFromDestination(destinationConnection.getDestinationId()))
@@ -183,6 +193,8 @@ class DestinationHandlerTest {
 
     verify(secretsProcessor).prepareSecretsForOutput(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification());
     verify(secretsRepositoryWriter).writeDestinationConnection(expectedDestinationConnection, connectorSpecification);
+    verify(oAuthConfigSupplier).maskDestinationOAuthParameters(destinationDefinitionSpecificationRead.getDestinationDefinitionId(),
+        destinationConnection.getWorkspaceId(), newConfiguration);
     verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), newConfiguration);
   }
 

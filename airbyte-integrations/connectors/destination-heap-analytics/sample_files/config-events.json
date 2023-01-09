@@ -1,0 +1,11 @@
+{
+  "app_id": "11",
+  "base_url": "https://heapanalytics.com",
+  "api": {
+    "api_type": "track",
+    "property_columns": "blocked,created_at,updated_at,name",
+    "event_column": "identities.connection",
+    "identity_column": "email",
+    "timestamp_column": "updated_at"
+  }
+}

@@ -48,7 +48,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
   const {
-    destDefinition: { supportedDestinationSyncModes },
+    destDefinitionSpecification: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { mode } = useConnectionFormService();
 
@@ -100,28 +100,34 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
 
   const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
 
-  const onSelectedFieldsUpdate = (selectedFields: SelectedFieldInfo[]) => {
-    updateStreamWithConfig({
-      selectedFields,
-      fieldSelectionEnabled: true,
-    });
-  };
+  const onSelectedFieldsUpdate = (fieldPath: string[], isSelected: boolean) => {
+    const previouslySelectedFields = config?.selectedFields || [];
 
-  // All fields in a stream are implicitly selected. When deselecting the first one, we also need to explicitly select the rest.
-  const onFirstFieldDeselected = (fieldPath: string[]) => {
-    const allOtherFields = fields.filter((field: SyncSchemaField) => !isEqual(field.path, fieldPath)) ?? [];
-    const selectedFields: SelectedFieldInfo[] = allOtherFields.map((field) => ({ fieldPath: field.path }));
-    updateStreamWithConfig({
-      selectedFields,
-      fieldSelectionEnabled: true,
-    });
-  };
-
-  const onAllFieldsSelected = () => {
-    updateStreamWithConfig({
-      selectedFields: [],
-      fieldSelectionEnabled: false,
-    });
+    if (!config?.fieldSelectionEnabled && !isSelected) {
+      // All fields in a stream are implicitly selected. When deselecting the first one, we also need to explicitly select the rest.
+      const allOtherFields = fields.filter((field: SyncSchemaField) => !isEqual(field.path, fieldPath)) ?? [];
+      const selectedFields: SelectedFieldInfo[] = allOtherFields.map((field) => ({ fieldPath: field.path }));
+      updateStreamWithConfig({
+        selectedFields,
+        fieldSelectionEnabled: true,
+      });
+    } else if (isSelected && previouslySelectedFields.length === numberOfFieldsInStream - 1) {
+      // In this case we are selecting the only unselected field
+      updateStreamWithConfig({
+        selectedFields: [],
+        fieldSelectionEnabled: false,
+      });
+    } else if (isSelected) {
+      updateStreamWithConfig({
+        selectedFields: [...previouslySelectedFields, { fieldPath }],
+        fieldSelectionEnabled: true,
+      });
+    } else {
+      updateStreamWithConfig({
+        selectedFields: previouslySelectedFields.filter((f) => !isEqual(f.fieldPath, fieldPath)) || [],
+        fieldSelectionEnabled: true,
+      });
+    }
   };
 
   const pkRequired = config?.destinationSyncMode === DestinationSyncMode.append_dedup;
@@ -160,7 +166,12 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   );
 
   const destName = prefix + (streamNode.stream?.name ?? "");
-  const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
+  const configErrors = getIn(
+    errors,
+    isNewStreamsTableEnabled
+      ? `syncCatalog.streams[${streamNode.id}].config`
+      : `schema.streams[${streamNode.id}].config`
+  );
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const pkType = getPathType(pkRequired, shouldDefinePk);
   const cursorType = getPathType(cursorRequired, shouldDefineCursor);
@@ -188,6 +199,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
         onExpand={onExpand}
         changedSelected={changedSelected}
         hasError={hasError}
+        configErrors={configErrors}
         disabled={disabled}
       />
       {isRowExpanded &&
@@ -212,12 +224,9 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             <StreamFieldTable
               config={config}
               syncSchemaFields={flattenedFields}
-              numberOfSelectableFields={numberOfFieldsInStream}
               onCursorSelect={onCursorSelect}
               onPkSelect={onPkSelect}
-              onSelectedFieldsUpdate={onSelectedFieldsUpdate}
-              onFirstFieldDeselected={onFirstFieldDeselected}
-              onAllFieldsSelected={onAllFieldsSelected}
+              handleFieldToggle={onSelectedFieldsUpdate}
               shouldDefinePk={shouldDefinePk}
               shouldDefineCursor={shouldDefineCursor}
             />

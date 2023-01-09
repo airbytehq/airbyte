@@ -1,10 +1,10 @@
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Row } from "components";
+import { MinusIcon } from "components/icons/MinusIcon";
+import { PlusIcon } from "components/icons/PlusIcon";
 import { CheckBox } from "components/ui/CheckBox";
 import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { Switch } from "components/ui/Switch";
@@ -43,6 +43,7 @@ export interface StreamHeaderProps {
   onExpand: () => void;
   changedSelected: boolean;
   hasError: boolean;
+  configErrors?: Record<string, string>;
   disabled?: boolean;
 }
 
@@ -100,15 +101,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     <Row className={styles.catalogSectionRow}>
       {!disabled && (
         <div className={checkboxCellCustomStyle}>
-          {changedSelected && (
-            <div>
-              {isStreamEnabled ? (
-                <FontAwesomeIcon icon={faPlus} size="2x" className={iconStyle} />
-              ) : (
-                <FontAwesomeIcon icon={faMinus} size="2x" className={iconStyle} />
-              )}
-            </div>
-          )}
+          <div className={iconStyle}>{changedSelected && (isStreamEnabled ? <PlusIcon /> : <MinusIcon />)}</div>
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
@@ -118,7 +111,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
           <Switch
-            small
+            size="sm"
             checked={stream.config?.selected}
             onChange={onSelectStream}
             disabled={disabled}
