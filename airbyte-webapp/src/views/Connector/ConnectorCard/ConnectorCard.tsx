@@ -1,7 +1,10 @@
+import { faChevronDown, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { JobItem } from "components/JobItem/JobItem";
+import JobLogs from "components/JobItem/components/JobLogs";
+import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Spinner } from "components/ui/Spinner";
 
@@ -14,9 +17,13 @@ import {
 } from "core/domain/connector";
 import { DestinationRead, SourceRead, SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
-import { ConnectorCardValues, ConnectorForm, ConnectorFormValues } from "views/Connector/ConnectorForm";
+import {
+  ConnectorCardValues,
+  ConnectorForm,
+  ConnectorFormProps,
+  ConnectorFormValues,
+} from "views/Connector/ConnectorForm";
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
@@ -81,7 +88,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [advancedMode] = useAdvancedModeSetting();
+  const [logsVisible, setLogsVisible] = useState(false);
 
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const {
@@ -131,6 +138,11 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     setDocumentationPanelOpen,
     setDocumentationUrl,
   ]);
+
+  const handleTestConnector: ConnectorFormProps["testConnector"] = (v) => {
+    setErrorStatusRequest(null);
+    return testConnector(v);
+  };
 
   const onHandleSubmit = async (values: ConnectorFormValues) => {
     if (!selectedConnectorDefinition) {
@@ -215,7 +227,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
               isTestConnectionInProgress={isTestConnectionInProgress}
               connectionTestSuccess={connectionTestSuccess}
               onStopTesting={onStopTesting}
-              testConnector={testConnector}
+              testConnector={handleTestConnector}
               onSubmit={onHandleSubmit}
               formValues={formValues}
               errorMessage={error && generateMessageFromError(error)}
@@ -223,8 +235,20 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
               connectorId={isEditMode ? getConnectorId(props.connector) : undefined}
             />
           )}
-          {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
-          {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
+          {job && (
+            <div className={styles.connectionTestLogs}>
+              <Button
+                variant="clear"
+                icon={<FontAwesomeIcon icon={logsVisible ? faChevronDown : faChevronRight} />}
+                onClick={() => {
+                  setLogsVisible(!logsVisible);
+                }}
+              >
+                <FormattedMessage id="connector.testLogs" />
+              </Button>
+              {logsVisible && <JobLogs job={job} jobIsFailed />}
+            </div>
+          )}
         </div>
       </div>
     </Card>
