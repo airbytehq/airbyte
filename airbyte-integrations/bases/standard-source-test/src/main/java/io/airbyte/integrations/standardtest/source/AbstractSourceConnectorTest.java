@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
@@ -157,21 +158,24 @@ public abstract class AbstractSourceConnectorTest {
 
   protected ConnectorSpecification runSpec() throws WorkerException {
     final io.airbyte.protocol.models.ConnectorSpecification spec = new DefaultGetSpecWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false))
-            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
+            new EnvVariableFeatureFlags()))
+                .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
     return convertProtocolObject(spec, ConnectorSpecification.class);
   }
 
   protected StandardCheckConnectionOutput runCheck() throws Exception {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false),
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
+            new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot).getCheckConnection();
   }
 
   protected String runCheckAndGetStatusAsString(final JsonNode config) throws Exception {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false),
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
+            new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection().getStatus().toString();
   }
@@ -179,7 +183,8 @@ public abstract class AbstractSourceConnectorTest {
   protected UUID runDiscover() throws Exception {
     final UUID toReturn = new DefaultDiscoverCatalogWorker(
         mConfigRepository,
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false),
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
+            new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
             .getDiscoverCatalogId();
@@ -211,7 +216,8 @@ public abstract class AbstractSourceConnectorTest {
         .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
     final AirbyteSource source = new DefaultAirbyteSource(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
+            new EnvVariableFeatureFlags()));
     final List<AirbyteMessage> messages = new ArrayList<>();
     source.start(sourceConfig, jobRoot);
     while (!source.isFinished()) {
@@ -260,9 +266,11 @@ public abstract class AbstractSourceConnectorTest {
 
   private AirbyteSource prepareAirbyteSource(final ResourceRequirements resourceRequirements) {
     final var workerConfigs = new WorkerConfigs(new EnvConfigs());
+    final var featureFlags = new EnvVariableFeatureFlags();
     final var integrationLauncher = resourceRequirements == null
-        ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false)
-        : new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, resourceRequirements, false);
+        ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
+            featureFlags)
+        : new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, resourceRequirements, false, featureFlags);
     return new DefaultAirbyteSource(integrationLauncher);
   }
 

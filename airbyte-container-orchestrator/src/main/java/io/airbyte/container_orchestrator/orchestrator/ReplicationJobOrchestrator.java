@@ -123,7 +123,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getSourceResourceRequirements(),
-        useIsolatedPool);
+        useIsolatedPool,
+        featureFlags);
 
     log.info("Setting up destination launcher...");
     final var destinationLauncher = new AirbyteIntegrationLauncher(
@@ -132,7 +133,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         destinationLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getDestinationResourceRequirements(),
-        useIsolatedPool);
+        useIsolatedPool,
+        featureFlags);
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.

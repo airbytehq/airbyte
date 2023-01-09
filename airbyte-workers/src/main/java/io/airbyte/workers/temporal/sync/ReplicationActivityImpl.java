@@ -265,7 +265,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     }
   }
 
-  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getLegacyWorkerFactory(final IntegrationLauncherConfig sourceLauncherConfig,
+  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getLegacyWorkerFactory(
+                                                                                                          final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                           final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                           final JobRunConfig jobRunConfig,
                                                                                                           final StandardSyncInput syncInput) {
@@ -276,14 +277,16 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           sourceLauncherConfig.getDockerImage(),
           processFactory,
           syncInput.getSourceResourceRequirements(),
-          sourceLauncherConfig.getIsCustomConnector());
+          sourceLauncherConfig.getIsCustomConnector(),
+          featureFlags);
       final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
           destinationLauncherConfig.getJobId(),
           Math.toIntExact(destinationLauncherConfig.getAttemptId()),
           destinationLauncherConfig.getDockerImage(),
           processFactory,
           syncInput.getDestinationResourceRequirements(),
-          destinationLauncherConfig.getIsCustomConnector());
+          destinationLauncherConfig.getIsCustomConnector(),
+          featureFlags);
 
       // reset jobs use an empty source to induce resetting all data in destination.
       final AirbyteSource airbyteSource = isResetJob(sourceLauncherConfig.getDockerImage())
@@ -312,7 +315,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     };
   }
 
-  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(final ContainerOrchestratorConfig containerOrchestratorConfig,
+  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(
+                                                                                                                     final ContainerOrchestratorConfig containerOrchestratorConfig,
                                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                                      final JobRunConfig jobRunConfig,
