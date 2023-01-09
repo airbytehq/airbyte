@@ -136,6 +136,7 @@ public class IntegrationRunner {
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
           try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+
             produceMessages(messageIterator);
           }
         }
@@ -199,7 +200,7 @@ public class IntegrationRunner {
     final Scanner input = new Scanner(System.in, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
     consumer.start();
     while (input.hasNext()) {
-      consumeMessage(consumer, input.next(), Runtime.getRuntime().maxMemory());
+      consumeMessage(consumer, input.next(), 1l);
     }
   }
 

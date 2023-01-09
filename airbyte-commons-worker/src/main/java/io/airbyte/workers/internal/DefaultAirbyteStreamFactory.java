@@ -15,6 +15,7 @@ import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -62,6 +63,12 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     return bufferedReader
         .lines()
         .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
+        .peek(str -> {
+          long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
+          if (messageSize > 1L/*Runtime.getRuntime().maxMemory() * 0.6*/) {
+            throw new IllegalStateException("too big message");
+          }
+        })
         .flatMap(this::parseJson)
         .filter(this::validate)
         .flatMap(this::toAirbyteMessage)
