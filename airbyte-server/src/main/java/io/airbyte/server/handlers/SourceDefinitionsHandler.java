@@ -28,6 +28,8 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.ActorType;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -41,8 +43,6 @@ import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,7 +54,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.AvoidCatchingNPE")
-@Singleton
 public class SourceDefinitionsHandler {
 
   private final ConfigRepository configRepository;
@@ -64,19 +63,26 @@ public class SourceDefinitionsHandler {
   private final SourceHandler sourceHandler;
   private final AirbyteProtocolVersionRange protocolVersionRange;
 
-  @Inject
+  public SourceDefinitionsHandler(final ConfigRepository configRepository,
+                                  final SynchronousSchedulerClient schedulerSynchronousClient,
+                                  final SourceHandler sourceHandler) {
+    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), sourceHandler);
+  }
+
   public SourceDefinitionsHandler(final ConfigRepository configRepository,
                                   final Supplier<UUID> uuidSupplier,
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
                                   final AirbyteGithubStore githubStore,
-                                  final SourceHandler sourceHandler,
-                                  final AirbyteProtocolVersionRange protocolVersionRange) {
+                                  final SourceHandler sourceHandler) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
     this.sourceHandler = sourceHandler;
-    this.protocolVersionRange = protocolVersionRange;
+
+    // TODO inject protocol min and max once this handler is being converted to micronaut
+    final Configs configs = new EnvConfigs();
+    protocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
   }
 
   @VisibleForTesting

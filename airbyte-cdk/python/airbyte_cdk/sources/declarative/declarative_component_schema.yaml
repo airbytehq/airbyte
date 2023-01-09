@@ -273,6 +273,23 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  CustomRequester:
+    description: Requester component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRequester]
+      class_name:
+        type: string
+        additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
   CustomRetriever:
     description: Retriever component whose behavior is derived from a custom code implementation of the connector
     type: object
@@ -963,7 +980,9 @@ definitions:
       record_selector:
         "$ref": "#/definitions/RecordSelector"
       requester:
-        "$ref": "#/definitions/HttpRequester"
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
       name:
         type: string
         default: ""
