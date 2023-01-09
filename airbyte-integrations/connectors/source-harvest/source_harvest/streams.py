@@ -201,6 +201,13 @@ class EstimateItemCategories(IncrementalHarvestStream):
     Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/
     """
 
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(**kwargs)
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code != requests.codes.FORBIDDEN:
+                raise e
+
 
 class Expenses(IncrementalHarvestStream):
     """

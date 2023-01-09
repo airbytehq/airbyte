@@ -99,6 +99,15 @@ class CustomRecordExtractor(BaseModel):
     _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
+class CustomRequester(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal["CustomRequester"]
+    class_name: str
+    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+
+
 class CustomRetriever(BaseModel):
     class Config:
         extra = Extra.allow
@@ -321,6 +330,7 @@ class DatetimeStreamSlicer(BaseModel):
     type: Literal["DatetimeStreamSlicer"]
     cursor_field: str
     datetime_format: str
+    cursor_granularity: str
     end_datetime: Union[str, MinMaxDatetime]
     start_datetime: Union[str, MinMaxDatetime]
     step: str
@@ -460,7 +470,7 @@ class ParentStreamConfig(BaseModel):
 class SimpleRetriever(BaseModel):
     type: Literal["SimpleRetriever"]
     record_selector: RecordSelector
-    requester: HttpRequester
+    requester: Union[CustomRequester, HttpRequester]
     name: Optional[str] = ""
     paginator: Optional[Union[DefaultPaginator, NoPagination]] = None
     primary_key: Optional[PrimaryKey] = None

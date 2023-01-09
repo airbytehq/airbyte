@@ -31,6 +31,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.StandardSyncQuery;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -188,7 +189,45 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   @Test
   void testListWorkspaceStandardSyncAll() throws IOException {
     final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
-    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(
+        MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncWithAllFiltering() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSyncQuery query = new StandardSyncQuery(workspaceId, MockData.SOURCE_ID_1, MockData.DESTINATION_ID_1, false);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3).stream()
+        .filter(sync -> sync.getDestinationId().equals(query.destinationId()))
+        .filter(sync -> sync.getSourceId().equals(query.sourceId()))
+        .toList();
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncDestinationFiltering() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSyncQuery query = new StandardSyncQuery(workspaceId, null, MockData.DESTINATION_ID_1, false);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3).stream()
+        .filter(sync -> sync.getDestinationId().equals(query.destinationId()))
+        .toList();
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncSourceFiltering() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSyncQuery query = new StandardSyncQuery(workspaceId, MockData.SOURCE_ID_2, null, false);
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3).stream()
+        .filter(sync -> sync.getSourceId().equals(query.sourceId()))
+        .toList();
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
 
     assertSyncsMatch(expectedSyncs, actualSyncs);
   }

@@ -18,6 +18,8 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   public static final String NEED_STATE_VALIDATION = "NEED_STATE_VALIDATION";
   public static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
 
+  public static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
+
   @Override
   public boolean autoDisablesFailingConnections() {
     log.info("Auto Disable Failing Connections: " + Boolean.parseBoolean(System.getenv("AUTO_DISABLE_FAILING_CONNECTIONS")));
@@ -53,6 +55,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public boolean applyFieldSelection() {
     return getEnvOrDefault(APPLY_FIELD_SELECTION, false, Boolean::parseBoolean);
+  }
+
+  @Override
+  public String fieldSelectionWorkspaces() {
+    return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "", (arg) -> arg);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

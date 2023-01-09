@@ -177,7 +177,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
+  public static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
     if (!BigQueryUtils.isUsingJsonCredentials(config)) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");

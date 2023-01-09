@@ -35,6 +35,7 @@ exports[`<BulkEditPanel /> should render 1`] = `
             class="<removed-for-snapshot-test>"
           >
             <input
+              aria-checked="false"
               class="<removed-for-snapshot-test>"
               type="checkbox"
               value=""
