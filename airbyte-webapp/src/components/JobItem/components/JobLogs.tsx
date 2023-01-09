@@ -7,11 +7,12 @@ import { StatusIcon } from "components/ui/StatusIcon";
 import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 import { Text } from "components/ui/Text";
 
+import { AttemptRead, AttemptStatus, SynchronousJobRead } from "core/request/AirbyteClient";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { useGetDebugInfoJob } from "services/job/JobService";
 
-import { AttemptRead, AttemptStatus, SynchronousJobRead } from "../../../core/request/AirbyteClient";
 import { parseAttemptLink } from "../attemptLinkUtils";
+import { isCancelledAttempt } from "../utils";
 import styles from "./JobLogs.module.scss";
 import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";
@@ -26,6 +27,11 @@ const mapAttemptStatusToIcon = (attempt: AttemptRead): StatusIconStatus => {
   if (isPartialSuccess(attempt)) {
     return "warning";
   }
+
+  if (isCancelledAttempt(attempt)) {
+    return "cancelled";
+  }
+
   switch (attempt.status) {
     case AttemptStatus.running:
       return "loading";
@@ -44,7 +50,7 @@ const jobIsSynchronousJobRead = (job: SynchronousJobRead | JobsWithJobs): job is
   return !!(job as SynchronousJobRead)?.logs?.logLines;
 };
 
-const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
+export const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
   const isSynchronousJobRead = jobIsSynchronousJobRead(job);
 
   const id: number | string = (job as JobsWithJobs).job?.id ?? (job as SynchronousJobRead).id;
@@ -110,5 +116,3 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
     </>
   );
 };
-
-export default JobLogs;
