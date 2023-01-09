@@ -1,5 +1,6 @@
 {
     "properties": {
+        "required": ["credentials"],
         "credentials": {
             "required": [
                 "client_id",
@@ -11,7 +12,8 @@
             "properties": {
                 "auth_type": {
                     "type": "string",
-                    "const": "Client"
+                    "const": "Client",
+                    "default": "Client"
                 },
                 "client_id": {
                     "title": "Client ID",
