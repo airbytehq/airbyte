@@ -23,7 +23,7 @@ public interface BufferingStrategy extends AutoCloseable {
    * Add a new message to the buffer while consuming streams
    *
    * @param stream - stream associated with record
-   * @param message - message to buffer
+   * @param message - {@link AirbyteMessage} to buffer
    * @return true if this record cause ALL records in the buffer to flush, otherwise false.
    * @throws Exception throw on failure
    */

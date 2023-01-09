@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { mockDestinationDefinition } from "test-utils/mock-data/mockDestinationDefinition";
+import { mockDestinationDefinitionSpecification } from "test-utils/mock-data/mockDestinationDefinitionSpecification";
 import { mockSourceDefinition } from "test-utils/mock-data/mockSourceDefinition";
 import { mockConnection, TestWrapper } from "test-utils/testutils";
 
@@ -20,7 +20,7 @@ jest.doMock("services/connector/SourceDefinitionService", () => ({
 }));
 
 jest.doMock("services/connector/DestinationDefinitionService", () => ({
-  useDestinationDefinition: () => mockDestinationDefinition,
+  useDestinationDefinition: () => mockDestinationDefinitionSpecification,
 }));
 
 jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty", () => ({
@@ -28,7 +28,7 @@ jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithC
 }));
 
 const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<string, unknown>>> = ({ children }) => (
-  <TestWrapper features={[...defaultOssFeatures, FeatureItem.AllowAutoDetectSchemaChanges]}>{children}</TestWrapper>
+  <TestWrapper features={[...defaultOssFeatures, FeatureItem.AllowAutoDetectSchema]}>{children}</TestWrapper>
 );
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

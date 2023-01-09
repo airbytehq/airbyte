@@ -10,12 +10,14 @@ import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
 import styles from "./ConnectionSettingsTab.module.scss";
+import { SchemaUpdateNotifications } from "./SchemaUpdateNotifications";
 import { StateBlock } from "./StateBlock";
 
 export const ConnectionSettingsTab: React.FC = () => {
   const { connection } = useConnectionEditService();
   const { mutateAsync: deleteConnection } = useDeleteConnection();
   const canUpdateDataResidency = useFeature(FeatureItem.AllowChangeDataGeographies);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
 
   const [isAdvancedMode] = useAdvancedModeSetting();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_SETTINGS);
@@ -23,6 +25,7 @@ export const ConnectionSettingsTab: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      {allowAutoDetectSchema && <SchemaUpdateNotifications />}
       {canUpdateDataResidency && <UpdateConnectionDataResidency />}
       {isAdvancedMode && <StateBlock connectionId={connection.connectionId} />}
       <DeleteBlock type="connection" onDelete={onDelete} />

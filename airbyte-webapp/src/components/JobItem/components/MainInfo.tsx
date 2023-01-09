@@ -44,8 +44,10 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   const isPartialSuccess = partialSuccessCheck(attempts);
 
   const statusIcon = useMemo(() => {
-    if (jobStatus === JobStatus.cancelled || (!isPartialSuccess && isFailed)) {
+    if (!isPartialSuccess && isFailed) {
       return <StatusIcon status="error" />;
+    } else if (jobStatus === JobStatus.cancelled) {
+      return <StatusIcon status="cancelled" />;
     } else if (jobStatus === JobStatus.running) {
       return <StatusIcon status="loading" />;
     } else if (jobStatus === JobStatus.succeeded) {

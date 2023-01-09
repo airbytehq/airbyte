@@ -10,6 +10,11 @@ import {
 
 export type ConnectorDefinition = SourceDefinitionReadWithLatestTag | DestinationDefinitionReadWithLatestTag;
 
+export type SourceDefinitionSpecificationDraft = Pick<
+  SourceDefinitionSpecificationRead,
+  "documentationUrl" | "connectionSpecification" | "authSpecification" | "advancedAuth"
+>;
+
 export type ConnectorDefinitionSpecification =
   | DestinationDefinitionSpecificationRead
   | SourceDefinitionSpecificationRead;

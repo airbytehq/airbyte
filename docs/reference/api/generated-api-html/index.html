@@ -319,6 +319,7 @@ font-style: italic;
   <li><a href="#createSource"><code><span class="http-method">post</span> /v1/sources/create</code></a></li>
   <li><a href="#deleteSource"><code><span class="http-method">post</span> /v1/sources/delete</code></a></li>
   <li><a href="#discoverSchemaForSource"><code><span class="http-method">post</span> /v1/sources/discover_schema</code></a></li>
+  <li><a href="#getMostRecentSourceActorCatalog"><code><span class="http-method">post</span> /v1/sources/most_recent_source_actor_catalog</code></a></li>
   <li><a href="#getSource"><code><span class="http-method">post</span> /v1/sources/get</code></a></li>
   <li><a href="#listSourcesForWorkspace"><code><span class="http-method">post</span> /v1/sources/list</code></a></li>
   <li><a href="#searchSources"><code><span class="http-method">post</span> /v1/sources/search</code></a></li>
@@ -1301,6 +1302,7 @@ font-style: italic;
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -1311,6 +1313,7 @@ font-style: italic;
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -1358,6 +1361,7 @@ font-style: italic;
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -1368,6 +1372,7 @@ font-style: italic;
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -1695,6 +1700,7 @@ font-style: italic;
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -1705,6 +1711,7 @@ font-style: italic;
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -1752,6 +1759,7 @@ font-style: italic;
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -1762,6 +1770,7 @@ font-style: italic;
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -2587,8 +2596,15 @@ containing the updated stream needs to be sent.</div>
   "dockerImageTag" : "dockerImageTag",
   "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
+  "supportsDbt" : true,
   "name" : "name",
   "icon" : "icon",
+  "normalizationConfig" : {
+    "normalizationIntegrationType" : "normalizationIntegrationType",
+    "normalizationRepository" : "normalizationRepository",
+    "normalizationTag" : "normalizationTag",
+    "supported" : false
+  },
   "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -2720,8 +2736,15 @@ containing the updated stream needs to be sent.</div>
   "dockerImageTag" : "dockerImageTag",
   "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
+  "supportsDbt" : true,
   "name" : "name",
   "icon" : "icon",
+  "normalizationConfig" : {
+    "normalizationIntegrationType" : "normalizationIntegrationType",
+    "normalizationRepository" : "normalizationRepository",
+    "normalizationTag" : "normalizationTag",
+    "supported" : false
+  },
   "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -2808,8 +2831,15 @@ containing the updated stream needs to be sent.</div>
   "dockerImageTag" : "dockerImageTag",
   "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
+  "supportsDbt" : true,
   "name" : "name",
   "icon" : "icon",
+  "normalizationConfig" : {
+    "normalizationIntegrationType" : "normalizationIntegrationType",
+    "normalizationRepository" : "normalizationRepository",
+    "normalizationTag" : "normalizationTag",
+    "supported" : false
+  },
   "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -2897,8 +2927,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   },
@@ -2976,8 +3013,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
@@ -3008,8 +3052,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
@@ -3092,8 +3143,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
@@ -3124,8 +3182,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
@@ -3196,8 +3261,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
@@ -3228,8 +3300,15 @@ containing the updated stream needs to be sent.</div>
     "dockerImageTag" : "dockerImageTag",
     "releaseDate" : "2000-01-23",
     "dockerRepository" : "dockerRepository",
+    "supportsDbt" : true,
     "name" : "name",
     "icon" : "icon",
+    "normalizationConfig" : {
+      "normalizationIntegrationType" : "normalizationIntegrationType",
+      "normalizationRepository" : "normalizationRepository",
+      "normalizationTag" : "normalizationTag",
+      "supported" : false
+    },
     "protocolVersion" : "protocolVersion",
     "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
@@ -3313,8 +3392,15 @@ containing the updated stream needs to be sent.</div>
       "dockerImageTag" : "dockerImageTag",
       "releaseDate" : "2000-01-23",
       "dockerRepository" : "dockerRepository",
+      "supportsDbt" : true,
       "name" : "name",
       "icon" : "icon",
+      "normalizationConfig" : {
+        "normalizationIntegrationType" : "normalizationIntegrationType",
+        "normalizationRepository" : "normalizationRepository",
+        "normalizationTag" : "normalizationTag",
+        "supported" : false
+      },
       "protocolVersion" : "protocolVersion",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
@@ -3348,8 +3434,15 @@ containing the updated stream needs to be sent.</div>
       "dockerImageTag" : "dockerImageTag",
       "releaseDate" : "2000-01-23",
       "dockerRepository" : "dockerRepository",
+      "supportsDbt" : true,
       "name" : "name",
       "icon" : "icon",
+      "normalizationConfig" : {
+        "normalizationIntegrationType" : "normalizationIntegrationType",
+        "normalizationRepository" : "normalizationRepository",
+        "normalizationTag" : "normalizationTag",
+        "supported" : false
+      },
       "protocolVersion" : "protocolVersion",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
@@ -3481,8 +3574,15 @@ containing the updated stream needs to be sent.</div>
   "dockerImageTag" : "dockerImageTag",
   "releaseDate" : "2000-01-23",
   "dockerRepository" : "dockerRepository",
+  "supportsDbt" : true,
   "name" : "name",
   "icon" : "icon",
+  "normalizationConfig" : {
+    "normalizationIntegrationType" : "normalizationIntegrationType",
+    "normalizationRepository" : "normalizationRepository",
+    "normalizationTag" : "normalizationTag",
+    "supported" : false
+  },
   "protocolVersion" : "protocolVersion",
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -3544,14 +3644,12 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "documentationUrl" : "documentationUrl",
-  "supportsNormalization" : true,
   "connectionSpecification" : {
     "user" : {
       "type" : "string"
     }
   },
   "supportedDestinationSyncModes" : [ null, null ],
-  "supportsDbt" : true,
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "advancedAuth" : {
     "predicateValue" : "predicateValue",
@@ -4138,6 +4236,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -4148,6 +4247,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -4195,6 +4295,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -4205,6 +4306,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -4403,8 +4505,15 @@ containing the updated stream needs to be sent.</div>
       "dockerImageTag" : "dockerImageTag",
       "releaseDate" : "2000-01-23",
       "dockerRepository" : "dockerRepository",
+      "supportsDbt" : true,
       "name" : "name",
       "icon" : "icon",
+      "normalizationConfig" : {
+        "normalizationIntegrationType" : "normalizationIntegrationType",
+        "normalizationRepository" : "normalizationRepository",
+        "normalizationTag" : "normalizationTag",
+        "supported" : false
+      },
       "protocolVersion" : "protocolVersion",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     }
@@ -4447,6 +4556,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -4457,6 +4567,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -4504,6 +4615,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -4514,6 +4626,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -4634,6 +4747,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -4644,6 +4758,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -4691,6 +4806,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -4701,6 +4817,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -4894,6 +5011,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -4904,6 +5022,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -4946,6 +5065,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -4956,6 +5076,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -5015,6 +5136,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -5025,6 +5147,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -5067,6 +5190,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       }, {
         "stats" : {
@@ -5077,6 +5201,7 @@ containing the updated stream needs to be sent.</div>
           "estimatedRecords" : 1,
           "recordsEmitted" : 2
         },
+        "streamNamespace" : "streamNamespace",
         "streamName" : "streamName"
       } ],
       "id" : 5,
@@ -6462,6 +6587,65 @@ containing the updated stream needs to be sent.</div>
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#SourceDiscoverSchemaRead">SourceDiscoverSchemaRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getMostRecentSourceActorCatalog"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/most_recent_source_actor_catalog</code></pre></div>
+    <div class="method-summary">Get most recent ActorCatalog for source (<span class="nickname">getMostRecentSourceActorCatalog</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceIdRequestBody <a href="#SourceIdRequestBody">SourceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ActorCatalogWithUpdatedAt">ActorCatalogWithUpdatedAt</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "catalog" : "{}",
+  "updatedAt" : 0
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ActorCatalogWithUpdatedAt">ActorCatalogWithUpdatedAt</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -8838,7 +9022,7 @@ containing the updated stream needs to be sent.</div>
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+      <div class="param">WebBackendConnectionListRequestBody <a href="#WebBackendConnectionListRequestBody">WebBackendConnectionListRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -8859,34 +9043,24 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "connections" : [ {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
+    "name" : "name",
     "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "destinationName" : "destinationName",
       "name" : "name",
       "icon" : "icon",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "name" : "name",
       "icon" : "icon",
       "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "sourceName" : "sourceName"
     },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -8898,34 +9072,24 @@ containing the updated stream needs to be sent.</div>
       }
     }
   }, {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
+    "name" : "name",
     "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "destinationName" : "destinationName",
       "name" : "name",
       "icon" : "icon",
       "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "name" : "name",
       "icon" : "icon",
       "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "sourceName" : "sourceName"
     },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -10008,6 +10172,7 @@ containing the updated stream needs to be sent.</div>
 
   <h3>Table of Contents</h3>
   <ol>
+    <li><a href="#ActorCatalogWithUpdatedAt"><code>ActorCatalogWithUpdatedAt</code> - </a></li>
     <li><a href="#ActorDefinitionResourceRequirements"><code>ActorDefinitionResourceRequirements</code> - </a></li>
     <li><a href="#AdvancedAuth"><code>AdvancedAuth</code> - </a></li>
     <li><a href="#AirbyteCatalog"><code>AirbyteCatalog</code> - </a></li>
@@ -10070,6 +10235,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#DestinationRead"><code>DestinationRead</code> - </a></li>
     <li><a href="#DestinationReadList"><code>DestinationReadList</code> - </a></li>
     <li><a href="#DestinationSearch"><code>DestinationSearch</code> - </a></li>
+    <li><a href="#DestinationSnippetRead"><code>DestinationSnippetRead</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#FieldAdd"><code>FieldAdd</code> - </a></li>
@@ -10103,6 +10269,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
     <li><a href="#NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a></li>
     <li><a href="#NonBreakingChangesPreference"><code>NonBreakingChangesPreference</code> - </a></li>
+    <li><a href="#NormalizationDestinationDefinitionConfig"><code>NormalizationDestinationDefinitionConfig</code> - </a></li>
     <li><a href="#NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a></li>
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
@@ -10155,6 +10322,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
     <li><a href="#SourceSearch"><code>SourceSearch</code> - </a></li>
+    <li><a href="#SourceSnippetRead"><code>SourceSnippetRead</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#StreamDescriptor"><code>StreamDescriptor</code> - </a></li>
     <li><a href="#StreamState"><code>StreamState</code> - </a></li>
@@ -10165,6 +10333,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#WebBackendCheckUpdatesRead"><code>WebBackendCheckUpdatesRead</code> - </a></li>
     <li><a href="#WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a></li>
     <li><a href="#WebBackendConnectionListItem"><code>WebBackendConnectionListItem</code> - </a></li>
+    <li><a href="#WebBackendConnectionListRequestBody"><code>WebBackendConnectionListRequestBody</code> - </a></li>
     <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
@@ -10185,6 +10354,14 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#WorkspaceUpdateName"><code>WorkspaceUpdateName</code> - </a></li>
   </ol>
 
+  <div class="model">
+    <h3><a name="ActorCatalogWithUpdatedAt"><code>ActorCatalogWithUpdatedAt</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>A source actor catalog with the timestamp it was mostly recently updated</div>
+    <div class="field-items">
+      <div class="param">updatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">catalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
   <div class="model">
     <h3><a name="ActorDefinitionResourceRequirements"><code>ActorDefinitionResourceRequirements</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.</div>
@@ -10344,6 +10521,7 @@ containing the updated stream needs to be sent.</div>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">streamName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">streamNamespace (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">stats </div><div class="param-desc"><span class="param-type"><a href="#AttemptStats">AttemptStats</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -10670,7 +10848,8 @@ containing the updated stream needs to be sent.</div>
     <h3><a name="DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+      <div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
@@ -10726,6 +10905,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">releaseStage (optional)</div><div class="param-desc"><span class="param-type"><a href="#ReleaseStage">ReleaseStage</a></span>  </div>
 <div class="param">releaseDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> The date when this connector was first released, in yyyy-mm-dd format. format: date</div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ActorDefinitionResourceRequirements">ActorDefinitionResourceRequirements</a></span>  </div>
+<div class="param">supportsDbt </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used. </div>
+<div class="param">normalizationConfig </div><div class="param-desc"><span class="param-type"><a href="#NormalizationDestinationDefinitionConfig">NormalizationDestinationDefinitionConfig</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10746,8 +10927,6 @@ containing the updated stream needs to be sent.</div>
 <div class="param">advancedAuth (optional)</div><div class="param-desc"><span class="param-type"><a href="#AdvancedAuth">AdvancedAuth</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">supportedDestinationSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">array[DestinationSyncMode]</a></span>  </div>
-<div class="param">supportsDbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">supportsNormalization (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10807,6 +10986,17 @@ containing the updated stream needs to be sent.</div>
 <div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">destinationName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationSnippetRead"><code>DestinationSnippetRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11076,6 +11266,16 @@ containing the updated stream needs to be sent.</div>
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="NormalizationDestinationDefinitionConfig"><code>NormalizationDestinationDefinitionConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>describes a normalization config for destination definition</div>
+    <div class="field-items">
+      <div class="param">supported </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> whether the destination definition supports normalization. </div>
+<div class="param">normalizationRepository (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used. </div>
+<div class="param">normalizationTag (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> a field indicating the tag of the docker repository to be used for normalization. </div>
+<div class="param">normalizationIntegrationType (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> a field indicating the type of integration dialect to use for normalization. </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -11386,7 +11586,8 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <h3><a name="SourceCoreConfig"><code>SourceCoreConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+      <div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
@@ -11547,6 +11748,17 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SourceSnippetRead"><code>SourceSnippetRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SourceUpdate"><code>SourceUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11648,17 +11860,24 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
 <div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
-<div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">SourceRead</a></span>  </div>
-<div class="param">destination </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">DestinationRead</a></span>  </div>
+<div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceSnippetRead">SourceSnippetRead</a></span>  </div>
+<div class="param">destination </div><div class="param-desc"><span class="param-type"><a href="#DestinationSnippetRead">DestinationSnippetRead</a></span>  </div>
 <div class="param">latestSyncJobCreatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> epoch time of the latest sync job. null if no sync job has taken place. format: int64</div>
 <div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
 <div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">schemaChange </div><div class="param-desc"><span class="param-type"><a href="#SchemaChange">SchemaChange</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionListRequestBody"><code>WebBackendConnectionListRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

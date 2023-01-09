@@ -34,6 +34,7 @@ import io.airbyte.api.client.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.DestinationSyncMode;
+import io.airbyte.api.client.model.generated.Geography;
 import io.airbyte.api.client.model.generated.JobConfigType;
 import io.airbyte.api.client.model.generated.JobDebugInfoRead;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -173,7 +174,7 @@ public class AirbyteAcceptanceTestHarness {
   private final UUID defaultWorkspaceId;
   private final String postgresSqlInitFile;
 
-  private KubernetesClient kubernetesClient = null;
+  private KubernetesClient kubernetesClient;
 
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
@@ -490,6 +491,18 @@ public class AirbyteAcceptanceTestHarness {
                                          final ConnectionScheduleType scheduleType,
                                          final ConnectionScheduleData scheduleData)
       throws ApiException {
+    return createConnectionWithGeography(name, sourceId, destinationId, operationIds, catalog, scheduleType, scheduleData, Geography.AUTO);
+  }
+
+  public ConnectionRead createConnectionWithGeography(final String name,
+                                                      final UUID sourceId,
+                                                      final UUID destinationId,
+                                                      final List<UUID> operationIds,
+                                                      final AirbyteCatalog catalog,
+                                                      final ConnectionScheduleType scheduleType,
+                                                      final ConnectionScheduleData scheduleData,
+                                                      final Geography geography)
+      throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
             .status(ConnectionStatus.ACTIVE)
@@ -502,7 +515,8 @@ public class AirbyteAcceptanceTestHarness {
             .name(name)
             .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
             .namespaceFormat(OUTPUT_NAMESPACE)
-            .prefix(OUTPUT_STREAM_PREFIX));
+            .prefix(OUTPUT_STREAM_PREFIX)
+            .geography(geography));
     connectionIds.add(connection.getConnectionId());
     return connection;
   }

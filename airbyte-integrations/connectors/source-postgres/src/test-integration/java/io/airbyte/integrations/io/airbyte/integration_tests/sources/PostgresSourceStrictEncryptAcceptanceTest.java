@@ -20,13 +20,13 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
 import java.util.List;
@@ -117,7 +117,8 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_strict_encrypt_spec.json"), ConnectorSpecification.class));
+    return SshHelpers
+        .injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_strict_encrypt_spec.json"), ConnectorSpecification.class));
   }
 
   @Override

@@ -1,0 +1,12 @@
+@use "scss/variables";
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: variables.$spacing-md;
+  height: 34px;
+
+  label {
+    padding-bottom: 0;
+  }
+}
