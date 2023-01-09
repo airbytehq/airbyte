@@ -127,6 +127,10 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
 
 
 class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
+    """
+    https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport
+    """
+
     _record_date_format = "%Y%m%d"
     primary_key = "uuid"
     cursor_field = "date"
@@ -277,6 +281,10 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
 
 class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream):
+    """
+    https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/getMetadata
+    """
+
     primary_key = None
     http_method = "GET"
 
