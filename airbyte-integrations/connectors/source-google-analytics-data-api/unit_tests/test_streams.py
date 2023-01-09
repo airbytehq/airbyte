@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import copy
 import datetime
 import random
 from http import HTTPStatus
@@ -10,7 +9,7 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
-from source_google_analytics_data_api.source import GoogleAnalyticsDataApiGenericStream
+from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream
 
 json_credentials = """
 {
@@ -31,9 +30,9 @@ json_credentials = """
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(GoogleAnalyticsDataApiGenericStream, "path", f"{random.randint(100000000, 999999999)}:runReport")
-    mocker.patch.object(GoogleAnalyticsDataApiGenericStream, "primary_key", "test_primary_key")
-    mocker.patch.object(GoogleAnalyticsDataApiGenericStream, "__abstractmethods__", set())
+    mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "path", f"{random.randint(100000000, 999999999)}:runReport")
+    mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "primary_key", "test_primary_key")
+    mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "__abstractmethods__", set())
 
     return {
         "config": {
@@ -57,7 +56,7 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     assert (
-        GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"]).request_params(
+        GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_params(
             stream_state=MagicMock(), stream_slice=MagicMock(), next_page_token=MagicMock()
         )
         == {}
@@ -87,12 +86,12 @@ def test_request_body_json(patch_base_class):
         "dateRanges": [request_body_params["stream_slice"]],
     }
 
-    request_body_json = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"]).request_body_json(**request_body_params)
+    request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(**request_body_params)
     assert request_body_json == expected_body_json
 
 
 def test_next_page_token_equal_chunk(patch_base_class):
-    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
         {"limit": 100000, "offset": 0, "rowCount": 200000},
@@ -118,7 +117,7 @@ def test_next_page_token_equal_chunk(patch_base_class):
 
 
 def test_next_page_token(patch_base_class):
-    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
         {"limit": 100000, "offset": 0, "rowCount": 250000},
@@ -149,7 +148,7 @@ def test_next_page_token(patch_base_class):
 
 
 def test_parse_response(patch_base_class):
-    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
 
     response_data = {
         "dimensionHeaders": [{"name": "date"}, {"name": "deviceCategory"}, {"name": "operatingSystem"}, {"name": "browser"}],
@@ -196,8 +195,7 @@ def test_parse_response(patch_base_class):
         "kind": "analyticsData#runReport",
     }
 
-    expected_data = copy.deepcopy(response_data)
-    expected_data["records"] = [
+    expected_data = [
         {
             "property_id": "496180525",
             "date": "20220731",
@@ -233,21 +231,21 @@ def test_parse_response(patch_base_class):
     response = MagicMock()
     response.json.return_value = response_data
     inputs = {"response": response, "stream_state": {}}
-    actual_records: Mapping[str, Any] = next(iter(stream.parse_response(**inputs)))
-    for record in actual_records["records"]:
+    actual_records: Mapping[str, Any] = list(stream.parse_response(**inputs))
+    for record in actual_records:
         del record["uuid"]
     assert actual_records == expected_data
 
 
 def test_request_headers(patch_base_class):
-    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
-    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     expected_method = "POST"
     assert stream.http_method == expected_method
 
@@ -257,19 +255,19 @@ def test_http_method(patch_base_class):
     [
         (HTTPStatus.OK, False),
         (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
+        (HTTPStatus.TOO_MANY_REQUESTS, False),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
 )
 def test_should_retry(patch_base_class, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     assert stream.should_retry(response_mock) == should_retry
 
 
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock()
-    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time

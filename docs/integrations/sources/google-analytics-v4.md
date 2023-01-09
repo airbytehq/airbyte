@@ -70,6 +70,7 @@ added by default to any report. There are 8 default reports. To add more reports
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------|
+| 0.1.0   | 2023-01-08 | [20889](https://github.com/airbytehq/airbyte/pull/20889) | Improved config validation, SAT                    |
 | 0.0.3   | 2022-08-15 | [15229](https://github.com/airbytehq/airbyte/pull/15229) | Source Google Analytics Data Api: code refactoring |
 | 0.0.2   | 2022-07-27 | [15087](https://github.com/airbytehq/airbyte/pull/15087) | fix documentationUrl                               |
 | 0.0.1   | 2022-05-09 | [12701](https://github.com/airbytehq/airbyte/pull/12701) | Introduce Google Analytics Data API source         |
