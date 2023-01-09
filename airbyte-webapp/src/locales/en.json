@@ -584,6 +584,7 @@
   "connector.optionsHeader": "Options",
   "connector.exampleValues": "Example {count, plural, one {value} other {values}}",
   "connector.oauthCredentialsMissing": "OAuth login is temporarily unavailable for this connector. Please try again later.",
+  "connector.testLogs": "Connection test logs",
 
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
@@ -727,6 +728,7 @@
   "connectorBuilder.copyToSlicerTitle": "Copy slicing settings to...",
   "connectorBuilder.copyFromSlicerTitle": "Import slicing settings from...",
   "connectorBuilder.inputsButton": "Inputs",
+  "connectorBuilder.interUserInputValue": "Insert a user input value",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
