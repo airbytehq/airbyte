@@ -94,7 +94,7 @@ import org.slf4j.LoggerFactory;
   "OptionalUsedAsFieldOrParameterType"})
 public class ConfigRepository {
 
-  public record StandardSyncQuery(@Nonnull UUID workspaceId, UUID sourceId, UUID destinationId, boolean includeDeleted) {}
+  public record StandardSyncQuery(@Nonnull UUID workspaceId, List<UUID> sourceId, List<UUID> destinationId, boolean includeDeleted) {}
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
   private static final String OPERATION_IDS_AGG_FIELD = "operation_ids_agg";
@@ -867,8 +867,10 @@ public class ConfigRepository {
         // join with source actors so that we can filter by workspaceId
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(standardSyncQuery.workspaceId)
-            .and(standardSyncQuery.destinationId == null ? noCondition() : CONNECTION.DESTINATION_ID.eq(standardSyncQuery.destinationId))
-            .and(standardSyncQuery.sourceId == null ? noCondition() : CONNECTION.SOURCE_ID.eq(standardSyncQuery.sourceId))
+            .and(standardSyncQuery.destinationId == null || standardSyncQuery.destinationId.isEmpty() ? noCondition()
+                : CONNECTION.DESTINATION_ID.in(standardSyncQuery.destinationId))
+            .and(standardSyncQuery.sourceId == null || standardSyncQuery.sourceId.isEmpty() ? noCondition()
+                : CONNECTION.SOURCE_ID.in(standardSyncQuery.sourceId))
             .and(standardSyncQuery.includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated)))
 
         // group by connection.id so that the groupConcat above works
