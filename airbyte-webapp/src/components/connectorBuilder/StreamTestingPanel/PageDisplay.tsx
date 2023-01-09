@@ -1,17 +1,21 @@
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
+import { useField } from "formik";
 import { useMemo } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
+import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
-import { StreamReadSlicesItemPagesItem } from "core/request/ConnectorBuilderClient";
+import { StreamReadInferredSchema, StreamReadSlicesItemPagesItem } from "core/request/ConnectorBuilderClient";
+import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./PageDisplay.module.scss";
 import { formatJson } from "./utils";
 
 interface PageDisplayProps {
   page: StreamReadSlicesItemPagesItem;
+  inferredSchema?: StreamReadInferredSchema;
   className?: string;
 }
 
@@ -21,12 +25,16 @@ interface TabData {
   content: string;
 }
 
-export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => {
+export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, inferredSchema }) => {
   const { formatMessage } = useIntl();
+
+  const { testStreamIndex } = useConnectorBuilderTestState();
+  const [field, , helpers] = useField(`streams[${testStreamIndex}].schema`);
 
   const formattedRecords = useMemo(() => formatJson(page.records), [page.records]);
   const formattedRequest = useMemo(() => formatJson(page.request), [page.request]);
   const formattedResponse = useMemo(() => formatJson(page.response), [page.response]);
+  const formattedSchema = useMemo(() => formatJson(inferredSchema), [inferredSchema]);
 
   let defaultTabIndex = 0;
   const tabs: TabData[] = [
@@ -55,6 +63,14 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
     }
   }
 
+  if (inferredSchema) {
+    tabs.push({
+      title: formatMessage({ id: "connectorBuilder.schemaTab" }),
+      key: "schema",
+      content: formattedSchema,
+    });
+  }
+
   return (
     <div className={classNames(className)}>
       <Tab.Group defaultIndex={defaultTabIndex}>
@@ -70,6 +86,23 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
         <Tab.Panels className={styles.tabPanelContainer}>
           {tabs.map((tab) => (
             <Tab.Panel className={styles.tabPanel} key={tab.key}>
+              {tab.key === "schema" && (
+                <Button
+                  variant="secondary"
+                  disabled={field.value === formattedSchema}
+                  onClick={() => {
+                    helpers.setValue(formattedSchema);
+                  }}
+                >
+                  <FormattedMessage
+                    id={
+                      field.value === formattedSchema || !field.value
+                        ? "connectorBuilder.useSchemaButton"
+                        : "connectorBuilder.overwriteSchemaButton"
+                    }
+                  />
+                </Button>
+              )}
               <pre>{tab.content}</pre>
             </Tab.Panel>
           ))}
