@@ -50,7 +50,7 @@ spec:
           volumeMounts:
             - name: airbyte-minio-pv-claim # must match the volume name, above
               mountPath: "/data"
-      hostname: airbyte-dev-logs
+      hostname: {{ .Values.s3.bucket }}
       subdomain: airbyte-minio-svc
 ---
 apiVersion: v1
