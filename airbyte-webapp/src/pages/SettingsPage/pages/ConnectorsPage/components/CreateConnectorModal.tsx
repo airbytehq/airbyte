@@ -190,7 +190,7 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                         </Label>
                       }
                       error={!!meta.error && meta.touched}
-                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                      message={meta.touched && meta.error && <FormattedMessage id={meta.error} />}
                     />
                   )}
                 </Field>
@@ -211,7 +211,7 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                         </Label>
                       }
                       error={meta.touched && !!meta.error}
-                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                      message={meta.touched && meta.error && <FormattedMessage id={meta.error} />}
                     />
                   )}
                 </Field>
