@@ -10,18 +10,21 @@ export const goToSettingsDestinationTab = () => {
   cy.wait(5000);
 };
 
-export const editVersionByConnectorName = (connectorName: string, version: string) => {
-  cy.get("[data-testid='connectorNameCell']")
-    .contains(connectorName)
-    .parents("tr")
-    .find("[data-testid='version-input']")
-    .focus()
-    .type(`{selectall} {backspace} ${version}`, { force: true })
-    .parents("tr")
-    .find("[data-testid='versionButton']")
-    .click({ force: true });
+export const editVersionByConnectorName = (
+  connectorType: "source" | "destination",
+  connectorId: string,
+  version?: string
+) => {
+  cy.intercept(`/api/v1/${connectorType}_definitions/update`).as("updateConnectorDefinitions");
 
-  cy.wait(5000);
+  if (version) {
+    cy.get(`[data-testid='${connectorId}-versionInput']`).clear().wait(1000);
+    cy.get(`[data-testid='${connectorId}-versionInput']`).type(`${version}`).wait(1000);
+  }
+
+  cy.get(`[data-testid='${connectorId}-versionButton']`).click();
+  cy.wait("@updateConnectorDefinitions");
+
   cy.get("[data-testid='errorMessage']").should("not.exist");
   cy.get("[data-testid='successMessage']").should("exist");
 
