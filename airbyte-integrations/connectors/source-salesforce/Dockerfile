@@ -9,6 +9,8 @@ WORKDIR /airbyte/integration_code
 COPY source_salesforce ./source_salesforce
 COPY setup.py ./
 COPY main.py ./
+COPY *.patch.json ./
+COPY selected_streams.json ./
 RUN pip install .
 
 COPY --from=ghcr.io/estuary/airbyte-to-flow:dev /airbyte-to-flow ./
