@@ -139,10 +139,9 @@ class SourceAmazonSellerPartner(AbstractSource):
 
             return True, None
         except Exception as e:
+            # Validate Orders stream without data
             if isinstance(e, StopIteration):
-                # Validate Orders stream without data
-                if isinstance(e, StopIteration):
-                    return True, None
+                return True, None
 
             # Additional check, since Vendor-ony accounts within Amazon Seller API will not pass the test without this exception
             if "403 Client Error" in str(e):
