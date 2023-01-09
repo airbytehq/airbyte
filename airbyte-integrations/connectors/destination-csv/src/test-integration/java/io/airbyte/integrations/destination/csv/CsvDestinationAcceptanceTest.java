@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.csv;
 
-import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.getProtocolVersion;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -130,12 +130,12 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
     // no op
   }
 
-  public class CSVDataArgumentsProvider extends DataArgumentsProvider {
+  public static class CSVDataArgumentsProvider extends DataArgumentsProvider {
 
     public CSVDataArgumentsProvider(){};
     @Override
-    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
-      ProtocolVersion protocolVersion = getProtocolVersion();
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
+      ProtocolVersion protocolVersion = ArgumentProviderUtil.getProtocolVersion(context);
       return Stream.of(
               Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "\\u002c"),
               Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "\\u003b"),
