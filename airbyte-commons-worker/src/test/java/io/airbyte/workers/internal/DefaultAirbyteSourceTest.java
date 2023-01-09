@@ -210,7 +210,7 @@ class DefaultAirbyteSourceTest {
 
   @Test
   void testIgnoredExitCodes() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, protocolSerializer, heartbeatMonitor);
     tap.start(SOURCE_CONFIG, jobRoot);
     when(process.isAlive()).thenReturn(false);
 
