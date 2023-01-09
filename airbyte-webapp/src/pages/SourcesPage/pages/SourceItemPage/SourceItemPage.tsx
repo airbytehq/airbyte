@@ -37,7 +37,7 @@ const SourceItemPage: React.FC = () => {
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
 
   // We load only connections attached to this source to be shown in the connections grid
-  const { connections } = useConnectionList({ sourceId: source.sourceId });
+  const { connections } = useConnectionList({ sourceId: [source.sourceId] });
 
   const breadcrumbsData = [
     {

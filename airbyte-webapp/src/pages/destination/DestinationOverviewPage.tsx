@@ -20,7 +20,7 @@ export const DestinationOverviewPage = () => {
   const destination = useGetDestination(params.id);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
   // We load only connections attached to this destination to be shown in the connections grid
-  const { connections } = useConnectionList({ destinationId: destination.destinationId });
+  const { connections } = useConnectionList({ destinationId: [destination.destinationId] });
 
   // We load all sources so the add source button has a pre-filled list of options.
   const { sources } = useSourceList();

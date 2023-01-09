@@ -32,8 +32,7 @@ import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,
-  lists: (sourceOrDestinationId?: string) => [...connectionsKeys.all, "list", sourceOrDestinationId].filter(Boolean),
-  list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
+  lists: (sourceOrDestinationIds: string[] = []) => [...connectionsKeys.all, "list", ...sourceOrDestinationIds],
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
   getState: (connectionId: string) => [...connectionsKeys.all, "getState", connectionId] as const,
 };
