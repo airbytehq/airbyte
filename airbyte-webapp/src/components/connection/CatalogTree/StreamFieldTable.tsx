@@ -40,7 +40,7 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = ({
         return true;
       }
 
-      // path[0] is the top-level field name for all nested fields
+      // Nested fields cannot currently be individually deselected, so we can just check whether the top-level field has been selected
       return !!config?.selectedFields?.find((f) => isEqual(f.fieldPath, [field.path[0]]));
     },
     [config]
