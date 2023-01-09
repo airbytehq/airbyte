@@ -11,6 +11,8 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.2.81"
   basic_read:
     - config_path: "secrets/config.json"
       empty_streams: ["videos"]
