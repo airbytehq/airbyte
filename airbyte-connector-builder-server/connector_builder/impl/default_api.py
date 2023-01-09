@@ -6,7 +6,7 @@ import json
 import logging
 import traceback
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, Iterator, Optional, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
@@ -22,7 +22,7 @@ from connector_builder.generated.models.stream_read_slices import StreamReadSlic
 from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
-from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
+from connector_builder.impl.adapter import CdkAdapter
 from fastapi import Body, HTTPException
 from jsonschema import ValidationError
 
@@ -30,7 +30,7 @@ from jsonschema import ValidationError
 class DefaultApiImpl(DefaultApi):
     logger = logging.getLogger("airbyte.connector-builder")
 
-    def __init__(self, adapter_cls: Type, max_record_limit: int = 1000):
+    def __init__(self, adapter_cls: Callable[[Dict[str, Any]], CdkAdapter], max_record_limit: int = 1000):
         self.adapter_cls = adapter_cls
         self.max_record_limit = max_record_limit
         super().__init__()
@@ -222,7 +222,7 @@ spec:
             self.logger.warning(f"Failed to parse log message into response object with error: {error}")
             return None
 
-    def _create_low_code_adapter(self, manifest: Dict[str, Any]) -> LowCodeSourceAdapter:
+    def _create_low_code_adapter(self, manifest: Dict[str, Any]) -> CdkAdapter:
         try:
             return self.adapter_cls(manifest=manifest)
         except ValidationError as error:

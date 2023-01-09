@@ -9,9 +9,10 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.yaml_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.streams.http import HttpStream
+from connector_builder.impl.adapter import CdkAdapter
 
 
-class LowCodeSourceAdapter:
+class LowCodeSourceAdapter(CdkAdapter):
     def __init__(self, manifest: Dict[str, Any]):
         # Request and response messages are only emitted for a sources that have debug turned on
         self._source = ManifestDeclarativeSource(manifest, debug=True)
