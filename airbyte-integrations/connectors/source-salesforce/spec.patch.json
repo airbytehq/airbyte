@@ -1,6 +1,6 @@
 {
+    "required": ["credentials"],
     "properties": {
-        "required": ["credentials"],
         "credentials": {
             "required": [
                 "client_id",
