@@ -22,7 +22,11 @@ import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/Connecti
 import styles from "./CatalogSection.module.scss";
 import { CatalogTreeTableRow } from "./next/CatalogTreeTableRow";
 import { StreamDetailsPanel } from "./next/StreamDetailsPanel/StreamDetailsPanel";
-import { updatePrimaryKey, addFieldToPrimaryKey, updateCursorField } from "./streamConfigHelpers/streamConfigHelpers";
+import {
+  updatePrimaryKey,
+  toggleFieldInPrimaryKey,
+  updateCursorField,
+} from "./streamConfigHelpers/streamConfigHelpers";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
@@ -82,7 +86,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
         return;
       }
 
-      const updatedConfig = addFieldToPrimaryKey(config, pkPath, numberOfFieldsInStream);
+      const updatedConfig = toggleFieldInPrimaryKey(config, pkPath, numberOfFieldsInStream);
 
       updateStreamWithConfig(updatedConfig);
     },

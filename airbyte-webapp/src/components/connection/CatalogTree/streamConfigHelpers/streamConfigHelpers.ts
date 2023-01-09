@@ -1,6 +1,23 @@
 import isEqual from "lodash/isEqual";
 
-import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
+import { AirbyteStreamConfiguration, SelectedFieldInfo } from "core/request/AirbyteClient";
+
+/**
+ * Merges arrays of SelectedFieldInfo, ensuring there are no duplicates
+ */
+export function mergeFieldPathArrays(...args: SelectedFieldInfo[][]): SelectedFieldInfo[] {
+  const set = new Set<string[]>();
+
+  args.forEach((array) =>
+    array.forEach((selectedFieldInfo) => {
+      if (selectedFieldInfo.fieldPath) {
+        set.add(selectedFieldInfo.fieldPath);
+      }
+    })
+  );
+
+  return Array.from(set).map((fieldPath) => ({ fieldPath }));
+}
 
 /**
  * Updates the cursor field in AirbyteStreamConfiguration
@@ -10,16 +27,19 @@ export const updateCursorField = (
   selectedCursorField: string[],
   numberOfFieldsInStream: number
 ): Partial<AirbyteStreamConfiguration> => {
-  const previouslySelectedFields = config?.selectedFields || [];
-
   // If field selection is enabled, we need to be sure the new cursor is also selected
-  if (config?.fieldSelectionEnabled && !previouslySelectedFields.find((field) => isEqual(field, selectedCursorField))) {
-    if (previouslySelectedFields.length === numberOfFieldsInStream - 1) {
+  if (config?.fieldSelectionEnabled) {
+    const previouslySelectedFields = config?.selectedFields || [];
+    const selectedFields = mergeFieldPathArrays(previouslySelectedFields, [{ fieldPath: selectedCursorField }]);
+
+    // If the number of selected fields is equal to the fields in the stream, field selection is disabled because all fields are selected
+    if (selectedFields.length === numberOfFieldsInStream) {
       return { cursorField: selectedCursorField, selectedFields: [], fieldSelectionEnabled: false };
     }
+
     return {
       fieldSelectionEnabled: true,
-      selectedFields: [...previouslySelectedFields, { fieldPath: selectedCursorField }],
+      selectedFields,
       cursorField: selectedCursorField,
     };
   }
@@ -27,28 +47,29 @@ export const updateCursorField = (
 };
 
 /**
- * Overwrites the entire primaryKey value in AirbyteStreamConfiguration.
+ * Overwrites the entire primaryKey value in AirbyteStreamConfiguration, which is a composite of one or more fieldPaths
  */
 export const updatePrimaryKey = (
   config: AirbyteStreamConfiguration,
   compositePrimaryKey: string[][],
   numberOfFieldsInStream: number
 ): Partial<AirbyteStreamConfiguration> => {
-  const previouslySelectedFields = config?.selectedFields || [];
+  // If field selection is enabled, we need to be sure each fieldPath in the new composite primary key is also selected
+  if (config?.fieldSelectionEnabled) {
+    const previouslySelectedFields = config?.selectedFields || [];
+    const selectedFields = mergeFieldPathArrays(
+      previouslySelectedFields,
+      compositePrimaryKey.map((fieldPath) => ({ fieldPath }))
+    );
 
-  // If field selection is enabled, we need to be sure each fieldPath in the new primary key is also selected
-  if (
-    config?.fieldSelectionEnabled &&
-    !compositePrimaryKey.some((fieldPath) => previouslySelectedFields.find((field) => isEqual(field, fieldPath)))
-  ) {
-    // If the fieldPath being added to the primaryKey is the only unselected field,
-    // we can actually just disable field selection, since all fields are now selected.
-    if (previouslySelectedFields.length === numberOfFieldsInStream - 1) {
+    // If the number of selected fields is equal to the fields in the stream, field selection is disabled because all fields are selected
+    if (selectedFields.length === numberOfFieldsInStream) {
       return { primaryKey: compositePrimaryKey, selectedFields: [], fieldSelectionEnabled: false };
     }
+
     return {
       fieldSelectionEnabled: true,
-      selectedFields: [...previouslySelectedFields, ...compositePrimaryKey.map((fieldPath) => ({ fieldPath }))],
+      selectedFields,
       primaryKey: compositePrimaryKey,
     };
   }
@@ -59,15 +80,14 @@ export const updatePrimaryKey = (
 };
 
 /**
- * Adds a single fieldPath to the composite primaryKey
+ * Toggles whether a fieldPath is part of the composite primaryKey
  */
-export const addFieldToPrimaryKey = (
+export const toggleFieldInPrimaryKey = (
   config: AirbyteStreamConfiguration,
   fieldPath: string[],
   numberOfFieldsInStream: number
 ): Partial<AirbyteStreamConfiguration> => {
   const fieldIsSelected = !config?.primaryKey?.find((pk) => isEqual(pk, fieldPath));
-  const previouslySelectedFields = config?.selectedFields || [];
   let newPrimaryKey: string[][];
 
   if (!fieldIsSelected) {
@@ -77,17 +97,18 @@ export const addFieldToPrimaryKey = (
   }
 
   // If field selection is enabled, we need to be sure the new fieldPath is also selected
-  if (
-    fieldIsSelected &&
-    config?.fieldSelectionEnabled &&
-    !previouslySelectedFields.find((field) => isEqual(field, fieldPath))
-  ) {
-    if (previouslySelectedFields.length === numberOfFieldsInStream - 1) {
+  if (fieldIsSelected && config?.fieldSelectionEnabled) {
+    const previouslySelectedFields = config?.selectedFields || [];
+    const selectedFields = mergeFieldPathArrays(previouslySelectedFields, [{ fieldPath }]);
+
+    // If the number of selected fields is equal to the fields in the stream, field selection is disabled because all fields are selected
+    if (selectedFields.length === numberOfFieldsInStream) {
       return { primaryKey: newPrimaryKey, selectedFields: [], fieldSelectionEnabled: false };
     }
+
     return {
       fieldSelectionEnabled: true,
-      selectedFields: [...previouslySelectedFields, { fieldPath }],
+      selectedFields,
       primaryKey: newPrimaryKey,
     };
   }
