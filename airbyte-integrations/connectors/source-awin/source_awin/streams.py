@@ -187,10 +187,14 @@ class AdvertiserTransactions(IncrementalAwinStream):
 
     def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[StreamData]:
         self._current_slice = stream_slice
+        account_id = stream_slice['account_id']
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            if self._cursor_value[stream_slice['account_id']]:
+            if self._cursor_value[account_id]:
                 latest_record_date = pendulum.parse(record[self.cursor_field])
-                self._cursor_value[stream_slice['account_id']] = max(self._cursor_value[stream_slice['account_id']], latest_record_date)
+                self._cursor_value[account_id] = max(self._cursor_value[account_id], latest_record_date)
             yield record
 
-        self._cursor_value[stream_slice['account_id']] = max(self._cursor_value[stream_slice['account_id']], stream_slice["date_to"])
+        if account_id in self._cursor_value:
+            self._cursor_value[account_id] = max(self._cursor_value[account_id], stream_slice["date_to"])
+        else:
+            self._cursor_value[account_id] = stream_slice["date_to"]
