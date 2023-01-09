@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
+import org.mockito.Mockito;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -64,6 +66,7 @@ public class ReplicationWorkerPerformanceTest {
     final var perSource = new LimitedAirbyteSource();
     final var perDestination = new EmptyAirbyteDestination();
     final var messageTracker = new AirbyteMessageTracker();
+    final var connectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
     final var metricReporter = new WorkerMetricReporter(new NotImplementedMetricClient(), "test-image:0.01");
     final var dstNamespaceMapper = new NamespacingMapper(NamespaceDefinitionType.DESTINATION, "", "");
     final var validator = new RecordSchemaValidator(Map.of(
@@ -77,6 +80,7 @@ public class ReplicationWorkerPerformanceTest {
         messageTracker,
         validator,
         metricReporter,
+        connectorConfigUpdater,
         false);
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     final Thread workerThread = new Thread(() -> {
@@ -97,7 +101,7 @@ public class ReplicationWorkerPerformanceTest {
     log.info("MBs read: {}, Time taken sec: {}, MB/s: {}", mbRead, timeTakenSec, mbRead / timeTakenSec);
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException {
     // Run this main class to start benchmarking.
     org.openjdk.jmh.Main.main(args);
   }

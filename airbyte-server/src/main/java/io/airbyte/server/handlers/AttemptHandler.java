@@ -10,26 +10,28 @@ import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.JobPersistence;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class AttemptHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AttemptHandler.class);
 
   private final JobPersistence jobPersistence;
 
-  public AttemptHandler(JobPersistence jobPersistence) {
+  public AttemptHandler(final JobPersistence jobPersistence) {
     this.jobPersistence = jobPersistence;
   }
 
-  public InternalOperationResult setWorkflowInAttempt(SetWorkflowInAttemptRequestBody requestBody) {
+  public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
     try {
       jobPersistence.setAttemptTemporalWorkflowInfo(requestBody.getJobId(),
           requestBody.getAttemptNumber(), requestBody.getWorkflowId(), requestBody.getProcessingTaskQueue());
-    } catch (IOException ioe) {
+    } catch (final IOException ioe) {
       LOGGER.error("IOException when setting temporal workflow in attempt;", ioe);
       return new InternalOperationResult().succeeded(false);
     }

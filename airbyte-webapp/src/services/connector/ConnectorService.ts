@@ -1,11 +1,15 @@
 import { useConfig } from "config";
-import { webBackendCheckUpdates } from "core/request/AirbyteClient";
+import { webBackendCheckUpdates, WebBackendCheckUpdatesRead } from "core/request/AirbyteClient";
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
+import { isCloudApp } from "utils/app";
 
 class ConnectorService extends AirbyteRequestService {
-  checkUpdates() {
+  checkUpdates(): Promise<WebBackendCheckUpdatesRead> {
+    if (isCloudApp()) {
+      return Promise.resolve({ sourceDefinitions: 0, destinationDefinitions: 0 });
+    }
     return webBackendCheckUpdates(this.requestOptions);
   }
 }
