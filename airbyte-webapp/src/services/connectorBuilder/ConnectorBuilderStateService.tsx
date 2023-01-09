@@ -1,5 +1,4 @@
 import { dump } from "js-yaml";
-import merge from "lodash/merge";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
@@ -61,6 +60,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
   );
 
   const lastValidBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
+  const currentBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
 
   const setBuilderFormValues = useCallback(
     (values: BuilderFormValues, isValid: boolean) => {
@@ -68,14 +68,15 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
         // update ref first because calling setStoredBuilderFormValues might synchronously kick off a react render cycle.
         lastValidBuilderFormValuesRef.current = values;
       }
+      currentBuilderFormValuesRef.current = values;
       setStoredBuilderFormValues(values);
     },
     [setStoredBuilderFormValues]
   );
 
-  const builderFormValues = useMemo(() => {
-    return merge({}, DEFAULT_BUILDER_FORM_VALUES, storedBuilderFormValues);
-  }, [storedBuilderFormValues]);
+  // use the ref for the current builder form values because useLocalStorage will always serialize and deserialize the whole object,
+  // changing all the references which re-triggers all memoizations
+  const builderFormValues = currentBuilderFormValuesRef.current || DEFAULT_BUILDER_FORM_VALUES;
 
   const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
     "connectorBuilderJsonManifest",
@@ -119,9 +120,9 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
       editorView !== "ui"
         ? jsonManifest
         : builderFormValues === lastValidBuilderFormValues
-        ? jsonManifest
+        ? derivedJsonManifest
         : convertToManifest(lastValidBuilderFormValues),
-    [builderFormValues, editorView, jsonManifest, lastValidBuilderFormValues]
+    [builderFormValues, editorView, jsonManifest, derivedJsonManifest, lastValidBuilderFormValues]
   );
 
   const [selectedView, setSelectedView] = useState<BuilderView>("global");

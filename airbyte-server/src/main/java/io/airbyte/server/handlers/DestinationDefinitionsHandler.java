@@ -48,6 +48,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -88,6 +89,7 @@ public class DestinationDefinitionsHandler {
   @VisibleForTesting
   static DestinationDefinitionRead buildDestinationDefinitionRead(final StandardDestinationDefinition standardDestinationDefinition) {
     try {
+
       return new DestinationDefinitionRead()
           .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
           .name(standardDestinationDefinition.getName())
@@ -98,6 +100,9 @@ public class DestinationDefinitionsHandler {
           .protocolVersion(standardDestinationDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardDestinationDefinition))
           .releaseDate(getReleaseDate(standardDestinationDefinition))
+          .supportsDbt(Objects.requireNonNullElse(standardDestinationDefinition.getSupportsDbt(), false))
+          .normalizationConfig(
+              ApiPojoConverters.normalizationDestinationDefinitionConfigToApi(standardDestinationDefinition.getNormalizationConfig()))
           .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardDestinationDefinition.getResourceRequirements()));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
