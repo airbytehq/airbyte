@@ -4,14 +4,15 @@ import styled from "styled-components";
 
 import { Card } from "components";
 
+import { ProductItem } from "core/domain/product";
 import { NumberNaming } from "core/functions/numberFormatter";
 
-import Range, { IDataRow } from "./Range";
+import Range from "./Range";
 
 interface IProps {
-  dataRows: IDataRow[];
-  selectedDataRow?: IDataRow;
-  setDataRow: (item: IDataRow) => void;
+  products: ProductItem[];
+  product?: ProductItem;
+  setProduct: (item: ProductItem) => void;
 }
 
 const Title = styled.div`
@@ -42,7 +43,7 @@ const NoteContainer = styled.div`
   color: #999999;
 `;
 
-const RangeCard: React.FC<IProps> = ({ dataRows, selectedDataRow, setDataRow }) => {
+const RangeCard: React.FC<IProps> = ({ products, product, setProduct }) => {
   return (
     <Card withPadding roundedBottom>
       <CardContainer>
@@ -50,13 +51,7 @@ const RangeCard: React.FC<IProps> = ({ dataRows, selectedDataRow, setDataRow }) 
           <FormattedMessage id="plan.rows.card.title" />
         </Title>
         <RangeContainer>
-          <Range
-            min={0}
-            max={110 * NumberNaming.M}
-            marks={dataRows}
-            selectedMark={selectedDataRow}
-            onSelect={setDataRow}
-          />
+          <Range min={0} max={110 * NumberNaming.M} marks={products} selectedMark={product} onSelect={setProduct} />
         </RangeContainer>
         <NoteContainer>
           <FormattedMessage id="plan.rows.card.note" />

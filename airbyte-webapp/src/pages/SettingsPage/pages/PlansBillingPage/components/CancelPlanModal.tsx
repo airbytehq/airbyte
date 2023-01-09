@@ -1,11 +1,15 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedDate, FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Modal, ModalBody, Button } from "components";
+import { Modal, ModalBody, LoadingButton } from "components";
 
 interface IProps {
   onClose?: () => void;
+  onConfirm?: () => void;
+  onNotNow?: () => void;
+  confirmLoading?: boolean;
+  expiresOn?: number;
 }
 
 const ModalBodyContainer = styled.div`
@@ -41,7 +45,7 @@ const ButtonsContainer = styled.div`
   padding: 0 40px;
 `;
 
-const ConfirmBtn = styled(Button)`
+const ConfirmBtn = styled(LoadingButton)`
   background-color: ${({ theme }) => theme.white};
   color: #6b6b6f;
   border: 1px solid #d1d5db;
@@ -49,38 +53,41 @@ const ConfirmBtn = styled(Button)`
 
 const BtnText = styled.div<{
   color?: string;
+  hide?: boolean;
 }>`
   font-weight: 500;
   font-size: 14px;
   color: ${({ theme, color }) => (color ? color : theme.white)};
+  opacity: ${({ hide }) => (hide ? 0 : 1)};
 `;
 
-export const CancelPlanModal: React.FC<IProps> = ({ onClose }) => {
-  const onConfirm = () => onClose?.();
-  const onNotNow = () => onClose?.();
+export const CancelPlanModal: React.FC<IProps> = ({ onClose, onConfirm, onNotNow, confirmLoading, expiresOn }) => {
+  const onConfirmModal = () => onConfirm?.();
+  const onNotNowModal = () => onNotNow?.();
   return (
     <Modal size="md" onClose={onClose}>
       <ModalBody>
         <ModalBodyContainer>
           <ModalHeading>Cancel subscription?</ModalHeading>
           <ModalBodyText>
-            You current plan expires on 20 Nov 2022.
+            Your current plan expires on{" "}
+            <FormattedDate value={(expiresOn as number) * 1000} day="numeric" month="long" year="numeric" />.
             <br />
             You will still be able to use your current plan until it expires.
             <br />
             Are you sure you want to cancel your subscription?
           </ModalBodyText>
           <ButtonsContainer>
-            <ConfirmBtn size="lg" onClick={onConfirm}>
-              <BtnText color="#6B6B6F">
+            <ConfirmBtn size="lg" onClick={onConfirmModal} isLoading={confirmLoading} disabled={confirmLoading}>
+              <BtnText color="#6B6B6F" hide={confirmLoading}>
                 <FormattedMessage id="cancelSubscription.modal.btn.confirm" />
               </BtnText>
             </ConfirmBtn>
-            <Button size="lg" onClick={onNotNow}>
+            <LoadingButton size="lg" onClick={onNotNowModal} disabled={confirmLoading}>
               <BtnText>
                 <FormattedMessage id="cancelSubscription.modal.btn.notNow" />
               </BtnText>
-            </Button>
+            </LoadingButton>
           </ButtonsContainer>
         </ModalBodyContainer>
       </ModalBody>

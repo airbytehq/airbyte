@@ -1,14 +1,21 @@
 export interface IAuthUser {
-  account: string;
-  company: string;
-  expiresTime: number;
   firstName: string;
-  lang: string;
   lastName: string;
+  account: string;
   role: number;
+  roleDesc?: string;
   status: number;
-  token: string;
+  statusDesc?: string;
+  expiresTime: number;
+  company: string;
+  lang: string;
   workspaceId: string;
+  token?: string;
+  subscriptionPackageName?: string;
+}
+
+export interface UserInfo {
+  data: IAuthUser;
 }
 
 class AuthUser {

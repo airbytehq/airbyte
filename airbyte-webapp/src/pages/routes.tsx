@@ -20,6 +20,7 @@ import SignupPage from "./AuthPage/SignupPage";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
 // import OnboardingPage from "./OnboardingPage";
+import PaymentErrorPage from "./PaymentErrorPage";
 import PaymentPage from "./PaymentPage";
 import PreferencesPage from "./PreferencesPage";
 import { RoutePaths } from "./routePaths";
@@ -50,6 +51,7 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = () =>
             <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
             <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
             <Route path={`${RoutePaths.Payment}/*`} element={<PaymentPage />} />
+            <Route path={`${RoutePaths.PaymentError}/*`} element={<PaymentErrorPage />} />
             {/* {workspace ? <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} /> : null}
           <Route path="*" element={<Navigate to={workspace ? RoutePaths.Onboarding : RoutePaths.Connections} />} /> */}
             <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />

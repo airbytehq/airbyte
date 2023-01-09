@@ -2,11 +2,16 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { LoadingButton } from "components";
 import { Separator } from "components/Separator";
+
+import { useUser } from "core/AuthContext";
+import { getStatusAgainstStatusNumber, STATUSES } from "core/Constants/statuses";
 
 interface IProps {
   price?: number;
+  selectPlanBtnDisability: boolean;
+  paymentLoading: boolean;
   onSelectPlan?: () => void;
 }
 
@@ -42,7 +47,8 @@ const Message = styled.div`
   color: #6b6b6f;
 `;
 
-const ProcessionalCell: React.FC<IProps> = ({ price = 0, onSelectPlan }) => {
+const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability, paymentLoading, onSelectPlan }) => {
+  const { user } = useUser();
   return (
     <Container>
       <PricingContainer>
@@ -50,14 +56,23 @@ const ProcessionalCell: React.FC<IProps> = ({ price = 0, onSelectPlan }) => {
       </PricingContainer>
       <Separator />
       <Message>
-        <FormattedMessage id="feature.cell.processional.message" />
+        <FormattedMessage id="feature.cell.professional.message" />
       </Message>
       <Separator />
-      <Button full size="lg" onClick={onSelectPlan}>
-        <FormattedMessage id="feature.cell.processional.btnText" />
-      </Button>
+      <LoadingButton
+        full
+        size="lg"
+        onClick={onSelectPlan}
+        disabled={
+          ((price > 0 ? false : true) || selectPlanBtnDisability) &&
+          getStatusAgainstStatusNumber(user.status) !== STATUSES.Pause_Subscription
+        }
+        isLoading={paymentLoading}
+      >
+        <FormattedMessage id="feature.cell.professional.btnText" />
+      </LoadingButton>
     </Container>
   );
 };
 
-export default ProcessionalCell;
+export default ProfessionalCell;

@@ -1,17 +1,28 @@
-import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import _ from "lodash";
+import React, { useCallback, useEffect, useState } from "react";
+import { FormattedMessage, FormattedDate } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
 import { CalendarIcon } from "components/icons/CalendarIcon";
 import { Separator } from "components/Separator";
 
+import { useUser } from "core/AuthContext";
+import { getStatusAgainstStatusNumber, STATUSES } from "core/Constants/statuses";
+import { PlanItem, PlanItemTypeEnum } from "core/domain/payment";
+import { usePrevious } from "hooks/usePrevstate";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
+import { useAuthDetail, useAuthenticationService } from "services/auth/AuthSpecificationService";
+import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
 
 import { CancelPlanModal } from "./components/CancelPlanModal";
 import PlanClause from "./components/PlanClause";
 import styles from "./style.module.scss";
+
+interface IProps {
+  setMessageId: React.Dispatch<React.SetStateAction<string>>;
+}
 
 const CancelSubscriptionBtn = styled(Button)`
   background-color: ${({ theme }) => theme.white};
@@ -32,17 +43,90 @@ const ButtonSeparator = styled.div`
   width: 50px;
 `;
 
-const PlansBillingPage: React.FC = () => {
+export const convert_M_To_Million = (string: string): string => {
+  if (string.includes("M")) {
+    return `${string.substring(0, string.length - 1)} million`;
+  }
+  return string;
+};
+
+const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
   const { push } = useRouter();
+  const { user, updateUserStatus } = useUser();
+  const { onPauseSubscription } = useAsyncAction();
+  const authService = useAuthenticationService();
+  const authDetail = useAuthDetail();
+  const { status } = authDetail;
+  const userPlanDetail = useUserPlanDetail();
+  const prevUserPlanDetail = usePrevious(userPlanDetail);
+
+  useEffect(() => {
+    if (status && user.status !== status) {
+      updateUserStatus?.(status);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (prevUserPlanDetail?.selectedProduct !== undefined) {
+      if (!_.isEqual(userPlanDetail.selectedProduct, prevUserPlanDetail?.selectedProduct)) {
+        setMessageId?.("subscription.plan.update");
+      }
+    }
+  }, [prevUserPlanDetail, userPlanDetail]);
 
   const [toggleCancel, setToggleCancel] = useState<boolean>(false);
+  const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
 
-  const cancelPlan = () => setToggleCancel(!toggleCancel);
+  const toggleCancleSuscriptionModal = () => setToggleCancel(!toggleCancel);
+
+  const onCancelSubscription = useCallback(() => {
+    setConfirmLoading(true);
+    onPauseSubscription()
+      .then(() => {
+        authService
+          .get()
+          .then(() => {
+            updateUserStatus?.(4);
+            setConfirmLoading(false);
+            setToggleCancel(false);
+            setMessageId?.("subscription.cancel.successfull");
+          })
+          .catch(() => {
+            setConfirmLoading(false);
+          });
+      })
+      .catch(() => {
+        setConfirmLoading(false);
+      });
+  }, []);
+
   const upgradePlan = () => push(`/${RoutePaths.Payment}`);
+
+  const manipulatePlanDetail = (planItem: PlanItem): string => {
+    if (planItem.planItemType === PlanItemTypeEnum.Features) {
+      return `${planItem.planItemName}: ${convert_M_To_Million(planItem.planItemScope as string)}`;
+    } else if (planItem.planItemType === PlanItemTypeEnum.Data_Replication) {
+      return `${planItem.planItemName}: ${planItem.planItemScope}`;
+    } else if (planItem.planItemType === PlanItemTypeEnum.Support) {
+      if (planItem.planItemScope === "false") {
+        return "";
+      }
+      return `${planItem.planItemName}: ${planItem.planItemScope}`;
+    }
+    return "";
+  };
 
   return (
     <>
-      {toggleCancel && <CancelPlanModal onClose={cancelPlan} />}
+      {toggleCancel && (
+        <CancelPlanModal
+          onClose={toggleCancleSuscriptionModal}
+          onConfirm={onCancelSubscription}
+          onNotNow={toggleCancleSuscriptionModal}
+          confirmLoading={confirmLoading}
+          expiresOn={userPlanDetail.expiresTime}
+        />
+      )}
       <div className={styles.container}>
         <div className={styles.header}>
           <CalendarIcon />
@@ -55,14 +139,25 @@ const PlansBillingPage: React.FC = () => {
             <div className={styles.planTitle}>
               <FormattedMessage id="plan.type.heading" />
             </div>
-            <div className={styles.planValue}>Free trial</div>
+            <div className={styles.planValue}>
+              {userPlanDetail.name === "Free trial" ? userPlanDetail.name : `${userPlanDetail.name} plan`}
+            </div>
           </div>
           <Separator height="40px" />
           <div className={styles.rowContainer}>
             <div className={styles.planTitle}>
-              <FormattedMessage id="plan.endsOn.heading" />
+              <FormattedMessage
+                id={
+                  getStatusAgainstStatusNumber(user.status) === STATUSES.Free_Trial ||
+                  getStatusAgainstStatusNumber(user.status) === STATUSES.Pause_Subscription
+                    ? "plan.endsOn.heading"
+                    : "plan.renewsOn.heading"
+                }
+              />
             </div>
-            <div className={styles.planValue}>4 Nov 2022</div>
+            <div className={styles.planValue}>
+              <FormattedDate value={userPlanDetail.expiresTime * 1000} day="numeric" month="long" year="numeric" />
+            </div>
           </div>
           <Separator height="40px" />
           <div className={styles.planDetailContainer}>
@@ -71,37 +166,21 @@ const PlansBillingPage: React.FC = () => {
             </div>
             <div className={styles.planDetailRowContainer}>
               <div className={styles.rowContainer}>
-                <PlanClause text="Unlimited no. of rows" />
-                <PlanClause text="50 connections" />
-              </div>
-              <Separator height="20px" />
-              <div className={styles.rowContainer}>
-                <PlanClause text="Unlimited users" />
-                <PlanClause text="5 concurrent jobs" />
-              </div>
-              <Separator height="20px" />
-              <div className={styles.rowContainer}>
-                <PlanClause text="Unlimited data sources" />
-                <PlanClause text="Replication frequency: 5 mins - 24 hours" />
-              </div>
-              <Separator height="20px" />
-              <div className={styles.rowContainer}>
-                <PlanClause text="Unlimited destinations" />
-                <PlanClause text="Supported replication type: full" />
-              </div>
-              <Separator height="20px" />
-              <div className={styles.rowContainer}>
-                <PlanClause text="Standard email support" />
+                {userPlanDetail.planDetail.map((item) => (
+                  <PlanClause text={manipulatePlanDetail(item) as string} />
+                ))}
               </div>
             </div>
           </div>
         </div>
         <div className={styles.footer}>
-          <CancelSubscriptionBtn size="xl" onClick={cancelPlan}>
-            <BtnText color="#6B6B6F">
-              <FormattedMessage id="plan.cancel.btn" />
-            </BtnText>
-          </CancelSubscriptionBtn>
+          {getStatusAgainstStatusNumber(user.status) === STATUSES.Subscription && (
+            <CancelSubscriptionBtn size="xl" onClick={toggleCancleSuscriptionModal}>
+              <BtnText color="#6B6B6F">
+                <FormattedMessage id="plan.cancel.btn" />
+              </BtnText>
+            </CancelSubscriptionBtn>
+          )}
           <ButtonSeparator />
           <Button size="xl" onClick={upgradePlan}>
             <BtnText>

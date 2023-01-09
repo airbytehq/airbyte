@@ -289,4 +289,5 @@ public interface JobPersistence {
    */
   void setSchedulerMigrationDone() throws IOException;
 
+    String getConnectionName(UUID connectionId) throws IOException;
 }

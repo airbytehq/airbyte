@@ -11,7 +11,12 @@ import { JobInfo } from "core/domain/job";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { SourceRead, SynchronousJobRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import {
+  SourceRead,
+  SynchronousJobRead,
+  WebBackendConnectionRead,
+  SourceCloneRequestBody,
+} from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -134,6 +139,26 @@ const useDeleteSource = () => {
   );
 };
 
+const useCloneSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
+  const analyticsService = useAnalyticsService();
+
+  return useMutation((payload: { source: SourceCloneRequestBody }) => service.clone(payload.source), {
+    onSuccess: (data) => {
+      analyticsService.track(Namespace.SOURCE, Action.CLONE, {
+        actionDescription: "Source clone",
+        connector_source: data.name, // ctx.source.sourceConfiguration?.name,
+        connector_source_definition_id: data.sourceDefinitionId, // ctx.source.sourceDefinitionId,
+      });
+
+      queryClient.setQueryData(sourcesKeys.lists(), (lst: SourceList | undefined) => ({
+        sources: [data, ...(lst?.sources ?? [])],
+      }));
+    },
+  });
+};
+
 const useUpdateSource = () => {
   const service = useSourceService();
   const queryClient = useQueryClient();
@@ -196,4 +221,12 @@ const useDiscoverSchema = (
   return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };
 };
 
-export { useSourceList, useGetSource, useCreateSource, useDeleteSource, useUpdateSource, useDiscoverSchema };
+export {
+  useSourceList,
+  useGetSource,
+  useCreateSource,
+  useDeleteSource,
+  useCloneSource,
+  useUpdateSource,
+  useDiscoverSchema,
+};
