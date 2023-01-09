@@ -136,8 +136,9 @@ definitions:
       end_datetime:
         datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
         datetime_format: "%Y-%m-%d %H:%M:%S"
-      step: 1w
+      step: "P1W"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: "PT1S"
       cursor_field: "{{ options['stream_cursor_field'] }}"
   common_parameters:
     token: "{{ config['api_key'] }}"
