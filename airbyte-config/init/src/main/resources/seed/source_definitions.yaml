@@ -62,7 +62,7 @@
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
   dockerRepository: airbyte/source-amazon-seller-partner
-  dockerImageTag: 0.2.29
+  dockerImageTag: 0.2.30
   sourceType: api
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   icon: amazonsellerpartner.svg
@@ -458,7 +458,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.81
+  dockerImageTag: 0.2.82
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api

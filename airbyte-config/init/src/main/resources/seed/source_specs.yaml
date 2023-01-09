@@ -837,7 +837,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.29"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
@@ -902,6 +902,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
           - "2017-01-25T00:00:00Z"
+          order: 8
           type: "string"
         replication_end_date:
           title: "End Date"
@@ -910,6 +911,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$"
           examples:
           - "2017-01-25T00:00:00Z"
+          order: 9
           type: "string"
         period_in_days:
           title: "Period In Days"
@@ -920,6 +922,7 @@
           examples:
           - "30"
           - "365"
+          order: 10
           type: "integer"
         report_options:
           title: "Report Options"
@@ -929,6 +932,7 @@
           - "{\"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT\": {\"reportPeriod\": \"WEEK\"\
             }}"
           - "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
+          order: 11
           type: "string"
         max_wait_seconds:
           title: "Max wait time for reports (in seconds)"
@@ -938,6 +942,7 @@
           examples:
           - "500"
           - "1980"
+          order: 12
           type: "integer"
         aws_environment:
           title: "AWSEnvironment"
@@ -3514,7 +3519,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.81"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.82"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
