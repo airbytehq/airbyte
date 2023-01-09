@@ -1,4 +1,19 @@
-import { addStream, configureOffsetPagination, enterName, enterRecordSelector, enterStreamName, enterTestInputs, enterUrlBase, enterUrlPath, goToTestPage, goToView, openTestInputs, selectAuthMethod, submitForm, togglePagination } from "pages/connectorBuilderPage";
+import {
+  addStream,
+  configureOffsetPagination,
+  enterName,
+  enterRecordSelector,
+  enterStreamName,
+  enterTestInputs,
+  enterUrlBase,
+  enterUrlPath,
+  goToTestPage,
+  goToView,
+  openTestInputs,
+  selectAuthMethod,
+  submitForm,
+  togglePagination
+} from "pages/connectorBuilderPage";
 
 export const configureGlobals = () => {
   goToView("global");
@@ -18,7 +33,7 @@ export const configureAuth = () => {
   goToView("global");
   selectAuthMethod("Bearer");
   openTestInputs();
-  enterTestInputs({ apiKey: "theauthkey"})
+  enterTestInputs({ apiKey: "theauthkey" })
   submitForm();
 }
 

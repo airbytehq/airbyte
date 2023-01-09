@@ -8,7 +8,7 @@ Except as noted, all commands are written as if run from inside the `airbyte-web
 Steps:
 1) If you have not already done so, run `npm install` to install the e2e test dependencies.
 2) Build the OSS backend for the current commit with `SUB_BUILD=PLATFORM ../gradlew clean build`.
-3) Create the test database: `npm run createdbsource`.
+3) Create the test database: `npm run createdbsource` and `npm run createdbdestination`.
 4) When running the connector builder tests, start the dummy API server: `npm run createdummyapi`
 5) Start the OSS backend: `BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" VERSION=dev docker-compose --file ../docker-compose.yaml up`. If you want, follow this with `docker-compose stop webapp` to turn off the dockerized frontend build; interactive cypress sessions don't use it.
 6) The following two commands will start a separate long-running server, so open another terminal window. In it, `cd` into the `airbyte-webapp/` directory.
@@ -24,7 +24,15 @@ Except as noted, all commands are written as if run from inside the `airbyte-web
 Steps:
 1) If you have not already done so, run `npm install` to install the e2e test dependencies.
 2) Build the OSS backend for the current commit with `SUB_BUILD=PLATFORM ../gradlew clean build`.
-3) Create the test database: `npm run createdbsource`.
+3) Create the test database: `npm run createdbsource` and `npm run createdbdestination`.
 4) When running the connector builder tests, start the dummy API server: `npm run createdummyapi`
 5) Start the OSS backend: `BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" VERSION=dev docker-compose --file ../docker-compose.yaml up`.
 6) Start the cypress test run with `npm run cypress:ci` or `npm run cypress:ci:record`.
+
+## Test setup
+
+When the tests are run as described above, the platform under test is started via docker compose on the local docker host. To test connections from real sources and destinations, additional docker containers are started for hosting these. For basic connections, additional postgres instances are started (`createdbsource` and `createdbdestination`).
+
+For testing the connector builder UI, a dummy api server based on a node script is started (`createdummyapi`). It is providing a simple http API with bearer authentication returning a few records of hardcoded data. By running it into the internal airbyte network, the connector builder server can access it under its container name.
+
+The tests in here are instrumenting a Chrome instance to test the full functionality of Airbyte from the frontend, so other components of the platform (scheduler, worker, connector builder server) are also tested in a rudimentary way.

@@ -6,23 +6,23 @@ describe("Connector builder", () => {
     goToConnectorBuilderPage();
   });
 
-  test("Configure basic connector", () => {
+  it("Configure basic connector", () => {
     configureGlobals();
     configureStream();
   });
 
-  test("Fail on missing auth", () => {
+  it("Fail on missing auth", () => {
     testStream();
     assertTestReadAuthFailure();
   });
 
-  test("Succeed on provided auth", () => {
+  it("Succeed on provided auth", () => {
     configureAuth();
     testStream();
     assertTestReadItems();
   });
 
-  test("Pagination", () => {
+  it("Pagination", () => {
     configurePagination();
     testStream();
     assertMultiPageReadItems();
