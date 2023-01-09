@@ -9,12 +9,9 @@ import static io.airbyte.cron.MicronautCronRunner.SCHEDULED_TRACE_OPERATION_NAME
 import datadog.trace.api.Trace;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
-import io.airbyte.config.init.DefinitionsProvider;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.scheduling.annotation.Scheduled;
 import jakarta.inject.Singleton;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -29,40 +26,26 @@ import lombok.extern.slf4j.Slf4j;
           value = "true")
 public class DefinitionsUpdater {
 
-  private final ConfigRepository configRepository;
-
-  private final DefinitionsProvider definitionsProvider;
+  private final ApplyDefinitionsHelper applyDefinitionsHelper;
   private final DeploymentMode deploymentMode;
 
-  public DefinitionsUpdater(final ConfigRepository configRepository,
-                            final DeploymentMode deploymentMode,
-                            final Optional<DefinitionsProvider> definitionsProvider) {
+  public DefinitionsUpdater(final ApplyDefinitionsHelper applyDefinitionsHelper,
+                            final DeploymentMode deploymentMode) {
     log.info("Creating connector definitions updater");
 
-    this.configRepository = configRepository;
+    this.applyDefinitionsHelper = applyDefinitionsHelper;
     this.deploymentMode = deploymentMode;
-    this.definitionsProvider = definitionsProvider.orElse(null);
   }
 
   @Trace(operationName = SCHEDULED_TRACE_OPERATION_NAME)
   @Scheduled(fixedRate = "30s",
              initialDelay = "1m")
   void updateDefinitions() {
-    if (definitionsProvider == null) {
-      log.warn("Tried to update definitions, but the remote catalog url is not set");
-      return;
-    }
-
     log.info("Updating definitions...");
 
     try {
-      log.info("Retrieved remote definitions: {} sources, {} destinations",
-          definitionsProvider.getSourceDefinitions().size(),
-          definitionsProvider.getDestinationDefinitions().size());
-
       try {
-        final ApplyDefinitionsHelper applyHelper = new ApplyDefinitionsHelper(configRepository, definitionsProvider);
-        applyHelper.apply(deploymentMode == DeploymentMode.CLOUD);
+        applyDefinitionsHelper.apply(deploymentMode == DeploymentMode.CLOUD);
 
         log.info("Done applying remote connector definitions");
       } catch (final Exception e) {

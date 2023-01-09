@@ -26,6 +26,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.config.init.PostLoadExecutor;
@@ -133,8 +134,8 @@ class BootloaderTest {
       val jobsDatabaseMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       val protocolVersionChecker = new ProtocolVersionChecker(jobsPersistence, airbyteProtocolRange, configRepository, definitionsProvider);
-      val postLoadExecutor =
-          new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
+      val applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, definitionsProvider, jobsPersistence);
+      val postLoadExecutor = new DefaultPostLoadExecutor(applyDefinitionsHelper, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
 
       val bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
@@ -199,7 +200,8 @@ class BootloaderTest {
       val spiedSecretMigrator =
           spy(new SecretMigrator(secretsReader, secretsWriter, configRepository, jobsPersistence, secretsPersistence));
 
-      var postLoadExecutor = new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, null);
+      val applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, definitionsProvider, jobsPersistence);
+      var postLoadExecutor = new DefaultPostLoadExecutor(applyDefinitionsHelper, mockedFeatureFlags, jobsPersistence, null);
 
       // Bootstrap the database for the test
       val initBootloader =
@@ -244,7 +246,7 @@ class BootloaderTest {
 
       when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);
 
-      postLoadExecutor = new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, spiedSecretMigrator);
+      postLoadExecutor = new DefaultPostLoadExecutor(applyDefinitionsHelper, mockedFeatureFlags, jobsPersistence, spiedSecretMigrator);
 
       // Perform secrets migration
       var bootloader =
@@ -319,8 +321,9 @@ class BootloaderTest {
       val jobsDatabaseMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
       val protocolVersionChecker = new ProtocolVersionChecker(jobsPersistence, airbyteProtocolRange, configRepository, definitionsProvider);
+      val applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, definitionsProvider, jobsPersistence);
       val postLoadExecutor =
-          new DefaultPostLoadExecutor(configRepository, definitionsProvider, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
+          new DefaultPostLoadExecutor(applyDefinitionsHelper, mockedFeatureFlags, jobsPersistence, mockedSecretMigrator);
 
       val bootloader =
           new Bootloader(false, configRepository, configDatabaseInitializer, configsDatabaseMigrator, currentAirbyteVersion,
