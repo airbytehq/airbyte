@@ -469,6 +469,7 @@ public class TemporalClient {
 
   public ConnectionManagerWorkflow submitConnectionUpdaterAsync(final UUID connectionId) {
     log.info("Starting the scheduler temporal wf");
+    log.info("submitConnectionUpdaterAsync connection id: " + connectionId);
     final ConnectionManagerWorkflow connectionManagerWorkflow =
         connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
     try {
