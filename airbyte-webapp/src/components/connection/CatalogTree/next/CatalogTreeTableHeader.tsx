@@ -80,9 +80,6 @@ export const CatalogTreeTableHeader: React.FC = () => {
       <HeaderCell size="small">
         <FormattedMessage id="sources.sync" />
       </HeaderCell>
-      {/* <TextCell>
-        <FormattedMessage id="form.fields" />
-      </TextCell> */}
       <HeaderCell>
         <FormattedMessage id="form.namespace" />
       </HeaderCell>

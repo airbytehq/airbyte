@@ -8,6 +8,7 @@ type Sizes = "xsmall" | "small" | "medium" | "large";
 interface CatalogTreeTableCellProps {
   size?: Sizes;
   className?: string;
+  withTooltip?: boolean;
 }
 
 // This lets us avoid the eslint complaint about unused styles
@@ -20,8 +21,19 @@ const sizeMap: Record<Sizes, string> = {
 
 export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeTableCellProps>> = ({
   size = "medium",
+  withTooltip,
   className,
   children,
 }) => {
-  return <div className={classNames(styles.tableCell, className, sizeMap[size])}>{children}</div>;
+  const style = classNames(styles.tableCell, className, sizeMap[size]);
+  // if (withTooltip) {
+  //   return (
+  //     <div className={style}>
+  //       <Tooltip className={style} control={children} theme="light" placement="top-start">
+  //         {children}
+  //       </Tooltip>
+  //     </div>
+  //   );
+  // }
+  return <div className={style}>{children}</div>;
 };
