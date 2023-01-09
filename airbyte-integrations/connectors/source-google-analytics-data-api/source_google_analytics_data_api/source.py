@@ -296,6 +296,10 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
 
         today: datetime.date = datetime.date.today()
         start_date: datetime.date = self.state[self.cursor_field]
+        
+        # always resync 2 previous days to be sure data is golden
+        # https://support.google.com/analytics/answer/9333790?hl=en
+        start_date: datetime.date = start_date - datetime.timedelta(days=2)
 
         timedelta: int = self.config["window_in_days"] or self._default_window_in_days
 
