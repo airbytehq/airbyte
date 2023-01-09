@@ -71,6 +71,7 @@ jobs:
               - 'buildSrc/**'
               - 'tools/**'
               - '*.gradle'
+              - 'deps.toml'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
