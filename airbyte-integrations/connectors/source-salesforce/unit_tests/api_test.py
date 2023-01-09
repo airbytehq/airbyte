@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -45,14 +45,11 @@ def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stre
         "POST",
         "https://fase-account.salesforce.com/services/data/v52.0/jobs/query",
         status_code=400,
-        json=[{
-            "errorCode": "INVALIDENTITY",
-            "message": "CustomEntity is not supported by the Bulk API"
-        }]
+        json=[{"errorCode": "INVALIDENTITY", "message": "CustomEntity is not supported by the Bulk API"}],
     )
     rest_stream_records = [
         {"id": 1, "name": "custom entity", "created": "2010-11-11"},
-        {"id": 11, "name": "custom entity", "created": "2020-01-02"}
+        {"id": 11, "name": "custom entity", "created": "2020-01-02"},
     ]
     # mock REST API
     mocker.patch("source_salesforce.source.SalesforceStream.read_records", Mock(return_value=rest_stream_records))
