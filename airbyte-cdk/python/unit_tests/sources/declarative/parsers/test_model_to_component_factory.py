@@ -16,6 +16,8 @@ from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CartesianProductStreamSlicer as CartesianProductStreamSlicerModel
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
+from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
+from airbyte_cdk.sources.declarative.models import CustomStreamSlicer as CustomStreamSlicerModel
 from airbyte_cdk.sources.declarative.models import DatetimeStreamSlicer as DatetimeStreamSlicerModel
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
@@ -38,7 +40,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
@@ -55,6 +57,7 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFie
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from dateutil.relativedelta import relativedelta
+from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamSlicer, TestingSomeComponent
 
 factory = ModelToComponentFactory()
 
@@ -180,12 +183,12 @@ spec:
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
     resolved_manifest["type"] = "DeclarativeSource"
-    config = transformer.propagate_types_and_options("", resolved_manifest, {})
+    manifest = transformer.propagate_types_and_options("", resolved_manifest, {})
 
-    stream_config = config["list_stream"]
-    assert stream_config["type"] == "DeclarativeStream"
-    assert stream_config["cursor_field"] == []
-    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_config, config=input_config)
+    stream_manifest = manifest["list_stream"]
+    assert stream_manifest["type"] == "DeclarativeStream"
+    assert stream_manifest["cursor_field"] == []
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
     assert isinstance(stream, DeclarativeStream)
     assert stream.primary_key == "id"
@@ -238,14 +241,14 @@ spec:
     assert isinstance(stream.retriever.requester.request_options_provider, InterpolatedRequestOptionsProvider)
     assert stream.retriever.requester.request_options_provider.request_parameters.get("unit") == "day"
 
-    checker = factory.create_component(model_type=CheckStreamModel, component_definition=config["check"], config=input_config)
+    checker = factory.create_component(model_type=CheckStreamModel, component_definition=manifest["check"], config=input_config)
 
     assert isinstance(checker, CheckStream)
     streams_to_check = checker.stream_names
     assert len(streams_to_check) == 1
     assert list(streams_to_check)[0] == "list_stream"
 
-    spec = factory.create_component(model_type=SpecModel, component_definition=config["spec"], config=input_config)
+    spec = factory.create_component(model_type=SpecModel, component_definition=manifest["spec"], config=input_config)
 
     assert isinstance(spec, Spec)
     documentation_url = spec.documentation_url
@@ -276,10 +279,10 @@ def test_interpolate_config():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    authenticator_config = transformer.propagate_types_and_options("", resolved_manifest["authenticator"], {})
+    authenticator_manifest = transformer.propagate_types_and_options("", resolved_manifest["authenticator"], {})
 
     authenticator = factory.create_component(
-        model_type=OAuthAuthenticatorModel, component_definition=authenticator_config, config=input_config
+        model_type=OAuthAuthenticatorModel, component_definition=authenticator_manifest, config=input_config
     )
 
     assert isinstance(authenticator, DeclarativeOauth2Authenticator)
@@ -301,9 +304,9 @@ def test_list_based_stream_slicer_with_values_refd():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    slicer_config = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
-    stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_config, config=input_config)
+    stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
     assert isinstance(stream_slicer, ListStreamSlicer)
     assert stream_slicer.slice_values == ["airbyte", "airbyte-cloud"]
@@ -321,9 +324,9 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    slicer_config = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
-    stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_config, config=input_config)
+    stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
     assert isinstance(stream_slicer, ListStreamSlicer)
     assert stream_slicer.slice_values == ["airbyte", "airbyte-cloud"]
@@ -375,9 +378,9 @@ def test_create_substream_slicer():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    slicer_config = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
-    stream_slicer = factory.create_component(model_type=SubstreamSlicerModel, component_definition=slicer_config, config=input_config)
+    stream_slicer = factory.create_component(model_type=SubstreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
     assert isinstance(stream_slicer, SubstreamSlicer)
     parent_stream_configs = stream_slicer.parent_stream_configs
@@ -415,10 +418,10 @@ def test_create_cartesian_stream_slicer():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    slicer_config = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(
-        model_type=CartesianProductStreamSlicerModel, component_definition=slicer_config, config=input_config
+        model_type=CartesianProductStreamSlicerModel, component_definition=slicer_manifest, config=input_config
     )
 
     assert isinstance(stream_slicer, CartesianProductStreamSlicer)
@@ -459,9 +462,11 @@ def test_datetime_stream_slicer():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    slicer_config = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
-    stream_slicer = factory.create_component(model_type=DatetimeStreamSlicerModel, component_definition=slicer_config, config=input_config)
+    stream_slicer = factory.create_component(
+        model_type=DatetimeStreamSlicerModel, component_definition=slicer_manifest, config=input_config
+    )
 
     assert isinstance(stream_slicer, DatetimeStreamSlicer)
     assert stream_slicer._timezone == datetime.timezone.utc
@@ -506,9 +511,9 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    selector_config = transformer.propagate_types_and_options("", resolved_manifest["selector"], {})
+    selector_manifest = transformer.propagate_types_and_options("", resolved_manifest["selector"], {})
 
-    selector = factory.create_component(model_type=RecordSelectorModel, component_definition=selector_config, config=input_config)
+    selector = factory.create_component(model_type=RecordSelectorModel, component_definition=selector_manifest, config=input_config)
 
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
@@ -584,9 +589,9 @@ requester:
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    requester_config = transformer.propagate_types_and_options("", resolved_manifest["requester"], {})
+    requester_manifest = transformer.propagate_types_and_options("", resolved_manifest["requester"], {})
 
-    selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_config, config=input_config)
+    selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config)
 
     assert isinstance(selector, HttpRequester)
     assert selector._method == HttpMethod.GET
@@ -621,10 +626,10 @@ def test_create_composite_error_handler():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    error_handler_config = transformer.propagate_types_and_options("", resolved_manifest["error_handler"], {})
+    error_handler_manifest = transformer.propagate_types_and_options("", resolved_manifest["error_handler"], {})
 
     error_handler = factory.create_component(
-        model_type=CompositeErrorHandlerModel, component_definition=error_handler_config, config=input_config
+        model_type=CompositeErrorHandlerModel, component_definition=error_handler_manifest, config=input_config
     )
 
     assert isinstance(error_handler, CompositeErrorHandler)
@@ -683,9 +688,9 @@ def test_config_with_defaults():
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
     resolved_manifest["type"] = "DeclarativeSource"
-    stream_config = transformer.propagate_types_and_options("", resolved_manifest["lists_stream"], {})
+    stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["lists_stream"], {})
 
-    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_config, config=input_config)
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
     assert isinstance(stream, DeclarativeStream)
     assert stream.primary_key == "id"
@@ -728,9 +733,9 @@ def test_create_default_paginator():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
-    paginator_config = transformer.propagate_types_and_options("", resolved_manifest["paginator"], {})
+    paginator_manifest = transformer.propagate_types_and_options("", resolved_manifest["paginator"], {})
 
-    paginator = factory.create_component(model_type=DefaultPaginatorModel, component_definition=paginator_config, config=input_config)
+    paginator = factory.create_component(model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config)
 
     assert isinstance(paginator, DefaultPaginator)
     assert paginator.url_base.string == "https://airbyte.io"
@@ -745,6 +750,177 @@ def test_create_default_paginator():
 
     assert isinstance(paginator.page_token_option, RequestOption)
     assert paginator.page_token_option.inject_into == RequestOptionType.path
+
+
+@pytest.mark.parametrize(
+    "manifest, field_name, expected_value",
+    [
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
+                "subcomponent_field_with_hint": {"type": "DpathExtractor", "field_pointer": []},
+            },
+            "subcomponent_field_with_hint",
+            DpathExtractor(field_pointer=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, options={}),
+            id="test_create_custom_component_with_subcomponent_that_must_be_parsed",
+        ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
+                "subcomponent_field_with_hint": {"field_pointer": []},
+            },
+            "subcomponent_field_with_hint",
+            DpathExtractor(field_pointer=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, options={}),
+            id="test_create_custom_component_with_subcomponent_that_must_infer_type_from_explicit_hints",
+        ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
+                "basic_field": "expected",
+            },
+            "basic_field",
+            "expected",
+            id="test_create_custom_component_with_built_in_type",
+        ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
+                "optional_subcomponent_field": {"inject_into": "path"},
+            },
+            "optional_subcomponent_field",
+            RequestOption(inject_into=RequestOptionType.path, options={}),
+            id="test_create_custom_component_with_subcomponent_wrapped_in_optional",
+        ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
+                "list_of_subcomponents": [
+                    {"inject_into": "header", "field_name": "store_me"},
+                    {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "destination"},
+                ],
+            },
+            "list_of_subcomponents",
+            [
+                RequestOption(inject_into=RequestOptionType.header, field_name="store_me", options={}),
+                RequestOption(inject_into=RequestOptionType.request_parameter, field_name="destination", options={}),
+            ],
+            id="test_create_custom_component_with_subcomponent_wrapped_in_list",
+        ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
+                "without_hint": {"inject_into": "request_parameter", "field_name": "missing_hint"},
+            },
+            "without_hint",
+            None,
+            id="test_create_custom_component_with_subcomponent_without_type_hints",
+        ),
+    ],
+)
+def test_create_custom_components(manifest, field_name, expected_value):
+    custom_component = factory.create_component(CustomErrorHandlerModel, manifest, input_config)
+    assert isinstance(custom_component, TestingSomeComponent)
+
+    assert isinstance(getattr(custom_component, field_name), type(expected_value))
+    assert getattr(custom_component, field_name) == expected_value
+
+
+def test_custom_components_do_not_contain_extra_fields():
+    custom_substream_slicer_manifest = {
+        "type": "CustomStreamSlicer",
+        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamSlicer",
+        "custom_field": "here",
+        "extra_field_to_exclude": "should_not_pass_as_parameter",
+        "custom_pagination_strategy": {"type": "PageIncrement", "page_size": 100},
+        "parent_stream_configs": [
+            {
+                "type": "ParentStreamConfig",
+                "stream": {
+                    "type": "DeclarativeStream",
+                    "name": "a_parent",
+                    "primary_key": "id",
+                    "retriever": {
+                        "type": "SimpleRetriever",
+                        "name": "a_parent",
+                        "primary_key": "id",
+                        "record_selector": {
+                            "type": "RecordSelector",
+                            "extractor": {"type": "DpathExtractor", "field_pointer": []},
+                        },
+                        "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
+                    },
+                    "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": "./source_sendgrid/schemas/{{ options['name'] }}.yaml"},
+                },
+                "parent_key": "id",
+                "stream_slice_field": "repository_id",
+                "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
+            }
+        ],
+    }
+
+    custom_substream_slicer = factory.create_component(CustomStreamSlicerModel, custom_substream_slicer_manifest, input_config)
+    assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
+
+    assert len(custom_substream_slicer.parent_stream_configs) == 1
+    assert custom_substream_slicer.parent_stream_configs[0].parent_key == "id"
+    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
+    assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
+
+    assert isinstance(custom_substream_slicer.custom_pagination_strategy, PageIncrement)
+    assert custom_substream_slicer.custom_pagination_strategy.page_size == 100
+
+
+def test_parse_custom_component_fields_if_subcomponent():
+    custom_substream_slicer_manifest = {
+        "type": "CustomStreamSlicer",
+        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamSlicer",
+        "custom_field": "here",
+        "custom_pagination_strategy": {"type": "PageIncrement", "page_size": 100},
+        "parent_stream_configs": [
+            {
+                "type": "ParentStreamConfig",
+                "stream": {
+                    "type": "DeclarativeStream",
+                    "name": "a_parent",
+                    "primary_key": "id",
+                    "retriever": {
+                        "type": "SimpleRetriever",
+                        "name": "a_parent",
+                        "primary_key": "id",
+                        "record_selector": {
+                            "type": "RecordSelector",
+                            "extractor": {"type": "DpathExtractor", "field_pointer": []},
+                        },
+                        "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
+                    },
+                    "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": "./source_sendgrid/schemas/{{ options['name'] }}.yaml"},
+                },
+                "parent_key": "id",
+                "stream_slice_field": "repository_id",
+                "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
+            }
+        ],
+    }
+
+    custom_substream_slicer = factory.create_component(CustomStreamSlicerModel, custom_substream_slicer_manifest, input_config)
+    assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
+    assert custom_substream_slicer.custom_field == "here"
+
+    assert len(custom_substream_slicer.parent_stream_configs) == 1
+    assert custom_substream_slicer.parent_stream_configs[0].parent_key == "id"
+    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
+    assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
+
+    assert isinstance(custom_substream_slicer.custom_pagination_strategy, PageIncrement)
+    assert custom_substream_slicer.custom_pagination_strategy.page_size == 100
 
 
 class TestCreateTransformations:
@@ -777,9 +953,9 @@ class TestCreateTransformations:
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
         resolved_manifest["type"] = "DeclarativeSource"
-        stream_config = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
+        stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
 
-        stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_config, config=input_config)
+        stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
         assert isinstance(stream, DeclarativeStream)
         assert [] == stream.transformations
@@ -799,9 +975,9 @@ class TestCreateTransformations:
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
         resolved_manifest["type"] = "DeclarativeSource"
-        stream_config = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
+        stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
 
-        stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_config, config=input_config)
+        stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
         assert isinstance(stream, DeclarativeStream)
         expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], options={})]
@@ -822,9 +998,9 @@ class TestCreateTransformations:
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
         resolved_manifest["type"] = "DeclarativeSource"
-        stream_config = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
+        stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
 
-        stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_config, config=input_config)
+        stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
         assert isinstance(stream, DeclarativeStream)
         expected = [

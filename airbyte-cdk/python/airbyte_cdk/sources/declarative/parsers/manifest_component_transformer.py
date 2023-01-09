@@ -55,7 +55,11 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # AddFields
     "AddFields.fields": "AddedFieldDefinition",
     # CustomStreamSlicer
+    "CustomStreamSlicer.end_datetime": "MinMaxDatetime",
+    "CustomStreamSlicer.end_time_option": "RequestOption",
     "CustomStreamSlicer.parent_stream_configs": "ParentStreamConfig",
+    "CustomStreamSlicer.start_datetime": "MinMaxDatetime",
+    "CustomStreamSlicer.start_time_option": "RequestOption",
 }
 
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to

@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import importlib
-from typing import Any, Callable, List, Literal, Mapping, Type, Union, get_type_hints
+from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
@@ -34,6 +34,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomBackoffStrategy as CustomBackoffStrategyModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
@@ -109,34 +110,49 @@ ComponentDefinition: Union[Literal, Mapping, List]
 DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
 
+class ModelToComponentFactory:
+    @staticmethod
+    def create_component(model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config) -> type:
+        component_type = component_definition.get("type")
+        if component_definition.get("type") != model_type.__name__:
+            raise ValueError(f"Expected manifest component of type {model_type}, but received {component_type} instead")
+
+        declarative_component_model = model_type.parse_obj(component_definition)
+
+        if not isinstance(declarative_component_model, model_type):
+            raise ValueError(f"Expected DeclarativeStream component, but received {declarative_component_model.__class__.__name__}")
+
+        return create_component_from_model(model=declarative_component_model, config=config)
+
+
 def create_component_from_model(model: BaseModel, config: Config, **kwargs) -> Any:
     if model.__class__ not in PYDANTIC_MODEL_TO_CONSTRUCTOR:
         raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
     component_constructor = PYDANTIC_MODEL_TO_CONSTRUCTOR.get(model.__class__)
-    return component_constructor(model=model, config=config, **kwargs)  # todo tbd check this
+    return component_constructor(model=model, config=config, **kwargs)
 
 
-def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config) -> AddedFieldDefinition:
+def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config, **kwargs) -> AddedFieldDefinition:
     interpolated_value = InterpolatedString.create(model.value, options=model.options)
     return AddedFieldDefinition(path=model.path, value=interpolated_value, options=model.options)
 
 
-def create_add_fields(model: AddFieldsModel, config: Config) -> AddFields:
+def create_add_fields(model: AddFieldsModel, config: Config, **kwargs) -> AddFields:
     added_field_definitions = [
         create_component_from_model(model=added_field_definition_model, config=config) for added_field_definition_model in model.fields
     ]
     return AddFields(fields=added_field_definitions, options=model.options)
 
 
-def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config) -> ApiKeyAuthenticator:
+def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config, **kwargs) -> ApiKeyAuthenticator:
     return ApiKeyAuthenticator(api_token=model.api_token, header=model.header, config=config, options=model.options)
 
 
-def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config) -> BasicHttpAuthenticator:
+def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs) -> BasicHttpAuthenticator:
     return BasicHttpAuthenticator(password=model.password, username=model.username, config=config, options=model.options)
 
 
-def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config) -> BearerAuthenticator:
+def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config, **kwargs) -> BearerAuthenticator:
     return BearerAuthenticator(
         api_token=model.api_token,
         config=config,
@@ -144,16 +160,16 @@ def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config)
     )
 
 
-def create_cartesian_product_slicer(model: CartesianProductStreamSlicerModel, config: Config) -> CartesianProductStreamSlicer:
+def create_cartesian_product_slicer(model: CartesianProductStreamSlicerModel, config: Config, **kwargs) -> CartesianProductStreamSlicer:
     stream_slicers = [create_component_from_model(model=stream_slicer_model, config=config) for stream_slicer_model in model.stream_slicers]
     return CartesianProductStreamSlicer(stream_slicers=stream_slicers, options=model.options)
 
 
-def create_check_stream(model: CheckStreamModel, config: Config):
+def create_check_stream(model: CheckStreamModel, config: Config, **kwargs):
     return CheckStream(model.stream_names, options={})
 
 
-def create_composite_error_handler(model: CompositeErrorHandlerModel, config: Config) -> CompositeErrorHandler:
+def create_composite_error_handler(model: CompositeErrorHandlerModel, config: Config, **kwargs) -> CompositeErrorHandler:
     error_handlers = []
     if model.error_handlers:
         for error_handler_model in model.error_handlers:
@@ -161,7 +177,7 @@ def create_composite_error_handler(model: CompositeErrorHandlerModel, config: Co
     return CompositeErrorHandler(error_handlers=error_handlers, options=model.options)
 
 
-def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config) -> ConstantBackoffStrategy:
+def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config, **kwargs) -> ConstantBackoffStrategy:
     return ConstantBackoffStrategy(
         backoff_time_in_seconds=model.backoff_time_in_seconds,
         config=config,
@@ -169,7 +185,7 @@ def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config
     )
 
 
-def create_cursor_pagination(model: CursorPaginationModel, config: Config) -> CursorPaginationStrategy:
+def create_cursor_pagination(model: CursorPaginationModel, config: Config, **kwargs) -> CursorPaginationStrategy:
     if model.decoder:
         decoder = create_component_from_model(model=model.decoder, config=config)
     else:
@@ -185,7 +201,7 @@ def create_cursor_pagination(model: CursorPaginationModel, config: Config) -> Cu
     )
 
 
-def create_custom_component(model, config: Config) -> type:
+def create_custom_component(model, config: Config, **kwargs) -> type:
     """
     Generically creates a custom component based on the model type and a class_name reference to the custom Python class being
     instantiated. Only the model's additional properties that match the custom class definition are passed to the constructor
@@ -198,20 +214,31 @@ def create_custom_component(model, config: Config) -> type:
     component_fields = get_type_hints(custom_component_class)
     model_args = model.dict()
     model_args["config"] = config
-    model_args["options"] = model_args.pop("$options", {})
 
-    # todo: we may need to investigate if we can pull type hints to figure out field types, otherwise type will always need to be defined
+    # The initial pydantic parse_obj() parsed handles the alias of $options -> options, but since it cannot parse dynamic custom
+    # component fields, this needs to be remapped manually
+    model_args["options"] = model_args.pop("$options", {})
 
     # Pydantic is unable to parse a custom component's fields that are subcomponents into models because their fields and types are not
     # defined in the schema. The fields and types are defined within the Python class implementation. Pydantic can only parse down to
     # the custom component and this code performs a second parse to convert the sub-fields first into models, then declarative components
     for model_field, model_value in model_args.items():
-        if _is_component(model_field, model_value):
+        # If a custom component field doesn't have a type set, we try to use the type hints to infer the type
+        if isinstance(model_value, dict) and "type" not in model_value and model_field in component_fields:
+            derived_type = derive_component_type_from_type_hints(component_fields.get(model_field))
+            if derived_type:
+                model_value["type"] = derived_type
+
+        if _is_component(model_value):
             model_args[model_field] = _create_nested_component(model, model_field, model_value, config)
         elif isinstance(model_value, list):
             vals = []
             for v in model_value:
-                if _is_component(model_field, v):
+                if isinstance(v, dict) and "type" not in v and model_field in component_fields:
+                    derived_type = derive_component_type_from_type_hints(component_fields.get(model_field))
+                    if derived_type:
+                        v["type"] = derived_type
+                if _is_component(v):
                     vals.append(_create_nested_component(model, model_field, v, config))
             model_args[model_field] = vals
 
@@ -219,12 +246,35 @@ def create_custom_component(model, config: Config) -> type:
     return custom_component_class(**kwargs)
 
 
+def derive_component_type_from_type_hints(field_type: str) -> Optional[str]:
+    interface = field_type
+    while True:
+        origin = get_origin(interface)
+        if origin:
+            # Unnest types until we reach the raw type
+            # List[T] -> T
+            # Optional[List[T]] -> T
+            args = get_args(interface)
+            interface = args[0]
+        else:
+            break
+    if isinstance(interface, type) and not is_builtin_type(interface):
+        return interface.__name__
+    return None
+
+
+def is_builtin_type(cls) -> bool:
+    if not cls:
+        return False
+    return cls.__module__ == "builtins"
+
+
 def _create_nested_component(model, model_field: str, model_value: Any, config: Config) -> Any:
     type_name = model_value.get("type", None)
-    if not type_name:
-        raise ValueError(
-            f"Error while parsing custom component {model.class_name}. Subcomponent field '{model_field}' should have a 'type' specified"
-        )
+    # if not type_name:
+    #     raise ValueError(
+    #         f"Error while parsing custom component {model.class_name}. Subcomponent field '{model_field}' should have a 'type' specified"
+    #     )
     model_type = TYPE_NAME_TO_MODEL.get(type_name, None)
     if model_type:
         parsed_model = model_type.parse_obj(model_value)
@@ -235,11 +285,11 @@ def _create_nested_component(model, model_field: str, model_value: Any, config: 
         )
 
 
-def _is_component(model_field: str, model_value: Any) -> bool:
-    return isinstance(model_value, dict) and model_field != "options" and model_field != "config"
+def _is_component(model_value: Any) -> bool:
+    return isinstance(model_value, dict) and model_value.get("type")
 
 
-def create_datetime_stream_slicer(model: DatetimeStreamSlicerModel, config: Config) -> DatetimeStreamSlicer:
+def create_datetime_stream_slicer(model: DatetimeStreamSlicerModel, config: Config, **kwargs) -> DatetimeStreamSlicer:
     start_datetime = (
         model.start_datetime if isinstance(model.start_datetime, str) else create_min_max_datetime(model.start_datetime, config)
     )
@@ -280,7 +330,7 @@ def create_datetime_stream_slicer(model: DatetimeStreamSlicerModel, config: Conf
     )
 
 
-def create_declarative_stream(model: DeclarativeStreamModel, config: Config) -> DeclarativeStream:
+def create_declarative_stream(model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
     retriever = create_component_from_model(model=model.retriever, config=config)
 
     if model.schema_loader:
@@ -305,7 +355,7 @@ def create_declarative_stream(model: DeclarativeStreamModel, config: Config) -> 
     )
 
 
-def create_default_error_handler(model: DefaultErrorHandlerModel, config: Config) -> DefaultErrorHandler:
+def create_default_error_handler(model: DefaultErrorHandlerModel, config: Config, **kwargs) -> DefaultErrorHandler:
     backoff_strategies = []
     if model.backoff_strategies:
         for backoff_strategy_model in model.backoff_strategies:
@@ -340,22 +390,18 @@ def create_default_paginator(model: DefaultPaginatorModel, config: Config, **kwa
     page_token_option = create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
     pagination_strategy = create_component_from_model(model=model.pagination_strategy, config=config)
 
-    url_base = (
-        kwargs["url_base"] if "url_base" in kwargs else model.url_base
-    )  # todo remove this later, just want to spike an example of passing args from another components fields
-
     return DefaultPaginator(
         decoder=decoder,
         page_size_option=page_size_option,
         page_token_option=page_token_option,
         pagination_strategy=pagination_strategy,
-        url_base=url_base,
+        url_base=model.url_base,
         config=config,
         options=model.options,
     )
 
 
-def create_dpath_extractor(model: DpathExtractorModel, config: Config) -> DpathExtractor:
+def create_dpath_extractor(model: DpathExtractorModel, config: Config, **kwargs) -> DpathExtractor:
     decoder = create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder(options={})
     return DpathExtractor(decoder=decoder, field_pointer=model.field_pointer, config=config, options=model.options)
 
@@ -364,7 +410,7 @@ def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, 
     return ExponentialBackoffStrategy(factor=model.factor, options=model.options, config=config)
 
 
-def create_http_requester(model: HttpRequesterModel, config: Config) -> HttpRequester:
+def create_http_requester(model: HttpRequesterModel, config: Config, **kwargs) -> HttpRequester:
     authenticator = create_component_from_model(model=model.authenticator, config=config) if model.authenticator else None
     error_handler = (
         create_component_from_model(model=model.error_handler, config=config)
@@ -388,7 +434,7 @@ def create_http_requester(model: HttpRequesterModel, config: Config) -> HttpRequ
     )
 
 
-def create_http_response_filter(model: HttpResponseFilterModel, config: Config) -> HttpResponseFilter:
+def create_http_response_filter(model: HttpResponseFilterModel, config: Config, **kwargs) -> HttpResponseFilter:
     action = ResponseAction(model.action.value)
     http_codes = (
         set(model.http_codes) if model.http_codes else set()
@@ -404,12 +450,12 @@ def create_http_response_filter(model: HttpResponseFilterModel, config: Config) 
     )
 
 
-def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config) -> InlineSchemaLoader:
+def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs) -> InlineSchemaLoader:
     return InlineSchemaLoader(schema=model.schema_, options={})
 
 
 def create_interpolated_request_options_provider(
-    model: InterpolatedRequestOptionsProviderModel, config: Config
+    model: InterpolatedRequestOptionsProviderModel, config: Config, **kwargs
 ) -> InterpolatedRequestOptionsProvider:
     return InterpolatedRequestOptionsProvider(
         request_body_data=model.request_body_data,
@@ -421,15 +467,15 @@ def create_interpolated_request_options_provider(
     )
 
 
-def create_json_decoder(model: JsonDecoderModel, config: Config) -> JsonDecoder:
+def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs) -> JsonDecoder:
     return JsonDecoder(options={})
 
 
-def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config) -> JsonFileSchemaLoader:
+def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs) -> JsonFileSchemaLoader:
     return JsonFileSchemaLoader(file_path=model.file_path, config=config, options=model.options)
 
 
-def create_list_stream_slicer(model: ListStreamSlicerModel, config: Config) -> ListStreamSlicer:
+def create_list_stream_slicer(model: ListStreamSlicerModel, config: Config, **kwargs) -> ListStreamSlicer:
     request_option = (
         RequestOption(
             inject_into=RequestOptionType(model.request_option.inject_into.value),
@@ -448,7 +494,7 @@ def create_list_stream_slicer(model: ListStreamSlicerModel, config: Config) -> L
     )
 
 
-def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config) -> MinMaxDatetime:
+def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config, **kwargs) -> MinMaxDatetime:
     return MinMaxDatetime(
         datetime=model.datetime,
         datetime_format=model.datetime_format,
@@ -458,7 +504,7 @@ def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config) -> MinMa
     )
 
 
-def create_no_auth(model: NoAuthModel, config: Config) -> NoAuth:
+def create_no_auth(model: NoAuthModel, config: Config, **kwargs) -> NoAuth:
     return NoAuth(options=model.options)
 
 
@@ -466,7 +512,7 @@ def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> 
     return NoPagination(options={})
 
 
-def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config) -> DeclarativeOauth2Authenticator:
+def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
     return DeclarativeOauth2Authenticator(
         access_token_name=model.access_token_name,
         client_id=model.client_id,
@@ -484,15 +530,15 @@ def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config) -
     )
 
 
-def create_offset_increment(model: OffsetIncrementModel, config: Config) -> OffsetIncrement:
+def create_offset_increment(model: OffsetIncrementModel, config: Config, **kwargs) -> OffsetIncrement:
     return OffsetIncrement(page_size=model.page_size, config=config, options=model.options)
 
 
-def create_page_increment(model: PageIncrementModel, config: Config) -> PageIncrement:
+def create_page_increment(model: PageIncrementModel, config: Config, **kwargs) -> PageIncrement:
     return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page, options=model.options)
 
 
-def create_parent_stream_config(model: ParentStreamConfigModel, config: Config) -> ParentStreamConfig:
+def create_parent_stream_config(model: ParentStreamConfigModel, config: Config, **kwargs) -> ParentStreamConfig:
     declarative_stream = create_component_from_model(model.stream, config=config)
     request_option = create_component_from_model(model.request_option, config=config) if model.request_option else None
     return ParentStreamConfig(
@@ -504,27 +550,27 @@ def create_parent_stream_config(model: ParentStreamConfigModel, config: Config) 
     )
 
 
-def create_record_filter(model: RecordFilterModel, config: Config) -> RecordFilter:
+def create_record_filter(model: RecordFilterModel, config: Config, **kwargs) -> RecordFilter:
     return RecordFilter(condition=model.condition, config=config, options=model.options)
 
 
-def create_request_option(model: RequestOptionModel, config: Config) -> RequestOption:
+def create_request_option(model: RequestOptionModel, config: Config, **kwargs) -> RequestOption:
     inject_into = RequestOptionType(model.inject_into.value)
     return RequestOption(field_name=model.field_name, inject_into=inject_into, options={})
 
 
-def create_record_selector(model: RecordSelectorModel, config: Config) -> RecordSelector:
+def create_record_selector(model: RecordSelectorModel, config: Config, **kwargs) -> RecordSelector:
     extractor = create_component_from_model(model=model.extractor, config=config)
     record_filter = create_component_from_model(model.record_filter, config=config) if model.record_filter else None
 
     return RecordSelector(extractor=extractor, record_filter=record_filter, options=model.options)
 
 
-def create_remove_fields(model: RemoveFieldsModel, config: Config) -> RemoveFields:
+def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs) -> RemoveFields:
     return RemoveFields(field_pointers=model.field_pointers, options={})
 
 
-def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, config: Config) -> SessionTokenAuthenticator:
+def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, config: Config, **kwargs) -> SessionTokenAuthenticator:
     return SessionTokenAuthenticator(
         api_url=model.api_url,
         header=model.header,
@@ -539,7 +585,7 @@ def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, co
     )
 
 
-def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> SimpleRetriever:
+def create_simple_retriever(model: SimpleRetrieverModel, config: Config, **kwargs) -> SimpleRetriever:
     requester = create_component_from_model(model=model.requester, config=config)
     record_selector = create_component_from_model(model=model.record_selector, config=config)
     paginator = (
@@ -554,7 +600,7 @@ def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> Simp
     return SimpleRetriever(
         name=model.name,
         paginator=paginator,
-        primary_key=model.primary_key.__root__,
+        primary_key=model.primary_key.__root__ if model.primary_key else None,
         requester=requester,
         record_selector=record_selector,
         stream_slicer=stream_slicer,
@@ -563,15 +609,15 @@ def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> Simp
     )
 
 
-def create_single_slice(model: SingleSliceModel, config: Config) -> SingleSlice:
+def create_single_slice(model: SingleSliceModel, config: Config, **kwargs) -> SingleSlice:
     return SingleSlice(options={})
 
 
-def create_spec(model: SpecModel, config: Config) -> Spec:
+def create_spec(model: SpecModel, config: Config, **kwargs) -> Spec:
     return Spec(connection_specification=model.connection_specification, documentation_url=model.documentation_url, options={})
 
 
-def create_substream_slicer(model: SubstreamSlicerModel, config: Config) -> SubstreamSlicer:
+def create_substream_slicer(model: SubstreamSlicerModel, config: Config, **kwargs) -> SubstreamSlicer:
     parent_stream_configs = []
     if model.parent_stream_configs:
         parent_stream_configs.extend(
@@ -581,32 +627,25 @@ def create_substream_slicer(model: SubstreamSlicerModel, config: Config) -> Subs
     return SubstreamSlicer(parent_stream_configs=parent_stream_configs, options=model.options)
 
 
-def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config) -> WaitTimeFromHeaderBackoffStrategy:
+def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs) -> WaitTimeFromHeaderBackoffStrategy:
     return WaitTimeFromHeaderBackoffStrategy(header=model.header, options=model.options, config=config, regex=model.regex)
 
 
-def create_wait_until_time_from_header(model: WaitUntilTimeFromHeaderModel, config: Config) -> WaitUntilTimeFromHeaderBackoffStrategy:
+def create_wait_until_time_from_header(
+    model: WaitUntilTimeFromHeaderModel, config: Config, **kwargs
+) -> WaitUntilTimeFromHeaderBackoffStrategy:
     return WaitUntilTimeFromHeaderBackoffStrategy(
         header=model.header, options=model.options, config=config, min_wait=model.min_wait, regex=model.regex
     )
 
 
-class ModelToComponentFactory:
-    @staticmethod
-    def create_component(model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config) -> type:
-        component_type = component_definition.get("type")
-        if component_definition.get("type") != model_type.__name__:
-            raise ValueError(f"Expected manifest component of type {model_type}, but received {component_type} instead")
-
-        declarative_component_model = model_type.parse_obj(component_definition)
-
-        if not isinstance(declarative_component_model, model_type):
-            raise ValueError(f"Expected DeclarativeStream component, but received {declarative_component_model.__class__.__name__}")
-
-        return create_component_from_model(model=declarative_component_model, config=config)
+def _get_class_from_fully_qualified_class_name(class_name: str) -> type:
+    split = class_name.split(".")
+    module = ".".join(split[:-1])
+    class_name = split[-1]
+    return getattr(importlib.import_module(module), class_name)
 
 
-# todo this is better up top but need to make it a forward reference
 PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     AddedFieldDefinitionModel: create_added_field_definition,
     AddFieldsModel: create_add_fields,
@@ -619,6 +658,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     ConstantBackoffStrategyModel: create_constant_backoff_strategy,
     CursorPaginationModel: create_cursor_pagination,
     CustomBackoffStrategyModel: create_custom_component,
+    CustomErrorHandlerModel: create_custom_component,
     CustomRecordExtractorModel: create_custom_component,
     CustomRetrieverModel: create_custom_component,
     CustomPaginationStrategyModel: create_custom_component,
@@ -660,10 +700,3 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
 
 # Needed for the case where we need to perform a second parse on the fields of a custom component
 TYPE_NAME_TO_MODEL = {cls.__name__.partition("Model")[0]: cls for cls in PYDANTIC_MODEL_TO_CONSTRUCTOR}
-
-
-def _get_class_from_fully_qualified_class_name(class_name: str):
-    split = class_name.split(".")
-    module = ".".join(split[:-1])
-    class_name = split[-1]
-    return getattr(importlib.import_module(module), class_name)

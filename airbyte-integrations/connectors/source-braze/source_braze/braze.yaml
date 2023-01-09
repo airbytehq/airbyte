@@ -4,7 +4,7 @@ definitions:
   # ----- Selector -----
   base_selector:
     extractor:
-      field_pointer: [ "data" ]
+      field_pointer: ["data"]
   list_selector:
     extractor:
       field_pointer: ["{{ options['name'] }}"]
@@ -71,7 +71,7 @@ definitions:
     transformations:
       - class_name: "source_braze.TransformToRecordComponent"
         fields:
-          - path: [ "event_name" ]
+          - path: ["event_name"]
             value: "{{ record }}"
     $options:
       name: "events"
@@ -152,7 +152,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "campaign_id" ]
+          - path: ["campaign_id"]
             value: "{{ stream_slice.campaign_id }}"
     stream_cursor_field: "time"
   canvases_analytics_substream_config:
@@ -160,7 +160,7 @@ definitions:
       $ref: "*ref(definitions.sliced_retriever)"
       record_selector:
         extractor:
-          field_pointer: [ "data", "stats" ]
+          field_pointer: ["data", "stats"]
       stream_slicer:
         type: CartesianProductStreamSlicer
         stream_slicers:
@@ -176,7 +176,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "canvas_id" ]
+          - path: ["canvas_id"]
             value: "{{ stream_slice.canvas_id }}"
     stream_cursor_field: "time"
   cards_analytics_substream_config:
@@ -197,7 +197,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "card_id" ]
+          - path: ["card_id"]
             value: "{{ stream_slice.card_id }}"
     stream_cursor_field: "time"
   segments_analytics_substream_config:
@@ -218,7 +218,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "segment_id" ]
+          - path: ["segment_id"]
             value: "{{ stream_slice.segment_id }}"
     stream_cursor_field: "time"
   events_analytics_substream_config:
@@ -238,13 +238,14 @@ definitions:
                 parent_key: "event_name"
                 stream_slice_field: "event"
                 request_option:
+                  type: RequestOption
                   field_name: "event"
                   inject_into: "request_parameter"
           - "*ref(definitions.datetime_100d_slicer)"
     transformations:
       - type: AddFields
         fields:
-          - path: [ "event_id" ]
+          - path: ["event_id"]
             value: "{{ stream_slice.event }}"
     stream_cursor_field: "time"
 
