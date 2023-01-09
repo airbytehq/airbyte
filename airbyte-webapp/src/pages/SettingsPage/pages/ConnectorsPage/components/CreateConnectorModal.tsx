@@ -161,9 +161,7 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                       type="text"
                       autoComplete="off"
                       placeholder={formatMessage({
-                        id: `${
-                          isCloudApp() ? "admin.dockerFullImageName.placeholder" : "admin.dockerRepository.placeholder"
-                        }`,
+                        id: "admin.dockerRepository.placeholder",
                       })}
                       label={
                         <Label>
