@@ -27,8 +27,6 @@ export const editVersionByConnectorName = (
 
   cy.get("[data-testid='errorMessage']").should("not.exist");
   cy.get("[data-testid='successMessage']").should("exist");
-
-  // todo: do we want to check that you can upgrade via the button without using the input?
 };
 
 export const clickUpgradeAllButton = () => {
