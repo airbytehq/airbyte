@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -11,9 +11,22 @@ from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 @pytest.fixture(scope="module")
-def configured_catalog():
-    with open("unit_tests/configured_catalog.json") as f:
+def bulk_catalog():
+    with open("unit_tests/bulk_catalog.json") as f:
+        data = json.loads(f.read())
+    return ConfiguredAirbyteCatalog.parse_obj(data)
+
+
+@pytest.fixture(scope="module")
+def rest_catalog():
+    with open("unit_tests/rest_catalog.json") as f:
         data = json.loads(f.read())
     return ConfiguredAirbyteCatalog.parse_obj(data)
 
@@ -28,7 +41,9 @@ def state():
 def stream_config():
     """Generates streams settings for BULK logic"""
     return {
-        "credentials": {"client_id": "fake_client_id", "client_secret": "fake_client_secret", "refresh_token": "fake_refresh_token"},
+        "client_id": "fake_client_id",
+        "client_secret": "fake_client_secret",
+        "refresh_token": "fake_refresh_token",
         "start_date": "2010-01-18T21:18:20Z",
         "is_sandbox": False,
         "wait_timeout": 15,
@@ -39,7 +54,9 @@ def stream_config():
 def stream_config_date_format():
     """Generates streams settings with `start_date` in format YYYY-MM-DD"""
     return {
-        "credentials": {"client_id": "fake_client_id", "client_secret": "fake_client_secret", "refresh_token": "fake_refresh_token"},
+        "client_id": "fake_client_id",
+        "client_secret": "fake_client_secret",
+        "refresh_token": "fake_refresh_token",
         "start_date": "2010-01-18",
         "is_sandbox": False,
         "wait_timeout": 15,
@@ -50,7 +67,9 @@ def stream_config_date_format():
 def stream_config_without_start_date():
     """Generates streams settings for REST logic without start_date"""
     return {
-        "credentials": {"client_id": "fake_client_id", "client_secret": "fake_client_secret", "refresh_token": "fake_refresh_token"},
+        "client_id": "fake_client_id",
+        "client_secret": "fake_client_secret",
+        "refresh_token": "fake_refresh_token",
         "is_sandbox": False,
         "wait_timeout": 15,
     }
@@ -80,5 +99,23 @@ def stream_api_v2(stream_config):
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
-def generate_stream(stream_name, stream_config, stream_api, state=None):
-    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api, state=state)[0]
+@pytest.fixture(scope="module")
+def stream_api_pk(stream_config):
+    describe_response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "Id", "type": "string"}]}
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
+
+
+def generate_stream(stream_name, stream_config, stream_api):
+    return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api)[0]
+
+
+def encoding_symbols_parameters():
+    return [(x, "ISO-8859-1", b'"\xc4"\n,"4"\n\x00,"\xca \xfc"', [{"Ä": "4"}, {"Ä": "Ê ü"}]) for x in range(1, 11)] + [
+        (
+            x,
+            "utf-8",
+            b'"\xd5\x80"\n "\xd5\xaf","\xd5\xaf"\n\x00,"\xe3\x82\x82 \xe3\x83\xa4 \xe3\x83\xa4 \xf0\x9d\x9c\xb5"',
+            [{"Հ": "կ"}, {"Հ": "も ヤ ヤ 𝜵"}],
+        )
+        for x in range(1, 11)
+    ]

@@ -9,7 +9,7 @@
         "default_cursor_field": ["SystemModstamp"],
         "source_defined_primary_key": [["Id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
     {
@@ -21,7 +21,7 @@
         "default_cursor_field": ["SystemModstamp"],
         "source_defined_primary_key": [["Id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
     {
@@ -33,7 +33,7 @@
         "default_cursor_field": ["SystemModstamp"],
         "source_defined_primary_key": [["Id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
     {
@@ -45,18 +45,8 @@
         "default_cursor_field": ["SystemModstamp"],
         "source_defined_primary_key": [["Id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "AppDefinition",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["Id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -67,18 +57,8 @@
         "default_cursor_field": ["SystemModstamp"],
         "source_defined_primary_key": [["Id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "FormulaFunctionAllowedType",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["Id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -89,7 +69,7 @@
         "default_cursor_field": ["SystemModstamp"],
         "source_defined_primary_key": [["Id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
     {
@@ -101,7 +81,7 @@
         "default_cursor_field": ["SystemModstamp"],
         "source_defined_primary_key": [["Id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
     {
@@ -113,7 +93,7 @@
         "default_cursor_field": ["CreatedDate"],
         "source_defined_primary_key": [["Id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append"
     }
   ]
