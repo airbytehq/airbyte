@@ -119,7 +119,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     [config, updateStreamWithConfig, numberOfFieldsInStream]
   );
 
-  const onSelectedFieldsUpdate = (fieldPath: string[], isSelected: boolean) => {
+  const onToggleFieldSelected = (fieldPath: string[], isSelected: boolean) => {
     const previouslySelectedFields = config?.selectedFields || [];
 
     if (!config?.fieldSelectionEnabled && !isSelected) {
@@ -245,7 +245,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
               syncSchemaFields={flattenedFields}
               onCursorSelect={onCursorSelect}
               onPkSelect={onPkSelect}
-              handleFieldToggle={onSelectedFieldsUpdate}
+              handleFieldToggle={onToggleFieldSelected}
               primaryKeyIndexerType={pkType}
               cursorIndexerType={cursorType}
               shouldDefinePrimaryKey={shouldDefinePk}
