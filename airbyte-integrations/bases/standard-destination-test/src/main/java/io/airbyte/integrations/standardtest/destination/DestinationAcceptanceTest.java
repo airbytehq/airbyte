@@ -645,15 +645,16 @@ public abstract class DestinationAcceptanceTest {
         defaultSchema);
   }
 
-  @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testIncrementalSyncWithNormalizationDropOneColumn(final String messagesFilename, final String catalogFilename)
+  @Test
+  public void testIncrementalSyncWithNormalizationDropOneColumn()
       throws Exception {
     if (!normalizationFromDefinition()) {
       return;
     }
 
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
+    final AirbyteCatalog catalog = Jsons.deserialize(
+        MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(ProtocolVersion.V0)),
         AirbyteCatalog.class);
 
     if (!catalog.getStreams().get(0).getName().equals("exchange_rate")) {
@@ -672,7 +673,8 @@ public abstract class DestinationAcceptanceTest {
           List.of(List.of("id"), List.of("currency"), List.of("date"), List.of("NZD"), List.of("USD")));
     });
 
-    List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+    List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(ProtocolVersion.V0))
+        .lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
 
@@ -687,10 +689,9 @@ public abstract class DestinationAcceptanceTest {
     // remove one field
     final JsonNode jsonSchema = configuredCatalog.getStreams().get(0).getStream().getJsonSchema();
     ((ObjectNode) jsonSchema.findValue("properties")).remove("HKD");
-    configuredCatalog.getStreams().get(0).getStream().setJsonSchema(jsonSchema);
     // insert more messages
     // NOTE: we re-read the messages because `assertSameMessages` above pruned the emittedAt timestamps.
-    messages = MoreResources.readResource(messagesFilename).lines()
+    messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(ProtocolVersion.V0)).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     messages.add(Jsons.deserialize(
