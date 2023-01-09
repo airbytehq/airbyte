@@ -425,3 +425,8 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/duckdb
   icon: duckdb.svg
   releaseStage: alpha #dev
+  normalizationConfig:
+    normalizationRepository: airbyte/normalization-duckdb
+    normalizationTag: 0.2.22
+    normalizationIntegrationType: duckdb
+  supportsDbt: true
