@@ -43,7 +43,7 @@ import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
@@ -76,14 +76,14 @@ import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 
-@Singleton
+@Slf4j
 public class SchedulerHandler {
 
   private static final HashFunction HASH_FUNCTION = Hashing.md5();
@@ -100,9 +100,8 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
-  private final FeatureFlags envVariableFeatureFlags;
+  private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
-  // TODO: Convert to be fully using micronaut
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
@@ -112,7 +111,7 @@ public class SchedulerHandler {
                           final LogConfigs logConfigs,
                           final EventRunner eventRunner,
                           final ConnectionsHandler connectionsHandler,
-                          final FeatureFlags envVariableFeatureFlags) {
+                          final EnvVariableFeatureFlags envVariableFeatureFlags) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -136,7 +135,7 @@ public class SchedulerHandler {
                    final EventRunner eventRunner,
                    final JobConverter jobConverter,
                    final ConnectionsHandler connectionsHandler,
-                   final FeatureFlags envVariableFeatureFlags) {
+                   final EnvVariableFeatureFlags envVariableFeatureFlags) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -363,8 +362,6 @@ public class SchedulerHandler {
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
-        .supportsNormalization(spec.getSupportsNormalization())
-        .supportsDbt(spec.getSupportsDBT())
         .destinationDefinitionId(destinationDefinitionId);
 
     final Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
@@ -395,8 +392,8 @@ public class SchedulerHandler {
   // wants the connection disabled when non-breaking changes are detected. If so, disable that
   // connection. Modify the current discoveredSchema object to add a CatalogDiff,
   // containsBreakingChange paramter, and connectionStatus parameter.
-  private void generateCatalogDiffsAndDisableConnectionsIfNeeded(final SourceDiscoverSchemaRead discoveredSchema,
-                                                                 final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
+  private void generateCatalogDiffsAndDisableConnectionsIfNeeded(SourceDiscoverSchemaRead discoveredSchema,
+                                                                 SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
     for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
@@ -404,13 +401,12 @@ public class SchedulerHandler {
           .getConnectionAirbyteCatalog(connectionRead.getConnectionId());
       final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
           connectionRead.getSyncCatalog();
-      final CatalogDiff diff =
-          connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-              CatalogConverter.toProtocol(currentAirbyteCatalog));
-      final boolean containsBreakingChange = containsBreakingChange(diff);
-      final ConnectionUpdate updateObject =
+      CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
+          CatalogConverter.toProtocol(currentAirbyteCatalog));
+      boolean containsBreakingChange = containsBreakingChange(diff);
+      ConnectionUpdate updateObject =
           new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(connectionRead.getConnectionId());
-      final ConnectionStatus connectionStatus;
+      ConnectionStatus connectionStatus;
       if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
         connectionStatus = ConnectionStatus.INACTIVE;
       } else {

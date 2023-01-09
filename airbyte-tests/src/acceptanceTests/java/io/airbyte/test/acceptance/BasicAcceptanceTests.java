@@ -276,7 +276,7 @@ class BasicAcceptanceTests {
 
   @Test
   @Order(3)
-  void wtestCreateSource() throws ApiException {
+  void testCreateSource() throws ApiException {
     final String dbName = "acc-test-db";
     final UUID postgresSourceDefinitionId = testHarness.getPostgresSourceDefinitionId();
     final JsonNode sourceDbConfig = testHarness.getSourceDbConfig();

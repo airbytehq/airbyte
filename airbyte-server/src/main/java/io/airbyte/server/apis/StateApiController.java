@@ -9,25 +9,20 @@ import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.server.handlers.StateHandler;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Post;
+import javax.ws.rs.Path;
+import lombok.AllArgsConstructor;
 
-@Controller("/api/v1/state")
+@Path("/v1/state")
+@AllArgsConstructor
 public class StateApiController implements StateApi {
 
   private final StateHandler stateHandler;
 
-  public StateApiController(final StateHandler stateHandler) {
-    this.stateHandler = stateHandler;
-  }
-
-  @Post("/create_or_update")
   @Override
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
     return ApiHelper.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
   }
 
-  @Post("/get")
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> stateHandler.getState(connectionIdRequestBody));
