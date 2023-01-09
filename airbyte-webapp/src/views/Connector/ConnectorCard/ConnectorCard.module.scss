@@ -1,21 +1,25 @@
-@use "../../../scss/variables" as vars;
+@use "scss/variables";
 
 .cardForm {
   padding: 22px 27px 23px 24px;
 }
 
 .connectorSelectControl {
-  margin-bottom: vars.$spacing-xl;
+  margin-bottom: variables.$spacing-xl;
 }
 
 .loaderContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: vars.$spacing-2xl 0;
+  padding: variables.$spacing-2xl 0;
 }
 
 .loadingMessage {
-  margin-top: vars.$spacing-md;
-  margin-left: vars.$spacing-lg;
+  margin-top: variables.$spacing-md;
+  margin-left: variables.$spacing-lg;
+}
+
+.connectionTestLogs {
+  margin-top: variables.$spacing-lg;
 }
