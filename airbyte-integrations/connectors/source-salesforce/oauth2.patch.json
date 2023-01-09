@@ -1,8 +1,8 @@
 {
   "provider": "salesforce",
-  "authUrlTemplate": "https://login.salesforce.com/services/oauth2/authorize?client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&state={{ state }}",
+  "authUrlTemplate": "https://login.salesforce.com/services/oauth2/authorize?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{#urlencode}}{{{ state }}}{{/urlencode}}",
   "accessTokenUrlTemplate": "https://login.salesforce.com/services/oauth2/token",
-  "accessTokenBody": "grant_type=authorization_code&client_id={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&redirect_uri={{ urlencode redirect_uri }}&code={{ urlencode code }}",
+  "accessTokenBody": "grant_type=authorization_code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}",
   "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
   "accessTokenResponseMap": "{\"refresh_token\": \"/refresh_token\"}"
 }
