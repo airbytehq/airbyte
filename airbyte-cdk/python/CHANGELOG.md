@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.18.1
+Allow for CustomRequester to be defined within declarative manifests
+
+## 0.18.0
+Adding `cursor_granularity` to the declarative API of DatetimeStreamSlicer
+
 ## 0.17.0
 Add utility class to infer schemas from real records
 

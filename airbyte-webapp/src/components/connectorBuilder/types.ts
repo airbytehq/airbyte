@@ -115,8 +115,8 @@ export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
   },
 };
 
-function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
-  if (values.global.authenticator.type === "ApiKeyAuthenticator") {
+function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormInput[] {
+  if (global.authenticator.type === "ApiKeyAuthenticator") {
     return [
       {
         key: "api_key",
@@ -129,7 +129,7 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
       },
     ];
   }
-  if (values.global.authenticator.type === "BearerAuthenticator") {
+  if (global.authenticator.type === "BearerAuthenticator") {
     return [
       {
         key: "api_key",
@@ -142,7 +142,7 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
       },
     ];
   }
-  if (values.global.authenticator.type === "BasicHttpAuthenticator") {
+  if (global.authenticator.type === "BasicHttpAuthenticator") {
     return [
       {
         key: "username",
@@ -163,7 +163,7 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
       },
     ];
   }
-  if (values.global.authenticator.type === "OAuthAuthenticator") {
+  if (global.authenticator.type === "OAuthAuthenticator") {
     return [
       {
         key: "client_id",
@@ -194,7 +194,7 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
       },
     ];
   }
-  if (values.global.authenticator.type === "SessionTokenAuthenticator") {
+  if (global.authenticator.type === "SessionTokenAuthenticator") {
     return [
       {
         key: "username",
@@ -228,13 +228,16 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
   return [];
 }
 
-export function getInferredInputs(values: BuilderFormValues): BuilderFormInput[] {
-  const inferredInputs = getInferredInputList(values);
+export function getInferredInputs(
+  global: BuilderFormValues["global"],
+  inferredInputOverrides: BuilderFormValues["inferredInputOverrides"]
+): BuilderFormInput[] {
+  const inferredInputs = getInferredInputList(global);
   return inferredInputs.map((input) =>
-    values.inferredInputOverrides[input.key]
+    inferredInputOverrides[input.key]
       ? {
           ...input,
-          definition: { ...input.definition, ...values.inferredInputOverrides[input.key] },
+          definition: { ...input.definition, ...inferredInputOverrides[input.key] },
         }
       : input
   );
@@ -577,7 +580,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     builderStreamToDeclarativeSteam(values, stream, [])
   );
 
-  const allInputs = [...values.inputs, ...getInferredInputs(values)];
+  const allInputs = [...values.inputs, ...getInferredInputs(values.global, values.inferredInputOverrides)];
 
   const specSchema: JSONSchema7 = {
     $schema: "http://json-schema.org/draft-07/schema#",
