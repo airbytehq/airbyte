@@ -42,12 +42,16 @@ spec:
               value: {{ .Values.minio.auth.rootUser  }}
             - name: MINIO_ROOT_PASSWORD
               value: {{ .Values.minio.auth.rootPassword }}
+            - name: MINIO_DOMAIN
+              value: "airbyte-minio-svc"
           ports:
             - containerPort: 9000
           # Mount the volume into the pod
           volumeMounts:
             - name: airbyte-minio-pv-claim # must match the volume name, above
               mountPath: "/data"
+      hostname: airbyte-dev-logs
+      subdomain: airbyte-minio-svc
 ---
 apiVersion: v1
 kind: Service

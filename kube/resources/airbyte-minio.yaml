@@ -34,12 +34,16 @@ spec:
               value: "minio"
             - name: MINIO_SECRET_KEY
               value: "minio123"
+            - name: MINIO_DOMAIN
+              value: "airbyte-minio-svc"
           ports:
             - containerPort: 9000
           # Mount the volume into the pod
           volumeMounts:
             - name: storage # must match the volume name, above
               mountPath: "/storage"
+      hostname: airbyte-dev-logs
+      subdomain: airbyte-minio-svc
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
