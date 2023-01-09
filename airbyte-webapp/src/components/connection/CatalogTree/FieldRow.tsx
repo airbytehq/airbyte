@@ -80,14 +80,19 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
       {isColumnSelectionEnabled && (
         <Cell flex={0}>
           <SyncCheckboxContainer>
-            {!fieldSelectionDisabled && (
-              <Switch size="sm" checked={isSelected} onChange={() => onToggleFieldSelected(field.path, !isSelected)} />
-            )}
-            {fieldSelectionDisabled && (
-              <Tooltip control={<Switch size="sm" disabled checked={isSelected} />}>
-                {renderDisabledReasonMessage()}
-              </Tooltip>
-            )}
+            <Tooltip
+              disabled={!fieldSelectionDisabled}
+              control={
+                <Switch
+                  size="sm"
+                  disabled={fieldSelectionDisabled}
+                  checked={isSelected}
+                  onChange={() => onToggleFieldSelected(field.path, !isSelected)}
+                />
+              }
+            >
+              {renderDisabledReasonMessage()}
+            </Tooltip>
           </SyncCheckboxContainer>
         </Cell>
       )}
