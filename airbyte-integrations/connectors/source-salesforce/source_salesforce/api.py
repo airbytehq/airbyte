@@ -383,7 +383,7 @@ class Salesforce:
         elif sf_type in DATE_TYPES:
             property_schema = {
                 "type": ["string", "null"],
-                "format": "date-time" if sf_type == "datetime" else "date",  # type: ignore[dict-item]
+                # "format": "date-time" if sf_type == "datetime" else "date",  # type: ignore[dict-item]
             }
         elif sf_type in NUMBER_TYPES:
             property_schema["type"] = ["number", "null"]
