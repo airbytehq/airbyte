@@ -1,3 +1,12 @@
+@use "scss/variables";
+
+.controlsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: variables.$spacing-lg;
+}
+
 .buttonsContainer {
   display: flex;
 }
