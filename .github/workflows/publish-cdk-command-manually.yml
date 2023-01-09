@@ -22,6 +22,7 @@ on:
           - major
           - minor
           - patch
+          - none
         required: true
       dry-run:
         description: 'By default dry-run publishes to Test PyPi. Use "false" to publish to actual PyPi servers.'
@@ -36,6 +37,7 @@ concurrency:
 
 jobs:
   bump-version:
+    if: github.event.inputs.part-to-bump != 'none'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v4
@@ -61,15 +63,33 @@ jobs:
           commit_message: 🤖 Bump patch version of Airbyte CDK
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
-      - name: Publish Failures to issue-19981_test-notification
-        uses: abinoda/slack-action@master
+      - name: Post to a Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C04HMCXBP46
+          payload: |
+            {
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "This is a test!\n\n"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-        with:
-          args: >-
-            {\"channel\":\"C04HMCXBP46\", \"blocks\":[
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"This is a test!\n\n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n\"}}]}
 
   build-cdk:
     needs: bump-version
