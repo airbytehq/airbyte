@@ -14,7 +14,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import datadog.trace.api.Trace;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
@@ -94,7 +93,7 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   public AirbyteMessageTracker(final FeatureFlags featureFlags) {
     this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES),
-        new DefaultStateAggregator(new EnvVariableFeatureFlags().useStreamCapableState()),
+        new DefaultStateAggregator(featureFlags.useStreamCapableState()),
         new StateMetricsTracker(STATE_METRICS_TRACKER_MESSAGE_LIMIT),
         featureFlags);
   }
