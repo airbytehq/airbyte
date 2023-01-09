@@ -1,3 +1,8 @@
+// Script starting a basic webserver returning mocked data over an authenticated API to test the connector builder UI and connector builder server in an
+// end to end fashion.
+
+// Start with `npm run createdummyapi`
+
 const http = require('http');
 
 const items = [{ name: "abc" }, { name: "def" }, { name: "xxx" }, { name: "yyy" }];
