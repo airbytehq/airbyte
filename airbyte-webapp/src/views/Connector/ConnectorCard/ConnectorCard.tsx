@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import JobLogs from "components/JobItem/components/JobLogs";
+import { JobLogs } from "components/JobItem/components/JobLogs";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Spinner } from "components/ui/Spinner";
