@@ -41,7 +41,6 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from dateutil.relativedelta import relativedelta
 from jsonschema import ValidationError
 
 factory = DeclarativeComponentFactory()
@@ -236,14 +235,15 @@ def test_datetime_stream_slicer():
         type: DatetimeStreamSlicer
         $options:
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+          cursor_granularity: "PT0.000001S"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_time'] }}"
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
         end_datetime: "{{ config['end_time'] }}"
-        step: "10d"
+        step: "P10D"
         cursor_field: "created"
-        lookback_window: "5d"
+        lookback_window: "P5D"
         start_time_option:
           inject_into: request_parameter
           field_name: created[gte]
@@ -263,9 +263,9 @@ def test_datetime_stream_slicer():
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
-    assert stream_slicer._step == relativedelta(days=10)
+    assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
-    assert stream_slicer.lookback_window.string == "5d"
+    assert stream_slicer.lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer.start_time_option.field_name == "created[gte]"
 

@@ -5,7 +5,7 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components/ui/Button";
 import { Tooltip } from "components/ui/Tooltip";
 
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { downloadFile } from "utils/file";
 
 import styles from "./DownloadYamlButton.module.scss";
@@ -18,7 +18,7 @@ interface DownloadYamlButtonProps {
 }
 
 export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ className, yaml, yamlIsValid }) => {
-  const { editorView } = useConnectorBuilderState();
+  const { editorView } = useConnectorBuilderFormState();
   const { hasErrors, validateAndTouch } = useBuilderErrors();
 
   const downloadYaml = () => {
