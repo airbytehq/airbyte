@@ -86,11 +86,9 @@ def setup_responses(config):
     responses.add(responses.PUT, f"{config['deployment_url']}/api/add_indexes", status=200)
     responses.add(
         responses.GET,
-        f"{config['deployment_url']}/api/get_indexes",
+        f"{config['deployment_url']}/api/indexes_ready",
         status=200,
-        json={
-            "indexes": [{"table": DEDUP_TABLE_NAME, "name": "by_primary_key", "fields": [DEDUP_INDEX_FIELD], "backfill": {"state": "done"}}]
-        },
+        json={"indexesReady": True},
     )
 
 

@@ -34,11 +34,11 @@ class ConvexClient:
         """
         return self._request("PUT", "add_indexes", json={"indexes": indexes})
 
-    def get_indexes(self):
+    def indexes_ready(self, tables: List[str]):
         """
-        See Convex docs: https://docs.convex.dev/http-api/#get-apiget_indexes
+        See Convex docs: https://docs.convex.dev/http-api/#get-apiindexes_ready
         """
-        return self._request("GET", "get_indexes")
+        return self._request("GET", "indexes_ready", json={"tables": tables})
 
     def _get_auth_headers(self) -> Mapping[str, Any]:
         return {"Authorization": f"Convex {self.access_key}"}

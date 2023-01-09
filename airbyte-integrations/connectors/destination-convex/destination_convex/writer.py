@@ -31,13 +31,12 @@ class ConvexWriter:
 
     def __poll_for_indexes(self, indexes: Mapping[str, List[List[str]]]):
         """Polls until the indexes specified are ready"""
-        while len(indexes) > 0:
-            resp = self.client.get_indexes()
-            for index in resp.json()["indexes"]:
-                if indexes[index["table"]]:
-                    if index["backfill"]["state"] == "done":
-                        indexes.pop(index["table"])
-            if len(indexes) > 0:
+        tables = list(indexes.keys())
+        while True:
+            resp = self.client.indexes_ready(tables)
+            if resp.json()["indexesReady"]:
+                break
+            else:
                 time.sleep(1)
         return
 
