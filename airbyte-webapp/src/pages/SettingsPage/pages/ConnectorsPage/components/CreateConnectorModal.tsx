@@ -119,15 +119,13 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
             dockerImageTag: "",
             dockerRepository: "",
           }}
-          validateOnBlur
-          validateOnChange={false}
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
             await onSubmit(values);
             setSubmitting(false);
           }}
         >
-          {({ isSubmitting, dirty }) => (
+          {({ isSubmitting, isValid, dirty }) => (
             <Form>
               <FieldContainer>
                 <Field name="name">
@@ -144,7 +142,13 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                         </Label>
                       }
                       error={meta.touched && !!meta.error}
-                      message={meta.touched && meta.error && <FormattedMessage id={meta.error} />}
+                      message={
+                        meta.touched && meta.error ? (
+                          <FormattedMessage id={meta.error} />
+                        ) : (
+                          <FormattedMessage id="form.empty.error" />
+                        )
+                      }
                     />
                   )}
                 </Field>
@@ -169,7 +173,13 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                         </Label>
                       }
                       error={meta.touched && !!meta.error}
-                      message={meta.touched && meta.error && <FormattedMessage id={meta.error} />}
+                      message={
+                        meta.touched && meta.error ? (
+                          <FormattedMessage id={meta.error} />
+                        ) : (
+                          <FormattedMessage id="form.empty.error" />
+                        )
+                      }
                     />
                   )}
                 </Field>
@@ -190,7 +200,13 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                         </Label>
                       }
                       error={!!meta.error && meta.touched}
-                      message={meta.touched && meta.error && <FormattedMessage id={meta.error} />}
+                      message={
+                        meta.touched && meta.error ? (
+                          <FormattedMessage id={meta.error} />
+                        ) : (
+                          <FormattedMessage id="form.empty.error" />
+                        )
+                      }
                     />
                   )}
                 </Field>
@@ -235,7 +251,7 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                   >
                     <FormattedMessage id="form.cancel" />
                   </Button>
-                  <Button type="submit" disabled={isSubmitting || !dirty} isLoading={isSubmitting}>
+                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid} isLoading={isSubmitting}>
                     <FormattedMessage id="form.add" />
                   </Button>
                 </div>
