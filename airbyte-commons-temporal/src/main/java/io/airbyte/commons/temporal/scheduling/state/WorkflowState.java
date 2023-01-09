@@ -30,8 +30,10 @@ public class WorkflowState {
   private boolean cancelled = false;
   private boolean failed = false;
   @Deprecated
+  @Getter(AccessLevel.NONE)
   private final boolean resetConnection = false;
   @Deprecated
+  @Getter(AccessLevel.NONE)
   private final boolean continueAsReset = false;
   @Deprecated
   @Getter(AccessLevel.NONE)
@@ -39,6 +41,7 @@ public class WorkflowState {
   private boolean success = true;
   private boolean cancelledForReset = false;
   @Deprecated
+  @Getter(AccessLevel.NONE)
   private final boolean resetWithScheduling = false;
   private boolean doneWaiting = false;
   private boolean skipSchedulingNextWorkflow = false;
