@@ -1,7 +1,6 @@
 # airbyte
 
-
-![Version: 0.40.33](https://img.shields.io/badge/Version-0.40.33-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.17](https://img.shields.io/badge/AppVersion-0.40.17-informational?style=flat-square)
+![Version: 0.43.13](https://img.shields.io/badge/Version-0.43.13-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.27](https://img.shields.io/badge/AppVersion-0.40.27-informational?style=flat-square)
 
 Helm chart to deploy airbyte
 
@@ -9,16 +8,16 @@ Helm chart to deploy airbyte
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://airbytehq.github.io/helm-charts/ | airbyte-bootloader | placeholder |
-| https://airbytehq.github.io/helm-charts/ | metrics | placeholder |
-| https://airbytehq.github.io/helm-charts/ | pod-sweeper | placeholder |
-| https://airbytehq.github.io/helm-charts/ | server | placeholder |
-| https://airbytehq.github.io/helm-charts/ | temporal | placeholder |
-| https://airbytehq.github.io/helm-charts/ | webapp | placeholder |
-| https://airbytehq.github.io/helm-charts/ | worker | placeholder |
+| https://airbytehq.github.io/helm-charts/ | airbyte-bootloader | 0.43.13 |
+| https://airbytehq.github.io/helm-charts/ | connector-builder-server | 0.43.13 |
+| https://airbytehq.github.io/helm-charts/ | cron | 0.43.13 |
+| https://airbytehq.github.io/helm-charts/ | metrics | 0.43.13 |
+| https://airbytehq.github.io/helm-charts/ | pod-sweeper | 0.43.13 |
+| https://airbytehq.github.io/helm-charts/ | server | 0.43.13 |
+| https://airbytehq.github.io/helm-charts/ | temporal | 0.43.13 |
+| https://airbytehq.github.io/helm-charts/ | webapp | 0.43.13 |
+| https://airbytehq.github.io/helm-charts/ | worker | 0.43.13 |
 | https://charts.bitnami.com/bitnami | common | 1.x.x |
-| https://charts.bitnami.com/bitnami | minio | 11.x.x |
-| https://charts.bitnami.com/bitnami | postgresql | 10.x.x |
 
 ## Values
 
@@ -36,10 +35,45 @@ Helm chart to deploy airbyte
 | airbyte-bootloader.image.repository | string | `"airbyte/bootloader"` |  |
 | airbyte-bootloader.nodeSelector | object | `{}` |  |
 | airbyte-bootloader.podAnnotations | object | `{}` |  |
+| airbyte-bootloader.podLabels | object | `{}` |  |
 | airbyte-bootloader.resources.limits | object | `{}` |  |
 | airbyte-bootloader.resources.requests | object | `{}` |  |
 | airbyte-bootloader.secrets | object | `{}` |  |
 | airbyte-bootloader.tolerations | list | `[]` |  |
+| connectorBuilderServer.enabled | bool | `true` |  |
+| connectorBuilderServer.service.port | int | `8003` |  |
+| cron.affinity | object | `{}` |  |
+| cron.containerSecurityContext | object | `{}` |  |
+| cron.enabled | bool | `true` |  |
+| cron.env_vars | object | `{}` |  |
+| cron.extraContainers | list | `[]` |  |
+| cron.extraEnv | list | `[]` |  |
+| cron.extraInitContainers | list | `[]` |  |
+| cron.extraVolumeMounts | list | `[]` |  |
+| cron.extraVolumes | list | `[]` |  |
+| cron.image.pullPolicy | string | `"IfNotPresent"` |  |
+| cron.image.repository | string | `"airbyte/cron"` |  |
+| cron.livenessProbe.enabled | bool | `true` |  |
+| cron.livenessProbe.failureThreshold | int | `3` |  |
+| cron.livenessProbe.initialDelaySeconds | int | `30` |  |
+| cron.livenessProbe.periodSeconds | int | `10` |  |
+| cron.livenessProbe.successThreshold | int | `1` |  |
+| cron.livenessProbe.timeoutSeconds | int | `1` |  |
+| cron.log.level | string | `"INFO"` |  |
+| cron.nodeSelector | object | `{}` |  |
+| cron.podAnnotations | object | `{}` |  |
+| cron.podLabels | object | `{}` |  |
+| cron.readinessProbe.enabled | bool | `true` |  |
+| cron.readinessProbe.failureThreshold | int | `3` |  |
+| cron.readinessProbe.initialDelaySeconds | int | `10` |  |
+| cron.readinessProbe.periodSeconds | int | `10` |  |
+| cron.readinessProbe.successThreshold | int | `1` |  |
+| cron.readinessProbe.timeoutSeconds | int | `1` |  |
+| cron.replicaCount | int | `1` |  |
+| cron.resources.limits | object | `{}` |  |
+| cron.resources.requests | object | `{}` |  |
+| cron.secrets | object | `{}` |  |
+| cron.tolerations | list | `[]` |  |
 | externalDatabase.database | string | `"db-airbyte"` |  |
 | externalDatabase.existingSecret | string | `""` |  |
 | externalDatabase.existingSecretPasswordKey | string | `""` |  |
@@ -75,9 +109,11 @@ Helm chart to deploy airbyte
 | global.logs.secretKey.existingSecret | string | `""` |  |
 | global.logs.secretKey.existingSecretKey | string | `""` |  |
 | global.logs.secretKey.password | string | `""` |  |
+| global.logs.storage.type | string | `"MINIO"` |  |
 | global.metrics.metricClient | string | `""` |  |
 | global.metrics.otelCollectorEndpoint | string | `""` |  |
 | global.serviceAccountName | string | `"airbyte-admin"` |  |
+| global.state.storage.type | string | `"MINIO"` |  |
 | metrics.affinity | object | `{}` |  |
 | metrics.containerSecurityContext | object | `{}` |  |
 | metrics.enabled | bool | `false` |  |
@@ -90,6 +126,7 @@ Helm chart to deploy airbyte
 | metrics.image.repository | string | `"airbyte/metrics-reporter"` |  |
 | metrics.nodeSelector | object | `{}` |  |
 | metrics.podAnnotations | object | `{}` |  |
+| metrics.podLabels | object | `{}` |  |
 | metrics.replicaCount | int | `1` |  |
 | metrics.resources.limits | object | `{}` |  |
 | metrics.resources.requests | object | `{}` |  |
@@ -98,6 +135,8 @@ Helm chart to deploy airbyte
 | minio.auth.rootPassword | string | `"minio123"` |  |
 | minio.auth.rootUser | string | `"minio"` |  |
 | minio.enabled | bool | `true` |  |
+| minio.image.repository | string | `"minio/minio"` |  |
+| minio.image.tag | string | `"latest"` |  |
 | nameOverride | string | `""` |  |
 | pod-sweeper.affinity | object | `{}` |  |
 | pod-sweeper.containerSecurityContext | object | `{}` |  |
@@ -115,6 +154,7 @@ Helm chart to deploy airbyte
 | pod-sweeper.livenessProbe.timeoutSeconds | int | `1` |  |
 | pod-sweeper.nodeSelector | object | `{}` |  |
 | pod-sweeper.podAnnotations | object | `{}` |  |
+| pod-sweeper.podLabels | object | `{}` |  |
 | pod-sweeper.readinessProbe.enabled | bool | `true` |  |
 | pod-sweeper.readinessProbe.failureThreshold | int | `3` |  |
 | pod-sweeper.readinessProbe.initialDelaySeconds | int | `5` |  |
@@ -129,6 +169,7 @@ Helm chart to deploy airbyte
 | postgresql.containerSecurityContext.runAsNonRoot | bool | `true` |  |
 | postgresql.enabled | bool | `true` |  |
 | postgresql.existingSecret | string | `""` |  |
+| postgresql.image.repository | string | `"airbyte/db"` |  |
 | postgresql.postgresqlDatabase | string | `"db-airbyte"` |  |
 | postgresql.postgresqlPassword | string | `"airbyte"` |  |
 | postgresql.postgresqlUsername | string | `"airbyte"` |  |
@@ -142,7 +183,7 @@ Helm chart to deploy airbyte
 | server.extraVolumeMounts | list | `[]` |  |
 | server.extraVolumes | list | `[]` |  |
 | server.image.pullPolicy | string | `"IfNotPresent"` |  |
-| server.image.repository | string | `"airbyte/worker"` |  |
+| server.image.repository | string | `"airbyte/server"` |  |
 | server.livenessProbe.enabled | bool | `true` |  |
 | server.livenessProbe.failureThreshold | int | `3` |  |
 | server.livenessProbe.initialDelaySeconds | int | `30` |  |
@@ -152,6 +193,7 @@ Helm chart to deploy airbyte
 | server.log.level | string | `"INFO"` |  |
 | server.nodeSelector | object | `{}` |  |
 | server.podAnnotations | object | `{}` |  |
+| server.podLabels | object | `{}` |  |
 | server.readinessProbe.enabled | bool | `true` |  |
 | server.readinessProbe.failureThreshold | int | `3` |  |
 | server.readinessProbe.initialDelaySeconds | int | `10` |  |
@@ -177,20 +219,11 @@ Helm chart to deploy airbyte
 | temporal.image.pullPolicy | string | `"IfNotPresent"` |  |
 | temporal.image.repository | string | `"airbyte/temporal-auto-setup"` |  |
 | temporal.image.tag | string | `"1.13.0"` |  |
-| temporal.livenessProbe.enabled | bool | `true` |  |
-| temporal.livenessProbe.failureThreshold | int | `3` |  |
-| temporal.livenessProbe.initialDelaySeconds | int | `5` |  |
-| temporal.livenessProbe.periodSeconds | int | `30` |  |
-| temporal.livenessProbe.successThreshold | int | `1` |  |
-| temporal.livenessProbe.timeoutSeconds | int | `1` |  |
+| temporal.livenessProbe.enabled | bool | `false` |  |
 | temporal.nodeSelector | object | `{}` |  |
 | temporal.podAnnotations | object | `{}` |  |
-| temporal.readinessProbe.enabled | bool | `true` |  |
-| temporal.readinessProbe.failureThreshold | int | `3` |  |
-| temporal.readinessProbe.initialDelaySeconds | int | `5` |  |
-| temporal.readinessProbe.periodSeconds | int | `30` |  |
-| temporal.readinessProbe.successThreshold | int | `1` |  |
-| temporal.readinessProbe.timeoutSeconds | int | `1` |  |
+| temporal.podLabels | object | `{}` |  |
+| temporal.readinessProbe.enabled | bool | `false` |  |
 | temporal.replicaCount | int | `1` |  |
 | temporal.resources.limits | object | `{}` |  |
 | temporal.resources.requests | object | `{}` |  |
@@ -200,6 +233,7 @@ Helm chart to deploy airbyte
 | version | string | `""` |  |
 | webapp.affinity | object | `{}` |  |
 | webapp.api.url | string | `"/api/v1/"` |  |
+| webapp.connectorBuilderServer.url | string | `"/connector-builder-api"` |  |
 | webapp.containerSecurityContext | object | `{}` |  |
 | webapp.enabled | bool | `true` |  |
 | webapp.env_vars | object | `{}` |  |
@@ -213,7 +247,7 @@ Helm chart to deploy airbyte
 | webapp.image.repository | string | `"airbyte/webapp"` |  |
 | webapp.ingress.annotations | object | `{}` |  |
 | webapp.ingress.className | string | `""` |  |
-| webapp.ingress.enabled | bool | `true` |  |
+| webapp.ingress.enabled | bool | `false` |  |
 | webapp.ingress.hosts | list | `[]` |  |
 | webapp.ingress.tls | list | `[]` |  |
 | webapp.livenessProbe.enabled | bool | `true` |  |
@@ -224,6 +258,7 @@ Helm chart to deploy airbyte
 | webapp.livenessProbe.timeoutSeconds | int | `1` |  |
 | webapp.nodeSelector | object | `{}` |  |
 | webapp.podAnnotations | object | `{}` |  |
+| webapp.podLabels | object | `{}` |  |
 | webapp.readinessProbe.enabled | bool | `true` |  |
 | webapp.readinessProbe.failureThreshold | int | `3` |  |
 | webapp.readinessProbe.initialDelaySeconds | int | `10` |  |
@@ -250,7 +285,6 @@ Helm chart to deploy airbyte
 | worker.hpa.enabled | bool | `false` |  |
 | worker.image.pullPolicy | string | `"IfNotPresent"` |  |
 | worker.image.repository | string | `"airbyte/worker"` |  |
-| worker.image.tag | string | `"0.40.27"` |  |
 | worker.livenessProbe.enabled | bool | `true` |  |
 | worker.livenessProbe.failureThreshold | int | `3` |  |
 | worker.livenessProbe.initialDelaySeconds | int | `30` |  |
@@ -260,6 +294,7 @@ Helm chart to deploy airbyte
 | worker.log.level | string | `"INFO"` |  |
 | worker.nodeSelector | object | `{}` |  |
 | worker.podAnnotations | object | `{}` |  |
+| worker.podLabels | object | `{}` |  |
 | worker.readinessProbe.enabled | bool | `true` |  |
 | worker.readinessProbe.failureThreshold | int | `3` |  |
 | worker.readinessProbe.initialDelaySeconds | int | `10` |  |

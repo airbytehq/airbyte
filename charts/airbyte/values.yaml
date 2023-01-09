@@ -1219,6 +1219,8 @@ postgresql:
   ## This secret is used in case of postgresql.enabled=true and we would like to specify password for newly created postgresql instance
   ##
   existingSecret: ""
+  image:
+    repository: airbyte/db
   containerSecurityContext:
     runAsNonRoot: true
   commonAnnotations:
@@ -1248,8 +1250,13 @@ externalDatabase:
 ## @section Minio chart overwrites
 ##  minio.accessKey.password Minio Access Key
 ##  minio.secretKey.password Minio Secret Key
+##  minio.repository Repository for minio image
+##  minio.tag Tag of minio image
 minio:
   enabled: true
+  image:
+    repository: minio/minio
+    tag: latest
   auth:
     rootUser: minio
     rootPassword: minio123
