@@ -37,17 +37,15 @@ def hex_to_int(hex_str: str) -> int:
 
 
 def generate_id(record_id: Any) -> uuid.UUID:
-    try:
-        return uuid.UUID(record_id)
-    except ValueError:
-        pass
-
     if isinstance(record_id, int):
         return uuid.UUID(int=record_id)
+
     if isinstance(record_id, str):
         id_int = hex_to_int(record_id)
         if hex_to_int(record_id) > 0:
             return uuid.UUID(int=id_int)
+
+    return uuid.UUID(record_id)
 
 
 def get_schema_from_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Mapping[str, Mapping[str, str]]:

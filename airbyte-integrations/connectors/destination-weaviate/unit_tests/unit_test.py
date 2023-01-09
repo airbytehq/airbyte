@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+import uuid
 from unittest.mock import Mock
 
 from destination_weaviate.client import Client
-from destination_weaviate.utils import stream_to_class_name
+from destination_weaviate.utils import stream_to_class_name, generate_id
 
 
 def test_client_custom_vectors_config():
@@ -35,3 +36,10 @@ def test_utils_stream_name_to_class_name():
     assert stream_to_class_name("s _ a") == "S_a"
     assert stream_to_class_name("s{} _ a") == "S_a"
     assert stream_to_class_name("s{} _ aA") == "S_aA"
+
+
+def test_generate_id():
+    assert generate_id("1") == uuid.UUID(int=1)
+    assert generate_id("0x1") == uuid.UUID(int=1)
+    assert generate_id(1) == uuid.UUID(int=1)
+    assert generate_id("123e4567-e89b-12d3-a456-426614174000") == uuid.UUID("123e4567-e89b-12d3-a456-426614174000")
