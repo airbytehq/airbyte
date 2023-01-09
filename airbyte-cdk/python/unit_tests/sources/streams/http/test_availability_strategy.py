@@ -203,9 +203,10 @@ def test_http_availability_no_stream_slices(mocker):
     bad_branches_stream = Branches(repositories=[])
     assert isinstance(branches_stream.availability_strategy, HttpAvailabilityStrategy)
 
-    # # successfully fails as expected due to same error as below
+    # If the stream_slices method returns {}, this fails
+
     # bad_slice_return_value = {}
-    # mock_stream_slices = mocker.patch.object(RepoBasedStream, "stream_slices", return_value=bad_slice_return_value)
+    # mocker.patch.object(RepoBasedStream, "stream_slices", return_value=bad_slice_return_value)
     # assert StreamHelper.get_stream_slice(branches_stream) == bad_slice_return_value
     # assert branches_stream.path(bad_slice_return_value) == f"repos/user/repo1/branches"
 

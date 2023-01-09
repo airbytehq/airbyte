@@ -41,10 +41,4 @@ class StreamHelper:
                 sync_mode=SyncMode.full_refresh,
             )
         )
-        # Replacing the below try/except block with just return next(slices)
-        # Makes the new test (and all existing tests) pass.
         return next(slices)
-        # try:
-        #     return next(slices)
-        # except StopIteration:
-        #     return {}
