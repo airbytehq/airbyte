@@ -28,6 +28,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.init.LocalDefinitionsProvider;
+import io.airbyte.config.init.PostLoadExecutor;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;

@@ -4,6 +4,35 @@ micronaut:
   server:
     port: 9001
 
+airbyte:
+  cron:
+    update-definitions:
+      enabled: ${UPDATE_DEFINITIONS_CRON_ENABLED:false}
+  deployment-mode: ${DEPLOYMENT_MODE:OSS}
+  flyway:
+    configs:
+      initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+      minimum-migration-version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+  local:
+    docker-mount: ${LOCAL_DOCKER_MOUNT:}
+    root: ${LOCAL_ROOT}
+  platform:
+    remote-connector-catalog:
+      timeout-ms: ${REMOTE_CONNECTOR_CATALOG_MS:30000}
+      url: ${REMOTE_CONNECTOR_CATALOG_URL:}
+  role: ${AIRBYTE_ROLE:}
+  temporal:
+    worker:
+      ports: ${TEMPORAL_WORKER_PORTS:}
+  tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
+  version: ${AIRBYTE_VERSION}
+  workflow:
+    failure:
+      restart-delay: ${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS:600}
+  workspace:
+    docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
+    root: ${WORKSPACE_ROOT}
+
 datasources:
   config:
     connection-test-query: SELECT 1
@@ -25,6 +54,9 @@ datasources:
     driverClassName: org.postgresql.Driver
     username: ${DATABASE_USER}
     password: ${DATABASE_PASSWORD}
+
+docker:
+  network: ${DOCKER_NETWORK:host}
 
 endpoints:
   beans:
@@ -73,35 +105,6 @@ jooq:
       jackson-converter-enabled: true
       sql-dialect: POSTGRES
 
-airbyte:
-  cron:
-    update-definitions:
-      enabled: ${UPDATE_DEFINITIONS_CRON_ENABLED:false}
-  deployment-mode: ${DEPLOYMENT_MODE:OSS}
-  flyway:
-    configs:
-      initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
-      minimum-migration-version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
-  local:
-    docker-mount: ${LOCAL_DOCKER_MOUNT:}
-    root: ${LOCAL_ROOT}
-  remote-connector-catalog-url: ${REMOTE_CONNECTOR_CATALOG_URL:}
-  role: ${AIRBYTE_ROLE:}
-  temporal:
-    worker:
-      ports: ${TEMPORAL_WORKER_PORTS:}
-  tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
-  version: ${AIRBYTE_VERSION}
-  workflow:
-    failure:
-      restart-delay: ${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS:600}
-  workspace:
-    docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
-    root: ${WORKSPACE_ROOT}
-
-docker:
-  network: ${DOCKER_NETWORK:host}
-
 temporal:
   cloud:
     client:
@@ -115,6 +118,5 @@ temporal:
 
 logger:
   levels:
-    io.airbyte.bootloader: DEBUG
 # Uncomment to help resolve issues with conditional beans
 #    io.micronaut.context.condition: DEBUG

@@ -8,15 +8,16 @@ airbyte:
   bootloader:
     auto-upgrade-connectors: ${AUTO_UPGRADE_CONNECTORS_PROTOCOL:false}
     migration-baseline-version: ${BOOTLOADER_MIGRATION_BASELINE_VERSION:0.29.0.001}
-    remote-connector-catalog:
-      timeout-ms: ${REMOTE_CONNECTOR_CATALOG_MS:10000}
-      url: ${REMOTE_CONNECTOR_CATALOG_URL:}
     run-migration-on-startup: ${RUN_DATABASE_MIGRATION_ON_STARTUP:true}
   flyway:
     configs:
       initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
     jobs:
       initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+  platform:
+    remote-connector-catalog:
+      timeout-ms: ${REMOTE_CONNECTOR_CATALOG_MS:10000}
+      url: ${REMOTE_CONNECTOR_CATALOG_URL:}
   protocol:
     target:
       range:
@@ -115,4 +116,4 @@ jooq:
 logger:
   levels:
 # Uncomment to help resolve issues with conditional beans
-#    io.micronaut.context.condition: DEBUG
+    io.micronaut.context.condition: DEBUG

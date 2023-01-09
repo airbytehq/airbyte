@@ -9,13 +9,12 @@ import static io.airbyte.cron.MicronautCronRunner.SCHEDULED_TRACE_OPERATION_NAME
 import datadog.trace.api.Trace;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
-import io.airbyte.config.init.RemoteDefinitionsProvider;
+import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.context.annotation.Value;
 import io.micronaut.scheduling.annotation.Scheduled;
 import jakarta.inject.Singleton;
-import java.net.URI;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -32,24 +31,24 @@ public class DefinitionsUpdater {
 
   private final ConfigRepository configRepository;
 
-  private final URI remoteCatalogUrl;
+  private final DefinitionsProvider definitionsProvider;
   private final DeploymentMode deploymentMode;
 
   public DefinitionsUpdater(final ConfigRepository configRepository,
                             final DeploymentMode deploymentMode,
-                            @Value("${airbyte.remote-connector-catalog-url}") final String remoteCatalogUrl) {
+                            final Optional<DefinitionsProvider> definitionsProvider) {
     log.info("Creating connector definitions updater");
 
     this.configRepository = configRepository;
     this.deploymentMode = deploymentMode;
-    this.remoteCatalogUrl = remoteCatalogUrl != null ? URI.create(remoteCatalogUrl) : null;
+    this.definitionsProvider = definitionsProvider.orElse(null);
   }
 
   @Trace(operationName = SCHEDULED_TRACE_OPERATION_NAME)
   @Scheduled(fixedRate = "30s",
              initialDelay = "1m")
   void updateDefinitions() {
-    if (remoteCatalogUrl == null) {
+    if (definitionsProvider == null) {
       log.warn("Tried to update definitions, but the remote catalog url is not set");
       return;
     }
@@ -57,13 +56,12 @@ public class DefinitionsUpdater {
     log.info("Updating definitions...");
 
     try {
-      final RemoteDefinitionsProvider remoteDefinitionsProvider = new RemoteDefinitionsProvider(remoteCatalogUrl);
       log.info("Retrieved remote definitions: {} sources, {} destinations",
-          remoteDefinitionsProvider.getSourceDefinitions().size(),
-          remoteDefinitionsProvider.getDestinationDefinitions().size());
+          definitionsProvider.getSourceDefinitions().size(),
+          definitionsProvider.getDestinationDefinitions().size());
 
       try {
-        final ApplyDefinitionsHelper applyHelper = new ApplyDefinitionsHelper(configRepository, remoteDefinitionsProvider);
+        final ApplyDefinitionsHelper applyHelper = new ApplyDefinitionsHelper(configRepository, definitionsProvider);
         applyHelper.apply(deploymentMode == DeploymentMode.CLOUD);
 
         log.info("Done applying remote connector definitions");

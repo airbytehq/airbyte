@@ -7,6 +7,7 @@ package io.airbyte.bootloader;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.DefinitionsProvider;
+import io.airbyte.config.init.PostLoadExecutor;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;

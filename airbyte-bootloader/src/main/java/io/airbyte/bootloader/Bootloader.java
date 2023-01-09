@@ -12,6 +12,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Geography;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.DefinitionsProvider;
+import io.airbyte.config.init.PostLoadExecutor;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.init.DatabaseInitializer;
