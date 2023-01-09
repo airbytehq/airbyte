@@ -22,7 +22,7 @@ export interface BuildFormHook {
   validationSchema: AnySchema;
 }
 
-function setDefaultValues(
+export function setDefaultValues(
   formGroup: FormGroupItem,
   values: Record<string, unknown>,
   options: { respectExistingValues: boolean } = { respectExistingValues: false }
@@ -79,12 +79,13 @@ export function useBuildForm(
       if (isDraft) {
         return schema;
       }
-      // schema.properties gets defined right above
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      schema.properties!.name = {
-        type: "string",
-        title: formatMessage({ id: `form.${formType}Name` }),
-        description: formatMessage({ id: `form.${formType}Name.message` }),
+      schema.properties = {
+        name: {
+          type: "string",
+          title: formatMessage({ id: `form.${formType}Name` }),
+          description: formatMessage({ id: `form.${formType}Name.message` }),
+        },
+        ...schema.properties,
       };
       schema.required = ["name"];
       return schema;

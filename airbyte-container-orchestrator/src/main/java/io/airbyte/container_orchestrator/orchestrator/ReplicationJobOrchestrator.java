@@ -10,6 +10,8 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.generated.DestinationApi;
+import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.commons.features.FeatureFlagHelper;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -31,6 +33,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
@@ -60,19 +63,25 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
   private final JobRunConfig jobRunConfig;
+  private final SourceApi sourceApi;
+  private final DestinationApi destinationApi;
 
   public ReplicationJobOrchestrator(final Configs configs,
                                     final ProcessFactory processFactory,
                                     final FeatureFlags featureFlags,
                                     final AirbyteMessageSerDeProvider serDeProvider,
                                     final AirbyteMessageVersionedMigratorFactory migratorFactory,
-                                    final JobRunConfig jobRunConfig) {
+                                    final JobRunConfig jobRunConfig,
+                                    final SourceApi sourceApi,
+                                    final DestinationApi destinationApi) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
     this.jobRunConfig = jobRunConfig;
+    this.sourceApi = sourceApi;
+    this.destinationApi = destinationApi;
   }
 
   @Override
@@ -149,7 +158,9 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-        metricReporter, FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
+        metricReporter,
+        new ConnectorConfigUpdater(sourceApi, destinationApi),
+        FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
 
     log.info("Running replication worker...");
     final var jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),
