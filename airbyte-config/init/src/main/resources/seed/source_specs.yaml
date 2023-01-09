@@ -3514,7 +3514,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.81"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.82"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -5397,7 +5397,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-data-api:0.0.3"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -5476,9 +5476,11 @@
                 airbyte_secret: true
         date_ranges_start_date:
           type: "string"
-          title: "Date Range Start Date"
-          description: "The start date. One of the values Ndaysago, yesterday, today\
-            \ or in the format YYYY-MM-DD"
+          title: "Start Date"
+          description: "The start date from which to replicate report data in the\
+            \ format YYYY-MM-DD. Data generated before this date will not be included\
+            \ in the report."
+          format: "date"
           order: 2
         custom_reports:
           order: 3
@@ -5499,7 +5501,7 @@
             \ causing inaccuracies in the returned results. We recommend setting this\
             \ to 1 unless you have a hard requirement to make the sync faster at the\
             \ expense of accuracy. The minimum allowed value for this field is 1,\
-            \ and the maximum is 364. "
+            \ and the maximum is 364."
           examples:
           - 30
           - 60
@@ -5507,6 +5509,8 @@
           - 120
           - 200
           - 364
+          minimum: 1
+          maximum: 364
           default: 1
           order: 4
     supportsNormalization: false
