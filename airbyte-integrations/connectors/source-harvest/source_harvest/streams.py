@@ -75,9 +75,7 @@ class HarvestStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == requests.codes.FORBIDDEN:
             setattr(self, "raise_on_http_errors", False)
-            self.logger.warn(
-                f"Stream `{self.name}` is not available. Please check required permissions. {response.text}"
-            )
+            self.logger.warn(f"Stream `{self.name}` is not available. Please check required permissions. {response.text}")
         return super().should_retry(response)
 
 
