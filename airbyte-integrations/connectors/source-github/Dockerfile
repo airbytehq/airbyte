@@ -7,6 +7,8 @@ WORKDIR /airbyte/integration_code
 COPY source_github ./source_github
 COPY main.py ./
 COPY setup.py ./
+COPY airbyte-cdk airbyte-cdk
+RUN pip install -e ./airbyte-cdk
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"

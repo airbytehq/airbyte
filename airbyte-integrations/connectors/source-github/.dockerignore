@@ -1,6 +1,1 @@
-*
-!Dockerfile
-!main.py
-!source_github
-!setup.py
-!secrets
+*.sqlite
