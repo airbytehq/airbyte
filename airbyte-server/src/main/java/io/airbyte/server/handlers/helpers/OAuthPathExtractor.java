@@ -17,7 +17,7 @@ public class OAuthPathExtractor {
 
   public static Map<String, List<String>> extractOauthConfigurationPaths(final JsonNode configuration) {
 
-    if (configuration.has(PROPERTIES) && configuration.get(PROPERTIES).isObject()) {
+    if (configuration != null && configuration.has(PROPERTIES) && configuration.get(PROPERTIES).isObject()) {
       final Map<String, List<String>> result = new HashMap<>();
 
       configuration.get(PROPERTIES).fields().forEachRemaining(entry -> {

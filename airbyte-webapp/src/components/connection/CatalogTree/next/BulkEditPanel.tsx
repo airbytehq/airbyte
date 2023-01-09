@@ -75,7 +75,7 @@ export const getAvailableSyncModesOptions = (
 
 export const BulkEditPanel: React.FC = () => {
   const {
-    destDefinition: { supportedDestinationSyncModes },
+    destDefinitionSpecification: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEditService();
   const availableSyncModesOptions = useMemo(
@@ -112,7 +112,12 @@ export const BulkEditPanel: React.FC = () => {
           <FormattedMessage id="sources.sync" />
         </p>
         <div className={styles.syncCellContent}>
-          <Switch small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
+          <Switch
+            variant="strong-blue"
+            size="sm"
+            checked={options.selected}
+            onChange={() => onChangeOption({ selected: !options.selected })}
+          />
         </div>
       </HeaderCell>
       <HeaderCell flex={1} className={styles.headerCell}>
