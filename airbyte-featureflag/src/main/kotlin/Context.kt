@@ -21,6 +21,26 @@ sealed interface Context {
 }
 
 /**
+ * Context for representing multiple contexts concurrently.  Only supported for LaunchDarkly v6!
+ *
+ *  @param [contexts] list of contexts, must not contain another Multi context
+ */
+data class Multi(val contexts: List<Context>) : Context {
+    /** This value MUST be "multi" to properly sync with the LaunchDarkly client. */
+    override val kind = "multi"
+
+    /** Multi contexts don't have a key */
+    override val key = ""
+
+    init {
+        // ensure there are no nested contexts (i.e. this Multi does not contain another Multi)
+        if (contexts.filterIsInstance<Multi>().isNotEmpty()) {
+            throw IllegalArgumentException("Multi contexts cannot be nested")
+        }
+    }
+}
+
+/**
  * Context for representing a workspace.
  *
  * @param [key] the unique identifying value of this workspace

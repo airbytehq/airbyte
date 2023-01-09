@@ -4,10 +4,24 @@
 
 import io.airbyte.featureflag.Connection
 import io.airbyte.featureflag.Destination
+import io.airbyte.featureflag.Multi
 import io.airbyte.featureflag.Source
 import io.airbyte.featureflag.User
 import io.airbyte.featureflag.Workspace
 import org.junit.jupiter.api.Test
+
+class MultiTest {
+    @Test
+    fun `verify data`() {
+        val user = User("user-id")
+        val workspace = Workspace("workspace")
+
+        Multi(listOf(user, workspace)).also {
+            assert(it.kind == "multi")
+            assert(it.key == "")
+        }
+    }
+}
 
 class WorkspaceTest {
     @Test

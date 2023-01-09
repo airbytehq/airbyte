@@ -9,6 +9,7 @@ import io.airbyte.featureflag.EnvVar
 import io.airbyte.featureflag.FeatureFlagClient
 import io.airbyte.featureflag.Flag
 import io.airbyte.featureflag.LaunchDarklyClient
+import io.airbyte.featureflag.Multi
 import io.airbyte.featureflag.Temporary
 import io.airbyte.featureflag.TestClient
 import io.airbyte.featureflag.User
@@ -17,224 +18,235 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class FeatureFlagClientTest {
-    @Nested
-    inner class ConfigFileClient {
-        @Test
-        fun `verify platform functionality`() {
-            val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
-            val client: FeatureFlagClient = ConfigFileClient(cfg)
+class ConfigFileClient {
+    @Test
+    fun `verify platform functionality`() {
+        val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
+        val client: FeatureFlagClient = ConfigFileClient(cfg)
 
-            val testTrue = Temporary(key = "test-true")
-            val testFalse = Temporary(key = "test-false", default = true)
-            val testDne = Temporary(key = "test-dne")
+        val testTrue = Temporary(key = "test-true")
+        val testFalse = Temporary(key = "test-false", default = true)
+        val testDne = Temporary(key = "test-dne")
 
-            val ctx = User("test")
+        val ctx = User("test")
 
-            with(client) {
-                assertTrue { enabled(testTrue, ctx) }
-                assertFalse { enabled(testFalse, ctx) }
-                assertFalse { enabled(testDne, ctx) }
-            }
+        with(client) {
+            assertTrue { enabled(testTrue, ctx) }
+            assertFalse { enabled(testFalse, ctx) }
+            assertFalse { enabled(testDne, ctx) }
         }
+    }
 
-        @Test
-        fun `verify platform reload capabilities`() {
-            val contents0 = """flags:
+    @Test
+    fun `verify platform reload capabilities`() {
+        val contents0 = """flags:
             |  - name: reload-test-true
             |    enabled: true
             |  - name: reload-test-false
             |    enabled: false
             |    """.trimMargin()
-            val contents1 = """flags:
+        val contents1 = """flags:
             |  - name: reload-test-true
             |    enabled: false
             |  - name: reload-test-false
             |    enabled: true
             |    """.trimMargin()
 
-            // write to a temp config
-            val tmpConfig = createTempFile(prefix = "reload-config", suffix = "yml").apply {
-                writeText(contents0)
-            }
-
-            val client: FeatureFlagClient = ConfigFileClient(tmpConfig)
-
-            // define the feature-flags
-            val testTrue = Temporary(key = "reload-test-true")
-            val testFalse = Temporary(key = "reload-test-false", default = true)
-            val testDne = Temporary(key = "reload-test-dne")
-            // and the context
-            val ctx = User("test")
-
-            // verify pre-updated values
-            with(client) {
-                assertTrue { enabled(testTrue, ctx) }
-                assertFalse { enabled(testFalse, ctx) }
-                assertFalse { enabled(testDne, ctx) }
-            }
-            // update the config and wait a few seconds (enough time for the file-watcher to pick up the change)
-            tmpConfig.writeText(contents1)
-            TimeUnit.SECONDS.sleep(2)
-
-            // verify post-updated values
-            with(client) {
-                assertFalse { enabled(testTrue, ctx) }
-                assertTrue { enabled(testFalse, ctx) }
-                assertFalse("undefined flag should still be false") { enabled(testDne, ctx) }
-            }
+        // write to a temp config
+        val tmpConfig = createTempFile(prefix = "reload-config", suffix = "yml").apply {
+            writeText(contents0)
         }
 
-        @Test
-        fun `verify env-var flag support`() {
-            val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
-            val client: FeatureFlagClient = ConfigFileClient(cfg)
+        val client: FeatureFlagClient = ConfigFileClient(tmpConfig)
 
-            val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
-            val evFalse = EnvVar(envVar = "env-true") { _ -> "false" }
-            val evEmpty = EnvVar(envVar = "env-true") { _ -> "" }
-            val evNull = EnvVar(envVar = "env-true") { _ -> null }
+        // define the feature-flags
+        val testTrue = Temporary(key = "reload-test-true")
+        val testFalse = Temporary(key = "reload-test-false", default = true)
+        val testDne = Temporary(key = "reload-test-dne")
+        // and the context
+        val ctx = User("test")
 
-            val ctx = User("test")
+        // verify pre-updated values
+        with(client) {
+            assertTrue { enabled(testTrue, ctx) }
+            assertFalse { enabled(testFalse, ctx) }
+            assertFalse { enabled(testDne, ctx) }
+        }
+        // update the config and wait a few seconds (enough time for the file-watcher to pick up the change)
+        tmpConfig.writeText(contents1)
+        TimeUnit.SECONDS.sleep(2)
 
-            with(client) {
-                assertTrue { enabled(evTrue, ctx) }
-                assertFalse { enabled(evFalse, ctx) }
-                assertFalse { enabled(evEmpty, ctx) }
-                assertFalse { enabled(evNull, ctx) }
-            }
+        // verify post-updated values
+        with(client) {
+            assertFalse { enabled(testTrue, ctx) }
+            assertTrue { enabled(testFalse, ctx) }
+            assertFalse("undefined flag should still be false") { enabled(testDne, ctx) }
         }
     }
 
-    @Nested
-    inner class LaunchDarklyClient {
-        @Test
-        fun `verify cloud functionality`() {
-            val testTrue = Temporary(key = "test-true")
-            val testFalse = Temporary(key = "test-false", default = true)
-            val testDne = Temporary(key = "test-dne")
+    @Test
+    fun `verify env-var flag support`() {
+        val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
+        val client: FeatureFlagClient = ConfigFileClient(cfg)
 
-            val ctx = User("test")
+        val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
+        val evFalse = EnvVar(envVar = "env-true") { _ -> "false" }
+        val evEmpty = EnvVar(envVar = "env-true") { _ -> "" }
+        val evNull = EnvVar(envVar = "env-true") { _ -> null }
 
-            val ldClient: LDClient = mockk()
-            val flag = slot<String>()
-            every {
-                ldClient.boolVariation(capture(flag), any<LDUser>(), any())
-            } answers {
-                when (flag.captured) {
-                    testTrue.key -> true
-                    testFalse.key, testDne.key -> false
-                    else -> throw IllegalArgumentException("${flag.captured} was unexpected")
-                }
-            }
+        val ctx = User("test")
 
-            val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
-            with(client) {
-                assertTrue { enabled(testTrue, ctx) }
-                assertFalse { enabled(testFalse, ctx) }
-                assertFalse { enabled(testDne, ctx) }
-            }
+        with(client) {
+            assertTrue { enabled(evTrue, ctx) }
+            assertFalse { enabled(evFalse, ctx) }
+            assertFalse { enabled(evEmpty, ctx) }
+            assertFalse { enabled(evNull, ctx) }
+        }
+    }
+}
 
-            verify {
-                ldClient.boolVariation(testTrue.key, any<LDUser>(), testTrue.default)
-                ldClient.boolVariation(testFalse.key, any<LDUser>(), testFalse.default)
-                ldClient.boolVariation(testDne.key, any<LDUser>(), testDne.default)
+class LaunchDarklyClient {
+    @Test
+    fun `verify cloud functionality`() {
+        val testTrue = Temporary(key = "test-true")
+        val testFalse = Temporary(key = "test-false", default = true)
+        val testDne = Temporary(key = "test-dne")
+
+        val ctx = User("test")
+
+        val ldClient: LDClient = mockk()
+        val flag = slot<String>()
+        every {
+            ldClient.boolVariation(capture(flag), any<LDUser>(), any())
+        } answers {
+            when (flag.captured) {
+                testTrue.key -> true
+                testFalse.key, testDne.key -> false
+                else -> throw IllegalArgumentException("${flag.captured} was unexpected")
             }
         }
 
-        @Test
-        fun `verify env-var flag support`() {
-            val ldClient: LDClient = mockk()
-            val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
+        val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
+        with(client) {
+            assertTrue { enabled(testTrue, ctx) }
+            assertFalse { enabled(testFalse, ctx) }
+            assertFalse { enabled(testDne, ctx) }
+        }
 
-            val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
-            val evFalse = EnvVar(envVar = "env-false") { _ -> "false" }
-            val evEmpty = EnvVar(envVar = "env-empty") { _ -> "" }
-            val evNull = EnvVar(envVar = "env-null") { _ -> null }
-
-            val ctx = User("test")
-
-            with(client) {
-                assertTrue { enabled(evTrue, ctx) }
-                assertFalse { enabled(evFalse, ctx) }
-                assertFalse { enabled(evEmpty, ctx) }
-                assertFalse { enabled(evNull, ctx) }
-            }
-
-            // EnvVar flags should not interact with the LDClient
-            verify { ldClient wasNot called }
+        verify {
+            ldClient.boolVariation(testTrue.key, any<LDUser>(), testTrue.default)
+            ldClient.boolVariation(testFalse.key, any<LDUser>(), testFalse.default)
+            ldClient.boolVariation(testDne.key, any<LDUser>(), testDne.default)
         }
     }
 
-    @Nested
-    inner class TestClient {
-        @Test
-        fun `verify functionality`() {
-            val testTrue = Pair(Temporary(key = "test-true"), true)
-            val testFalse = Pair(Temporary(key = "test-false", default = true), false)
-            val testDne = Temporary(key = "test-dne")
+    @Test
+    fun `verify multi-context is not supported`() {
+        /**
+         * TODO replace this test once LDv6 is being used and Context.toLDUser no longer exists, to verify Multi support
+         */
+        val ldClient: LDClient = mockk()
+        every { ldClient.boolVariation(any(), any<LDUser>(), any()) } returns false
 
-            val ctx = User("test")
-            val values: MutableMap<String, Boolean> = mutableMapOf<Flag, Boolean>(testTrue, testFalse)
-                .mapKeys { it.key.key }
-                .toMutableMap()
+        val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
+        val multiCtx = Multi(listOf(User("test")))
 
-            val client: FeatureFlagClient = TestClient(values)
-            with(client) {
-                assertTrue { enabled(testTrue.first, ctx) }
-                assertFalse { enabled(testFalse.first, ctx) }
-                assertFalse { enabled(testDne, ctx) }
-            }
+        assertFailsWith<IllegalArgumentException> {
+            client.enabled(Temporary(key = "test"), multiCtx)
+        }
+    }
 
-            // modify the value, ensure the client reports the new modified value
-            values[testTrue.first.key] = false
-            values[testFalse.first.key] = true
+    @Test
+    fun `verify env-var flag support`() {
+        val ldClient: LDClient = mockk()
+        val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
 
-            with(client) {
-                assertFalse { enabled(testTrue.first, ctx) }
-                assertTrue { enabled(testFalse.first, ctx) }
-                assertFalse("undefined flags should always return false") { enabled(testDne, ctx) }
-            }
+        val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
+        val evFalse = EnvVar(envVar = "env-false") { _ -> "false" }
+        val evEmpty = EnvVar(envVar = "env-empty") { _ -> "" }
+        val evNull = EnvVar(envVar = "env-null") { _ -> null }
+
+        val ctx = User("test")
+
+        with(client) {
+            assertTrue { enabled(evTrue, ctx) }
+            assertFalse { enabled(evFalse, ctx) }
+            assertFalse { enabled(evEmpty, ctx) }
+            assertFalse { enabled(evNull, ctx) }
         }
 
-        @Test
-        fun `verify env-var flag support`() {
-            val evTrue = EnvVar(envVar = "env-true")
-            val evFalse = EnvVar(envVar = "env-false")
-            val evEmpty = EnvVar(envVar = "env-empty")
+        // EnvVar flags should not interact with the LDClient
+        verify { ldClient wasNot called }
+    }
+}
 
-            val ctx = User("test")
+class TestClient {
+    @Test
+    fun `verify functionality`() {
+        val testTrue = Pair(Temporary(key = "test-true"), true)
+        val testFalse = Pair(Temporary(key = "test-false", default = true), false)
+        val testDne = Temporary(key = "test-dne")
 
-            val values = mutableMapOf(
-                evTrue.key to true,
-                evFalse.key to false,
-            )
-            val client: FeatureFlagClient = TestClient(values)
+        val ctx = User("test")
+        val values: MutableMap<String, Boolean> = mutableMapOf<Flag, Boolean>(testTrue, testFalse)
+            .mapKeys { it.key.key }
+            .toMutableMap()
 
-            with(client) {
-                assertTrue { enabled(evTrue, ctx) }
-                assertFalse { enabled(evFalse, ctx) }
-                assertFalse { enabled(evEmpty, ctx) }
-            }
+        val client: FeatureFlagClient = TestClient(values)
+        with(client) {
+            assertTrue { enabled(testTrue.first, ctx) }
+            assertFalse { enabled(testFalse.first, ctx) }
+            assertFalse { enabled(testDne, ctx) }
+        }
 
-            // modify the value, ensure the client reports the new modified value
-            values[evTrue.key] = false
-            values[evFalse.key] = true
+        // modify the value, ensure the client reports the new modified value
+        values[testTrue.first.key] = false
+        values[testFalse.first.key] = true
 
-            with(client) {
-                assertFalse { enabled(evTrue, ctx) }
-                assertTrue { enabled(evFalse, ctx) }
-                assertFalse("undefined flags should always return false") { enabled(evEmpty, ctx) }
-            }
+        with(client) {
+            assertFalse { enabled(testTrue.first, ctx) }
+            assertTrue { enabled(testFalse.first, ctx) }
+            assertFalse("undefined flags should always return false") { enabled(testDne, ctx) }
+        }
+    }
+
+    @Test
+    fun `verify env-var flag support`() {
+        val evTrue = EnvVar(envVar = "env-true")
+        val evFalse = EnvVar(envVar = "env-false")
+        val evEmpty = EnvVar(envVar = "env-empty")
+
+        val ctx = User("test")
+
+        val values = mutableMapOf(
+            evTrue.key to true,
+            evFalse.key to false,
+        )
+        val client: FeatureFlagClient = TestClient(values)
+
+        with(client) {
+            assertTrue { enabled(evTrue, ctx) }
+            assertFalse { enabled(evFalse, ctx) }
+            assertFalse { enabled(evEmpty, ctx) }
+        }
+
+        // modify the value, ensure the client reports the new modified value
+        values[evTrue.key] = false
+        values[evFalse.key] = true
+
+        with(client) {
+            assertFalse { enabled(evTrue, ctx) }
+            assertTrue { enabled(evFalse, ctx) }
+            assertFalse("undefined flags should always return false") { enabled(evEmpty, ctx) }
         }
     }
 }

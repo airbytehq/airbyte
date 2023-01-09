@@ -176,8 +176,9 @@ private fun Path.onChange(block: () -> Unit) {
  *
  * Once v6 is GA, this method would be removed and replaced with toLDContext.
  */
-private fun Context.toLDUser(): LDUser {
-    return LDUser(key)
+private fun Context.toLDUser(): LDUser = when (this) {
+    is Multi -> throw IllegalArgumentException("LDv5 does not support multiple contexts")
+    else -> LDUser(key)
 }
 
 /**
@@ -186,12 +187,15 @@ private fun Context.toLDUser(): LDUser {
  * Replaces toLDUser once LaunchDarkly v6 is GA.
  */
 private fun Context.toLDContext(): LDContext {
+    if (this is Multi) {
+        val builder = LDContext.multiBuilder()
+        contexts.forEach { builder.add(it.toLDContext()) }
+        return builder.build()
+    }
+
     val builder = LDContext.builder(ContextKind.of(kind), key)
     when (this) {
-        is Workspace -> {
-            user?.let { builder.set("user", it) }
-        }
-
+        is Workspace -> user?.let { builder.set("user", it) }
         else -> Unit
     }
     return builder.build()
