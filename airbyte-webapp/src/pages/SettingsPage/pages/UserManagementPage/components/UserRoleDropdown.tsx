@@ -28,7 +28,7 @@ const UserRoleDropDown: React.FC<IProps> = ({ value, options, onChange, name }) 
       <DropDown
         isDisabled
         $withBorder
-        $transparentBackground
+        $background="white"
         placeholder={getRoleAgainstRoleNumber(selectedRole as number)}
       />
     );
@@ -37,7 +37,7 @@ const UserRoleDropDown: React.FC<IProps> = ({ value, options, onChange, name }) 
     <DropDown
       isDisabled={getRoleAgainstRoleNumber(selectedRole as number) === ROLES.Administrator_Owner ? true : false}
       $withBorder
-      $transparentBackground
+      $background="white"
       isSearchable
       options={options}
       value={selectedRole}

@@ -5,7 +5,7 @@ export const CustomSelect = styled(Select)<
   {
     $withBorder?: boolean;
     $error?: boolean;
-    $transparentBackground?: boolean;
+    $background?: string;
   } & Props
 >`
   & > .react-select__control {
@@ -15,7 +15,7 @@ export const CustomSelect = styled(Select)<
     border: 1px solid
       ${({ theme, $withBorder, $error }) =>
         $error ? theme.dangerColor : $withBorder ? theme.greyColor30 : theme.greyColor0};
-    background: ${({ $transparentBackground, theme }) => ($transparentBackground ? "transparent" : theme.greyColor0)};
+    background: ${({ $background, theme }) => ($background ? $background : theme.greyColor0)};
     border-radius: 6px;
     font-size: 14px;
     line-height: 20px;
@@ -23,8 +23,7 @@ export const CustomSelect = styled(Select)<
 
     &:hover {
       border-color: ${({ theme, $error }) => ($error ? theme.dangerColor : theme.greyColor20)};
-      background: ${({ $transparentBackground, theme }) =>
-        $transparentBackground ? "transparent" : theme.greyColor20};
+      background: ${({ $background, theme }) => ($background ? $background : theme.greyColor20)};
     }
 
     &.react-select__control--menu-is-open {
