@@ -6,7 +6,8 @@ $controlButtonWidth: 24px;
 .controls {
   display: flex;
   justify-content: center;
-  gap: variables.$spacing-sm;
+  align-items: center;
+  gap: variables.$spacing-md;
 }
 
 .controlButton {
@@ -31,6 +32,33 @@ $controlButtonWidth: 24px;
   &:hover {
     background-color: colors.$red;
   }
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: variables.$spacing-md;
+  border-bottom: variables.$border-thick solid transparent;
+  color: colors.$grey-400;
+  cursor: pointer;
+  display: flex;
+  gap: variables.$spacing-md;
+  align-items: center;
+}
+
+.selectedTab {
+  color: colors.$black;
+  border-bottom-color: colors.$yellow-900;
+}
+
+.errorMessage {
+  // hardcode height to prevent resizing when error message is hidden
+  height: 16px;
+  color: colors.$red;
+}
+
+.schemaEditor {
+  height: 100%;
 }
 
 .multiStreams {

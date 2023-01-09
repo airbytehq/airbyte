@@ -48,7 +48,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
   const {
-    destDefinition: { supportedDestinationSyncModes },
+    destDefinitionSpecification: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { mode } = useConnectionFormService();
 
@@ -166,7 +166,12 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   );
 
   const destName = prefix + (streamNode.stream?.name ?? "");
-  const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
+  const configErrors = getIn(
+    errors,
+    isNewStreamsTableEnabled
+      ? `syncCatalog.streams[${streamNode.id}].config`
+      : `schema.streams[${streamNode.id}].config`
+  );
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const pkType = getPathType(pkRequired, shouldDefinePk);
   const cursorType = getPathType(cursorRequired, shouldDefineCursor);
@@ -194,6 +199,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
         onExpand={onExpand}
         changedSelected={changedSelected}
         hasError={hasError}
+        configErrors={configErrors}
         disabled={disabled}
       />
       {isRowExpanded &&

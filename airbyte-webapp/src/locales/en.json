@@ -584,6 +584,7 @@
   "connector.optionsHeader": "Options",
   "connector.exampleValues": "Example {count, plural, one {value} other {values}}",
   "connector.oauthCredentialsMissing": "OAuth login is temporarily unavailable for this connector. Please try again later.",
+  "connector.testLogs": "Connection test logs",
 
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
@@ -718,11 +719,16 @@
   "connectorBuilder.setInUserInput": "This setting is configured as part of the user inputs in the testing panel",
   "connectorBuilder.optionalFieldsLabel": "Optional fields",
   "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
+  "connectorBuilder.addNewSlicer": "Add new slicer",
+  "connectorBuilder.streamConfiguration": "Configuration",
+  "connectorBuilder.streamSchema": "Schema",
+  "connectorBuilder.invalidSchema": "Invalid JSON - please fix schema to have it applied",
   "connectorBuilder.copyToPaginationTitle": "Copy pagination settings to...",
   "connectorBuilder.copyFromPaginationTitle": "Import pagination settings from...",
   "connectorBuilder.copyToSlicerTitle": "Copy slicing settings to...",
   "connectorBuilder.copyFromSlicerTitle": "Import slicing settings from...",
   "connectorBuilder.inputsButton": "Inputs",
+  "connectorBuilder.interUserInputValue": "Insert a user input value",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 

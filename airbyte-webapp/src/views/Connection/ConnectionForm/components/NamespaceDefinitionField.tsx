@@ -11,14 +11,14 @@ import styles from "./NamespaceDefinitionField.module.scss";
 
 export const StreamOptions = [
   {
-    value: NamespaceDefinitionType.source,
-    label: <FormattedMessage id="connectionForm.sourceFormat" />,
-    testId: "namespaceDefinition-source",
-  },
-  {
     value: NamespaceDefinitionType.destination,
     label: <FormattedMessage id="connectionForm.destinationFormat" />,
     testId: "namespaceDefinition-destination",
+  },
+  {
+    value: NamespaceDefinitionType.source,
+    label: <FormattedMessage id="connectionForm.sourceFormat" />,
+    testId: "namespaceDefinition-source",
   },
   {
     value: NamespaceDefinitionType.customformat,

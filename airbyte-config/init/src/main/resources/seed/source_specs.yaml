@@ -242,7 +242,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alpha-vantage:0.1.0"
+- dockerImage: "airbyte/source-alpha-vantage:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/alpha-vantage"
     connectionSpecification:
@@ -285,7 +285,7 @@
           description: "Whether to return adjusted data. Only applicable to intraday\
             \ endpoints.\n"
           default: false
-          order: 4
+          order: 3
         outputsize:
           title: "Output Size"
           type: "string"
@@ -295,7 +295,7 @@
           - "compact"
           - "full"
           default: "compact"
-          order: 5
+          order: 4
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -719,7 +719,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.26"
+- dockerImage: "airbyte/source-amazon-ads:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -2572,7 +2572,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-coin-api:0.1.0"
+- dockerImage: "airbyte/source-coin-api:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/coin-api"
     connectionSpecification:
@@ -2796,6 +2796,46 @@
           type: "string"
           description: "API Secret"
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-commcare:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Commcare Source Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "app_id"
+      - "start_date"
+      properties:
+        api_key:
+          type: "string"
+          title: "API Key"
+          description: "Commcare API Key"
+          airbyte_secret: true
+          order: 0
+        project_space:
+          type: "string"
+          title: "Project Space"
+          description: "Project Space for commcare"
+          order: 1
+        app_id:
+          type: "string"
+          title: "Application ID"
+          description: "The Application ID we are interested in"
+          airbyte_secret: true
+          order: 2
+        start_date:
+          type: "string"
+          title: "Start date for extracting records"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          default: "2022-10-01T00:00:00Z"
+          description: "UTC date and time in the format 2017-01-25T00:00:00Z. Only\
+            \ records after this date will be replicated."
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -3474,7 +3514,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.80"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.81"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4346,7 +4386,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:1.0.0"
+- dockerImage: "airbyte/source-freshdesk:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshdesk"
     connectionSpecification:
@@ -4547,7 +4587,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.10"
+- dockerImage: "airbyte/source-github:0.3.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -5067,7 +5107,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.5"
+- dockerImage: "airbyte/source-google-ads:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -5357,7 +5397,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-data-api:0.0.3"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -5436,9 +5476,11 @@
                 airbyte_secret: true
         date_ranges_start_date:
           type: "string"
-          title: "Date Range Start Date"
-          description: "The start date. One of the values Ndaysago, yesterday, today\
-            \ or in the format YYYY-MM-DD"
+          title: "Start Date"
+          description: "The start date from which to replicate report data in the\
+            \ format YYYY-MM-DD. Data generated before this date will not be included\
+            \ in the report."
+          format: "date"
           order: 2
         custom_reports:
           order: 3
@@ -5459,7 +5501,7 @@
             \ causing inaccuracies in the returned results. We recommend setting this\
             \ to 1 unless you have a hard requirement to make the sync faster at the\
             \ expense of accuracy. The minimum allowed value for this field is 1,\
-            \ and the maximum is 364. "
+            \ and the maximum is 364."
           examples:
           - 30
           - 60
@@ -5467,6 +5509,8 @@
           - 120
           - 200
           - 364
+          minimum: 1
+          maximum: 364
           default: 1
           order: 4
     supportsNormalization: false
@@ -7570,7 +7614,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-looker:0.2.7"
+- dockerImage: "airbyte/source-looker:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/looker"
     connectionSpecification:
@@ -7581,7 +7625,7 @@
       - "domain"
       - "client_id"
       - "client_secret"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         domain:
           type: "string"
@@ -7602,6 +7646,7 @@
           title: "Client Secret"
           type: "string"
           description: "The Client Secret is second part of an API3 key."
+          airbyte_secret: true
         run_look_ids:
           title: "Look IDs to Run"
           type: "array"
@@ -9807,7 +9852,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-okta:0.1.13"
+- dockerImage: "airbyte/source-okta:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/okta"
     connectionSpecification:
@@ -9882,52 +9927,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    advanced_auth:
-      auth_flow_type: "oauth2.0"
-      predicate_key:
-      - "credentials"
-      - "auth_type"
-      predicate_value: "oauth2.0"
-      oauth_config_specification:
-        oauth_user_input_from_connector_config_specification:
-          type: "object"
-          additionalProperties: true
-          properties:
-            domain:
-              type: "string"
-              path_in_connector_config:
-              - "domain"
-        complete_oauth_output_specification:
-          type: "object"
-          additionalProperties: true
-          properties:
-            refresh_token:
-              type: "string"
-              path_in_connector_config:
-              - "credentials"
-              - "refresh_token"
-        complete_oauth_server_input_specification:
-          type: "object"
-          additionalProperties: true
-          properties:
-            client_id:
-              type: "string"
-            client_secret:
-              type: "string"
-        complete_oauth_server_output_specification:
-          type: "object"
-          additionalProperties: true
-          properties:
-            client_id:
-              type: "string"
-              path_in_connector_config:
-              - "credentials"
-              - "client_id"
-            client_secret:
-              type: "string"
-              path_in_connector_config:
-              - "credentials"
-              - "client_secret"
 - dockerImage: "airbyte/source-omnisend:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/omnisend"
@@ -12857,7 +12856,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.28"
+- dockerImage: "airbyte/source-salesforce:1.0.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -13387,7 +13386,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.19"
+- dockerImage: "airbyte/source-slack:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:

@@ -179,6 +179,7 @@ class AdAccount(FBMarketingStream):
         # that specific ad account.
         if "funding_source_details" in properties and "MANAGE" not in self.get_task_permissions():
             properties.remove("funding_source_details")
+        if "is_prepay_account" in properties and "MANAGE" not in self.get_task_permissions():
             properties.remove("is_prepay_account")
         return properties
 

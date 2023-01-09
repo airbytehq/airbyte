@@ -250,3 +250,5 @@ export const CreationFormPage: React.FC = () => {
     </>
   );
 };
+
+export default CreationFormPage;
