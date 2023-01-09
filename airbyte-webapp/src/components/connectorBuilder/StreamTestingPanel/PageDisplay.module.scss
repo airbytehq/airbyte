@@ -35,3 +35,16 @@
   max-height: 100%;
   overflow-y: auto;
 }
+
+.diffLine {
+  margin: 0;
+  padding: 0;
+}
+
+.added {
+  background-color: green;
+}
+
+.removed {
+  background-color: red;
+}
