@@ -1,10 +1,5 @@
 name: Publish CDK Manually
 on:
-  push:
-    paths:
-      - '**.yml'
-    branches:
-      - issue-19981_avoid-race-condition-on-airbyte-cdk-release
   workflow_dispatch:
     inputs:
       repo:
@@ -27,7 +22,7 @@ on:
       dry-run:
         description: 'By default dry-run publishes to Test PyPi. Use "false" to publish to actual PyPi servers.'
         required: false
-      changelog:
+      changelog-message:
         description: "Changelog message to be added to CHANGELOG.md"
         required: true
 
@@ -52,44 +47,17 @@ jobs:
         run: |
           pip install bumpversion
           cd airbyte-cdk/python
-          bumpversion patch
+          bumpversion ${{ github.event.inputs.part-to-bump }}
           new_version="$(grep -i 'current_version = ' .bumpversion.cfg | sed -e 's/.* = //')"
-          awk -v NEW_VERSION="$new_version" -v CHANGELOG_MESSAGE="This is a changelog message for testing purposes" 'NR==3{print "## " NEW_VERSION "\n" CHANGELOG_MESSAGE "\n"}1' CHANGELOG.md > tmp && mv tmp CHANGELOG.md
+          awk -v NEW_VERSION="$new_version" -v CHANGELOG_MESSAGE="${{ github.event.inputs.changelog-message }}" 'NR==3{print "## " NEW_VERSION "\n" CHANGELOG_MESSAGE "\n"}1' CHANGELOG.md > tmp && mv tmp CHANGELOG.md
       - name: Commit and Push Changes
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md
-          commit_message: 🤖 Bump patch version of Airbyte CDK
+          commit_message: 🤖 Bump ${{ github.event.inputs.part-to-bump }} version of Airbyte CDK
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
-      - name: Post to a Slack channel
-        id: slack
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04HMCXBP46
-          payload: |
-            {
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "This is a test!\n\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   build-cdk:
     needs: bump-version
@@ -109,59 +77,31 @@ jobs:
           ref: ${{ github.event.inputs.gitref }}
       - name: Build CDK Package
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
-      - name: Add Failure Comment
-        if: github.event.inputs.comment-id && !success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
 
-#  publish-cdk:
-#    needs: build-cdk
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Link comment to workflow run
-#        if: github.event.inputs.comment-id
-#        uses: peter-evans/create-or-update-comment@v1
-#        with:
-#          comment-id: ${{ github.event.inputs.comment-id }}
-#          body: |
-#            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-#      # Make use of env vars to dynamically set the PyPi url. Since the default is set to publish to production PyPi, only set the url if during
-#      # a dry-run publish to the Test PyPi servers.
-#      - name: Set PyPi URL
-#        if: github.event.inputs.dry-run != 'false'
-#        run: |
-#          echo ${{ github.event.inputs.dry-run }}
-#          echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
-#      - name: Checkout Airbyte
-#        uses: actions/checkout@v3
-#        with:
-#          repository: ${{ github.event.inputs.repo }}
-#          ref: ${{ github.event.inputs.gitref }}
-#      - name: Publish Python Package
-#        uses: mariamrf/py-package-publish-action@v1.1.0
-#        with:
-#          # specify the same version as in ~/.python-version
-#          python_version: "3.9.11"
-#          pip_version: "21.1"
-#          subdir: "airbyte-cdk/python/"
-#        env:
-#          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-#          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-#          TWINE_REPOSITORY_URL: ${{ env.pypi_url }}
-#      - name: Add Success Comment
-#        if: github.event.inputs.comment-id && success()
-#        uses: peter-evans/create-or-update-comment@v1
-#        with:
-#          comment-id: ${{ github.event.inputs.comment-id }}
-#          body: |
-#            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-#      - name: Add Failure Comment
-#        if: github.event.inputs.comment-id && !success()
-#        uses: peter-evans/create-or-update-comment@v1
-#        with:
-#          comment-id: ${{ github.event.inputs.comment-id }}
-#          body: |
-#            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+  publish-cdk:
+    needs: build-cdk
+    runs-on: ubuntu-latest
+    steps:
+      # Make use of env vars to dynamically set the PyPi url. Since the default is set to publish to production PyPi, only set the url if during
+      # a dry-run publish to the Test PyPi servers.
+      - name: Set PyPi URL
+        if: github.event.inputs.dry-run != 'false'
+        run: |
+          echo ${{ github.event.inputs.dry-run }}
+          echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Publish Python Package
+        uses: mariamrf/py-package-publish-action@v1.1.0
+        with:
+          # specify the same version as in ~/.python-version
+          python_version: "3.9.11"
+          pip_version: "21.1"
+          subdir: "airbyte-cdk/python/"
+        env:
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_REPOSITORY_URL: ${{ env.pypi_url }}
