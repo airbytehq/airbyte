@@ -10,6 +10,7 @@ COPY source_salesforce ./source_salesforce
 COPY setup.py ./
 COPY main.py ./
 COPY *.patch.json ./
+COPY *.map.json ./
 COPY selected_streams.json ./
 RUN pip install .
 

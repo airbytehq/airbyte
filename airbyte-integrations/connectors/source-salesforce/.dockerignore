@@ -1,6 +1,7 @@
 *
 !*.patch.json
 !selected_streams.json
+*.map.json
 !Dockerfile
 !main.py
 !source_salesforce

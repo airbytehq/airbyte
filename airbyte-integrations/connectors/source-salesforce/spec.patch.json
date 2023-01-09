@@ -1,0 +1,44 @@
+{
+    "properties": {
+        "credentials": {
+            "required": [
+                "client_id",
+                "client_secret",
+                "refresh_token"
+            ],
+            "type": "object",
+            "x-oauth2-provider": "salesforce",
+            "properties": {
+                "auth_type": {
+                    "type": "string",
+                    "const": "Client"
+                },
+                "client_id": {
+                    "title": "Client ID",
+                    "description": "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client ID</a>",
+                    "type": "string",
+                    "order": 2,
+                    "airbyte_secret": true
+                },
+                "client_secret": {
+                    "title": "Client Secret",
+                    "description": "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client secret</a>",
+                    "type": "string",
+                    "airbyte_secret": true,
+                    "order": 3
+                },
+                "refresh_token": {
+                    "title": "Refresh Token",
+                    "description": "Enter your application's <a href=\"https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm\">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.",
+                    "type": "string",
+                    "airbyte_secret": true,
+                    "order": 4
+                }
+            }
+        },
+        "refresh_token": null,
+        "client_secret": null,
+        "client_id": null,
+        "auth_type": null
+    }
+}
