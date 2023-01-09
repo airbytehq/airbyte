@@ -6,7 +6,9 @@ package io.airbyte.server.converters;
 
 import io.airbyte.api.model.generated.WorkflowStateRead;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
+import jakarta.inject.Singleton;
 
+@Singleton
 public class WorkflowStateConverter {
 
   public WorkflowStateRead getWorkflowStateRead(final WorkflowState workflowState) {
