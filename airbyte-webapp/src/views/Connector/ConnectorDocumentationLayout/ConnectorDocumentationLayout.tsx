@@ -17,7 +17,8 @@ export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unkn
   const { documentationPanelOpen, documentationUrl } = useDocumentationPanelContext();
   const screenWidth = useWindowSize().width;
   const showDocumentationPanel =
-    screenWidth > 500 && documentationPanelOpen && documentationUrl.includes("docs.airbyte.com");
+    const isOfficialDocumentation = documentationUrl.includes("docs.airbyte.com");
+    screenWidth > 500 && documentationPanelOpen && isOfficialDocumentation;
 
   const documentationPanel = (
     <Suspense fallback={<LoadingPage />}>
