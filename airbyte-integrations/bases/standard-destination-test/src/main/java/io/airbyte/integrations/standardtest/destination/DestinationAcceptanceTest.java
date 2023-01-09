@@ -649,7 +649,7 @@ public abstract class DestinationAcceptanceTest {
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testIncrementalSyncWithNormalizationDropOneColumn(final String messagesFilename, final String catalogFilename)
       throws Exception {
-    if (!normalizationFromSpec()) {
+    if (!normalizationFromDefinition()) {
       return;
     }
 
