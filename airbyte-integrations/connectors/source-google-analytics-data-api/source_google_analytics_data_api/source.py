@@ -108,6 +108,7 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     def __init__(self, *, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self._config = config
+        self._stop_iteration = False
 
     @property
     def config(self):
@@ -122,6 +123,7 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
         try:
             yield from super().read_records(**kwargs)
         except requests.exceptions.HTTPError as e:
+            self._stop_iteration = True
             if e.response.status_code != 429:
                 raise e
 
@@ -250,7 +252,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        dates = []
 
         today: datetime.date = datetime.date.today()
 
@@ -268,16 +269,12 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             if timedelta > 1 and end_date > today:
                 end_date: datetime.date = start_date + datetime.timedelta(days=timedelta - (end_date - today).days)
 
-            dates.append(
-                {
-                    "startDate": utils.date_to_string(start_date),
-                    "endDate": utils.date_to_string(end_date),
-                }
-            )
+            if self._stop_iteration:
+                return
+
+            yield {"startDate": utils.date_to_string(start_date), "endDate": utils.date_to_string(end_date)}
 
             start_date: datetime.date = end_date + datetime.timedelta(days=1)
-
-        return dates
 
 
 class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream):
