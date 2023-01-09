@@ -20,6 +20,7 @@ from connector_builder.generated.models.streams_list_request_body import Streams
 from connector_builder.impl.default_api import DefaultApiImpl
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
 from fastapi import HTTPException
+from pydantic.error_wrappers import ValidationError
 
 MANIFEST = {
     "version": "0.1.0",
@@ -306,8 +307,6 @@ def test_read_stream_with_logs():
 @pytest.mark.parametrize(
     "request_record_limit, max_record_limit",
     [
-        pytest.param(None, 2, id="test_create_request_no_record_limit"),
-        pytest.param(None, 1, id="test_create_request_no_record_limit_n_records_exceed_max"),
         pytest.param(1, 3, id="test_create_request_with_record_limit"),
         pytest.param(3, 1, id="test_create_request_record_limit_exceeds_max"),
     ],
@@ -334,10 +333,7 @@ def test_read_stream_record_limit(request_record_limit, max_record_limit):
         )
     )
     n_records = 2
-    if request_record_limit is None:
-        record_limit = max_record_limit
-    else:
-        record_limit = min(request_record_limit, max_record_limit)
+    record_limit = min(request_record_limit, max_record_limit)
 
     api = DefaultApiImpl(mock_source_adapter_cls, max_record_limit=max_record_limit)
     loop = asyncio.get_event_loop()
@@ -349,6 +345,48 @@ def test_read_stream_record_limit(request_record_limit, max_record_limit):
     for i, actual_page in enumerate(single_slice.pages):
         total_records += len(actual_page.records)
     assert total_records == min([record_limit, n_records])
+
+
+@pytest.mark.parametrize(
+    "max_record_limit",
+    [
+        pytest.param(2, id="test_create_request_no_record_limit"),
+        pytest.param(1, id="test_create_request_no_record_limit_n_records_exceed_max"),
+    ],
+)
+def test_read_stream_default_record_limit(max_record_limit):
+    request = {
+        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
+        "headers": {"Content-Type": "application/json"},
+        "body": {"custom": "field"},
+    }
+    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+    mock_source_adapter_cls = make_mock_adapter_cls(
+        iter(
+            [
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Shinobu Kocho"}),
+                record_message("hashiras", {"name": "Muichiro Tokito"}),
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Mitsuri Kanroji"}),
+                response_log_message(response),
+            ]
+        )
+    )
+    n_records = 2
+
+    api = DefaultApiImpl(mock_source_adapter_cls, max_record_limit=max_record_limit)
+    loop = asyncio.get_event_loop()
+    actual_response: StreamRead = loop.run_until_complete(
+        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
+    )
+    single_slice = actual_response.slices[0]
+    total_records = 0
+    for i, actual_page in enumerate(single_slice.pages):
+        total_records += len(actual_page.records)
+    assert total_records == min([max_record_limit, n_records])
 
 
 def test_read_stream_limit_0():
@@ -372,17 +410,12 @@ def test_read_stream_limit_0():
             ]
         )
     )
-    request_record_limit = 0
-
     api = DefaultApiImpl(mock_source_adapter_cls)
-    with pytest.raises(HTTPException) as actual_exception:
-        loop = asyncio.get_event_loop()
+    loop = asyncio.get_event_loop()
 
-        loop.run_until_complete(
-            api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras", record_limit=request_record_limit))
-        )
+    with pytest.raises(ValidationError):
+        loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras", record_limit=0)))
         loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras")))
-        assert actual_exception.value.status_code == 400
 
 
 def test_read_stream_no_records():
