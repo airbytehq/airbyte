@@ -49,6 +49,8 @@ public interface JobPersistence {
    */
   record AttemptStats(SyncStats combinedStats, List<StreamSyncStats> perStreamStats) {}
 
+  record JobAttemptPair(long id, int attemptNumber) {}
+
   /**
    * Retrieve the combined and per stream stats for a single attempt.
    *
@@ -56,6 +58,19 @@ public interface JobPersistence {
    * @throws IOException
    */
   AttemptStats getAttemptStats(long jobId, int attemptNumber) throws IOException;
+
+  /**
+   * Alternative method to retrieve combined and per stream stats per attempt for a list of jobs to
+   * avoid overloading the database with too many queries.
+   * <p>
+   * This implementation is intended to utilise complex joins under the hood to reduce the potential
+   * N+1 database pattern.
+   *
+   * @param jobIds
+   * @return
+   * @throws IOException
+   */
+  Map<JobAttemptPair, AttemptStats> getAttemptStats(List<Long> jobIds) throws IOException;
 
   List<NormalizationSummary> getNormalizationSummary(long jobId, int attemptNumber) throws IOException;
 

@@ -349,7 +349,10 @@ public class TemporalClient {
         .withDockerImage(config.getDockerImage())
         .withProtocolVersion(config.getProtocolVersion())
         .withIsCustomConnector(config.getIsCustomConnector());
-    final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
+    final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
+        .withActorType(config.getActorType())
+        .withActorId(config.getActorId())
+        .withConnectionConfiguration(config.getConnectionConfiguration());
 
     return execute(jobRunConfig,
         () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
