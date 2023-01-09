@@ -9,7 +9,7 @@ import { useUnmount } from "react-use";
 import { ControlLabels } from "components";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
-import { Heading } from "components/ui/Heading";
+import { FlexContainer } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
@@ -51,30 +51,28 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
   });
 
   const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+  const firstSectionTitle = isNewStreamsTableEnabled ? undefined : <FormattedMessage id="connection.transfer" />;
 
   return (
     <>
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
       <FormChangeTracker changed={dirty} formId={formId} />
       <div className={styles.formContainer}>
-        <Section title={<FormattedMessage id="connection.transfer" />}>
+        <Section title={firstSectionTitle}>
           <ScheduleField />
           {allowAutoDetectSchema && (
             <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
           )}
         </Section>
         {!isNewStreamsTableEnabled && (
-          <Section>
-            <Heading as="h2" size="sm">
-              <FormattedMessage id="connection.streams" />
-            </Heading>
+          <Section title={<FormattedMessage id="connection.streams" />}>
             <span className={readonlyClass}>
               <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
             </span>
             {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
-                  <div className={styles.flexRow}>
+                  <FlexContainer alignItems="flex-start">
                     <div className={styles.leftFieldCol}>
                       <ControlLabels
                         className={styles.namespaceFormatLabel}
@@ -93,13 +91,13 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                         })}
                       />
                     </div>
-                  </div>
+                  </FlexContainer>
                 )}
               </Field>
             )}
             <Field name="prefix">
               {({ field }: FieldProps<string>) => (
-                <div className={styles.flexRow}>
+                <FlexContainer alignItems="flex-start">
                   <div className={styles.leftFieldCol}>
                     <ControlLabels
                       nextLine
@@ -122,7 +120,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                       style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                     />
                   </div>
-                </div>
+                </FlexContainer>
               )}
             </Field>
           </Section>

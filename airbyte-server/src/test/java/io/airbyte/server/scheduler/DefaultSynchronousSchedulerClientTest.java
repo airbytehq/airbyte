@@ -24,6 +24,7 @@ import io.airbyte.commons.temporal.JobMetadata;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.commons.version.Version;
+import io.airbyte.config.ActorType;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -202,6 +203,8 @@ class DefaultSynchronousSchedulerClientTest {
     @Test
     void testCreateSourceCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
+          .withActorType(ActorType.SOURCE)
+          .withActorId(SOURCE_CONNECTION.getSourceId())
           .withConnectionConfiguration(SOURCE_CONNECTION.getConfiguration())
           .withDockerImage(DOCKER_IMAGE)
           .withProtocolVersion(PROTOCOL_VERSION).withIsCustomConnector(false);
@@ -218,6 +221,8 @@ class DefaultSynchronousSchedulerClientTest {
     @Test
     void testCreateDestinationCheckConnectionJob() throws IOException {
       final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
+          .withActorType(ActorType.DESTINATION)
+          .withActorId(DESTINATION_CONNECTION.getDestinationId())
           .withConnectionConfiguration(DESTINATION_CONNECTION.getConfiguration())
           .withDockerImage(DOCKER_IMAGE)
           .withProtocolVersion(PROTOCOL_VERSION)

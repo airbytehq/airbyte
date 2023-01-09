@@ -217,6 +217,8 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
   private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
+  private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
+  private static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -1121,6 +1123,16 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean getAutoDetectSchema() {
     return getEnvOrDefault(AUTO_DETECT_SCHEMA, false);
+  }
+
+  @Override
+  public boolean getApplyFieldSelection() {
+    return getEnvOrDefault(APPLY_FIELD_SELECTION, false);
+  }
+
+  @Override
+  public String getFieldSelectionWorkspaces() {
+    return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "");
   }
 
   @Override

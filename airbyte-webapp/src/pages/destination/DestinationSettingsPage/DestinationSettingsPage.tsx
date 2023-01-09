@@ -21,7 +21,7 @@ export const DestinationSettingsPage: React.FC = () => {
   const destination = useGetDestination(params.id);
   const { connections } = useConnectionList();
   const connectionsWithDestination = connections.filter(
-    (connectionItem) => connectionItem.destinationId === destination.destinationId
+    ({ destination: { destinationId } }) => destinationId === destination.destinationId
   );
   const destinationSpecification = useGetDestinationDefinitionSpecification(destination.destinationDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);

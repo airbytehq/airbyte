@@ -274,7 +274,8 @@ public class ServerApp implements ServerRunnable {
         secretsRepositoryReader,
         secretsRepositoryWriter,
         schemaValidator,
-        connectionsHandler);
+        connectionsHandler,
+        oAuthConfigSupplier);
 
     final OperationsHandler operationsHandler = new OperationsHandler(configRepository);
 
@@ -302,7 +303,8 @@ public class ServerApp implements ServerRunnable {
         secretsRepositoryReader,
         secretsRepositoryWriter,
         schemaValidator,
-        connectionsHandler);
+        connectionsHandler,
+        oAuthConfigSupplier);
 
     final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler);
 

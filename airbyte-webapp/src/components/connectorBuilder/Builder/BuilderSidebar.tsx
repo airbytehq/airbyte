@@ -1,7 +1,8 @@
-import { faSliders } from "@fortawesome/free-solid-svg-icons";
+import { faSliders, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useFormikContext } from "formik";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import Indicator from "components/Indicator";
@@ -10,14 +11,10 @@ import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import {
-  BuilderView,
-  DEFAULT_BUILDER_FORM_VALUES,
-  useConnectorBuilderState,
-} from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "../DownloadYamlButton";
-import { BuilderFormValues } from "../types";
+import { BuilderFormValues, DEFAULT_BUILDER_FORM_VALUES, getInferredInputs } from "../types";
 import { useBuilderErrors } from "../useBuilderErrors";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
@@ -56,11 +53,11 @@ interface BuilderSidebarProps {
   toggleYamlEditor: () => void;
 }
 
-export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggleYamlEditor }) => {
+export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ className, toggleYamlEditor }) => {
   const { formatMessage } = useIntl();
   const { hasErrors } = useBuilderErrors();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { yamlManifest, selectedView, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
+  const { yamlManifest, selectedView, setSelectedView } = useConnectorBuilderFormState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
   const handleResetForm = () => {
     openConfirmationModal({
@@ -76,9 +73,6 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
   };
   const handleViewSelect = (selectedView: BuilderView) => {
     setSelectedView(selectedView);
-    if (selectedView !== "global") {
-      setTestStreamIndex(selectedView);
-    }
   };
 
   return (
@@ -106,6 +100,21 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       >
         <FontAwesomeIcon icon={faSliders} />
         <FormattedMessage id="connectorBuilder.globalConfiguration" />
+      </ViewSelectButton>
+
+      <ViewSelectButton
+        showErrorIndicator={false}
+        className={styles.globalConfigButton}
+        selected={selectedView === "inputs"}
+        onClick={() => handleViewSelect("inputs")}
+      >
+        <FontAwesomeIcon icon={faUser} />
+        <FormattedMessage
+          id="connectorBuilder.userInputs"
+          values={{
+            number: values.inputs.length + getInferredInputs(values.global, values.inferredInputOverrides).length,
+          }}
+        />
       </ViewSelectButton>
 
       <div className={styles.streamsHeader}>
@@ -141,4 +150,4 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       </Button>
     </div>
   );
-};
+});

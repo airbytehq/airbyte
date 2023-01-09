@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.26",
+  "version": "0.40.27",
   "private": true,
   "engines": {
     "node": "16.18.1"
@@ -40,6 +40,7 @@
     "@sentry/tracing": "^6.19.6",
     "@tanstack/react-table": "^8.7.0",
     "@types/segment-analytics": "^0.0.34",
+    "@types/uuid": "^9.0.0",
     "classnames": "^2.3.1",
     "dayjs": "^1.11.3",
     "firebase": "^9.8.2",
@@ -80,6 +81,7 @@
     "styled-components": "^5.3.5",
     "typesafe-actions": "^5.1.0",
     "unist-util-visit": "^4.1.0",
+    "uuid": "^9.0.0",
     "yup": "^0.32.11"
   },
   "devDependencies": {

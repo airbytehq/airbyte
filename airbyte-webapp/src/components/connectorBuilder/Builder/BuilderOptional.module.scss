@@ -1,0 +1,34 @@
+@use "scss/variables";
+@use "scss/colors";
+@use "scss/mixins";
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-top: variables.$border-thin solid colors.$grey-100;
+  gap: variables.$spacing-lg;
+}
+
+.container {
+  padding-left: variables.$spacing-xl;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  align-self: stretch;
+  gap: variables.$spacing-lg;
+}
+
+.label {
+  cursor: pointer;
+  background: none;
+  border: none;
+  display: flex;
+  gap: variables.$spacing-sm;
+  margin-top: variables.$spacing-lg;
+  align-items: center;
+
+  &.closed {
+    color: colors.$grey-400;
+  }
+}
