@@ -19,9 +19,6 @@ if (isCloudApp()) {
   loadOsano();
 }
 
-// pose as linux - this is necessary because json-diff used in the connector builder is doing feature detection this way
-window.process = { ...window.process, platform: "linux" };
-
 const CloudApp = lazy(() => import(`packages/cloud/App`));
 const App = lazy(() => import(`./App`));
 

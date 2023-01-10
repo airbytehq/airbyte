@@ -1,18 +1,26 @@
 import { faTrashCan, faCopy } from "@fortawesome/free-regular-svg-icons";
+import { faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useField } from "formik";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import Indicator from "components/Indicator";
+import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 import { Text } from "components/ui/Text";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  BuilderView,
+  useConnectorBuilderFormState,
+  useConnectorBuilderTestState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { formatJson } from "../StreamTestingPanel/utils";
 import { BuilderStream } from "../types";
 import { AddStreamButton } from "./AddStreamButton";
 import { BuilderCard } from "./BuilderCard";
@@ -124,7 +132,12 @@ const StreamControls = ({
   const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { setSelectedView } = useConnectorBuilderFormState();
-  const [, meta] = useField<string | undefined>(streamFieldPath("schema"));
+  const { readStream } = useConnectorBuilderTestState();
+  const [schema, meta] = useField<string | undefined>(streamFieldPath("schema"));
+  const formattedDetectedSchema = useMemo(
+    () => readStream.data?.inferred_schema && formatJson(readStream.data?.inferred_schema),
+    [readStream.data?.inferred_schema]
+  );
   const hasSchemaErrors = Boolean(meta.error);
 
   const handleDelete = () => {
@@ -154,6 +167,7 @@ const StreamControls = ({
         selected={selectedTab === "schema"}
         onSelect={() => setSelectedTab("schema")}
         showErrorIndicator={hasSchemaErrors}
+        showWarningIndicator={Boolean(schema.value !== formattedDetectedSchema)}
       />
       <AddStreamButton
         onAddStream={(addedStreamNum) => {
@@ -178,23 +192,42 @@ const StreamTab = ({
   label,
   onSelect,
   showErrorIndicator,
+  showWarningIndicator,
 }: {
   selected: boolean;
   label: string;
   onSelect: () => void;
   showErrorIndicator?: boolean;
+  showWarningIndicator?: boolean;
 }) => (
   <button type="button" className={classNames(styles.tab, { [styles.selectedTab]: selected })} onClick={onSelect}>
     {label}
     {showErrorIndicator && <Indicator />}
+    {showWarningIndicator && (
+      <Tooltip control={<FontAwesomeIcon icon={faWarning} className={styles.schemaConflictIcon} />}>
+        <FormattedMessage id="connectorBuilder.differentSchemaDescription" />
+      </Tooltip>
+    )}
   </button>
 );
 
 const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string) => string }) => {
   const [field, meta, helpers] = useField<string | undefined>(streamFieldPath("schema"));
+  const { readStream } = useConnectorBuilderTestState();
 
   return (
     <>
+      {!field.value && readStream.data?.inferred_schema && (
+        <Button
+          full
+          variant="secondary"
+          onClick={() => {
+            helpers.setValue(formatJson(readStream.data?.inferred_schema));
+          }}
+        >
+          <FormattedMessage id="connectorBuilder.useSchemaButton" />
+        </Button>
+      )}
       <CodeEditor
         value={field.value || ""}
         language="json"
