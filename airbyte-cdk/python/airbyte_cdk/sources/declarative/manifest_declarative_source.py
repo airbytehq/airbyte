@@ -76,6 +76,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
         self._validate_source()
 
+        # todo: The handwritten schema uses additionalProperties: false to validate, when we delete legacy path this can be removed
         # Stopgap to protect the top-level namespace until it's validated through the schema
         unknown_fields = [key for key in self._legacy_source_config.keys() if key not in self.VALID_TOP_LEVEL_FIELDS]
         if unknown_fields:

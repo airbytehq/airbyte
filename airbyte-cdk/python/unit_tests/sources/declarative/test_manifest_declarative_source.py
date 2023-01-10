@@ -9,7 +9,6 @@ import sys
 
 import pytest
 import yaml
-from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from jsonschema.exceptions import ValidationError
 
@@ -284,7 +283,7 @@ class TestYamlDeclarativeSource:
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
             "not_a_valid_field": "error",
         }
-        with pytest.raises(InvalidConnectorDefinitionException):
+        with pytest.raises(ValidationError):
             ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
 
     @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
