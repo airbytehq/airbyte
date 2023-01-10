@@ -8,7 +8,6 @@ import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.N
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
 import io.airbyte.commons.temporal.exception.UnreachableWorkflowException;
 import io.airbyte.commons.temporal.scheduling.CheckConnectionWorkflow;
@@ -30,7 +29,6 @@ import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.micronaut.context.annotation.Requires;
 import io.temporal.api.common.v1.WorkflowType;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
 import io.temporal.api.workflowservice.v1.ListClosedWorkflowExecutionsRequest;
@@ -62,7 +60,6 @@ import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class TemporalClient {
 
   /**
