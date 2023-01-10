@@ -46,7 +46,7 @@
         ]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "appendx"
+      "destination_sync_mode": "append"
     }
   ]
 }

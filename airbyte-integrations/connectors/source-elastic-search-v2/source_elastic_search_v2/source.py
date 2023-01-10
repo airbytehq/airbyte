@@ -74,11 +74,12 @@ class ElasticSearchV2Stream(HttpStream, ABC):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
-
         if stream_state == {}:
             date_filter = "2020-01-01"
         else:
             date_filter = stream_state.get("date")
+
+        self.logger.info("Date filter : {}".format(date_filter))
 
         if next_page_token is None:
             payload = {
