@@ -5,7 +5,8 @@ import { LoadingPage } from "components";
 
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
-import SideBar from "views/layout/SideBar";
+
+import { SideBar } from "../SideBar/SideBar";
 
 const MainContainer = styled.div`
   width: 100%;

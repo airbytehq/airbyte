@@ -13,11 +13,11 @@ import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
-import SideBar from "packages/cloud/views/layout/SideBar";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
+import { CloudSideBar } from "../SideBar/CloudSideBar";
 import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
 import styles from "./MainView.module.scss";
 
@@ -78,7 +78,7 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   return (
     <div className={styles.mainContainer}>
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
-        <SideBar />
+        <CloudSideBar />
         <div
           className={classNames(styles.content, {
             [styles.alertBanner]: !!alertToShow && !showExperimentBanner,
