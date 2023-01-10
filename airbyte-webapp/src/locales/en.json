@@ -223,6 +223,8 @@
   "form.nullable": "Nullable",
   "form.field.sync": "Sync",
   "form.field.sync.nestedFieldTooltip": "This field will be synced if \"{fieldName}\" is selected",
+  "form.field.sync.cursorFieldTooltip": "The cursor field cannot be deselected",
+  "form.field.sync.primaryKeyTooltip": "The primary key cannot be deselected",
   "form.field.name": "Field name",
   "form.field.dataType": "Data type",
   "form.field.destinationName": "Destination name",
