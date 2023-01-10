@@ -39,6 +39,7 @@ import io.airbyte.persistence.job.tracker.TrackingMetadata;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.handlers.helpers.OAuthPathExtractor;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class OAuthHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OAuthHandler.class);
