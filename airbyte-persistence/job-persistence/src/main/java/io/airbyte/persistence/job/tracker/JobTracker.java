@@ -85,7 +85,7 @@ public class JobTracker {
                                          final StandardCheckConnectionOutput output,
                                          final FailureReason failureReason) {
     Exceptions.swallow(() -> {
-      final Map<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output);
+      final Map<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output, failureReason);
       final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CHECK_CONNECTION_SOURCE);
       final Map<String, Object> sourceDefMetadata = generateSourceDefinitionMetadata(sourceDefinitionId);
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
@@ -101,7 +101,7 @@ public class JobTracker {
                                               final StandardCheckConnectionOutput output,
                                               final FailureReason failureReason) {
     Exceptions.swallow(() -> {
-      final Map<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output);
+      final Map<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output, failureReason);
       final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CHECK_CONNECTION_DESTINATION);
       final Map<String, Object> destinationDefinitionMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
@@ -344,11 +344,16 @@ public class JobTracker {
    * job with a failed check. Because of this, tracking just the job attempt status does not capture
    * the whole picture. The `check_connection_outcome` field tracks this.
    */
-  private Map<String, Object> generateCheckConnectionMetadata(final StandardCheckConnectionOutput output) {
+  private Map<String, Object> generateCheckConnectionMetadata(final StandardCheckConnectionOutput output, final FailureReason failureReason) {
     if (output == null) {
       return Map.of();
     }
-    return Map.of("check_connection_outcome", output.getStatus().toString());
+    final Map<String, Object> metadata = new HashMap<>();
+    metadata.put("check_connection_outcome", output.getStatus().toString());
+    if (failureReason != null) {
+      metadata.put("check_connection_failure_reason", failureReason.toString());
+    }
+    return Collections.unmodifiableMap(metadata);
   }
 
   private Map<String, Object> generateDestinationDefinitionMetadata(final UUID destinationDefinitionId)
