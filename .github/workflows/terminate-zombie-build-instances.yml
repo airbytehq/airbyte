@@ -12,6 +12,7 @@ on:
 jobs:
   terminate:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'airbyte'
     steps:
       - name: List and Terminate Instances Older Than 4 Hours
         env:
