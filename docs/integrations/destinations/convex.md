@@ -43,10 +43,7 @@ If you see performance issues,please reach via email to [Convex support](mailto:
 
 Airbyte integration is available to all Convex developers.
 
-On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project that you want to sync.
-Note only "Production" deployments should be synced.
-
-In the Data tab, you should see the tables and a sample of the data that will be synced.
+On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project and deployment that you want to sync.
 
 1. Navigate to the Settings tab.
 2. Copy the "Deployment URL" from the settings page to the `deployment_url` field in Airbyte.
