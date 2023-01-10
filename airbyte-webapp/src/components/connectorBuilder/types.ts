@@ -122,11 +122,25 @@ export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
   },
 };
 
+export const interpolateAuthFieldKey = (authField: keyof typeof authFieldToInputKey): string => {
+  return `{{ config['${authFieldToInputKey[authField]}'] }}`;
+};
+
+export const authFieldToInputKey = {
+  api_token: "api_key",
+  username: "username",
+  password: "password",
+  client_id: "client_id",
+  client_secret: "client_secret",
+  refresh_token: "client_refresh_token",
+  session_token: "session_token",
+};
+
 function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormInput[] {
   if (global.authenticator.type === "ApiKeyAuthenticator") {
     return [
       {
-        key: "api_key",
+        key: authFieldToInputKey.api_token,
         required: true,
         definition: {
           type: "string",
@@ -139,7 +153,7 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
   if (global.authenticator.type === "BearerAuthenticator") {
     return [
       {
-        key: "api_key",
+        key: authFieldToInputKey.api_token,
         required: true,
         definition: {
           type: "string",
@@ -152,7 +166,7 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
   if (global.authenticator.type === "BasicHttpAuthenticator") {
     return [
       {
-        key: "username",
+        key: authFieldToInputKey.username,
         required: true,
         definition: {
           type: "string",
@@ -160,7 +174,7 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
         },
       },
       {
-        key: "password",
+        key: authFieldToInputKey.password,
         required: true,
         definition: {
           type: "string",
@@ -173,7 +187,7 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
   if (global.authenticator.type === "OAuthAuthenticator") {
     return [
       {
-        key: "client_id",
+        key: authFieldToInputKey.client_id,
         required: true,
         definition: {
           type: "string",
@@ -182,7 +196,7 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
         },
       },
       {
-        key: "client_secret",
+        key: authFieldToInputKey.client_secret,
         required: true,
         definition: {
           type: "string",
@@ -191,7 +205,7 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
         },
       },
       {
-        key: "refresh_token",
+        key: authFieldToInputKey.refresh_token,
         required: true,
         definition: {
           type: "string",
@@ -204,7 +218,7 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
   if (global.authenticator.type === "SessionTokenAuthenticator") {
     return [
       {
-        key: "username",
+        key: authFieldToInputKey.username,
         required: false,
         definition: {
           type: "string",
@@ -212,7 +226,7 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
         },
       },
       {
-        key: "password",
+        key: authFieldToInputKey.password,
         required: false,
         definition: {
           type: "string",
@@ -221,7 +235,7 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
         },
       },
       {
-        key: "session_token",
+        key: authFieldToInputKey.session_token,
         required: false,
         definition: {
           type: "string",
@@ -468,15 +482,22 @@ function builderAuthenticatorToManifest(globalSettings: BuilderFormValues["globa
 }
 
 function manifestAuthenticatorToBuilder(
-  manifestAuthenticator: HttpRequesterAuthenticator,
+  manifestAuthenticator: HttpRequesterAuthenticator | undefined,
   streamName?: string
 ): BuilderFormAuthenticator {
+  if (manifestAuthenticator === undefined) {
+    return {
+      type: "NoAuth",
+    };
+  }
+
   if (manifestAuthenticator.type === "OAuthAuthenticator") {
     return {
       ...manifestAuthenticator,
       refresh_request_body: Object.entries(manifestAuthenticator.refresh_request_body ?? {}),
     };
   }
+
   if (manifestAuthenticator.type === "CustomAuthenticator") {
     throw new ManifestCompatibilityError(streamName, "uses a CustomAuthenticator");
   }
@@ -739,6 +760,46 @@ function manifestSchemaLoaderToBuilderSchema(
     return JSON.stringify(inlineSchemaLoader.schema);
   }
   return undefined;
+}
+
+const interpolatedConfigValueRegex = /^{{config\[('|")(.*)('|")\]}}$/;
+
+function isInterpolatedConfigValue(str: string): boolean {
+  const noWhitespaceString = str.replace(/\s/, "");
+  return interpolatedConfigValueRegex.test(noWhitespaceString);
+}
+
+function extractInterpolatedConfigKey(str: string): string {
+  const noWhitespaceString = str.replace(/\s/, "");
+  const regexResult = interpolatedConfigValueRegex.exec(noWhitespaceString);
+  if (regexResult === null) {
+    // this shouldn't happen, since we are testing that string matches the regex before this
+    throw new ManifestCompatibilityError(undefined, "Failed to extract interpolated config key");
+  }
+
+  return regexResult[2];
+}
+
+function manifestSpecAndAuthToBuilder(
+  manifestSpec: Spec | undefined,
+  manifestAuth: HttpRequesterAuthenticator | undefined
+): { inputs: BuilderFormInput[]; auth: BuilderFormAuthenticator } {
+  const result = { inputs: [], auth: undefined };
+
+  const specKeysToExclude: string[] = [];
+
+  const builderAuth = manifestAuthenticatorToBuilder(manifestAuth);
+  if (builderAuth?.type === "ApiKeyAuthenticator") {
+    if (!isInterpolatedConfigValue(builderAuth.api_token)) {
+      throw new ManifestCompatibilityError(
+        undefined,
+        "authenticator's api_token is not of the form {{config['value']}}"
+      );
+    }
+
+    builderAuth.api_token = "{{ config['api_key']}}";
+    specKeysToExclude.push(extractInterpolatedConfigKey(builderAuth.api_token));
+  }
 }
 
 function manifestSpecToBuilderInputs(manifestSpec: Spec | undefined): BuilderFormValues["inputs"] {

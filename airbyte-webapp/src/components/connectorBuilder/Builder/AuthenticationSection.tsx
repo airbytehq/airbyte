@@ -1,3 +1,4 @@
+import { interpolateAuthFieldKey } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
@@ -19,7 +20,7 @@ export const AuthenticationSection: React.FC = () => {
             label: "API Key",
             typeValue: "ApiKeyAuthenticator",
             default: {
-              api_token: "{{ config['api_key'] }}",
+              api_token: interpolateAuthFieldKey("api_token"),
               header: "",
             },
             children: (
@@ -41,7 +42,7 @@ export const AuthenticationSection: React.FC = () => {
             label: "Bearer",
             typeValue: "BearerAuthenticator",
             default: {
-              api_token: "{{ config['api_key'] }}",
+              api_token: interpolateAuthFieldKey("api_token"),
             },
             children: (
               <UserInputField
@@ -54,8 +55,8 @@ export const AuthenticationSection: React.FC = () => {
             label: "Basic HTTP",
             typeValue: "BasicHttpAuthenticator",
             default: {
-              username: "{{ config['username'] }}",
-              password: "{{ config['password'] }}",
+              username: interpolateAuthFieldKey("username"),
+              password: interpolateAuthFieldKey("password"),
             },
             children: (
               <>
@@ -68,9 +69,9 @@ export const AuthenticationSection: React.FC = () => {
             label: "OAuth",
             typeValue: "OAuthAuthenticator",
             default: {
-              client_id: "{{ config['client_id'] }}",
-              client_secret: "{{ config['client_secret'] }}",
-              refresh_token: "{{ config['client_refresh_token'] }}",
+              client_id: interpolateAuthFieldKey("client_id"),
+              client_secret: interpolateAuthFieldKey("client_secret"),
+              refresh_token: interpolateAuthFieldKey("refresh_token"),
               refresh_request_body: [],
               token_refresh_endpoint: "",
             },
@@ -134,9 +135,9 @@ export const AuthenticationSection: React.FC = () => {
             label: "Session token",
             typeValue: "SessionTokenAuthenticator",
             default: {
-              username: "{{ config['username'] }}",
-              password: "{{ config['password'] }}",
-              session_token: "{{ config['session_token'] }}",
+              username: interpolateAuthFieldKey("username"),
+              password: interpolateAuthFieldKey("password"),
+              session_token: interpolateAuthFieldKey("session_token"),
             },
             children: (
               <>
