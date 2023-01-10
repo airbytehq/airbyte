@@ -127,7 +127,13 @@ const InnerBuilderField: React.FC<BuilderFieldProps & FastFieldProps<unknown>> =
         />
       )}
       {props.type === "enum" && (
-        <EnumField options={props.options} value={field.value as string} setValue={setValue} error={hasError} />
+        <EnumField
+          options={props.options}
+          value={field.value as string}
+          setValue={setValue}
+          error={hasError}
+          data-testid={path}
+        />
       )}
       {hasError && (
         <Text className={styles.error}>

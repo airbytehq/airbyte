@@ -178,7 +178,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-airtable:0.1.3"
+- dockerImage: "airbyte/source-airtable:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
@@ -187,35 +187,16 @@
       type: "object"
       required:
       - "api_key"
-      - "base_id"
-      - "tables"
       properties:
         api_key:
           type: "string"
-          description: "The API Key for the Airtable account. See the <a href=\"https://support.airtable.com/hc/en-us/articles/219046777-How-do-I-get-my-API-key-\"\
-            >Support Guide</a> for more information on how to obtain this key."
+          description: "The API Key or PAT for the Airtable account. See the <a href=\"\
+            https://airtable.com/developers/web/guides/personal-access-tokens\">Support\
+            \ Guide</a> for more information on how to obtain this key."
           title: "API Key"
           airbyte_secret: true
           examples:
           - "key1234567890"
-        base_id:
-          type: "string"
-          description: "The Base ID to integrate the data from. You can find the Base\
-            \ ID following the link <a href=\"https://airtable.com/api\">Airtable\
-            \ API</a>, log in to your account, select the base you need and find Base\
-            \ ID in the docs."
-          title: "Base ID"
-          examples:
-          - "app1234567890"
-        tables:
-          type: "array"
-          items:
-            type: "string"
-          description: "The list of Tables to integrate."
-          title: "Tables"
-          examples:
-          - "table 1"
-          - "table 2"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -6115,7 +6096,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-harvest:0.1.13"
+- dockerImage: "airbyte/source-harvest:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/harvest"
     connectionSpecification:
@@ -7662,7 +7643,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.3.0"
+- dockerImage: "airbyte/source-mailchimp:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailchimp"
     connectionSpecification:
@@ -7718,6 +7699,10 @@
                 description: "Mailchimp API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/mailchimp\"\
                   >docs</a> for information on how to generate this key."
                 airbyte_secret: true
+        campaign_id:
+          type: "string"
+          title: "ID of a campaign to sync email activities"
+          airbyte_hidden: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
