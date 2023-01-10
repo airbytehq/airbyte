@@ -44,7 +44,7 @@ Place unit tests under `src/test/io/airbyte/integrations/destinations/exasol`.
 
 #### Acceptance Tests
 Airbyte has a standard test suite that all destination connectors must pass. Implement the `TODO`s in
-`src/test-integration/java/io/airbyte/integrations/destinations/ExasolDestinationAcceptanceTest.java`.
+`src/test-integration/java/io/airbyte/integrations/destination/exasol/ExasolDestinationAcceptanceTest.java`.
 
 ### Using gradle to run tests
 All commands should be run from airbyte project root.

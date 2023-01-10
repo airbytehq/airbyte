@@ -1,14 +1,17 @@
 # Exasol
 
-TODO: update this doc
+Exasol is the in-memory database built for analytics.
 
 ## Sync overview
 
 ### Output schema
 
-Is the output schema fixed (e.g: for an API like Stripe)? If so, point to the connector's schema (e.g: link to Stripe’s documentation) or describe the schema here directly (e.g: include a diagram or paragraphs describing the schema).
+Exasol tables become Airbyte Streams and Exasol columns become Airbyte Fields. Each table will contain 3 columns:
 
-Describe how the connector's schema is mapped to Airbyte concepts. An example description might be: "MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read."
+* `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Exasol is `VARCHAR(64)`.
+* `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Exasol is `VARCHAR(2000000)`.
+* `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source. The column type in Exasol is `TIMESTAMP`.
+
 
 ### Data type mapping
 
@@ -22,31 +25,48 @@ This section should contain a table mapping each of the connector's data types t
 
 This section should contain a table with the following format:
 
-| Feature | Supported?(Yes/No) | Notes |
+| Feature | Supported? (Yes/No) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync |  |  |
 | Incremental Sync |  |  |
 | Replicate Incremental Deletes |  |  |
 | For databases, WAL/Logical replication |  |  |
-| SSL connection |  |  |
+| SSL connection | Yes | TLS |
 | SSH Tunnel Support |  |  |
-| (Any other source-specific features) |  |  |
 
 ### Performance considerations
-
-Could this connector hurt the user's database/API/etc... or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point (e.g: 100mm&gt; records)? What can the user do to prevent this? (e.g: use a read-only replica, or schedule frequent syncs, etc..)
 
 ## Getting started
 
 ### Requirements
 
-* What versions of this connector does this implementation support? (e.g: `postgres v3.14 and above`)
-* What configurations, if any, are required on the connector? (e.g: `buffer_size > 1024`)
-* Network accessibility requirements
-* Credentials/authentication requirements? (e.g: A  DB user with read permissions on certain tables)
+To use the Exasol destination, you'll need Exasol version 7.1 or above.
+
+#### Network Access
+
+Make sure your Exasol database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
+
+#### **Permissions**
+
+As Airbyte namespaces allows us to store data into different schemas, we have different scenarios and list of required permissions:
+
+| Login user | Destination user | Required permissions | Comment |
+| :--- | :--- | :--- | :--- |
+| DBA User | Any user | - |  |
+| Regular user | Same user as login | Create, drop and write table, create session |  |
+| Regular user | Any existing user | Create, drop and write ANY table, create session | Grants can be provided on a system level by DBA or by target user directly |
+| Regular user | Not existing user | Create, drop and write ANY table, create user, create session | Grants should be provided on a system level by DBA |
+
+We highly recommend creating an Airbyte-specific user for this purpose.
 
 ### Setup guide
 
 For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source or destination guides for an example.
 
 For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject                                   |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------|
+| 0.1.0   | 2023-01-?? | [21200](https://github.com/airbytehq/airbyte/pull/21200) | Initial version of the Exasol destination |
