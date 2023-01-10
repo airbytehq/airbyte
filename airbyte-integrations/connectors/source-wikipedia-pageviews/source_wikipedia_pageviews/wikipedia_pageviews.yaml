@@ -18,16 +18,18 @@ definitions:
     end_datetime:
       datetime: "{{config.start}}"
       datetime_format: "%Y%m%d"
-    step: "1d"
+    step: "P1D"
     cursor_field: "timestamp"
     datetime_format: "%Y/%m/%d"
+    cursor_granularity: "P1D"
   per_article_stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime: "{{config.start}}"
     end_datetime: "{{config.end}}"
-    step: "1d"
+    step: "P1D"
     cursor_field: "timestamp"
     datetime_format: "%Y%m%d"
+    cursor_granularity: "P1D"
 
   per_article_requester:
     $options:

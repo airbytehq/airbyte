@@ -6,7 +6,8 @@
   height: 340px;
 }
 
-.actions, .description {
+.actions,
+.description {
   display: flex;
   flex-direction: column;
   padding: variables.$spacing-xl;

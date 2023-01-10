@@ -12,4 +12,8 @@ export class SyncSchemaFieldObject {
   static isPrimitive(field: SyncSchemaField): boolean {
     return !(field.type === "object" || field.type === "array");
   }
+
+  static isNestedField(field: SyncSchemaField): boolean {
+    return field.path.length > 1;
+  }
 }

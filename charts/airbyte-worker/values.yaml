@@ -4,6 +4,10 @@ global:
   credVolumeOverride: ""
   secretName: ""
   extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
   database:
     secretName: ""
     secretValue: ""
@@ -118,6 +122,10 @@ image:
 ##  worker.podAnnotations [object] Add extra annotations to the worker pod(s)
 ##
 podAnnotations: {}
+
+##  worker.podLabels [object] Add extra labels to the worker pod(s)
+##
+podLabels: {}
 
 ##  worker.containerSecurityContext Security context for the container
 ## Examples:
@@ -347,6 +355,7 @@ secrets: {}
 #   JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY:
 
 #   # Launch a separate pod to orchestrate sync steps
+#   CONTAINER_ORCHESTRATOR_ENABLED: true
 #   CONTAINER_ORCHESTRATOR_IMAGE:
 
 #   # Open Telemetry Configuration
@@ -362,3 +371,8 @@ secrets: {}
 #   USE_STREAM_CAPABLE_STATE: true
 
 env_vars: {}
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}

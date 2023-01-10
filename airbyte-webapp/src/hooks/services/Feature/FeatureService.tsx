@@ -39,12 +39,29 @@ export const FeatureService: React.FC<React.PropsWithChildren<FeatureServiceProp
   const [userFeatures, setUserFeaturesState] = useState<FeatureSet>();
   const [overwrittenFeatures, setOverwrittenFeaturesState] = useState<FeatureSet>();
 
+  const envOverwrites = useMemo(() => {
+    // Allow env feature overwrites only during development
+    if (process.env.NODE_ENV !== "development") {
+      return {};
+    }
+    const featureSet: FeatureSet = {};
+    for (const item of Object.values(FeatureItem)) {
+      const envFeature = process.env[`REACT_APP_FEATURE_${item}`];
+      // If a REACT_APP_FEATURE_{id} env variable is set it can overwrite that feature state
+      if (envFeature) {
+        featureSet[item] = envFeature === "true";
+      }
+    }
+    return featureSet;
+  }, []);
+
   const combinedFeatures = useMemo(() => {
     const combined: FeatureSet = {
       ...featureSetFromList(defaultFeatures),
       ...workspaceFeatures,
       ...userFeatures,
       ...overwrittenFeatures,
+      ...envOverwrites,
     };
 
     return Object.entries(combined)
