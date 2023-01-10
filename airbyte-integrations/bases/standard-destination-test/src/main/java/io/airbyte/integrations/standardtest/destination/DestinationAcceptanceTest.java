@@ -650,6 +650,69 @@ public abstract class DestinationAcceptanceTest {
         defaultSchema);
   }
 
+  @ArgumentsSource(DataArgumentsProvider.class)
+  @Test
+  public void testIncrementalSyncWithNormalizationDropOneColumn()
+      throws Exception {
+    if (!normalizationFromDefinition()) {
+      return;
+    }
+
+    final AirbyteCatalog catalog = Jsons.deserialize(
+        MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(ProtocolVersion.V0)),
+        AirbyteCatalog.class);
+
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
+        catalog);
+    configuredCatalog.getStreams().forEach(s -> {
+      s.withSyncMode(SyncMode.INCREMENTAL);
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
+      s.withCursorField(Collections.emptyList());
+      // use composite primary key of various types (string, float)
+      s.withPrimaryKey(
+          List.of(List.of("id"), List.of("currency"), List.of("date"), List.of("NZD"), List.of("USD")));
+    });
+
+    List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(ProtocolVersion.V0))
+        .lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
+
+    final String defaultSchema = getDefaultSchema(config);
+    List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog,
+        defaultSchema);
+    assertSameMessages(messages, actualMessages, true);
+
+    // remove one field
+    final JsonNode jsonSchema = configuredCatalog.getStreams().get(0).getStream().getJsonSchema();
+    ((ObjectNode) jsonSchema.findValue("properties")).remove("HKD");
+    // insert more messages
+    // NOTE: we re-read the messages because `assertSameMessages` above pruned the emittedAt timestamps.
+    messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(ProtocolVersion.V0)).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .collect(Collectors.toList());
+    messages.add(Jsons.deserialize(
+        "{\"type\": \"RECORD\", \"record\": {\"stream\": \"exchange_rate\", \"emitted_at\": 1602637989500, \"data\": { \"id\": 2, \"currency\": \"EUR\", \"date\": \"2020-09-02T00:00:00Z\", \"NZD\": 1.14, \"USD\": 10.16}}}\n",
+        AirbyteMessage.class));
+
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
+
+    // assert the removed field is missing on the new messages
+    actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+
+    // We expect all the of messages to be missing the removed column after normalization.
+    final List<AirbyteMessage> expectedMessages = messages.stream().map((message) -> {
+      if (message.getRecord() != null) {
+        ((ObjectNode) message.getRecord().getData()).remove("HKD");
+      }
+      return message;
+    }).collect(Collectors.toList());
+    assertSameMessages(expectedMessages, actualMessages, true);
+  }
+
   /**
    * Verify that the integration successfully writes records successfully both raw and normalized.
    * Tests a wide variety of messages an schemas (aspirationally, anyway).
