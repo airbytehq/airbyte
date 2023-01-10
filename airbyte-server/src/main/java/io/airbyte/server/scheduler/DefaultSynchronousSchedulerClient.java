@@ -17,6 +17,7 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorType;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -188,7 +189,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
 
       if (outputState == JobState.FAILED && jobOutput.isPresent()) {
-        reportError(configType, jobContext, jobOutput.get(), connectorDefinitionId, workspaceId);
+        final FailureReason failureReason = ((ConnectorJobOutput) jobOutput.get()).getFailureReason();
+
+        reportError(configType, jobContext, failureReason, connectorDefinitionId, workspaceId);
       }
 
       final long endedAt = Instant.now().toEpochMilli();
@@ -238,9 +241,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
   }
 
-  private <S, T> void reportError(final ConfigType configType,
+  private void reportError(final ConfigType configType,
                                   final ConnectorJobReportingContext jobContext,
-                                  final T jobOutput,
+                                  final FailureReason failureReason,
                                   final UUID connectorDefinitionId,
                                   final UUID workspaceId) {
     Exceptions.swallow(() -> {
@@ -248,20 +251,20 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         case CHECK_CONNECTION_SOURCE -> jobErrorReporter.reportSourceCheckJobFailure(
             connectorDefinitionId,
             workspaceId,
-            ((ConnectorJobOutput) jobOutput).getFailureReason(),
+            failureReason,
             jobContext);
         case CHECK_CONNECTION_DESTINATION -> jobErrorReporter.reportDestinationCheckJobFailure(
             connectorDefinitionId,
             workspaceId,
-            ((ConnectorJobOutput) jobOutput).getFailureReason(),
+            failureReason,
             jobContext);
         case DISCOVER_SCHEMA -> jobErrorReporter.reportDiscoverJobFailure(
             connectorDefinitionId,
             workspaceId,
-            ((ConnectorJobOutput) jobOutput).getFailureReason(),
+            failureReason,
             jobContext);
         case GET_SPEC -> jobErrorReporter.reportSpecJobFailure(
-            ((ConnectorJobOutput) jobOutput).getFailureReason(),
+            failureReason,
             jobContext);
         default -> LOGGER.error("Tried to report job failure for type {}, but this job type is not supported", configType);
       }
