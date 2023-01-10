@@ -109,7 +109,7 @@ class SourceDefinitionsHandlerTest {
         .withDocumentationUrl("https://netflix.com")
         .withDockerRepository("dockerstuff")
         .withDockerImageTag("12.3")
-        .withIcon("http.svg")
+        .withIcon("rss.svg")
         .withSpec(spec)
         .withTombstone(false)
         .withReleaseStage(StandardSourceDefinition.ReleaseStage.ALPHA)
