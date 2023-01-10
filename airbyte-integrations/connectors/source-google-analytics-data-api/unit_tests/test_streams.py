@@ -280,23 +280,26 @@ def test_stream_slices():
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
     slices = list(stream.stream_slices(sync_mode=None))
     assert slices == [
-        {'startDate': '2022-12-29', 'endDate': '2022-12-30'},
-        {'startDate': '2022-12-31', 'endDate': '2023-01-01'},
+        {"startDate": "2022-12-29", "endDate": "2022-12-29"},
+        {"startDate": "2022-12-30", "endDate": "2022-12-30"},
+        {"startDate": "2022-12-31", "endDate": "2022-12-31"},
+        {"startDate": "2023-01-01", "endDate": "2023-01-01"},
     ]
 
     config = {"date_ranges_start_date": datetime.date(2022, 12, 28), "window_in_days": 2}
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
     slices = list(stream.stream_slices(sync_mode=None))
     assert slices == [
-        {'startDate': '2022-12-28', 'endDate': '2022-12-30'},
-        {'startDate': '2022-12-31', 'endDate': '2023-01-01'},
+        {"startDate": "2022-12-28", "endDate": "2022-12-29"},
+        {"startDate": "2022-12-30", "endDate": "2022-12-31"},
+        {"startDate": "2023-01-01", "endDate": "2023-01-01"},
     ]
 
     config = {"date_ranges_start_date": datetime.date(2022, 12, 20), "window_in_days": 5}
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
     slices = list(stream.stream_slices(sync_mode=None))
     assert slices == [
-        {'startDate': '2022-12-20', 'endDate': '2022-12-25'},
-        {'startDate': '2022-12-26', 'endDate': '2022-12-31'},
-        {'startDate': '2023-01-01', 'endDate': '2023-01-01'},
+        {"startDate": "2022-12-20", "endDate": "2022-12-24"},
+        {"startDate": "2022-12-25", "endDate": "2022-12-29"},
+        {"startDate": "2022-12-30", "endDate": "2023-01-01"},
     ]
