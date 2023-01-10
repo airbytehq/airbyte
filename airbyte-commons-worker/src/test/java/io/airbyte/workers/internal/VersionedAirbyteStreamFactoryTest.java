@@ -48,7 +48,8 @@ class VersionedAirbyteStreamFactoryTest {
   @Test
   void testCreate() {
     final Version initialVersion = new Version("0.1.2");
-    final VersionedAirbyteStreamFactory<?> streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, false, null);
+    final VersionedAirbyteStreamFactory<?> streamFactory =
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, false, null);
 
     final BufferedReader bufferedReader = new BufferedReader(new StringReader(""));
     streamFactory.create(bufferedReader);
@@ -60,8 +61,9 @@ class VersionedAirbyteStreamFactoryTest {
   @Test
   void testCreateWithVersionDetection() {
     final Version initialVersion = new Version("0.0.0");
-    final VersionedAirbyteStreamFactory<?> streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, false, null)
-        .withDetectVersion(true);
+    final VersionedAirbyteStreamFactory<?> streamFactory =
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, false, null)
+            .withDetectVersion(true);
 
     final BufferedReader bufferedReader =
         getBuffereredReader("version-detection/logs-with-version.jsonl");
@@ -76,8 +78,9 @@ class VersionedAirbyteStreamFactoryTest {
   @Test
   void testCreateWithVersionDetectionFallback() {
     final Version initialVersion = new Version("0.0.6");
-    final VersionedAirbyteStreamFactory<?> streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, false, null)
-        .withDetectVersion(true);
+    final VersionedAirbyteStreamFactory<?> streamFactory =
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, false, null)
+            .withDetectVersion(true);
 
     final BufferedReader bufferedReader =
         getBuffereredReader("version-detection/logs-without-version.jsonl");
@@ -92,8 +95,9 @@ class VersionedAirbyteStreamFactoryTest {
   @Test
   void testCreateWithVersionDetectionWithoutSpecMessage() {
     final Version initialVersion = new Version("0.0.1");
-    final VersionedAirbyteStreamFactory<?> streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, false, null)
-        .withDetectVersion(true);
+    final VersionedAirbyteStreamFactory<?> streamFactory =
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, false, null)
+            .withDetectVersion(true);
 
     final BufferedReader bufferedReader =
         getBuffereredReader("version-detection/logs-without-spec-message.jsonl");

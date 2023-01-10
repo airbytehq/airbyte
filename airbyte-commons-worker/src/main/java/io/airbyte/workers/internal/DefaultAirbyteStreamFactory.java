@@ -20,8 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import io.airbyte.workers.internal.exception.SourceException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,9 +94,10 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
             long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
             if (messageSize > maxMemory * 0.6) {
               try {
-                String errorMessage = String.format("Airbyte has received a message at %s UTC which is larger than %x Bytes (size: %x). The sync has been failed to prevent running out of memory.",
-                        DateTime.now(), maxMemory, messageSize);
-                throw  exceptionClass.getConstructor(String.class).newInstance(errorMessage);
+                String errorMessage = String.format(
+                    "Airbyte has received a message at %s UTC which is larger than %x Bytes (size: %x). The sync has been failed to prevent running out of memory.",
+                    DateTime.now(), maxMemory, messageSize);
+                throw exceptionClass.getConstructor(String.class).newInstance(errorMessage);
               } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
               }
