@@ -10,7 +10,7 @@ on:
         description: "The git ref to check out from the specified repository."
         required: false
         default: master
-      part-to-bump:
+      release-type:
         type: choice
         description: "Choose the type of version upgrade : major|minor|patch"
         options:
@@ -19,8 +19,8 @@ on:
           - patch
           - none
         required: true
-      dry-run:
-        description: 'By default dry-run publishes to Test PyPi. Use "false" to publish to actual PyPi servers.'
+      skip-publish-test:
+        description: 'By default, the job publishes to Test PyPi. Use "true" to only publish to actual PyPi servers.'
         required: false
       changelog-message:
         description: "Changelog message to be added to CHANGELOG.md"
@@ -32,7 +32,7 @@ concurrency:
 
 jobs:
   bump-version:
-    if: github.event.inputs.part-to-bump != 'none'
+    if: github.event.inputs.release-type != 'none'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v4
@@ -47,7 +47,7 @@ jobs:
         run: |
           pip install bumpversion
           cd airbyte-cdk/python
-          bumpversion ${{ github.event.inputs.part-to-bump }}
+          bumpversion ${{ github.event.inputs.release-type }}
           new_version="$(grep -i 'current_version = ' .bumpversion.cfg | sed -e 's/.* = //')"
           awk -v NEW_VERSION="$new_version" -v CHANGELOG_MESSAGE="${{ github.event.inputs.changelog-message }}" 'NR==3{print "## " NEW_VERSION "\n" CHANGELOG_MESSAGE "\n"}1' CHANGELOG.md > tmp && mv tmp CHANGELOG.md
       - name: Commit and Push Changes
@@ -55,7 +55,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md
-          commit_message: 🤖 Bump ${{ github.event.inputs.part-to-bump }} version of Airbyte CDK
+          commit_message: 🤖 Bump ${{ github.event.inputs.release-type }} version of Airbyte CDK
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
@@ -82,18 +82,23 @@ jobs:
     needs: build-cdk
     runs-on: ubuntu-latest
     steps:
-      # Make use of env vars to dynamically set the PyPi url. Since the default is set to publish to production PyPi, only set the url if during
-      # a dry-run publish to the Test PyPi servers.
-      - name: Set PyPi URL
-        if: github.event.inputs.dry-run != 'false'
-        run: |
-          echo ${{ github.event.inputs.dry-run }}
-          echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+      - name: Publish Python Package to test.pypi.org
+        if: github.event.inputs.skip-publish-test != 'true'
+        uses: mariamrf/py-package-publish-action@v1.1.0
+        with:
+          # specify the same version as in ~/.python-version
+          python_version: "3.9.11"
+          pip_version: "21.1"
+          subdir: "airbyte-cdk/python/"
+        env:
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_REPOSITORY_URL: "https://test.pypi.org/legacy/"
       - name: Publish Python Package
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:
@@ -104,4 +109,3 @@ jobs:
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_REPOSITORY_URL: ${{ env.pypi_url }}

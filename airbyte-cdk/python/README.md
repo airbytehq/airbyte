@@ -141,9 +141,7 @@ and the installation should use your local CDK. Note that the local CDK is injec
 #### Publishing a new version to PyPi
 
 1. Open a PR
-2. Once it is approved and merge, an Airbyte member must run the `Publish CDK Manually` workflow twice
-   1. Once with `part-to-bump=major|manor|patch` and `dry-run=true` to bump the version and publish to test.pypi.org
-   2. Another time with `part-to-bump=none` and `dry-run=false` to publish it to the real index of pypi.org.
+2. Once it is approved and merge, an Airbyte member must run the `Publish CDK Manually` workflow using `release-type=major|manor|patch` and setting the changelog message.
 
 ## Coming Soon
 
