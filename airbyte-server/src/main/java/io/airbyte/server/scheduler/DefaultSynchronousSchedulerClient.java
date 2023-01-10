@@ -227,13 +227,15 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
           connectorDefinitionId,
           workspaceId,
           jobState,
-          (StandardCheckConnectionOutput) value);
+          (StandardCheckConnectionOutput) value,
+          failureReason);
       case CHECK_CONNECTION_DESTINATION -> jobTracker.trackCheckConnectionDestination(
           jobId,
           connectorDefinitionId,
           workspaceId,
           jobState,
-          (StandardCheckConnectionOutput) value);
+          (StandardCheckConnectionOutput) value,
+          failureReason);
       case DISCOVER_SCHEMA -> jobTracker.trackDiscover(jobId, connectorDefinitionId, workspaceId, jobState);
       case GET_SPEC -> {
         // skip tracking for get spec to avoid noise.

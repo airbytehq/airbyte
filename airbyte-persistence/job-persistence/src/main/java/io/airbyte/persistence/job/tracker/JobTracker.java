@@ -15,6 +15,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -81,7 +82,8 @@ public class JobTracker {
                                          final UUID sourceDefinitionId,
                                          final UUID workspaceId,
                                          final JobState jobState,
-                                         final StandardCheckConnectionOutput output) {
+                                         final StandardCheckConnectionOutput output,
+                                         final FailureReason failureReason) {
     Exceptions.swallow(() -> {
       final Map<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output);
       final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CHECK_CONNECTION_SOURCE);
@@ -96,7 +98,8 @@ public class JobTracker {
                                               final UUID destinationDefinitionId,
                                               final UUID workspaceId,
                                               final JobState jobState,
-                                              final StandardCheckConnectionOutput output) {
+                                              final StandardCheckConnectionOutput output,
+                                              final FailureReason failureReason) {
     Exceptions.swallow(() -> {
       final Map<String, Object> checkConnMetadata = generateCheckConnectionMetadata(output);
       final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CHECK_CONNECTION_DESTINATION);
