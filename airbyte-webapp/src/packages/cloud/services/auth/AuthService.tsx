@@ -161,10 +161,12 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
   });
 
   useEffect(() => {
-    const onFocus = () => {
-      return auth.onAuthStateChanged((currentUser) => {
+    const onFocus = async () => {
+      return auth.onAuthStateChanged(async (currentUser) => {
         if (!currentUser) {
           loggedOut();
+        } else {
+          await onAfterAuth(currentUser);
         }
       });
     };
@@ -173,7 +175,7 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
     return () => {
       window.removeEventListener("focus", onFocus);
     };
-  }, [auth, loggedOut]);
+  }, [auth, loggedOut, onAfterAuth]);
 
   const queryClient = useQueryClient();
 
