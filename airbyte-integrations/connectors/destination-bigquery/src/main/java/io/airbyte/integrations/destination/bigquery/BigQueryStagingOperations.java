@@ -74,23 +74,6 @@ public interface BigQueryStagingOperations {
   @Deprecated
   void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles);
 
-  /**
-   * Similar to {@link io.airbyte.integrations.destination.staging.StagingOperations#insertTableQuery}
-   * which primarily focuses on inserting data at the end of a sync from the temporary table into
-   * the destination's table
-   *
-   * @param datasetId
-   * @param tmpTableId
-   * @param targetTableId
-   * @param schema
-   * @param syncMode
-   */
-  @Deprecated
-  void copyIntoTargetTable(final String datasetId,
-                           final TableId tmpTableId,
-                           final TableId targetTableId,
-                           final Schema schema,
-                           final DestinationSyncMode syncMode);
 
   void dropTableIfExists(final String datasetId, final TableId targetTableId);
 

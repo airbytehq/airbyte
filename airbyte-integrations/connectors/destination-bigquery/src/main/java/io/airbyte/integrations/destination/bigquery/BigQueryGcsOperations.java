@@ -162,20 +162,6 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   @Override
-  public void copyIntoTargetTable(final String datasetId,
-                                  final TableId tmpTableId,
-                                  final TableId targetTableId,
-                                  final Schema schema,
-                                  final DestinationSyncMode syncMode) {
-    LOGGER.info("Copying data from tmp table {} to target table {} (dataset {}, sync mode {})", tmpTableId, targetTableId, datasetId, syncMode);
-    final WriteDisposition bigQueryMode = BigQueryUtils.getWriteDisposition(syncMode);
-    if (bigQueryMode == JobInfo.WriteDisposition.WRITE_APPEND) {
-      AbstractBigQueryUploader.partitionIfUnpartitioned(bigQuery, schema, targetTableId);
-    }
-    AbstractBigQueryUploader.copyTable(bigQuery, tmpTableId, targetTableId, bigQueryMode);
-  }
-
-  @Override
   public void dropTableIfExists(final String datasetId, final TableId targetTableId) {
     LOGGER.info("Deleting target table {} (dataset {})", targetTableId, datasetId);
     bigQuery.delete(targetTableId);
