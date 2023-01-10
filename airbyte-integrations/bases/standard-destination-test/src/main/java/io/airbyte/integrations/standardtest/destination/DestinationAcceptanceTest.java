@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
@@ -1270,14 +1271,14 @@ public abstract class DestinationAcceptanceTest {
   private ConnectorSpecification runSpec() throws WorkerException {
     return convertProtocolObject(
         new DefaultGetSpecWorker(
-            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
+            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()))
                 .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec(),
         ConnectorSpecification.class);
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false),
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .getCheckConnection();
@@ -1287,7 +1288,7 @@ public abstract class DestinationAcceptanceTest {
                                                                               final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
-          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false),
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()),
           mConnectorConfigUpdater)
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
               .getCheckConnection();
@@ -1300,7 +1301,7 @@ public abstract class DestinationAcceptanceTest {
 
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,
