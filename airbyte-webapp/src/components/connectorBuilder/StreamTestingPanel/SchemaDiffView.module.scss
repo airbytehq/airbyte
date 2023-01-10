@@ -1,0 +1,20 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.diffLine {
+  margin: 0;
+  padding: variables.$spacing-xs variables.$spacing-sm;
+}
+
+.added {
+  background-color: colors.$green-100;
+}
+
+.removed {
+  background-color: colors.$red-100;
+}
+
+.infoBox {
+  align-items: flex-start;
+  width: 100%;
+}

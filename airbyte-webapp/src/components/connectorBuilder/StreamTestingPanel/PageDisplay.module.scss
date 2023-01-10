@@ -36,15 +36,6 @@
   overflow-y: auto;
 }
 
-.diffLine {
-  margin: 0;
-  padding: 0;
-}
-
-.added {
-  background-color: green;
-}
-
-.removed {
-  background-color: red;
+.schemaConflictIcon {
+  color: colors.$yellow-400;
 }
