@@ -27,12 +27,16 @@ RUN echo "Etc/UTC" > /etc/timezone
 # bash is installed for more convenient debugging.
 RUN apk --no-cache add bash
 
+# install shady packages
+RUN apk --no-cache add curl
+RUN curl --version
+
 # copy payload code only
 COPY main.py ./
 COPY source_faker ./source_faker
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+ENTRYPOINT ["bash", "/airbyte/integration_code/source_faker/launcher.sh"]
 
 LABEL io.airbyte.version=2.0.0
 LABEL io.airbyte.name=airbyte/source-faker
