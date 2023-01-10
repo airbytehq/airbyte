@@ -21,10 +21,7 @@ class AirbyteSpecAcceptanceTestPlugin implements Plugin<Project> {
                         'airbyte/source-acceptance-test:dev',
                         '-p', 'source_acceptance_test.plugin',
                         // only run the test specs
-                        '-k', 'TestSpec'
-                        // exclude the tests that require a sample configuration
-                        '-k', 'not test_config_match_spec'
-                        '-k', 'not test_match_expected'
+                        '-k', 'TestSpec and not test_config_match_spec and not test_match_expected'
                     ]
                     commandLine args
                 }
@@ -33,7 +30,7 @@ class AirbyteSpecAcceptanceTestPlugin implements Plugin<Project> {
             outputs.upToDateWhen { false }
         }
 
-        // project.specAcceptanceTest.dependsOn(':airbyte-integrations:bases:source-acceptance-test:airbyteDocker')
+        project.specAcceptanceTest.dependsOn(':airbyte-integrations:bases:source-acceptance-test:airbyteDocker')
         project.specAcceptanceTest.dependsOn(project.build)
         project.specAcceptanceTest.dependsOn(project.airbyteDocker)
         if (project.hasProperty('airbyteDockerTest')){
