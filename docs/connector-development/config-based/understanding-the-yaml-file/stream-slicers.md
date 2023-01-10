@@ -111,7 +111,7 @@ stream_slicer:
   step: "P1D"
 ```
 
-will create one slice per day for the interval `2021-02-01` - `2021-03-01`. The first slice will start from the `start_datetime` and end at `start_datetime + step - granularity` like this: `{"start_time": "2021-02-01T00:00:00.000000+0000", "end_time": "2021-02-01T23:59:59.999999+0000"}`.
+will create one slice per day for the interval `2021-02-01` - `2021-03-01`. The first slice will start from the `start_datetime` and end at `start_datetime + step - cursor_granularity` like this: `{"start_time": "2021-02-01T00:00:00.000000+0000", "end_time": "2021-02-01T23:59:59.999999+0000"}`. `cursor_granularity` allows the DatetimeStreamSlicer to create non overlapping slices so that the `end_time` of a slice is just before the `start_time` of the next one. 
 
 The `DatetimeStreamSlicer` also supports an optional lookback window, specifying how many days before the start_datetime to read data for.
 
