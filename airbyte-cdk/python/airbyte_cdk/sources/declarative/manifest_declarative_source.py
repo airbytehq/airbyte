@@ -53,7 +53,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         """
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 
-        resolved_source_config = ManifestReferenceResolver(source_config).preprocess_manifest()
+        resolved_source_config = ManifestReferenceResolver().preprocess_manifest(source_config)
         self._source_config = resolved_source_config
         self._debug = debug
         self._factory = DeclarativeComponentFactory()

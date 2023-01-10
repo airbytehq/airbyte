@@ -96,23 +96,22 @@ class ManifestReferenceResolver:
 
     ref_tag = "$ref"
 
-    def __init__(self, manifest: Mapping[str, Any]):
-        self.manifest = manifest
+    def __init__(self):
         self.visited = set()
 
-    def preprocess_manifest(self):
+    def preprocess_manifest(self, manifest):
         """
         :param manifest: incoming manifest that could have references to previously defined components
         :return:
         """
-        return self._evaluate_node(self.manifest)
+        return self._evaluate_node(manifest, manifest)
 
-    def _evaluate_node(self, node: Any):
+    def _evaluate_node(self, node: Any, manifest: Mapping[str, Any]):
         if isinstance(node, dict):
-            evaluated_dict = {k: self._evaluate_node(v) for k, v in node.items() if not self._is_ref_key(k)}
+            evaluated_dict = {k: self._evaluate_node(v, manifest) for k, v in node.items() if not self._is_ref_key(k)}
             if self.ref_tag in node:
                 # The node includes a $ref key, so we splat the referenced value(s) into the evaluated dict
-                evaluated_ref = self._evaluate_node(node[self.ref_tag])
+                evaluated_ref = self._evaluate_node(node[self.ref_tag], manifest)
                 if not isinstance(evaluated_ref, dict):
                     return evaluated_ref
                 else:
@@ -121,12 +120,12 @@ class ManifestReferenceResolver:
             else:
                 return evaluated_dict
         elif isinstance(node, list):
-            return [self._evaluate_node(v) for v in node]
+            return [self._evaluate_node(v, manifest) for v in node]
         elif isinstance(node, str) and node.startswith("*ref("):
             if node in self.visited:
                 raise CircularReferenceException(node)
             self.visited.add(node)
-            ret = self._evaluate_node(self._lookup_reference_value(node))
+            ret = self._evaluate_node(self._lookup_reference_value(node, manifest), manifest)
             self.visited.remove(node)
             return ret
         else:
@@ -135,12 +134,12 @@ class ManifestReferenceResolver:
     def _is_ref_key(self, key):
         return key == self.ref_tag
 
-    def _lookup_reference_value(self, reference: str) -> Any:
+    def _lookup_reference_value(self, reference: str, manifest: Mapping[str, Any]) -> Any:
         path = re.match("\\*ref\\(([^)]+)\\)", reference).groups()[0]
         if not path:
             raise UndefinedReferenceException(path, reference)
         try:
-            return self._read_reference_value(path, self.manifest)
+            return self._read_reference_value(path, manifest)
         except (KeyError, IndexError):
             raise UndefinedReferenceException(path, reference)
 
