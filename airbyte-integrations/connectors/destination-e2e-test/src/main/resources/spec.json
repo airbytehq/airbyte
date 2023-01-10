@@ -56,11 +56,6 @@
                   "max_entry_count"
                 ],
                 "properties": {
-                  "logging_type": {
-                    "type": "string",
-                    "enum": ["EveryNth"],
-                    "default": "EveryNth"
-                  },
                   "nth_entry_to_log": {
                     "title": "N",
                     "description": "The N-th entry to log for each stream. N starts from 1. For example, when N = 1, every entry is logged; when N = 2, every other entry is logged; when N = 3, one out of three entries is logged.",
