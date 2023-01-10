@@ -52,8 +52,7 @@ class ConfigFileClient(config: Path) : FeatureFlagClient {
         }
 
         config.onChange {
-            val tempFlags = readConfig(config)
-            lock.write { flags = tempFlags }
+            lock.write { flags = readConfig(config) }
         }
     }
 
