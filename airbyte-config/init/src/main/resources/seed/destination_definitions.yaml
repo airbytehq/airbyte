@@ -424,9 +424,9 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/duckdb
   icon: duckdb.svg
-  releaseStage: alpha #dev
   normalizationConfig:
     normalizationRepository: airbyte/normalization-duckdb
-    normalizationTag: 0.2.22
+    normalizationTag: 0.2.25
     normalizationIntegrationType: duckdb
   supportsDbt: true
+  releaseStage: alpha
