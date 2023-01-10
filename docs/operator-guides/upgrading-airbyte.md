@@ -49,6 +49,12 @@ If you use custom connectors, this upgrade requires all of your connector specs 
    docker compose up
    ```
 
+### Note on docker compose
+
+Starting from version 0.40.27, Airbyte requires docker compose v2. It should be already available for users with a recent version of docker desktop.
+
+For further details on how to install docker compose v2, please refer to the [docker compose install guide](https://docs.docker.com/compose/install/).
+
 ### Resetting your Configuration
 
 If you did not start Airbyte from the root of the Airbyte monorepo, you may run into issues where existing orphaned Airbyte configurations will prevent you from upgrading with the automatic process. To fix this, we will need to globally remove these lost Airbyte configurations. You can do this with `docker volume rm $(docker volume ls -q | grep airbyte)`.
