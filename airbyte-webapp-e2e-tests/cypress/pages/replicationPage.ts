@@ -80,16 +80,14 @@ export const selectCursorField = (value: string) => {
   cy.get(`.react-select__option`).contains(value).click();
 };
 
-export const checkStreamFields = (listNames: Array<String>, listTypes: Array<String>,) => {
-  cy.get(streamFieldNames)
-   .each(($span, i) => {
-        expect($span.text()).to.equal(listNames[i]);
-   });
+export const checkStreamFields = (listNames: string[], listTypes: string[]) => {
+  cy.get(streamFieldNames).each(($span, i) => {
+    expect($span.text()).to.equal(listNames[i]);
+  });
 
-   cy.get(streamDataTypes)
-   .each(($span, i) => {
-        expect($span.text()).to.equal(listTypes[i]);
-   });
+  cy.get(streamDataTypes).each(($span, i) => {
+    expect($span.text()).to.equal(listTypes[i]);
+  });
 };
 
 export const checkCursorField = (expectedValue: string) => {
