@@ -6,17 +6,18 @@ import { AirbyteStreamConfiguration, SelectedFieldInfo } from "core/request/Airb
  * Merges arrays of SelectedFieldInfo, ensuring there are no duplicates
  */
 export function mergeFieldPathArrays(...args: SelectedFieldInfo[][]): SelectedFieldInfo[] {
-  const set = new Set<string[]>();
+  const set = new Set<string>();
 
   args.forEach((array) =>
     array.forEach((selectedFieldInfo) => {
       if (selectedFieldInfo.fieldPath) {
-        set.add(selectedFieldInfo.fieldPath);
+        const key = JSON.stringify(selectedFieldInfo.fieldPath);
+        set.add(key);
       }
     })
   );
 
-  return Array.from(set).map((fieldPath) => ({ fieldPath }));
+  return Array.from(set).map((key) => ({ fieldPath: JSON.parse(key) }));
 }
 
 /**

@@ -30,6 +30,21 @@ describe(`${mergeFieldPathArrays.name}`, () => {
       { fieldPath: FIELD_THREE },
     ]);
   });
+
+  it("merges two arrays of complex fieldPaths without duplicates", () => {
+    const arr1 = [{ fieldPath: [...FIELD_ONE, ...FIELD_TWO] }, { fieldPath: [...FIELD_TWO, ...FIELD_THREE] }];
+    const arr2 = [
+      { fieldPath: [...FIELD_ONE, ...FIELD_TWO] },
+      { fieldPath: [...FIELD_TWO, ...FIELD_THREE] },
+      { fieldPath: [...FIELD_ONE, ...FIELD_THREE] },
+    ];
+
+    expect(mergeFieldPathArrays(arr1, arr2)).toEqual([
+      { fieldPath: [...FIELD_ONE, ...FIELD_TWO] },
+      { fieldPath: [...FIELD_TWO, ...FIELD_THREE] },
+      { fieldPath: [...FIELD_ONE, ...FIELD_THREE] },
+    ]);
+  });
 });
 
 describe(`${updateCursorField.name}`, () => {
