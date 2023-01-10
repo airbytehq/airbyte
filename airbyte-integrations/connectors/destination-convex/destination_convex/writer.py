@@ -20,16 +20,16 @@ class ConvexWriter:
     def __init__(self, client: ConvexClient):
         self.client = client
 
-    def delete_stream_entries(self, stream_names: List[str]):
+    def delete_stream_entries(self, stream_names: List[str]) -> None:
         """Deletes all the records belonging to the input stream"""
         if len(stream_names) > 0:
             self.client.delete(stream_names)
 
-    def add_indexes(self, indexes: Mapping[str, List[List[str]]]):
+    def add_indexes(self, indexes: Mapping[str, List[List[str]]]) -> None:
         self.client.add_indexes(indexes)
         self.__poll_for_indexes(indexes)
 
-    def __poll_for_indexes(self, indexes: Mapping[str, List[List[str]]]):
+    def __poll_for_indexes(self, indexes: Mapping[str, List[List[str]]]) -> None:
         """Polls until the indexes specified are ready"""
         tables = list(indexes.keys())
         while True:
@@ -40,13 +40,13 @@ class ConvexWriter:
                 time.sleep(1)
         return
 
-    def queue_write_operation(self, message: Mapping):
+    def queue_write_operation(self, message: Mapping) -> None:
         """Adds messages to the write queue and flushes if the buffer is full"""
         self.write_buffer.append(message)
         if len(self.write_buffer) == self.flush_interval:
             self.flush()
 
-    def flush(self):
+    def flush(self) -> None:
         """Writes to Convex"""
 
         self.client.batch_write(self.write_buffer)
