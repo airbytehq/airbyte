@@ -1,33 +1,57 @@
 # Airtable
 
-## Features
+This page contains the setup guide and reference information for the Airtable source connector.
+This source syncs data from the [Airtable API](https://airtable.com/api).
+
+## Prerequisites
+
+* An active Airtable account
+* API Key (Personal Access Token)
+
+## Setup guide
+### Step 1: Set up Airtable
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
+4. Enter your `API Key` obtained by following [these steps](https://airtable.com/developers/web/guides/personal-access-tokens)
+5. Log in and Authorize to the Airtable account and click `Set up source`.
+
+### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
+4. Enter your `API Key` obtained by following [these steps](https://airtable.com/developers/web/guides/personal-access-tokens)
+5. Log in and Authorize to the Airtable account and click `Set up source`.
+
+
+## Supported sync modes
+
+The airtable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported?\(Yes/No\) | Notes |
 | :---------------- | :------------------- | :---- |
 | Full Refresh Sync | Yes                  |       |
 | Incremental Sync  | No                   |       |
 
-This source syncs data from the [Airtable API](https://airtable.com/api).
 
 ## Supported Tables
 
-This source allows you to configure any table in your Airtable base. In case you you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog. 
+This source allows you to pull all available tables and bases using `Metadata API` for a given authenticated user. In case you you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog. 
 
-## Getting started
+## Data type map
 
-### Requirements
-
-* An Airtable account & API key
-
-### Setup guide
-1. To find your API key, navigate to your [account page](https://airtable.com/account). On your account overview page, under the API heading, there's a button that says "Generate API key."
-![img.png](../../.gitbook/assets/airtable_api_key1.png)
-2. Generate an API key by clicking the button. If one already exists, click the key to reveal it and copy it. ![img.png](../../.gitbook/assets/airtable_api_key2.png). See [here](https://support.airtable.com/hc/en-us/articles/219046777-How-do-I-get-my-API-key-) for more information on managing your API keys. 
+| Integration Type       | Airbyte Type |
+| :--------------------- | :----------- |
+| `Any`                  | `string`     |
 
 
 ### Performance Considerations (Airbyte Open-Source)
 
-See information about rate limits [here](https://support.airtable.com/hc/en-us/articles/203313985-Public-REST-API).
+See information about rate limits [here](https://airtable.com/developers/web/api/rate-limits).
 
 ## Changelog
 
