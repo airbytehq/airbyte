@@ -16,7 +16,8 @@ kubectl patch configmap/coredns \
   --type merge \
   -p '{"data":{"NodeHosts": "${DOCKER_HOST_IP} host.docker.internal" }}'
 
-if [ -n "$CI" ]; then
+# TODO (revert me): This is for a test
+if [ -n "$CICI" ]; then
 echo "Deploying fluentbit"
 helm repo add fluent https://fluent.github.io/helm-charts
 helm repo update fluent
@@ -56,7 +57,7 @@ kubectl describe pods | grep "Name\|Node"
 # allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
 sleep 120
 
-if [ -n "$CI" ]; then
+if [ -n "$CICI" ]; then
   server_logs () { kubectl logs deployment.apps/airbyte-server > /tmp/kubernetes_logs/server.txt; }
   pod_sweeper_logs () { kubectl logs deployment.apps/airbyte-pod-sweeper > /tmp/kubernetes_logs/pod_sweeper.txt; }
   worker_logs () { kubectl logs deployment.apps/airbyte-worker > /tmp/kubernetes_logs/worker.txt; }
