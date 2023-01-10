@@ -12,6 +12,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
@@ -36,7 +37,40 @@ import java.util.stream.Stream;
  */
 public interface JobPersistence {
 
-  List<SyncStats> getSyncStats(long jobId, int attemptNumber) throws IOException;
+  //
+  // SIMPLE GETTERS
+  //
+
+  /**
+   * Convenience POJO for various stats data structures.
+   *
+   * @param combinedStats
+   * @param perStreamStats
+   */
+  record AttemptStats(SyncStats combinedStats, List<StreamSyncStats> perStreamStats) {}
+
+  record JobAttemptPair(long id, int attemptNumber) {}
+
+  /**
+   * Retrieve the combined and per stream stats for a single attempt.
+   *
+   * @return {@link AttemptStats}
+   * @throws IOException
+   */
+  AttemptStats getAttemptStats(long jobId, int attemptNumber) throws IOException;
+
+  /**
+   * Alternative method to retrieve combined and per stream stats per attempt for a list of jobs to
+   * avoid overloading the database with too many queries.
+   * <p>
+   * This implementation is intended to utilise complex joins under the hood to reduce the potential
+   * N+1 database pattern.
+   *
+   * @param jobIds
+   * @return
+   * @throws IOException
+   */
+  Map<JobAttemptPair, AttemptStats> getAttemptStats(List<Long> jobIds) throws IOException;
 
   List<NormalizationSummary> getNormalizationSummary(long jobId, int attemptNumber) throws IOException;
 
@@ -137,6 +171,15 @@ public interface JobPersistence {
    * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
    */
   void writeOutput(long jobId, int attemptNumber, JobOutput output) throws IOException;
+
+  void writeStats(long jobId,
+                  int attemptNumber,
+                  long estimatedRecords,
+                  long estimatedBytes,
+                  long recordsEmitted,
+                  long bytesEmitted,
+                  List<StreamSyncStats> streamStats)
+      throws IOException;
 
   /**
    * Writes a summary of all failures that occurred during the attempt.

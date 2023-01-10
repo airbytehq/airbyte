@@ -9,6 +9,7 @@ import { isDefined } from "utils/common";
 
 import { DestinationDefinitionCreate, DestinationDefinitionRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
+import { connectorDefinitionKeys } from "./ConnectorDefinitions";
 import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const destinationDefinitionKeys = {
@@ -117,6 +118,8 @@ const useUpdateDestinationDefinition = () => {
             ) ?? [],
         })
       );
+
+      queryClient.invalidateQueries(connectorDefinitionKeys.count());
     },
   });
 };
