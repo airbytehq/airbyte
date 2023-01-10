@@ -8,6 +8,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 
+/**
+ * Serialize a ConfiguredAirbyteCatalog to the specified version
+ * <p>
+ * This Serializer expects a ConfiguredAirbyteCatalog from the Current version of the platform,
+ * converts it to the target protocol version before serializing it.
+ */
 public class VersionedProtocolSerializer implements ProtocolSerializer {
 
   private final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator;

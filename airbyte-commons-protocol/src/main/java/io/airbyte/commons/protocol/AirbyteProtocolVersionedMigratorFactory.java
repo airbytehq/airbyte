@@ -23,7 +23,7 @@ public class AirbyteProtocolVersionedMigratorFactory {
   }
 
   public <T> AirbyteMessageVersionedMigrator<T> getAirbyteMessageMigrator(final Version version) {
-    return new AirbyteMessageVersionedMigrator<>(this.airbyteMessageMigrator, version);
+    return new AirbyteMessageVersionedMigrator<>(airbyteMessageMigrator, version);
   }
 
   public final VersionedProtocolSerializer getProtocolSerializer(final Version version) {
