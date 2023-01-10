@@ -93,23 +93,26 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void copyIntoTargetTableFromStage(final JdbcDatabase database,
+  public void copyIntoTableFromStage(final JdbcDatabase database,
                                         final String stageName,
                                         final String stagingPath,
                                         final List<String> stagedFiles,
-                                        final String targetTableName,
+                                        final String tableName,
                                         final String schemaName)
       throws Exception {
     LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
-        targetTableName, stagingPath, schemaName);
+        tableName, stagingPath, schemaName);
     final var possibleManifest = Optional.ofNullable(createManifest(stagedFiles, stagingPath));
     Exceptions.toRuntime(() -> possibleManifest.stream()
         .map(manifestContent -> putManifest(manifestContent, stagingPath))
-        .forEach(manifestPath -> executeCopy(manifestPath, database, schemaName, targetTableName)));
-    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, targetTableName);
+        .forEach(manifestPath -> executeCopy(manifestPath, database, schemaName, tableName)));
+    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, tableName);
   }
 
-  private void executeCopy(final String manifestPath, final JdbcDatabase db, final String schemaName, final String tmpTableName) {
+  /**
+   * Generates the COPY data from staging files into target table
+   */
+  private void executeCopy(final String manifestPath, final JdbcDatabase db, final String schemaName, final String tableName) {
     final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
     final String encryptionClause;
     if (keyEncryptingKey == null) {
@@ -128,7 +131,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
         STATUPDATE OFF
         MANIFEST;""",
         schemaName,
-        tmpTableName,
+        tableName,
         getFullS3Path(s3Config.getBucketName(), manifestPath),
         credentialConfig.getAccessKeyId(),
         credentialConfig.getSecretAccessKey(),

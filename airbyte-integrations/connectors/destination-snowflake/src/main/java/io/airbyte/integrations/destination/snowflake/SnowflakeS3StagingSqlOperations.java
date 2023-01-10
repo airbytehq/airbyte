@@ -86,18 +86,18 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   }
 
   @Override
-  public void copyIntoTargetTableFromStage(final JdbcDatabase database,
+  public void copyIntoTableFromStage(final JdbcDatabase database,
                                         final String stageName,
                                         final String stagingPath,
                                         final List<String> stagedFiles,
-                                        final String targetTableName,
+                                        final String tableName,
                                         final String schemaName) {
     LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
-        targetTableName, stagingPath, schemaName);
+        tableName, stagingPath, schemaName);
     // Print actual SQL query if user needs to manually force reload from staging
     Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles,
-        targetTableName, schemaName)));
-    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, targetTableName);
+        tableName, schemaName)));
+    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, tableName);
   }
 
   protected String getCopyQuery(final String stagingPath,

@@ -101,8 +101,12 @@ public class BigQueryStagingConsumerFactory {
   /**
    * Sets up {@link BufferedStreamConsumer} with creation of the destination's raw tables
    *
-   * @param bigQueryGcsOperations
-   * @param writeConfigs
+   * <p>
+   * Note: targetTableId is synonymous with airbyte_raw table
+   * </p>
+   *
+   * @param bigQueryGcsOperations collection of Google Cloud Storage Operations
+   * @param writeConfigs configuration settings used to describe how to write data and where it exists
    * @return
    */
   private VoidCallable onStartFunction(final BigQueryStagingOperations bigQueryGcsOperations,
@@ -110,7 +114,7 @@ public class BigQueryStagingConsumerFactory {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
-        LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, raw table: {}, stage: {}",
+        LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
             writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
         final String datasetId = writeConfig.datasetId();
         bigQueryGcsOperations.createSchemaIfNotExists(datasetId, writeConfig.datasetLocation());
@@ -157,7 +161,7 @@ public class BigQueryStagingConsumerFactory {
          * at the end of the sync
          */
         writeConfig.addStagedFile(stagedFile);
-        bigQueryGcsOperations.copyIntoTargetTableFromStage(datasetId, stream, writeConfig.targetTableId(), writeConfig.tableSchema(),
+        bigQueryGcsOperations.copyIntoTableFromStage(datasetId, stream, writeConfig.targetTableId(), writeConfig.tableSchema(),
             List.of(stagedFile));
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and commit buffer data into destination's raw table:", e);
@@ -170,7 +174,7 @@ public class BigQueryStagingConsumerFactory {
    * Tear down process, will attempt to clean out any staging area
    *
    * @param bigQueryGcsOperations collection of staging operations
-   * @param writeConfigs
+   * @param writeConfigs configuration settings used to describe how to write data and where it exists
    * @return
    */
   private CheckedConsumer<Boolean, Exception> onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,

@@ -13,15 +13,12 @@ import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.LoadJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
-import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -89,7 +86,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
       LOGGER.info("Creating dataset {}", datasetId);
       try {
         BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
-      } catch (BigQueryException e) {
+      } catch (final BigQueryException e) {
         if (ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.getCode())) {
           throw new ConfigErrorException(e.getMessage(), e);
         } else {
@@ -128,18 +125,18 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    * https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
    */
   @Override
-  public void copyIntoTargetTableFromStage(final String datasetId,
+  public void copyIntoTableFromStage(final String datasetId,
                                         final String stream,
-                                        final TableId targetTableId,
+                                        final TableId tableId,
                                         final Schema tableSchema,
                                         final List<String> stagedFiles) {
     LOGGER.info("Uploading records from staging files to target table {} (dataset {}): {}",
-        targetTableId, datasetId, stagedFiles);
+        tableId, datasetId, stagedFiles);
 
     stagedFiles.parallelStream().forEach(stagedFile -> {
       final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFile);
       LOGGER.info("Uploading staged file: {}", fullFilePath);
-      final LoadJobConfiguration configuration = LoadJobConfiguration.builder(targetTableId, fullFilePath)
+      final LoadJobConfiguration configuration = LoadJobConfiguration.builder(tableId, fullFilePath)
           .setFormatOptions(FormatOptions.avro())
           .setSchema(tableSchema)
           .setWriteDisposition(WriteDisposition.WRITE_APPEND)
@@ -148,16 +145,16 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
 
       final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
       LOGGER.info("[{}] Created a new job to upload record(s) to target table {} (dataset {}): {}", loadJob.getJobId(),
-          targetTableId, datasetId, loadJob);
+          tableId, datasetId, loadJob);
 
       try {
         BigQueryUtils.waitForJobFinish(loadJob);
         LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
-            targetTableId, datasetId);
+            tableId, datasetId);
       } catch (final BigQueryException | InterruptedException e) {
         throw new RuntimeException(
             String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
-                targetTableId, datasetId), e);
+                tableId, datasetId), e);
       }
     });
   }
@@ -173,9 +170,9 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   @Override
-  public void dropTableIfExists(final String datasetId, final TableId targetTableId) {
-    LOGGER.info("Deleting target table {} (dataset {})", targetTableId, datasetId);
-    bigQuery.delete(targetTableId);
+  public void dropTableIfExists(final String datasetId, final TableId tableId) {
+    LOGGER.info("Deleting target table {} (dataset {})", tableId, datasetId);
+    bigQuery.delete(tableId);
   }
 
   @Override
@@ -199,16 +196,16 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    * </p>
    *
    * @param datasetId equivalent to schema name
-   * @param targetTableId table name
-   * @param schema schema of the table to be deleted/created
+   * @param tableId   table name
+   * @param schema    schema of the table to be deleted/created
    */
   @Override
   public void truncateTableIfExists(final String datasetId,
-                                    final TableId targetTableId,
+                                    final TableId tableId,
                                     final Schema schema) {
-    LOGGER.info("Truncating target table {} (dataset {})", targetTableId, datasetId);
-    dropTableIfExists(datasetId, targetTableId);
-    createTableIfNotExists(targetTableId, schema);
+    LOGGER.info("Truncating target table {} (dataset {})", tableId, datasetId);
+    dropTableIfExists(datasetId, tableId);
+    createTableIfNotExists(tableId, schema);
   }
 
 }

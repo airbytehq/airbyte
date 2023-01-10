@@ -110,7 +110,7 @@ public class SnowflakeDestinationTest {
         config,
         getCatalog(),
         true);
-    doThrow(SQLException.class).when(sqlOperations).copyIntoTargetTableFromStage(any(), anyString(), anyString(), anyList(), anyString(), anyString());
+    doThrow(SQLException.class).when(sqlOperations).copyIntoTableFromStage(any(), anyString(), anyString(), anyList(), anyString(), anyString());
 
     airbyteMessageConsumer.start();
     for (final AirbyteMessage m : testMessages) {

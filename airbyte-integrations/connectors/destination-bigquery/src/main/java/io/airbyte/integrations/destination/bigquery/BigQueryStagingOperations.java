@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.List;
 
 /**
@@ -52,16 +51,16 @@ public interface BigQueryStagingOperations {
   /**
    * Copies data from staging area to the target table
    *
-   * @param datasetId Name of schema
-   * @param stream Name of stream
-   * @param targetTableId Name of destination's raw table
-   * @param schema Schema of the data being synced
+   * @param datasetId   Name of schema
+   * @param stream      Name of stream
+   * @param tableId     Name of destination's target table
+   * @param schema      Schema of the data being synced
    * @param stagedFiles collection of staged files
    * @throws Exception
    */
-  void copyIntoTargetTableFromStage(final String datasetId,
+  void copyIntoTableFromStage(final String datasetId,
                                     final String stream,
-                                    final TableId targetTableId,
+                                    final TableId tableId,
                                     final Schema schema,
                                     final List<String> stagedFiles)
       throws Exception;
@@ -75,10 +74,10 @@ public interface BigQueryStagingOperations {
   void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles);
 
 
-  void dropTableIfExists(final String datasetId, final TableId targetTableId);
+  void dropTableIfExists(final String datasetId, final TableId tableId);
 
   void dropStageIfExists(final String datasetId, final String stream);
 
-  void truncateTableIfExists(final String datasetId, final TableId targetTableId, Schema schema);
+  void truncateTableIfExists(final String datasetId, final TableId tableId, Schema schema);
 
 }

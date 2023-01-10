@@ -51,18 +51,18 @@ public interface StagingOperations extends SqlOperations {
    * <p>
    * FINSISHED: destination-snowflake (all sub-variants)
    *
-   * @param database        database interface
-   * @param stageName       name of staging area folder
-   * @param stagingPath     path to staging files
-   * @param stagedFiles     collection of staged files
-   * @param targetTableName name of table to write staging files to
-   * @param schemaName      name of schema
+   * @param database    database interface
+   * @param stageName   name of staging area folder
+   * @param stagingPath path to staging files
+   * @param stagedFiles collection of staged files
+   * @param tableName   name of table to write staging files to
+   * @param schemaName  name of schema
    */
-  void copyIntoTargetTableFromStage(JdbcDatabase database,
+  void copyIntoTableFromStage(JdbcDatabase database,
                                  String stageName,
                                  String stagingPath,
                                  List<String> stagedFiles,
-                                 String targetTableName,
+                                 String tableName,
                                  String schemaName)
       throws Exception;
 

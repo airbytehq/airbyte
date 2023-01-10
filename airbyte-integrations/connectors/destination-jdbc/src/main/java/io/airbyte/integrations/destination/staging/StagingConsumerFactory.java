@@ -141,7 +141,7 @@ public class StagingConsumerFactory {
         final String stageName = stagingOperations.getStageName(schema, stream);
         final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schema, stream, writeConfig.getWriteDatetime());
 
-        LOGGER.info("Preparing staging area in destination started for schema {} stream {}: raw table: {}, stage: {}",
+        LOGGER.info("Preparing staging area in destination started for schema {} stream {}: target table: {}, stage: {}",
             schema, stream, dstTableName, stagingPath);
 
         stagingOperations.createSchemaIfNotExists(database, schema);
@@ -220,7 +220,7 @@ public class StagingConsumerFactory {
       try (writer) {
         writer.flush();
         final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
-        copyIntoTargetTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName, stagingOperations);
+        copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName, stagingOperations);
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
@@ -229,18 +229,19 @@ public class StagingConsumerFactory {
   }
 
   /**
-   * Handles copying data from staging area to raw destination table and clean up of staged files if
+   * Handles copying data from staging area to destination table and clean up of staged files if
    * upload was unsuccessful
    */
-  private void copyIntoTargetTableFromStage(final JdbcDatabase database,
+  private void copyIntoTableFromStage(final JdbcDatabase database,
                                          final String stageName,
                                          final String stagingPath,
                                          final List<String> stagedFiles,
-                                         final String targetTableName,
+                                         final String tableName,
                                          final String schemaName,
                                          final StagingOperations stagingOperations) throws Exception {
     try {
-      stagingOperations.copyIntoTargetTableFromStage(database, stageName, stagingPath, stagedFiles, targetTableName, schemaName);
+      stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
+          tableName, schemaName);
     } catch (final Exception e) {
       stagingOperations.cleanUpStage(database, stageName, stagedFiles);
       LOGGER.info("Cleaning stage path {}", stagingPath);
@@ -251,9 +252,9 @@ public class StagingConsumerFactory {
   /**
    * Tear down process, will attempt to try to clean out any staging area
    *
-   * @param database
-   * @param stagingOperations
-   * @param writeConfigs
+   * @param database database used for syncing
+   * @param stagingOperations collection of SQL queries necessary for writing data into a staging area
+   * @param writeConfigs configuration settings for all destination connectors needed to write
    * @param purgeStagingData drop staging area if true, keep otherwise
    * @return
    */
@@ -271,7 +272,7 @@ public class StagingConsumerFactory {
         stagingOperations.onDestinationCloseOperations(database, writeConfigs);
         LOGGER.info("Finalizing tables in destination completed.");
       }
-      // After moving data from staging area to the finalized table (airybte_raw) clean up the staging
+      // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
