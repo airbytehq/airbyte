@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.25
+Enable bypass reason for future state test config.[#20549](https://github.com/airbytehq/airbyte/pull/20549)
+
+## 0.2.24
+Check for nullity of docker runner in `previous_discovered_catalog_fixture`.[#20899](https://github.com/airbytehq/airbyte/pull/20899)
+
 ## 0.2.23
 Skip backward compatibility tests on specifications if actual and previous specifications and discovered catalogs are identical.[#20435](https://github.com/airbytehq/airbyte/pull/20435)
 

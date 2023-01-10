@@ -1,7 +1,7 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React, { useCallback, useImperativeHandle, useRef, useState } from "react";
+import React, { ReactNode, useCallback, useImperativeHandle, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 
@@ -12,10 +12,11 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   error?: boolean;
   light?: boolean;
   containerClassName?: string;
+  adornment?: ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ light, error, containerClassName, ...props }, ref) => {
+  ({ light, error, containerClassName, adornment, ...props }, ref) => {
     const { formatMessage } = useIntl();
 
     const inputRef = useRef<HTMLInputElement | null>(null);
@@ -99,6 +100,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             props.className
           )}
         />
+        {adornment}
         {isVisibilityButtonVisible ? (
           <Button
             ref={buttonRef}
