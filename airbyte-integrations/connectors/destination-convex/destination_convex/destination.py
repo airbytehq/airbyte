@@ -64,6 +64,8 @@ class DestinationConvex(Destination):
                 writer.flush()
                 yield message
             elif message.type == Type.RECORD and message.record is not None:
+                if message.record.namespace is not None:
+                    message.record.stream = f"{message.record.namespace}_{message.record.stream}"
                 msg = message.record.dict()
                 writer.queue_write_operation(msg)
             else:

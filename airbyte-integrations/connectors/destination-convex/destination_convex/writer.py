@@ -26,14 +26,14 @@ class ConvexWriter:
             self.client.delete(stream_names)
 
     def add_indexes(self, indexes: Mapping[str, List[List[str]]]) -> None:
-        self.client.add_indexes(indexes)
+        self.client.add_primary_key_indexes(indexes)
         self.__poll_for_indexes(indexes)
 
     def __poll_for_indexes(self, indexes: Mapping[str, List[List[str]]]) -> None:
         """Polls until the indexes specified are ready"""
         tables = list(indexes.keys())
         while True:
-            resp = self.client.indexes_ready(tables)
+            resp = self.client.primary_key_indexes_ready(tables)
             if resp.json()["indexesReady"]:
                 break
             else:

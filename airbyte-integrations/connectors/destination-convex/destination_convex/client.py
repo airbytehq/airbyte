@@ -28,17 +28,17 @@ class ConvexClient:
         request_body = {"tableNames": keys}
         return self._request("PUT", endpoint="clear_tables", json=request_body)
 
-    def add_indexes(self, indexes: Mapping) -> requests.Response:
+    def add_primary_key_indexes(self, indexes: Mapping) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#put-apiadd_indexes
+        See Convex docs: https://docs.convex.dev/http-api/#put-apiadd_primary_key_indexes
         """
-        return self._request("PUT", "add_indexes", json={"indexes": indexes})
+        return self._request("PUT", "add_primary_key_indexes", json={"indexes": indexes})
 
-    def indexes_ready(self, tables: List[str]) -> requests.Response:
+    def primary_key_indexes_ready(self, tables: List[str]) -> requests.Response:
         """
-        See Convex docs: https://docs.convex.dev/http-api/#get-apiindexes_ready
+        See Convex docs: https://docs.convex.dev/http-api/#get-apiprimary_key_indexes_ready
         """
-        return self._request("GET", "indexes_ready", json={"tables": tables})
+        return self._request("GET", "primary_key_indexes_ready", json={"tables": tables})
 
     def _get_auth_headers(self) -> Mapping[str, str]:
         return {"Authorization": f"Convex {self.access_key}"}

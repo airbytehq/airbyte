@@ -83,10 +83,10 @@ def setup_responses(config):
     responses.add(responses.PUT, f"{config['deployment_url']}/api/clear_tables", status=200)
     responses.add(responses.POST, f"{config['deployment_url']}/api/airbyte_ingress", status=200)
     responses.add(responses.GET, f"{config['deployment_url']}/version", status=200)
-    responses.add(responses.PUT, f"{config['deployment_url']}/api/add_indexes", status=200)
+    responses.add(responses.PUT, f"{config['deployment_url']}/api/add_primary_key_indexes", status=200)
     responses.add(
         responses.GET,
-        f"{config['deployment_url']}/api/indexes_ready",
+        f"{config['deployment_url']}/api/primary_key_indexes_ready",
         status=200,
         json={"indexesReady": True},
     )
