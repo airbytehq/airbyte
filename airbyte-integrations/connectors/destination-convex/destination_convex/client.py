@@ -9,12 +9,12 @@ from destination_convex.config import ConvexConfig
 
 
 class ConvexClient:
-    def __init__(self, config: ConvexConfig, stream_metadata: Mapping):
+    def __init__(self, config: ConvexConfig, stream_metadata: Mapping[str, Any]):
         self.deployment_url = config["deployment_url"]
         self.access_key = config["access_key"]
         self.stream_metadata = stream_metadata
 
-    def batch_write(self, records: List[Mapping]) -> requests.Response:
+    def batch_write(self, records: List[Mapping[str, Any]]) -> requests.Response:
         """
         See Convex docs: https://docs.convex.dev/http-api/#post-apiairbyte_ingress
         """
@@ -28,7 +28,7 @@ class ConvexClient:
         request_body = {"tableNames": keys}
         return self._request("PUT", endpoint="clear_tables", json=request_body)
 
-    def add_primary_key_indexes(self, indexes: Mapping) -> requests.Response:
+    def add_primary_key_indexes(self, indexes: Mapping[str, List[List[str]]]) -> requests.Response:
         """
         See Convex docs: https://docs.convex.dev/http-api/#put-apiadd_primary_key_indexes
         """
@@ -44,12 +44,15 @@ class ConvexClient:
         return {"Authorization": f"Convex {self.access_key}"}
 
     def _request(
-        self, http_method: str, endpoint: str = None, params: Mapping[str, Any] = None, json: Mapping[str, Any] = None
+        self,
+        http_method: str,
+        endpoint: str,
+        json: Mapping[str, Any],
     ) -> requests.Response:
         url = f"{self.deployment_url}/api/{endpoint}"
         headers = {"Accept": "application/json", **self._get_auth_headers()}
 
-        response = requests.request(method=http_method, params=params, url=url, headers=headers, json=json)
+        response = requests.request(method=http_method, url=url, headers=headers, json=json)
 
         if response.status_code != 200:
             raise Exception(response.json())

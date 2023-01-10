@@ -4,7 +4,7 @@
 
 from collections.abc import Mapping
 import time
-from typing import List
+from typing import Any, List
 
 from destination_convex.client import ConvexClient
 
@@ -14,7 +14,7 @@ class ConvexWriter:
     Buffers messages before sending them to Convex.
     """
 
-    write_buffer = []
+    write_buffer: List[Mapping[str, Any]] = []
     flush_interval = 1000
 
     def __init__(self, client: ConvexClient):
@@ -40,7 +40,7 @@ class ConvexWriter:
                 time.sleep(1)
         return
 
-    def queue_write_operation(self, message: Mapping) -> None:
+    def queue_write_operation(self, message: Mapping[str, Any]) -> None:
         """Adds messages to the write queue and flushes if the buffer is full"""
         self.write_buffer.append(message)
         if len(self.write_buffer) == self.flush_interval:
