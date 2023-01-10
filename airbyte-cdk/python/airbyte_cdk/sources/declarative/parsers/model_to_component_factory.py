@@ -33,6 +33,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomAuthenticator as CustomAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomBackoffStrategy as CustomBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
@@ -113,6 +114,14 @@ DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 class ModelToComponentFactory:
     @staticmethod
     def create_component(model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config) -> type:
+        """
+
+        :param model_type:
+        :param component_definition:
+        :param config:
+        :return:
+        """
+
         component_type = component_definition.get("type")
         if component_definition.get("type") != model_type.__name__:
             raise ValueError(f"Expected manifest component of type {model_type}, but received {component_type} instead")
@@ -170,10 +179,7 @@ def create_check_stream(model: CheckStreamModel, config: Config, **kwargs):
 
 
 def create_composite_error_handler(model: CompositeErrorHandlerModel, config: Config, **kwargs) -> CompositeErrorHandler:
-    error_handlers = []
-    if model.error_handlers:
-        for error_handler_model in model.error_handlers:
-            error_handlers.append(create_component_from_model(model=error_handler_model, config=config))
+    error_handlers = [create_component_from_model(model=error_handler_model, config=config) for error_handler_model in model.error_handlers]
     return CompositeErrorHandler(error_handlers=error_handlers, options=model.options)
 
 
@@ -215,17 +221,13 @@ def create_custom_component(model, config: Config, **kwargs) -> type:
     model_args = model.dict()
     model_args["config"] = config
 
-    # The initial pydantic parse_obj() parsed handles the alias of $options -> options, but since it cannot parse dynamic custom
-    # component fields, this needs to be remapped manually
-    model_args["options"] = model_args.pop("$options", {})
-
     # Pydantic is unable to parse a custom component's fields that are subcomponents into models because their fields and types are not
     # defined in the schema. The fields and types are defined within the Python class implementation. Pydantic can only parse down to
     # the custom component and this code performs a second parse to convert the sub-fields first into models, then declarative components
     for model_field, model_value in model_args.items():
         # If a custom component field doesn't have a type set, we try to use the type hints to infer the type
         if isinstance(model_value, dict) and "type" not in model_value and model_field in component_fields:
-            derived_type = derive_component_type_from_type_hints(component_fields.get(model_field))
+            derived_type = _derive_component_type_from_type_hints(component_fields.get(model_field))
             if derived_type:
                 model_value["type"] = derived_type
 
@@ -235,7 +237,7 @@ def create_custom_component(model, config: Config, **kwargs) -> type:
             vals = []
             for v in model_value:
                 if isinstance(v, dict) and "type" not in v and model_field in component_fields:
-                    derived_type = derive_component_type_from_type_hints(component_fields.get(model_field))
+                    derived_type = _derive_component_type_from_type_hints(component_fields.get(model_field))
                     if derived_type:
                         v["type"] = derived_type
                 if _is_component(v):
@@ -246,7 +248,14 @@ def create_custom_component(model, config: Config, **kwargs) -> type:
     return custom_component_class(**kwargs)
 
 
-def derive_component_type_from_type_hints(field_type: str) -> Optional[str]:
+def _get_class_from_fully_qualified_class_name(class_name: str) -> type:
+    split = class_name.split(".")
+    module = ".".join(split[:-1])
+    class_name = split[-1]
+    return getattr(importlib.import_module(module), class_name)
+
+
+def _derive_component_type_from_type_hints(field_type: str) -> Optional[str]:
     interface = field_type
     while True:
         origin = get_origin(interface)
@@ -514,11 +523,11 @@ def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> 
 
 def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
     return DeclarativeOauth2Authenticator(
-        access_token_name=model.access_token_name,
+        access_token_name=model.access_token_name or "access_token",
         client_id=model.client_id,
         client_secret=model.client_secret,
-        expires_in_name=model.expires_in_name,
-        grant_type=model.grant_type,
+        expires_in_name=model.expires_in_name or "expires_in",
+        grant_type=model.grant_type or "refresh_token",
         refresh_request_body=model.refresh_request_body,
         refresh_token=model.refresh_token,
         scopes=model.scopes,
@@ -639,13 +648,6 @@ def create_wait_until_time_from_header(
     )
 
 
-def _get_class_from_fully_qualified_class_name(class_name: str) -> type:
-    split = class_name.split(".")
-    module = ".".join(split[:-1])
-    class_name = split[-1]
-    return getattr(importlib.import_module(module), class_name)
-
-
 PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     AddedFieldDefinitionModel: create_added_field_definition,
     AddFieldsModel: create_add_fields,
@@ -657,6 +659,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     CompositeErrorHandlerModel: create_composite_error_handler,
     ConstantBackoffStrategyModel: create_constant_backoff_strategy,
     CursorPaginationModel: create_cursor_pagination,
+    CustomAuthenticatorModel: create_custom_component,
     CustomBackoffStrategyModel: create_custom_component,
     CustomErrorHandlerModel: create_custom_component,
     CustomRecordExtractorModel: create_custom_component,

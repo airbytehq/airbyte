@@ -29,8 +29,8 @@ definitions:
 
     request_options_provider:
       request_headers:
-        Square-Version: '2022-10-19'
-        Content-Type: 'application/json'
+        Square-Version: "2022-10-19"
+        Content-Type: "application/json"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -38,6 +38,7 @@ definitions:
       $ref: "*ref(definitions.requester)"
 
   base_stream:
+    type: DeclarativeStream
     retriever:
       $ref: "*ref(definitions.retriever)"
       paginator:

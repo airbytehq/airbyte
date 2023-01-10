@@ -238,7 +238,6 @@ definitions:
                 parent_key: "event_name"
                 stream_slice_field: "event"
                 request_option:
-                  type: RequestOption
                   field_name: "event"
                   inject_into: "request_parameter"
           - "*ref(definitions.datetime_100d_slicer)"
