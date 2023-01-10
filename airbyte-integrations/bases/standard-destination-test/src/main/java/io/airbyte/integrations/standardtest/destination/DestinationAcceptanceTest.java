@@ -23,6 +23,7 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
@@ -986,7 +987,10 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    final String namespace = "sourcenamespace";
+    // A randomized namespace is required otherwise you can generate a "false success" with data from a
+    // previous run.
+    final String namespace = Strings.addRandomSuffix("airbyte_source_namespace", "_", 8);
+
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);

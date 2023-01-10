@@ -44,6 +44,12 @@ The destination we are creating is a simple JSON line file, meaning that it will
 
 The resulting files will be located in `/tmp/airbyte_local/json_data`
 
+:::caution
+
+Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
+
+:::
+
 To set it up, just follow the instructions on the screenshot below.
 
 :::info

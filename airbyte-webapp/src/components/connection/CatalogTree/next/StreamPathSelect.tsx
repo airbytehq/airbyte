@@ -19,6 +19,7 @@ interface StreamPathSelectBaseProps {
   placeholder?: React.ReactNode;
   variant?: PillButtonVariant;
   disabled?: boolean;
+  hasError?: boolean;
 }
 
 interface StreamPathSelectMultiProps {
@@ -69,6 +70,7 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
         props.onPathChange(finalValues);
       }}
       className={styles.streamPathSelect}
+      hasError={props?.hasError}
     />
   );
 };

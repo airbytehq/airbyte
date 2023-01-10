@@ -12,7 +12,6 @@
   display: flex;
 
   .resetButton,
-  .cancelButton,
   .syncButton {
     display: flex;
     align-items: center;
@@ -21,16 +20,6 @@
 
   .resetButton {
     margin-right: variables.$spacing-md;
-  }
-
-  .cancelButton {
-    border-color: transparent;
-    background-color: colors.$red;
-
-    .iconXmark {
-      margin-right: 12px;
-      font-size: 18px;
-    }
   }
 
   .syncButton {

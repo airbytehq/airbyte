@@ -43,6 +43,7 @@ export interface StreamHeaderProps {
   onExpand: () => void;
   changedSelected: boolean;
   hasError: boolean;
+  configErrors?: Record<string, string>;
   disabled?: boolean;
 }
 
@@ -118,7 +119,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
           <Switch
-            small
+            size="sm"
             checked={stream.config?.selected}
             onChange={onSelectStream}
             disabled={disabled}

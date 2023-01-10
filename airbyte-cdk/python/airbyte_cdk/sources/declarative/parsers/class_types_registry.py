@@ -19,6 +19,8 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters import RequestOption
+from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
@@ -37,6 +39,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import 
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
@@ -45,7 +48,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
-from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import SubstreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig, SubstreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 
@@ -69,8 +72,10 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "DpathExtractor": DpathExtractor,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "HttpRequester": HttpRequester,
+    "HttpResponseFilter": HttpResponseFilter,
     "InlineSchemaLoader": InlineSchemaLoader,
     "InterpolatedBoolean": InterpolatedBoolean,
+    "InterpolatedRequestOptionsProvider": InterpolatedRequestOptionsProvider,
     "InterpolatedString": InterpolatedString,
     "JsonSchema": JsonFileSchemaLoader,  # todo remove after hacktoberfest and update connectors to use JsonFileSchemaLoader
     "JsonFileSchemaLoader": JsonFileSchemaLoader,
@@ -81,7 +86,9 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "OAuthAuthenticator": DeclarativeOauth2Authenticator,
     "OffsetIncrement": OffsetIncrement,
     "PageIncrement": PageIncrement,
+    "ParentStreamConfig": ParentStreamConfig,
     "RecordSelector": RecordSelector,
+    "RequestOption": RequestOption,
     "RemoveFields": RemoveFields,
     "SimpleRetriever": SimpleRetriever,
     "SingleSlice": SingleSlice,

@@ -170,8 +170,13 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 
   const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
+  const connector = isEditMode ? props.connector : undefined;
+
   // Fill form with existing connector values otherwise set the default service name
-  const formValues = isEditMode ? props.connector : { name: selectedConnectorDefinition?.name };
+  const formValues = useMemo(
+    () => (isEditMode && connector ? connector : { name: selectedConnectorDefinition?.name }),
+    [isEditMode, connector, selectedConnectorDefinition?.name]
+  );
 
   return (
     <Card title={title} description={description} fullWidth={full}>

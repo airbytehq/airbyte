@@ -5,6 +5,9 @@ metadata:
   name: {{ include "common.names.fullname" . }}
   labels:
     {{- include "airbyte.labels" . | nindent 4 }}
+    {{- if .Values.extraLabels }}
+    {{ toYaml (mergeOverwrite .Values.extraLabels .Values.global.extraLabels) | nindent 4 }}
+    {{- end }}
     {{- if .Values.podLabels }}
       {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 4 }}
     {{- end }}

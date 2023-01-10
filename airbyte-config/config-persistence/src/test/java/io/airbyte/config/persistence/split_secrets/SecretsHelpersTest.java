@@ -71,6 +71,7 @@ public class SecretsHelpersTest {
 
   @ParameterizedTest
   @MethodSource(PROVIDE_TEST_CASES)
+  @SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert"})
   public void validateTestCases(final SecretsTestCase testCase) throws JsonValidationException {
     final var validator = new JsonSchemaValidator();
     final var spec = testCase.getSpec().getConnectionSpecification();
