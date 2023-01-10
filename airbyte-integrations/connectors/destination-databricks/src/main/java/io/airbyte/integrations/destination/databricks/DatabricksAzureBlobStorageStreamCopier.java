@@ -160,9 +160,25 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
     final List<String> recordHeaders = MoreIterators.toList(properties.fieldNames())
         .stream().sorted().toList();
     for (final String header : recordHeaders) {
-      final JsonNode node = properties.get(header);
-      final String type = node.get("type").asText();
-      schemaString.append(", `").append(header).append("` ").append(type.equals("number") ? "double" : type);
+      final JsonNode typeNode = properties.get(header).get("type");
+
+      String columnType = typeNode.asText();
+
+      // Optional types in the input stream are sometimes specified as {"type" : ["<type>", "null"]}
+      if (typeNode.isArray()) {
+        final ArrayList<String> typeArray = new ArrayList<>();
+        typeNode.elements().forEachRemaining(n -> typeArray.add(n.asText()));
+        if (typeArray.size() == 2 && typeArray.contains("null")) {
+          columnType = typeArray.indexOf("null") == 0 ? typeArray.get(1) : typeArray.get(0);
+        }
+      }
+
+      if (columnType.equals("")) {
+        LOGGER.info("Unable to parse type for the `{}` column. Falling back to \"string\"", header);
+        columnType = "string";
+      }
+
+      schemaString.append(", `").append(header).append("` ").append(columnType.equals("number") ? "double" : columnType);
     }
     return schemaString.toString();
   }
