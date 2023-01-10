@@ -9,23 +9,28 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.services.AirbyteGithubStore;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
 @Slf4j
+@Singleton
 public class WebBackendCheckUpdatesHandler {
 
   private static final int NO_CHANGES_FOUND = 0;
 
   final ConfigRepository configRepository;
   final AirbyteGithubStore githubStore;
+
+  public WebBackendCheckUpdatesHandler(final ConfigRepository configRepository, final AirbyteGithubStore githubStore) {
+    this.configRepository = configRepository;
+    this.githubStore = githubStore;
+  }
 
   public WebBackendCheckUpdatesRead checkUpdates() {
 
