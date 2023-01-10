@@ -389,7 +389,7 @@
 
   "connection.geographyTitle": "Data residency",
   "connection.requestNewGeography": "Request a new geography",
-  "connection.geographyDescription": "Choose where the data for this connection will be processed. Depending on your network configuration, you may need to <ipLink>add IP addresses</ipLink> to your allowlist. <docLink>Learn more</docLink>.",
+  "connection.geographyDescription": "Choose where the data for this connection will be processed. Depending on your network configuration, you may need to <ipLink>add IP addresses</ipLink> to your allowlist. <docLink></docLink>",
   "connection.geography.auto": "Airbyte Default",
   "connection.geography.us": "United States",
   "connection.geography.eu": "European Union",
