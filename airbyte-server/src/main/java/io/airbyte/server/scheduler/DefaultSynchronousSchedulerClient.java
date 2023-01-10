@@ -186,13 +186,15 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       final T mappedOutput = jobOutput.map(outputMapper).orElse(null);
       final JobState outputState = temporalResponse.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
 
-      track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
-
       if (outputState == JobState.FAILED && jobOutput.isPresent()) {
         final FailureReason failureReason = ((ConnectorJobOutput) jobOutput.get()).getFailureReason();
-
         reportError(configType, jobContext, failureReason, connectorDefinitionId, workspaceId);
+        track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
+      } else {
+        track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
       }
+
+
 
       final long endedAt = Instant.now().toEpochMilli();
       return SynchronousResponse.fromTemporalResponse(
