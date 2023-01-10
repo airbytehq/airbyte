@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.18.1
+Allow for CustomRequester to be defined within declarative manifests
+
+## 0.18.0
+Adding `cursor_granularity` to the declarative API of DatetimeStreamSlicer
+
+## 0.17.0
+Add utility class to infer schemas from real records
+
+## 0.16.3
+Do not eagerly refresh access token in `SingleUseRefreshTokenOauth2Authenticator` [#20923](https://github.com/airbytehq/airbyte/pull/20923)
+
 ## 0.16.2
 Fix the naming of OAuthAuthenticator
 

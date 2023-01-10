@@ -29,24 +29,11 @@ class SourceAirtable(AbstractSource):
             for base in AirtableBases(authenticator=auth).read_records(sync_mode=None):
                 base_id = base.get("id")
                 base_name = base.get("name")
-                logger.info(f"Reading first table info for base: {base_name}")
+                self.logger.info(f"Reading first table info for base: {base_name}")
                 next(AirtableTables(base_id=base_id, authenticator=auth).read_records(sync_mode=None))
             return True, None
         except Exception as e:
             return False, str(e)
-
-    def prepare_catalog_for_base(self, base_id: str, base_name: str, base_tables: list) -> Iterable[Mapping[str, Any]]:
-        for table in base_tables:
-            if table not in self.streams_catalog:
-                self.streams_catalog.append(
-                    {
-                        "stream_path": f"{base_id}/{table.get('id')}",
-                        "stream": Helpers.get_airbyte_stream(
-                            f"{base_name}/{Helpers.clean_name(table.get('name'))}",
-                            Helpers.get_json_schema(table),
-                        ),
-                    }
-                )
 
     def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
         """
@@ -55,29 +42,33 @@ class SourceAirtable(AbstractSource):
 
         Retrieve: Bases, Tables from each Base, generate JSON Schema for each table.
         """
-        # re-use the authenticator while generating streams instances
-        # or create new auth instance otherwise
-        auth = self._auth if self._auth else AirtableAuth(config)
-
+        auth = TokenAuthenticator(token=config["api_key"])
         # list all bases available for authenticated account
         for base in AirtableBases(authenticator=auth).read_records(sync_mode=None):
+            base_id = base.get("id")
+            base_name = SchemaHelpers.clean_name(base.get("name"))
             # list and process each table under each base to generate the JSON Schema
-            self.prepare_catalog_for_base(
-                base_id=base.get("id"),
-                base_name=Helpers.clean_name(base.get("name")),
-                base_tables=list(AirtableTables(base_id=base.get("id"), authenticator=auth).read_records(sync_mode=None)),
-            )
-
+            for table in list(AirtableTables(base_id, authenticator=auth).read_records(sync_mode=None)):
+                self.streams_catalog.append(
+                    {
+                        "stream_path": f"{base_id}/{table.get('id')}",
+                        "stream": SchemaHelpers.get_airbyte_stream(
+                            f"{base_name}/{SchemaHelpers.clean_name(table.get('name'))}",
+                            SchemaHelpers.get_json_schema(table),
+                        ),
+                    }
+                )
         return AirbyteCatalog(streams=[stream["stream"] for stream in self.streams_catalog])
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        self._auth = AirtableAuth(config)
+        # trigger discovery to populate the streams_catalog
         if not self.streams_catalog:
-            self.discover(logger=None, config=config)
+            self.discover(None, config)
+        # build the stream class from prepared streams_catalog
         for stream in self.streams_catalog:
             yield AirtableStream(
                 stream_path=stream["stream_path"],
                 stream_name=stream["stream"].name,
                 stream_schema=stream["stream"].json_schema,
-                authenticator=self._auth,
+                authenticator=TokenAuthenticator(token=config["api_key"]),
             )
