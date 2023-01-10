@@ -878,6 +878,13 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
+      - name: Build normalization
+        uses: Wandalen/wretry.action@master
+        with:
+          command: ./gradlew :airbyte-integrations:bases:base-normalization:airbyteDocker --scan
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
           USER: root
@@ -1137,6 +1144,13 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: pwd && SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
+      - name: Build normalization
+        uses: Wandalen/wretry.action@master
+        with:
+          command: ./gradlew :airbyte-integrations:bases:base-normalization:airbyteDocker --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
