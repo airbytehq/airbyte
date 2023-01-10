@@ -7,6 +7,7 @@ package io.airbyte.workers.internal;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import io.airbyte.workers.internal.exception.SourceException;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   private final AirbyteProtocolPredicate protocolValidator;
   protected final Logger logger;
   private final boolean checkSize;
+  private final long maxMemory;
   private final Class<? extends RuntimeException> exceptionClass;
 
   public DefaultAirbyteStreamFactory() {
@@ -63,6 +66,22 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     this.containerLogMdcBuilder = containerLogMdcBuilder;
     this.checkSize = checkSize;
     this.exceptionClass = exceptionClass;
+    this.maxMemory = 1l; // Runtime.getRuntime().maxMemory();
+  }
+
+  @VisibleForTesting
+  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
+                              final Logger logger,
+                              final MdcScope.Builder containerLogMdcBuilder,
+                              final boolean checkSize,
+                              final Class<? extends RuntimeException> exceptionClass,
+                              final long maxMemory) {
+    protocolValidator = protocolPredicate;
+    this.logger = logger;
+    this.containerLogMdcBuilder = containerLogMdcBuilder;
+    this.checkSize = checkSize;
+    this.exceptionClass = exceptionClass;
+    this.maxMemory = maxMemory;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -75,9 +94,11 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .peek(str -> {
           if (checkSize) {
             long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
-            if (messageSize > /**/1L/**//*Runtime.getRuntime().maxMemory() * 0.6/**/) {
+            if (messageSize > maxMemory * 0.6) {
               try {
-                throw  exceptionClass.getConstructor(String.class).newInstance("Too big");
+                String errorMessage = String.format("Airbyte has received a message at %s UTC which is larger than %x Bytes (size: %x). The sync has been failed to prevent running out of memory.",
+                        DateTime.now(), maxMemory, messageSize);
+                throw  exceptionClass.getConstructor(String.class).newInstance(errorMessage);
               } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
               }

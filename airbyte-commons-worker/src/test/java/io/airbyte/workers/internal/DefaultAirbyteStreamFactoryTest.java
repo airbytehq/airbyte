@@ -5,6 +5,7 @@
 package io.airbyte.workers.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -103,6 +104,18 @@ class DefaultAirbyteStreamFactoryTest {
     assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
     verify(logger).error(anyString(), anyString());
     verifyNoMoreInteractions(logger);
+  }
+
+  @Test
+  void testFailsSize() {
+    final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
+
+    final InputStream inputStream = new ByteArrayInputStream(record1.toString().getBytes(StandardCharsets.UTF_8));
+    final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+
+    final Stream<AirbyteMessage> messageStream = new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder(), true, RuntimeException.class, 1l).create(bufferedReader);
+
+    assertThrows(RuntimeException.class, () -> messageStream.toList());
   }
 
   @Test
