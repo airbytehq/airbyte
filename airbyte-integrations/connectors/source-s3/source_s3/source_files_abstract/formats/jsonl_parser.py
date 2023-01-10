@@ -1,11 +1,13 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import pyarrow as pa
-from pyarrow import json as pa_json, ArrowNotImplementedError
+from pyarrow import ArrowNotImplementedError
+from pyarrow import json as pa_json
 from source_s3.source_files_abstract.file_info import FileInfo
 
 from .abstract_file_parser import AbstractFileParser
@@ -53,8 +55,7 @@ class JsonlParser(AbstractFileParser):
         build ReadOptions object like: pa.json.ReadOptions(**self._read_options())
         Disable block size parameter if it set to 0.
         """
-        return {**{"block_size": self.format.block_size if self.format.block_size else None,
-                   "use_threads": True}}
+        return {**{"block_size": self.format.block_size if self.format.block_size else None, "use_threads": True}}
 
     def _parse_options(self, json_schema: Mapping[str, Any] = None) -> Mapping[str, str]:
         """
