@@ -41,7 +41,7 @@ sealed interface FeatureFlagClient {
  */
 class ConfigFileClient(config: Path) : FeatureFlagClient {
     /** [flags] holds the mappings of the flag-name to the flag properties */
-    private var flags: Map<String, PlatformFlag> = readConfig(config)
+    private var flags: Map<String, ConfigFileFlag> = readConfig(config)
 
     /** lock is used for ensuring access to the flags map is handled correctly when the map is being updated. */
     private val lock = ReentrantReadWriteLock()
@@ -113,12 +113,12 @@ class TestClient(val values: Map<String, Boolean>) : FeatureFlagClient {
  *  - name: feature-two
  *    enabled: false
  */
-private data class PlatformFlags(val flags: List<PlatformFlag>)
+private data class ConfigFileFlags(val flags: List<ConfigFileFlag>)
 
 /**
  * Data wrapper around an individual flag read from the configuration file.
  */
-private data class PlatformFlag(val name: String, val enabled: Boolean)
+private data class ConfigFileFlag(val name: String, val enabled: Boolean)
 
 
 /** The yaml mapper is used for reading the feature-flag configuration file. */
@@ -130,7 +130,7 @@ private val yamlMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
  * @param [path] to yaml config file
  * @return map of feature-flag name to feature-flag config
  */
-private fun readConfig(path: Path): Map<String, PlatformFlag> = yamlMapper.readValue<PlatformFlags>(path.toFile()).flags
+private fun readConfig(path: Path): Map<String, ConfigFileFlag> = yamlMapper.readValue<ConfigFileFlags>(path.toFile()).flags
     .associateBy { it.name }
 
 /**

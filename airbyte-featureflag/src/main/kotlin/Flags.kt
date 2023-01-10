@@ -16,6 +16,8 @@ object AutoDetectSchema : EnvVar(envVar = "AUTO_DETECT_SCHEMA")
 object NeedStateValidation : EnvVar(envVar = "NEED_STATE_VALIDATION")
 object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
 
+object FieldSelectionWorkspaces : EnvVar(envVar = "FIELD_SELECTION_WORKSPACES")
+
 /**
  * Flag is a sealed class that all feature-flags must inherit from.
  *
