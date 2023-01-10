@@ -194,8 +194,6 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput, null);
       }
 
-
-
       final long endedAt = Instant.now().toEpochMilli();
       return SynchronousResponse.fromTemporalResponse(
           temporalResponse,
@@ -247,10 +245,10 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   private void reportError(final ConfigType configType,
-                                  final ConnectorJobReportingContext jobContext,
-                                  final FailureReason failureReason,
-                                  final UUID connectorDefinitionId,
-                                  final UUID workspaceId) {
+                           final ConnectorJobReportingContext jobContext,
+                           final FailureReason failureReason,
+                           final UUID connectorDefinitionId,
+                           final UUID workspaceId) {
     Exceptions.swallow(() -> {
       switch (configType) {
         case CHECK_CONNECTION_SOURCE -> jobErrorReporter.reportSourceCheckJobFailure(
