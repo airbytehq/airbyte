@@ -6,10 +6,11 @@ This connector supports GA4 properties through the [Analytics Data API v1](https
 
 ## Prerequisites
 
-* JSON credentials for the service account that has access to Google Analytics. For more details check [instructions](https://support.google.com/analytics/answer/1009702#zippy=%2Cin-this-article)
+* JSON credentials for the service account that has access to Google Analytics. For more details check [instructions](https://support.google.com/analytics/answer/1009702)
 * OAuth 2.0 credentials for the service account that has access to Google Analytics
 * Property ID
-* Date Range Start Date
+* Start Date
+* Custom Reports (Optional)
 * Data request time increment in days (Optional)
 
 ## Custom reports
@@ -27,7 +28,7 @@ This connector supports GA4 properties through the [Analytics Data API v1](https
 First, you need to select existing or create a new project in the Google Developers Console:
 
 1. Sign in to the Google Account you are using for Google Analytics as an admin.
-2. Go to the [Service accounts page](https://console.developers.google.com/iam-admin/serviceaccounts).
+2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page.
 3. Click `Create service account`.
 4. Create a JSON key file for the service user. The contents of this file will be provided as the `credentials_json` in the UI when authorizing GA after you grant permissions \(see below\).
 
@@ -42,7 +43,7 @@ Use the service account email address to [add a user](https://support.google.com
 
 ### Property ID
 
-Specify the Property ID as set [here](https://analytics.google.com/analytics/web/a54907729p153687530/admin/property/settings)
+To determine a Google Analytics 4 [Property ID](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id)
 
 ## Step 2: Set up the source connector in Airbyte
 
@@ -63,8 +64,8 @@ The Google Analytics source connector supports the following [sync modes](https:
 
 # Reports
 
-The reports are custom by setting the dimensions and metrics required. To support Incremental sync, the `uuid` field is
-added by default to any report. There are 8 default reports. To add more reports, you need to specify the `custom reports` field.
+The reports are custom by setting the dimensions and metrics required. To support Incremental sync, the `date` dimension is
+added by default to all reports. There are 8 default reports. To add more reports, you need to specify the `custom reports` field.
 
 ## Changelog
 
