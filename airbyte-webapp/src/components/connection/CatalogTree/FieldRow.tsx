@@ -110,7 +110,7 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
           </NameContainer>
         </FirstCell>
       )}
-      <DataTypeCell>{dataType}</DataTypeCell>
+      <DataTypeCell data-testid="dataTypeCell">{dataType}</DataTypeCell>
       <Cell>
         {shouldDefineCursor && <RadioButton checked={isCursor} onChange={() => onCursorChange(field.path)} />}
       </Cell>
