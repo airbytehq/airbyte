@@ -77,6 +77,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                       <ControlLabels
                         className={styles.namespaceFormatLabel}
                         nextLine
+                        optional
                         error={!!meta.error}
                         label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
                         infoTooltipContent={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
@@ -101,6 +102,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                   <div className={styles.leftFieldCol}>
                     <ControlLabels
                       nextLine
+                      optional
                       label={formatMessage({
                         id: "form.prefix",
                       })}
