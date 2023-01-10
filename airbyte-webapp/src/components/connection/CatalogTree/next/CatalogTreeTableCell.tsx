@@ -25,7 +25,7 @@ export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeT
   className,
   children,
 }) => {
-  const style = classNames(styles.tableCell, className, sizeMap[size]);
+  const style = classNames(styles.tableCell, className, sizeMap[size], withTooltip);
   // if (withTooltip) {
   //   return (
   //     <div className={style}>
@@ -35,5 +35,10 @@ export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeT
   //     </div>
   //   );
   // }
-  return <div className={style}>{children}</div>;
+  return (
+    <div className={style}>
+      <div className={styles.tooltip}>{children}</div>
+      {children}
+    </div>
+  );
 };
