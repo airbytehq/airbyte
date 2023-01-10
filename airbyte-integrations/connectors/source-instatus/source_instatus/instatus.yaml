@@ -16,27 +16,6 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
 
-  public_data_requester:
-    url_base: ""
-    http_method: "GET"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_key'] }}"
-    error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          response_filters:
-            # 401 This user is not an owner of the status page
-            - http_codes: [ 401 ]
-              action: IGNORE
-        - response_filters:
-            - http_codes: [ 429 ]
-              action: RETRY
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: "Retry-After"
-
   api_error_handler_requester:
     $ref: "*ref(definitions.requester)"
     error_handler:
@@ -47,12 +26,17 @@ definitions:
             # 401 This user is not an owner of the status page
             - http_codes: [ 401 ]
               action: IGNORE
-        - response_filters:
-            - http_codes: [ 429 ]
-              action: RETRY
+        - type: DefaultErrorHandler
+          response_filters:
+              - http_codes: [ 429 ]
+                action: RETRY
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: "Retry-After"
+
+  public_data_requester:
+    $ref: "*ref(definitions.api_error_handler_requester)"
+    url_base: "https://{{ stream_slice.url }}.instatus.com/"
 
   retriever:
     record_selector:
@@ -168,7 +152,6 @@ definitions:
           - path: [ "updates_ids" ]
             value: "{{ record['updates'] }}"
 
-
   maintenance_updates_stream_slicer:
     class_name: "source_instatus.components.UpdatesSubstreamSlicer"
     parent_stream_configs:
@@ -262,10 +245,9 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.public_data_requester)"
-        path: "https://{{ stream_slice.url }}.instatus.com/summary.json"
+        path: "summary.json"
       stream_slicer:
         $ref: "*ref(definitions.page_url_stream_slicer)"
-
 
 streams:
   - "*ref(definitions.status_pages_stream)"
