@@ -21,7 +21,7 @@ Each stream will be output into its own table in Databend. Each table will conta
 ## Getting Started
 You can follow the [Connecting to a Warehouse docs](https://docs.databend.com/using-databend-cloud/warehouses/connecting-a-warehouse) to get the user, password, host etc.
 
-Or You can create such a user by running:
+Or you can create such a user by running:
 
 ```
 GRANT CREATE ON * TO airbyte_user;
