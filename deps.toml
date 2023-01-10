@@ -32,7 +32,7 @@ apache-commons = { module = "org.apache.commons:commons-compress", version = "1.
 apache-commons-lang = { module = "org.apache.commons:commons-lang3", version = "3.11" }
 appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
 assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
-aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.372" }
+aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons_io" }
 connectors-destination-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-destination-testcontainers-clickhouse" }
 connectors-destination-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-destination-testcontainers-oracle-xe" }
@@ -98,7 +98,7 @@ platform-testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref
 platform-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "platform-testcontainers" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 quartz-scheduler = { module = "org.quartz-scheduler:quartz", version = "2.3.2" }
-s3 = { module = "software.amazon.awssdk:s3", version = "2.19.4" }
+s3 = { module = "software.amazon.awssdk:s3", version = "2.16.84" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.7.3" }
 temporal-sdk = { module = "io.temporal:temporal-sdk", version.ref = "temporal" }

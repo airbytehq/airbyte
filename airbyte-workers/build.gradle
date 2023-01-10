@@ -25,6 +25,12 @@ dependencies {
     implementation (libs.jooq) {
         force = true
     }
+    implementation(libs.s3) {
+        force = true
+    }
+    implementation(libs.aws.java.sdk.s3) {
+        force = true
+    }
 
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.4.0'
     implementation 'com.auth0:java-jwt:3.19.2'
