@@ -18,6 +18,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.commons.features.FeatureFlagHelper;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
@@ -52,6 +53,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
@@ -72,10 +74,8 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -265,7 +265,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     }
   }
 
-  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getLegacyWorkerFactory(final IntegrationLauncherConfig sourceLauncherConfig,
+  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getLegacyWorkerFactory(
+                                                                                                          final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                           final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                           final JobRunConfig jobRunConfig,
                                                                                                           final StandardSyncInput syncInput) {
@@ -276,21 +277,24 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           sourceLauncherConfig.getDockerImage(),
           processFactory,
           syncInput.getSourceResourceRequirements(),
-          sourceLauncherConfig.getIsCustomConnector());
+          sourceLauncherConfig.getIsCustomConnector(),
+          featureFlags);
       final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
           destinationLauncherConfig.getJobId(),
           Math.toIntExact(destinationLauncherConfig.getAttemptId()),
           destinationLauncherConfig.getDockerImage(),
           processFactory,
           syncInput.getDestinationResourceRequirements(),
-          destinationLauncherConfig.getIsCustomConnector());
+          destinationLauncherConfig.getIsCustomConnector(),
+          featureFlags);
 
       // reset jobs use an empty source to induce resetting all data in destination.
       final AirbyteSource airbyteSource = isResetJob(sourceLauncherConfig.getDockerImage())
           ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
           : new DefaultAirbyteSource(sourceLauncher,
               new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
-                  DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER));
+                  DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER),
+              featureFlags);
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
@@ -304,13 +308,16 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
                   DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
-          new AirbyteMessageTracker(),
+          new AirbyteMessageTracker(featureFlags),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-          metricReporter, enableFieldSelection(featureFlags, syncInput.getWorkspaceId()));
+          metricReporter,
+          new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()),
+          FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
     };
   }
 
-  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(final ContainerOrchestratorConfig containerOrchestratorConfig,
+  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(
+                                                                                                                     final ContainerOrchestratorConfig containerOrchestratorConfig,
                                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                                      final JobRunConfig jobRunConfig,
@@ -342,26 +349,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private boolean isResetJob(final String dockerImage) {
     return WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equalsIgnoreCase(dockerImage);
-  }
-
-  private boolean enableFieldSelection(final FeatureFlags featureFlags, final UUID workspaceId) {
-    final String workspaceIdsString = featureFlags.fieldSelectionWorkspaces();
-    final Set<UUID> workspaceIds = new HashSet<>();
-    LOGGER.debug("Field selection enabled for {}", workspaceIdsString);
-    if (!workspaceIdsString.isEmpty()) {
-      for (final String id : workspaceIdsString.split(",")) {
-        try {
-          workspaceIds.add(UUID.fromString(id));
-        } catch (IllegalArgumentException e) {
-          LOGGER.warn("Malformed workspace id for field selection: {}", id);
-        }
-      }
-    }
-    if (workspaceId != null && workspaceIds.contains(workspaceId)) {
-      return true;
-    }
-
-    return featureFlags.applyFieldSelection();
   }
 
 }

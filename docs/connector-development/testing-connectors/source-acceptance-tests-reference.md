@@ -236,6 +236,7 @@ This test verifies that sync produces no records when run with the STATE with ab
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                         |     |
 | `future_state_path`       | string | None                                        | Path to the state file with abnormally large cursor values         |     |
 | `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                  |     |
+| `bypass_reason`           | string | None                                        | Explain why this test is bypassed                                 |     |
 
 ## Strictness level
 
