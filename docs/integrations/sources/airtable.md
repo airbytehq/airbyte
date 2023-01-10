@@ -38,9 +38,18 @@ The airtable source connector supports the following [sync modes](https://docs.a
 | Incremental Sync  | No                   |       |
 
 
-## Supported Tables
+## Supported Tables and Plans
 
 This source allows you to pull all available tables and bases using `Metadata API` for a given authenticated user. In case you you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog. 
+
+Currently, this source connector works with `standard` subscription plan only.
+
+Standard Scopes required for the successfull authentication:
+* data.records:read
+* data.recordComments:read
+* schema.bases:read
+
+The `Enterprise` level accounts are not supported yet.
 
 ## Data type map
 
