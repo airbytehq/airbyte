@@ -19,9 +19,10 @@ from flatten_json import flatten
 
 # Basic full refresh stream
 class CommcareStream(HttpStream, ABC):
-    def __init__(self, project_space, **kwargs):
+    def __init__(self, project_space, form_fields, **kwargs):
         super().__init__(**kwargs)
         self.project_space = project_space
+        self.form_fields = form_fields
 
     @property
     def url_base(self) -> str:
@@ -34,15 +35,22 @@ class CommcareStream(HttpStream, ABC):
     last_form_date = None
     schemas = {}
     unwantedfields = re.compile(r"^(case_|update_|meta|create_|commcare_).*$")
-
+  
     @property
     def dateformat(self):
         return "%Y-%m-%dT%H:%M:%S.%f"
 
     def scrubUnwantedFields(self, form):
-        newform = {k: v for k, v in form.items() if not self.unwantedfields.match(k)}
-        return newform
-
+        new_dict = {}
+        for key, value in form.items():
+            if key in self.form_fields:
+             continue
+            if isinstance(value, dict):
+             new_dict[key] = self.scrubUnwantedFields(value)
+            else:
+                new_dict[key] = value
+        return new_dict
+       
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
             # Server returns status 500 when there are no more rows.
@@ -144,7 +152,7 @@ class Case(IncrementalStream):
     cursor_field = "indexed_on"
     primary_key = "id"
 
-    def __init__(self, start_date, app_id, schema, **kwargs):
+    def __init__(self, start_date, schema, app_id, **kwargs):
         super().__init__(**kwargs)
         self._cursor_value = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
         self.schema = schema
@@ -250,16 +258,11 @@ class Form(IncrementalStream):
         return params
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        upd = {"streamname": self.streamname, "xmlns": self.xmlns}
         for record in super().read_records(*args, **kwargs):
             self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
             CommcareStream.forms.add(record["id"])
-            form = record["form"]
-            form.update(upd)
-            # Append Z to make it timezone aware
-            form.update({"id": record["id"], "indexed_on": record["indexed_on"] + "Z"})
-            newform = self.scrubUnwantedFields(form)
-            yield flatten(newform)
+            newform = self.scrubUnwantedFields(record)
+            yield newform
         if self._cursor_value.microsecond == 0:
             # Airbyte converts the cursor_field value (datetime) to string when it saves the state and
             # our state setter parses the saved state with a format that contains microseconds
@@ -287,7 +290,7 @@ class SourceCommcare(AbstractSource):
         args = {
             "authenticator": auth,
         }
-        appdata = Application(**{**args, "app_id": config["app_id"], "project_space": config["project_space"]}).read_records(
+        appdata = Application(**{**args, "app_id": config["app_id"], "form_fields": config["form_fields"], "project_space": config["project_space"]}).read_records(
             sync_mode=SyncMode.full_refresh
         )
 
@@ -296,7 +299,7 @@ class SourceCommcare(AbstractSource):
         return streams
 
     def generate_streams(self, args, config, appdata):
-        form_args = {"app_id": config["app_id"], "start_date": config["start_date"], "project_space": config["project_space"], **args}
+        form_args = {"app_id": config["app_id"], "start_date": config["start_date"], "form_fields": config["form_fields"], "project_space": config["project_space"], **args}
         streams = []
         name2xmlns = {}
 
@@ -330,8 +333,10 @@ class SourceCommcare(AbstractSource):
             start_date=config["start_date"],
             schema=self.base_schema(),
             project_space=config["project_space"],
+            form_fields=config["form_fields"],
             **args,
         )
+
         streams.append(stream)
 
         return streams
