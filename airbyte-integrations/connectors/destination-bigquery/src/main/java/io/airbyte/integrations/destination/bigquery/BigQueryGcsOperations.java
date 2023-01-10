@@ -18,7 +18,10 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+<<<<<<< HEAD
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
+=======
+>>>>>>> e549ff0eb36 (Updates the COPY INTO methods to match writing to table)
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
