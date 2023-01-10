@@ -231,7 +231,7 @@ def test_get_http_streams_non_http_stream():
 
 
 def test_read_streams():
-    expected_messages = [
+    expected_messages = iter([
         AirbyteMessage(
             type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="request:{'url': 'https://demonslayers.com/v1/hashiras'}")
         ),
@@ -250,9 +250,34 @@ def test_read_streams():
             type=Type.RECORD,
             record=AirbyteRecordMessage(data={"name": "Giyu Tomioka", "breathing_technique": "water"}, emitted_at=1234, stream="hashiras"),
         ),
-    ]
+    ])
     mock_source = MagicMock()
     mock_source.read.return_value = expected_messages
+
+    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter._source = mock_source
+    actual_messages = list(adapter.read_stream("hashiras", {}))
+
+    for i, expected_message in enumerate(expected_messages):
+        assert actual_messages[i] == expected_message
+
+
+def test_read_streams_with_error():
+    expected_messages = [
+        AirbyteMessage(
+            type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="request:{'url': 'https://demonslayers.com/v1/hashiras'}")
+        ),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="response:{'status': 401}")),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message="error_message")),
+    ]
+    mock_source = MagicMock()
+
+    def return_value(*args, **kwargs):
+        yield expected_messages[0]
+        yield expected_messages[1]
+        raise Exception("error_message")
+
+    mock_source.read.side_effect = return_value
 
     adapter = LowCodeSourceAdapter(MANIFEST)
     adapter._source = mock_source

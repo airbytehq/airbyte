@@ -4,13 +4,17 @@
 
 from typing import Any, Dict, Iterable, List
 
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.yaml_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import \
+    ManifestDeclarativeSource
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class LowCodeSourceAdapter:
+
     def __init__(self, manifest: Dict[str, Any]):
         # Request and response messages are only emitted for a sources that have debug turned on
         self._source = ManifestDeclarativeSource(manifest, debug=True)
@@ -25,7 +29,8 @@ class LowCodeSourceAdapter:
                     raise TypeError(
                         f"A declarative stream should only have a retriever of type HttpStream, but received: {stream.retriever.__class__}")
             else:
-                raise TypeError(f"A declarative source should only contain streams of type DeclarativeStream, but received: {stream.__class__}")
+                raise TypeError(
+                    f"A declarative source should only contain streams of type DeclarativeStream, but received: {stream.__class__}")
         return http_streams
 
     def read_stream(self, stream: str, config: Dict[str, Any]) -> Iterable[AirbyteMessage]:
@@ -45,5 +50,11 @@ class LowCodeSourceAdapter:
             }
         )
         generator = self._source.read(logger=self._source.logger, config=config, catalog=configured_catalog)
-        for message in generator:
-            yield message
+
+        # the generator can raise an exception
+        # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
+        try:
+            yield from generator
+        except Exception as e:
+            yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=str(e)))
+            return

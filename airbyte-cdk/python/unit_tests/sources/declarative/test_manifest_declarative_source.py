@@ -94,7 +94,31 @@ class TestYamlDeclarativeSource:
                         },
                         "record_selector": {"extractor": {"field_pointer": ["result"]}},
                     },
-                }
+                },
+                {
+                    "type": "DeclarativeStream",
+                    "$options": {"name": "stream_with_custom_requester", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ options.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"inject_into": "path"},
+                            "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
+                        },
+                        "requester": {
+                            "type": "CustomRequester",
+                            "class_name": "unit_tests.sources.declarative.external_component.SampleCustomComponent",
+                            "path": "/v3/marketing/lists",
+                            "custom_request_parameters": {"page_size": 10},
+                        },
+                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    },
+                },
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }

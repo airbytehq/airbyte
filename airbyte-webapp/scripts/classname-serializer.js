@@ -1,8 +1,7 @@
 import { prettyDOM } from "@testing-library/react";
 
 /**
- * Traverse a tree of nodes and replace all class names with
- * the count of classnames instead, e.g. "<3 classnames>"
+ * Traverse a tree of nodes and replace all class names with "<removed-for-snapshot-test>"
  */
 const traverseAndRedactClasses = (node) => {
   if (

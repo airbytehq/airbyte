@@ -1,14 +1,14 @@
-@use "../../../scss/colors";
-@use "../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
 
 .mainView {
   cursor: pointer;
   height: unset !important;
   min-height: 70px;
+  gap: variables.$spacing-lg;
   padding: variables.$spacing-lg 0;
 
   .titleCell {
-    width: 80%;
     display: flex;
     color: colors.$dark-blue;
     min-width: 0;
@@ -39,20 +39,23 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    flex: 0 0 auto;
 
     .attemptCount {
       font-size: 12px;
       line-height: 15px;
-      color: colors.$red;
+      color: colors.$grey;
     }
   }
 
+  border-bottom: variables.$border-thin solid transparent !important;
+
   &.open:not(.failed) {
-    border-bottom: variables.$border-thin solid colors.$grey-100;
+    border-bottom: variables.$border-thin solid colors.$grey-100 !important;
   }
 
   &.open.failed {
-    border-bottom: variables.$border-thin solid colors.$red-50;
+    border-bottom: variables.$border-thin solid colors.$red-50 !important;
   }
 }
 

@@ -23,20 +23,9 @@ const Label = styled.label<{ disabled?: boolean }>`
   cursor: pointer;
 `;
 
-const BigCheckBox = styled(CheckBox)`
-  height: 25px;
-  width: 25px;
-  min-width: 25px;
-  background: ${({ theme, checked }) => (checked ? theme.primaryColor : theme.whiteColor)};
-  border: ${({ theme, checked }) => (checked ? theme.primaryColor : theme.textColor)} 2px solid;
-  color: ${({ theme }) => theme.whiteColor};
-  font-size: 18px;
-  line-height: 18px;
-`;
-
 const CheckBoxControl: React.FC<IProps> = (props) => (
   <ToggleContainer>
-    <BigCheckBox {...props} id={`checkbox-${props.name}`} />
+    <CheckBox {...props} id={`checkbox-${props.name}`} />
     <Label disabled={props.disabled} htmlFor={`checkbox-${props.name}`}>
       {props.label}
     </Label>

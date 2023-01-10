@@ -1,6 +1,3 @@
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # Deploy Airbyte on GCP (Compute Engine)
 
 This page guides you through deploying Airbyte Open Source on a [Google Cloud Platform (GCP) Compute Engine instance](https://cloud.google.com/compute/docs/instances) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the GCP instance.
@@ -13,8 +10,8 @@ The instructions have been tested on a `Debian GNU/Linux 10` VM instance.
 
 ## Requirements
 
-- To test Airbyte, we recommend an `e2.medium` instance and provision at least 30GBs of disk per node.
-- To deploy Airbyte in a production environment, we recommend a `n1-standard-2` instance.
+- To test Airbyte, we recommend an `e2.medium` instance and provision at least 30GBs of disk per node
+- To deploy Airbyte in a production environment, we recommend a `n1-standard-2` instance
 
 ## Set up the environment
 
@@ -95,7 +92,7 @@ docker-compose up -d
 ## Connect to Airbyte
 
 :::caution
-Warning: For security reasons, we strongly recommended not exposing Airbyte publicly.
+For security reasons, we strongly recommended not exposing Airbyte publicly.
 :::
 
 1. In your local terminal, create an SSH tunnel to connect the GCP instance to Airbyte:

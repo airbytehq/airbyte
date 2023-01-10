@@ -33,3 +33,6 @@ properties:
   protocolVersion:
     type: object
     existingJavaType: io.airbyte.commons.version.Version
+  isCustomConnector:
+    description: determine if the running image is a custom connector.
+    type: boolean

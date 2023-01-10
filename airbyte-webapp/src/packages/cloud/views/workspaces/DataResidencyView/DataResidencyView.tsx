@@ -6,6 +6,7 @@ import { ControlLabels } from "components";
 import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
+import { ToastType } from "components/ui/Toast";
 
 import { Geography } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
@@ -44,8 +45,8 @@ export const DataResidencyView: React.FC = () => {
     } catch (e) {
       registerNotification({
         id: "workspaceSettings.defaultGeographyError",
-        title: formatMessage({ id: "settings.defaultDataResidencyUpdateError" }),
-        isError: true,
+        text: formatMessage({ id: "settings.defaultDataResidencyUpdateError" }),
+        type: ToastType.ERROR,
       });
     }
   };
@@ -80,7 +81,7 @@ export const DataResidencyView: React.FC = () => {
                       label={<FormattedMessage id="settings.defaultGeography" />}
                       message={
                         <FormattedMessage
-                          id="connection.geographyDescription"
+                          id="settings.geographyDescription"
                           values={{
                             lnk: (node: React.ReactNode) => (
                               <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">

@@ -7,6 +7,7 @@ import copy
 import json
 import logging
 import os
+from glob import glob
 from logging import Logger
 from pathlib import Path
 from subprocess import STDOUT, check_output, run
@@ -55,8 +56,19 @@ def cache_discovered_catalog_fixture(acceptance_test_config: Config) -> bool:
 
 @pytest.fixture(name="connector_config_path")
 def connector_config_path_fixture(inputs, base_path) -> Path:
-    """Fixture with connector's config path"""
-    return Path(base_path) / getattr(inputs, "config_path")
+    """Fixture with connector's config path. The path to the latest updated configurations will be returned if any."""
+    original_configuration_path = Path(base_path) / getattr(inputs, "config_path")
+    updated_configurations_glob = f"{original_configuration_path.parent}/updated_configurations/{original_configuration_path.stem}|**{original_configuration_path.suffix}"
+    existing_configurations_path_creation_time = [
+        (config_file_path, os.path.getctime(config_file_path)) for config_file_path in glob(updated_configurations_glob)
+    ]
+    if existing_configurations_path_creation_time:
+        existing_configurations_path_creation_time.sort(key=lambda x: x[1])
+        most_recent_configuration_path = existing_configurations_path_creation_time[-1][0]
+    else:
+        most_recent_configuration_path = original_configuration_path
+    logging.info(f"Using {most_recent_configuration_path} as configuration. It is the most recent version.")
+    return Path(most_recent_configuration_path)
 
 
 @pytest.fixture(name="invalid_connector_config_path")
@@ -127,8 +139,8 @@ def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
 
 
 @pytest.fixture(name="docker_runner")
-def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
-    return ConnectorRunner(image_tag, volume=tmp_path)
+def docker_runner_fixture(image_tag, tmp_path, connector_config_path) -> ConnectorRunner:
+    return ConnectorRunner(image_tag, volume=tmp_path, connector_configuration_path=connector_config_path)
 
 
 @pytest.fixture(name="previous_connector_image_name")
@@ -260,6 +272,11 @@ def previous_discovered_catalog_fixture(
     connector_config, previous_connector_docker_runner: ConnectorRunner, previous_cached_schemas
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
+    if previous_connector_docker_runner is None:
+        logging.warning(
+            "\n We could not retrieve the previous discovered catalog as a connector runner for the previous connector version could not be instantiated."
+        )
+        return None
     if not previous_cached_schemas:
         output = previous_connector_docker_runner.call_discover(config=connector_config)
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]

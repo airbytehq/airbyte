@@ -1,0 +1,22 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+  position: relative;
+}
+
+.control {
+  flex: 0 0 auto;
+  background-color: colors.$grey-30;
+  display: flex;
+  padding: variables.$spacing-md;
+  flex-direction: row-reverse;
+}
+
+.editorContainer {
+  padding-top: variables.$spacing-xl;
+  flex: 1 1 0;
+}

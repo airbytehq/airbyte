@@ -1,36 +1,55 @@
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import React from "react";
 import { Link } from "react-router-dom";
 
 import { ConnectorCard } from "components";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
+import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
-import EnabledControl from "./EnabledControl";
+import { EnabledControl } from "./EnabledControl";
+import { SchemaChangesDetected } from "./SchemaChangesDetected";
 import styles from "./StatusMainInfo.module.scss";
 
 export const StatusMainInfo: React.FC = () => {
   const {
-    connection: { source, destination, status },
+    connection: { source, destination, status, schemaChange },
+    schemaHasBeenRefreshed,
   } = useConnectionEditService();
+  const { hasSchemaChanges, hasBreakingSchemaChange, hasNonBreakingSchemaChange } = useSchemaChanges(schemaChange);
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
-  const allowSync = useFeature(FeatureItem.AllowSync);
+  const hasAllowSyncFeature = useFeature(FeatureItem.AllowSync);
 
   const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
   const destinationConnectionPath = `../../${RoutePaths.Destination}/${destination.destinationId}`;
 
+  const isConnectionReadOnly = status === ConnectionStatus.deprecated;
+
+  const schemaChangeClassNames =
+    isConnectionReadOnly || schemaHasBeenRefreshed
+      ? undefined
+      : {
+          [styles.breaking]: hasBreakingSchemaChange,
+          [styles.nonBreaking]: hasNonBreakingSchemaChange,
+        };
+
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-testid="statusMainInfo">
       <div className={styles.pathContainer}>
-        <Link to={sourceConnectionPath} className={styles.connectorLink}>
+        <Link
+          to={sourceConnectionPath}
+          className={classNames(styles.connectorLink, schemaChangeClassNames)}
+          data-testid="statusMainInfo-sourceLink"
+        >
           <ConnectorCard
             connectionName={source.sourceName}
             icon={sourceDefinition?.icon}
@@ -39,7 +58,11 @@ export const StatusMainInfo: React.FC = () => {
           />
         </Link>
         <FontAwesomeIcon icon={faArrowRight} />
-        <Link to={destinationConnectionPath} className={styles.connectorLink}>
+        <Link
+          to={destinationConnectionPath}
+          className={styles.connectorLink}
+          data-testid="statusMainInfo-destinationLink"
+        >
           <ConnectorCard
             connectionName={destination.destinationName}
             icon={destinationDefinition?.icon}
@@ -48,10 +71,13 @@ export const StatusMainInfo: React.FC = () => {
           />
         </Link>
       </div>
-      {status !== ConnectionStatus.deprecated && (
-        <div className={styles.enabledControlContainer}>
-          <EnabledControl disabled={!allowSync} />
-        </div>
+      {!isConnectionReadOnly && (
+        <>
+          <div className={styles.enabledControlContainer}>
+            <EnabledControl disabled={!hasAllowSyncFeature || hasBreakingSchemaChange} />
+          </div>
+          {hasSchemaChanges && <SchemaChangesDetected />}
+        </>
       )}
     </div>
   );

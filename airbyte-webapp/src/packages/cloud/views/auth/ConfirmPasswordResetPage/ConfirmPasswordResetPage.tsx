@@ -7,6 +7,7 @@ import * as yup from "yup";
 
 import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
+import { ToastType } from "components/ui/Toast";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useQuery } from "hooks/useQuery";
@@ -46,8 +47,8 @@ const ResetPasswordConfirmPage: React.FC = () => {
             await confirmPasswordReset(query.oobCode, newPassword);
             registerNotification({
               id: "confirmResetPassword.success",
-              title: formatMessage({ id: "confirmResetPassword.success" }),
-              isError: false,
+              text: formatMessage({ id: "confirmResetPassword.success" }),
+              type: ToastType.SUCCESS,
             });
             navigate(CloudRoutes.Login);
           } catch (err) {
@@ -57,37 +58,37 @@ const ResetPasswordConfirmPage: React.FC = () => {
               case AuthErrorCodes.EXPIRED_OOB_CODE:
                 registerNotification({
                   id: "confirmResetPassword.error.expiredActionCode",
-                  title: formatMessage({
+                  text: formatMessage({
                     id: "confirmResetPassword.error.expiredActionCode",
                   }),
-                  isError: true,
+                  type: ToastType.ERROR,
                 });
                 break;
               case AuthErrorCodes.INVALID_OOB_CODE:
                 registerNotification({
                   id: "confirmResetPassword.error.invalidActionCode",
-                  title: formatMessage({
+                  text: formatMessage({
                     id: "confirmResetPassword.error.invalidActionCode",
                   }),
-                  isError: true,
+                  type: ToastType.ERROR,
                 });
                 break;
               case AuthErrorCodes.WEAK_PASSWORD:
                 registerNotification({
                   id: "confirmResetPassword.error.weakPassword",
-                  title: formatMessage({
+                  text: formatMessage({
                     id: "confirmResetPassword.error.weakPassword",
                   }),
-                  isError: true,
+                  type: ToastType.WARNING,
                 });
                 break;
               default:
                 registerNotification({
                   id: "confirmResetPassword.error.default",
-                  title: formatMessage({
+                  text: formatMessage({
                     id: "confirmResetPassword.error.default",
                   }),
-                  isError: true,
+                  type: ToastType.ERROR,
                 });
             }
           }

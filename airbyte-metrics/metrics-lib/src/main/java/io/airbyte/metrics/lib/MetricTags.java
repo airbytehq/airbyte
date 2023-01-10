@@ -5,6 +5,7 @@
 package io.airbyte.metrics.lib;
 
 import io.airbyte.config.FailureReason.FailureOrigin;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 
@@ -15,6 +16,7 @@ public class MetricTags {
 
   public static final String CONNECTION_ID = "connection_id";
   public static final String FAILURE_ORIGIN = "failure_origin";
+  public static final String FAILURE_TYPE = "failure_type";
   public static final String JOB_ID = "job_id";
   public static final String JOB_STATUS = "job_status";
   public static final String RELEASE_STAGE = "release_stage";
@@ -30,6 +32,10 @@ public class MetricTags {
 
   public static String getFailureOrigin(final FailureOrigin origin) {
     return origin != null ? origin.value() : FailureOrigin.UNKNOWN.value();
+  }
+
+  public static String getFailureType(final FailureType origin) {
+    return origin != null ? origin.value() : UNKNOWN;
   }
 
   public static String getJobStatus(final JobStatus status) {

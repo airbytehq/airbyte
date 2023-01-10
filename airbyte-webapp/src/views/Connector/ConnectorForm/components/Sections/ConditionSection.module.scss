@@ -1,8 +1,3 @@
-@use "scss/colors";
-
-.groupDropdown {
-  margin-left: auto;
-  padding: 0 2px;
-  background-color: colors.$white;
+.dropdown {
   min-width: calc(50% - 100px);
 }

@@ -80,17 +80,18 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
       }
     } catch (final Exception e) {
       ApmTraceUtils.addExceptionToTrace(e);
+      LOGGER.error("Normalization failed for job {}.", jobId, e);
       buildFailureReasonsAndSetFailure();
     }
 
     if (cancelled.get()) {
-      LOGGER.info("Normalization was cancelled.");
+      LOGGER.info("Normalization was cancelled for job {}.", jobId);
     }
 
     final long endTime = System.currentTimeMillis();
     final Duration duration = Duration.ofMillis(endTime - startTime);
     final String durationDescription = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
-    LOGGER.info("Normalization executed in {}.", durationDescription);
+    LOGGER.info("Normalization executed in {} for job {}.", durationDescription, jobId);
 
     final NormalizationSummary summary = new NormalizationSummary()
         .withStartTime(startTime)
@@ -98,7 +99,6 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
     if (!traceFailureReasons.isEmpty()) {
       summary.setFailures(traceFailureReasons);
-      LOGGER.error("Normalization Failed.");
     } else if (failed) {
       throw new WorkerException("Normalization Failed.");
     }

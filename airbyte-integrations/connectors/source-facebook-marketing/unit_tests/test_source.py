@@ -106,6 +106,23 @@ class TestSourceFacebookMarketing:
         config = ConnectorConfig.parse_obj(config)
         assert SourceFacebookMarketing().get_custom_insights_streams(api, config)
 
+    def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config):
+        config["custom_insights"] = [
+            {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": []},
+        ]
+
+        config["action_breakdowns_allow_empty"] = False
+        streams = SourceFacebookMarketing().get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        assert len(streams) == 1
+        assert streams[0].breakdowns == ["ad_format_asset"]
+        assert streams[0].action_breakdowns == ["action_type", "action_target_id", "action_destination"]
+
+        config["action_breakdowns_allow_empty"] = True
+        streams = SourceFacebookMarketing().get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        assert len(streams) == 1
+        assert streams[0].breakdowns == ["ad_format_asset"]
+        assert streams[0].action_breakdowns == []
+
 
 def test_check_config(config_gen, requests_mock):
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", {})
