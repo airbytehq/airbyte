@@ -9,44 +9,7 @@ import static java.util.stream.Collectors.toMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import io.airbyte.api.model.generated.AirbyteCatalog;
-import io.airbyte.api.model.generated.AirbyteStream;
-import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
-import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
-import io.airbyte.api.model.generated.CatalogDiff;
-import io.airbyte.api.model.generated.ConnectionCreate;
-import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.ConnectionSearch;
-import io.airbyte.api.model.generated.ConnectionStateType;
-import io.airbyte.api.model.generated.ConnectionUpdate;
-import io.airbyte.api.model.generated.DestinationIdRequestBody;
-import io.airbyte.api.model.generated.DestinationRead;
-import io.airbyte.api.model.generated.JobConfigType;
-import io.airbyte.api.model.generated.JobListRequestBody;
-import io.airbyte.api.model.generated.JobRead;
-import io.airbyte.api.model.generated.JobReadList;
-import io.airbyte.api.model.generated.JobStatus;
-import io.airbyte.api.model.generated.JobWithAttemptsRead;
-import io.airbyte.api.model.generated.OperationCreate;
-import io.airbyte.api.model.generated.OperationReadList;
-import io.airbyte.api.model.generated.OperationUpdate;
-import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.generated.SourceIdRequestBody;
-import io.airbyte.api.model.generated.SourceRead;
-import io.airbyte.api.model.generated.StreamDescriptor;
-import io.airbyte.api.model.generated.StreamTransform;
-import io.airbyte.api.model.generated.WebBackendConnectionCreate;
-import io.airbyte.api.model.generated.WebBackendConnectionRead;
-import io.airbyte.api.model.generated.WebBackendConnectionReadList;
-import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
-import io.airbyte.api.model.generated.WebBackendConnectionSearch;
-import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
-import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
-import io.airbyte.api.model.generated.WebBackendWorkspaceState;
-import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
@@ -111,6 +74,30 @@ public class WebBackendConnectionsHandler {
       reads.add(buildWebBackendConnectionRead(connection));
     }
     return new WebBackendConnectionReadList().connections(reads);
+  }
+
+  public WebBackendConnectionPageReadList webBackendPageConnectionsForWorkspace(WorkspaceIdPageRequestBody workspaceIdPageRequestBody)
+          throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
+    if(workspaceIdPageRequestBody.getPageSize() == null || workspaceIdPageRequestBody.getPageSize() == 0){
+      workspaceIdPageRequestBody.setPageSize(10);
+    }if(workspaceIdPageRequestBody.getPageCurrent() == null || workspaceIdPageRequestBody.getPageCurrent() == 0){
+      workspaceIdPageRequestBody.setPageCurrent(1);
+    }
+    for (final ConnectionRead connection : connectionsHandler.pageConnectionsForWorkspace(workspaceIdPageRequestBody).getConnections()) {
+      reads.add(buildWebBackendConnectionRead(connection));
+    }
+    return new WebBackendConnectionPageReadList().connections(reads)
+            .total(connectionsHandler.pageConnectionsForWorkspaceCount(workspaceIdPageRequestBody))
+            .pageCurrent(workspaceIdPageRequestBody.getPageCurrent()).pageSize(workspaceIdPageRequestBody.getPageSize());
+  }
+
+  public WebBackendConnectionFilterParam webBackendConnectionsFilterParam()
+          throws IOException {
+    return new WebBackendConnectionFilterParam()
+            .status(connectionsHandler.listStatus())
+            .sources(sourceHandler.listFilterParam())
+            .destinations(destinationHandler.listFilterParam());
   }
 
   public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)

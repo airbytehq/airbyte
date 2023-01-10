@@ -730,6 +730,16 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
+  public WebBackendConnectionFilterParam webBackendConnectionsFilterParam() {
+    return execute(webBackendConnectionsHandler::webBackendConnectionsFilterParam);
+  }
+
+  @Override
+  public WebBackendConnectionPageReadList webBackendPageConnectionsForWorkspace(WorkspaceIdPageRequestBody workspaceIdPageRequestBody) {
+    return execute(() -> webBackendConnectionsHandler.webBackendPageConnectionsForWorkspace(workspaceIdPageRequestBody));
+  }
+
+  @Override
   public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendListAllConnectionsForWorkspace(workspaceIdRequestBody));
   }

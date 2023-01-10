@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 
 // import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
+import { AuthService } from "services/auth/AuthService";
 
 import { OperationService } from "./domain/connection";
 import { DestinationDefinitionService } from "./domain/connector/DestinationDefinitionService";
@@ -29,6 +30,7 @@ export const ApiServices: React.FC = React.memo(({ children }) => {
       ),
       OperationService: new OperationService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
       HealthService: new HealthService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
+      AuthService: new AuthService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
     }),
     [process.env.REACT_APP_API_URL as string, middlewares]
   );

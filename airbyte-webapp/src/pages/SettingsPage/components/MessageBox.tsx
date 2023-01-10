@@ -10,6 +10,7 @@ interface IProps {
 }
 
 const Container = styled.div`
+  min-width: 600px;
   background: #eff6ff;
   border-radius: 6px;
   top: 22px;

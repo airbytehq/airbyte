@@ -60,26 +60,15 @@ const LoginPage: React.FC = () => {
           password: "",
         }}
         validationSchema={LoginPageValidationSchema}
-        onSubmit={
-          async (values) => {
-            Signin.post(values)
-              .then((res: any) => {
-                setUser?.(res);
-              })
-              .catch((err: any) => {
-                setErrorMessage(err.message);
-              });
-          }
-          // return login(values)
-          //     .then(() => replace(query.from ?? "/"))
-          //     .catch((err) => {
-          //         if (err instanceof FieldError) {
-          //             setFieldError(err.field, err.message);
-          //         } else {
-          //             setFieldError("password", err.message);
-          //         }
-          //     });
-        }
+        onSubmit={async (values) => {
+          Signin.post(values)
+            .then((res: any) => {
+              setUser?.(res);
+            })
+            .catch((err: any) => {
+              setErrorMessage(err.message);
+            });
+        }}
         validateOnBlur
         validateOnChange
       >
