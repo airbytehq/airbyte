@@ -1,4 +1,4 @@
-import { useField } from "formik";
+import { FastField, FastFieldProps, FieldInputProps } from "formik";
 import { ReactNode } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -64,24 +64,26 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error })
   return <TagInput name={name} fieldValue={value} onChange={(value) => setValue(value)} error={error} />;
 };
 
-export const BuilderField: React.FC<BuilderFieldProps> = ({
+const InnerBuilderField: React.FC<BuilderFieldProps & FastFieldProps<unknown>> = ({
   path,
   label,
   tooltip,
   optional = false,
   readOnly,
   pattern,
+  field,
+  meta,
+  form,
   adornment,
   ...props
 }) => {
-  const [field, meta, helpers] = useField(path);
   const hasError = !!meta.error && meta.touched;
 
   if (props.type === "boolean") {
     return (
       <LabeledSwitch
-        {...field}
-        checked={field.value}
+        {...(field as FieldInputProps<string>)}
+        checked={field.value as boolean}
         label={
           <>
             {label} {tooltip && <InfoTooltip placement="top-start">{tooltip}</InfoTooltip>}
@@ -93,7 +95,7 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
 
   const setValue = (newValue: unknown) => {
     props.onChange?.(newValue as string & string[]);
-    helpers.setValue(newValue);
+    form.setFieldValue(path, newValue);
   };
 
   return (
@@ -104,23 +106,28 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
           onChange={(e) => {
             field.onChange(e);
             if (e.target.value === "") {
-              helpers.setValue(undefined);
+              form.setFieldValue(path, undefined);
             }
             props.onChange?.(e.target.value);
           }}
           className={props.className}
           type={props.type}
-          value={field.value ?? ""}
+          value={(field.value as string | number | undefined) ?? ""}
           error={hasError}
           readOnly={readOnly}
           adornment={adornment}
         />
       )}
       {props.type === "array" && (
-        <ArrayField name={path} value={field.value ?? []} setValue={setValue} error={hasError} />
+        <ArrayField
+          name={path}
+          value={(field.value as string[] | undefined) ?? []}
+          setValue={setValue}
+          error={hasError}
+        />
       )}
       {props.type === "enum" && (
-        <EnumField options={props.options} value={field.value} setValue={setValue} error={hasError} />
+        <EnumField options={props.options} value={field.value as string} setValue={setValue} error={hasError} />
       )}
       {hasError && (
         <Text className={styles.error}>
@@ -131,5 +138,15 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
         </Text>
       )}
     </ControlLabels>
+  );
+};
+
+export const BuilderField: React.FC<BuilderFieldProps> = (props) => {
+  return (
+    <FastField name={props.path}>
+      {({ field, form, meta }: FastFieldProps<unknown>) => (
+        <InnerBuilderField {...props} field={field} form={form} meta={meta} />
+      )}
+    </FastField>
   );
 };

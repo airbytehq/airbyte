@@ -12,7 +12,7 @@ import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/Airbyte
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
 import { getJobStatus } from "../JobItem";
-import AttemptDetails from "./AttemptDetails";
+import { AttemptDetails } from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
 import { ResetStreamsDetails } from "./ResetStreamDetails";
 

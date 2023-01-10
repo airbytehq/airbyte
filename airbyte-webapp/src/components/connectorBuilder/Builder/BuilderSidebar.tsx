@@ -111,7 +111,9 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
         <FontAwesomeIcon icon={faUser} />
         <FormattedMessage
           id="connectorBuilder.userInputs"
-          values={{ number: values.inputs.length + getInferredInputs(values).length }}
+          values={{
+            number: values.inputs.length + getInferredInputs(values.global, values.inferredInputOverrides).length,
+          }}
         />
       </ViewSelectButton>
 

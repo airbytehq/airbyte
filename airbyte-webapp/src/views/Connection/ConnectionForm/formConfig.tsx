@@ -15,6 +15,7 @@ import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import {
   ConnectionScheduleData,
   ConnectionScheduleType,
+  DestinationDefinitionRead,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
   Geography,
@@ -316,7 +317,8 @@ export const getInitialNormalization = (
 
 export const useInitialValues = (
   connection: ConnectionOrPartialConnection,
-  destDefinition: DestinationDefinitionSpecificationRead,
+  destDefinition: DestinationDefinitionRead,
+  destDefinitionSpecification: DestinationDefinitionSpecificationRead,
   isNotCreateMode?: boolean
 ): FormikConnectionFormValues => {
   const workspace = useCurrentWorkspace();
@@ -344,7 +346,7 @@ export const useInitialValues = (
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
-        destDefinition?.supportedDestinationSyncModes || [],
+        destDefinitionSpecification?.supportedDestinationSyncModes || [],
         streamTransformsWithBreakingChange,
         isNotCreateMode,
         newStreamDescriptors
@@ -352,7 +354,7 @@ export const useInitialValues = (
     [
       streamTransformsWithBreakingChange,
       connection.syncCatalog,
-      destDefinition?.supportedDestinationSyncModes,
+      destDefinitionSpecification?.supportedDestinationSyncModes,
       isNotCreateMode,
       newStreamDescriptors,
     ]
@@ -381,7 +383,7 @@ export const useInitialValues = (
       initialValues.transformations = getInitialTransformations(operations);
     }
 
-    if (destDefinition.supportsNormalization) {
+    if (destDefinition.normalizationConfig.supported) {
       initialValues.normalization = getInitialNormalization(operations, isNotCreateMode);
     }
 
@@ -400,7 +402,7 @@ export const useInitialValues = (
     connection.scheduleType,
     connection.source.name,
     destDefinition.supportsDbt,
-    destDefinition.supportsNormalization,
+    destDefinition.normalizationConfig,
     initialSchema,
     isNotCreateMode,
     workspace,
