@@ -34,6 +34,7 @@ class Client:
         self.vectors = parse_vectors(config.get("vectors"))
         self.id_schema = parse_id_schema(config.get("id_schema"))
         self.buffered_objects: MutableMapping[str, BufferedObject] = {}
+        self.objects_with_error: MutableMapping[str, BufferedObject] = {}
 
     def buffered_write_operation(self, stream_name: str, record: MutableMapping):
         if self.id_schema.get(stream_name, "") in record:
@@ -74,28 +75,27 @@ class Client:
             self.flush()
 
     def flush(self, retries: int = 3):
+        if len(self.objects_with_error) > 0 and retries == 0:
+            error_msg = f"Objects had errors and retries failed as well. Object IDs: {self.objects_with_error.keys}"
+            raise WeaviatePartialBatchError(error_msg)
+
         results = self.client.batch.create_objects()
-        objects_with_error = []
+        self.objects_with_error.clear()
         for result in results:
             errors = result.get("result", {}).get("errors", [])
             if errors:
-                objects_with_error.append({"id": result.get("id"), "errors": errors})
-                logging.info(f"Object {result.get('id')} had errors: {errors}. Going to retry.")
+                obj_id = result.get("id")
+                self.objects_with_error[obj_id] = self.buffered_objects.get(obj_id)
+                logging.info(f"Object {obj_id} had errors: {errors}. Going to retry.")
 
-        for object_with_error in objects_with_error:
-            print(self.buffered_objects)
-            buffered_object = self.buffered_objects[object_with_error["id"]]
+        for buffered_object in self.objects_with_error.values():
             self.client.batch.add_data_object(buffered_object.properties, buffered_object.class_name, buffered_object.id,
                                               buffered_object.vector)
 
-        if objects_with_error and retries > 0:
+        if len(self.objects_with_error) > 0 and retries > 0:
             logging.info("sleeping 2 seconds before retrying batch again")
             time.sleep(2)
             self.flush(retries - 1)
-
-        if objects_with_error and retries <= 0:
-            error_msg = f"Objects had errors and retries failed as well: {objects_with_error}"
-            raise WeaviatePartialBatchError(error_msg)
 
         self.buffered_objects.clear()
 

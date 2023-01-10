@@ -494,7 +494,7 @@ def test_client_delete_stream_entries(caplog, client: Client):
     assert title_prop["moduleConfig"]["text2vec-contextionary"]["vectorizePropertyName"] == True, "Ensure moduleconfig is persisted"
 
 
-def test_client_flush_partial_error(caplog, client: Client):
+def test_client_flush_partial_error(client: Client):
     partial_error_result = load_json_file("create_objects_partial_error.json")
     client.client.batch.create_objects = Mock(return_value=partial_error_result)
     time.sleep = Mock(return_value=None)
