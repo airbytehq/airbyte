@@ -12,7 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .auth import AirtableAuth
-from .helpers import Helpers
+from .schema_helpers import SchemaHelpers
 from .streams import AirtableBases, AirtableStream, AirtableTables
 
 
@@ -42,7 +42,7 @@ class SourceAirtable(AbstractSource):
 
         Retrieve: Bases, Tables from each Base, generate JSON Schema for each table.
         """
-        auth = TokenAuthenticator(token=config["api_key"])
+        auth = self._auth if self._auth else AirtableAuth(config)
         # list all bases available for authenticated account
         for base in AirtableBases(authenticator=auth).read_records(sync_mode=None):
             base_id = base.get("id")
@@ -61,6 +61,7 @@ class SourceAirtable(AbstractSource):
         return AirbyteCatalog(streams=[stream["stream"] for stream in self.streams_catalog])
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        self._auth = AirtableAuth(config)
         # trigger discovery to populate the streams_catalog
         if not self.streams_catalog:
             self.discover(None, config)
@@ -70,5 +71,5 @@ class SourceAirtable(AbstractSource):
                 stream_path=stream["stream_path"],
                 stream_name=stream["stream"].name,
                 stream_schema=stream["stream"].json_schema,
-                authenticator=TokenAuthenticator(token=config["api_key"]),
+                authenticator=self._auth,
             )
