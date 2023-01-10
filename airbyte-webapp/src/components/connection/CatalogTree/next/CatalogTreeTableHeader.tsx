@@ -49,7 +49,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
   const { openModal, closeModal } = useModalService();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEditService();
   const formikProps = useFormikContext<FormikConnectionFormValues>();
-  const useNewConnectionTableDesign = useNewTableDesignExperiment();
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
 
   const destinationNamespaceChange = (value: DestinationNamespaceFormValueType) => {
     formikProps.setFieldValue("namespaceDefinition", value.namespaceDefinition);
@@ -67,7 +67,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
   };
 
   return (
-    <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!useNewConnectionTableDesign })}>
+    <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewTableDesignEnabled })}>
       <CatalogTreeTableCell size="small" className={styles.checkboxCell}>
         {mode !== "readonly" && (
           <CheckBox
