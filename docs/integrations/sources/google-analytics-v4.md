@@ -13,14 +13,6 @@ This connector supports GA4 properties through the [Analytics Data API v1](https
 * Custom Reports (Optional)
 * Data request time increment in days (Optional)
 
-## Custom reports
-
-* Support for multiple custom reports
-* Custom reports in format `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...]}]`
-* Custom report format when using segments and / or filters `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...], "segments":  ["<segment-id-or-dynamic-segment-v3-format]", filter: "<filter-definition-v3-format>"}]`
-* When using segments, make sure you add the `ga:segment` dimension.
-* Custom reports: [Dimensions and metrics explorer](https://ga-dev-tools.web.app/dimensions-metrics-explorer/)
-
 ## Step 1: Set up Source
 
 ### Create a Service Account
@@ -45,10 +37,19 @@ Use the service account email address to [add a user](https://support.google.com
 
 To determine a Google Analytics 4 [Property ID](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id)
 
-## Step 2: Set up the source connector in Airbyte
+### Step 2: Set up the Google Analytics connector in Airbyte
 
-Set the required fields in the Google Analytics Data API connector page such as the JSON credentials, property ID,
-custom reports, date ranges start date, data request time increment in days.
+**For Airbyte Cloud:**
+
+1. [Login to your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **Google Analytics 4 (GA4)** from the Source type dropdown and enter a name for this connector.
+4. Click `Authenticate your account` by selecting Oauth or Service Account for Authentication.
+5. Log in and Authorize the Google Analytics account.
+6. Enter the **Property ID** whose events are tracked.
+7. Enter the **Start Date** from which to replicate report data in the format YYYY-MM-DD.
+8. Enter the **Custom Reports (Optional)** a JSON array describing the custom reports you want to sync from Google Analytics.
+9. Enter the **Data request time increment in days (Optional)**. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364.
 
 ## Supported sync modes
 
@@ -58,6 +59,14 @@ The Google Analytics source connector supports the following [sync modes](https:
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+
+## Custom reports
+
+* Support for multiple custom reports
+* Custom reports in format `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...]}]`
+* Custom report format when using segments and / or filters `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...], "segments":  ["<segment-id-or-dynamic-segment-v3-format]", filter: "<filter-definition-v3-format>"}]`
+* When using segments, make sure you add the `ga:segment` dimension.
+* Custom reports: [Dimensions and metrics explorer](https://ga-dev-tools.web.app/dimensions-metrics-explorer/)
 
 ## Rate Limits & Performance Considerations \(Airbyte Open-Source\)
 
