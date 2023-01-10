@@ -51,7 +51,7 @@ class DentclinicStream(HttpStream, ABC):
         response = requests.post(f"{self.url_base}", data=payload_clinics, headers=headers)
 
         clinics = xmltodict.parse(response.text)['soap:Envelope']['soap:Body']['GetClinicsResponse']['GetClinicsResult']['ClinicModel']
-        clinic_ids = [x.get('Id') for x in clinics][-1:]
+        clinic_ids = [x.get('Id') for x in clinics]
         return iter(clinic_ids)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
