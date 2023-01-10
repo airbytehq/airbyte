@@ -13,7 +13,6 @@ import { useConnectionEditService } from "hooks/services/ConnectionEdit/Connecti
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { FormikOnSubmit } from "types/formik";
 import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
 import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
@@ -94,14 +93,13 @@ const NormalizationCard: React.FC<{
 
 export const ConnectionTransformationTab: React.FC = () => {
   const { connection, updateConnection } = useConnectionEditService();
-  const { mode } = useConnectionFormService();
-  const definition = useDestinationDefinition(connection.destination.destinationDefinitionId);
+  const { mode, destDefinition } = useConnectionFormService();
   const workspace = useCurrentWorkspace();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_TRANSFORMATION);
-  const supportsNormalization = Boolean(definition.normalizationConfig);
-  const supportsDbt = useFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
-  const supportsCloudDbtIntegration = useFeature(FeatureItem.AllowDBTCloudIntegration) && definition.supportsDbt;
+  const supportsNormalization = Boolean(destDefinition.normalizationConfig);
+  const supportsDbt = useFeature(FeatureItem.AllowCustomDBT) && destDefinition.supportsDbt;
+  const supportsCloudDbtIntegration = useFeature(FeatureItem.AllowDBTCloudIntegration) && destDefinition.supportsDbt;
   const noSupportedTransformations = !supportsNormalization && !supportsDbt && !supportsCloudDbtIntegration;
 
   const onSubmit: FormikOnSubmit<{ transformations?: OperationRead[]; normalization?: NormalizationType }> = async (
