@@ -30,6 +30,7 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
             <div className={styles.leftFieldCol}>
               <ControlLabels
                 nextLine
+                optional
                 label={<FormattedMessage id="connection.geographyTitle" />}
                 infoTooltipContent={
                   <FormattedMessage
