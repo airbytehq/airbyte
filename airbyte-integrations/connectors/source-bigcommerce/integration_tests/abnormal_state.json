@@ -61,6 +61,17 @@
         "id": 9000002039398998
       },
       "stream_descriptor": {
+        "name": "order_coupons"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 9000002039398998
+      },
+      "stream_descriptor": {
         "name": "pages"
       }
     }

@@ -15,7 +15,7 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: ["orders", "transactions", "products", "customers", "channels", "order_products",
-        "order_shipping_addresses", "product_variants"]
+        "order_shipping_addresses", "product_variants", "order_coupons"]
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

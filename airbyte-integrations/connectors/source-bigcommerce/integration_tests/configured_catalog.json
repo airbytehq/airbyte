@@ -2073,6 +2073,44 @@
     },
     {
       "stream": {
+        "name": "order_coupons",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "coupon_id": {
+              "type": ["null", "integer"]
+            },
+            "order_id": {
+              "type": ["null", "integer"]
+            },
+            "code": {
+              "type": ["null", "string"]
+            },
+            "amount": {
+              "type": ["null", "string", "number", "integer"]
+            },
+            "type": {
+              "type": ["null", "integer"]
+            },
+            "discount": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "product_variants",
         "json_schema":  {
         "$schema": "http://json-schema.org/draft-07/schema#",

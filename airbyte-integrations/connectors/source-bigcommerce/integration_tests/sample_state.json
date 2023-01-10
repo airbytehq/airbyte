@@ -58,6 +58,17 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "id": 1
+      },
+      "stream_descriptor": {
+        "name": "order_coupons"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "id": 4
       },
       "stream_descriptor": {
