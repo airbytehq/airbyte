@@ -10,9 +10,6 @@ from typing import Any, Dict, Iterable, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
-from fastapi import Body, HTTPException
-from jsonschema import ValidationError
-
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 
 from connector_builder.generated.apis.default_api_interface import DefaultApi
@@ -26,6 +23,10 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
+
+from fastapi import Body, HTTPException
+from jsonschema import ValidationError
+
 
 
 class DefaultApiImpl(DefaultApi):

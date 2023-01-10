@@ -10,10 +10,12 @@ import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.workers.helper.StateConverter;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
+@Singleton
 public class StateHandler {
 
   private final StatePersistence statePersistence;
