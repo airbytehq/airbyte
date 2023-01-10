@@ -61,6 +61,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.airbyte.workers.internal.exception.DestinationException;
+import io.airbyte.workers.internal.exception.SourceException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -707,30 +710,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
 
     return tags;
-  }
-
-  private static class SourceException extends RuntimeException {
-
-    SourceException(final String message) {
-      super(message);
-    }
-
-    SourceException(final String message, final Throwable cause) {
-      super(message, cause);
-    }
-
-  }
-
-  private static class DestinationException extends RuntimeException {
-
-    DestinationException(final String message) {
-      super(message);
-    }
-
-    DestinationException(final String message, final Throwable cause) {
-      super(message, cause);
-    }
-
   }
 
 }

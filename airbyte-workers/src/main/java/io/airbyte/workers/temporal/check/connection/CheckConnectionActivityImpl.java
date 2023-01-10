@@ -142,7 +142,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           airbyteApiClient.getDestinationApi());
 
       final AirbyteStreamFactory streamFactory = launcherConfig.getProtocolVersion() != null
-          ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion())
+          ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion(), false, null)
           : new DefaultAirbyteStreamFactory();
 
       return new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, streamFactory);

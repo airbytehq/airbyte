@@ -15,9 +15,12 @@ import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import io.airbyte.workers.internal.exception.SourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,21 +42,27 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   private final MdcScope.Builder containerLogMdcBuilder;
   private final AirbyteProtocolPredicate protocolValidator;
   protected final Logger logger;
+  private final boolean checkSize;
+  private final Class<? extends RuntimeException> exceptionClass;
 
   public DefaultAirbyteStreamFactory() {
     this(MdcScope.DEFAULT_BUILDER);
   }
 
   public DefaultAirbyteStreamFactory(final MdcScope.Builder containerLogMdcBuilder) {
-    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder);
+    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder, false, null);
   }
 
   DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
                               final Logger logger,
-                              final MdcScope.Builder containerLogMdcBuilder) {
+                              final MdcScope.Builder containerLogMdcBuilder,
+                              final boolean checkSize,
+                              final Class<? extends RuntimeException> exceptionClass) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
+    this.checkSize = checkSize;
+    this.exceptionClass = exceptionClass;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -64,9 +73,15 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .lines()
         .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
         .peek(str -> {
-          long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
-          if (messageSize > 1L/*Runtime.getRuntime().maxMemory() * 0.6*/) {
-            throw new IllegalStateException("too big message");
+          if (checkSize) {
+            long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
+            if (messageSize > /**/1L/**//*Runtime.getRuntime().maxMemory() * 0.6/**/) {
+              try {
+                throw  exceptionClass.getConstructor(String.class).newInstance("Too big");
+              } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+              }
+            }
           }
         })
         .flatMap(this::parseJson)

@@ -58,7 +58,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private Integer exitValue = null;
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory());
+    this(integrationLauncher, new DestinationStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory());
 
   }
 

@@ -123,7 +123,7 @@ class DefaultAirbyteStreamFactoryTest {
   private Stream<AirbyteMessage> stringToMessageStream(final String inputString) {
     final InputStream inputStream = new ByteArrayInputStream(inputString.getBytes(StandardCharsets.UTF_8));
     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-    return new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder()).create(bufferedReader);
+    return new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder(), false, null).create(bufferedReader);
   }
 
 }
