@@ -10,14 +10,6 @@
   pointer-events: none;
 }
 
-.flexRow {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: variables.$spacing-md;
-}
-
 .leftFieldCol {
   flex: 1;
   max-width: 640px;

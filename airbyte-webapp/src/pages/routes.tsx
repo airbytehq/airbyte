@@ -13,18 +13,20 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
-import ConnectionPage from "./ConnectionPage";
-import CreationFormPage from "./ConnectionPage/pages/CreationFormPage";
-import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
-import { AllDestinationsPage } from "./destination/AllDestinationsPage";
-import CreateDestinationPage from "./destination/CreateDestinationPage";
-import { DestinationItemPage } from "./destination/DestinationItemPage";
-import { DestinationOverviewPage } from "./destination/DestinationOverviewPage";
-import { DestinationSettingsPage } from "./destination/DestinationSettingsPage";
-import PreferencesPage from "./PreferencesPage";
 import { RoutePaths, DestinationPaths } from "./routePaths";
-import SettingsPage from "./SettingsPage";
-import SourcesPage from "./SourcesPage";
+
+const ConnectionPage = React.lazy(() => import("./ConnectionPage"));
+const CreationFormPage = React.lazy(() => import("./ConnectionPage/pages/CreationFormPage"));
+const ConnectorBuilderPage = React.lazy(() => import("./ConnectorBuilderPage/ConnectorBuilderPage"));
+
+const AllDestinationsPage = React.lazy(() => import("./destination/AllDestinationsPage"));
+const CreateDestinationPage = React.lazy(() => import("./destination/CreateDestinationPage"));
+const DestinationItemPage = React.lazy(() => import("./destination/DestinationItemPage"));
+const DestinationOverviewPage = React.lazy(() => import("./destination/DestinationOverviewPage"));
+const DestinationSettingsPage = React.lazy(() => import("./destination/DestinationSettingsPage"));
+const PreferencesPage = React.lazy(() => import("./PreferencesPage"));
+const SettingsPage = React.lazy(() => import("./SettingsPage"));
+const SourcesPage = React.lazy(() => import("./SourcesPage"));
 
 const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   const analyticsContext = useMemo(
