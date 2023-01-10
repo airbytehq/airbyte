@@ -25,6 +25,8 @@ import {
   DatetimeStreamSlicer,
   ListStreamSlicer,
   InlineSchemaLoader,
+  SimpleRetrieverPaginator,
+  DeclarativeStreamSchemaLoader,
 } from "core/request/ConnectorManifest";
 
 export interface BuilderFormInput {
@@ -449,7 +451,7 @@ export const builderFormValidationSchema = yup.object().shape({
   ),
 });
 
-function builderToManifestAuthenticator(globalSettings: BuilderFormValues["global"]): HttpRequesterAuthenticator {
+function builderAuthenticatorToManifest(globalSettings: BuilderFormValues["global"]): HttpRequesterAuthenticator {
   if (globalSettings.authenticator.type === "OAuthAuthenticator") {
     return {
       ...globalSettings.authenticator,
@@ -465,7 +467,7 @@ function builderToManifestAuthenticator(globalSettings: BuilderFormValues["globa
   return globalSettings.authenticator as HttpRequesterAuthenticator;
 }
 
-function manifestToBuilderAuthenticator(
+function manifestAuthenticatorToBuilder(
   manifestAuthenticator: HttpRequesterAuthenticator,
   streamName?: string
 ): BuilderFormAuthenticator {
@@ -481,7 +483,7 @@ function manifestToBuilderAuthenticator(
   return manifestAuthenticator;
 }
 
-function builderToManifestStreamSlicer(
+function builderStreamSlicerToManifest(
   values: BuilderFormValues,
   slicer: BuilderStream["streamSlicer"],
   visitedStreams: string[]
@@ -496,7 +498,7 @@ function builderToManifestStreamSlicer(
     return {
       type: "CartesianProductStreamSlicer",
       stream_slicers: slicer.stream_slicers.map((subSlicer) => {
-        return builderToManifestStreamSlicer(values, subSlicer, visitedStreams);
+        return builderStreamSlicerToManifest(values, subSlicer, visitedStreams);
       }),
     } as unknown as CartesianProductStreamSlicer;
   }
@@ -528,10 +530,14 @@ function builderToManifestStreamSlicer(
   };
 }
 
-function manifestToBuilderStreamSlicer(
-  manifestStreamSlicer: SimpleRetrieverStreamSlicer,
+function manifestStreamSlicerToBuilder(
+  manifestStreamSlicer: SimpleRetrieverStreamSlicer | undefined,
   streamName?: string
-): NonNullable<BuilderStream["streamSlicer"]> {
+): BuilderStream["streamSlicer"] {
+  if (manifestStreamSlicer === undefined) {
+    return undefined;
+  }
+
   if (manifestStreamSlicer.type === undefined) {
     throw new ManifestCompatibilityError(streamName, "stream_slicer has no type");
   }
@@ -552,7 +558,7 @@ function manifestToBuilderStreamSlicer(
     return {
       type: "CartesianProductStreamSlicer",
       stream_slicers: manifestStreamSlicer.stream_slicers.map((subSlicer) => {
-        return manifestToBuilderStreamSlicer(subSlicer, streamName) as
+        return manifestStreamSlicerToBuilder(subSlicer, streamName) as
           | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
           | BuilderSubstreamSlicer;
       }),
@@ -606,7 +612,7 @@ function builderStreamToDeclarativeSteam(
           request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
           request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
         } as InterpolatedRequestOptionsProvider,
-        authenticator: builderToManifestAuthenticator(values.global),
+        authenticator: builderAuthenticatorToManifest(values.global),
       },
       record_selector: {
         type: "RecordSelector",
@@ -630,7 +636,7 @@ function builderStreamToDeclarativeSteam(
             url_base: values.global?.urlBase,
           }
         : { type: "NoPagination" },
-      stream_slicer: builderToManifestStreamSlicer(values, stream.streamSlicer, [...visitedStreams, stream.id]),
+      stream_slicer: builderStreamSlicerToManifest(values, stream.streamSlicer, [...visitedStreams, stream.id]),
     },
   };
 }
@@ -668,14 +674,99 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
   };
 };
 
+function manifestPrimaryKeyToBuilder(manifestStream: DeclarativeStream): BuilderStream["primaryKey"] {
+  if (!isEqual(manifestStream.primary_key, manifestStream.retriever.primary_key)) {
+    throw new ManifestCompatibilityError(
+      manifestStream.name,
+      "primary_key is not consistent across stream and retriever levels"
+    );
+  }
+  if (manifestStream.primary_key === undefined) {
+    return [];
+  } else if (Array.isArray(manifestStream.retriever.primary_key)) {
+    if (manifestStream.retriever.primary_key.length > 0 && Array.isArray(manifestStream.retriever.primary_key[0])) {
+      throw new ManifestCompatibilityError(manifestStream.stream.name, "primary_key contains nested arrays");
+    } else {
+      return manifestStream.retriever.primary_key as string[];
+    }
+  } else {
+    return [manifestStream.retriever.primary_key];
+  }
+}
+
+function manifestPaginatorToBuilder(
+  manifestPaginator: SimpleRetrieverPaginator | undefined,
+  streamName: string | undefined,
+  globalUrlBase: string
+): BuilderPaginator | undefined {
+  if (manifestPaginator === undefined || manifestPaginator.type === "NoPagination") {
+    return undefined;
+  }
+
+  if (manifestPaginator.page_token_option === undefined) {
+    throw new ManifestCompatibilityError(streamName, "paginator does not define a page_token_option");
+  }
+
+  if (manifestPaginator.url_base !== globalUrlBase) {
+    throw new ManifestCompatibilityError(streamName, "paginator.url_base does not match the first stream's url_base");
+  }
+
+  return {
+    strategy: manifestPaginator.pagination_strategy,
+    pageTokenOption: manifestPaginator.page_token_option,
+    pageSizeOption: manifestPaginator.page_size_option,
+  };
+}
+
+function manifestSchemaLoaderToBuilderSchema(
+  manifestSchemaLoader: DeclarativeStreamSchemaLoader | undefined,
+  streamName: string | undefined
+): BuilderStream["schema"] {
+  if (manifestSchemaLoader === undefined) {
+    return undefined;
+  }
+
+  if (manifestSchemaLoader.type !== "InlineSchemaLoader") {
+    throw new ManifestCompatibilityError(
+      streamName,
+      "schema_loader type is unsupported. Only InlineSchemaLoader is supported."
+    );
+  }
+
+  const inlineSchemaLoader = manifestSchemaLoader as InlineSchemaLoader;
+
+  if (inlineSchemaLoader.schema) {
+    return JSON.stringify(inlineSchemaLoader.schema);
+  }
+  return undefined;
+}
+
+function manifestSpecToBuilderInputs(manifestSpec: Spec | undefined): BuilderFormValues["inputs"] {
+  if (manifestSpec === undefined) {
+    return [];
+  }
+
+  const required = manifestSpec.connection_specification.required as string[];
+  return Object.entries(manifestSpec.connection_specification.properties as Record<string, AirbyteJSONSchema>).map(
+    ([key, definition]) => {
+      return {
+        key,
+        definition,
+        required: required.includes(key),
+      };
+    }
+  );
+  // Mot exactly sure how to deal with inferred inputs, because the manifest may contain inputs that are used in the authenticator but are not named the same as inferred inputs
+  // Maybe we can verify if the authenticator values point to {{config[]}} values, and if they do then we just rename them, if not then we throw an error?
+}
+
 export const convertToBuilderFormValues = (
   manifest: ConnectorManifest,
   currentBuilderFormValues: BuilderFormValues
 ) => {
   const builderFormValues = DEFAULT_BUILDER_FORM_VALUES;
   builderFormValues.global.connectorName = currentBuilderFormValues.global.connectorName;
-
-  console.log("test");
+  builderFormValues.inputs = manifestSpecToBuilderInputs(manifest.spec);
 
   const streams = manifest.streams;
   if (streams && streams.length > 0) {
@@ -684,7 +775,7 @@ export const convertToBuilderFormValues = (
     }
     builderFormValues.global.urlBase = streams[0].retriever.requester.url_base;
     if (streams[0].retriever.requester.authenticator) {
-      builderFormValues.global.authenticator = manifestToBuilderAuthenticator(
+      builderFormValues.global.authenticator = manifestAuthenticatorToBuilder(
         streams[0].retriever.requester.authenticator,
         streams[0].name
       );
@@ -713,102 +804,35 @@ export const convertToBuilderFormValues = (
         );
       }
 
-      const builderStream = {
+      if (![undefined, "GET", "POST"].includes(requester.http_method)) {
+        throw new ManifestCompatibilityError(stream.name, "http_method is not GET or POST");
+      }
+
+      const builderStream: BuilderStream = {
         ...DEFAULT_BUILDER_STREAM_VALUES,
         id: uuid(),
         name: stream.name ?? "",
         urlPath: requester.path,
+        httpMethod: (requester.http_method as "GET" | "POST" | undefined) ?? "GET",
         fieldPointer: retriever.record_selector.extractor.field_pointer,
-        requestParameters: Object.entries(requester.request_options_provider?.request_parameters ?? {}),
-        requestHeaders: Object.entries(requester.request_options_provider?.request_headers ?? {}),
-        // try getting this from request_body_data first, and if not set then pull from request_body_json
-        requestBody: Object.entries(
-          requester.request_options_provider?.request_body_data ??
-            requester.request_options_provider?.request_body_json ??
-            {}
-        ),
+        requestOptions: {
+          requestParameters: Object.entries(requester.request_options_provider?.request_parameters ?? {}),
+          requestHeaders: Object.entries(requester.request_options_provider?.request_headers ?? {}),
+          // try getting this from request_body_data first, and if not set then pull from request_body_json
+          requestBody: Object.entries(
+            requester.request_options_provider?.request_body_data ??
+              requester.request_options_provider?.request_body_json ??
+              {}
+          ),
+        },
+        primaryKey: manifestPrimaryKeyToBuilder(stream),
+        paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, builderFormValues.global.urlBase),
+        streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, stream.name),
+        schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader, stream.name),
       };
-
-      if (![undefined, "GET", "POST"].includes(requester.http_method)) {
-        throw new ManifestCompatibilityError(stream.name, "http_method is not GET or POST");
-      } else {
-        builderStream.httpMethod = (requester.http_method as "GET" | "POST" | undefined) ?? "GET";
-      }
-
-      if (!isEqual(stream.primary_key, retriever.primary_key)) {
-        throw new ManifestCompatibilityError(
-          stream.name,
-          "primary_key is not consistent across stream and retriever levels"
-        );
-      }
-      if (retriever.primary_key === undefined) {
-        builderStream.primaryKey = [];
-      } else if (Array.isArray(retriever.primary_key)) {
-        if (retriever.primary_key.length > 0 && Array.isArray(retriever.primary_key[0])) {
-          throw new ManifestCompatibilityError(stream.name, "primary_key contains nested arrays");
-        } else {
-          builderStream.primaryKey = retriever.primary_key as string[];
-        }
-      } else {
-        builderStream.primaryKey = [retriever.primary_key];
-      }
-
-      if (retriever.paginator && retriever.paginator.type === "DefaultPaginator") {
-        if (retriever.paginator.page_token_option === undefined) {
-          throw new ManifestCompatibilityError(stream.name, "paginator does not define a page_token_option");
-        }
-
-        if (retriever.paginator.url_base !== builderFormValues.global.urlBase) {
-          throw new ManifestCompatibilityError(
-            stream.name,
-            "paginator.url_base does not match the first stream's url_base"
-          );
-        }
-
-        builderStream.paginator = {
-          strategy: retriever.paginator.pagination_strategy,
-          pageTokenOption: retriever.paginator.page_token_option,
-          pageSizeOption: retriever.paginator.page_size_option,
-        };
-      }
-
-      if (retriever.stream_slicer) {
-        builderStream.streamSlicer = manifestToBuilderStreamSlicer(retriever.stream_slicer);
-      }
-
-      if (stream.schema_loader) {
-        if (stream.schema_loader.type === "DefaultSchemaLoader") {
-          throw new ManifestCompatibilityError(stream.name, "schema_loader is DefaultSchemaLoader");
-        }
-
-        if (stream.schema_loader.type === "JsonFileSchemaLoader") {
-          throw new ManifestCompatibilityError(stream.name, "schema_loader is JsonFileSchemaLoader");
-        }
-
-        const schemaLoader = stream.schema_loader as InlineSchemaLoader;
-        if (schemaLoader.schema) {
-          builderStream.schema = JSON.stringify(schemaLoader.schema);
-        }
-      }
 
       return builderStream;
     });
-  }
-
-  const spec = manifest.spec;
-  if (spec) {
-    const required = spec.connection_specification.required as string[];
-    builderFormValues.inputs = Object.entries(
-      spec.connection_specification.properties as Record<string, AirbyteJSONSchema>
-    ).map(([key, definition]) => {
-      return {
-        key,
-        definition,
-        required: required.includes(key),
-      };
-    });
-    // Mot exactly sure how to deal with inferred inputs, because the manifest may contain inputs that are used in the authenticator but are not named the same as inferred inputs
-    // Maybe we can verify if the authenticator values point to {{config[]}} values, and if they do then we just rename them, if not then we throw an error?
   }
 
   return builderFormValues;
