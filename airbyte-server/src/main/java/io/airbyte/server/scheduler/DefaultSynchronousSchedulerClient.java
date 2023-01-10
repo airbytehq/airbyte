@@ -180,7 +180,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final long createdAt = Instant.now().toEpochMilli();
     final UUID jobId = jobContext.jobId();
     try {
-      track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null);
+      track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null, null);
       final TemporalResponse<U> temporalResponse = executor.get();
       final Optional<U> jobOutput = temporalResponse.getOutput();
       final T mappedOutput = jobOutput.map(outputMapper).orElse(null);
@@ -189,9 +189,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       if (outputState == JobState.FAILED && jobOutput.isPresent()) {
         final FailureReason failureReason = ((ConnectorJobOutput) jobOutput.get()).getFailureReason();
         reportError(configType, jobContext, failureReason, connectorDefinitionId, workspaceId);
-        track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
+        track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput, failureReason);
       } else {
-        track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
+        track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput, null);
       }
 
 
@@ -206,7 +206,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
           createdAt,
           endedAt);
     } catch (final RuntimeException e) {
-      track(jobId, configType, connectorDefinitionId, workspaceId, JobState.FAILED, null);
+      track(jobId, configType, connectorDefinitionId, workspaceId, JobState.FAILED, null, null);
       throw e;
     }
   }
@@ -219,7 +219,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
                          final UUID connectorDefinitionId,
                          final UUID workspaceId,
                          final JobState jobState,
-                         final T value) {
+                         final T value,
+                         final FailureReason failureReason) {
     switch (configType) {
       case CHECK_CONNECTION_SOURCE -> jobTracker.trackCheckConnectionSource(
           jobId,
