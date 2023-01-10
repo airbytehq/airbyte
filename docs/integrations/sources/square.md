@@ -82,7 +82,7 @@ Useful links:
 No defined API rate limits were found in Square documentation however considering [this information](https://stackoverflow.com/questions/28033966/whats-the-rate-limit-on-the-square-connect-api/28053836#28053836) it has 10 QPS limits. The connector doesn't handle rate limits exceptions, but no errors were raised during testing.
 Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api-rate-limit/449) strategy recommended.
 
-## Data type map <if applicable>
+## Data type map
 
 | Integration Type | Airbyte Type | Notes |
 |:-----------------|:-------------|:------|
