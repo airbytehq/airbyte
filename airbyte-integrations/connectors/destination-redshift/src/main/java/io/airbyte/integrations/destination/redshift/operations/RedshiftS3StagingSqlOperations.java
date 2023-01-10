@@ -93,19 +93,20 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
   }
 
   @Override
-  public void copyIntoRawTableFromStage(final JdbcDatabase database,
+  public void copyIntoTargetTableFromStage(final JdbcDatabase database,
                                         final String stageName,
                                         final String stagingPath,
                                         final List<String> stagedFiles,
-                                        final String dstTableName,
+                                        final String targetTableName,
                                         final String schemaName)
       throws Exception {
-    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
+    LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
+        targetTableName, stagingPath, schemaName);
     final var possibleManifest = Optional.ofNullable(createManifest(stagedFiles, stagingPath));
     Exceptions.toRuntime(() -> possibleManifest.stream()
         .map(manifestContent -> putManifest(manifestContent, stagingPath))
-        .forEach(manifestPath -> executeCopy(manifestPath, database, schemaName, dstTableName)));
-    LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
+        .forEach(manifestPath -> executeCopy(manifestPath, database, schemaName, targetTableName)));
+    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, targetTableName);
   }
 
   private void executeCopy(final String manifestPath, final JdbcDatabase db, final String schemaName, final String tmpTableName) {

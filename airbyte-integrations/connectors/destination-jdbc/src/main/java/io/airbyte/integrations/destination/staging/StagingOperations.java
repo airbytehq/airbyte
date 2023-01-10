@@ -48,19 +48,21 @@ public interface StagingOperations extends SqlOperations {
 
   /**
    * Load the data stored in the stage area into a temporary table in the destination
-   *
-   * TODO: deprecate this method in favor of writing directly into the final table when we're flushing the file from buffer
+   * <p>
    * FINSISHED: destination-snowflake (all sub-variants)
-   * TODO: destination-redshift
    *
-   * @param database
-   * @param
+   * @param database        database interface
+   * @param stageName       name of staging area folder
+   * @param stagingPath     path to staging files
+   * @param stagedFiles     collection of staged files
+   * @param targetTableName name of table to write staging files to
+   * @param schemaName      name of schema
    */
-  void copyIntoRawTableFromStage(JdbcDatabase database,
+  void copyIntoTargetTableFromStage(JdbcDatabase database,
                                  String stageName,
                                  String stagingPath,
                                  List<String> stagedFiles,
-                                 String dstTableName,
+                                 String targetTableName,
                                  String schemaName)
       throws Exception;
 

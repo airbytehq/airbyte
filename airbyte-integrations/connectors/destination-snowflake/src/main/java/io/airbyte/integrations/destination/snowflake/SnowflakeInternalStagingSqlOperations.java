@@ -145,14 +145,14 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   }
 
   @Override
-  public void copyIntoRawTableFromStage(final JdbcDatabase database,
+  public void copyIntoTargetTableFromStage(final JdbcDatabase database,
                                         final String stageName,
                                         final String stagingPath,
                                         final List<String> stagedFiles,
-                                        final String dstTableName,
+                                        final String targetTableName,
                                         final String schemaName)
       throws SQLException {
-    final String query = getCopyQuery(stageName, stagingPath, stagedFiles, dstTableName, schemaName);
+    final String query = getCopyQuery(stageName, stagingPath, stagedFiles, targetTableName, schemaName);
     LOGGER.debug("Executing query: {}", query);
     database.execute(query);
   }

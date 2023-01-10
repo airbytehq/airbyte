@@ -143,8 +143,8 @@ class DestStreamStateLifecycleManagerTest {
   }
 
   /*
-   * This section is to test for logic that is isolated to changes with respect to destination checkpointing
-   * where it captures flush and commit are bundled into a transaction so
+   * This section is to test for logic that is isolated to changes with respect to destination
+   * checkpointing where it captures flush and commit are bundled into a transaction so
    *
    * buffer -(flush buffer)-> staging area -(copy into {staging_file})-> destination raw table
    */

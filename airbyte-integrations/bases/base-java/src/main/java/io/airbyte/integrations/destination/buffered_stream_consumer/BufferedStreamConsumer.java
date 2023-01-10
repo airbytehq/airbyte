@@ -133,8 +133,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         throwUnrecognizedStream(catalog, message);
       }
 
-      // if the record is not valid then add to map of stream to number of records omitted, then short
-      // circuit
       if (!isValidRecord.apply(message.getRecord().getData())) {
         streamToIgnoredRecordCount.put(stream, streamToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
         return;
@@ -143,18 +141,16 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       final Optional flushType = bufferingStrategy.addRecord(stream, message);
       // if present means that a flush occurred
       if (flushType.isPresent()) {
-        // TODO: (ryankfu) separate the logic for handling flush states in a separate
         if (flushType.equals(BufferFlushType.FLUSH_ALL)) {
           // when all buffers have been flushed then we can update all states as flushed
           markStatesAsFlushedToDestination();
         } else if (flushType.equals(BufferFlushType.FLUSH_SINGLE_STREAM)) {
-          // need to check if the state manager is for GLOBAL/PER-STREAM/DEFAULT to handle logic differently
           if (stateManager instanceof DestStreamStateLifecycleManager) {
             // per-stream instance can handle flush of just a single stream
             markStatesAsFlushedToDestination();
           }
           /*
-           * We don't mark {@link AirbyteStateMessage} as flushed in the case with GLOBAL/LEGACY because
+           * We don't mark {@link AirbyteStateMessage} as committed in the case with GLOBAL/LEGACY because
            * within a single stream being flushed it is not deterministic that all the AirbyteRecordMessages
            * have been committed
            */
@@ -165,10 +161,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
        * flush the buffer
        *
        * The reason that this is where time component should exist here is primarily due to #acceptTracked
-       * the method that processes each AirbyteMessage. Method to call is
+       * is the method that processes each AirbyteMessage. Method to call is
        * bufferingStrategy.flushWriter(stream, streamBuffer)
        */
-
     } else if (message.getType() == Type.STATE) {
       stateManager.addState(message);
     } else {
@@ -178,12 +173,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * Depending on the different types of state manager, it will mark the states as flushed or not
-   * flushed. After marking states as committed, emit the state message to platform
+   * After marking states as committed, emit the state message to platform then mark state messages as
+   * emitted to avoid resending the same state message to the platform
    */
   private void markStatesAsFlushedToDestination() {
     stateManager.markPendingAsCommitted();
     stateManager.listCommitted().forEach(outputRecordCollector);
+    stateManager.markCommittedAsEmitted();
   }
 
   private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
@@ -192,6 +188,15 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
             Jsons.serialize(catalog), Jsons.serialize(message)));
   }
 
+  /**
+   * Cleans up buffer based on whether the sync was successful or some exception occurred. In the case
+   * where a failure occurred we do a simple clean up any lingering data. Otherwise, flush any
+   * remaining data that has been stored. This is fine even if the state has not been received since
+   * this Airbyte promises at least once delivery
+   *
+   * @param hasFailed true if the stream replication failed partway through, false otherwise
+   * @throws Exception
+   */
   @Override
   protected void close(final boolean hasFailed) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot close; has not started.");
@@ -206,18 +211,22 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.error("executing on failed close procedure.");
     } else {
       LOGGER.info("executing on success close procedure.");
+      // When flushing the buffer, this will call the respective #flushBufferFunction which bundles
+      // the flush and commit operation, so if successful then mark state as committed
       bufferingStrategy.flushAll();
-      // marking state as flushed
       markStatesAsFlushedToDestination();
     }
     bufferingStrategy.close();
 
     try {
-      // flushed is empty in 2 cases:
-      // 1. either it is full refresh (no state is emitted necessarily).
-      // 2. it is stream but no states were flushed.
-      // in both of these cases, if there was a failure, we should not bother committing. otherwise,
-      // attempt to commit.
+      /*
+       * TODO: (ryankfu) Remove usage of hasFailed with onClose after all destination connectors have been
+       * updated to support checkpointing
+       *
+       * flushed is empty in 2 cases: 1. either it is full refresh (no state is emitted necessarily) 2. it
+       * is stream but no states were flushed in both of these cases, if there was a failure, we should
+       * not bother committing. otherwise attempt to commit
+       */
       if (stateManager.listFlushed().isEmpty()) {
         onClose.accept(hasFailed);
       } else {
@@ -229,14 +238,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         onClose.accept(false);
       }
 
-      /*
-       * TODO: (ryankfu) at this section for when we close the stream and mark stream as committed if
-       * onClose succeeds without exception then we can emit the state record because it means its records
-       * were not only flushed, but committed.
-       *
-       * TODO: (ryankfu) clean up this logic. This is fine to have duplicate STATE messages reported back
-       * to platform since platform de-deplicates, however, this should not be expected
-       */
       stateManager.listCommitted().forEach(outputRecordCollector);
     } catch (final Exception e) {
       LOGGER.error("Close failed.", e);

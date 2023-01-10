@@ -132,12 +132,11 @@ public class StagingConsumerFactory {
                                           final StagingOperations stagingOperations,
                                           final List<WriteConfig> writeConfigs) {
     return () -> {
-      LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
+      LOGGER.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
       final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schema = writeConfig.getOutputSchemaName();
         final String stream = writeConfig.getStreamName();
-        // TODO: remove this before merging, as this line is to know that we're getting the final output table name
         final String dstTableName = writeConfig.getOutputTableName();
         final String stageName = stagingOperations.getStageName(schema, stream);
         final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schema, stream, writeConfig.getWriteDatetime());
@@ -146,12 +145,6 @@ public class StagingConsumerFactory {
             schema, stream, dstTableName, stagingPath);
 
         stagingOperations.createSchemaIfNotExists(database, schema);
-        /*
-         * TODO: remove before merging
-         * Creates the destination table earlier in the lifecycle so that we can write the raw destination table
-         * This logic is migrated from the #onCloseFunction where previously we would create a temporary table.
-         * Instead we will now immediately write to the raw destination table to allow for checkpointing
-         */
         stagingOperations.createTableIfNotExists(database, schema, dstTableName);
         stagingOperations.createStageIfNotExists(database, stageName);
 
@@ -212,11 +205,6 @@ public class StagingConsumerFactory {
       throw new ConfigErrorException(message);
     }
 
-    /*
-     * TODO: this is where the buffer needs to flush instead of to temp to airbyte_raw
-     * When we flush buffer, this needs to propagate information to {@link BufferedStreamConsumer}
-     * about moving the state message from flushed to committed
-     */
     return (pair, writer) -> {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!pairToWriteConfig.containsKey(pair)) {
@@ -231,84 +219,63 @@ public class StagingConsumerFactory {
           stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
       try (writer) {
         writer.flush();
-        // No longer need to add staged file to writeConfig since after each upload we'll be writing to the raw destination table
         final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
-        copyIntoRawTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig, schemaName, stagingOperations);
+        copyIntoTargetTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName, stagingOperations);
       } catch (final Exception e) {
-        LOGGER.error("Failed to flush and upload buffer to stage:", e);
-        throw new RuntimeException("Failed to upload buffer to stage", e);
+        LOGGER.error("Failed to flush and commit buffer data into destination's raw table", e);
+        throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
       }
     };
   }
 
   /**
-   * Handles copying data from staging area to raw destination table
+   * Handles copying data from staging area to raw destination table and clean up of staged files if
+   * upload was unsuccessful
    */
-  private void copyIntoRawTableFromStage(final JdbcDatabase database,
+  private void copyIntoTargetTableFromStage(final JdbcDatabase database,
                                          final String stageName,
                                          final String stagingPath,
                                          final List<String> stagedFiles,
-                                         final WriteConfig writeConfig,
+                                         final String targetTableName,
                                          final String schemaName,
                                          final StagingOperations stagingOperations) throws Exception {
     try {
-      stagingOperations.copyIntoRawTableFromStage(database, stageName, stagingPath, writeConfig.getStagedFiles(), writeConfig.getOutputTableName(), schemaName);
+      stagingOperations.copyIntoTargetTableFromStage(database, stageName, stagingPath, stagedFiles, targetTableName, schemaName);
     } catch (final Exception e) {
-      // TODO: (ryankfu) refactor #cleanUpStage since there's a few places that call this method and expects a list of staged files
       stagingOperations.cleanUpStage(database, stageName, stagedFiles);
       LOGGER.info("Cleaning stage path {}", stagingPath);
       throw new RuntimeException("Failed to upload data from stage " + stagingPath, e);
     }
   }
 
+  /**
+   * Tear down process, will attempt to try to clean out any staging area
+   *
+   * @param database
+   * @param stagingOperations
+   * @param writeConfigs
+   * @param purgeStagingData drop staging area if true, keep otherwise
+   * @return
+   */
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,
                                           final StagingOperations stagingOperations,
                                           final List<WriteConfig> writeConfigs,
                                           final boolean purgeStagingData) {
     return (hasFailed) -> {
       if (!hasFailed) {
-        final List<String> queryList = new ArrayList<>();
-        LOGGER.info("Copying into tables in destination started for {} streams", writeConfigs.size());
-
-        for (final WriteConfig writeConfig : writeConfigs) {
-          final String schemaName = writeConfig.getOutputSchemaName();
-          final String streamName = writeConfig.getStreamName();
-          final String srcTableName = writeConfig.getTmpTableName(); // TODO: remove this since temp table will no longer be used
-          final String dstTableName = writeConfig.getOutputTableName();
-          final String stageName = stagingOperations.getStageName(schemaName, streamName);
-          final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, streamName, writeConfig.getWriteDatetime());
-          LOGGER.info("Copying stream {} of schema {} into tmp table {} to final table {} from stage path {} with {} file(s) [{}]",
-              streamName, schemaName, srcTableName, dstTableName, stagingPath, writeConfig.getStagedFiles().size(),
-              String.join(",", writeConfig.getStagedFiles()));
-
-          // This table creation needs to occur earlier since the dstTableName represents the raw destination table
-          stagingOperations.createTableIfNotExists(database, schemaName, dstTableName);
-          copyIntoRawTableFromStage(database, stageName, stagingPath, writeConfig.getStagedFiles(), writeConfig, schemaName, stagingOperations);
-          writeConfig.clearStagedFiles();
-
-          /*
-`           * NOTE: OVERWRITE mode will be a future no-op since copying data from temp tables to raw destination tables is no longer used, so
-           * instead we clear out the destination table upon #onStartFunction
-           */
-          switch (writeConfig.getSyncMode()) {
-            case APPEND, APPEND_DEDUP, OVERWRITE -> {}
-            default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
-          }
-          queryList.add(stagingOperations.insertTableQuery(database, schemaName, srcTableName, dstTableName));
-        }
+        /*
+         * This section is mostly a no-op since the #flushBufferFunction will flush and commit within
+         * the same operation. What this section previously included was logic to ensure any flushed
+         * files were moved from the staging area -> temp tables -> raw destination table
+         */
         stagingOperations.onDestinationCloseOperations(database, writeConfigs);
-        LOGGER.info("Executing finalization of tables.");
-        // copies data from temporary table into final table (airbyte_raw)
-        stagingOperations.executeTransaction(database, queryList);
         LOGGER.info("Finalizing tables in destination completed.");
       }
-      // After moving data from staging area to the finalized table (airybte_raw) clean up temporary tables and the staging area (if user configured)
+      // After moving data from staging area to the finalized table (airybte_raw) clean up the staging
+      // area (if user configured)
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
-
-        // TODO: remove before merging, this clears the need to clean up any tmp tables since they will no longer be used when checkpointing
-
         if (purgeStagingData) {
           final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
           LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,

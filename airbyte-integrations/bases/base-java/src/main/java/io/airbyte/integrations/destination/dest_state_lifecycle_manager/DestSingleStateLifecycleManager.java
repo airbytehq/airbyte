@@ -26,6 +26,7 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
   private AirbyteMessage lastPendingState;
   private AirbyteMessage lastFlushedState;
   private AirbyteMessage lastCommittedState;
+  private AirbyteMessage lastEmittedState;
 
   @Override
   public void addState(final AirbyteMessage message) {
@@ -55,6 +56,14 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
     if (lastFlushedState != null) {
       lastCommittedState = lastFlushedState;
       lastFlushedState = null;
+    }
+  }
+
+  @Override
+  public void markCommittedAsEmitted() {
+    if (lastCommittedState != null) {
+      lastEmittedState = lastCommittedState;
+      lastCommittedState = null;
     }
   }
 

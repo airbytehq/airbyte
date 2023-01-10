@@ -130,17 +130,19 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
   }
 
   @Override
-  public void copyIntoRawTableFromStage(final JdbcDatabase database,
+  public void copyIntoTargetTableFromStage(final JdbcDatabase database,
                                         final String stageName,
                                         final String stagingPath,
                                         final List<String> stagedFiles,
-                                        final String dstTableName,
+                                        final String targetTableName,
                                         final String schemaName)
       throws Exception {
-    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
+    LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
+        targetTableName, stagingPath, schemaName);
     // Print actual SQL query if user needs to manually force reload from staging
-    Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles, dstTableName, schemaName)));
-    LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
+    Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles,
+        targetTableName, schemaName)));
+    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, targetTableName);
   }
 
   private String getCopyQuery(final String stagingPath, final List<String> stagedFiles, final String dstTableName, final String schemaName) {

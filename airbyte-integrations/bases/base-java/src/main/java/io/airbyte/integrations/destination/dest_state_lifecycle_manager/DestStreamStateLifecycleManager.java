@@ -34,11 +34,13 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastPendingState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastFlushedState;
   private final Map<StreamDescriptor, AirbyteMessage> streamToLastCommittedState;
+  private final Map<StreamDescriptor, AirbyteMessage> streamToLastEmittedState;
 
   public DestStreamStateLifecycleManager() {
     streamToLastPendingState = new HashMap<>();
     streamToLastFlushedState = new HashMap<>();
     streamToLastCommittedState = new HashMap<>();
+    streamToLastEmittedState = new HashMap<>();
   }
 
   @Override
@@ -67,13 +69,18 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   }
 
   /*
-   * During the process of migration to destination checkpointing, this method should no longer be
-   * in use in favor of #markPendingAsCommitted where states will be flushed/committed as a singular
+   * During the process of migration to destination checkpointing, this method should no longer be in
+   * use in favor of #markPendingAsCommitted where states will be flushed/committed as a singular
    * transaction
    */
   @Override
   public void markFlushedAsCommitted() {
     moveToNextPhase(streamToLastFlushedState, streamToLastCommittedState);
+  }
+
+  @Override
+  public void markCommittedAsEmitted() {
+    moveToNextPhase(streamToLastCommittedState, streamToLastEmittedState);
   }
 
   @Override
