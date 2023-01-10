@@ -10,7 +10,11 @@ on:
     inputs:
       debug_mode:
         description: "Enable or disable tmate session for debug during helm ac tests"
+        type: choice
         default: 'false'
+        options: 
+          - 'true'
+          - 'false'
         required: false
   schedule:
     - cron: "0 */1 * * *"
@@ -67,6 +71,7 @@ jobs:
               - 'buildSrc/**'
               - 'tools/**'
               - '*.gradle'
+              - 'deps.toml'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
@@ -811,6 +816,16 @@ jobs:
         with:
           python-version: "3.9"
 
+      - name: Install unzip
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+          token: ${{ secrets.GITHUB_TOKEN }}
+        id: install
+
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /home/runner
@@ -862,6 +877,8 @@ jobs:
           HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         uses: Wandalen/wretry.action@master
@@ -998,6 +1015,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
+          iam-role-name: ${{ secrets.AWS_ASSUME_ROLE_NAME }}
 
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
@@ -1028,12 +1046,8 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: |
-            sudo rm /var/lib/dpkg/lock
-            sudo rm /var/lib/dpkg/lock-frontend
             sudo apt-get remove docker.io || sudo apt-get remove docker
             curl -fsSL https://get.docker.com | bash -
-            sudo rm -f /var/lib/dpkg/lock
-            sudo rm -f /var/lib/dpkg/lock-frontend
           attempt_limit: 3
           attempt_delay: 2000 # in ms
 
@@ -1070,11 +1084,7 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: |
-            sudo rm /var/lib/dpkg/lock
-            sudo rm /var/lib/dpkg/lock-frontend
             sudo apt-get -y install tmate
-            sudo rm -f /var/lib/dpkg/lock
-            sudo rm -f /var/lib/dpkg/lock-frontend
           attempt_limit: 3
           attempt_delay: 2000 # in ms
       
@@ -1129,6 +1139,8 @@ jobs:
           # HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         timeout-minutes: 20

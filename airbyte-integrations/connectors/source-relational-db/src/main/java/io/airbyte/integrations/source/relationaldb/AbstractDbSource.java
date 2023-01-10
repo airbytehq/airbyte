@@ -30,24 +30,24 @@ import io.airbyte.integrations.source.relationaldb.InvalidCursorInfoUtil.Invalid
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -182,7 +182,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   private void validateCursorFieldForIncrementalTables(
                                                        final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                       final ConfiguredAirbyteCatalog catalog, final Database database) throws SQLException {
+                                                       final ConfiguredAirbyteCatalog catalog,
+                                                       final Database database)
+      throws SQLException {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     final List<InvalidCursorInfo> tablesWithInvalidCursorToWarnAbout = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
@@ -235,14 +237,17 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   /**
    * Verify that cursor column allows syncing to go through.
+   *
    * @param database database
    * @return true if syncing can go through. false otherwise
    * @throws SQLException exception
    */
-  protected boolean verifyCursorColumnValues(final Database database, final String schema, final String tableName, final String columnName) throws SQLException {
+  protected boolean verifyCursorColumnValues(final Database database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
     /* no-op */
     return true;
   }
+
   private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
                                                                              final Database database)
       throws Exception {
@@ -530,12 +535,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   private Field toField(final CommonField<DataType> field) {
-    if (getType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null
+    if (getAirbyteType(field.getType()) == JsonSchemaType.OBJECT && field.getProperties() != null
         && !field.getProperties().isEmpty()) {
       final var properties = field.getProperties().stream().map(this::toField).toList();
-      return Field.of(field.getName(), getType(field.getType()), properties);
+      return Field.of(field.getName(), getAirbyteType(field.getType()), properties);
     } else {
-      return Field.of(field.getName(), getType(field.getType()));
+      return Field.of(field.getName(), getAirbyteType(field.getType()));
     }
   }
 
@@ -599,12 +604,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       throws Exception;
 
   /**
-   * Map source types and Airbyte types
+   * Map source types to Airbyte types
    *
    * @param columnType source data type
    * @return airbyte data type
    */
-  protected abstract JsonSchemaType getType(DataType columnType);
+  protected abstract JsonSchemaType getAirbyteType(DataType columnType);
 
   /**
    * Get list of system namespaces(schemas) in order to exclude them from the discover result list.
@@ -719,15 +724,19 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     return typedState.map((state) -> {
       switch (state.getStateType()) {
         case GLOBAL:
-          return List.of(state.getGlobal());
+          return List.of(convertStateMessage(state.getGlobal()));
         case STREAM:
-          return state.getStateMessages();
+          return state.getStateMessages().stream().map(this::convertStateMessage).toList();
         case LEGACY:
         default:
           return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
               .withData(state.getLegacyState()));
       }
     }).orElse(generateEmptyInitialState(config));
+  }
+
+  protected AirbyteStateMessage convertStateMessage(final io.airbyte.protocol.models.AirbyteStateMessage state) {
+    return Jsons.object(Jsons.jsonNode(state), AirbyteStateMessage.class);
   }
 
   /**

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -14,7 +14,6 @@ interface ConnectionCreateSourceFormProps {
 export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({ afterSubmit }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [successRequest, setSuccessRequest] = useState(false);
   const { sourceDefinitions } = useSourceDefinitionList();
   const { mutateAsync: createSource } = useCreateSource();
 
@@ -29,9 +28,7 @@ export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProp
       throw new Error("No Connector Found");
     }
     const result = await createSource({ values, sourceConnector });
-    setSuccessRequest(true);
     setTimeout(() => {
-      setSuccessRequest(false);
       navigate(
         {},
         {
@@ -53,5 +50,5 @@ export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProp
     };
   }, [setDocumentationPanelOpen]);
 
-  return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />;
+  return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} />;
 };
