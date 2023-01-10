@@ -15,6 +15,7 @@ import com.launchdarkly.sdk.server.LDClient
 import java.lang.Thread.MIN_PRIORITY
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchService
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.thread
@@ -92,7 +93,7 @@ class TestClient(val values: Map<String, Boolean>) : FeatureFlagClient {
             is EnvVar -> {
                 // convert to a EnvVar flag with a custom fetcher that uses the [values] of this Test class
                 // instead of fetching from the environment variables
-                EnvVar(envVar = flag.key, default = flag.default, team = flag.team) {
+                EnvVar(envVar = flag.key, default = flag.default, attrs = flag.attrs) {
                     values[flag.key]?.toString() ?: flag.default.toString()
                 }.enabled()
             }
@@ -130,8 +131,6 @@ private val yamlMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
  * @param [path] to yaml config file
  * @return map of feature-flag name to feature-flag config
  */
-//private fun readConfig(path: Path): Map<String, OSSFlag> = yamlMapper.readValue<List<OSSFlag>>(path.toFile())
-//    .associateBy { it.name }
 private fun readConfig(path: Path): Map<String, PlatformFlag> = yamlMapper.readValue<PlatformFlags>(path.toFile()).flags
     .associateBy { it.name }
 
@@ -142,7 +141,7 @@ private fun readConfig(path: Path): Map<String, PlatformFlag> = yamlMapper.readV
  * @param [block] function called anytime a change is detected on this [Path]
  */
 private fun Path.onChange(block: () -> Unit) {
-    val watcher = fileSystem.newWatchService()
+    val watcher: WatchService = fileSystem.newWatchService()
     // The watcher service requires a directory to be registered and not an individual file. This Path is an individual file,
     // hence the `parent` reference to register the parent of this file (which is the directory that contains this file).
     // As all files within this directory could send events, any file that doesn't match this Path will need to be filtered out.
