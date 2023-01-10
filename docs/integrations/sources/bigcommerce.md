@@ -57,7 +57,7 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| 0.1.11  | 2022-12-22 | [20540](https://github.com/airbytehq/airbyte/pull/20540) | Add order_shipping_addresses, order_coupons and product_variants stream |
+| 0.1.11  | 2022-12-22 | [20946](https://github.com/airbytehq/airbyte/pull/20946) | Add order_shipping_addresses, order_coupons and product_variants stream |
 | 0.1.9   | 2022-12-15 | [20540](https://github.com/airbytehq/airbyte/pull/20540) | Rebuild on CDK 0.15.0                                                   |
 | 0.1.8   | 2022-12-15 | [20090](https://github.com/airbytehq/airbyte/pull/20090) | Add order_products stream                                               |
 | 0.1.7   | 2022-09-13 | [16647](https://github.com/airbytehq/airbyte/pull/16647) | Add channel and store stream goes beyond                                |
