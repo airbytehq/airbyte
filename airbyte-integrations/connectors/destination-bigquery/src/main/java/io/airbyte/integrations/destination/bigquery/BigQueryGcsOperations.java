@@ -196,8 +196,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
    * </p>
    *
    * @param datasetId equivalent to schema name
-   * @param tableId   table name
-   * @param schema    schema of the table to be deleted/created
+   * @param tableId table name
+   * @param schema schema of the table to be deleted/created
    */
   @Override
   public void truncateTableIfExists(final String datasetId,

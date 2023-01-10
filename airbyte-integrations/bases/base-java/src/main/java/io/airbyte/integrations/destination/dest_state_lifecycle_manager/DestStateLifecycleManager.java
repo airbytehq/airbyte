@@ -53,6 +53,7 @@ public interface DestStateLifecycleManager {
   void markFlushedAsCommitted();
 
   /**
+<<<<<<< HEAD
    * Clears any committed state messages, this is called after returning the state message to the
    * platform. The rationale behind this logic is to avoid returning duplicated state messages that
    * would otherwise be held in the `committed` state

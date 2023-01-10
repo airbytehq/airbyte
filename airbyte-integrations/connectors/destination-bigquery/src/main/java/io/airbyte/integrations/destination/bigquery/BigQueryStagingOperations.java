@@ -51,10 +51,10 @@ public interface BigQueryStagingOperations {
   /**
    * Copies data from staging area to the target table
    *
-   * @param datasetId   Name of schema
-   * @param stream      Name of stream
-   * @param tableId     Name of destination's target table
-   * @param schema      Schema of the data being synced
+   * @param datasetId Name of schema
+   * @param stream Name of stream
+   * @param tableId Name of destination's target table
+   * @param schema Schema of the data being synced
    * @param stagedFiles collection of staged files
    * @throws Exception
    */
