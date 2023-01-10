@@ -38,12 +38,7 @@ import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
 import io.airbyte.persistence.job.errorreporter.JobErrorReportingClientFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
-import io.airbyte.server.errors.InvalidInputExceptionHandler;
-import io.airbyte.server.errors.InvalidJsonExceptionHandler;
-import io.airbyte.server.errors.InvalidJsonInputExceptionHandler;
-import io.airbyte.server.errors.KnownExceptionMapper;
-import io.airbyte.server.errors.NotFoundExceptionHandler;
-import io.airbyte.server.errors.UncaughtExceptionHandler;
+import io.airbyte.server.errors.*;
 import io.airbyte.server.handlers.*;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
@@ -99,12 +94,12 @@ public class ServerApp implements ServerRunnable {
     final ResourceConfig rc =
         new ResourceConfig()
             .register(new RequestLogger(mdc))
-            .register(InvalidInputExceptionHandler.class)
-            .register(InvalidJsonExceptionHandler.class)
-            .register(InvalidJsonInputExceptionHandler.class)
+            .register(InvalidInputExceptionMapper.class)
+            .register(InvalidJsonExceptionMapper.class)
+            .register(InvalidJsonInputExceptionMapper.class)
             .register(KnownExceptionMapper.class)
-            .register(UncaughtExceptionHandler.class)
-            .register(NotFoundExceptionHandler.class)
+            .register(UncaughtExceptionMapper.class)
+            .register(NotFoundExceptionMapper.class)
             // needed so that the custom json exception mappers don't get overridden
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
             .register(JacksonJaxbJsonProvider.class);
