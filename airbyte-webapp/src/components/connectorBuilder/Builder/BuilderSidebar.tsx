@@ -25,7 +25,7 @@ interface ViewSelectButtonProps {
   selected: boolean;
   showErrorIndicator: boolean;
   onClick: () => void;
-  testId: string;
+  "data-testid": string;
 }
 
 const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>> = ({
@@ -34,11 +34,11 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
   selected,
   showErrorIndicator,
   onClick,
-  testId,
+  "data-testid": testId,
 }) => {
   return (
     <button
-      data-testid={`navbutton-${testId}`}
+      data-testid={testId}
       className={classnames(className, styles.viewButton, {
         [styles.selectedViewButton]: selected,
         [styles.unselectedViewButton]: !selected,
@@ -96,7 +96,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
       </div>
 
       <ViewSelectButton
-        testId="global"
+        data-testid="navbutton-global"
         className={styles.globalConfigButton}
         selected={selectedView === "global"}
         showErrorIndicator={hasErrors(true, ["global"])}
@@ -107,7 +107,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
       </ViewSelectButton>
 
       <ViewSelectButton
-        testId="inputs"
+        data-testid="navbutton-inputs"
         showErrorIndicator={false}
         className={styles.globalConfigButton}
         selected={selectedView === "inputs"}
@@ -134,7 +134,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
         {values.streams.map(({ name }, num) => (
           <ViewSelectButton
             key={num}
-            testId={String(num)}
+            data-testid={`navbutton-${String(num)}`}
             selected={selectedView === num}
             showErrorIndicator={hasErrors(true, [num])}
             onClick={() => handleViewSelect(num)}
