@@ -3,7 +3,7 @@
 #
 
 import re
-from typing import Any, Mapping, Tuple, Union
+from typing import Any, Mapping, Set, Tuple, Union
 
 from airbyte_cdk.sources.declarative.parsers.custom_exceptions import CircularReferenceException, UndefinedReferenceException
 
@@ -96,9 +96,6 @@ class ManifestReferenceResolver:
 
     ref_tag = "$ref"
 
-    def __init__(self):
-        self.visited = set()
-
     def preprocess_manifest(self, manifest):
         """
         :param manifest: incoming manifest that could have references to previously defined components
@@ -106,7 +103,7 @@ class ManifestReferenceResolver:
         """
         return self._evaluate_node(manifest, manifest)
 
-    def _evaluate_node(self, node: Any, manifest: Mapping[str, Any]):
+    def _evaluate_node(self, node: Any, manifest: Mapping[str, Any], visited: Set = None):
         if isinstance(node, dict):
             evaluated_dict = {k: self._evaluate_node(v, manifest) for k, v in node.items() if not self._is_ref_key(k)}
             if self.ref_tag in node:
@@ -122,11 +119,13 @@ class ManifestReferenceResolver:
         elif isinstance(node, list):
             return [self._evaluate_node(v, manifest) for v in node]
         elif isinstance(node, str) and node.startswith("*ref("):
-            if node in self.visited:
+            if visited is None:
+                visited = set()
+            if node in visited:
                 raise CircularReferenceException(node)
-            self.visited.add(node)
-            ret = self._evaluate_node(self._lookup_reference_value(node, manifest), manifest)
-            self.visited.remove(node)
+            visited.add(node)
+            ret = self._evaluate_node(self._lookup_reference_value(node, manifest), manifest, visited)
+            visited.remove(node)
             return ret
         else:
             return node
