@@ -74,7 +74,7 @@ if [ -n "$CI" ]; then
     describe_pods;
   }
 # Uncomment for debugging. Warning, this is verbose.
- trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
+  # trap "mkdir -p /tmp/kubernetes_logs && write_all_logs" EXIT
 fi
 
 kubectl expose $(kubectl get po -l app.kubernetes.io/name=server -o name) --name exposed-server-svc --type NodePort --overrides '{ "apiVersion": "v1","spec":{"ports": [{"port":8001,"protocol":"TCP","targetPort":8001,"nodePort":8001}]}}'
