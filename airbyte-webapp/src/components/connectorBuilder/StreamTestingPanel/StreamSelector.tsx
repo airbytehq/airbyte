@@ -5,7 +5,10 @@ import { useIntl } from "react-intl";
 import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
 
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  useConnectorBuilderTestState,
+  useConnectorBuilderFormState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { ReactComponent as CaretDownIcon } from "../../ui/ListBox/CaretDownIcon.svg";
 import styles from "./StreamSelector.module.scss";
@@ -27,7 +30,8 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
 
 export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
   const { formatMessage } = useIntl();
-  const { streams, selectedView, testStreamIndex, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
+  const { selectedView, setSelectedView } = useConnectorBuilderFormState();
+  const { streams, testStreamIndex, setTestStreamIndex } = useConnectorBuilderTestState();
   const options = streams.map((stream) => {
     const label =
       stream.name && stream.name.trim() ? capitalize(stream.name) : formatMessage({ id: "connectorBuilder.emptyName" });
@@ -39,7 +43,7 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => 
     if (selectedStreamIndex >= 0) {
       setTestStreamIndex(selectedStreamIndex);
 
-      if (selectedView !== "global" && selectedStreamIndex >= 0) {
+      if (selectedView !== "global") {
         setSelectedView(selectedStreamIndex);
       }
     }

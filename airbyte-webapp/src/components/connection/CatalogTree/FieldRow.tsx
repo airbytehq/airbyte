@@ -61,10 +61,10 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
         <Cell flex={0}>
           <SyncCheckboxContainer>
             {!isNestedField && (
-              <Switch small checked={isSelected} onChange={() => onToggleFieldSelected(field.path, !isSelected)} />
+              <Switch size="sm" checked={isSelected} onChange={() => onToggleFieldSelected(field.path, !isSelected)} />
             )}
             {isNestedField && (
-              <Tooltip control={<Switch small disabled checked={isSelected} />}>
+              <Tooltip control={<Switch size="sm" disabled checked={isSelected} />}>
                 <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />
               </Tooltip>
             )}

@@ -4,14 +4,14 @@
 
 package io.airbyte.workers.process;
 
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.CHECK_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.DISCOVER_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.JOB_TYPE;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.READ_STEP;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SPEC_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_STEP;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.WRITE_STEP;
+import static io.airbyte.workers.process.Metadata.CHECK_JOB;
+import static io.airbyte.workers.process.Metadata.DISCOVER_JOB;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
+import static io.airbyte.workers.process.Metadata.READ_STEP;
+import static io.airbyte.workers.process.Metadata.SPEC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
+import static io.airbyte.workers.process.Metadata.WRITE_STEP;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -54,7 +54,9 @@ class AirbyteIntegrationLauncherTest {
       WorkerEnvConstants.WORKER_JOB_ID, JOB_ID,
       WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT),
       EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(new EnvVariableFeatureFlags().useStreamCapableState()),
-      EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(new EnvVariableFeatureFlags().autoDetectSchema()));
+      EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(new EnvVariableFeatureFlags().autoDetectSchema()),
+      EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(new EnvVariableFeatureFlags().applyFieldSelection()),
+      EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, new EnvVariableFeatureFlags().fieldSelectionWorkspaces());
 
   private WorkerConfigs workerConfigs;
   @Mock
@@ -72,7 +74,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.spec(JOB_ROOT);
 
     Mockito.verify(processFactory).create(SPEC_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, Collections.emptyMap(), null,
-        workerConfigs.getResourceRequirements(), Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SPEC_JOB), JOB_METADATA,
+        workerConfigs.getResourceRequirements(), Map.of(JOB_TYPE_KEY, SPEC_JOB), JOB_METADATA,
         Map.of(),
         "spec");
   }
@@ -83,7 +85,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(CHECK_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, CHECK_JOB),
+        Map.of(JOB_TYPE_KEY, CHECK_JOB),
         JOB_METADATA,
         Map.of(),
         "check",
@@ -96,7 +98,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(DISCOVER_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, DISCOVER_JOB),
+        Map.of(JOB_TYPE_KEY, DISCOVER_JOB),
         JOB_METADATA,
         Map.of(),
         "discover",
@@ -109,7 +111,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(READ_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_CATALOG_STATE_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, READ_STEP),
+        Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, READ_STEP),
         JOB_METADATA,
         Map.of(),
         Lists.newArrayList(
@@ -125,7 +127,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(WRITE_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, true, CONFIG_CATALOG_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, WRITE_STEP),
+        Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, WRITE_STEP),
         JOB_METADATA,
         Map.of(),
         "write",

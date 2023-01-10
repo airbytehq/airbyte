@@ -126,6 +126,7 @@ Make sure to configure the [required parameters](https://developer-docs.amazon.c
 
 | Version  | Date       | Pull Request                                               | Subject                                                                |
 |:---------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------|
+| `0.2.30` | 2022-12-28 | [\#20896](https://github.com/airbytehq/airbyte/pull/20896) | Validate connections without orders data                               | 
 | `0.2.29` | 2022-11-18 | [\#19581](https://github.com/airbytehq/airbyte/pull/19581) | Use user provided end date for GET_SALES_AND_TRAFFIC_REPORT            |                           |
 | `0.2.28` | 2022-10-20 | [\#18283](https://github.com/airbytehq/airbyte/pull/18283) | Added multiple (22) report types                                       |
 | `0.2.26` | 2022-09-24 | [\#16629](https://github.com/airbytehq/airbyte/pull/16629) | Report API version to 2021-06-30, added multiple (5) report types      |
