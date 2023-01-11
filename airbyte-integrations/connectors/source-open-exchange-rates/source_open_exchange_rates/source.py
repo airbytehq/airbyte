@@ -70,7 +70,8 @@ class OpenExchangeRates(HttpStream, ABC):
         response_json = response.json()
 
         latest_record_timestamp = response_json['timestamp']
-
+        if self._cursor_value and latest_record_timestamp <= self._cursor_value:
+            return
         if self._cursor_value:
             self._cursor_value = max(self._cursor_value, latest_record_timestamp)
 
