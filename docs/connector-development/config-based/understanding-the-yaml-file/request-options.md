@@ -131,7 +131,7 @@ The following example will set the "created[gte]" request parameter value to the
 stream_slicer:
   start_datetime: "2021-02-01T00:00:00.000000+0000",
   end_datetime: "2021-03-01T00:00:00.000000+0000",
-  step: "1d"
+  step: "P1D"
   start_time_option:
     field_name: "created[gte]"
     inject_into: "request_parameter"
