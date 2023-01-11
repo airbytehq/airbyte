@@ -80,7 +80,7 @@ class OpenExchangeRates(HttpStream, ABC):
         yield response_json
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        start_date = pendulum.parse(stream_state[self.cursor_field] if stream_state and self.cursor_field in stream_state else self.start_date)
+        start_date = pendulum.from_timestamp(stream_state[self.cursor_field] if stream_state and self.cursor_field in stream_state else self.start_date)
         return self._chunk_date_range(start_date)
 
     def path(
