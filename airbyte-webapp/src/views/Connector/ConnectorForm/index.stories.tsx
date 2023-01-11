@@ -3,7 +3,7 @@ import withMock from "storybook-addon-mock";
 
 import { Card } from "components/ui/Card";
 
-import { ConnectorSpecification } from "core/domain/connector";
+import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 
 import { ConnectorForm } from "./ConnectorForm";

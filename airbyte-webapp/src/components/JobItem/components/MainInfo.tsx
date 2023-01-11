@@ -17,10 +17,10 @@ import styles from "./MainInfo.module.scss";
 import { ResetStreamsDetails } from "./ResetStreamDetails";
 
 const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
-  (job as SynchronousJobRead).configType ?? job.job.configType;
+  (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job.configType;
 
 const getJobCreatedAt = (job: SynchronousJobRead | JobsWithJobs) =>
-  (job as SynchronousJobRead).createdAt ?? job.job.createdAt;
+  (job as SynchronousJobRead).createdAt ?? (job as JobsWithJobs).job.createdAt;
 
 const partialSuccessCheck = (attempts: AttemptRead[]) => {
   if (attempts.length > 0 && attempts[attempts.length - 1].status === JobStatus.failed) {

@@ -71,7 +71,9 @@ describe("auth button", () => {
     render(
       <TestWrapper>
         <AuthButton
-          selectedConnectorDefinitionSpecification={baseUseConnectorFormValues.selectedConnectorDefinitionSpecification}
+          selectedConnectorDefinitionSpecification={
+            baseUseConnectorFormValues.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification
+          }
         />
       </TestWrapper>
     );
