@@ -20,7 +20,7 @@ class OpenExchangeRates(HttpStream, ABC):
     url_base = "https://openexchangerates.org/api/"
 
     primary_key = None
-    cursor_field = "date"
+    cursor_field = "timestamp"
 
 
     def __init__(self, base: Optional[str], start_date: str, app_id: str, **kwargs: dict) -> None:
@@ -44,9 +44,6 @@ class OpenExchangeRates(HttpStream, ABC):
             params["base"] = self.base
 
         return params
-
-    def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
-        return self.authenticator.get_auth_header()
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -74,8 +71,6 @@ class OpenExchangeRates(HttpStream, ABC):
             return
         if self._cursor_value:
             self._cursor_value = max(self._cursor_value, latest_record_timestamp)
-        else:
-            self._cursor_value = latest_record_timestamp
         else:
             self._cursor_value = latest_record_timestamp
 
