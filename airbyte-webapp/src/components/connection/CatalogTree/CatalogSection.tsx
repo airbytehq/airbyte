@@ -15,6 +15,7 @@ import {
   SelectedFieldInfo,
 } from "core/request/AirbyteClient";
 import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
@@ -50,7 +51,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   errors,
   changedSelected,
 }) => {
-  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
 
   const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
 
@@ -187,9 +188,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const destName = prefix + (streamNode.stream?.name ?? "");
   const configErrors = getIn(
     errors,
-    isNewStreamsTableEnabled
-      ? `syncCatalog.streams[${streamNode.id}].config`
-      : `schema.streams[${streamNode.id}].config`
+    isNewTableDesignEnabled ? `syncCatalog.streams[${streamNode.id}].config` : `schema.streams[${streamNode.id}].config`
   );
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const pkType = getPathType(pkRequired, shouldDefinePk);
@@ -197,7 +196,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const hasFields = fields?.length > 0;
   const disabled = mode === "readonly";
 
-  const StreamComponent = isNewStreamsTableEnabled ? CatalogTreeTableRow : StreamHeader;
+  const StreamComponent = isNewTableDesignEnabled ? CatalogTreeTableRow : StreamHeader;
 
   return (
     <div className={styles.catalogSection}>
@@ -223,7 +222,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
       />
       {isRowExpanded &&
         hasFields &&
-        (isNewStreamsTableEnabled ? (
+        (isNewTableDesignEnabled ? (
           <StreamDetailsPanel
             config={config}
             disabled={mode === "readonly"}
