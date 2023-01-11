@@ -1,4 +1,4 @@
-import { CellContext, ColumnDef } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { SortOrderEnum } from "components/EntityTable/types";
+import { NextTable } from "components/ui/NextTable";
 import { SortableTableHeader } from "components/ui/Table";
 
 import { useQuery } from "hooks/useQuery";
@@ -13,7 +14,6 @@ import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWor
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
-import { NextTable } from "../../../../../../components/ui/NextTable";
 import ConnectionCell from "./ConnectionCell";
 import UsageCell from "./UsageCell";
 
@@ -39,13 +39,20 @@ type FullTableProps = CreditConsumptionByConnector & {
   destinationIcon?: string;
 };
 
+type ColumnDefs = [
+  ColumnDef<FullTableProps, string>,
+  ColumnDef<FullTableProps, string>,
+  ColumnDef<FullTableProps, number>,
+  ColumnDef<FullTableProps, string>
+];
+
 const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const navigate = useNavigate();
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const creditConsumptionWithPercent = React.useMemo((): FullTableProps[] => {
+  const creditConsumptionWithPercent = React.useMemo<FullTableProps[]>(() => {
     const sumCreditsConsumed = creditConsumption.reduce((a, b) => a + b.creditsConsumed, 0);
     return creditConsumption.map((item) => {
       const currentSourceDefinition = sourceDefinitions.find(
@@ -103,13 +110,13 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     [sortBy, sortOrder]
   );
 
-  const sortingData = React.useMemo(
-    (): FullTableProps[] => creditConsumptionWithPercent.sort(sortData),
+  const sortingData = React.useMemo<FullTableProps[]>(
+    () => creditConsumptionWithPercent.sort(sortData),
     [sortData, creditConsumptionWithPercent]
   );
 
   const columns = React.useMemo(
-    (): Array<ColumnDef<FullTableProps>> => [
+    (): ColumnDefs => [
       {
         header: () => (
           <SortableTableHeader
@@ -124,9 +131,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
           customWidth: 30,
         },
         accessorKey: "sourceDefinitionName",
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        cell: (props: CellContext<FullTableProps, string>) => (
+        cell: (props) => (
           <ConnectionCell
             sourceDefinitionName={props.cell.getValue()}
             destinationDefinitionName={props.row.original.destinationDefinitionName}
@@ -152,9 +157,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
             right: 0,
           },
         },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        cell: (props: CellContext<FullTableProps, string>) => <UsageValue>{props.cell.getValue()}</UsageValue>,
+        cell: (props) => <UsageValue>{props.cell.getValue()}</UsageValue>,
       },
       {
         header: "",
@@ -164,9 +167,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
             left: 0,
           },
         },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        cell: (props: CellContext<FullTableProps, number>) => <UsageCell percent={props.cell.getValue()} />,
+        cell: (props) => <UsageCell percent={props.cell.getValue()} />,
       },
       // TODO: Replace to Grow column
       {
@@ -183,7 +184,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
 
   return (
     <Content>
-      <NextTable<FullTableProps> columns={columns} data={sortingData} light />
+      <NextTable columns={columns} data={sortingData} light />
     </Content>
   );
 };

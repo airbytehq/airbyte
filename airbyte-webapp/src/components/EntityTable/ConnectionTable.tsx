@@ -26,6 +26,16 @@ interface IProps {
   onSync: (id: string) => void;
 }
 
+type ColumnDefs = [
+  ColumnDef<ITableDataItem, string>,
+  ColumnDef<ITableDataItem, string>,
+  ColumnDef<ITableDataItem, string>,
+  ColumnDef<ITableDataItem, ConnectionScheduleData>,
+  ColumnDef<ITableDataItem, number>,
+  ColumnDef<ITableDataItem, boolean>,
+  ColumnDef<ITableDataItem, string>
+];
+
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync }) => {
   const navigate = useNavigate();
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
@@ -72,8 +82,8 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
 
   const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data]);
 
-  const columns = React.useMemo(
-    (): Array<ColumnDef<ITableDataItem>> => [
+  const columns = React.useMemo<ColumnDefs>(
+    () => [
       {
         header: () => (
           <SortableTableHeader
@@ -141,7 +151,6 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
           />
         ),
       },
-
       {
         header: () => <FormattedMessage id="tables.frequency" />,
         accessorKey: "scheduleData",
@@ -199,7 +208,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
     [sortBy, sortOrder, entity, onSortClick, onSync, allowSync, allowAutoDetectSchema]
   );
 
-  return <NextTable<ITableDataItem> columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />;
+  return <NextTable columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />;
 };
 
 export default ConnectionTable;

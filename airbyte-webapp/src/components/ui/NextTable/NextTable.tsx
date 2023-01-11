@@ -3,6 +3,8 @@ import { ColumnMeta } from "@tanstack/table-core";
 import classNames from "classnames";
 import { CSSProperties, PropsWithChildren } from "react";
 
+import { ConnectionScheduleData } from "core/request/AirbyteClient";
+
 import styles from "./NextTable.module.scss";
 
 type TData<T> = T & {
@@ -11,7 +13,12 @@ type TData<T> = T & {
 
 export interface TableProps<T> {
   className?: string;
-  columns: Array<ColumnDef<TData<T>>>;
+  columns: Array<
+    | ColumnDef<TData<T>, string>
+    | ColumnDef<TData<T>, number>
+    | ColumnDef<TData<T>, boolean>
+    | ColumnDef<TData<T>, ConnectionScheduleData>
+  >;
   data: Array<TData<T>>;
   erroredRows?: boolean;
   light?: boolean;
@@ -21,13 +28,13 @@ export interface TableProps<T> {
 const getStyleFromColumnMeta = <T,>(meta: ColumnMeta<T, unknown>): CSSProperties => {
   const style: CSSProperties = {};
   if (meta?.customWidth) {
-    style.width = `${meta?.customWidth}%`;
+    style.width = `${meta.customWidth}%`;
   }
   if (meta?.customPadding?.left) {
-    style.paddingLeft = `${meta?.customPadding?.left}px`;
+    style.paddingLeft = `${meta.customPadding.left}px`;
   }
   if (meta?.customPadding?.right) {
-    style.paddingRight = `${meta?.customPadding?.right}px`;
+    style.paddingRight = `${meta.customPadding.right}px`;
   }
   return style;
 };
@@ -53,7 +60,7 @@ export const NextTable = <T,>({
           <tr key={`table-header-${headerGroup.id}}`}>
             {headerGroup.headers.map((header) => {
               const { meta } = header.column.columnDef;
-              const style: CSSProperties = getStyleFromColumnMeta<TData<T>>(meta as ColumnMeta<T, unknown>);
+              const style = getStyleFromColumnMeta<TData<T>>(meta as ColumnMeta<T, unknown>);
               return (
                 <th
                   colSpan={header.colSpan}
