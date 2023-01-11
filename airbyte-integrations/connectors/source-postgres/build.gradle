@@ -20,6 +20,9 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
+    implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-config:config-models')
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.postgresql
