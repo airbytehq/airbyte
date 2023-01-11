@@ -13,10 +13,26 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .streams import DentclinicStream, DentclinicVisidIdStream, DentclinicStaticStream
+from .streams import DentclinicBookingStream,DentclinicBookingFrStream, DentclinicVisidIdStream, DentclinicStaticStream
 
 
-class Bookings(DentclinicStream):
+class Bookings(DentclinicBookingStream):
+    primary_key = "Id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "bookings". Required.
+        """
+        return ""
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+
+class BookingsFr(DentclinicBookingFrStream):
     primary_key = "Id"
 
     def path(

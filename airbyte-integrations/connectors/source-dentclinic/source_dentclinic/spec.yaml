@@ -7,7 +7,9 @@ connectionSpecification:
     - start_date
     - api_key
     - fetch_interval_days
-    - months_forward
+    - days_forward
+    - fr_days_back
+    - fr_days_forward
   properties:
     start_date:
       type: string
@@ -18,10 +20,18 @@ connectionSpecification:
       type: integer
       description: Bulk fetch interval 
       default: 7
-    months_forward:
+    days_forward:
       type: integer
-      description: Months ahead we want to fetch bookings
+      description: Days ahead we want to fetch bookings
       default: 2
+    fr_days_back:
+      type: integer
+      description: Full refresh days back
+      default: 7
+    fr_days_forward:
+      type: integer
+      description: Full refresh days forward
+      default: 60
 
     api_key:
       type: string
