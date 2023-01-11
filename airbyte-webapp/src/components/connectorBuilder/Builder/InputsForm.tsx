@@ -70,7 +70,10 @@ export const InputForm = ({
 }) => {
   const { values, setFieldValue } = useFormikContext<BuilderFormValues>();
   const [inputs, , helpers] = useField<BuilderFormInput[]>("inputs");
-  const inferredInputs = useMemo(() => getInferredInputs(values), [values]);
+  const inferredInputs = useMemo(
+    () => getInferredInputs(values.global, values.inferredInputOverrides),
+    [values.global, values.inferredInputOverrides]
+  );
   const usedKeys = useMemo(
     () => [...inputs.value, ...inferredInputs].map((input) => input.key),
     [inputs.value, inferredInputs]

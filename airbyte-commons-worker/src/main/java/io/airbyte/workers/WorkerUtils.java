@@ -11,6 +11,8 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
+import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -107,6 +109,14 @@ public class WorkerUtils {
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
+  }
+
+  public static Optional<AirbyteControlConnectorConfigMessage> getMostRecentConfigControlMessage(final Map<Type, List<AirbyteMessage>> messagesByType) {
+    return messagesByType.getOrDefault(Type.CONTROL, new ArrayList<>()).stream()
+        .map(AirbyteMessage::getControl)
+        .filter(control -> control.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG)
+        .map(AirbyteControlMessage::getConnectorConfig)
+        .reduce((first, second) -> second);
   }
 
   public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,
