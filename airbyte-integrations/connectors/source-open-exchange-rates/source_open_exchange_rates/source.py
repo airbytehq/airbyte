@@ -99,7 +99,7 @@ class OpenExchangeRates(HttpStream, ABC):
         """
         dates = []
         while start_date < pendulum.now():
-            dates.append({self.cursor_field: start_date.to_date_string()})
+            dates.append({"date": start_date.to_date_string()})
             start_date = start_date.add(days=1)
         return dates
 
