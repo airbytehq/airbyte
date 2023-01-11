@@ -147,7 +147,7 @@ Airbyte Cloud supports [user management](https://docs.airbyte.com/cloud/managing
 Our compliance efforts for Airbyte Cloud include:
 
 - SOC 2 Type II assessment: An independent third-party completed a SOC2 Type II assessment and found effective operational controls in place. Independent third-party audits will continue at a regular cadence, and the most recent report is available upon request.
-- ISO 27001 certification: We are currently pursuing ISO 27001 certification and will continue to align the evolution of our security program with its standards as we grow.
+- ISO 27001 certification: We received our ISO 27001 certification in November 2022. A copy of the certificate is available upon request. 
 - Assessments and penetration tests: We use tools provided by the Cloud platforms as well as third-party assessments and penetration tests.
 
 ## Reporting Vulnerabilities​
