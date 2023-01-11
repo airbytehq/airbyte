@@ -36,7 +36,6 @@ definitions:
 
   public_data_requester:
     $ref: "*ref(definitions.api_error_handler_requester)"
-    url_base: "https://{{ stream_slice.url }}.instatus.com/"
 
   retriever:
     record_selector:
@@ -57,6 +56,8 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
 
   status_pages_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -80,8 +81,7 @@ definitions:
         stream_slice_field: "page_id"
 
   page_components_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "page_components"
       primary_key: "id"
@@ -94,8 +94,7 @@ definitions:
         $ref: "*ref(definitions.page_stream_slicer)"
 
   incidents_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "incidents"
       primary_key: "id"
@@ -120,8 +119,7 @@ definitions:
         stream_slice_field: "incident_update_id"
 
   incident_updates_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "incident_updates"
       primary_key: "id"
@@ -134,8 +132,7 @@ definitions:
         $ref: "*ref(definitions.incident_updates_stream_slicer)"
 
   maintenances_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "maintenances"
       primary_key: "id"
@@ -160,8 +157,7 @@ definitions:
         stream_slice_field: "maintenance_update_id"
 
   maintenance_updates_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "maintenance_updates"
       primary_key: "id"
@@ -174,8 +170,7 @@ definitions:
         $ref: "*ref(definitions.maintenance_updates_stream_slicer)"
 
   templates_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "templates"
       primary_key: "id"
@@ -188,8 +183,7 @@ definitions:
         $ref: "*ref(definitions.page_stream_slicer)"
 
   team_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "team"
       primary_key: "id"
@@ -202,8 +196,7 @@ definitions:
         $ref: "*ref(definitions.page_stream_slicer)"
 
   subscribers_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "subscribers"
       primary_key: "id"
@@ -216,8 +209,7 @@ definitions:
         $ref: "*ref(definitions.page_stream_slicer)"
 
   metrics_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "metrics"
       primary_key: "id"
@@ -237,15 +229,14 @@ definitions:
         stream_slice_field: "url"
 
   public_data_stream:
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "public_data"
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.public_data_requester)"
-        path: "summary.json"
+        path: "https://{{ stream_slice.url }}.instatus.com/summary.json"
       stream_slicer:
         $ref: "*ref(definitions.page_url_stream_slicer)"
 
