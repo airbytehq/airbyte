@@ -241,11 +241,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        return {
-            "reportType": self.name,
-            "marketplaceIds": [self.marketplace_id],
-            **stream_slice
-        }
+        return {"reportType": self.name, "marketplaceIds": [self.marketplace_id], **stream_slice}
 
     def _create_report(
         self,
@@ -388,14 +384,6 @@ class FlatFileOrdersReports(ReportsAmazonSPStream):
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
 
 
-class FbaInventoryReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/200740930
-    """
-
-    name = "GET_FBA_INVENTORY_AGED_DATA"
-
-
 class FbaAfnInventoryReports(ReportsAmazonSPStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
@@ -466,10 +454,6 @@ class RestockInventoryReports(ReportsAmazonSPStream):
     """
 
     name = "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
-
-
-class VendorInventoryHealthReports(ReportsAmazonSPStream):
-    name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
 class GetXmlBrowseTreeData(ReportsAmazonSPStream):
@@ -627,7 +611,6 @@ class AnalyticsStream(ReportsAmazonSPStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        print("LOL")
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         options = self.report_options()
         if options is not None:

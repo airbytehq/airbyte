@@ -101,7 +101,7 @@ class AmazonSellerPartnerConfig(BaseModel):
         500,
         title="Max wait time for reports (in seconds)",
         description="Sometimes report can take up to 30 minutes to generate. This will set the limit for how long "
-                    "to wait for a successful report.",
+        "to wait for a successful report.",
         examples=["500", "1980"],
         order=12,
     )
