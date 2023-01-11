@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.19.0
+Low-Code: Handle forward references in manifest
+
 ## 0.18.1
 Allow for CustomRequester to be defined within declarative manifests
 
