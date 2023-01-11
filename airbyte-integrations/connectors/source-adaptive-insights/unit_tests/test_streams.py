@@ -96,6 +96,8 @@ accounts_expected = {
     'is_group': '0', 
     'has_formula': '0', 
     'version': 'c',
+    'rollup_to_code': 'D',
+    'rollup_to_text': 'TT',
     'attributes': str([
         {
             'name': 'FF', 
@@ -320,4 +322,4 @@ def test_request_body_data_export_headcount(patch_base_class):
         </call>
         """.encode('utf-8')
     inputs = {}
-    assert stream.construct_xml_body(start_date="01/2019", end_date="01/2019") == expected_data
+    assert stream.construct_xml_body(start_date="01/2019") == expected_data
