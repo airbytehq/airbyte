@@ -6,6 +6,7 @@ import logging
 
 import pendulum
 import pytest
+import urlparse
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_typeform.source import SourceTypeform
 
