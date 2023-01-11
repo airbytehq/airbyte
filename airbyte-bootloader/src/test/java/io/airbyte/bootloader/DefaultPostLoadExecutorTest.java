@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
