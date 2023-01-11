@@ -57,7 +57,7 @@ class OpenExchangeRates(HttpStream, ABC):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = pendulum.parse(value[self.cursor_field])
+        self._cursor_value = value[self.cursor_field]
 
     def parse_response(
         self,
