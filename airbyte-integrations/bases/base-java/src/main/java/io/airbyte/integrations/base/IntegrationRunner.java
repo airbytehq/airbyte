@@ -136,7 +136,6 @@ public class IntegrationRunner {
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
           try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-
             produceMessages(messageIterator);
           }
         }
@@ -200,7 +199,7 @@ public class IntegrationRunner {
     final Scanner input = new Scanner(System.in, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
     consumer.start();
     while (input.hasNext()) {
-      consumeMessage(consumer, input.next(), 1l);
+      consumeMessage(consumer, input.next());
     }
   }
 
@@ -284,14 +283,9 @@ public class IntegrationRunner {
    *         provided message.
    */
   @VisibleForTesting
-  static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString, final long runnerMaximumMemoryInBytes)
+  static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString)
       throws Exception {
 
-    if (inputString.getBytes().length > (runnerMaximumMemoryInBytes * 0.6)) {
-      LOGGER.error("One messge is too big, the replication will fail in order to avoid OOM. The size of the message is: {} bytes",
-          inputString.getBytes().length);
-      throw new IllegalStateException("Invalid message, the message is too big");
-    }
     final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
     if (messageOptional.isPresent()) {
       consumer.accept(messageOptional.get());

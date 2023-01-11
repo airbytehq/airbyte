@@ -42,42 +42,37 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   private final MdcScope.Builder containerLogMdcBuilder;
   private final AirbyteProtocolPredicate protocolValidator;
   protected final Logger logger;
-  private final boolean checkSize;
   private final long maxMemory;
-  private final Class<? extends RuntimeException> exceptionClass;
+  private final Optional<Class<? extends RuntimeException>> exceptionClass;
 
   public DefaultAirbyteStreamFactory() {
     this(MdcScope.DEFAULT_BUILDER);
   }
 
   public DefaultAirbyteStreamFactory(final MdcScope.Builder containerLogMdcBuilder) {
-    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder, false, null);
+    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder, Optional.empty());
   }
 
   DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
                               final Logger logger,
                               final MdcScope.Builder containerLogMdcBuilder,
-                              final boolean checkSize,
-                              final Class<? extends RuntimeException> exceptionClass) {
+                              final Optional<Class<? extends RuntimeException>> exceptionClass) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
-    this.checkSize = checkSize;
     this.exceptionClass = exceptionClass;
-    this.maxMemory = 1l; // Runtime.getRuntime().maxMemory();
+    this.maxMemory = Runtime.getRuntime().maxMemory();
   }
 
   @VisibleForTesting
   DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
                               final Logger logger,
                               final MdcScope.Builder containerLogMdcBuilder,
-                              final boolean checkSize,
-                              final Class<? extends RuntimeException> exceptionClass,
+                              final Optional<Class<? extends RuntimeException>> exceptionClass,
                               final long maxMemory) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
-    this.checkSize = checkSize;
     this.exceptionClass = exceptionClass;
     this.maxMemory = maxMemory;
   }
@@ -90,14 +85,14 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .lines()
         .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
         .peek(str -> {
-          if (checkSize) {
+          if (exceptionClass.isPresent()) {
             long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
             if (messageSize > maxMemory * 0.6) {
               try {
                 String errorMessage = String.format(
                     "Airbyte has received a message at %s UTC which is larger than %x Bytes (size: %x). The sync has been failed to prevent running out of memory.",
                     DateTime.now(), maxMemory, messageSize);
-                throw exceptionClass.getConstructor(String.class).newInstance(errorMessage);
+                throw exceptionClass.get().getConstructor(String.class).newInstance(errorMessage);
               } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
               }

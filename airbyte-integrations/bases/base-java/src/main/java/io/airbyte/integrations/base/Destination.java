@@ -30,7 +30,6 @@ public interface Destination extends Integration {
       throws Exception;
 
   static void defaultOutputRecordCollector(final AirbyteMessage message) {
-
     System.out.println(Jsons.serialize(message));
   }
 

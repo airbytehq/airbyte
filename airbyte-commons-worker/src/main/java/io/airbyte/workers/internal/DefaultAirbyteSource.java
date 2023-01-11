@@ -59,7 +59,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final FeatureFlags featureFlags;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
-    this(integrationLauncher, new SourceStreamFactory(CONTAINER_LOG_MDC_BUILDER), featureFlags);
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), featureFlags);
   }
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,

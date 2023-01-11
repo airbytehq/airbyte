@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -114,7 +115,7 @@ class DefaultAirbyteStreamFactoryTest {
     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
 
     final Stream<AirbyteMessage> messageStream =
-        new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder(), true, RuntimeException.class, 1l).create(bufferedReader);
+        new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder(), Optional.of(RuntimeException.class), 1l).create(bufferedReader);
 
     assertThrows(RuntimeException.class, () -> messageStream.toList());
   }
@@ -137,7 +138,7 @@ class DefaultAirbyteStreamFactoryTest {
   private Stream<AirbyteMessage> stringToMessageStream(final String inputString) {
     final InputStream inputStream = new ByteArrayInputStream(inputString.getBytes(StandardCharsets.UTF_8));
     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-    return new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder(), false, null).create(bufferedReader);
+    return new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder(), Optional.empty()).create(bufferedReader);
   }
 
 }
