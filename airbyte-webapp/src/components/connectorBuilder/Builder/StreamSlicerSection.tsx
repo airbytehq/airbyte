@@ -118,7 +118,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
             type="string"
             path={buildPath("step")}
             label="Step"
-            tooltip="Time interval for which to break up stream into slices, e.g. P1D for daily slices"
+            tooltip="Time interval (ISO 8601 duration) for which to break up stream into slices, e.g. P1D for daily slices"
           />
           <BuilderFieldWithInputs
             type="string"
