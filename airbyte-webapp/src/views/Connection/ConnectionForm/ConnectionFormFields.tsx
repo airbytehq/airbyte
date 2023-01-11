@@ -72,14 +72,14 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
-                  <FlexContainer alignItems="flex-start">
+                  <FlexContainer alignItems="center">
                     <div className={styles.leftFieldCol}>
                       <ControlLabels
                         className={styles.namespaceFormatLabel}
                         nextLine
                         error={!!meta.error}
                         label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
-                        message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                        infoTooltipContent={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
                       />
                     </div>
                     <div className={classNames(styles.rightFieldCol, readonlyClass)}>
@@ -97,14 +97,15 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             )}
             <Field name="prefix">
               {({ field }: FieldProps<string>) => (
-                <FlexContainer alignItems="flex-start">
+                <FlexContainer alignItems="center">
                   <div className={styles.leftFieldCol}>
                     <ControlLabels
                       nextLine
+                      optional
                       label={formatMessage({
                         id: "form.prefix",
                       })}
-                      message={formatMessage({
+                      infoTooltipContent={formatMessage({
                         id: "form.prefix.message",
                       })}
                     />
