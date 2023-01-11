@@ -95,6 +95,10 @@ class OpenExchangeRates(HttpStream, ABC):
         The return value is a list of dicts {'date': date_string}.
         """
         dates = []
+
+        if isinstance(start_date, int):
+            start_date = pendulum.from_timestamp(start_date)
+
         while start_date < pendulum.now():
             dates.append({"date": start_date.to_date_string()})
             start_date = start_date.add(days=1)
