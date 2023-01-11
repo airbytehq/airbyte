@@ -39,6 +39,7 @@ class DefaultGetSpecWorkerTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String DUMMY_IMAGE_NAME = "airbyte/notarealimage:1.1";
+  private static final String ERROR_MESSAGE = "some error from the connector";
 
   private DefaultGetSpecWorker worker;
   private IntegrationLauncher integrationLauncher;
@@ -98,7 +99,7 @@ class DefaultGetSpecWorkerTest {
     final AirbyteMessage message = new AirbyteMessage()
         .withType(Type.SPEC)
         .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
-    final AirbyteMessage traceMessage = AirbyteMessageUtils.createErrorMessage("some error from the connector", 123.0);
+    final AirbyteMessage traceMessage = AirbyteMessageUtils.createErrorMessage(ERROR_MESSAGE, 123.0);
 
     when(process.getInputStream())
         .thenReturn(new ByteArrayInputStream((Jsons.serialize(message) + "\n" + Jsons.serialize(traceMessage)).getBytes(Charsets.UTF_8)));
@@ -109,7 +110,7 @@ class DefaultGetSpecWorkerTest {
     assertNull(output.getSpec());
 
     final FailureReason failureReason = output.getFailureReason();
-    assertEquals("some error from the connector", failureReason.getExternalMessage());
+    assertEquals(ERROR_MESSAGE, failureReason.getExternalMessage());
   }
 
   @Test
@@ -119,7 +120,7 @@ class DefaultGetSpecWorkerTest {
     final AirbyteMessage message = new AirbyteMessage()
         .withType(Type.SPEC)
         .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
-    final AirbyteMessage traceMessage = AirbyteMessageUtils.createErrorMessage("some error from the connector", 123.0);
+    final AirbyteMessage traceMessage = AirbyteMessageUtils.createErrorMessage(ERROR_MESSAGE, 123.0);
 
     when(process.getInputStream())
         .thenReturn(new ByteArrayInputStream((Jsons.serialize(message) + "\n" + Jsons.serialize(traceMessage)).getBytes(Charsets.UTF_8)));
@@ -129,12 +130,12 @@ class DefaultGetSpecWorkerTest {
     assertEquals(OutputType.SPEC, output.getOutputType());
     assertEquals(output.getSpec(), Jsons.deserialize(expectedSpecString, ConnectorSpecification.class));
     final FailureReason failureReason = output.getFailureReason();
-    assertEquals("some error from the connector", failureReason.getExternalMessage());
+    assertEquals(ERROR_MESSAGE, failureReason.getExternalMessage());
   }
 
   @Test
   void testFailureReasonWithTraceMessageOnly() throws WorkerException, InterruptedException {
-    final AirbyteMessage message = AirbyteMessageUtils.createErrorMessage("some error from the connector", 123.0);
+    final AirbyteMessage message = AirbyteMessageUtils.createErrorMessage(ERROR_MESSAGE, 123.0);
 
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
@@ -145,7 +146,7 @@ class DefaultGetSpecWorkerTest {
     assertNotNull(output.getFailureReason());
 
     final FailureReason failureReason = output.getFailureReason();
-    assertEquals("some error from the connector", failureReason.getExternalMessage());
+    assertEquals(ERROR_MESSAGE, failureReason.getExternalMessage());
   }
 
 }
