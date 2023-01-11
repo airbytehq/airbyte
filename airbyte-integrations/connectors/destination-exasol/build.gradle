@@ -18,9 +18,12 @@ dependencies {
 
     implementation 'com.exasol:exasol-jdbc:7.1.16'
 
+    // Explicitly upgrade testcontainers to avoid java.lang.NoSuchMethodError:
+    // 'org.testcontainers.containers.GenericContainer com.exasol.containers.ExasolContainer.withCopyToContainer(org.testcontainers.images.builder.Transferable, java.lang.String)'
+    testImplementation 'org.testcontainers:testcontainers:1.17.6'
+
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-exasol')
     integrationTestJavaImplementation 'com.exasol:exasol-testcontainers:6.4.1'
     integrationTestJavaImplementation 'org.testcontainers:testcontainers:1.17.6'
-    testImplementation 'org.testcontainers:testcontainers:1.17.6'
 }
