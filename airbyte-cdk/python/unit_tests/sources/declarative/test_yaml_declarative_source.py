@@ -78,8 +78,8 @@ class TestYamlDeclarativeSource:
               name: "lists"
               primary_key: id
               url_base: "https://api.sendgrid.com"
-            schema_loader: "*ref(definitions.schema_loader)"
-            retriever: "*ref(definitions.retriever)"
+            schema_loader: "#/definitions/schema_loader"
+            retriever: "#/definitions/retriever"
         check:
           type: CheckStream
           stream_names: ["lists"]
@@ -119,8 +119,8 @@ class TestYamlDeclarativeSource:
               name: "lists"
               primary_key: id
               url_base: "https://api.sendgrid.com"
-            schema_loader: "*ref(definitions.schema_loader)"
-            retriever: "*ref(definitions.retriever)"
+            schema_loader: "#/definitions/schema_loader"
+            retriever: "#/definitions/retriever"
         check:
           type: CheckStream
           stream_names: ["lists"]
