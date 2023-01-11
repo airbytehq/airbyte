@@ -4,17 +4,17 @@
 
 package io.airbyte.integrations.destination.exasol;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.util.List;
+
 import com.exasol.jdbc.EXAConnection;
 import com.exasol.jdbc.EXAStatement;
+
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.List;
 
 public class ExasolSqlOperations extends JdbcSqlOperations {
 
@@ -29,7 +29,7 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR(2000000),\n"
+            + "%s VARCHAR(64),\n"
             + "%s VARCHAR(2000000),\n"
             + "%s TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n"
             + "PRIMARY KEY(%s)\n"
@@ -78,7 +78,7 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
             Files.delete(tmpFile.toPath());
           }
         } catch (final IOException e) {
-          throw new RuntimeException(e);
+          throw new UncheckedIOException("Failed to delete temp file " + tmpFile, e);
         }
       }
     });
