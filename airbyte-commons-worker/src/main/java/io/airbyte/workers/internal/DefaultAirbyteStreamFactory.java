@@ -18,6 +18,8 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.joda.time.DateTime;
@@ -87,11 +89,13 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .peek(str -> {
           if (exceptionClass.isPresent()) {
             long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
-            if (messageSize > maxMemory * 0.6) {
+            if (messageSize > maxMemory * 0.8) {
               try {
                 String errorMessage = String.format(
-                    "Airbyte has received a message at %s UTC which is larger than %x Bytes (size: %x). The sync has been failed to prevent running out of memory.",
-                    DateTime.now(), maxMemory, messageSize);
+                    "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
+                    DateTime.now(),
+                    humanReadableByteCountSI(maxMemory),
+                    humanReadableByteCountSI(messageSize));
                 throw exceptionClass.get().getConstructor(String.class).newInstance(errorMessage);
               } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
@@ -156,6 +160,19 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
       case TRACE -> logger.trace(combinedMessage);
       default -> logger.info(combinedMessage);
     }
+  }
+
+  // Human-readable byte size from https://stackoverflow.com/questions/3758606/how-can-i-convert-byte-size-into-a-human-readable-format-in-java
+  private String humanReadableByteCountSI(long bytes) {
+    if (-1000 < bytes && bytes < 1000) {
+      return bytes + " B";
+    }
+    CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+    while (bytes <= -999_950 || bytes >= 999_950) {
+      bytes /= 1000;
+      ci.next();
+    }
+    return String.format("%.1f %cB", bytes / 1000.0, ci.current());
   }
 
 }
