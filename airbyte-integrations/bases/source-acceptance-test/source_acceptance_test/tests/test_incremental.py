@@ -33,7 +33,6 @@ def future_state_configuration_fixture(inputs, base_path, test_strictness_level)
 @pytest.fixture(name="future_state")
 def future_state_fixture(future_state_configuration, test_strictness_level, configured_catalog) -> List[MutableMapping]:
     """"""
-
     future_state_path, missing_streams = future_state_configuration
     with open(str(future_state_path), "r") as file:
         contents = file.read()
