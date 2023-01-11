@@ -199,8 +199,7 @@ class Case(IncrementalStream):
                 # one field per item. This is because some cases have up to 2000 xform_ids and we don't want 2000 extra
                 # fields in the schema
                 record["xform_ids"] = ",".join(record["xform_ids"])
-                frec = flatten(record)
-                yield frec
+                yield record
         if self._cursor_value.microsecond == 0:
             # Airbyte converts the cursor_field value (datetime) to string when it saves the state and
             # our state setter parses the saved state with a format that contains microseconds
