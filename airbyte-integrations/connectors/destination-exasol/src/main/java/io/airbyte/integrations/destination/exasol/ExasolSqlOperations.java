@@ -4,12 +4,9 @@
 
 package io.airbyte.integrations.destination.exasol;
 
-import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
-
-import com.exasol.jdbc.EXAConnection;
-import com.exasol.jdbc.EXAStatement;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -51,37 +48,25 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
 
   @Override
   protected void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception {
-   if (records.isEmpty()) {
+    if (records.isEmpty()) {
       return;
     }
-
-    database.execute(connection -> {
-      File tmpFile = null;
-      try {
-        tmpFile = Files.createTempFile(tableName + "-", ".tmp").toFile();
-        writeBatchToFile(tmpFile, records);
-
-        final EXAConnection conn = connection.unwrap(EXAConnection.class);
-        final EXAStatement stmt = (EXAStatement) conn.createStatement();
-
-        stmt.execute(String.format("""
-                IMPORT INTO %s.%s
-                FROM LOCAL CSV FILE '%s'
-                ROW SEPARATOR = 'CRLF'
-                COLUMN SEPARATOR = ','\s""", schemaName, tableName, tmpFile.getAbsolutePath()));
-
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
-      } finally {
-        try {
-          if (tmpFile != null) {
-            Files.delete(tmpFile.toPath());
-          }
-        } catch (final IOException e) {
-          throw new UncheckedIOException("Failed to delete temp file " + tmpFile, e);
-        }
-      }
-    });
+    Path tmpFile = createBatchFile(tableName, records);
+    try {
+      String importStatement = String.format("""
+             IMPORT INTO %s.%s
+             FROM LOCAL CSV FILE '%s'
+             ROW SEPARATOR = 'CRLF'
+             COLUMN SEPARATOR = ','\s""", schemaName, tableName, tmpFile.toAbsolutePath().toString());
+      database.execute(connection -> connection.createStatement().execute(importStatement));
+    } finally {
+      Files.delete(tmpFile);
+    }
   }
 
+  private Path createBatchFile(String tableName, List<AirbyteRecordMessage> records) throws Exception {
+    Path tmpFile = Files.createTempFile(tableName + "-", ".tmp");
+    writeBatchToFile(tmpFile.toFile(), records);
+    return tmpFile;
+  }
 }

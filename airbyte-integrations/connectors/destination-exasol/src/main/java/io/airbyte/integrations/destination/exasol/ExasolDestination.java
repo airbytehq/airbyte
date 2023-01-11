@@ -49,7 +49,7 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+          .withMessage("Could not connect with provided configuration.\n" + e.getMessage());
     } finally {
       try {
         DataSourceFactory.close(dataSource);
@@ -61,7 +61,7 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String jdbcUrl = String.format("jdbc:exa:%s:%d",
+    final String jdbcUrl = String.format(DatabaseDriver.EXASOL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(), config.get(JdbcUtils.PORT_KEY).asInt());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
