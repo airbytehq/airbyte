@@ -13,6 +13,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -32,8 +33,12 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
     super(DRIVER_CLASS, new ExasolSQLNameTransformer(), new ExasolSqlOperations());
   }
 
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new ExasolDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
+
   public static void main(String[] args) throws Exception {
-    new IntegrationRunner(new ExasolDestination()).run(args);
+    new IntegrationRunner(ExasolDestination.sshWrappedDestination()).run(args);
   }
 
   @Override
