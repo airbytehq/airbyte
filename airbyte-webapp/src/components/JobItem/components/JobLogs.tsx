@@ -12,6 +12,7 @@ import { useGetDebugInfoJob } from "services/job/JobService";
 
 import { parseAttemptLink } from "../attemptLinkUtils";
 import { JobsWithJobs } from "../types";
+import { isCancelledAttempt } from "../utils";
 import styles from "./JobLogs.module.scss";
 import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";
@@ -26,6 +27,11 @@ const mapAttemptStatusToIcon = (attempt: AttemptRead): StatusIconStatus => {
   if (isPartialSuccess(attempt)) {
     return "warning";
   }
+
+  if (isCancelledAttempt(attempt)) {
+    return "cancelled";
+  }
+
   switch (attempt.status) {
     case AttemptStatus.running:
       return "loading";
@@ -44,7 +50,7 @@ const jobIsSynchronousJobRead = (job: SynchronousJobRead | JobsWithJobs): job is
   return !!(job as SynchronousJobRead)?.logs?.logLines;
 };
 
-const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
+export const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
   const isSynchronousJobRead = jobIsSynchronousJobRead(job);
 
   const id: number | string = (job as JobsWithJobs).job?.id ?? (job as SynchronousJobRead).id;
@@ -110,5 +116,3 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
     </>
   );
 };
-
-export default JobLogs;
