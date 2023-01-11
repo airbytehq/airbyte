@@ -14,8 +14,8 @@ import { InfoBox } from "components/ui/InfoBox";
 import { StreamReadInferredSchema } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { formatJson } from "../utils";
 import styles from "./SchemaDiffView.module.scss";
-import { formatJson } from "./utils";
 
 interface SchemaDiffViewProps {
   inferredSchema: StreamReadInferredSchema;

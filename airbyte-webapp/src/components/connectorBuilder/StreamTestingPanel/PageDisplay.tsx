@@ -1,21 +1,19 @@
-import { faWarning } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import { useField } from "formik";
 import React, { useMemo } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 
 import { FlexContainer } from "components/ui/Flex";
 import { Text } from "components/ui/Text";
-import { Tooltip } from "components/ui/Tooltip";
 
 import { StreamReadInferredSchema, StreamReadSlicesItemPagesItem } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
+import { formatJson } from "../utils";
 import styles from "./PageDisplay.module.scss";
 import { SchemaDiffView } from "./SchemaDiffView";
-import { formatJson } from "./utils";
 
 interface PageDisplayProps {
   page: StreamReadSlicesItemPagesItem;
@@ -85,11 +83,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
                   <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })}>
                     <FlexContainer direction="row" justifyContent="center">
                       {formatMessage({ id: "connectorBuilder.schemaTab" })}
-                      {field.value !== formattedSchema && (
-                        <Tooltip control={<FontAwesomeIcon icon={faWarning} className={styles.schemaConflictIcon} />}>
-                          <FormattedMessage id="connectorBuilder.differentSchemaDescription" />
-                        </Tooltip>
-                      )}
+                      {field.value !== formattedSchema && <SchemaConflictIndicator />}
                     </FlexContainer>
                   </Text>
                 )}

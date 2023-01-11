@@ -1,5 +1,4 @@
 import { faTrashCan, faCopy } from "@fortawesome/free-regular-svg-icons";
-import { faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useField } from "formik";
@@ -11,7 +10,6 @@ import Indicator from "components/Indicator";
 import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 import { Text } from "components/ui/Text";
-import { Tooltip } from "components/ui/Tooltip";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
@@ -20,8 +18,9 @@ import {
   useConnectorBuilderTestState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { formatJson } from "../StreamTestingPanel/utils";
+import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
 import { BuilderStream } from "../types";
+import { formatJson } from "../utils";
 import { AddStreamButton } from "./AddStreamButton";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderConfigView } from "./BuilderConfigView";
@@ -167,7 +166,7 @@ const StreamControls = ({
         selected={selectedTab === "schema"}
         onSelect={() => setSelectedTab("schema")}
         showErrorIndicator={hasSchemaErrors}
-        showWarningIndicator={Boolean(schema.value !== formattedDetectedSchema)}
+        showSchemaConflictIndicator={Boolean(formattedDetectedSchema && schema.value !== formattedDetectedSchema)}
       />
       <AddStreamButton
         onAddStream={(addedStreamNum) => {
@@ -192,22 +191,18 @@ const StreamTab = ({
   label,
   onSelect,
   showErrorIndicator,
-  showWarningIndicator,
+  showSchemaConflictIndicator,
 }: {
   selected: boolean;
   label: string;
   onSelect: () => void;
   showErrorIndicator?: boolean;
-  showWarningIndicator?: boolean;
+  showSchemaConflictIndicator?: boolean;
 }) => (
   <button type="button" className={classNames(styles.tab, { [styles.selectedTab]: selected })} onClick={onSelect}>
     {label}
     {showErrorIndicator && <Indicator />}
-    {showWarningIndicator && (
-      <Tooltip control={<FontAwesomeIcon icon={faWarning} className={styles.schemaConflictIcon} />}>
-        <FormattedMessage id="connectorBuilder.differentSchemaDescription" />
-      </Tooltip>
-    )}
+    {showSchemaConflictIndicator && <SchemaConflictIndicator />}
   </button>
 );
 
