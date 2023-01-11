@@ -63,7 +63,7 @@ class SecretMigratorTest {
   }
 
   @Test
-  void testMigrateSecret() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void testMigrateSecret() throws Exception {
     final JsonNode sourceSpec = Jsons.jsonNode("sourceSpec");
     final UUID sourceDefinitionId = UUID.randomUUID();
     final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()

@@ -30,7 +30,7 @@ class DefaultPostLoadExecutorTest {
   @ParameterizedTest
   @CsvSource({"true,true,1", "true,false,1", "false,true,0", "false,false,1"})
   void testPostLoadExecution(final boolean forceSecretMigration, final boolean isSecretMigration, final int expectedTimes)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
+      throws Exception {
     final ApplyDefinitionsHelper applyDefinitionsHelper = mock(ApplyDefinitionsHelper.class);
     final FeatureFlags featureFlags = mock(FeatureFlags.class);
     final JobPersistence jobPersistence = mock(JobPersistence.class);
