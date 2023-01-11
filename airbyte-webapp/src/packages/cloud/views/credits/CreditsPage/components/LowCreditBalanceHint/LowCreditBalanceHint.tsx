@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import { InfoBox } from "components/ui/InfoBox";
 
+import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
@@ -14,7 +15,9 @@ export const LowCreditBalanceHint: React.FC<React.PropsWithChildren<unknown>> = 
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
 
-  if (cloudWorkspace.remainingCredits > LOW_BALANCE_CREDIT_TRESHOLD) {
+  const isNoBillingAccount =
+    cloudWorkspace.remainingCredits <= 0 && cloudWorkspace.creditStatus === CreditStatus.POSITIVE;
+  if (isNoBillingAccount || cloudWorkspace.remainingCredits > LOW_BALANCE_CREDIT_TRESHOLD) {
     return null;
   }
 
