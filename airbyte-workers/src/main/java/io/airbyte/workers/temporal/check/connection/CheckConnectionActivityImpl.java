@@ -12,6 +12,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
@@ -60,6 +61,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   private final String airbyteVersion;
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final FeatureFlags featureFlags;
 
   public CheckConnectionActivityImpl(@Named("checkWorkerConfigs") final WorkerConfigs workerConfigs,
                                      @Named("checkProcessFactory") final ProcessFactory processFactory,
@@ -70,7 +72,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final AirbyteApiClient airbyteApiClient,
                                      @Value("${airbyte.version}") final String airbyteVersion,
                                      final AirbyteMessageSerDeProvider serDeProvider,
-                                     final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+                                     final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                     final FeatureFlags featureFlags) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
@@ -81,6 +84,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.airbyteVersion = airbyteVersion;
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
+    this.featureFlags = featureFlags;
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -135,7 +139,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           launcherConfig.getDockerImage(),
           processFactory,
           workerConfigs.getResourceRequirements(),
-          launcherConfig.getIsCustomConnector());
+          launcherConfig.getIsCustomConnector(),
+          featureFlags);
 
       final ConnectorConfigUpdater connectorConfigUpdater = new ConnectorConfigUpdater(
           airbyteApiClient.getSourceApi(),

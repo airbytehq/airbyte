@@ -1,0 +1,49 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/teradata",
+  "supportsIncremental": false,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Teradata Destination Spec",
+    "type": "object",
+    "required": ["host", "username"],
+    "additionalProperties": true,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the database.",
+        "type": "string",
+        "order": 0
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "order": 4
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 5
+      },
+      "schema": {
+        "title": "Default Schema",
+        "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
+        "type": "string",
+        "examples": ["public"],
+        "default": "public",
+        "order": 3
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 7
+      }
+    }
+  }
+}

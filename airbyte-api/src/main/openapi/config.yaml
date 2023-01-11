@@ -4730,9 +4730,13 @@ components:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
         sourceId:
-          $ref: "#/components/schemas/SourceId"
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceId"
         destinationId:
-          $ref: "#/components/schemas/DestinationId"
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationId"
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.
