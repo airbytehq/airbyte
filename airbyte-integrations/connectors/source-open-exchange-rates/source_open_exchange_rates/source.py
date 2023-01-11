@@ -89,7 +89,7 @@ class OpenExchangeRates(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"historical/{stream_slice[self.cursor_field]}.json"
+        return f"historical/{stream_slice['date']}.json"
 
 
     def _chunk_date_range(self, start_date: DateTime) -> List[Mapping[str, Any]]:
