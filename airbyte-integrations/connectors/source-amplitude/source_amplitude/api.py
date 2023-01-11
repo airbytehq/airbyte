@@ -239,9 +239,17 @@ class ActiveUsers(IncrementalAmplitudeStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_data = response.json().get(self.data_field, [])
         if response_data:
-            series = list(map(list, zip(*response_data["series"])))
-            for i, date in enumerate(response_data["xValues"]):
-                yield from [{"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}] if series else []
+            # Following the https://github.com/airbytehq/airbyte/issues/15208
+            # the additional length check of `series` objects should take place,
+            # to ensure that we have values to work with, otherwise yield []
+            series = response_data.get("series", [])
+            if len(series) > 0:
+                series = list(map(list, zip(*response_data["series"])))
+                for i, date in enumerate(response_data["xValues"]):
+                    yield from [{"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}]
+            else:
+                self.logger.info(f"Stream `{self.name}` the `series` appears to be empty. Content: {series=}")
+                yield from []
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/users"
