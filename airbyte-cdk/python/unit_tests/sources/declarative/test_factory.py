@@ -792,7 +792,7 @@ def test_validation_type_missing_required_fields():
         min_datetime: "{{ config['start_time'] + day_delta(2) }}"
       end_datetime: "{{ config['end_time'] }}"
       cursor_field: "created"
-      lookback_window: "5d"
+      lookback_window: "P5D"
       start_time_option:
         inject_into: request_parameter
         field_name: created[gte]

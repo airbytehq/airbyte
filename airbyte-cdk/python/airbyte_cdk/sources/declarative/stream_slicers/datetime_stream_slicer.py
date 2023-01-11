@@ -123,7 +123,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         """
         Partition the daterange into slices of size = step.
 
-        The start of the window is the minimum datetime between start_datetime - looback_window and the stream_state's datetime
+        The start of the window is the minimum datetime between start_datetime - lookback_window and the stream_state's datetime
         The end of the window is the minimum datetime between the start of the window and end_datetime.
 
         :param sync_mode:

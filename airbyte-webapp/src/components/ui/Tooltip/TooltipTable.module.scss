@@ -2,12 +2,12 @@
 @use "../../../scss/variables";
 
 .label {
-  color: rgba(colors.$white, 0.7);
+  color: colors.$dark-blue-200;
   padding-right: variables.$spacing-sm;
 }
 
 .light {
   .label {
-    color: rgba(colors.$dark-blue, 0.7);
+    color: colors.$dark-blue-400;
   }
 }
