@@ -260,6 +260,13 @@
                 "enum": ["JSONL"],
                 "default": "JSONL"
               },
+              "flattening": {
+                "type": "string",
+                "title": "Normalization (Flattening)",
+                "description": "Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.",
+                "default": "No flattening",
+                "enum": ["No flattening", "Root level flattening"]
+              },
               "compression": {
                 "title": "Compression",
                 "type": "object",
