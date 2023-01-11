@@ -1,4 +1,5 @@
 @use "./variables";
+@use "./colors";
 
 @mixin shadow {
   box-shadow: variables.$box-shadow;
@@ -10,4 +11,17 @@
 
 @mixin right-shadow {
   box-shadow: variables.$box-shadow-right;
+}
+
+@mixin focus-ring-style {
+  outline: 1px solid colors.$blue;
+  outline-offset: 2px;
+}
+
+@mixin focus-ring {
+  margin: variables.$spacing-xs;
+
+  &:focus-within {
+    @include focus-ring-style;
+  }
 }

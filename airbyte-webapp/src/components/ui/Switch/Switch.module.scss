@@ -1,5 +1,6 @@
 @use "scss/colors";
 @use "scss/variables";
+@use "scss/mixins";
 
 @mixin knob-transform($position, $size) {
   @if $position == left {
@@ -44,6 +45,7 @@
 .switch {
   position: relative;
   display: inline-block;
+  margin: variables.$spacing-xs;
 
   &.sizeLg {
     width: 42px;
@@ -109,6 +111,10 @@
     opacity: 0;
     width: 0;
     height: 0;
+
+    &:focus-visible ~ .slider {
+      @include mixins.focus-ring-style;
+    }
 
     &[aria-checked="true"] + .slider {
       &.variantDefault {

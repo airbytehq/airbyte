@@ -1,7 +1,10 @@
 @use "scss/colors";
 @use "scss/variables";
+@use "scss/mixins";
 
 .button {
+  @include mixins.focus-ring;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -24,14 +27,9 @@
     pointer-events: none;
   }
 
-  &:focus-visible,
   &:hover,
   &:not(.typeLight) {
     box-shadow: 0 3px 4px -2px rgba(26, 25, 77, 21%);
-  }
-
-  &:focus-visible {
-    outline: 3px solid colors.$blue-50;
   }
 
   &:disabled:not(.isLoading) {

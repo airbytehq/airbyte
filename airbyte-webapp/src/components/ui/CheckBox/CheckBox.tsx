@@ -29,7 +29,7 @@ export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, checkboxSize 
         className
       )}
     >
-      <input type="checkbox" aria-checked={indeterminate ? "mixed" : checked} {...inputProps} />
+      <input type="checkbox" aria-checked={indeterminate ? "mixed" : checked} {...inputProps} tabIndex={0} />
       {indeterminate ? (
         <FontAwesomeIcon size={checkboxSize} icon={faMinus} />
       ) : (

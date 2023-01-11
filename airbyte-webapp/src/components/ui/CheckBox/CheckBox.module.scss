@@ -1,5 +1,6 @@
 @use "scss/colors";
 @use "scss/variables";
+@use "scss/mixins";
 
 $lg-size: 18px;
 $sm-size: 14px;
@@ -14,9 +15,10 @@ $sm-size: 14px;
   color: colors.$white;
   background-color: colors.$white;
   cursor: pointer;
+  @include mixins.focus-ring;
 
   input {
-    display: none;
+    opacity: 0;
   }
 
   &.disabled {
