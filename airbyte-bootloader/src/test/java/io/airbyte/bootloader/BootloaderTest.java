@@ -35,7 +35,6 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseCheckFactory;
@@ -189,16 +188,16 @@ class BootloaderTest {
           jobsDatabaseInitializationTimeoutMs, MoreResources.readResource(DatabaseConstants.JOBS_INITIAL_SCHEMA_PATH));
       val jobsDatabaseMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
       val jobsPersistence = new DefaultJobPersistence(jobDatabase);
+      val secretPersistence = new LocalTestingSecretPersistence(configDatabase);
       val protocolVersionChecker = new ProtocolVersionChecker(jobsPersistence, airbyteProtocolRange, configRepository, definitionsProvider);
 
-      val secretsPersistence = SecretPersistence.getLongLived(configsDslContext, mockedConfigs);
       val localTestingSecretPersistence = new LocalTestingSecretPersistence(configDatabase);
 
       val secretsReader = new SecretsRepositoryReader(configRepository, new RealSecretsHydrator(localTestingSecretPersistence));
-      val secretsWriter = new SecretsRepositoryWriter(configRepository, secretsPersistence, Optional.empty());
+      val secretsWriter = new SecretsRepositoryWriter(configRepository, Optional.of(secretPersistence), Optional.empty());
 
       val spiedSecretMigrator =
-          spy(new SecretMigrator(secretsReader, secretsWriter, configRepository, jobsPersistence, secretsPersistence));
+          spy(new SecretMigrator(secretsReader, secretsWriter, configRepository, jobsPersistence, Optional.of(secretPersistence)));
 
       val applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, definitionsProvider, jobsPersistence);
       var postLoadExecutor = new DefaultPostLoadExecutor(applyDefinitionsHelper, mockedFeatureFlags, jobsPersistence, null);

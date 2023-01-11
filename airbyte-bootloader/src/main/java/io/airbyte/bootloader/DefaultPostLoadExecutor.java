@@ -7,11 +7,8 @@ package io.airbyte.bootloader;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.PostLoadExecutor;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.validation.json.JsonValidationException;
 import jakarta.inject.Singleton;
-import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -45,7 +42,7 @@ public class DefaultPostLoadExecutor implements PostLoadExecutor {
   }
 
   @Override
-  public void execute() throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void execute() throws Exception {
     applyDefinitionsHelper.apply();
 
     if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {

@@ -66,9 +66,9 @@ public class ApplicationBeanFactory {
 
   @Singleton
   public SecretsRepositoryWriter secretsRepositoryWriter(final ConfigRepository configRepository,
-                                                         @Named("longLivedSecretPersistence") final Optional<SecretPersistence> longLivedSecretPersistence,
+                                                         @Named("secretPersistence") final Optional<SecretPersistence> secretPersistence,
                                                          @Named("ephemeralSecretPersistence") final Optional<SecretPersistence> ephemeralSecretPersistence) {
-    return new SecretsRepositoryWriter(configRepository, longLivedSecretPersistence, ephemeralSecretPersistence);
+    return new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
   }
 
 }

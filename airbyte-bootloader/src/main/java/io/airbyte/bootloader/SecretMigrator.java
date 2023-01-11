@@ -11,7 +11,6 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
@@ -45,7 +44,7 @@ public class SecretMigrator {
                         final SecretsRepositoryWriter secretsWriter,
                         final ConfigRepository configRepository,
                         final JobPersistence jobPersistence,
-                        @Named("longLivedSecretPersistence") final Optional<SecretPersistence> secretPersistence) {
+                        @Named("secretPersistence") final Optional<SecretPersistence> secretPersistence) {
     this.secretsReader = secretsReader;
     this.secretsWriter = secretsWriter;
     this.configRepository = configRepository;
@@ -67,12 +66,15 @@ public class SecretMigrator {
    * Then for all the secret that are stored in a plain text format, it will save the plain text in
    * the secret manager and store the coordinate in the config DB.
    */
-  public void migrateSecrets() throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void migrateSecrets() throws Exception {
     if (secretPersistence.isEmpty()) {
       log.info("No secret persistence is provided, the migration won't be run ");
 
       return;
+    } else {
+      secretPersistence.get().initialize();
     }
+
     final List<StandardSourceDefinition> standardSourceDefinitions = configRepository.listStandardSourceDefinitions(true);
 
     final Map<UUID, ConnectorSpecification> definitionIdToSourceSpecs = standardSourceDefinitions
