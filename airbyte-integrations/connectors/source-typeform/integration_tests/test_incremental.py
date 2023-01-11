@@ -34,7 +34,7 @@ def configured_catalog():
 def test_incremental_sync(config, configured_catalog):
     def get_form_id(record):
         referer = record.get("metadata", {}).get("referer")
-        return referer.rsplit("/")[-1] if referer else None
+        return urlparse.urlparse(referer).path.split("/")[-1] if referer else None
 
     def timestamp_from_datetime(value):
         return pendulum.from_format(value, "YYYY-MM-DDTHH:mm:ss[Z]").int_timestamp
