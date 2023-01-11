@@ -19,6 +19,7 @@ def commonConfigs = [
 node {
     download = true
     version = nodeVersion
+    npmInstallCommand = 'ci'
 }
 
 npm_run_build {

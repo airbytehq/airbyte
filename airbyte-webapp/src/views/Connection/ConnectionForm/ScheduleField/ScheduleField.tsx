@@ -135,7 +135,7 @@ export const ScheduleField: React.FC = () => {
     <Field name="scheduleData">
       {({ field, meta, form }: FieldProps<ConnectionScheduleData>) => (
         <>
-          <FlexContainer alignItems="flex-start">
+          <FlexContainer alignItems="center">
             <div className={styles.leftFieldCol}>
               <ControlLabels
                 className={styles.connectorLabel}
@@ -143,7 +143,7 @@ export const ScheduleField: React.FC = () => {
                 label={formatMessage({
                   id: "form.frequency",
                 })}
-                message={formatMessage({
+                infoTooltipContent={formatMessage({
                   id: "form.frequency.message",
                 })}
               />
@@ -161,7 +161,7 @@ export const ScheduleField: React.FC = () => {
             </div>
           </FlexContainer>
           {isCron(form) && (
-            <FlexContainer alignItems="flex-start">
+            <FlexContainer alignItems="center">
               <div className={styles.leftFieldCol}>
                 <ControlLabels
                   className={styles.connectorLabel}
@@ -170,7 +170,7 @@ export const ScheduleField: React.FC = () => {
                   label={formatMessage({
                     id: "form.cronExpression",
                   })}
-                  message={formatMessage(
+                  infoTooltipContent={formatMessage(
                     {
                       id: "form.cronExpression.message",
                     },
@@ -186,7 +186,7 @@ export const ScheduleField: React.FC = () => {
               </div>
 
               <div className={styles.rightFieldCol} style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
-                <FlexContainer alignItems="flex-start">
+                <FlexContainer alignItems="center">
                   <Input
                     disabled={mode === "readonly"}
                     error={!!meta.error}
