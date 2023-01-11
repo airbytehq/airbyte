@@ -43,7 +43,7 @@ const Bar = styled.nav`
 
 const Menu = styled.ul`
   padding: 0;
-  margin: 20px 0 40px 0;
+  margin: 20px 0 0 0;
   width: 100%;
 `;
 
@@ -87,12 +87,11 @@ const Logo = styled.img`
 const LogOut = styled.div`
   width: 100%;
   box-sizing: border-box;
-  //  padding-left: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #6b6b6f;
-  margin: 20px 0;
+  margin: 20px 0 40px 0;
   &:hover {
     cursor: pointer;
     color: #4f46e5;
@@ -122,6 +121,13 @@ const MenuItemIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   line-height: 16px;
   font-weight: normal;
+`;
+
+const UserDetail = styled.div`
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 15px;
+  color: #aaaaaa;
 `;
 
 // const SettingIcon = styled(FontAwesomeIcon)`
@@ -167,7 +173,7 @@ export const getPopoutStyles = (isOpen?: boolean) => {
 const SideBar: React.FC = () => {
   // const config = useConfig();
   // const workspace = useCurrentWorkspace();
-  const { removeUser } = useUser();
+  const { removeUser, user } = useUser();
   const { push } = useRouter();
   return (
     <Bar>
@@ -315,6 +321,11 @@ const SideBar: React.FC = () => {
             <Version primary />
           </li>
         ) : null} */}
+        <UserDetail>
+          {`${user.firstName} ${user.lastName}`}
+          <br />
+          {`(${user.account})`}
+        </UserDetail>
       </Menu>
     </Bar>
   );
