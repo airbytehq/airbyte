@@ -7,7 +7,7 @@
   },
   "scripts": {
     "cypress:open": "cypress open",
-    "cypress:ci": "CYPRESS_BASE_URL=http://localhost:8000 cypress run",
+    "cypress:ci": "CYPRESS_BASE_URL=http://localhost:8000 cypress run --parallel",
     "cypress:ci:record": "CYPRESS_BASE_URL=http://localhost:8000 cypress run --record --key $CYPRESS_KEY --parallel",
     "createdbsource": "docker run --rm -d -p 5433:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci_source --name airbyte_ci_pg_source postgres",
     "createdbdestination": "docker run --rm -d -p 5434:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci_destination --name airbyte_ci_pg_destination postgres",
