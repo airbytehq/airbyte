@@ -129,23 +129,23 @@ MANIFEST_WITH_REFERENCES = {
         "retriever": {
             "type": "SimpleRetriever",
             "record_selector": {
-                "$ref": "*ref(definitions.selector)"
+                "$ref": "#/definitions/selector"
             },
             "paginator": {
                 "type": "NoPagination"
             },
             "requester": {
-                "$ref": "*ref(definitions.requester)"
+                "$ref": "#/definitions/requester"
             }
         },
         "base_stream": {
             "type": "DeclarativeStream",
             "retriever": {
-                "$ref": "*ref(definitions.retriever)"
+                "$ref": "#/definitions/retriever"
             }
         },
         "ranks_stream": {
-            "$ref": "*ref(definitions.base_stream)",
+            "$ref": "#/definitions/base_stream",
             "$options": {
                 "name": "ranks",
                 "primary_key": "id",
@@ -153,7 +153,7 @@ MANIFEST_WITH_REFERENCES = {
             }
         }
     },
-    "streams": ["*ref(definitions.ranks_stream)"],
+    "streams": ["#/definitions/ranks_stream"],
     "check": {
         "type": "CheckStream",
         "stream_names": ["ranks"]
@@ -293,7 +293,7 @@ def test_read_streams_invalid_reference():
                 }
             },
             "ranks_stream": {
-                "$ref": "*ref(definitions.base_stream)",
+                "$ref": "#/definitions/base_stream",
                 "$options": {
                     "name": "ranks",
                     "primary_key": "id",
@@ -301,7 +301,7 @@ def test_read_streams_invalid_reference():
                 }
             }
         },
-        "streams": ["*ref(definitions.ranks_stream)"],
+        "streams": ["#/definitions/ranks_stream"],
         "check": {
             "type": "CheckStream",
             "stream_names": ["ranks"]
