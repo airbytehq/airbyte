@@ -8,7 +8,10 @@ import { FlexContainer } from "components/ui/Flex";
 import { Text } from "components/ui/Text";
 
 import { StreamReadInferredSchema, StreamReadSlicesItemPagesItem } from "core/request/ConnectorBuilderClient";
-import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  useConnectorBuilderFormState,
+  useConnectorBuilderTestState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
 import { formatJson } from "../utils";
@@ -30,6 +33,7 @@ interface TabData {
 export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, inferredSchema }) => {
   const { formatMessage } = useIntl();
 
+  const { editorView } = useConnectorBuilderFormState();
   const { testStreamIndex } = useConnectorBuilderTestState();
   const [field] = useField(`streams[${testStreamIndex}].schema`);
 
@@ -83,7 +87,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
                   <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })}>
                     <FlexContainer direction="row" justifyContent="center">
                       {formatMessage({ id: "connectorBuilder.schemaTab" })}
-                      {field.value !== formattedSchema && <SchemaConflictIndicator />}
+                      {editorView === "ui" && field.value !== formattedSchema && <SchemaConflictIndicator />}
                     </FlexContainer>
                   </Text>
                 )}

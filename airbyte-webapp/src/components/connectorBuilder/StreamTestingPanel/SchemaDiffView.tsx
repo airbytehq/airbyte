@@ -12,7 +12,10 @@ import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { InfoBox } from "components/ui/InfoBox";
 
 import { StreamReadInferredSchema } from "core/request/ConnectorBuilderClient";
-import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  useConnectorBuilderFormState,
+  useConnectorBuilderTestState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { formatJson } from "../utils";
 import styles from "./SchemaDiffView.module.scss";
@@ -58,22 +61,27 @@ function getDiff(existingSchema: string | undefined, detectedSchema: object): Di
 
 export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }) => {
   const { testStreamIndex } = useConnectorBuilderTestState();
+  const { editorView } = useConnectorBuilderFormState();
   const [field, , helpers] = useField(`streams[${testStreamIndex}].schema`);
   const formattedSchema = useMemo(() => inferredSchema && formatJson(inferredSchema), [inferredSchema]);
 
-  const [schemaDiff, setSchemaDiff] = useState<Diff>({ changes: [], lossyOverride: false });
+  const [schemaDiff, setSchemaDiff] = useState<Diff>(() =>
+    editorView === "ui" ? getDiff(field.value, inferredSchema) : { changes: [], lossyOverride: false }
+  );
 
   useDebounce(
     () => {
-      setSchemaDiff(getDiff(field.value, inferredSchema));
+      if (editorView === "ui") {
+        setSchemaDiff(getDiff(field.value, inferredSchema));
+      }
     },
     250,
-    [field.value, inferredSchema]
+    [field.value, inferredSchema, editorView]
   );
 
   return (
     <FlexContainer direction="column">
-      {field.value && field.value !== formattedSchema && (
+      {editorView === "ui" && field.value && field.value !== formattedSchema && (
         <InfoBox icon={faWarning} className={styles.infoBox}>
           <FlexItem grow>
             <FlexContainer direction="column">
@@ -128,29 +136,30 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
       )}
       <FlexItem>
         {!schemaDiff.changes.length ? (
-          <pre>{formattedSchema}</pre>
+          <pre className={styles.diffLine}>
+            {formattedSchema
+              .split("\n")
+              .map((line) => ` ${line}`)
+              .join("\n")}
+          </pre>
         ) : (
           schemaDiff.changes.map((change, changeIndex) => (
-            <React.Fragment key={changeIndex}>
+            <pre
+              className={classNames(
+                {
+                  [styles.added]: change.added,
+                  [styles.removed]: change.removed,
+                },
+                styles.diffLine
+              )}
+              key={changeIndex}
+            >
               {change.value
                 .split("\n")
-                .slice(0, -1)
-                .map((line, lineIndex) => (
-                  <pre
-                    className={classNames(
-                      {
-                        [styles.added]: change.added,
-                        [styles.removed]: change.removed,
-                      },
-                      styles.diffLine
-                    )}
-                    key={lineIndex}
-                  >
-                    {change.added ? "+" : change.removed ? "-" : " "}
-                    {line}
-                  </pre>
-                ))}
-            </React.Fragment>
+                .map((line) => (line === "" ? undefined : `${change.added ? "+" : change.removed ? "-" : " "}${line}`))
+                .filter(Boolean)
+                .join("\n")}
+            </pre>
           ))
         )}
       </FlexItem>
