@@ -14,18 +14,22 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
   basic_read:
-    bypass_reason: "
-      There is the `Events` stream which generates millions of thousands records/hour, 
-      and was removed previously from `configured_catalog`, because it takes more than 10 hours just to sync a single day.
-      This test is skipped because we should have a workaround for SAT to bypass such large and heavy streams or provide the custom catalog instead.
-      "
+    tests:
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: "events"
+            bypass_reason: "The stream is too large, skipped."
+          - name: "annotations"
+            bypass_reason: "Stream has no records"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
   incremental: 
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_without_events.json"
-      future_state:
-        bypass_reason: "Unable to use 'state_path' because Amplitude returns an error when specifying a date in the future."
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_without_events.json"
+        future_state:
+          bypass_reason: "Unable to use 'state_path' because Amplitude returns an error when specifying a date in the future."
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_without_events.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_without_events.json"
