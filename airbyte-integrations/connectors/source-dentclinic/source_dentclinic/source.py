@@ -14,23 +14,24 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-
-class DentclinicClinicsStream(HttpStream, ABC):
+class DentclinicStaticStream(HttpStream, ABC):
     """Base stream"""
     primary_key = None
-    state_checkpoint_interval = 1
-
+    static_endpoint = None
+    endpoint_data_path = None
     url_base = "https://dcm-nhn.dentclinicmanager.com/API/DCMConnect.asmx?WSDL"
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.api_key = config.get("api_key")
 
+    def get_api_key(self):
+        return self.api_key
+
     def request_headers(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {'Content-Type': 'application/soap+xml; charset=utf-8'}
-
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -44,9 +45,9 @@ class DentclinicClinicsStream(HttpStream, ABC):
         return f"""<?xml version="1.0" encoding="utf-8"?>
             <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
                 <soap12:Body>
-                    <GetClinics xmlns="http://tempuri.org/">
+                    <{self.static_endpoint} xmlns="http://tempuri.org/">
                         <key>{self.api_key}</key>
-                    </GetClinics>
+                    </{self.static_endpoint}>
                 </soap12:Body>
             </soap12:Envelope>
         """
@@ -56,7 +57,7 @@ class DentclinicClinicsStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
-        path = ['soap:Envelope', 'soap:Body', 'GetClinicsResponse', 'GetClinicsResult', 'ClinicModel']
+        path = self.endpoint_data_path
         data = xmltodict.parse(response.text).copy()
         for key in path:
             data = data.get(key)
@@ -104,9 +105,11 @@ class DentclinicStream(HttpStream, ABC):
             </soap12:Envelope>
         """
         headers = {'Content-Type': 'application/soap+xml; charset=utf-8'}
-        response = requests.post(f"{self.url_base}", data=payload_clinics, headers=headers)
+        response = requests.post(
+            f"{self.url_base}", data=payload_clinics, headers=headers)
 
-        clinics = xmltodict.parse(response.text)['soap:Envelope']['soap:Body']['GetClinicsResponse']['GetClinicsResult']['ClinicModel']
+        clinics = xmltodict.parse(response.text)[
+            'soap:Envelope']['soap:Body']['GetClinicsResponse']['GetClinicsResult']['ClinicModel']
         clinic_ids = [x.get('Id') for x in clinics]
         return iter(clinic_ids)
 
@@ -153,7 +156,8 @@ class DentclinicStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
-        path = ['soap:Envelope', 'soap:Body', 'GetBookingsResponse', 'GetBookingsResult', 'BookingModel']
+        path = ['soap:Envelope', 'soap:Body', 'GetBookingsResponse',
+                'GetBookingsResult', 'BookingModel']
         data = xmltodict.parse(response.text).copy()
         for key in path:
             data = data.get(key)
@@ -182,8 +186,31 @@ class Bookings(DentclinicStream):
     def http_method(self) -> str:
         return "POST"
 
-class Clinics(DentclinicClinicsStream):
+
+class Clinics(DentclinicStaticStream):
     primary_key = "Id"
+    static_endpoint = 'GetClinics'
+    endpoint_data_path = ['soap:Envelope', 'soap:Body',
+                          'GetClinicsResponse', 'GetClinicsResult', 'ClinicModel']
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "clinics". Required.
+        """
+        return ""
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+
+class Services(DentclinicStaticStream):
+    primary_key = "Id"
+    static_endpoint = 'GetServices'
+    endpoint_data_path = ['soap:Envelope', 'soap:Body',
+                          'GetServicesResponse', 'GetServicesResult', 'ServiceModel']
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -215,4 +242,4 @@ class SourceDentclinic(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Bookings(config=config), Clinics(config=config)]
+        return [Bookings(config=config), Clinics(config=config), Services(config=config)]
