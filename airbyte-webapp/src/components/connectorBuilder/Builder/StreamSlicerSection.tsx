@@ -131,7 +131,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
               type="string"
               path={buildPath("lookback_window")}
               label="Lookback window"
-              tooltip="How many days before the start_datetime to read data for, e.g. P1M for looking back one month"
+              tooltip="Time interval (ISO 8601 duration) before the start_datetime to read data for, e.g. P1M for looking back one month"
               optional
             />
             <ToggleGroupField<RequestOption>
