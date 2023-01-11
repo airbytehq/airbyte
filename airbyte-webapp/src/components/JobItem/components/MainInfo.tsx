@@ -12,15 +12,15 @@ import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/Airbyte
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
 import { getJobStatus } from "../JobItem";
-import AttemptDetails from "./AttemptDetails";
+import { AttemptDetails } from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
 import { ResetStreamsDetails } from "./ResetStreamDetails";
 
 const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
-  (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job.configType;
+  (job as SynchronousJobRead).configType ?? job.job.configType;
 
 const getJobCreatedAt = (job: SynchronousJobRead | JobsWithJobs) =>
-  (job as SynchronousJobRead).createdAt ?? (job as JobsWithJobs).job.createdAt;
+  (job as SynchronousJobRead).createdAt ?? job.job.createdAt;
 
 const partialSuccessCheck = (attempts: AttemptRead[]) => {
   if (attempts.length > 0 && attempts[attempts.length - 1].status === JobStatus.failed) {
@@ -44,8 +44,10 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   const isPartialSuccess = partialSuccessCheck(attempts);
 
   const statusIcon = useMemo(() => {
-    if (jobStatus === JobStatus.cancelled || (!isPartialSuccess && isFailed)) {
+    if (!isPartialSuccess && isFailed) {
       return <StatusIcon status="error" />;
+    } else if (jobStatus === JobStatus.cancelled) {
+      return <StatusIcon status="cancelled" />;
     } else if (jobStatus === JobStatus.running) {
       return <StatusIcon status="loading" />;
     } else if (jobStatus === JobStatus.succeeded) {

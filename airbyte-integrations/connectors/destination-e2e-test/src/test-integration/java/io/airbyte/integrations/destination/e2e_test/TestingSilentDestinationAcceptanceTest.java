@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.e2e_test.TestingDestinations.TestDestinationType;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Collections;
 import java.util.List;
 

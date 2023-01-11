@@ -23,7 +23,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
-    implementation ('com.github.airbytehq:json-avro-converter:1.0.1') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     testImplementation project(':airbyte-integrations:bases:standard-destination-test')
 

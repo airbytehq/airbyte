@@ -4,9 +4,9 @@
 
 package io.airbyte.db;
 
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Optional;
 
 public class IncrementalUtils {

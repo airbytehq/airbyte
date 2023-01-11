@@ -34,13 +34,13 @@ public class Db2SourceOperations extends JdbcSourceOperations {
 
   /* Helpers */
 
-  private void setFields(ResultSet queryContext, int index, ObjectNode jsonNode) throws SQLException {
+  private void setFields(final ResultSet queryContext, final int index, final ObjectNode jsonNode) throws SQLException {
     try {
       queryContext.getObject(index);
       if (!queryContext.wasNull()) {
-        setJsonField(queryContext, index, jsonNode);
+        copyToJsonField(queryContext, index, jsonNode);
       }
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       if (DB2_UNIQUE_NUMBER_TYPES.contains(queryContext.getMetaData().getColumnTypeName(index))) {
         db2UniqueTypes(queryContext, index, jsonNode);
       } else {
@@ -49,9 +49,9 @@ public class Db2SourceOperations extends JdbcSourceOperations {
     }
   }
 
-  private void db2UniqueTypes(ResultSet resultSet, int index, ObjectNode jsonNode) throws SQLException {
-    String columnType = resultSet.getMetaData().getColumnTypeName(index);
-    String columnName = resultSet.getMetaData().getColumnName(index);
+  private void db2UniqueTypes(final ResultSet resultSet, final int index, final ObjectNode jsonNode) throws SQLException {
+    final String columnType = resultSet.getMetaData().getColumnTypeName(index);
+    final String columnName = resultSet.getMetaData().getColumnName(index);
     if (DB2_UNIQUE_NUMBER_TYPES.contains(columnType)) {
       putDecfloat(jsonNode, columnName, resultSet, index);
     }
