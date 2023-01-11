@@ -1,4 +1,5 @@
-import { connectorsIds } from "commands/common";
+// import { connectorsIds } from "commands/common";
+import { ConnectorIds } from "../../../airbyte-webapp/src/utils/connectors/constants";
 import { initialSetupCompleted } from "commands/workspaces";
 import {
   clickUpgradeAllButton,
@@ -13,21 +14,21 @@ describe("Source settings main actions", () => {
   });
   it("downgrades a source version and upgrades it through the input", () => {
     goToSettingsSourcesTab();
-    editVersionByConnectorName("source", connectorsIds.sources.AwsCloudTrail, "0.1.0");
+    editVersionByConnectorName("source", ConnectorIds.Sources.AwsCloudTrail, "0.1.0");
 
     goToSettingsSourcesTab();
-    editVersionByConnectorName("source", connectorsIds.sources.AwsCloudTrail, "0.1.1");
+    editVersionByConnectorName("source", ConnectorIds.Sources.AwsCloudTrail, "0.1.1");
   });
   it("downgrades a source version and upgrades it through the button", () => {
     goToSettingsSourcesTab();
-    editVersionByConnectorName("source", connectorsIds.sources.AwsCloudTrail, "0.1.0");
+    editVersionByConnectorName("source", ConnectorIds.Sources.AwsCloudTrail, "0.1.0");
 
     goToSettingsSourcesTab();
-    editVersionByConnectorName("source", connectorsIds.sources.AwsCloudTrail);
+    editVersionByConnectorName("source", ConnectorIds.Sources.AwsCloudTrail);
   });
 
   it("downgrades a source version and upgrades all sources through 'upgrade all' button", () => {
-    editVersionByConnectorName("source", connectorsIds.sources.AwsCloudTrail, "0.1.0");
+    editVersionByConnectorName("source", ConnectorIds.Sources.AwsCloudTrail, "0.1.0");
     clickUpgradeAllButton();
   });
 });
@@ -38,16 +39,16 @@ describe("Destination settings main actions", () => {
   });
   it("downgrades a destination version and upgrades it through the input", () => {
     goToSettingsDestinationTab();
-    editVersionByConnectorName("destination", connectorsIds.destinations.AwsDatalake, "0.1.0");
+    editVersionByConnectorName("destination", ConnectorIds.Destinations.AwsDatalake, "0.1.0");
 
     goToSettingsDestinationTab();
-    editVersionByConnectorName("destination", connectorsIds.destinations.AwsDatalake, "0.1.1");
+    editVersionByConnectorName("destination", ConnectorIds.Destinations.AwsDatalake, "0.1.1");
   });
   it("downgrades a destination version and upgrades it through the button", () => {
     goToSettingsDestinationTab();
-    editVersionByConnectorName("destination", connectorsIds.destinations.AwsDatalake, "0.1.0");
+    editVersionByConnectorName("destination", ConnectorIds.Destinations.AwsDatalake, "0.1.0");
 
     goToSettingsDestinationTab();
-    editVersionByConnectorName("destination", connectorsIds.destinations.AwsDatalake);
+    editVersionByConnectorName("destination", ConnectorIds.Destinations.AwsDatalake);
   });
 });
