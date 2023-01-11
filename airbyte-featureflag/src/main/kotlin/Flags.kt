@@ -16,7 +16,25 @@ object AutoDetectSchema : EnvVar(envVar = "AUTO_DETECT_SCHEMA")
 object NeedStateValidation : EnvVar(envVar = "NEED_STATE_VALIDATION")
 object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
 
-object FieldSelectionWorkspaces : EnvVar(envVar = "FIELD_SELECTION_WORKSPACES")
+object FieldSelectionWorkspaces : EnvVar(envVar = "FIELD_SELECTION_WORKSPACES") {
+    override fun enabled(ctx: Context): Boolean {
+        val workspaces: List<String> = fetcher(key)
+            ?.takeIf { it.isNotEmpty() }
+            ?.split(",")
+            ?: listOf()
+
+        val workspaceIds: List<String> = when (ctx) {
+            is Multi -> ctx.contexts.filterIsInstance<Workspace>().map { it.key }
+            is Workspace -> listOf(ctx.key)
+            else -> listOf()
+        }
+
+        return when (workspaceIds.any { it in workspaces }) {
+            true -> true
+            else -> default
+        }
+    }
+}
 
 /**
  * Flag is a sealed class that all feature-flags must inherit from.
@@ -66,7 +84,7 @@ open class EnvVar internal constructor(
     envVar: String,
     default: Boolean = false,
     attrs: Map<String, String> = mapOf(),
-    private val fetcher: (String) -> String?,
+    protected val fetcher: (String) -> String?,
 ) : Flag(key = envVar, default = default, attrs = attrs) {
 
     /**
@@ -81,12 +99,12 @@ open class EnvVar internal constructor(
         envVar: String,
         default: Boolean = false,
         attrs: Map<String, String> = mapOf(),
-    ) : this(envVar, default, attrs, { s -> System.getenv(s) })
+    ) : this(envVar = envVar, default = default, attrs = attrs, fetcher = { s -> System.getenv(s) })
 
     /**
      * Returns true if, and only if, the environment-variable is defined and evaluates to "true".  Otherwise, returns false.
      */
-    internal fun enabled(): Boolean {
+    internal open fun enabled(ctx: Context): Boolean {
         return fetcher(key)
             ?.takeIf { it.isNotEmpty() }
             ?.let { it.toBoolean() }

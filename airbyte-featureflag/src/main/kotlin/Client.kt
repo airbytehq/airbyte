@@ -58,7 +58,7 @@ class ConfigFileClient(config: Path) : FeatureFlagClient {
 
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {
-            is EnvVar -> flag.enabled()
+            is EnvVar -> flag.enabled(ctx)
             else -> lock.read { flags[flag.key]?.enabled ?: flag.default }
         }
     }
@@ -73,7 +73,7 @@ class ConfigFileClient(config: Path) : FeatureFlagClient {
 class LaunchDarklyClient(private val client: LDClient) : FeatureFlagClient {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {
-            is EnvVar -> flag.enabled()
+            is EnvVar -> flag.enabled(ctx)
             else -> client.boolVariation(flag.key, ctx.toLDUser(), flag.default)
         }
     }
@@ -94,7 +94,7 @@ class TestClient(val values: Map<String, Boolean>) : FeatureFlagClient {
                 // instead of fetching from the environment variables
                 EnvVar(envVar = flag.key, default = flag.default, attrs = flag.attrs) {
                     values[flag.key]?.toString() ?: flag.default.toString()
-                }.enabled()
+                }.enabled(ctx)
             }
 
             else -> values[flag.key] ?: flag.default
