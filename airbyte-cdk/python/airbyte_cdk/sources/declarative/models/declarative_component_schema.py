@@ -136,9 +136,9 @@ class OAuthAuthenticator(BaseModel):
     client_secret: str
     refresh_token: str
     token_refresh_endpoint: str
-    access_token_name: Optional[str] = None
-    expires_in_name: Optional[str] = None
-    grant_type: Optional[str] = None
+    access_token_name: Optional[str] = "access_token"
+    expires_in_name: Optional[str] = "expires_in"
+    grant_type: Optional[str] = "refresh_token"
     refresh_request_body: Optional[Dict[str, Any]] = None
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[str] = None

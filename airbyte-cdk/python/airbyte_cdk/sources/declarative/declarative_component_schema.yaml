@@ -91,8 +91,10 @@ definitions:
         type: string
         enum: [BasicHttpAuthenticator]
       username:
+        description: The username that will be combined with the password, base64 encoded and used to make requests
         type: string
       password:
+        description: The password that will be combined with the username, base64 encoded and used to make requests
         type: string
         default: ""
       $options:
@@ -399,10 +401,13 @@ definitions:
         type: string
       access_token_name:
         type: string
+        default: "access_token"
       expires_in_name:
         type: string
+        default: "expires_in"
       grant_type:
         type: string
+        default: "refresh_token"
       refresh_request_body:
         type: object
         additionalProperties: true
@@ -413,6 +418,7 @@ definitions:
       token_expiry_date:
         type: string
       token_expiry_date_format:
+        description: The format of the datetime; provide it if expires_in is returned in datetime instead of seconds
         type: string
       $options:
         type: object
@@ -783,6 +789,7 @@ definitions:
         type: string
         enum: [OffsetIncrement]
       page_size:
+        description: The number of records to request
         anyOf:
           - type: integer
           - type: string
@@ -800,6 +807,7 @@ definitions:
         type: string
         enum: [PageIncrement]
       page_size:
+        description: The number of records to request
         type: integer
       start_from_page:
         type: integer
@@ -853,6 +861,7 @@ definitions:
         type: string
         enum: [RecordFilter]
       condition:
+        description: The predicate to filter a record. Records will be removed if evaluated to False
         type: string
         default: ""
       $options:
