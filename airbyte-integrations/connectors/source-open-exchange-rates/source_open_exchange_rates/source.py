@@ -27,7 +27,7 @@ class OpenExchangeRates(HttpStream, ABC):
         super().__init__(**kwargs)
 
         self.base = base
-        self.start_date = start_date
+        self.start_date = pendulum.parse(start_date)
         self.app_id = app_id
         self._cursor_value = None
 
