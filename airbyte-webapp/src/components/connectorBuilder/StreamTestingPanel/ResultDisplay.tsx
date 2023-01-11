@@ -34,7 +34,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ slices, className 
       )}
       <PageDisplay className={styles.pageDisplay} page={page} />
       {slice.pages.length > 1 && (
-        <div className={styles.paginator}>
+        <div className={styles.paginator} data-testid="test-pages">
           <Text className={styles.pageLabel}>Page:</Text>
           <Paginator numPages={numPages} onPageChange={setSelectedPage} selectedPage={selectedPage} />
         </div>

@@ -16,13 +16,13 @@ export const CreateConnectionNameField = () => {
     <Section title={<FormattedMessage id="connection.title" />}>
       <Field name="name">
         {({ field, meta }: FieldProps<string>) => (
-          <FlexContainer alignItems="flex-start">
+          <FlexContainer alignItems="center">
             <div className={styles.leftFieldCol}>
               <ControlLabels
                 nextLine
                 error={!!meta.error && meta.touched}
                 label={<FormattedMessage id="form.connectionName" />}
-                message={formatMessage({
+                infoTooltipContent={formatMessage({
                   id: "form.connectionName.message",
                 })}
               />
