@@ -69,7 +69,7 @@ class OpenExchangeRates(HttpStream, ABC):
     ) -> Iterable[Mapping]:
         response_json = response.json()
 
-        latest_record_timestamp = pendulum.from_timestamp(response_json['timestamp'])
+        latest_record_timestamp = response_json['timestamp']
 
         if self._cursor_value:
             self._cursor_value = max(self._cursor_value, latest_record_timestamp)
