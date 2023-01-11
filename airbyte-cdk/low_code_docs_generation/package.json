@@ -1,0 +1,16 @@
+{
+  "name": "low_code_docs_generation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "generate": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "handlebars": "^4.7.7",
+    "lodash": "^4.17.21",
+    "yaml": "^2.2.1"
+  }
+}

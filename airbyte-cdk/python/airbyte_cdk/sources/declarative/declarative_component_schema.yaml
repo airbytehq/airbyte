@@ -61,7 +61,19 @@ definitions:
         type: object
         additionalProperties: true
   ApiKeyAuthenticator:
-    description: Authenticator for requests requiring an api token
+    description: |
+      The `ApiKeyAuthenticator` sets an HTTP header on outgoing requests.
+    title: "ApiKeyAuthenticator"
+    examples:
+      - |
+        The following definition will set the header "Authorization" with a value "Bearer hello":
+
+        ```yaml
+        authenticator:
+          type: "ApiKeyAuthenticator"
+          header: "Authorization"
+          api_token: "Bearer hello"
+        ```
     type: object
     required:
       - type
@@ -89,7 +101,19 @@ definitions:
       password:
         type: string
   BearerAuthenticator:
-    description: Authenticator for requests authenticated with a Bearer token
+    description: |
+      The `BearerAuthenticator` is a specialized `ApiKeyAuthenticator` that always sets the header "Authorization" with the value "Bearer {token}".
+
+      More information on bearer authentication can be found [here](https://swagger.io/docs/specification/authentication/bearer-authentication/).
+    examples:
+      - |
+        The following definition will set the header "Authorization" with a value "Bearer hello"
+
+        ```yaml
+        authenticator:
+          type: "BearerAuthenticator"
+          api_token: "hello"
+        ```
     type: object
     required:
       - type
@@ -420,7 +444,13 @@ definitions:
       token_expiry_date:
         type: string
   DeclarativeStream:
-    description: A stream whose behavior is described by a set of declarative low code components
+    description: |
+      Streams define the schema of the data to sync, as well as how to read it from the underlying API source.
+      A stream generally corresponds to a resource within the API. They are analogous to tables for a relational database source.
+
+      By default, the schema of a stream's data is defined as a [JSONSchema](https://json-schema.org/) file in `<source_connector_name>/schemas/<stream_name>.json`. 
+
+      Alternately, the stream's data schema can be stored in YAML format inline in the YAML file, by including the optional `schema_loader` key. If the data schema is provided inline, any schema on disk for that stream will be ignored.
     type: object
     additionalProperties: true
     required:
@@ -541,7 +571,121 @@ definitions:
         type: object
         additionalProperties: true
   DpathExtractor:
-    description: Record extractor that searches a decoded response over a path defined as an array of fields
+    description: |
+      The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
+
+      ## Common recipes:
+
+      Here are some common patterns:
+
+      ### Selecting the whole response
+
+      If the root of the response is an array containing the records, the records can be extracted using the following definition:
+
+      ```yaml
+      selector:
+        extractor:
+          field_pointer: [ ]
+      ```
+
+      If the root of the response is a json object representing a single record, the record can be extracted and wrapped in an array.
+      For example, given a response body of the form
+
+      ```json
+      {
+        "id": 1
+      }
+      ```
+
+      and a selector
+
+      ```yaml
+      selector:
+        extractor:
+          field_pointer: [ ]
+      ```
+
+      The selected records will be
+
+      ```json
+      [
+        {
+          "id": 1
+        }
+      ]
+      ```
+
+      ### Selecting a field
+
+      Given a response body of the form
+
+      ```
+      {
+        "data": [{"id": 0}, {"id": 1}],
+        "metadata": {"api-version": "1.0.0"}
+      }
+      ```
+
+      and a selector
+
+      ```yaml
+      selector:
+        extractor:
+          field_pointer: [ "data" ]
+      ```
+
+      The selected records will be
+
+      ```json
+      [
+        {
+          "id": 0
+        },
+        {
+          "id": 1
+        }
+      ]
+      ```
+
+      ### Selecting an inner field
+
+      Given a response body of the form
+
+      ```json
+      {
+        "data": {
+          "records": [
+            {
+              "id": 1
+            },
+            {
+              "id": 2
+            }
+          ]
+        }
+      }
+      ```
+
+      and a selector
+
+      ```yaml
+      selector:
+        extractor:
+          field_pointer: [ "data", "records" ]
+      ```
+
+      The selected records will be
+
+      ```json
+      [
+        {
+          "id": 1
+        },
+        {
+          "id": 2
+        }
+      ]
+      ```
     type: object
     required:
       - type
@@ -967,7 +1111,20 @@ definitions:
         type: object
         additionalProperties: true
   SimpleRetriever:
-    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
+    description: |
+      The data retriever defines how to read the data for a Stream and acts as an orchestrator for the data retrieval flow.
+
+      It is described by:
+
+      1. [Requester](./requester.md): Describes how to submit requests to the API source
+      2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
+      3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
+      4. [Stream slicer](./stream-slicers.md): Describes how to partition the stream, enabling incremental syncs and checkpointing
+
+      Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
+      The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
+
+      Since the `Retriever` is defined as part of the Stream configuration, different Streams for a given Source can use different `Retriever` definitions if needed.
     type: object
     required:
       - type

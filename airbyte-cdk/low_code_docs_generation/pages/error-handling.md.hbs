@@ -1,8 +1,3 @@
-
-<!---
-    Auto-generated file, do not edit here.
-    Template is located in "airbyte-cdk/low_code_docs_generation/pages/error-handling.md.hbs"
--->
 # Error handling
 
 By default, only server errors (HTTP 5XX) and too many requests (HTTP 429) will be retried up to 5 times with exponential backoff.
@@ -134,7 +129,7 @@ requester:
   <...>
   error_handler:
     response_filters:
-        - predicate: "{{ 'code' in response }}"
+        - predicate: "\{{ 'code' in response }}"
           action: IGNORE
 ```
 
@@ -342,7 +337,7 @@ requester:
     type: "CompositeErrorHandler"
     error_handlers:
       - response_filters:
-          - predicate: "{{ 'code' in response }}"
+          - predicate: "\{{ 'code' in response }}"
             action: RETRY
         backoff_strategies:
           - type: "ConstantBackoffStrategy"

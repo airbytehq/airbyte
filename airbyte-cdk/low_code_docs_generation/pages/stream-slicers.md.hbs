@@ -1,8 +1,3 @@
-
-<!---
-    Auto-generated file, do not edit here.
-    Template is located in "airbyte-cdk/low_code_docs_generation/pages/stream-slicers.md.hbs"
--->
 # Stream Slicers
 
 `StreamSlicer`s define how to partition a stream into a subset of records.
@@ -322,7 +317,7 @@ retriever:
   <...>
   requester:
     <...>
-    path: "/respositories/{{ stream_slice.repository }}/commits"
+    path: "/respositories/\{{ stream_slice.repository }}/commits"
   stream_slicer:
     type: "SubstreamSlicer"
 parent_streams_configs:
