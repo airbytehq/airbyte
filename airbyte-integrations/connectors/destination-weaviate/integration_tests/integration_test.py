@@ -204,8 +204,6 @@ def test_write(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, clien
     assert expected_records == records_in_destination, "Records in destination should match records expected"
 
 
-
-
 def test_write_large_batch(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
     append_stream = article_catalog.streams[0].stream.name
     first_state_message = _state({"state": "1"})
@@ -491,7 +489,7 @@ def test_client_delete_stream_entries(caplog, client: Client):
     assert count_objects(client, "Article") == 0, "Ensure articles have been deleted however class was recreated"
     actual_schema = client.client.schema.get("Article")
     title_prop = next(filter(lambda x: x["name"] == "title", actual_schema["properties"]))
-    assert title_prop["moduleConfig"]["text2vec-contextionary"]["vectorizePropertyName"] == True, "Ensure moduleconfig is persisted"
+    assert title_prop["moduleConfig"]["text2vec-contextionary"]["vectorizePropertyName"] is True, "Ensure moduleconfig is persisted"
 
 
 def test_client_flush_partial_error(client: Client):
