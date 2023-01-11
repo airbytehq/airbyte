@@ -7,12 +7,6 @@
     "required": ["property_id", "date_ranges_start_date"],
     "additionalProperties": true,
     "properties": {
-      "property_id": {
-        "type": "string",
-        "title": "Property ID",
-        "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body",
-        "order": 1
-      },
       "credentials": {
         "order": 0,
         "type": "object",
@@ -33,7 +27,6 @@
                 "title": "Client ID",
                 "type": "string",
                 "description": "The Client ID of your Google Analytics developer application.",
-                "airbyte_secret": true,
                 "order": 1
               },
               "client_secret": {
@@ -76,11 +69,18 @@
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
                 ],
-                "airbyte_secret": true
+                "airbyte_secret": true,
+                "order": 1
               }
             }
           }
         ]
+      },
+      "property_id": {
+        "type": "string",
+        "title": "Property ID",
+        "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body",
+        "order": 1
       },
       "date_ranges_start_date": {
         "type": "string",
@@ -93,7 +93,7 @@
         "order": 3,
         "type": "string",
         "title": "Custom Reports",
-        "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4#data-processing-latency\">the docs</a> for more information about the exact format you can use to fill out this field."
+        "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#custom-reports\">the docs</a> for more information about the exact format you can use to fill out this field."
       },
       "window_in_days": {
         "type": "integer",
