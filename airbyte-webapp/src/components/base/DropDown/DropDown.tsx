@@ -17,7 +17,7 @@ export type OptionType = any;
 export interface DropdownProps<T = unknown> extends Props<OptionType> {
   withBorder?: boolean;
   $withBorder?: boolean;
-  $transparentBackground?: boolean;
+  $background?: string;
   fullText?: boolean;
   error?: boolean;
   selectProps?: T;
