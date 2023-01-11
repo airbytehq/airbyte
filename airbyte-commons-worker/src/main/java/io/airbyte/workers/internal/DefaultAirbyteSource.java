@@ -94,7 +94,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
     final List<Type> acceptedMessageTypes = List.of(Type.RECORD, Type.STATE, Type.TRACE, Type.CONTROL);
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
-        .peek(message -> heartbeatMonitor.beat())
+        // .peek(message -> heartbeatMonitor.beat())
         .filter(message -> acceptedMessageTypes.contains(message.getType()))
         .iterator();
   }

@@ -11,7 +11,6 @@ import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.metrics.lib.MetricClientFactory;
-import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
@@ -61,9 +60,10 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     final var metricClient = MetricClientFactory.getMetricClient();
     return bufferedReader
         .lines()
-        .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
+        // .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
+        // can we move all this validation into the main method? After all we already validate for schema
         .flatMap(this::parseJson)
-        .filter(this::validate)
+        // .filter(this::validate)
         .flatMap(this::toAirbyteMessage)
         .filter(this::filterLog);
   }

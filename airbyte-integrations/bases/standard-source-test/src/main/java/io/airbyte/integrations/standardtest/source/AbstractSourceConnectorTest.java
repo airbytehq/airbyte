@@ -23,8 +23,6 @@ import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.workers.WorkerConfigs;
@@ -244,16 +242,19 @@ public abstract class AbstractSourceConnectorTest {
     var start = System.currentTimeMillis();
     while (!source.isFinished()) {
       final Optional<io.airbyte.protocol.models.AirbyteMessage> airbyteMessageOptional = source.attemptRead();
-//      if (airbyteMessageOptional.isPresent() && airbyteMessageOptional.get().getType().equals(Type.RECORD)) {
-        final io.airbyte.protocol.models.AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
-         totalBytes += airbyteMessage.getRecord().getData().toString().getBytes().length;
-         counter++;
-//        final String streamName = record.getStream();
-//        mapOfExpectedRecordsCount.put(streamName, mapOfExpectedRecordsCount.get(streamName) - 1);
-        if (counter % 1_000_000 == 0) {
-          break;
-        }
-//      }
+      // if (airbyteMessageOptional.isPresent() &&
+      // airbyteMessageOptional.get().getType().equals(Type.RECORD)) {
+      final io.airbyte.protocol.models.AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
+      if (airbyteMessage.getRecord() != null) {
+        totalBytes += airbyteMessage.getRecord().getData().toString().getBytes().length;
+        counter++;
+      }
+      // final String streamName = record.getStream();
+      // mapOfExpectedRecordsCount.put(streamName, mapOfExpectedRecordsCount.get(streamName) - 1);
+      if (counter % 1_000_000 == 0) {
+        break;
+      }
+      // }
     }
 
     var end = System.currentTimeMillis();

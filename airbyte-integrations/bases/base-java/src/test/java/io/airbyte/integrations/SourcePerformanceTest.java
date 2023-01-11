@@ -1,6 +1,8 @@
-package io.airbyte.integrations;
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
 
-import io.airbyte.integrations.base.Source;
+package io.airbyte.integrations;
 
 public class SourcePerformanceTest {
 
