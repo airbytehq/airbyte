@@ -34,9 +34,19 @@ data class Multi(val contexts: List<Context>) : Context {
 
     init {
         // ensure there are no nested contexts (i.e. this Multi does not contain another Multi)
-        if (contexts.filterIsInstance<Multi>().isNotEmpty()) {
+        if (fetchContexts<Multi>().isNotEmpty()) {
             throw IllegalArgumentException("Multi contexts cannot be nested")
         }
+    }
+
+    /**
+     * Returns all the [Context] types contained within this [Multi] matching type [T].
+     *
+     * @param [T] the [Context] type to fetch.
+     * @return all [Context] of [T] within this [Multi], or an empty list if none match.
+     */
+    internal inline fun <reified T> fetchContexts(): List<T> {
+        return contexts.filterIsInstance<T>()
     }
 }
 

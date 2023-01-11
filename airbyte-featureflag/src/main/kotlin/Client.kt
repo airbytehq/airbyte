@@ -92,8 +92,8 @@ class TestClient(val values: Map<String, Boolean>) : FeatureFlagClient {
             is EnvVar -> {
                 // convert to a EnvVar flag with a custom fetcher that uses the [values] of this Test class
                 // instead of fetching from the environment variables
-                EnvVar(envVar = flag.key, default = flag.default, attrs = flag.attrs) {
-                    values[flag.key]?.toString() ?: flag.default.toString()
+                EnvVar(envVar = flag.key, default = flag.default, attrs = flag.attrs).apply {
+                    fetcher = { values[flag.key]?.toString() ?: flag.default.toString() }
                 }.enabled(ctx)
             }
 

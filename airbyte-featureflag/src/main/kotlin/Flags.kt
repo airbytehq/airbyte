@@ -18,18 +18,18 @@ object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
 
 object FieldSelectionWorkspaces : EnvVar(envVar = "FIELD_SELECTION_WORKSPACES") {
     override fun enabled(ctx: Context): Boolean {
-        val workspaces: List<String> = fetcher(key)
+        val enabledWorkspaceIds: List<String> = fetcher(key)
             ?.takeIf { it.isNotEmpty() }
             ?.split(",")
             ?: listOf()
 
-        val workspaceIds: List<String> = when (ctx) {
-            is Multi -> ctx.contexts.filterIsInstance<Workspace>().map { it.key }
+        val contextWorkspaceIds: List<String> = when (ctx) {
+            is Multi -> ctx.fetchContexts<Workspace>().map { it.key }
             is Workspace -> listOf(ctx.key)
             else -> listOf()
         }
 
-        return when (workspaceIds.any { it in workspaces }) {
+        return when (contextWorkspaceIds.any { it in enabledWorkspaceIds }) {
             true -> true
             else -> default
         }
@@ -69,7 +69,7 @@ open class Temporary @JvmOverloads constructor(
 ) : Flag(key = key, default = default, attrs = attrs)
 
 /**
- * Environment Variable based feature-flag.
+ * Environment-Variable based feature-flag.
  *
  * Intended only to be used in a transitory manner as the platform migrates to an official feature-flag solution.
  * Every instance of this class should be migrated over to the Temporary class.
@@ -77,29 +77,18 @@ open class Temporary @JvmOverloads constructor(
  * @param [envVar] the environment variable to check for the status of this flag
  * @param [default] the default value of this flag, if the environment variable is not defined
  * @param [attrs] attributes associated with this flag
- * @param [fetcher] the function used to retrieve the environment-variable, overrideable for testing purposes only
- * @constructor an internal constructor for testing purposes, users must be the public constructor
  */
-open class EnvVar internal constructor(
+open class EnvVar @JvmOverloads constructor(
     envVar: String,
     default: Boolean = false,
     attrs: Map<String, String> = mapOf(),
-    protected val fetcher: (String) -> String?,
 ) : Flag(key = envVar, default = default, attrs = attrs) {
-
     /**
-     * Constructs an EnvVar flag
+     * Function used to retrieve the environment-variable, overrideable for testing purposes only.
      *
-     * @param [envVar] the environment variable to check for the status of this flag
-     * @param [default] the default value of this flag, if the environment variable is not defined
-     * @param [attrs] attributes associated with this flag
+     * This is internal so that it can be modified for unit-testing purposes only!
      */
-    @JvmOverloads
-    constructor(
-        envVar: String,
-        default: Boolean = false,
-        attrs: Map<String, String> = mapOf(),
-    ) : this(envVar = envVar, default = default, attrs = attrs, fetcher = { s -> System.getenv(s) })
+    internal var fetcher: (String) -> String? = { s -> System.getenv(s) }
 
     /**
      * Returns true if, and only if, the environment-variable is defined and evaluates to "true".  Otherwise, returns false.

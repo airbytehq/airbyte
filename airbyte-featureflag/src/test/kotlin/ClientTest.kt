@@ -98,10 +98,10 @@ class ConfigFileClient {
         val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
         val client: FeatureFlagClient = ConfigFileClient(cfg)
 
-        val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
-        val evFalse = EnvVar(envVar = "env-true") { _ -> "false" }
-        val evEmpty = EnvVar(envVar = "env-true") { _ -> "" }
-        val evNull = EnvVar(envVar = "env-true") { _ -> null }
+        val evTrue = EnvVar(envVar = "env-true").apply { fetcher = { _ -> "true" } }
+        val evFalse = EnvVar(envVar = "env-true").apply { fetcher = { _ -> "false" } }
+        val evEmpty = EnvVar(envVar = "env-true").apply { fetcher = { _ -> "" } }
+        val evNull = EnvVar(envVar = "env-true").apply { fetcher = { _ -> null } }
 
         val ctx = User("test")
 
@@ -170,10 +170,10 @@ class LaunchDarklyClient {
         val ldClient: LDClient = mockk()
         val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
 
-        val evTrue = EnvVar(envVar = "env-true") { _ -> "true" }
-        val evFalse = EnvVar(envVar = "env-false") { _ -> "false" }
-        val evEmpty = EnvVar(envVar = "env-empty") { _ -> "" }
-        val evNull = EnvVar(envVar = "env-null") { _ -> null }
+        val evTrue = EnvVar(envVar = "env-true").apply { fetcher = { _ -> "true" } }
+        val evFalse = EnvVar(envVar = "env-false").apply { fetcher = { _ -> "false" } }
+        val evEmpty = EnvVar(envVar = "env-empty").apply { fetcher = { _ -> "" } }
+        val evNull = EnvVar(envVar = "env-null").apply { fetcher = { _ -> null } }
 
         val ctx = User("test")
 
