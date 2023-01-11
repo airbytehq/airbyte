@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React, { useCallback, useMemo, useState } from "react";
 
 import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
@@ -7,15 +8,10 @@ import { BulkEditServiceProvider } from "hooks/services/BulkEdit/BulkEditService
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
 
-import { BulkHeader } from "./BulkHeader";
 import styles from "./CatalogTree.module.scss";
 import { CatalogTreeBody } from "./CatalogTreeBody";
-import { CatalogTreeHeader } from "./CatalogTreeHeader";
 import { CatalogTreeSearch } from "./CatalogTreeSearch";
-import { CatalogTreeSubheader } from "./CatalogTreeSubheader";
 import { BulkEditPanel } from "./next/BulkEditPanel";
-import { CatalogTreeTableHeader } from "./next/CatalogTreeTableHeader";
-import { StreamConnectionHeader } from "./next/StreamConnectionHeader";
 
 interface CatalogTreeProps {
   streams: SyncSchemaStream[];
@@ -76,19 +72,9 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
     <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
-        <div className={isNewStreamsTableEnabled ? undefined : styles.catalogTreeTable}>
-          {isNewStreamsTableEnabled ? (
-            <>
-              <StreamConnectionHeader />
-              <CatalogTreeTableHeader />
-            </>
-          ) : (
-            <>
-              <CatalogTreeHeader />
-              <CatalogTreeSubheader />
-              <BulkHeader />
-            </>
-          )}
+        <div
+          className={classNames(styles.catalogTreeTable, { [styles.newCatalogTreeTable]: isNewStreamsTableEnabled })}
+        >
           <CatalogTreeBody
             streams={filteredStreams}
             changedStreams={changedStreams}

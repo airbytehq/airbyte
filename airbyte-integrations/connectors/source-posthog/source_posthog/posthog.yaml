@@ -1,7 +1,6 @@
 version: "0.1.0"
 
 definitions:
-
   schema_loader:
     file_path: "./source_posthog/schemas/{{ options['name'] }}.json"
 
@@ -9,7 +8,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: ['results']
+      field_pointer: ["results"]
 
   requester:
     type: HttpRequester
@@ -120,9 +119,9 @@ definitions:
         stream_slicers:
           - type: SubstreamSlicer
             parent_stream_configs:
-            - stream: "*ref(definitions.projects_stream)"
-              parent_key: "id"
-              stream_slice_field: "project_id"
+              - stream: "*ref(definitions.projects_stream)"
+                parent_key: "id"
+                stream_slice_field: "project_id"
           - type: DatetimeStreamSlicer
             start_datetime:
               datetime: "{{ config['start_date'] }}"
@@ -131,7 +130,8 @@ definitions:
               datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
               datetime_format: "%Y-%m-%dT%H:%M:%S%z"
             datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-            step: 30d
+            cursor_granularity: "PT0.000001S"
+            step: "P30D"
             cursor_field: timestamp
             start_time_option:
               field_name: after

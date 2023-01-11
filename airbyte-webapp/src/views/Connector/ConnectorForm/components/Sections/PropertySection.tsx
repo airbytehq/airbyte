@@ -17,7 +17,7 @@ interface PropertySectionProps {
   disabled?: boolean;
 }
 
-const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disabled }) => {
+export const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disabled }) => {
   const propertyPath = path ?? property.path;
   const formikBag = useField(propertyPath);
   const [field, meta] = formikBag;
@@ -57,5 +57,3 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
     </PropertyLabel>
   );
 };
-
-export { PropertySection };

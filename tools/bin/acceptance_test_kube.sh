@@ -20,6 +20,7 @@ if [ -n "$CI" ]; then
   wait
 fi
 
+if [ -n "$CI" ]; then
 echo "Deploying fluentbit"
 helm repo add fluent https://fluent.github.io/helm-charts
 helm repo update fluent
@@ -29,7 +30,7 @@ helm install --values tools/bin/fluent_values.yaml --set env[1].name="AWS_ACCESS
  --set env[3].name="AWS_S3_BUCKET" --set env[3].value=${AWS_S3_BUCKET} \
  --set env[4].name="SUITE_TYPE" --set env[4].value="kustomize-logs" \
  --generate-name fluent/fluent-bit
-
+fi
 
 echo "Starting app..."
 

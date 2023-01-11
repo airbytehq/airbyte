@@ -5,12 +5,8 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.api.client.model.generated.ConnectionStatus;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +22,9 @@ public interface ConfigFetchActivity {
 
   @ActivityMethod
   Optional<ConnectionStatus> getStatus(UUID connectionId);
+
+  @ActivityMethod
+  public Optional<Boolean> getBreakingChange(final UUID connectionId);
 
   @Data
   @NoArgsConstructor
@@ -44,8 +43,6 @@ public interface ConfigFetchActivity {
     private Duration timeToWait;
 
   }
-
-  StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException;
 
   /**
    * Return how much time to wait before running the next sync. It will query the DB to get the last
