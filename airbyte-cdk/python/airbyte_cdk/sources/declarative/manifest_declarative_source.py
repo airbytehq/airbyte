@@ -65,7 +65,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         if "type" not in manifest:
             manifest["type"] = "DeclarativeSource"
 
-        resolved_source_config = ManifestReferenceResolver().preprocess_manifest(source_config)
+        resolved_source_config = ManifestReferenceResolver().preprocess_manifest(manifest)
         propagated_source_config = ManifestComponentTransformer().propagate_types_and_options("", resolved_source_config, {})
         self._new_source_config = propagated_source_config
         self._legacy_source_config = resolved_source_config
