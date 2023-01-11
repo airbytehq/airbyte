@@ -119,4 +119,4 @@ class SourceDentclinic(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Bookings(config=config), Clinics(config=config), Services(config=config), Resources(config=config)]
+        return [Bookings(config=config), Clinics(config=config), Services(config=config), Resources(config=config), BookingsFr(config=config)]
