@@ -1,13 +1,4 @@
-@use "../../../../scss/colors";
-@use "../../../../scss/variables" as vars;
-
-.container {
-  padding: vars.$spacing-md vars.$spacing-lg;
-  background: colors.$yellow-100;
-  border-radius: vars.$border-radius-lg;
-  white-space: break-spaces;
-  margin-top: vars.$spacing-lg;
-}
+@use "scss/colors";
 
 .link {
   color: colors.$dark-blue;
