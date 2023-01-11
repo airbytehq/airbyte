@@ -5,6 +5,7 @@
 package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
@@ -117,6 +118,10 @@ public class WorkerUtils {
         .filter(control -> control.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG)
         .map(AirbyteControlMessage::getConnectorConfig)
         .reduce((first, second) -> second);
+  }
+
+  public static Boolean getDidControlMessageUpdateConfig(final JsonNode initialConfig, final AirbyteControlConnectorConfigMessage configMessage) {
+    return initialConfig != Jsons.jsonNode(configMessage.getConfig().getAdditionalProperties());
   }
 
   public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,

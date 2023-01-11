@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +69,8 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
     LineGobbler.startSection("CHECK");
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ROOT_KEY, jobRoot));
+    final AtomicBoolean didUpdateConfig = new AtomicBoolean(false);
+
     try {
       process = integrationLauncher.check(
           jobRoot,
@@ -89,17 +93,23 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
           .map(AirbyteMessage::getConnectionStatus)
           .findFirst();
 
+      final ConnectorJobOutput theOutput = new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION);
+
       if (input.getActorId() != null && input.getActorType() != null) {
         final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getMostRecentConfigControlMessage(messagesByType);
         optionalConfigMsg.ifPresent(
             configMessage -> {
-              switch (input.getActorType()) {
-                case SOURCE -> connectorConfigUpdater.updateSource(
-                    input.getActorId(),
-                    configMessage.getConfig());
-                case DESTINATION -> connectorConfigUpdater.updateDestination(
-                    input.getActorId(),
-                    configMessage.getConfig());
+              if (WorkerUtils.getDidControlMessageUpdateConfig(input.getConnectionConfiguration(), configMessage)) {
+                switch (input.getActorType()) {
+                  case SOURCE -> connectorConfigUpdater.updateSource(
+                      input.getActorId(),
+                      configMessage.getConfig());
+                  case DESTINATION -> connectorConfigUpdater.updateDestination(
+                      input.getActorId(),
+                      configMessage.getConfig());
+                }
+
+                didUpdateConfig.set(true);
               }
             });
       }
@@ -112,12 +122,16 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
         LOGGER.debug("Check connection job received output: {}", output);
         LineGobbler.endSection("CHECK");
-        return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output);
+        return new ConnectorJobOutput()
+            .withOutputType(OutputType.CHECK_CONNECTION)
+            .withCheckConnection(output)
+            .withDidUpdateConfiguration(didUpdateConfig.get());
       } else {
         final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
         LOGGER.error(message);
 
-        return WorkerUtils.getJobFailureOutputOrThrow(OutputType.CHECK_CONNECTION, messagesByType, message);
+        return WorkerUtils.getJobFailureOutputOrThrow(OutputType.CHECK_CONNECTION, messagesByType, message)
+            .withDidUpdateConfiguration(didUpdateConfig.get());
       }
 
     } catch (final Exception e) {

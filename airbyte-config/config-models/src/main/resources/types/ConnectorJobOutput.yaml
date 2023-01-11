@@ -22,5 +22,9 @@ properties:
     format: uuid
   spec:
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+  didUpdateConfiguration:
+    description: Indicates whether the job updated the configuration for the actor, generally through an AirbyteControlMessage
+    type: boolean
+    default: false
   failureReason:
     "$ref": FailureReason.yaml
