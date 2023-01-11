@@ -135,7 +135,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
         </Button>
       )}
       <FlexItem>
-        {!schemaDiff.changes.length ? (
+        {editorView === "yaml" || !schemaDiff.changes.length ? (
           <pre className={styles.diffLine}>
             {formattedSchema
               .split("\n")
