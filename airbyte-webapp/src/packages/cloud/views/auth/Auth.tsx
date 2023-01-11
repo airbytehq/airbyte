@@ -37,7 +37,7 @@ const hasValidRightSideUrl = (url?: string): boolean => {
 export const Auth: React.FC = () => {
   const { pathname } = useLocation();
   const { formatMessage } = useIntl();
-  const { loggedOut, user } = useAuthService();
+  const { loggedOut } = useAuthService();
   const rightSideUrl = useExperiment("authPage.rightSideUrl", undefined);
 
   const toLogin = pathname === CloudRoutes.Signup || pathname === CloudRoutes.FirebaseAction;
@@ -56,13 +56,9 @@ export const Auth: React.FC = () => {
                 path="*"
                 element={
                   <Navigate
-                    to={
-                      user
-                        ? `${pathname}`
-                        : `${CloudRoutes.Login}${
-                            loggedOut && pathname.includes("/settings/account") ? "" : `?from=${pathname}`
-                          }`
-                    }
+                    to={`${CloudRoutes.Login}${
+                      loggedOut && pathname.includes("/settings/account") ? "" : `?from=${pathname}`
+                    }`}
                   />
                 }
               />
