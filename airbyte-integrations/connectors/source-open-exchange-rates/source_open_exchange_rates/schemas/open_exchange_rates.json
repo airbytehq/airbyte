@@ -9,7 +9,7 @@
             "type": "string"
         },
         "timestamp": {
-            "type": "string"
+            "type": "integer"
         },
         "rates": {
             "type": "object",
