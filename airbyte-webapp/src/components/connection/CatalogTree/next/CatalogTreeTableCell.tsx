@@ -1,6 +1,8 @@
 import classNames from "classnames";
 import React from "react";
 
+import { Tooltip } from "components/ui/Tooltip";
+
 import styles from "./CatalogTreeTableCell.module.scss";
 
 type Sizes = "xsmall" | "small" | "medium" | "large";
@@ -26,19 +28,14 @@ export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeT
   children,
 }) => {
   const style = classNames(styles.tableCell, className, sizeMap[size], withTooltip);
-  // if (withTooltip) {
-  //   return (
-  //     <div className={style}>
-  //       <Tooltip className={style} control={children} theme="light" placement="top-start">
-  //         {children}
-  //       </Tooltip>
-  //     </div>
-  //   );
-  // }
-  return (
-    <div className={style}>
-      <div className={styles.tooltip}>{children}</div>
-      {children}
-    </div>
-  );
+  if (withTooltip) {
+    return (
+      <div className={style}>
+        <Tooltip control={children} theme="light" placement="top-start">
+          {children}
+        </Tooltip>
+      </div>
+    );
+  }
+  return <div className={style}>{children}</div>;
 };

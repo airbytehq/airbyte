@@ -10,33 +10,6 @@ $large: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
 
-  .tooltip {
-    position: absolute;
-
-    /* vertically center */
-    top: 50%;
-    transform: translateY(-50%);
-    border-radius: 10px;
-    background: black;
-    text-align: center;
-    z-index: 1;
-    display: none; /* hide by default */
-
-    > * {
-      color: white;
-    }
-  }
-
-  &:hover {
-    .tooltip {
-      display: block;
-    }
-
-    > :not(.tooltip) {
-      display: none;
-    }
-  }
-
   &.xsmall {
     flex-basis: $xsmall;
     min-width: $xsmall;
