@@ -53,7 +53,7 @@ class OpenExchangeRates(HttpStream, ABC):
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value}
         else:
-            return {self.cursor_field: self.start_date}
+            return {self.cursor_field: self.start_date.timestamp()}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
