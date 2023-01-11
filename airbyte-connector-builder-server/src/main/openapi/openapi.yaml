@@ -147,6 +147,11 @@ components:
           type: object
           description: The AirbyteStateMessage object to use as the starting state for this read
           # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
+        record_limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          description: Number of records that will be returned to the client from the connector builder (max of 1000)
         # --- Potential addition for a later phase ---
         # numPages:
         #   type: integer
