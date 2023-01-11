@@ -21,50 +21,58 @@ from fastapi import HTTPException
 
 MANIFEST = {
     "version": "0.1.0",
+    "type": "DeclarativeSource",
     "definitions": {
-        "selector": {"extractor": {"field_pointer": ["items"]}},
-        "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET"},
+        "selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+        "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "DeclarativeSource"},
         "retriever": {
-            "record_selector": {"extractor": {"field_pointer": ["items"]}},
+            "type": "DeclarativeSource",
+            "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
             "paginator": {"type": "NoPagination"},
-            "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET"},
+            "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
         },
         "hashiras_stream": {
             "retriever": {
-                "record_selector": {"extractor": {"field_pointer": ["items"]}},
+                "type": "DeclarativeSource",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
-                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET"},
+                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
             "$options": {"name": "hashiras", "path": "/hashiras"},
         },
         "breathing_techniques_stream": {
             "retriever": {
-                "record_selector": {"extractor": {"field_pointer": ["items"]}},
+                "type": "DeclarativeSource",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
-                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET"},
+                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
             "$options": {"name": "breathing-techniques", "path": "/breathing_techniques"},
         },
     },
     "streams": [
         {
+            "type": "DeclarativeStream",
             "retriever": {
-                "record_selector": {"extractor": {"field_pointer": ["items"]}},
+                "type": "SimpleRetriever",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
-                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET"},
+                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
             "$options": {"name": "hashiras", "path": "/hashiras"},
         },
         {
+            "type": "DeclarativeStream",
             "retriever": {
-                "record_selector": {"extractor": {"field_pointer": ["items"]}},
+                "type": "SimpleRetriever",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
-                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET"},
+                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
             "$options": {"name": "breathing-techniques", "path": "/breathing_techniques"},
         },
     ],
-    "check": {"stream_names": ["hashiras"], "class_name": "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"},
+    "check": {"stream_names": ["hashiras"], "type": "CheckStream"},
 }
 
 CONFIG = {"rank": "upper-six"}
@@ -100,17 +108,24 @@ def test_list_streams():
 def test_list_streams_with_interpolated_urls():
     manifest = {
         "version": "0.1.0",
+        "type": "DeclarativeSource",
         "streams": [
             {
+                "type": "DeclarativeStream",
                 "retriever": {
-                    "record_selector": {"extractor": {"field_pointer": ["items"]}},
+                    "type": "SimpleRetriever",
+                    "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                     "paginator": {"type": "NoPagination"},
-                    "requester": {"url_base": "https://{{ config['rank'] }}.muzan.com/api/v1/", "http_method": "GET"},
+                    "requester": {
+                        "url_base": "https://{{ config['rank'] }}.muzan.com/api/v1/",
+                        "http_method": "GET",
+                        "type": "HttpRequester",
+                    },
                 },
                 "$options": {"name": "demons", "path": "/demons"},
             }
         ],
-        "check": {"stream_names": ["demons"], "class_name": "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"},
+        "check": {"stream_names": ["demons"], "type": "CheckStream"},
     }
 
     expected_streams = StreamsListRead(streams=[StreamsListReadStreams(name="demons", url="https://upper-six.muzan.com/api/v1/demons")])
@@ -126,17 +141,24 @@ def test_list_streams_with_interpolated_urls():
 def test_list_streams_with_unresolved_interpolation():
     manifest = {
         "version": "0.1.0",
+        "type": "DeclarativeSource",
         "streams": [
             {
+                "type": "DeclarativeStream",
                 "retriever": {
-                    "record_selector": {"extractor": {"field_pointer": ["items"]}},
+                    "type": "SimpleRetriever",
+                    "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                     "paginator": {"type": "NoPagination"},
-                    "requester": {"url_base": "https://{{ config['not_in_config'] }}.muzan.com/api/v1/", "http_method": "GET"},
+                    "requester": {
+                        "url_base": "https://{{ config['not_in_config'] }}.muzan.com/api/v1/",
+                        "http_method": "GET",
+                        "type": "HttpRequester",
+                    },
                 },
                 "$options": {"name": "demons", "path": "/demons"},
             }
         ],
-        "check": {"stream_names": ["demons"], "class_name": "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"},
+        "check": {"stream_names": ["demons"], "type": "CheckStream"},
     }
 
     # The interpolated string {{ config['not_in_config'] }} doesn't resolve to anything so it ends up blank during interpolation
@@ -155,9 +177,11 @@ def test_read_stream():
     request = {
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
+        "http_method": "GET",
         "body": {"custom": "field"},
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+    expected_schema = {"$schema": "http://json-schema.org/schema#", "properties": {"name": {"type": "string"}}, "type": "object"}
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
@@ -165,6 +189,7 @@ def test_read_stream():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
@@ -175,6 +200,7 @@ def test_read_stream():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[{"name": "Mitsuri Kanroji"}],
@@ -200,6 +226,8 @@ def test_read_stream():
             api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
         )
 
+        assert actual_response.inferred_schema == expected_schema
+
         single_slice = actual_response.slices[0]
         for i, actual_page in enumerate(single_slice.pages):
             assert actual_page == expected_pages[i]
@@ -210,6 +238,7 @@ def test_read_stream_with_logs():
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
         "body": {"custom": "field"},
+        "http_method": "GET",
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
     expected_pages = [
@@ -219,6 +248,7 @@ def test_read_stream_with_logs():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
@@ -229,6 +259,7 @@ def test_read_stream_with_logs():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[{"name": "Mitsuri Kanroji"}],
@@ -272,6 +303,7 @@ def test_read_stream_no_records():
         "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
         "headers": {"Content-Type": "application/json"},
         "body": {"custom": "field"},
+        "http_method": "GET",
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
     expected_pages = [
@@ -281,6 +313,7 @@ def test_read_stream_no_records():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[],
@@ -291,6 +324,7 @@ def test_read_stream_no_records():
                 parameters={"era": ["taisho"]},
                 headers={"Content-Type": "application/json"},
                 body={"custom": "field"},
+                http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
             records=[],
@@ -388,15 +422,19 @@ def test_read_stream_returns_error_if_stream_does_not_exist():
         pytest.param(
             'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "PUT", "headers": {"field": "name"}, "body":{"key": "value"}}',
             HttpRequest(
-                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, body={"key": "value"},
+                url="https://nichirin.com/v1/swords",
+                parameters={"color": ["orange"]},
+                headers={"field": "name"},
+                body={"key": "value"},
                 http_method="PUT",
             ),
             id="test_create_request_with_all_fields",
         ),
         pytest.param(
             'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "GET", "headers": {"field": "name"}}',
-            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"},
-                        http_method="GET"),
+            HttpRequest(
+                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, http_method="GET"
+            ),
             id="test_create_request_with_no_body",
         ),
         pytest.param(
@@ -408,6 +446,11 @@ def test_read_stream_returns_error_if_stream_does_not_exist():
             'request:{"url": "https://nichirin.com/v1/swords", "http_method": "PUT", "headers": {"field": "name"}, "body":{"key": "value"}}',
             HttpRequest(url="https://nichirin.com/v1/swords", headers={"field": "name"}, body={"key": "value"}, http_method="PUT"),
             id="test_create_request_with_no_parameters",
+        ),
+        pytest.param(
+            'request:{"url": "https://nichirin.com/v1/swords", "http_method": "POST", "headers": {"field": "name"}, "body":null}',
+            HttpRequest(url="https://nichirin.com/v1/swords", headers={"field": "name"}, body=None, http_method="POST"),
+            id="test_create_request_with_null_body",
         ),
         pytest.param("request:{invalid_json: }", None, id="test_invalid_json_still_does_not_crash"),
         pytest.param("just a regular log message", None, id="test_no_request:_prefix_does_not_crash"),
