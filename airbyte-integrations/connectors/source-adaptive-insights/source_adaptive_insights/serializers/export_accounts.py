@@ -1,8 +1,9 @@
 from collections.abc import MutableMapping
+from typing import Union
 
 
 class Account:
-    def __init__(self, version: str):
+    def __init__(self, version: str, parent_code: str = None, parent_name: str = None):
         self.id = None
         self.code = None
         self.name = None
@@ -39,9 +40,11 @@ class Account:
         self.hasFormula = None
         self.attributes = None
         self.version = version
+        self.parent_code = parent_code
+        self.parent_name = parent_name
 
-    def parse_dict(self, d: dict) -> None:
-        
+    def parse_dict(self, d: Union[dict, MutableMapping]) -> None:
+
         self.id = d.get("@id")
         self.code = d.get("@code")
         self.name = d.get("@name")
@@ -77,12 +80,12 @@ class Account:
         self.isGroup = d.get("@isGroup")
         self.hasFormula = d.get("@hasFormula")
         self.attributes = d.get("attributes", None)
-    
+
     @staticmethod
     def parse_attributes(d: dict) -> dict:
         if not d:
             return None
-        
+
         attribute_records = []
 
         attributes = d.get("attribute")
@@ -91,7 +94,7 @@ class Account:
                 record = {}
                 for k, v in attribute.items():
                     record[k.replace("@", "")] = v
-                
+
                 attribute_records.append(record)
         elif isinstance(attributes, dict):
             record = {}
@@ -140,31 +143,35 @@ class Account:
             "is_group": self.isGroup,
             "has_formula": self.hasFormula,
             "attributes": str(self.parse_attributes(self.attributes)),
-            "version": self.version
+            "version": self.version,
+            "rollup_to_code": self.parent_code,
+            "rollup_to_text": self.parent_name
         }
 
 
-def flatten_dict(d: MutableMapping, items: list, version:str) -> MutableMapping:
-
-    records = {}
+def flatten_dict(d: MutableMapping,
+                 items: Union[list, MutableMapping],
+                 version: str,
+                 parent_code=None,
+                 parent_name=None) -> MutableMapping:
     if isinstance(d, list):
         for i in d:
-            flatten_dict(i, items, version)
+            flatten_dict(i, items, version, parent_code, parent_name)
     else:
         dict_keys = list(d.keys())
         if "account" in dict_keys:
-            flatten_dict(d["account"], items, version)
-            lvl = Account(version=version)
+            lvl = Account(version=version, parent_code=parent_code, parent_name=parent_name)
             lvl.parse_dict(d)
-            
+            flatten_dict(d["account"], items, version, lvl.code, lvl.name)
+
             items.append(lvl.to_record())
         else:
-            lvl = Account(version=version)
+            lvl = Account(version=version, parent_code=parent_code, parent_name=parent_name)
             lvl.parse_dict(d)
             items.append(lvl.to_record())
-        
+
     return items
-        
+
 
 def handle_export_accounts(d: dict, version: str) -> list:
     data = d.get("response").get("output").get("accounts").get("account")

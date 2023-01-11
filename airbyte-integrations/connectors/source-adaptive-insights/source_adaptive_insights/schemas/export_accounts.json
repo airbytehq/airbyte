@@ -104,6 +104,12 @@
     "has_formula": {
       "type": ["null", "string"]
     },
+    "rollup_to_code": {
+      "type": ["null", "string"]
+    },
+    "rollup_to_text": {
+      "type": ["null", "string"]
+    },
     "attributes": {
       "type": ["null", "string"]
     },
