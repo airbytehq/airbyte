@@ -147,10 +147,10 @@ export const ConnectionStatusTab: React.FC = () => {
 
   const cancelJobBtn = (
     <Button
-      className={styles.cancelButton}
+      variant="danger"
       disabled={!activeJob?.id || activeJob.isCanceling}
       onClick={onCancelJob}
-      icon={<FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />}
+      icon={<FontAwesomeIcon icon={faXmark} />}
     >
       {label}
     </Button>

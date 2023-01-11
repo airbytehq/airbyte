@@ -3,6 +3,7 @@ import merge from "lodash/merge";
 import { useState } from "react";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { v4 as uuid } from "uuid";
 import * as yup from "yup";
 
 import { Button } from "components/ui/Button";
@@ -24,9 +25,15 @@ interface AddStreamButtonProps {
   onAddStream: (addedStreamNum: number) => void;
   button?: React.ReactElement;
   initialValues?: Partial<BuilderStream>;
+  "data-testid"?: string;
 }
 
-export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, button, initialValues }) => {
+export const AddStreamButton: React.FC<AddStreamButtonProps> = ({
+  onAddStream,
+  button,
+  initialValues,
+  "data-testid": testId,
+}) => {
   const { formatMessage } = useIntl();
   const [isOpen, setIsOpen] = useState(false);
   const [streamsField, , helpers] = useField<BuilderStream[]>("streams");
@@ -41,9 +48,10 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, b
       {button ? (
         React.cloneElement(button, {
           onClick: buttonClickHandler,
+          "data-testid": testId,
         })
       ) : (
-        <Button className={styles.addButton} onClick={buttonClickHandler} icon={<PlusIcon />} />
+        <Button className={styles.addButton} onClick={buttonClickHandler} icon={<PlusIcon />} data-testid={testId} />
       )}
       {isOpen && (
         <Formik
@@ -55,6 +63,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, b
                 ...initialValues,
                 name: values.streamName,
                 urlPath: values.urlPath,
+                id: uuid(),
               }),
             ]);
             setIsOpen(false);

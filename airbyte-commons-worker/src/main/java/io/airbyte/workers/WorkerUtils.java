@@ -11,6 +11,8 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
+import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -95,6 +97,7 @@ public class WorkerUtils {
    */
   public static WorkerSourceConfig syncToWorkerSourceConfig(final StandardSyncInput sync) {
     return new WorkerSourceConfig()
+        .withSourceId(sync.getSourceId())
         .withSourceConnectionConfiguration(sync.getSourceConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
@@ -106,6 +109,7 @@ public class WorkerUtils {
    */
   public static WorkerDestinationConfig syncToWorkerDestinationConfig(final StandardSyncInput sync) {
     return new WorkerDestinationConfig()
+        .withDestinationId(sync.getDestinationId())
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
@@ -117,6 +121,14 @@ public class WorkerUtils {
       case CHECK_CONNECTION -> ConnectorCommand.CHECK;
       case DISCOVER_CATALOG_ID -> ConnectorCommand.DISCOVER;
     };
+  }
+
+  public static Optional<AirbyteControlConnectorConfigMessage> getMostRecentConfigControlMessage(final Map<Type, List<AirbyteMessage>> messagesByType) {
+    return messagesByType.getOrDefault(Type.CONTROL, new ArrayList<>()).stream()
+        .map(AirbyteMessage::getControl)
+        .filter(control -> control.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG)
+        .map(AirbyteControlMessage::getConnectorConfig)
+        .reduce((first, second) -> second);
   }
 
   private static Optional<AirbyteTraceMessage> getTraceMessageFromMessagesByType(final Map<Type, List<AirbyteMessage>> messagesByType) {

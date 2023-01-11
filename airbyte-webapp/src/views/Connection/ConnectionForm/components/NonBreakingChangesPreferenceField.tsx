@@ -5,6 +5,7 @@ import { useIntl } from "react-intl";
 
 import { ControlLabels } from "components";
 import { DropDown } from "components/ui/DropDown";
+import { FlexContainer } from "components/ui/Flex";
 
 import { NonBreakingChangesPreference } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -27,14 +28,14 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
   const { mode } = useConnectionFormService();
 
   return (
-    <div className={styles.flexRow}>
+    <FlexContainer alignItems="center">
       <div className={styles.leftFieldCol}>
         <ControlLabels
           nextLine
           label={formatMessage({
             id: "connectionForm.nonBreakingChangesPreference.label",
           })}
-          message={formatMessage({
+          infoTooltipContent={formatMessage({
             id: "connectionForm.nonBreakingChangesPreference.message",
           })}
         />
@@ -49,6 +50,6 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
           onChange={({ value }) => form.setFieldValue(field.name, value)}
         />
       </div>
-    </div>
+    </FlexContainer>
   );
 };
