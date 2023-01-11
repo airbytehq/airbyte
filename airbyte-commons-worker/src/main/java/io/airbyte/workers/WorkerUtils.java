@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -138,7 +139,7 @@ public class WorkerUtils {
         .findFirst();
   }
 
-  public static Map<Type, List<AirbyteMessage>> getMessagesByType(Process process, AirbyteStreamFactory streamFactory, int timeOut)
+  public static Map<Type, List<AirbyteMessage>> getMessagesByType(final Process process, final AirbyteStreamFactory streamFactory, final int timeOut)
       throws IOException {
     final Map<Type, List<AirbyteMessage>> messagesByType;
     try (final InputStream stdout = process.getInputStream()) {
@@ -152,7 +153,7 @@ public class WorkerUtils {
 
   public static Optional<FailureReason> getJobFailureReasonFromMessages(final OutputType outputType,
                                                                         final Map<Type, List<AirbyteMessage>> messagesByType) {
-    Optional<AirbyteTraceMessage> traceMessage = getTraceMessageFromMessagesByType(messagesByType);
+    final Optional<AirbyteTraceMessage> traceMessage = getTraceMessageFromMessagesByType(messagesByType);
     if (traceMessage.isPresent()) {
       final ConnectorCommand connectorCommand = getConnectorCommandFromOutputType(outputType);
       return Optional.of(FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand));
@@ -171,8 +172,8 @@ public class WorkerUtils {
   }
 
   public static String getStdErrFromErrorStream(final InputStream errorStream) throws IOException {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
-    StringBuilder errorOutput = new StringBuilder();
+    final BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8));
+    final StringBuilder errorOutput = new StringBuilder();
     String line;
     while ((line = reader.readLine()) != null) {
       errorOutput.append(line);
