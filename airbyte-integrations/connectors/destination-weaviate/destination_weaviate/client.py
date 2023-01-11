@@ -2,14 +2,15 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import uuid
-import logging
 import json
-from dataclasses import dataclass
+import logging
 import time
-from typing import Any, Mapping, MutableMapping, List
+import uuid
+from dataclasses import dataclass
+from typing import Any, List, Mapping, MutableMapping
 
 import weaviate
+
 from .utils import generate_id, parse_id_schema, parse_vectors, stream_to_class_name
 
 
@@ -89,8 +90,9 @@ class Client:
                 logging.info(f"Object {obj_id} had errors: {errors}. Going to retry.")
 
         for buffered_object in self.objects_with_error.values():
-            self.client.batch.add_data_object(buffered_object.properties, buffered_object.class_name, buffered_object.id,
-                                              buffered_object.vector)
+            self.client.batch.add_data_object(
+                buffered_object.properties, buffered_object.class_name, buffered_object.id, buffered_object.vector
+            )
 
         if len(self.objects_with_error) > 0 and retries > 0:
             logging.info("sleeping 2 seconds before retrying batch again")

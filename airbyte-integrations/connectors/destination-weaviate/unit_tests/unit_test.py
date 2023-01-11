@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import uuid
 from unittest.mock import Mock
 
 from destination_weaviate.client import Client
-from destination_weaviate.utils import stream_to_class_name, generate_id
+from destination_weaviate.utils import generate_id, stream_to_class_name
 
 
 def test_client_custom_vectors_config():

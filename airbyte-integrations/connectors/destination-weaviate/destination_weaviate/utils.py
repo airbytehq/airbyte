@@ -1,6 +1,10 @@
-from typing import Mapping, Any
-import uuid
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import re
+import uuid
+from typing import Any, Mapping
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
@@ -55,8 +59,8 @@ def get_schema_from_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Map
         for k, v in stream.stream.json_schema.get("properties").items():
             stream_schema[k] = "default"
             if "array" in v.get("type", []) and (
-                    "object" in v.get("items", {}).get("type", []) or
-                    "array" in v.get("items", {}).get("type", [])):
+                "object" in v.get("items", {}).get("type", []) or "array" in v.get("items", {}).get("type", [])
+            ):
                 stream_schema[k] = "jsonify"
             if "object" in v.get("type", []):
                 stream_schema[k] = "jsonify"

@@ -4,10 +4,10 @@
 
 import json
 import logging
+import os
 import time
 import uuid
 from typing import Any, Dict, List, Mapping
-import os
 from unittest.mock import Mock
 
 import docker
