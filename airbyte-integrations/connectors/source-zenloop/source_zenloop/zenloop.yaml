@@ -80,13 +80,14 @@ definitions:
     type: DatetimeStreamSlicer
     cursor_field: "inserted_at"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    cursor_granularity: "PT0.000001S"
     start_datetime:
       datetime: "{{ config['date_from'] }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
-    step: "1m"
+    step: "P1M"
     end_time_option:
       field_name: "date_to"
       inject_into: "request_parameter"
