@@ -34,8 +34,8 @@ streams:
   - "*ref(definitions.catalogs_stream)"
 
 check:
-  stream_names:
-    - "catalogs"
+  type: CheckStream
+  stream_names: ["catalogs"]
 
 spec:
   documentation_url: "https://docs.airbyte.com/integrations/sources/dremio"
