@@ -18,24 +18,24 @@ public class ConfiguredAirbyteCatalogMigrationV1
     implements ConfiguredAirbyteCatalogMigration<io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalog> {
 
   @Override
-  public io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgrade(ConfiguredAirbyteCatalog oldMessage) {
-    io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog newMessage = Jsons.object(
+  public io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgrade(final ConfiguredAirbyteCatalog oldMessage) {
+    final io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog newMessage = Jsons.object(
         Jsons.jsonNode(oldMessage),
         io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class);
-    for (io.airbyte.protocol.models.v0.ConfiguredAirbyteStream stream : newMessage.getStreams()) {
-      JsonNode schema = stream.getStream().getJsonSchema();
+    for (final io.airbyte.protocol.models.v0.ConfiguredAirbyteStream stream : newMessage.getStreams()) {
+      final JsonNode schema = stream.getStream().getJsonSchema();
       SchemaMigrationV1.downgradeSchema(schema);
     }
     return newMessage;
   }
 
   @Override
-  public ConfiguredAirbyteCatalog upgrade(io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog oldMessage) {
-    ConfiguredAirbyteCatalog newMessage = Jsons.object(
+  public ConfiguredAirbyteCatalog upgrade(final io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog oldMessage) {
+    final ConfiguredAirbyteCatalog newMessage = Jsons.object(
         Jsons.jsonNode(oldMessage),
         ConfiguredAirbyteCatalog.class);
-    for (ConfiguredAirbyteStream stream : newMessage.getStreams()) {
-      JsonNode schema = stream.getStream().getJsonSchema();
+    for (final ConfiguredAirbyteStream stream : newMessage.getStreams()) {
+      final JsonNode schema = stream.getStream().getJsonSchema();
       SchemaMigrationV1.upgradeSchema(schema);
     }
     return newMessage;

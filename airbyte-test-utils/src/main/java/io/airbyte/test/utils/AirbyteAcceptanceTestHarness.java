@@ -588,8 +588,8 @@ public class AirbyteAcceptanceTestHarness {
         .map(rec -> {
           // The protocol requires converting numbers to strings. source-postgres does that internally,
           // but we're querying the DB directly, so we have to do it manually.
-          Map<String, Object> stringifiedNumbers = new HashMap<>();
-          for (String key : rec.keySet()) {
+          final Map<String, Object> stringifiedNumbers = new HashMap<>();
+          for (final String key : rec.keySet()) {
             Object o = rec.get(key);
             if (o instanceof Number) {
               o = o.toString();

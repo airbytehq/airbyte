@@ -33,7 +33,7 @@ public class SchemaMigrations {
    * @param matcher A function which returns true on any schema node that needs to be transformed
    * @param transformer A function which mutates a schema node
    */
-  public static void mutateSchemas(Function<JsonNode, Boolean> matcher, Consumer<JsonNode> transformer, JsonNode schema) {
+  public static void mutateSchemas(final Function<JsonNode, Boolean> matcher, final Consumer<JsonNode> transformer, final JsonNode schema) {
     if (schema.isBoolean()) {
       // We never want to modify a schema of `true` or `false` (e.g. additionalProperties: true)
       // so just return immediately
@@ -50,7 +50,7 @@ public class SchemaMigrations {
       // additionalProperties
       // else if oneof, allof, etc
       // but that sounds really verbose for no real benefit
-      List<JsonNode> subschemas = new ArrayList<>();
+      final List<JsonNode> subschemas = new ArrayList<>();
 
       // array schemas
       findSubschemas(subschemas, schema, "items");
@@ -59,18 +59,18 @@ public class SchemaMigrations {
 
       // object schemas
       if (schema.hasNonNull("properties")) {
-        ObjectNode propertiesNode = (ObjectNode) schema.get("properties");
-        Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
+        final ObjectNode propertiesNode = (ObjectNode) schema.get("properties");
+        final Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
         while (propertiesIterator.hasNext()) {
-          Entry<String, JsonNode> property = propertiesIterator.next();
+          final Entry<String, JsonNode> property = propertiesIterator.next();
           subschemas.add(property.getValue());
         }
       }
       if (schema.hasNonNull("patternProperties")) {
-        ObjectNode propertiesNode = (ObjectNode) schema.get("patternProperties");
-        Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
+        final ObjectNode propertiesNode = (ObjectNode) schema.get("patternProperties");
+        final Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
         while (propertiesIterator.hasNext()) {
-          Entry<String, JsonNode> property = propertiesIterator.next();
+          final Entry<String, JsonNode> property = propertiesIterator.next();
           subschemas.add(property.getValue());
         }
       }
@@ -84,7 +84,7 @@ public class SchemaMigrations {
       findSubschemas(subschemas, schema, "not");
 
       // recurse into each subschema
-      for (JsonNode subschema : subschemas) {
+      for (final JsonNode subschema : subschemas) {
         mutateSchemas(matcher, transformer, subschema);
       }
     }
@@ -115,11 +115,11 @@ public class SchemaMigrations {
    * (technically `true` is a valid JsonSchema, but we don't want to modify it)</li>
    * </ul>
    */
-  public static void findSubschemas(List<JsonNode> subschemas, JsonNode schema, String key) {
+  public static void findSubschemas(final List<JsonNode> subschemas, final JsonNode schema, final String key) {
     if (schema.hasNonNull(key)) {
-      JsonNode subschemaNode = schema.get(key);
+      final JsonNode subschemaNode = schema.get(key);
       if (subschemaNode.isArray()) {
-        for (JsonNode subschema : subschemaNode) {
+        for (final JsonNode subschema : subschemaNode) {
           subschemas.add(subschema);
         }
       } else if (subschemaNode.isObject()) {

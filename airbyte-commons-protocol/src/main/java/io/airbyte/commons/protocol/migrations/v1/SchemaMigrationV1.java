@@ -27,7 +27,7 @@ public class SchemaMigrationV1 {
   /**
    * Perform the {type: foo} -> {$ref: foo} upgrade. Modifies the schema in-place.
    */
-  public static void upgradeSchema(JsonNode schema) {
+  public static void upgradeSchema(final JsonNode schema) {
     SchemaMigrations.mutateSchemas(
         SchemaMigrationV1::isPrimitiveTypeDeclaration,
         SchemaMigrationV1::upgradeTypeDeclaration,
@@ -37,7 +37,7 @@ public class SchemaMigrationV1 {
   /**
    * Perform the {$ref: foo} -> {type: foo} downgrade. Modifies the schema in-place.
    */
-  public static void downgradeSchema(JsonNode schema) {
+  public static void downgradeSchema(final JsonNode schema) {
     SchemaMigrations.mutateSchemas(
         SchemaMigrationV1::isPrimitiveReferenceTypeDeclaration,
         SchemaMigrationV1::downgradeTypeDeclaration,
@@ -48,11 +48,11 @@ public class SchemaMigrationV1 {
    * Detects any schema that looks like a primitive type declaration, e.g.: { "type": "string" } or {
    * "type": ["string", "object"] }
    */
-  private static boolean isPrimitiveTypeDeclaration(JsonNode schema) {
+  private static boolean isPrimitiveTypeDeclaration(final JsonNode schema) {
     if (!schema.isObject() || !schema.hasNonNull(TYPE_KEY)) {
       return false;
     }
-    JsonNode typeNode = schema.get(TYPE_KEY);
+    final JsonNode typeNode = schema.get(TYPE_KEY);
     if (typeNode.isArray()) {
       return StreamSupport.stream(typeNode.spliterator(), false)
           .anyMatch(n -> JsonSchemaReferenceTypes.PRIMITIVE_JSON_TYPES.contains(n.asText()));
@@ -65,7 +65,7 @@ public class SchemaMigrationV1 {
    * Detects any schema that looks like a reference type declaration, e.g.: { "$ref":
    * "WellKnownTypes.json...." } or { "oneOf": [{"$ref": "..."}, {"type": "object"}] }
    */
-  private static boolean isPrimitiveReferenceTypeDeclaration(JsonNode schema) {
+  private static boolean isPrimitiveReferenceTypeDeclaration(final JsonNode schema) {
     if (!schema.isObject()) {
       // Non-object schemas (i.e. true/false) never need to be modified
       return false;
@@ -75,7 +75,7 @@ public class SchemaMigrationV1 {
     } else if (schema.hasNonNull(ONEOF_KEY)) {
       // If this is a oneOf with at least one primitive $ref option, then we should consider converting it
       // back
-      List<JsonNode> subschemas = getSubschemas(schema, ONEOF_KEY);
+      final List<JsonNode> subschemas = getSubschemas(schema, ONEOF_KEY);
       return subschemas.stream().anyMatch(
           subschema -> subschema.hasNonNull(REF_KEY)
               && subschema.get(REF_KEY).asText().startsWith("WellKnownTypes.json"));
@@ -94,45 +94,45 @@ public class SchemaMigrationV1 {
    *
    * @param schema An ObjectNode representing a primitive type declaration
    */
-  private static void upgradeTypeDeclaration(JsonNode schema) {
-    ObjectNode schemaNode = (ObjectNode) schema;
+  private static void upgradeTypeDeclaration(final JsonNode schema) {
+    final ObjectNode schemaNode = (ObjectNode) schema;
 
     if (schemaNode.hasNonNull("airbyte_type")) {
       // If airbyte_type is defined, always respect it
-      String referenceType = JsonSchemaReferenceTypes.LEGACY_AIRBYTE_PROPERY_TO_REFERENCE.get(schemaNode.get("airbyte_type").asText());
+      final String referenceType = JsonSchemaReferenceTypes.LEGACY_AIRBYTE_PROPERY_TO_REFERENCE.get(schemaNode.get("airbyte_type").asText());
       schemaNode.removeAll();
       schemaNode.put(REF_KEY, referenceType);
     } else {
       // Otherwise, fall back to type/format
-      JsonNode typeNode = schemaNode.get(TYPE_KEY);
+      final JsonNode typeNode = schemaNode.get(TYPE_KEY);
       if (typeNode.isTextual()) {
         // If the type is a single string, then replace this node with the appropriate reference type
-        String type = typeNode.asText();
-        String referenceType = getReferenceType(type, schemaNode);
+        final String type = typeNode.asText();
+        final String referenceType = getReferenceType(type, schemaNode);
         schemaNode.removeAll();
         schemaNode.put(REF_KEY, referenceType);
       } else {
         // If type is an array of strings, then things are more complicated
-        List<String> types = StreamSupport.stream(typeNode.spliterator(), false)
+        final List<String> types = StreamSupport.stream(typeNode.spliterator(), false)
             .map(JsonNode::asText)
             // Everything is implicitly nullable by just not declaring the `required `field
             // so filter out any explicit null types
             .filter(type -> !"null".equals(type))
             .toList();
-        boolean exactlyOneType = types.size() == 1;
+        final boolean exactlyOneType = types.size() == 1;
         if (exactlyOneType) {
           // If there's only one type, e.g. {type: [string]}, just treat that as equivalent to {type: string}
-          String type = types.get(0);
-          String referenceType = getReferenceType(type, schemaNode);
+          final String type = types.get(0);
+          final String referenceType = getReferenceType(type, schemaNode);
           schemaNode.removeAll();
           schemaNode.put(REF_KEY, referenceType);
         } else {
           // If there are multiple types, we'll need to convert this to a oneOf.
           // For arrays and objects, we do a mutual recursion back into mutateSchemas to upgrade their
           // subschemas.
-          ArrayNode oneOfOptions = Jsons.arrayNode();
-          for (String type : types) {
-            ObjectNode option = (ObjectNode) Jsons.emptyObject();
+          final ArrayNode oneOfOptions = Jsons.arrayNode();
+          for (final String type : types) {
+            final ObjectNode option = (ObjectNode) Jsons.emptyObject();
             switch (type) {
               case "array" -> {
                 option.put(TYPE_KEY, "array");
@@ -149,7 +149,7 @@ public class SchemaMigrationV1 {
                 upgradeSchema(option);
               }
               default -> {
-                String referenceType = getReferenceType(type, schemaNode);
+                final String referenceType = getReferenceType(type, schemaNode);
                 option.put(REF_KEY, referenceType);
               }
             }
@@ -174,10 +174,10 @@ public class SchemaMigrationV1 {
    *
    * @param schema An ObjectNode representing a primitive type declaration
    */
-  private static void downgradeTypeDeclaration(JsonNode schema) {
+  private static void downgradeTypeDeclaration(final JsonNode schema) {
     if (schema.hasNonNull(REF_KEY)) {
       // If this is a direct type declaration, then we can just replace it with the old-style declaration
-      String referenceType = schema.get(REF_KEY).asText();
+      final String referenceType = schema.get(REF_KEY).asText();
       ((ObjectNode) schema).removeAll();
       ((ObjectNode) schema).setAll(JsonSchemaReferenceTypes.REFERENCE_TYPE_TO_OLD_TYPE.get(referenceType));
     } else if (schema.hasNonNull(ONEOF_KEY)) {
@@ -192,13 +192,13 @@ public class SchemaMigrationV1 {
       // See V0ToV1MigrationTest.CatalogDowngradeTest#testDowngradeMultiTypeFields for some examples.
 
       // We'll build up a node containing the combined subschemas.
-      ObjectNode replacement = (ObjectNode) Jsons.emptyObject();
+      final ObjectNode replacement = (ObjectNode) Jsons.emptyObject();
       // As part of this, we need to build up a list of `type` entries. For ease of access, we'll keep it
       // in a List.
-      List<String> types = new ArrayList<>();
+      final List<String> types = new ArrayList<>();
 
       boolean canRecombineSubschemas = true;
-      for (JsonNode subschemaNode : schema.get(ONEOF_KEY)) {
+      for (final JsonNode subschemaNode : schema.get(ONEOF_KEY)) {
         // No matter what - we always need to downgrade the subschema node.
         downgradeSchema(subschemaNode);
 
@@ -206,7 +206,7 @@ public class SchemaMigrationV1 {
           // If this subschema is an object, then we can attempt to combine it with the other subschemas.
 
           // First, update our list of types.
-          JsonNode subschemaType = subschema.get(TYPE_KEY);
+          final JsonNode subschemaType = subschema.get(TYPE_KEY);
           if (subschemaType != null) {
             if (types.contains(subschemaType.asText())) {
               // If another subschema has the same type, then we can't combine them.
@@ -218,9 +218,9 @@ public class SchemaMigrationV1 {
 
           // Then, update the combined schema with this subschema's fields.
           if (canRecombineSubschemas) {
-            Iterator<Entry<String, JsonNode>> fields = subschema.fields();
+            final Iterator<Entry<String, JsonNode>> fields = subschema.fields();
             while (fields.hasNext()) {
-              Entry<String, JsonNode> field = fields.next();
+              final Entry<String, JsonNode> field = fields.next();
               if (TYPE_KEY.equals(field.getKey())) {
                 // We're handling the `type` field outside this loop, so ignore it here.
                 continue;
@@ -244,7 +244,7 @@ public class SchemaMigrationV1 {
 
       if (canRecombineSubschemas) {
         // Update our replacement node with the full list of types
-        ArrayNode typeNode = Jsons.arrayNode();
+        final ArrayNode typeNode = Jsons.arrayNode();
         types.forEach(typeNode::add);
         replacement.set(TYPE_KEY, typeNode);
 
@@ -255,7 +255,7 @@ public class SchemaMigrationV1 {
     }
   }
 
-  private static void copyKey(ObjectNode source, ObjectNode target, String key) {
+  private static void copyKey(final ObjectNode source, final ObjectNode target, final String key) {
     if (source.hasNonNull(key)) {
       target.set(key, source.get(key));
     }
@@ -266,7 +266,7 @@ public class SchemaMigrationV1 {
    * appropriate $ref type. In most cases, this only depends on the "type" key. When type=string, also
    * checks the "format" key.
    */
-  private static String getReferenceType(String type, ObjectNode schemaNode) {
+  private static String getReferenceType(final String type, final ObjectNode schemaNode) {
     return switch (type) {
       case "string" -> {
         if (schemaNode.hasNonNull("format")) {
@@ -297,8 +297,8 @@ public class SchemaMigrationV1 {
     };
   }
 
-  private static List<JsonNode> getSubschemas(JsonNode schema, String key) {
-    List<JsonNode> subschemas = new ArrayList<>();
+  private static List<JsonNode> getSubschemas(final JsonNode schema, final String key) {
+    final List<JsonNode> subschemas = new ArrayList<>();
     SchemaMigrations.findSubschemas(subschemas, schema, key);
     return subschemas;
   }

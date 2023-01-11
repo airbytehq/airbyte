@@ -36,7 +36,7 @@ class AirbyteMessageMigrationV1Test {
   void setup() throws URISyntaxException {
     // TODO this should probably just get generated as part of the airbyte-protocol build, and
     // airbyte-workers / airbyte-commons-protocol would reference it directly
-    URI parentUri = MoreResources.readResourceAsFile("WellKnownTypes.json").getAbsoluteFile().toURI();
+    final URI parentUri = MoreResources.readResourceAsFile("WellKnownTypes.json").getAbsoluteFile().toURI();
     validator = new JsonSchemaValidator(parentUri);
     migration = new AirbyteMessageMigrationV1(validator);
   }
@@ -54,16 +54,16 @@ class AirbyteMessageMigrationV1Test {
     void testBasicUpgrade() {
       // This isn't actually a valid stream schema (since it's not an object)
       // but this test case is mostly about preserving the message structure, so it's not super relevant
-      JsonNode oldSchema = Jsons.deserialize(
+      final JsonNode oldSchema = Jsons.deserialize(
           """
           {
             "type": "string"
           }
           """);
 
-      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
+      final AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
 
-      AirbyteMessage expectedMessage = Jsons.deserialize(
+      final AirbyteMessage expectedMessage = Jsons.deserialize(
           """
           {
             "type": "CATALOG",
@@ -84,10 +84,10 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testNullUpgrade() {
-      io.airbyte.protocol.models.v0.AirbyteMessage oldMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
+      final io.airbyte.protocol.models.v0.AirbyteMessage oldMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
           .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG);
-      AirbyteMessage upgradedMessage = migration.upgrade(oldMessage, Optional.empty());
-      AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.CATALOG);
+      final AirbyteMessage upgradedMessage = migration.upgrade(oldMessage, Optional.empty());
+      final AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.CATALOG);
       assertEquals(expectedMessage, upgradedMessage);
     }
 
@@ -97,12 +97,12 @@ class AirbyteMessageMigrationV1Test {
      * @param oldSchemaString The schema to be upgraded
      * @param expectedSchemaString The expected schema after upgrading
      */
-    private void doTest(String oldSchemaString, String expectedSchemaString) {
-      JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
+    private void doTest(final String oldSchemaString, final String expectedSchemaString) {
+      final JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
 
-      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
+      final AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
 
-      JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
+      final JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
       assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
@@ -327,42 +327,42 @@ class AirbyteMessageMigrationV1Test {
     void testUpgradeBooleanSchemas() {
       // Most of these should never happen in reality, but let's handle them just in case
       // The only ones that we're _really_ expecting are additionalItems and additionalProperties
-      String schemaString = """
-                            {
-                              "type": "object",
-                              "properties": {
-                                "basic_array": {
-                                  "items": true
-                                },
-                                "tuple_array": {
-                                  "items": [true],
-                                  "additionalItems": true,
-                                  "contains": true
-                                },
-                                "nested_object": {
-                                  "properties": {
-                                    "id": true,
-                                    "nested_oneof": {
-                                      "oneOf": [true]
-                                    },
-                                    "nested_anyof": {
-                                      "anyOf": [true]
-                                    },
-                                    "nested_allof": {
-                                      "allOf": [true]
-                                    },
-                                    "nested_not": {
-                                      "not": [true]
+      final String schemaString = """
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "basic_array": {
+                                        "items": true
+                                      },
+                                      "tuple_array": {
+                                        "items": [true],
+                                        "additionalItems": true,
+                                        "contains": true
+                                      },
+                                      "nested_object": {
+                                        "properties": {
+                                          "id": true,
+                                          "nested_oneof": {
+                                            "oneOf": [true]
+                                          },
+                                          "nested_anyof": {
+                                            "anyOf": [true]
+                                          },
+                                          "nested_allof": {
+                                            "allOf": [true]
+                                          },
+                                          "nested_not": {
+                                            "not": [true]
+                                          }
+                                        },
+                                        "patternProperties": {
+                                          "integer_.*": true
+                                        },
+                                        "additionalProperties": true
+                                      }
                                     }
-                                  },
-                                  "patternProperties": {
-                                    "integer_.*": true
-                                  },
-                                  "additionalProperties": true
-                                }
-                              }
-                            }
-                            """;
+                                  }
+                                  """;
       doTest(schemaString, schemaString);
     }
 
@@ -370,61 +370,61 @@ class AirbyteMessageMigrationV1Test {
     void testUpgradeEmptySchema() {
       // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently
       // enforced by SATs
-      String schemaString = """
-                            {
-                              "type": "object",
-                              "properties": {
-                                "basic_array": {
-                                  "items": {}
-                                },
-                                "tuple_array": {
-                                  "items": [{}],
-                                  "additionalItems": {},
-                                  "contains": {}
-                                },
-                                "nested_object": {
-                                  "properties": {
-                                    "id": {},
-                                    "nested_oneof": {
-                                      "oneOf": [{}]
-                                    },
-                                    "nested_anyof": {
-                                      "anyOf": [{}]
-                                    },
-                                    "nested_allof": {
-                                      "allOf": [{}]
-                                    },
-                                    "nested_not": {
-                                      "not": [{}]
+      final String schemaString = """
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "basic_array": {
+                                        "items": {}
+                                      },
+                                      "tuple_array": {
+                                        "items": [{}],
+                                        "additionalItems": {},
+                                        "contains": {}
+                                      },
+                                      "nested_object": {
+                                        "properties": {
+                                          "id": {},
+                                          "nested_oneof": {
+                                            "oneOf": [{}]
+                                          },
+                                          "nested_anyof": {
+                                            "anyOf": [{}]
+                                          },
+                                          "nested_allof": {
+                                            "allOf": [{}]
+                                          },
+                                          "nested_not": {
+                                            "not": [{}]
+                                          }
+                                        },
+                                        "patternProperties": {
+                                          "integer_.*": {}
+                                        },
+                                        "additionalProperties": {}
+                                      }
                                     }
-                                  },
-                                  "patternProperties": {
-                                    "integer_.*": {}
-                                  },
-                                  "additionalProperties": {}
-                                }
-                              }
-                            }
-                            """;
+                                  }
+                                  """;
       doTest(schemaString, schemaString);
     }
 
     @Test
     void testUpgradeLiteralSchema() {
       // Verify that we do _not_ recurse into places we shouldn't
-      String schemaString = """
-                            {
-                              "type": "object",
-                              "properties": {
-                                "example_schema": {
-                                  "type": "object",
-                                  "default": {"type": "string"},
-                                  "enum": [{"type": "string"}],
-                                  "const": {"type": "string"}
-                                }
-                              }
-                            }
-                            """;
+      final String schemaString = """
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "example_schema": {
+                                        "type": "object",
+                                        "default": {"type": "string"},
+                                        "enum": [{"type": "string"}],
+                                        "const": {"type": "string"}
+                                      }
+                                    }
+                                  }
+                                  """;
       doTest(schemaString, schemaString);
     }
 
@@ -557,7 +557,7 @@ class AirbyteMessageMigrationV1Test {
           """);
     }
 
-    private io.airbyte.protocol.models.v0.AirbyteMessage createCatalogMessage(JsonNode schema) {
+    private io.airbyte.protocol.models.v0.AirbyteMessage createCatalogMessage(final JsonNode schema) {
       return new io.airbyte.protocol.models.v0.AirbyteMessage().withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG)
           .withCatalog(
               new io.airbyte.protocol.models.v0.AirbyteCatalog().withStreams(List.of(new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(
@@ -571,16 +571,16 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testBasicUpgrade() {
-      JsonNode oldData = Jsons.deserialize(
+      final JsonNode oldData = Jsons.deserialize(
           """
           {
             "id": 42
           }
           """);
 
-      AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData), Optional.empty());
+      final AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData), Optional.empty());
 
-      AirbyteMessage expectedMessage = Jsons.deserialize(
+      final AirbyteMessage expectedMessage = Jsons.deserialize(
           """
           {
             "type": "RECORD",
@@ -597,10 +597,10 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testNullUpgrade() {
-      io.airbyte.protocol.models.v0.AirbyteMessage oldMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
+      final io.airbyte.protocol.models.v0.AirbyteMessage oldMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
           .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD);
-      AirbyteMessage upgradedMessage = migration.upgrade(oldMessage, Optional.empty());
-      AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.RECORD);
+      final AirbyteMessage upgradedMessage = migration.upgrade(oldMessage, Optional.empty());
+      final AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.RECORD);
       assertEquals(expectedMessage, upgradedMessage);
     }
 
@@ -610,12 +610,12 @@ class AirbyteMessageMigrationV1Test {
      * @param oldDataString The data of the record to be upgraded
      * @param expectedDataString The expected data after upgrading
      */
-    private void doTest(String oldDataString, String expectedDataString) {
-      JsonNode oldData = Jsons.deserialize(oldDataString);
+    private void doTest(final String oldDataString, final String expectedDataString) {
+      final JsonNode oldData = Jsons.deserialize(oldDataString);
 
-      AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData), Optional.empty());
+      final AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData), Optional.empty());
 
-      JsonNode expectedData = Jsons.deserialize(expectedDataString);
+      final JsonNode expectedData = Jsons.deserialize(expectedDataString);
       assertEquals(expectedData, upgradedMessage.getRecord().getData());
     }
 
@@ -677,7 +677,7 @@ class AirbyteMessageMigrationV1Test {
           """);
     }
 
-    private io.airbyte.protocol.models.v0.AirbyteMessage createRecordMessage(JsonNode data) {
+    private io.airbyte.protocol.models.v0.AirbyteMessage createRecordMessage(final JsonNode data) {
       return new io.airbyte.protocol.models.v0.AirbyteMessage().withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD)
           .withRecord(new io.airbyte.protocol.models.v0.AirbyteRecordMessage().withData(data));
     }
@@ -691,16 +691,16 @@ class AirbyteMessageMigrationV1Test {
     void testBasicDowngrade() {
       // This isn't actually a valid stream schema (since it's not an object)
       // but this test case is mostly about preserving the message structure, so it's not super relevant
-      JsonNode newSchema = Jsons.deserialize(
+      final JsonNode newSchema = Jsons.deserialize(
           """
           {
             "$ref": "WellKnownTypes.json#/definitions/String"
           }
           """);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(newSchema), Optional.empty());
+      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(newSchema), Optional.empty());
 
-      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+      final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
           """
           {
             "type": "CATALOG",
@@ -721,9 +721,9 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testNullDowngrade() {
-      AirbyteMessage oldMessage = new AirbyteMessage().withType(Type.CATALOG);
-      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(oldMessage, Optional.empty());
-      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
+      final AirbyteMessage oldMessage = new AirbyteMessage().withType(Type.CATALOG);
+      final io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(oldMessage, Optional.empty());
+      final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
           .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG);
       assertEquals(expectedMessage, upgradedMessage);
     }
@@ -734,12 +734,12 @@ class AirbyteMessageMigrationV1Test {
      * @param oldSchemaString The schema to be downgraded
      * @param expectedSchemaString The expected schema after downgrading
      */
-    private void doTest(String oldSchemaString, String expectedSchemaString) {
-      JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
+    private void doTest(final String oldSchemaString, final String expectedSchemaString) {
+      final JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema), Optional.empty());
+      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema), Optional.empty());
 
-      JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
+      final JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
       assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
@@ -944,42 +944,42 @@ class AirbyteMessageMigrationV1Test {
     void testDowngradeBooleanSchemas() {
       // Most of these should never happen in reality, but let's handle them just in case
       // The only ones that we're _really_ expecting are additionalItems and additionalProperties
-      String schemaString = """
-                            {
-                              "type": "object",
-                              "properties": {
-                                "basic_array": {
-                                  "items": true
-                                },
-                                "tuple_array": {
-                                  "items": [true],
-                                  "additionalItems": true,
-                                  "contains": true
-                                },
-                                "nested_object": {
-                                  "properties": {
-                                    "id": true,
-                                    "nested_oneof": {
-                                      "oneOf": [true]
-                                    },
-                                    "nested_anyof": {
-                                      "anyOf": [true]
-                                    },
-                                    "nested_allof": {
-                                      "allOf": [true]
-                                    },
-                                    "nested_not": {
-                                      "not": [true]
+      final String schemaString = """
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "basic_array": {
+                                        "items": true
+                                      },
+                                      "tuple_array": {
+                                        "items": [true],
+                                        "additionalItems": true,
+                                        "contains": true
+                                      },
+                                      "nested_object": {
+                                        "properties": {
+                                          "id": true,
+                                          "nested_oneof": {
+                                            "oneOf": [true]
+                                          },
+                                          "nested_anyof": {
+                                            "anyOf": [true]
+                                          },
+                                          "nested_allof": {
+                                            "allOf": [true]
+                                          },
+                                          "nested_not": {
+                                            "not": [true]
+                                          }
+                                        },
+                                        "patternProperties": {
+                                          "integer_.*": true
+                                        },
+                                        "additionalProperties": true
+                                      }
                                     }
-                                  },
-                                  "patternProperties": {
-                                    "integer_.*": true
-                                  },
-                                  "additionalProperties": true
-                                }
-                              }
-                            }
-                            """;
+                                  }
+                                  """;
       doTest(schemaString, schemaString);
     }
 
@@ -987,61 +987,61 @@ class AirbyteMessageMigrationV1Test {
     void testDowngradeEmptySchema() {
       // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently
       // enforced by SATs
-      String schemaString = """
-                            {
-                              "type": "object",
-                              "properties": {
-                                "basic_array": {
-                                  "items": {}
-                                },
-                                "tuple_array": {
-                                  "items": [{}],
-                                  "additionalItems": {},
-                                  "contains": {}
-                                },
-                                "nested_object": {
-                                  "properties": {
-                                    "id": {},
-                                    "nested_oneof": {
-                                      "oneOf": [{}]
-                                    },
-                                    "nested_anyof": {
-                                      "anyOf": [{}]
-                                    },
-                                    "nested_allof": {
-                                      "allOf": [{}]
-                                    },
-                                    "nested_not": {
-                                      "not": [{}]
+      final String schemaString = """
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "basic_array": {
+                                        "items": {}
+                                      },
+                                      "tuple_array": {
+                                        "items": [{}],
+                                        "additionalItems": {},
+                                        "contains": {}
+                                      },
+                                      "nested_object": {
+                                        "properties": {
+                                          "id": {},
+                                          "nested_oneof": {
+                                            "oneOf": [{}]
+                                          },
+                                          "nested_anyof": {
+                                            "anyOf": [{}]
+                                          },
+                                          "nested_allof": {
+                                            "allOf": [{}]
+                                          },
+                                          "nested_not": {
+                                            "not": [{}]
+                                          }
+                                        },
+                                        "patternProperties": {
+                                          "integer_.*": {}
+                                        },
+                                        "additionalProperties": {}
+                                      }
                                     }
-                                  },
-                                  "patternProperties": {
-                                    "integer_.*": {}
-                                  },
-                                  "additionalProperties": {}
-                                }
-                              }
-                            }
-                            """;
+                                  }
+                                  """;
       doTest(schemaString, schemaString);
     }
 
     @Test
     void testDowngradeLiteralSchema() {
       // Verify that we do _not_ recurse into places we shouldn't
-      String schemaString = """
-                            {
-                              "type": "object",
-                              "properties": {
-                                "example_schema": {
-                                  "type": "object",
-                                  "default": {"$ref": "WellKnownTypes.json#/definitions/String"},
-                                  "enum": [{"$ref": "WellKnownTypes.json#/definitions/String"}],
-                                  "const": {"$ref": "WellKnownTypes.json#/definitions/String"}
-                                }
-                              }
-                            }
-                            """;
+      final String schemaString = """
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "example_schema": {
+                                        "type": "object",
+                                        "default": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                                        "enum": [{"$ref": "WellKnownTypes.json#/definitions/String"}],
+                                        "const": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                                      }
+                                    }
+                                  }
+                                  """;
       doTest(schemaString, schemaString);
     }
 
@@ -1172,7 +1172,7 @@ class AirbyteMessageMigrationV1Test {
           """);
     }
 
-    private AirbyteMessage createCatalogMessage(JsonNode schema) {
+    private AirbyteMessage createCatalogMessage(final JsonNode schema) {
       return new AirbyteMessage().withType(AirbyteMessage.Type.CATALOG)
           .withCatalog(
               new AirbyteCatalog().withStreams(List.of(new AirbyteStream().withJsonSchema(
@@ -1189,19 +1189,19 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testBasicDowngrade() {
-      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+      final ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
           """
           {"$ref": "WellKnownTypes.json#/definitions/Integer"}
           """);
-      JsonNode oldData = Jsons.deserialize(
+      final JsonNode oldData = Jsons.deserialize(
           """
           "42"
           """);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(validator)
+      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(validator)
           .downgrade(createRecordMessage(oldData), Optional.of(catalog));
 
-      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+      final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
           """
           {
             "type": "RECORD",
@@ -1218,9 +1218,9 @@ class AirbyteMessageMigrationV1Test {
 
     @Test
     void testNullDowngrade() {
-      AirbyteMessage oldMessage = new AirbyteMessage().withType(Type.RECORD);
-      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(oldMessage, Optional.empty());
-      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
+      final AirbyteMessage oldMessage = new AirbyteMessage().withType(Type.RECORD);
+      final io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(oldMessage, Optional.empty());
+      final io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
           .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD);
       assertEquals(expectedMessage, upgradedMessage);
     }
@@ -1233,14 +1233,14 @@ class AirbyteMessageMigrationV1Test {
      * @param oldDataString The data of the record to be downgraded
      * @param expectedDataString The expected data after downgrading
      */
-    private void doTest(String schemaString, String oldDataString, String expectedDataString) {
-      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(schemaString);
-      JsonNode oldData = Jsons.deserialize(oldDataString);
+    private void doTest(final String schemaString, final String oldDataString, final String expectedDataString) {
+      final ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(schemaString);
+      final JsonNode oldData = Jsons.deserialize(oldDataString);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(validator)
+      final io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(validator)
           .downgrade(createRecordMessage(oldData), Optional.of(catalog));
 
-      JsonNode expectedDowngradedRecord = Jsons.deserialize(expectedDataString);
+      final JsonNode expectedDowngradedRecord = Jsons.deserialize(expectedDataString);
       assertEquals(expectedDowngradedRecord, downgradedMessage.getRecord().getData());
     }
 
@@ -1615,7 +1615,7 @@ class AirbyteMessageMigrationV1Test {
           """);
     }
 
-    private ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String schema) {
+    private ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String schema) {
       return new ConfiguredAirbyteCatalog()
           .withStreams(List.of(new ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.AirbyteStream()
               .withName(STREAM_NAME)
@@ -1623,7 +1623,7 @@ class AirbyteMessageMigrationV1Test {
               .withJsonSchema(Jsons.deserialize(schema)))));
     }
 
-    private AirbyteMessage createRecordMessage(JsonNode data) {
+    private AirbyteMessage createRecordMessage(final JsonNode data) {
       return new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withNamespace(NAMESPACE_NAME).withData(data));
     }

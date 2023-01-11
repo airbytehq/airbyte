@@ -59,11 +59,11 @@ public class RecordMigrations {
    * @param transformer Performs the modification on the given data node. Should not throw exceptions.
    */
   public static MigratedNode mutateDataNode(
-                                            JsonSchemaValidator validator,
-                                            Function<JsonNode, Boolean> schemaMatcher,
-                                            Transformer transformer,
-                                            JsonNode data,
-                                            JsonNode schema) {
+                                            final JsonSchemaValidator validator,
+                                            final Function<JsonNode, Boolean> schemaMatcher,
+                                            final Transformer transformer,
+                                            final JsonNode data,
+                                            final JsonNode schema) {
     // If this is a oneOf node, then we need to handle each oneOf case.
     if (!schema.hasNonNull(REF_KEY) && !schema.hasNonNull(TYPE_KEY) && schema.hasNonNull(ONEOF_KEY)) {
       return mutateOneOfNode(validator, schemaMatcher, transformer, data, schema);
@@ -92,12 +92,12 @@ public class RecordMigrations {
    * subschema.
    */
   private static MigratedNode mutateOneOfNode(
-                                              JsonSchemaValidator validator,
-                                              Function<JsonNode, Boolean> schemaMatcher,
-                                              Transformer transformer,
-                                              JsonNode data,
-                                              JsonNode schema) {
-    JsonNode schemaOptions = schema.get(ONEOF_KEY);
+                                              final JsonSchemaValidator validator,
+                                              final Function<JsonNode, Boolean> schemaMatcher,
+                                              final Transformer transformer,
+                                              final JsonNode data,
+                                              final JsonNode schema) {
+    final JsonNode schemaOptions = schema.get(ONEOF_KEY);
     if (schemaOptions.size() == 0) {
       // If the oneOf has no options, then don't do anything interesting.
       return new MigratedNode(data, validator.test(schema, data));
@@ -106,8 +106,8 @@ public class RecordMigrations {
     // Attempt to mutate the node against each oneOf schema.
     // Return the first schema that matches the data, or the first schema if none matched successfully.
     MigratedNode migratedNode = null;
-    for (JsonNode maybeSchema : schemaOptions) {
-      MigratedNode maybeMigratedNode = mutateDataNode(validator, schemaMatcher, transformer, data, maybeSchema);
+    for (final JsonNode maybeSchema : schemaOptions) {
+      final MigratedNode maybeMigratedNode = mutateDataNode(validator, schemaMatcher, transformer, data, maybeSchema);
       if (maybeMigratedNode.matchedSchema()) {
         // If we've found a matching schema, then return immediately
         return maybeMigratedNode;
@@ -124,11 +124,11 @@ public class RecordMigrations {
    * If data is an object, then we need to recursively mutate all of its fields.
    */
   private static MigratedNode mutateObjectNode(
-                                               JsonSchemaValidator validator,
-                                               Function<JsonNode, Boolean> schemaMatcher,
-                                               Transformer transformer,
-                                               JsonNode data,
-                                               JsonNode schema) {
+                                               final JsonSchemaValidator validator,
+                                               final Function<JsonNode, Boolean> schemaMatcher,
+                                               final Transformer transformer,
+                                               final JsonNode data,
+                                               final JsonNode schema) {
     boolean isObjectSchema;
     // First, check whether the schema is supposed to be an object at all.
     if (schema.hasNonNull(REF_KEY)) {
@@ -137,10 +137,10 @@ public class RecordMigrations {
     } else if (schema.hasNonNull(TYPE_KEY)) {
       // If the schema declares {type: object} or {type: [..., object, ...]}
       // Then this is an object schema
-      JsonNode typeNode = schema.get(TYPE_KEY);
+      final JsonNode typeNode = schema.get(TYPE_KEY);
       if (typeNode.isArray()) {
         isObjectSchema = false;
-        for (JsonNode typeItem : typeNode) {
+        for (final JsonNode typeItem : typeNode) {
           if (OBJECT_TYPE.equals(typeItem.asText())) {
             isObjectSchema = true;
           }
@@ -160,19 +160,19 @@ public class RecordMigrations {
       return new MigratedNode(data, false);
     } else {
       // If the schema _is_ for an object, then recurse into each field
-      ObjectNode mutatedData = (ObjectNode) Jsons.emptyObject();
-      JsonNode propertiesNode = schema.get(PROPERTIES_KEY);
+      final ObjectNode mutatedData = (ObjectNode) Jsons.emptyObject();
+      final JsonNode propertiesNode = schema.get(PROPERTIES_KEY);
 
-      Iterator<Entry<String, JsonNode>> dataFields = data.fields();
+      final Iterator<Entry<String, JsonNode>> dataFields = data.fields();
       boolean matchedSchema = true;
       while (dataFields.hasNext()) {
-        Entry<String, JsonNode> field = dataFields.next();
-        String key = field.getKey();
-        JsonNode value = field.getValue();
+        final Entry<String, JsonNode> field = dataFields.next();
+        final String key = field.getKey();
+        final JsonNode value = field.getValue();
         if (propertiesNode != null && propertiesNode.hasNonNull(key)) {
           // If we have a schema for this property, mutate the value
-          JsonNode subschema = propertiesNode.get(key);
-          MigratedNode migratedNode = mutateDataNode(validator, schemaMatcher, transformer, value, subschema);
+          final JsonNode subschema = propertiesNode.get(key);
+          final MigratedNode migratedNode = mutateDataNode(validator, schemaMatcher, transformer, value, subschema);
           mutatedData.set(key, migratedNode.node);
           if (!migratedNode.matchedSchema) {
             matchedSchema = false;
@@ -192,11 +192,11 @@ public class RecordMigrations {
    * Much like objects, arrays must be recursively mutated.
    */
   private static MigratedNode mutateArrayNode(
-                                              JsonSchemaValidator validator,
-                                              Function<JsonNode, Boolean> schemaMatcher,
-                                              Transformer transformer,
-                                              JsonNode data,
-                                              JsonNode schema) {
+                                              final JsonSchemaValidator validator,
+                                              final Function<JsonNode, Boolean> schemaMatcher,
+                                              final Transformer transformer,
+                                              final JsonNode data,
+                                              final JsonNode schema) {
     // Similar to objects, we first check whether this is even supposed to be an array.
     boolean isArraySchema;
     if (schema.hasNonNull(REF_KEY)) {
@@ -205,10 +205,10 @@ public class RecordMigrations {
     } else if (schema.hasNonNull(TYPE_KEY)) {
       // If the schema declares {type: array} or {type: [..., array, ...]}
       // Then this is an array schema
-      JsonNode typeNode = schema.get(TYPE_KEY);
+      final JsonNode typeNode = schema.get(TYPE_KEY);
       if (typeNode.isArray()) {
         isArraySchema = false;
-        for (JsonNode typeItem : typeNode) {
+        for (final JsonNode typeItem : typeNode) {
           if (ARRAY_TYPE.equals(typeItem.asText())) {
             isArraySchema = true;
           }
@@ -225,8 +225,8 @@ public class RecordMigrations {
     if (!isArraySchema) {
       return new MigratedNode(data, false);
     } else {
-      ArrayNode mutatedItems = Jsons.arrayNode();
-      JsonNode itemsNode = schema.get(ITEMS_KEY);
+      final ArrayNode mutatedItems = Jsons.arrayNode();
+      final JsonNode itemsNode = schema.get(ITEMS_KEY);
       if (itemsNode == null) {
         // We _could_ check additionalItems, but much like the additionalProperties comment for objects:
         // it's a lot of work for no payoff
@@ -237,10 +237,10 @@ public class RecordMigrations {
         // schema2 against the second element, etc.
         boolean allSchemasMatched = true;
         for (int i = 0; i < data.size(); i++) {
-          JsonNode element = data.get(i);
+          final JsonNode element = data.get(i);
           if (itemsNode.size() > i) {
             // If we have a schema for this element, then try mutating the element
-            MigratedNode mutatedElement = mutateDataNode(validator, schemaMatcher, transformer, element, itemsNode.get(i));
+            final MigratedNode mutatedElement = mutateDataNode(validator, schemaMatcher, transformer, element, itemsNode.get(i));
             if (!mutatedElement.matchedSchema()) {
               allSchemasMatched = false;
             }
@@ -256,8 +256,8 @@ public class RecordMigrations {
       } else {
         // IN the case of {items: schema}, we just check every array element against that schema.
         boolean matchedSchema = true;
-        for (JsonNode item : data) {
-          MigratedNode migratedNode = mutateDataNode(validator, schemaMatcher, transformer, item, itemsNode);
+        for (final JsonNode item : data) {
+          final MigratedNode migratedNode = mutateDataNode(validator, schemaMatcher, transformer, item, itemsNode);
           mutatedItems.add(migratedNode.node);
           if (!migratedNode.matchedSchema) {
             matchedSchema = false;

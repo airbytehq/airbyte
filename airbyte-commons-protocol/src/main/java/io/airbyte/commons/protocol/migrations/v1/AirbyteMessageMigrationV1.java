@@ -40,35 +40,35 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   @VisibleForTesting
-  public AirbyteMessageMigrationV1(JsonSchemaValidator validator) {
+  public AirbyteMessageMigrationV1(final JsonSchemaValidator validator) {
     this.validator = validator;
   }
 
   @Override
   public io.airbyte.protocol.models.v0.AirbyteMessage downgrade(final AirbyteMessage oldMessage,
                                                                 final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
-    io.airbyte.protocol.models.v0.AirbyteMessage newMessage = Jsons.object(
+    final io.airbyte.protocol.models.v0.AirbyteMessage newMessage = Jsons.object(
         Jsons.jsonNode(oldMessage),
         io.airbyte.protocol.models.v0.AirbyteMessage.class);
     if (oldMessage.getType() == Type.CATALOG && oldMessage.getCatalog() != null) {
-      for (io.airbyte.protocol.models.v0.AirbyteStream stream : newMessage.getCatalog().getStreams()) {
-        JsonNode schema = stream.getJsonSchema();
+      for (final io.airbyte.protocol.models.v0.AirbyteStream stream : newMessage.getCatalog().getStreams()) {
+        final JsonNode schema = stream.getJsonSchema();
         SchemaMigrationV1.downgradeSchema(schema);
       }
     } else if (oldMessage.getType() == Type.RECORD && oldMessage.getRecord() != null) {
       if (configuredAirbyteCatalog.isPresent()) {
-        ConfiguredAirbyteCatalog catalog = configuredAirbyteCatalog.get();
-        io.airbyte.protocol.models.v0.AirbyteRecordMessage record = newMessage.getRecord();
-        Optional<ConfiguredAirbyteStream> maybeStream = catalog.getStreams().stream()
+        final ConfiguredAirbyteCatalog catalog = configuredAirbyteCatalog.get();
+        final io.airbyte.protocol.models.v0.AirbyteRecordMessage record = newMessage.getRecord();
+        final Optional<ConfiguredAirbyteStream> maybeStream = catalog.getStreams().stream()
             .filter(stream -> Objects.equals(stream.getStream().getName(), record.getStream())
                 && Objects.equals(stream.getStream().getNamespace(), record.getNamespace()))
             .findFirst();
         // If this record doesn't belong to any configured stream, then there's no point downgrading it
         // So only do the downgrade if we can find its stream
         if (maybeStream.isPresent()) {
-          JsonNode schema = maybeStream.get().getStream().getJsonSchema();
-          JsonNode oldData = record.getData();
-          MigratedNode downgradedNode = downgradeRecord(oldData, schema);
+          final JsonNode schema = maybeStream.get().getStream().getJsonSchema();
+          final JsonNode oldData = record.getData();
+          final MigratedNode downgradedNode = downgradeRecord(oldData, schema);
           record.setData(downgradedNode.node());
         }
       }
@@ -81,17 +81,17 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
                                 final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     // We're not introducing any changes to the structure of the record/catalog
     // so just clone a new message object, which we can edit in-place
-    AirbyteMessage newMessage = Jsons.object(
+    final AirbyteMessage newMessage = Jsons.object(
         Jsons.jsonNode(oldMessage),
         AirbyteMessage.class);
     if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG && oldMessage.getCatalog() != null) {
-      for (AirbyteStream stream : newMessage.getCatalog().getStreams()) {
-        JsonNode schema = stream.getJsonSchema();
+      for (final AirbyteStream stream : newMessage.getCatalog().getStreams()) {
+        final JsonNode schema = stream.getJsonSchema();
         SchemaMigrationV1.upgradeSchema(schema);
       }
     } else if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD && oldMessage.getRecord() != null) {
-      JsonNode oldData = newMessage.getRecord().getData();
-      JsonNode newData = upgradeRecord(oldData);
+      final JsonNode oldData = newMessage.getRecord().getData();
+      final JsonNode newData = upgradeRecord(oldData);
       newMessage.getRecord().setData(newData);
     }
     return newMessage;
@@ -101,29 +101,29 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
    * Returns a copy of oldData, with numeric values converted to strings. String and boolean values
    * are returned as-is for convenience, i.e. this is not a true deep copy.
    */
-  private static JsonNode upgradeRecord(JsonNode oldData) {
+  private static JsonNode upgradeRecord(final JsonNode oldData) {
     if (oldData.isNumber()) {
       // Base case: convert numbers to strings
       return Jsons.convertValue(oldData.asText(), TextNode.class);
     } else if (oldData.isObject()) {
       // Recurse into each field of the object
-      ObjectNode newData = (ObjectNode) Jsons.emptyObject();
+      final ObjectNode newData = (ObjectNode) Jsons.emptyObject();
 
-      Iterator<Entry<String, JsonNode>> fieldsIterator = oldData.fields();
+      final Iterator<Entry<String, JsonNode>> fieldsIterator = oldData.fields();
       while (fieldsIterator.hasNext()) {
-        Entry<String, JsonNode> next = fieldsIterator.next();
-        String key = next.getKey();
-        JsonNode value = next.getValue();
+        final Entry<String, JsonNode> next = fieldsIterator.next();
+        final String key = next.getKey();
+        final JsonNode value = next.getValue();
 
-        JsonNode newValue = upgradeRecord(value);
+        final JsonNode newValue = upgradeRecord(value);
         newData.set(key, newValue);
       }
 
       return newData;
     } else if (oldData.isArray()) {
       // Recurse into each element of the array
-      ArrayNode newData = Jsons.arrayNode();
-      for (JsonNode element : oldData) {
+      final ArrayNode newData = Jsons.arrayNode();
+      for (final JsonNode element : oldData) {
         newData.add(upgradeRecord(element));
       }
       return newData;
@@ -141,12 +141,12 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
    * downgrade anything that we can definitively say is a number. Should _not_ throw an exception if
    * bad things happen (e.g. we try to parse a non-numerical string as a number).
    */
-  private MigratedNode downgradeRecord(JsonNode data, JsonNode schema) {
+  private MigratedNode downgradeRecord(final JsonNode data, final JsonNode schema) {
     return RecordMigrations.mutateDataNode(
         validator,
         s -> {
           if (s.hasNonNull(REF_KEY)) {
-            String type = s.get(REF_KEY).asText();
+            final String type = s.get(REF_KEY).asText();
             return JsonSchemaReferenceTypes.INTEGER_REFERENCE.equals(type)
                 || JsonSchemaReferenceTypes.NUMBER_REFERENCE.equals(type);
           } else {

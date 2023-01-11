@@ -42,7 +42,7 @@ class ConfiguredAirbyteCatalogMigrationV1Test {
   void testBasicUpgrade() {
     // This isn't actually a valid stream schema (since it's not an object)
     // but this test case is mostly about preserving the message structure, so it's not super relevant
-    io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgradedCatalog = new io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog()
+    final io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgradedCatalog = new io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog()
         .withStreams(List.of(
             new io.airbyte.protocol.models.v0.ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(
                 Jsons.deserialize(
@@ -52,9 +52,9 @@ class ConfiguredAirbyteCatalogMigrationV1Test {
                     }
                     """)))));
 
-    ConfiguredAirbyteCatalog upgradedMessage = migration.upgrade(downgradedCatalog);
+    final ConfiguredAirbyteCatalog upgradedMessage = migration.upgrade(downgradedCatalog);
 
-    ConfiguredAirbyteCatalog expectedMessage = Jsons.deserialize(
+    final ConfiguredAirbyteCatalog expectedMessage = Jsons.deserialize(
         """
         {
           "streams": [
@@ -76,7 +76,7 @@ class ConfiguredAirbyteCatalogMigrationV1Test {
   void testBasicDowngrade() {
     // This isn't actually a valid stream schema (since it's not an object)
     // but this test case is mostly about preserving the message structure, so it's not super relevant
-    ConfiguredAirbyteCatalog upgradedCatalog = new ConfiguredAirbyteCatalog()
+    final ConfiguredAirbyteCatalog upgradedCatalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(
             new ConfiguredAirbyteStream().withStream(new AirbyteStream().withJsonSchema(
                 Jsons.deserialize("""
@@ -85,9 +85,9 @@ class ConfiguredAirbyteCatalogMigrationV1Test {
                                   }
                                   """)))));
 
-    io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgradedMessage = migration.downgrade(upgradedCatalog);
+    final io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgradedMessage = migration.downgrade(upgradedCatalog);
 
-    io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog expectedMessage = Jsons.deserialize(
+    final io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog expectedMessage = Jsons.deserialize(
         """
         {
           "streams": [
