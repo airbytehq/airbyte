@@ -1,0 +1,4 @@
+- row_id: google_sheets_source.py, we added logic to add `row_id` to every row at the
+  end of `read` function. Also added a schema change to helpers.py for adding
+  `row_id` with type `integer` to schema of each stream in
+  `headers_to_airbyte_stream` function
