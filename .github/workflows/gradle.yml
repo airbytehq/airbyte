@@ -19,8 +19,8 @@ on:
   schedule:
     - cron: "0 */1 * * *"
   push:
-    branches-ignore:
-      - "gitbook/v1"
+    branches:
+      - master
   pull_request:
 
 permissions: write-all
