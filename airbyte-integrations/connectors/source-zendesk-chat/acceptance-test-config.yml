@@ -24,11 +24,19 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
-        empty_streams: ["conversions", "department_events"]
+        empty_streams: 
+          - name: "conversions"
+            bypass_reason: "sandbox app doesn't have data for this stream"
+          - name: "department_events"
+            bypass_reason: "sandbox app doesn't have data for this stream"
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
-        empty_streams: ["conversions", "department_events"]
+        empty_streams:
+          - name: "conversions"
+            bypass_reason: "sandbox app doesn't have data for this stream"
+          - name: "department_events"
+            bypass_reason: "sandbox app doesn't have data for this stream"
   incremental:
     tests:
       - config_path: "secrets/config.json"
