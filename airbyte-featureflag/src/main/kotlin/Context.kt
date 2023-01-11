@@ -4,6 +4,8 @@
 
 package io.airbyte.featureflag
 
+import java.util.*
+
 /**
  * Context abstraction around LaunchDarkly v6 context idea
  *
@@ -61,6 +63,15 @@ data class Workspace @JvmOverloads constructor(
     val user: String? = null
 ) : Context {
     override val kind = "workspace"
+
+    /**
+     * Secondary constructor
+     *
+     * @param [key] workspace UUID
+     * @param [user] an optional user identifier
+     */
+    @JvmOverloads
+    constructor(key: UUID, user: String? = null) : this(key = key.toString(), user = user)
 }
 
 /**
@@ -70,6 +81,13 @@ data class Workspace @JvmOverloads constructor(
  */
 data class User(override val key: String) : Context {
     override val kind = "user"
+
+    /**
+     * Secondary constructor
+     *
+     * @param [key] user UUID
+     */
+    constructor(key: UUID) : this(key = key.toString())
 }
 
 /**
@@ -79,6 +97,13 @@ data class User(override val key: String) : Context {
  */
 data class Connection(override val key: String) : Context {
     override val kind = "connection"
+
+    /**
+     * Secondary constructor
+     *
+     * @param [key] connection UUID
+     */
+    constructor(key: UUID) : this(key = key.toString())
 }
 
 /**
@@ -88,6 +113,13 @@ data class Connection(override val key: String) : Context {
  */
 data class Source(override val key: String) : Context {
     override val kind = "source"
+
+    /**
+     * Secondary constructor
+     *
+     * @param [key] Source UUID
+     */
+    constructor(key: UUID) : this(key = key.toString())
 }
 
 /**
@@ -97,4 +129,11 @@ data class Source(override val key: String) : Context {
  */
 data class Destination(override val key: String) : Context {
     override val kind = "destination"
+
+    /**
+     * Secondary constructor
+     *
+     * @param [key] Destination UUID
+     */
+    constructor(key: UUID) : this(key = key.toString())
 }
