@@ -46,7 +46,7 @@ export default {
 } as ComponentMeta<typeof ConnectorForm>;
 
 const Template: ComponentStory<typeof ConnectorForm> = (args) => {
-  const selectedSpecification = args.selectedConnectorDefinitionSpecification;
+  const selectedSpecification = args.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification;
   // Hack to allow devs to not specify sourceDefinitionId
   if (!ConnectorSpecification.id(selectedSpecification)) {
     if (isSourceDefinitionSpecification(selectedSpecification)) {
