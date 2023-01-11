@@ -16,7 +16,7 @@
     @extend %cover;
 
     position: absolute;
-    background: linear-gradient(180deg, rgba(colors.$grey-50, 0.5) 0%, colors.$white 92.54%);
+    background: linear-gradient(180deg, rgba(248, 248, 250, 50% /* grey-50 50% */) 0%, colors.$white 92.54%);
     z-index: z-indices.$schemaChangesBackdrop;
     border-radius: variables.$border-radius-lg;
     display: flex;
