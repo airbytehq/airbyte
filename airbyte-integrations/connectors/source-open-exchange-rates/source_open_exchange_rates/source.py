@@ -78,6 +78,10 @@ class OpenExchangeRates(HttpStream, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = stream_state[self.cursor_field] if stream_state and self.cursor_field in stream_state else self.start_date
+
+        if isinstance(start_date, int):
+            start_date = pendulum.from_timestamp(start_date)
+
         return self._chunk_date_range(start_date)
 
     def path(
@@ -95,9 +99,6 @@ class OpenExchangeRates(HttpStream, ABC):
         The return value is a list of dicts {'date': date_string}.
         """
         dates = []
-
-        if isinstance(start_date, int):
-            start_date = pendulum.from_timestamp(start_date)
 
         while start_date < pendulum.now():
             dates.append({"date": start_date.to_date_string()})
