@@ -74,6 +74,8 @@ class OpenExchangeRates(HttpStream, ABC):
             return
         if self._cursor_value:
             self._cursor_value = max(self._cursor_value, latest_record_timestamp)
+        else:
+            self._cursor_value = latest_record_timestamp
 
         yield response_json
 
