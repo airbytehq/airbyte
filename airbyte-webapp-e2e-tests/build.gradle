@@ -17,7 +17,7 @@ task e2etest(type: NpmTask) {
     def recordCypress = project.hasProperty('cypressWebappKey') && project.getProperty('cypressWebappKey')
     if (recordCypress) {
         environment = [CYPRESS_KEY: project.getProperty('cypressWebappKey')]
-        args = ['run', 'cypress:ci:record']
+        args = ['run', 'cypress:ci:parallel']
     } else {
         args = ['run', 'cypress:ci']
     }
