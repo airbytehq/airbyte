@@ -210,7 +210,7 @@ class DefaultDiscoverCatalogWorkerTest {
   void testDiscoverSchemaHasFailureReasonAndCatalogWithCatalogAndTraceMessage() throws Exception {
 
     final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, validCatalogWithTraceMessageStreamFactory);
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, validCatalogWithTraceMessageStreamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
     assertEquals(output.getOutputType(), OutputType.DISCOVER_CATALOG_ID);
     assertNotNull(output.getDiscoverCatalogId());
