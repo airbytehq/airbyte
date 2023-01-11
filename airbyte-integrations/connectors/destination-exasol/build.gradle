@@ -20,7 +20,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-exasol')
-    integrationTestJavaImplementation 'com.exasol:exasol-testcontainers:6.4.0'
+    integrationTestJavaImplementation 'com.exasol:exasol-testcontainers:6.4.1'
     integrationTestJavaImplementation 'org.testcontainers:testcontainers:1.17.6'
     testImplementation 'org.testcontainers:testcontainers:1.17.6'
 }
