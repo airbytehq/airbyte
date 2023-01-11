@@ -178,7 +178,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-airtable:1.0.0"
+- dockerImage: "airbyte/source-airtable:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
@@ -9706,7 +9706,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.10"
+- dockerImage: "airbyte/source-notion:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
@@ -12511,7 +12511,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.27"
+- dockerImage: "airbyte/source-s3:0.1.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12734,7 +12734,7 @@
                   \ from each file. If your data is particularly wide and failing\
                   \ during schema detection, increasing this should solve it. Beware\
                   \ of raising this too high as you could hit OOM errors."
-                default: 10000
+                default: 0
                 order: 2
                 type: "integer"
         schema:
