@@ -16,14 +16,14 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
         empty_streams:
           - name: "events"
             bypass_reason: "The stream is too large, skipped."
           - name: "annotations"
             bypass_reason: "Stream has no records"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
-  incremental: 
+  incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_without_events.json"
