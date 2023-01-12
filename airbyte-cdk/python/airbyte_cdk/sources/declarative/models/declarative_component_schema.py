@@ -421,11 +421,15 @@ class HttpRequester(BaseModel):
 
 
 class DeclarativeSource(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
     type: Literal["DeclarativeSource"]
     check: CheckStream
     streams: List[DeclarativeStream]
     version: str
     schemas: Optional[Schemas] = None
+    definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None
 
 
