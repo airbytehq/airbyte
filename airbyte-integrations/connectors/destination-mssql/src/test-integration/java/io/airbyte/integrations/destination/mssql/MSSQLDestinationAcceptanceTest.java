@@ -39,11 +39,6 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     return "airbyte/destination-mssql:dev";
   }
 
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
