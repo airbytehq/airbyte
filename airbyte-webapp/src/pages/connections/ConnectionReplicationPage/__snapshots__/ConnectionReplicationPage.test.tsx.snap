@@ -35,7 +35,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                     <label
                       class="<removed-for-snapshot-test>"
                     >
-                      Replication frequency*
+                      Replication frequency
                       <span
                         class="<removed-for-snapshot-test>"
                       >
@@ -174,7 +174,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                       <label
                         class="<removed-for-snapshot-test>"
                       >
-                        Destination Namespace*
+                        Destination Namespace
                         <span
                           class="<removed-for-snapshot-test>"
                         >
@@ -297,7 +297,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                     <label
                       class="<removed-for-snapshot-test>"
                     >
-                      Destination Stream Prefix (Optional)
+                      Destination Stream Prefix
                       <span
                         class="<removed-for-snapshot-test>"
                       >
@@ -321,6 +321,11 @@ exports[`ConnectionReplicationPage should render 1`] = `
                           </span>
                         </span>
                       </span>
+                      <p
+                        class="<removed-for-snapshot-test>"
+                      >
+                        Optional
+                      </p>
                     </label>
                   </div>
                 </div>
