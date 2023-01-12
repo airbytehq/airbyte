@@ -8,6 +8,7 @@ from source_open_exchange_rates.source import SourceOpenExchangeRates
 
 logger = logging.getLogger("airbyte")
 
+
 def test_check_connection(config, mock_stream):
     response = {
         "status": 200,
@@ -84,6 +85,7 @@ def test_check_connection_quota_exceeded_exception(config, mock_stream):
 
     assert not ok
     assert error_msg == "Quota exceeded"
+
 
 def test_check_connection_invalid_appid_exception(config, mock_stream):
     response = {

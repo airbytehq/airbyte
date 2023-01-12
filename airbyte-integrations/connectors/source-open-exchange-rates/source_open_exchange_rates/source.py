@@ -7,13 +7,12 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
-from pendulum import DateTime
-
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from pendulum import DateTime
 
 
 class OpenExchangeRates(HttpStream, ABC):
@@ -21,7 +20,6 @@ class OpenExchangeRates(HttpStream, ABC):
 
     primary_key = None
     cursor_field = "timestamp"
-
 
     def __init__(self, base: Optional[str], start_date: str, app_id: str, **kwargs: dict) -> None:
         super().__init__(**kwargs)
@@ -66,7 +64,7 @@ class OpenExchangeRates(HttpStream, ABC):
     ) -> Iterable[Mapping]:
         response_json = response.json()
 
-        latest_record_timestamp = response_json['timestamp']
+        latest_record_timestamp = response_json["timestamp"]
         if self._cursor_value and latest_record_timestamp <= self._cursor_value:
             return
         if self._cursor_value:
@@ -85,13 +83,9 @@ class OpenExchangeRates(HttpStream, ABC):
         return self._chunk_date_range(start_date)
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"historical/{stream_slice['date']}.json"
-
 
     def _chunk_date_range(self, start_date: DateTime) -> List[Mapping[str, Any]]:
         """
@@ -144,4 +138,4 @@ class SourceOpenExchangeRates(AbstractSource):
         """
         auth = TokenAuthenticator(token=config["app_id"], auth_method="Token")
 
-        return [OpenExchangeRates(base=config['base'], start_date=config['start_date'], app_id=config['app_id'], authenticator=auth)]
+        return [OpenExchangeRates(base=config["base"], start_date=config["start_date"], app_id=config["app_id"], authenticator=auth)]
