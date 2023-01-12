@@ -34,7 +34,7 @@ const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<s
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { ConnectionInfoCard } = require("./ConnectionInfoCard");
 
-describe("<connectionInfo />", () => {
+describe(`<${ConnectionInfoCard.name} />`, () => {
   beforeEach(() => {
     mockUseConnectionEditService.mockReturnValue({
       connection: mockConnection,
