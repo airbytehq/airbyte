@@ -105,6 +105,7 @@ class GoogleAdsStream(Stream, ABC):
             yield {"customer_id": customer.id}
 
     def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        self.logger.info(f"Read records using g-ads client. Stream slice is {stream_slice}")
         if stream_slice is None:
             return []
 
@@ -164,6 +165,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 start_date = self._start_date
 
             end_date = self._end_date
+            self.logger.info(f"Generating slices for customer {customer.id}. Start date is {start_date}, end date is {end_date}")
 
             for chunk in chunk_date_range(
                 start_date=start_date,
@@ -176,6 +178,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             ):
                 if chunk:
                     chunk["customer_id"] = customer.id
+                self.logger.info(f"Next slice is {chunk}")
                 yield chunk
 
     def read_records(
@@ -186,6 +189,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         and update `start_date` key in the `stream_slice` with the latest read record's cursor value, then retry the sync.
         """
         while True:
+            self.logger.info("Starting a while loop iteration")
             customer_id = stream_slice and stream_slice["customer_id"]
             try:
                 records = super().read_records(sync_mode, stream_slice=stream_slice)
@@ -196,16 +200,20 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                         date_in_latest_record = pendulum.parse(record[self.cursor_field])
                         cursor_value = (max(date_in_current_stream, date_in_latest_record)).to_date_string()
                         self.state = {customer_id: {self.cursor_field: cursor_value}}
+                        self.logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
                         yield record
                         continue
                     self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
+                    self.logger.info(f"Initialized state for customer {customer_id}. Full state is {self.state}.")
                     yield record
                     continue
             except GoogleAdsException as exception:
+                self.logger.info(f"Caught a GoogleAdsException: {str(exception)}")
                 error = next(iter(exception.failure.errors))
                 if error.error_code.request_error == RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN:
                     start_date, end_date = parse_dates(stream_slice)
                     current_state = self.current_state(customer_id)
+                    self.logger.info(f"Start date is {start_date}. End date is {end_date}. Current state is {current_state}")
                     if (end_date - start_date).days == 1:
                         # If range days is 1, no need in retry, because it's the minimum date range
                         self.logger.error("Page token has expired.")
@@ -217,11 +225,13 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                         raise exception
                     # Retry reading records from where it crushed
                     stream_slice["start_date"] = self.current_state(customer_id, default=stream_slice["start_date"])
+                    self.logger.info(f"Retry reading records from where it crushed with a modified slice: {stream_slice}")
                 else:
                     # raise caught error for other error statuses
                     raise exception
             else:
                 # return the control if no exception is raised
+                self.logger.info("Current slice has been read. Exiting read_records()")
                 return
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:

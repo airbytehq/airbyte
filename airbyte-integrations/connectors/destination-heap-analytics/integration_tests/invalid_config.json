@@ -1,0 +1,10 @@
+{
+  "app_id": "11",
+  "base_url": "https://www.heapanalytics.com",
+  "api": {
+    "api_type": "track",
+    "property_columns": "*",
+    "event_column": "event",
+    "identity_column": "email"
+  }
+}

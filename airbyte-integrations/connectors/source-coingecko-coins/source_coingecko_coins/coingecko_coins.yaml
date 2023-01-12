@@ -20,8 +20,9 @@ definitions:
     end_datetime:
       datetime: "{{ config['end_date'] or now_utc().strftime('%d-%m-%Y') }}"
       datetime_format: "%d-%m-%Y"
-    step: 1d
+    step: "P1D"
     datetime_format: "%d-%m-%Y"
+    cursor_granularity: "P1D"
     cursor_field: "date"
     start_time_option:
       field_name: "date"

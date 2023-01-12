@@ -52,7 +52,7 @@ const SourceItemPage: React.FC = () => {
     { label: source.name },
   ];
 
-  const connectionsWithSource = connections.filter((connectionItem) => connectionItem.sourceId === source.sourceId);
+  const connectionsWithSource = connections.filter(({ source: { sourceId } }) => sourceId === source.sourceId);
 
   const destinationDropdownOptions: DropdownMenuOptionType[] = useMemo(
     () =>

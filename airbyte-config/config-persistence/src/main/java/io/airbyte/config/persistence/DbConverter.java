@@ -17,6 +17,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorCatalogWithUpdatedAt;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -216,6 +217,14 @@ public class DbConverter {
         .withId(record.get(ACTOR_CATALOG.ID))
         .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
         .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
+  }
+
+  public static ActorCatalogWithUpdatedAt buildActorCatalogWithUpdatedAt(final Record record) {
+    return new ActorCatalogWithUpdatedAt()
+        .withId(record.get(ACTOR_CATALOG.ID))
+        .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
+        .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH))
+        .withUpdatedAt(record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
   }
 
   public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {
