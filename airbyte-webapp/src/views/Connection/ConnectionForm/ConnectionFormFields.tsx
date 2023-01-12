@@ -13,6 +13,7 @@ import { FlexContainer } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
@@ -50,8 +51,8 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
     clearFormChange(formId);
   });
 
-  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
-  const firstSectionTitle = isNewStreamsTableEnabled ? undefined : <FormattedMessage id="connection.transfer" />;
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
+  const firstSectionTitle = isNewTableDesignEnabled ? undefined : <FormattedMessage id="connection.transfer" />;
 
   return (
     <>
@@ -64,7 +65,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
           )}
         </Section>
-        {!isNewStreamsTableEnabled && (
+        {!isNewTableDesignEnabled && (
           <Section title={<FormattedMessage id="connection.streams" />}>
             <span className={readonlyClass}>
               <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
@@ -72,14 +73,14 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
-                  <FlexContainer alignItems="flex-start">
+                  <FlexContainer alignItems="center">
                     <div className={styles.leftFieldCol}>
                       <ControlLabels
                         className={styles.namespaceFormatLabel}
                         nextLine
                         error={!!meta.error}
                         label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
-                        message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                        infoTooltipContent={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
                       />
                     </div>
                     <div className={classNames(styles.rightFieldCol, readonlyClass)}>
@@ -97,14 +98,15 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             )}
             <Field name="prefix">
               {({ field }: FieldProps<string>) => (
-                <FlexContainer alignItems="flex-start">
+                <FlexContainer alignItems="center">
                   <div className={styles.leftFieldCol}>
                     <ControlLabels
                       nextLine
+                      optional
                       label={formatMessage({
                         id: "form.prefix",
                       })}
-                      message={formatMessage({
+                      infoTooltipContent={formatMessage({
                         id: "form.prefix.message",
                       })}
                     />
