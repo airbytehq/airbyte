@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
+  private final double MAX_SIZE_RATIO = 0.8;
 
   private final MdcScope.Builder containerLogMdcBuilder;
   private final AirbyteProtocolPredicate protocolValidator;
@@ -55,14 +56,19 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder, Optional.empty());
   }
 
+  /**
+   * Create a default airbyte stream, if a `messageSizeExceptionClass` is not empty, the message size
+   * will be checked and if it more than the available memory * MAX_SIZE_RATIO the sync will be failed
+   * by throwing the exception provided. The exception must have a constructor that accept a string.
+   */
   DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
                               final Logger logger,
                               final MdcScope.Builder containerLogMdcBuilder,
-                              final Optional<Class<? extends RuntimeException>> exceptionClass) {
+                              final Optional<Class<? extends RuntimeException>> messageSizeExceptionClass) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
-    this.exceptionClass = exceptionClass;
+    this.exceptionClass = messageSizeExceptionClass;
     this.maxMemory = Runtime.getRuntime().maxMemory();
   }
 
@@ -70,12 +76,12 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
                               final Logger logger,
                               final MdcScope.Builder containerLogMdcBuilder,
-                              final Optional<Class<? extends RuntimeException>> exceptionClass,
+                              final Optional<Class<? extends RuntimeException>> messageSizeExceptionClass,
                               final long maxMemory) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
-    this.exceptionClass = exceptionClass;
+    this.exceptionClass = messageSizeExceptionClass;
     this.maxMemory = maxMemory;
   }
 
@@ -85,19 +91,19 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     final var metricClient = MetricClientFactory.getMetricClient();
     return bufferedReader
         .lines()
-        .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
+        .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.getBytes(StandardCharsets.UTF_8).length))
         .peek(str -> {
           if (exceptionClass.isPresent()) {
-            long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
-            if (messageSize > maxMemory * 0.8) {
+            final long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
+            if (messageSize > maxMemory * MAX_SIZE_RATIO) {
               try {
-                String errorMessage = String.format(
+                final String errorMessage = String.format(
                     "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
                     DateTime.now(),
                     humanReadableByteCountSI(maxMemory),
                     humanReadableByteCountSI(messageSize));
                 throw exceptionClass.get().getConstructor(String.class).newInstance(errorMessage);
-              } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+              } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
               }
             }
@@ -162,12 +168,13 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     }
   }
 
-  // Human-readable byte size from https://stackoverflow.com/questions/3758606/how-can-i-convert-byte-size-into-a-human-readable-format-in-java
+  // Human-readable byte size from
+  // https://stackoverflow.com/questions/3758606/how-can-i-convert-byte-size-into-a-human-readable-format-in-java
   private String humanReadableByteCountSI(long bytes) {
     if (-1000 < bytes && bytes < 1000) {
       return bytes + " B";
     }
-    CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+    final CharacterIterator ci = new StringCharacterIterator("kMGTPE");
     while (bytes <= -999_950 || bytes >= 999_950) {
       bytes /= 1000;
       ci.next();
