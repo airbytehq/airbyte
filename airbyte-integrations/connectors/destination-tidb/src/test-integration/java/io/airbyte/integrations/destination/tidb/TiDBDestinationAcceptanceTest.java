@@ -49,11 +49,6 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
   protected boolean supportBasicDataTypeTest() {
     return true;
   }

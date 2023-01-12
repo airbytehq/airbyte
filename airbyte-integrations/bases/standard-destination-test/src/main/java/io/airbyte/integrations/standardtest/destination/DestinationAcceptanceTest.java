@@ -285,7 +285,6 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-
   /**
    * Override to return true if a destination implements size limits on record size (then destination
    * should redefine getMaxRecordValueLimit() too)
@@ -572,7 +571,6 @@ public abstract class DestinationAcceptanceTest {
       assertEquals(normalizationFromDefinition(), normalizationRunnerFactorySupportsDestinationImage);
     }
   }
-
 
   /**
    * Verify that the integration successfully writes records incrementally. The second run should

@@ -55,11 +55,6 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
   protected TestDataComparator getTestDataComparator() {
     return new MySqlTestDataComparator();
   }

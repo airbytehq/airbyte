@@ -61,11 +61,6 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
   protected TestDataComparator getTestDataComparator() {
     return new MySqlTestDataComparator();
   }

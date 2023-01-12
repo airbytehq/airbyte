@@ -87,11 +87,6 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
     return true;
   }
 
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
