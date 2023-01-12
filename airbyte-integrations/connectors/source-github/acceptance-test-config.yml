@@ -51,8 +51,6 @@ acceptance_tests:
             bypass_reason: "some reason"
           - name: issues
             bypass_reason: "some reason"
-          - name: organizations
-            bypass_reason: "some reason"
           - name: project_cards
             bypass_reason: "some reason"
           - name: project_columns
