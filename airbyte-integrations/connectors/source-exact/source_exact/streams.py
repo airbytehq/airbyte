@@ -19,18 +19,19 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefre
 
 class ExactStream(HttpStream, IncrementalMixin):
     _cursor_value = None
+    _single_refresh_token_authenticator = None
 
     def __init__(self, config: Mapping[str, Any]):
         self._url_base = f"https://start.exactonline.nl/api/v1/{config['division']}/"
 
-        auth = SingleUseRefreshTokenOauth2Authenticator(
+        self._single_refresh_token_authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config=config,
             token_refresh_endpoint="https://start.exactonline.nl/api/oauth2/token",
             token_expiry_date=pendulum.now().add(minutes=11),
         )
-        auth.access_token = config["credentials"]["access_token"]
+        self._single_refresh_token_authenticator.access_token = config["credentials"]["access_token"]
 
-        super().__init__(auth)
+        super().__init__(self._single_refresh_token_authenticator)
 
     @property
     def url_base(self) -> str:
@@ -137,11 +138,6 @@ class ExactStream(HttpStream, IncrementalMixin):
 
             yield record
 
-    @property
-    def _auth(self) -> SingleUseRefreshTokenOauth2Authenticator:
-        """Helper property to return the Authenticator in the right type."""
-
-        return self._session.auth
 
     def _is_token_expired(self, response: requests.Response):
         if response.status_code == 401:
@@ -227,8 +223,8 @@ class ExactStream(HttpStream, IncrementalMixin):
                     logger.info("Access token expired: will retry after refresh")
 
                     # mark the token as expired and overwrite thea authorization header
-                    self._auth.set_token_expiry_date(pendulum.now().subtract(minutes=1))
-                    request.headers.update(self._auth.get_auth_header())
+                    self._single_refresh_token_authenticator.set_token_expiry_date(pendulum.now().subtract(minutes=1))
+                    request.headers.update(self._single_refresh_token_authenticator.get_auth_header())
 
                     continue
 
