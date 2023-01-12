@@ -1,0 +1,10 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  margin-top: variables.$spacing-lg;
+}
+
+.freeText {
+  color: colors.$blue;
+}
