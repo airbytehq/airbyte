@@ -17,12 +17,7 @@ export const mockDestinationDefinitionSpecification: DestinationDefinitionSpecif
         default: false,
         description: "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
       },
-      host: {
-        type: "string",
-        order: 0,
-        title: "Host",
-        description: "Hostname of the database.",
-      },
+      host: { type: "string", order: 0, title: "Host", description: "Hostname of the database." },
       port: {
         type: "integer",
         order: 1,
@@ -42,12 +37,7 @@ export const mockDestinationDefinitionSpecification: DestinationDefinitionSpecif
         description:
           'The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".',
       },
-      database: {
-        type: "string",
-        order: 2,
-        title: "DB Name",
-        description: "Name of the database.",
-      },
+      database: { type: "string", order: 2, title: "DB Name", description: "Name of the database." },
       password: {
         type: "string",
         order: 5,
@@ -61,60 +51,28 @@ export const mockDestinationDefinitionSpecification: DestinationDefinitionSpecif
           {
             title: "disable",
             required: ["mode"],
-            properties: {
-              mode: {
-                enum: ["disable"],
-                type: "string",
-                const: "disable",
-                order: 0,
-                default: "disable",
-              },
-            },
+            properties: { mode: { enum: ["disable"], type: "string", const: "disable", order: 0, default: "disable" } },
             description: "Disable SSL.",
             additionalProperties: false,
           },
           {
             title: "allow",
             required: ["mode"],
-            properties: {
-              mode: {
-                enum: ["allow"],
-                type: "string",
-                const: "allow",
-                order: 0,
-                default: "allow",
-              },
-            },
+            properties: { mode: { enum: ["allow"], type: "string", const: "allow", order: 0, default: "allow" } },
             description: "Allow SSL mode.",
             additionalProperties: false,
           },
           {
             title: "prefer",
             required: ["mode"],
-            properties: {
-              mode: {
-                enum: ["prefer"],
-                type: "string",
-                const: "prefer",
-                order: 0,
-                default: "prefer",
-              },
-            },
+            properties: { mode: { enum: ["prefer"], type: "string", const: "prefer", order: 0, default: "prefer" } },
             description: "Prefer SSL mode.",
             additionalProperties: false,
           },
           {
             title: "require",
             required: ["mode"],
-            properties: {
-              mode: {
-                enum: ["require"],
-                type: "string",
-                const: "require",
-                order: 0,
-                default: "require",
-              },
-            },
+            properties: { mode: { enum: ["require"], type: "string", const: "require", order: 0, default: "require" } },
             description: "Require SSL mode.",
             additionalProperties: false,
           },
@@ -122,13 +80,7 @@ export const mockDestinationDefinitionSpecification: DestinationDefinitionSpecif
             title: "verify-ca",
             required: ["mode", "ca_certificate"],
             properties: {
-              mode: {
-                enum: ["verify-ca"],
-                type: "string",
-                const: "verify-ca",
-                order: 0,
-                default: "verify-ca",
-              },
+              mode: { enum: ["verify-ca"], type: "string", const: "verify-ca", order: 0, default: "verify-ca" },
               ca_certificate: {
                 type: "string",
                 order: 1,
@@ -153,13 +105,7 @@ export const mockDestinationDefinitionSpecification: DestinationDefinitionSpecif
             title: "verify-full",
             required: ["mode", "ca_certificate", "client_certificate", "client_key"],
             properties: {
-              mode: {
-                enum: ["verify-full"],
-                type: "string",
-                const: "verify-full",
-                order: 0,
-                default: "verify-full",
-              },
+              mode: { enum: ["verify-full"], type: "string", const: "verify-full", order: 0, default: "verify-full" },
               client_key: {
                 type: "string",
                 order: 3,
@@ -202,12 +148,7 @@ export const mockDestinationDefinitionSpecification: DestinationDefinitionSpecif
         description:
           'SSL connection modes. \n <b>disable</b> - Chose this mode to disable encryption of communication between Airbyte and destination database\n <b>allow</b> - Chose this mode to enable encryption only when required by the source database\n <b>prefer</b> - Chose this mode to allow unencrypted connection only if the source database does not support encryption\n <b>require</b> - Chose this mode to always require encryption. If the source database server does not support encryption, connection will fail\n  <b>verify-ca</b> - Chose this mode to always require encryption and to verify that the source database server has a valid SSL certificate\n  <b>verify-full</b> - This is the most secure mode. Chose this mode to always require encryption and to verify the identity of the source database server\n See more information - <a href="https://jdbc.postgresql.org/documentation/head/ssl-client.html"> in the docs</a>.',
       },
-      username: {
-        type: "string",
-        order: 4,
-        title: "User",
-        description: "Username to use to access the database.",
-      },
+      username: { type: "string", order: 4, title: "User", description: "Username to use to access the database." },
       tunnel_method: {
         type: "object",
         oneOf: [
@@ -323,15 +264,13 @@ export const mockDestinationDefinitionSpecification: DestinationDefinitionSpecif
     additionalProperties: true,
   },
   jobInfo: {
-    id: "7c3ae799-cb25-4c05-9685-f7bb1885d662",
+    id: "0e3274aa-11da-4818-a750-4dc940cc7fdf",
     configType: "get_spec",
     configId: "Optional.empty",
-    createdAt: 1661365436880,
-    endedAt: 1661365436880,
+    createdAt: 1669740943018,
+    endedAt: 1669740943018,
     succeeded: true,
-    logs: {
-      logLines: [],
-    },
+    logs: { logLines: [] },
   },
   supportedDestinationSyncModes: ["overwrite", "append", "append_dedup"],
 };

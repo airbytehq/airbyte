@@ -1,7 +1,9 @@
 import { renderHook } from "@testing-library/react-hooks";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
-import { mockDestinationDefinition } from "test-utils/mock-data/mockDestinationDefinition";
-import { mockDestinationDefinitionSpecification } from "test-utils/mock-data/mockDestinationDefinitionSpecification";
+import {
+  mockDestinationDefinition,
+  mockDestinationDefinitionSpecification,
+} from "test-utils/mock-data/mockDestination";
 import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper as wrapper } from "test-utils/testutils";
 
