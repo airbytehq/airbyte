@@ -15,11 +15,19 @@
 import Cypress from "cypress";
 
 const pgp = require("pg-promise")();
-const postgresConfig = require(require("path").resolve("cypress.json"));
+const cypressConfig = require(require("path").resolve("cypress.json"));
 
-function dbConnection(query: any, userDefineConnection: undefined) {
-  let connection = postgresConfig.db;
-  if (userDefineConnection != undefined) {
+interface dbConfig {
+  user: string;
+  host: string;
+  database: string;
+  password: string;
+  port: number;
+}
+
+function dbConnection(query: any, userDefineConnection: dbConfig) {
+  let connection = cypressConfig.db;
+  if (userDefineConnection !== undefined) {
     connection = userDefineConnection;
   }
   const db = pgp(connection);
