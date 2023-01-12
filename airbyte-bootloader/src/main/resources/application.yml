@@ -1,37 +1,42 @@
 micronaut:
   application:
-    name: airbyte-cron
+    name: airbyte-bootloader
   server:
-    port: 9001
+    port: 9002
 
 airbyte:
-  cron:
-    update-definitions:
-      enabled: ${UPDATE_DEFINITIONS_CRON_ENABLED:false}
-  deployment-mode: ${DEPLOYMENT_MODE:OSS}
+  bootloader:
+    auto-upgrade-connectors: ${AUTO_UPGRADE_CONNECTORS_PROTOCOL:false}
+    migration-baseline-version: ${BOOTLOADER_MIGRATION_BASELINE_VERSION:0.29.0.001}
+    run-migration-on-startup: ${RUN_DATABASE_MIGRATION_ON_STARTUP:true}
   flyway:
     configs:
       initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
-      minimum-migration-version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
-  local:
-    docker-mount: ${LOCAL_DOCKER_MOUNT:}
-    root: ${LOCAL_ROOT}
+    jobs:
+      initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
   platform:
     remote-connector-catalog:
-      timeout-ms: ${REMOTE_CONNECTOR_CATALOG_MS:30000}
+      timeout-ms: ${REMOTE_CONNECTOR_CATALOG_MS:10000}
       url: ${REMOTE_CONNECTOR_CATALOG_URL:}
-  role: ${AIRBYTE_ROLE:}
-  temporal:
-    worker:
-      ports: ${TEMPORAL_WORKER_PORTS:}
-  tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
+  protocol:
+    target:
+      range:
+        min-version: ${AIRBYTE_PROTOCOL_VERSION_MIN:0.0.0}
+        max-version: ${AIRBYTE_PROTOCOL_VERSION_MAX:0.3.0}
+  secret:
+    persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
+    store:
+      aws:
+        access-key: ${AWS_ACCESS_KEY:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      gcp:
+        credentials: ${SECRET_STORE_GCP_CREDENTIALS:}
+        project-id: ${SECRET_STORE_GCP_PROJECT_ID:}
+      vault:
+        address: ${VAULT_ADDRESS:}
+        prefix: ${VAULT_PREFIX:}
+        token: ${VAULT_AUTH_TOKEN:}
   version: ${AIRBYTE_VERSION}
-  workflow:
-    failure:
-      restart-delay: ${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS:600}
-  workspace:
-    docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
-    root: ${WORKSPACE_ROOT}
 
 datasources:
   config:
@@ -56,9 +61,6 @@ datasources:
     driverClassName: org.postgresql.Driver
     username: ${DATABASE_USER}
     password: ${DATABASE_PASSWORD}
-
-docker:
-  network: ${DOCKER_NETWORK:host}
 
 endpoints:
   beans:
@@ -98,6 +100,12 @@ flyway:
       locations:
         - 'classpath:io/airbyte/db/instance/jobs/migrations'
 
+jpa:
+  default:
+    properties:
+      hibernate:
+        show_sql: true
+
 jooq:
   datasources:
     config:
@@ -106,17 +114,6 @@ jooq:
     jobs:
       jackson-converter-enabled: true
       sql-dialect: POSTGRES
-
-temporal:
-  cloud:
-    client:
-      cert: ${TEMPORAL_CLOUD_CLIENT_CERT:}
-      key: ${TEMPORAL_CLOUD_CLIENT_KEY:}
-    enabled: ${TEMPORAL_CLOUD_ENABLED:false}
-    host: ${TEMPORAL_CLOUD_HOST:}
-    namespace: ${TEMPORAL_CLOUD_NAMESPACE:}
-  host: ${TEMPORAL_HOST:`airbyte-temporal:7233`}
-  retention: ${TEMPORAL_HISTORY_RETENTION_IN_DAYS:30}
 
 logger:
   levels:

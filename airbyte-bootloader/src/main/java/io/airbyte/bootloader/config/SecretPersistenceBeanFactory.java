@@ -2,11 +2,8 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.server.config;
+package io.airbyte.bootloader.config;
 
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.SecretsRepositoryReader;
-import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.AWSSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
@@ -20,7 +17,6 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
-import java.util.Optional;
 
 /**
  * Micronaut bean factory for secret persistence-related singletons.
@@ -36,6 +32,8 @@ public class SecretPersistenceBeanFactory {
             pattern = "(?i)^(?!google_secret_manager).*")
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^(?!vault).*")
+  @Requires(property = "airbyte.secret.persistence",
+            pattern = "(?i)^(?!aws_secret_manager).*")
   @Named("secretPersistence")
   public SecretPersistence defaultSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return localTestingSecretPersistence(configDatabase);
@@ -105,29 +103,8 @@ public class SecretPersistenceBeanFactory {
   }
 
   @Singleton
-  @Requires(property = "airbyte.secret.persistence",
-            pattern = "(?i)^aws_secret_manager$")
-  @Named("ephemeralSecretPersistence")
-  public SecretPersistence ephemeralAwsSecretPersistence(@Value("${airbyte.secret.store.aws.access-key}") final String awsAccessKey,
-                                                         @Value("${airbyte.secret.store.aws.secret-key}") final String awsSecretKey) {
-    return new AWSSecretManagerPersistence(awsAccessKey, awsSecretKey);
-  }
-
-  @Singleton
   public SecretsHydrator secretsHydrator(@Named("secretPersistence") final SecretPersistence secretPersistence) {
     return new RealSecretsHydrator(secretPersistence);
-  }
-
-  @Singleton
-  public SecretsRepositoryReader secretsRepositoryReader(final ConfigRepository configRepository, final SecretsHydrator secretsHydrator) {
-    return new SecretsRepositoryReader(configRepository, secretsHydrator);
-  }
-
-  @Singleton
-  public SecretsRepositoryWriter secretsRepositoryWriter(final ConfigRepository configRepository,
-                                                         @Named("secretPersistence") final Optional<SecretPersistence> secretPersistence,
-                                                         @Named("ephemeralSecretPersistence") final Optional<SecretPersistence> ephemeralSecretPersistence) {
-    return new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
   }
 
 }
