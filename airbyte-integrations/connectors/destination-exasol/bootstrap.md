@@ -6,7 +6,7 @@ Exasol is the in-memory database built for analytics.
 
 ## Endpoints
 
-This destination connector uses the official [Exasol JDBC driver](https://docs.exasol.com/db/latest/connect_exasol/drivers/jdbc.htm).
+The destination-exasol connector uses the official [Exasol JDBC driver](https://docs.exasol.com/db/latest/connect_exasol/drivers/jdbc.htm).
 
  ## Quick Notes
 
