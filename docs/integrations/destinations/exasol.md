@@ -40,7 +40,7 @@ This section should contain a table with the following format:
 
 ### Requirements
 
-To use the Exasol destination, you'll need Exasol version 7.1 or above.
+To use the Exasol destination, you'll need Exasol database version 7.1 or above.
 
 #### Network Access
 
@@ -48,7 +48,7 @@ Make sure your Exasol database can be accessed by Airbyte. If your database is w
 
 #### **Permissions**
 
-As Airbyte namespaces allows us to store data into different schemas, we have different scenarios and list of required permissions:
+As Airbyte namespaces allow to store data into different schemas, we have different scenarios each with specific required permissions:
 
 | Login user | Destination user | Required permissions | Comment |
 | :--- | :--- | :--- | :--- |
