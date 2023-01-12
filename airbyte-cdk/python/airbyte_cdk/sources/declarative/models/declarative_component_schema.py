@@ -299,7 +299,7 @@ class SingleSlice(BaseModel):
 class Spec(BaseModel):
     type: Literal["Spec"]
     connection_specification: Dict[str, Any]
-    documentation_url: str
+    documentation_url: Optional[str] = None
 
 
 class WaitTimeFromHeader(BaseModel):
