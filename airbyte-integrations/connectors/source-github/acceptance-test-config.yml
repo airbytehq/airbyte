@@ -25,10 +25,6 @@ acceptance_tests:
           exact_order: no
           extra_records: yes
         empty_streams:
-          - name: collaborators
-            bypass_reason: "some reason"
-          - name: comments
-            bypass_reason: "some reason"
           - name: commit_comment_reactions
             bypass_reason: "some reason"
           - name: commit_comments
@@ -44,8 +40,6 @@ acceptance_tests:
           - name: issue_milestones
             bypass_reason: "some reason"
           - name: issue_reactions
-            bypass_reason: "some reason"
-          - name: issues
             bypass_reason: "some reason"
           - name: organizations
             bypass_reason: "The objects can mutate quite often"
