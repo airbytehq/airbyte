@@ -31,6 +31,12 @@ If you use custom connectors, this upgrade requires all of your connector specs 
 
 ## Upgrading on Docker
 
+:::note
+
+Airbyte version 0.40.27 or later requires [Docker Compose V2](https://docs.docker.com/compose/compose-v2/) to be [installed](https://docs.docker.com/compose/install/) before upgrading.
+
+:::
+
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
    ```bash
@@ -48,12 +54,6 @@ If you use custom connectors, this upgrade requires all of your connector specs 
    ```bash
    docker compose up
    ```
-
-### Note on docker compose
-
-Starting from version 0.40.27, Airbyte requires docker compose v2. It should be already available for users with a recent version of docker desktop.
-
-For further details on how to install docker compose v2, please refer to the [docker compose install guide](https://docs.docker.com/compose/install/).
 
 ### Resetting your Configuration
 
