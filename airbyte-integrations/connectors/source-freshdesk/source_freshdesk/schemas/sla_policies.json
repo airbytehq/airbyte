@@ -138,7 +138,10 @@
               "type": ["null", "integer"]
             },
             "agent_ids": {
-              "type": ["null", "integer"]
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "integer"]
+              }
             }
           }
         },
@@ -152,7 +155,10 @@
                   "type": ["null", "integer"]
                 },
                 "agent_ids": {
-                  "type": ["null", "integer"]
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "integer"]
+                  }
                 }
               }
             },
@@ -163,7 +169,10 @@
                   "type": ["null", "integer"]
                 },
                 "agent_ids": {
-                  "type": ["null", "integer"]
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "integer"]
+                  }
                 }
               }
             },
@@ -174,7 +183,10 @@
                   "type": ["null", "integer"]
                 },
                 "agent_ids": {
-                  "type": ["null", "integer"]
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "integer"]
+                  }
                 }
               }
             },
@@ -185,7 +197,10 @@
                   "type": ["null", "integer"]
                 },
                 "agent_ids": {
-                  "type": ["null", "integer"]
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "integer"]
+                  }
                 }
               }
             }

@@ -26,12 +26,13 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
     <Section title={formatMessage({ id: "connection.geographyTitle" })}>
       <Field name={name}>
         {({ field, form }: FieldProps<Geography>) => (
-          <FlexContainer alignItems="flex-start">
+          <FlexContainer alignItems="center">
             <div className={styles.leftFieldCol}>
               <ControlLabels
                 nextLine
+                optional
                 label={<FormattedMessage id="connection.geographyTitle" />}
-                message={
+                infoTooltipContent={
                   <FormattedMessage
                     id="connection.geographyDescription"
                     values={{

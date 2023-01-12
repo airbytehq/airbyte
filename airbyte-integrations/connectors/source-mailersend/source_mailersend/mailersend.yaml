@@ -21,12 +21,13 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc().strftime('%s') }}"
       datetime_format: "%s"
-    step: "1d"
+    step: "P1D"
     cursor_field: "{{ options['stream_cursor_field'] }}"
     start_time_option:
       field_name: "date_from"
       inject_into: "request_parameter"
     datetime_format: "%s"
+    cursor_granularity: "PT1S"
   paginator:
     type: "DefaultPaginator"
     page_size_option:
