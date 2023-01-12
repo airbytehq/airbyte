@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!main.py
+!source_databend
+!setup.py
+!secrets
