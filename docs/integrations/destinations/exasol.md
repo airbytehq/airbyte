@@ -6,35 +6,25 @@ Exasol is the in-memory database built for analytics.
 
 ### Output schema
 
-Exasol tables become Airbyte Streams and Exasol columns become Airbyte Fields. Each table will contain 3 columns:
+Exasol tables become Airbyte Streams and Exasol columns become Airbyte Fields. Each Exasol table created by Airbyte will contain 3 columns:
 
 * `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Exasol is `VARCHAR(64)`.
 * `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Exasol is `VARCHAR(2000000)`.
 * `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source. The column type in Exasol is `TIMESTAMP`.
 
-
-### Data type mapping
-
-This section should contain a table mapping each of the connector's data types to Airbyte types. At the moment, Airbyte uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html). `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-
-
 ### Features
 
-This section should contain a table with the following format:
+The Exasol destination supports the following features:
 
 | Feature | Supported? (Yes/No) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync |  |  |
-| Incremental Sync |  |  |
-| Replicate Incremental Deletes |  |  |
-| For databases, WAL/Logical replication |  |  |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | No |  |
+| Normalization | No |  |
+| Namespaces | Yes |  |
 | SSL connection | Yes | TLS |
 | SSH Tunnel Support | No |  |
-
-### Performance considerations
 
 ## Getting started
 
@@ -61,9 +51,13 @@ We highly recommend creating an Airbyte-specific user for this purpose.
 
 ### Setup guide
 
-For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source or destination guides for an example.
+You should now have all the requirements needed to configure Exasol as a destination in the UI. You'll need the following information to configure the Exasol destination:
 
-For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+* Host
+* Port
+* Fingerprint of the Exasol server's TLS certificate (if the database uses a self-signed certificate)
+* Username
+* Password
 
 ## Changelog
 

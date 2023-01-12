@@ -37,14 +37,13 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ```
 
 ## Testing
-We use `JUnit` for Java tests.
+The connector uses `JUnit` for Java tests.
 
 ### Unit and Integration Tests
 Place unit tests under `src/test/io/airbyte/integrations/destinations/exasol`.
 
 #### Acceptance Tests
-Airbyte has a standard test suite that all destination connectors must pass. Implement the `TODO`s in
-`src/test-integration/java/io/airbyte/integrations/destination/exasol/ExasolDestinationAcceptanceTest.java`.
+Airbyte has a standard test suite that all destination connectors must pass.
 
 ### Using gradle to run tests
 All commands should be run from airbyte project root.
@@ -62,7 +61,7 @@ To run acceptance and custom integration tests:
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
+1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately according to [semantic versioning](https://semver.org/).
 1. Create a Pull Request.
 1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+1. Someone from the Airbyte team will take a look at your PR and iterate with you to merge it into master.
