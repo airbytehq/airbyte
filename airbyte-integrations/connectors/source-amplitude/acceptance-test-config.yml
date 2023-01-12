@@ -20,15 +20,13 @@ acceptance_tests:
           path: "integration_tests/expected_records.txt"
         empty_streams:
           - name: "events"
-            bypass_reason: "The stream is too large, skipped."
-          - name: "annotations"
-            bypass_reason: "Stream has no records"
+            bypass_reason: "The stream is too large and frequently changing, due to test with live account."
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_without_events.json"
         future_state:
-          bypass_reason: "Unable to use 'state_path' because Amplitude returns an error when specifying a date in the future."
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

@@ -135,17 +135,16 @@ class TestIncrementalStreams:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (ActiveUsers, {"m": "active", "i": 1, "g": "country"}),
-            (AverageSessionLength, {}),
+            (ActiveUsers, {'end': '20230112', 'g': 'country', 'i': 1, 'm': 'active', 'start': '20230112'}),
+            (AverageSessionLength, {'end': '20230112', 'start': '20230112'}),
         ],
         ids=["ActiveUsers", "AverageSessionLength"],
     )
     def test_request_params(self, stream_cls, expected):
         now = pendulum.now()
         stream = stream_cls(now.isoformat(), data_region="Standard Server")
-        # update expected with valid start,end dates
-        expected.update(**{"start": now.strftime(stream.date_template), "end": stream._get_end_date(now).strftime(stream.date_template)})
-        assert stream.request_params({}) == expected
+        slice = list(stream.stream_slices({"date": pendulum.now().to_rfc3339_string()}))[0]
+        assert stream.request_params(stream_slice=slice) == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",

@@ -19,6 +19,10 @@ HTTP_ERROR_CODES = {
         "msg": "The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.",
         "lvl": "ERROR",
     },
+    429: {
+        "msg": "Default rate limit is exceeded.",
+        "lvl": "ERROR",
+    },
 }
 
 
