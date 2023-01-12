@@ -186,7 +186,6 @@ public class DockerProcessFactory implements ProcessFactory {
    * @param containerName the name of the container which could be debugged.
    * @return A list with debugging arguments or an empty list
    */
-  @VisibleForTesting
   static List<String> localDebuggingOptions(final String containerName) {
     final boolean shouldAddDebuggerOptions =
         Optional.ofNullable(System.getenv("DEBUG_CONTAINER_IMAGE")).filter(StringUtils::isNotEmpty)
