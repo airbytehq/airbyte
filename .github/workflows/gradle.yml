@@ -623,7 +623,7 @@ jobs:
           attempt_delay: 5000 # in ms
 
       - name: Add coverage to PR
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' or github.event_name == 'push'
         id: jacoco
         uses: madrapps/jacoco-report@v1.3
         with:
@@ -631,6 +631,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 40
           min-coverage-changed-files: 60
+          debug-mode: true
 
       - name: Integration test
         uses: Wandalen/wretry.action@master
