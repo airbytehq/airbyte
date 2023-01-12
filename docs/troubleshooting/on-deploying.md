@@ -44,7 +44,7 @@ CONTAINER ID   IMAGE                            COMMAND                  CREATED
 f02fc709b130   airbyte/server:1.11.1-alpha      "/bin/bash -c './wai…"   2 hours ago    Up 2 hours   8000/tcp, [...] :::8001->8001/tcp  airbyte-server
 153b2b322870   airbyte/webapp:1.11.1-alpha      "/docker-entrypoint.…"   2 hours ago    Up 2 hours   :::8000->80/tcp                    airbyte-webapp
 b88d94652268   airbyte/db:1.11.1-alpha          "docker-entrypoint.s…"   2 hours ago    Up 2 hours   5432/tcp                           airbyte-db
-0573681a10e0   temporalio/auto-setup:1.7.0      "/entrypoint.sh /bin…"   2 hours ago    Up 2 hours   6933-6935/tcp, [...]               airbyte-temporal
+0573681a10e0   airbyte/temporal-auto-setup:1.13.0  "/entrypoint.sh /bin…"  2 hours ago  Up 2 hours   6933-6935/tcp, [...]               airbyte-temporal
 ```
 
 You must see 4 containers running. If you are not seeing execute the following steps:

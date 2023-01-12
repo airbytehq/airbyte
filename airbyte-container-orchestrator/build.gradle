@@ -9,6 +9,19 @@ dependencies {
     implementation platform(libs.micronaut.bom)
     implementation libs.bundles.micronaut
 
+    // Ensure that the versions defined in deps.toml are used
+    // instead of versions from transitive dependencies
+    implementation(libs.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
+    implementation(libs.aws.java.sdk.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible wit hour current Helm setup
+        force = true
+    }
+
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation libs.bundles.datadog
 

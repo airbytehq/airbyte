@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.19.0
+Low-Code: Handle forward references in manifest
+
+## 0.18.1
+Allow for CustomRequester to be defined within declarative manifests
+
+## 0.18.0
+Adding `cursor_granularity` to the declarative API of DatetimeStreamSlicer
+
+## 0.17.0
+Add utility class to infer schemas from real records
+
+## 0.16.3
+Do not eagerly refresh access token in `SingleUseRefreshTokenOauth2Authenticator` [#20923](https://github.com/airbytehq/airbyte/pull/20923)
+
+## 0.16.2
+Fix the naming of OAuthAuthenticator
+
+## 0.16.1
+Include declarative_component_schema.yaml in the publish to PyPi
+
+## 0.16.0
+Start validating low-code manifests using the declarative_component_schema.yaml file
+
+## 0.15.0
+Reverts additions from versions 0.13.0 and 0.13.3.
+
 ## 0.14.0
 Low-code: Add token_expiry_date_format to OAuth Authenticator. Resolve ref schema
 

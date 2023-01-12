@@ -126,7 +126,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("DECIMAL(31, 0)")
             .addInsertValues("null", "1", "DECIMAL((-1 + 10E+29), 31, 0)", "DECIMAL((1 - 10E+29), 31, 0)")
-            .addExpectedValues(null, "1", "1.0E30", "-1.0E30")
+            .addExpectedValues(null, "1", "%.0f".formatted(Double.valueOf("1.0E30")), "%.0f".formatted(Double.valueOf("-1.0E30")))
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()

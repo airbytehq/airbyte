@@ -70,3 +70,5 @@ export const ConnectionItemPage = () => {
     </ConnectionEditServiceProvider>
   );
 };
+
+export default ConnectionItemPage;

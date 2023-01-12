@@ -22,7 +22,7 @@ jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithC
 }));
 
 const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<string, unknown>>> = ({ children }) => (
-  <TestWrapper features={[FeatureItem.AllowAutoDetectSchemaChanges]}>{children}</TestWrapper>
+  <TestWrapper features={[FeatureItem.AllowAutoDetectSchema]}>{children}</TestWrapper>
 );
 
 const renderComponent = () => render(<SchemaChangesDetected />, { wrapper: TestWrapperWithAutoDetectSchema });
@@ -48,7 +48,7 @@ describe("<SchemaChangesDetected />", () => {
 
     const { queryByTestId } = renderComponent();
 
-    expect(queryByTestId("schemaChagnesDetected")).toBeFalsy();
+    expect(queryByTestId("schemaChangesDetected")).toBeFalsy();
   });
 
   it("renders with breaking changes", () => {

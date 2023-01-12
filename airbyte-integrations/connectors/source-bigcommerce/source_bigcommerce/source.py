@@ -209,6 +209,35 @@ class Transactions(OrderSubstream):
         return params
 
 
+class OrderProducts(OrderSubstream):
+    api_version = "v2"
+    data_field = "products"
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice["order_id"]
+        return f"orders/{order_id}/{self.data_field}"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": self.limit}
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return response.json() if len(response.content) > 0 else []
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if len(response.content) > 0 and len(response.json()) == self.limit:
+            self.page = self.page + 1
+            return dict(page=self.page)
+        else:
+            return None
+
+
 class Channels(IncrementalBigcommerceStream):
     data_field = "channels"
     # Override `order_field` bacause Channels API do not acept `asc` value
@@ -273,4 +302,5 @@ class SourceBigcommerce(AbstractSource):
             Products(**args),
             Channels(**args),
             Store(**args),
+            OrderProducts(**args),
         ]

@@ -157,7 +157,7 @@
 }
 
 .tooltip {
-  transform: translate(0, -#{variables.$spacing-md});
+  transform: translate(-#{variables.$spacing-xs}, -#{variables.$spacing-md});
   white-space: nowrap;
 }
 

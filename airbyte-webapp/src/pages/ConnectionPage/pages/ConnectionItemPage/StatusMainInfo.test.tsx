@@ -1,10 +1,10 @@
 import { render } from "@testing-library/react";
-import { mockDestinationDefinition } from "test-utils/mock-data/mockDestinationDefinition";
+import { mockDestinationDefinitionSpecification } from "test-utils/mock-data/mockDestinationDefinitionSpecification";
 import { mockSourceDefinition } from "test-utils/mock-data/mockSourceDefinition";
 import { mockConnection, TestWrapper } from "test-utils/testutils";
 
 import { ConnectionStatus, SchemaChange } from "core/request/AirbyteClient";
-import { defaultFeatures, FeatureItem } from "hooks/services/Feature";
+import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 
 // eslint-disable-next-line css-modules/no-unused-class
 import styles from "./StatusMainInfo.module.scss";
@@ -20,7 +20,7 @@ jest.doMock("services/connector/SourceDefinitionService", () => ({
 }));
 
 jest.doMock("services/connector/DestinationDefinitionService", () => ({
-  useDestinationDefinition: () => mockDestinationDefinition,
+  useDestinationDefinition: () => mockDestinationDefinitionSpecification,
 }));
 
 jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty", () => ({
@@ -28,7 +28,7 @@ jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithC
 }));
 
 const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<string, unknown>>> = ({ children }) => (
-  <TestWrapper features={[...defaultFeatures, FeatureItem.AllowAutoDetectSchemaChanges]}>{children}</TestWrapper>
+  <TestWrapper features={[...defaultOssFeatures, FeatureItem.AllowAutoDetectSchema]}>{children}</TestWrapper>
 );
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
