@@ -4,6 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { Callout } from "components/ui/Callout";
 import { Text } from "components/ui/Text";
 
+import { useExperiment } from "hooks/services/Experiment";
+
 import styles from "./InlineEnrollmentCallout.module.scss";
 
 const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
@@ -23,6 +25,16 @@ const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
   );
 };
 export const InlineEnrollmentCallout: React.FC = () => {
+  const isFreeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
+
+  // todo: implement actual call once merged with issue #4006
+  // for now, we'll just default to true
+  const enrolledInFreeConnectorProgram = false;
+
+  if (!isFreeConnectorProgramEnabled || enrolledInFreeConnectorProgram) {
+    return null;
+  }
+
   return (
     <Callout variant="blue" className={styles.container}>
       <Text size="sm">
