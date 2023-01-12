@@ -27,7 +27,7 @@ interface dbConfig {
 
 function dbConnection(query: any, userDefineConnection: dbConfig) {
   let connection = cypressConfig.db;
-  if (userDefineConnection != undefined) {
+  if (userDefineConnection !== undefined) {
     connection = userDefineConnection;
   }
   const db = pgp(connection);
