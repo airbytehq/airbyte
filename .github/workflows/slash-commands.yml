@@ -11,14 +11,6 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
 
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
-
       - name: Get PR repo and ref
         id: getref
         run: |
@@ -30,16 +22,10 @@ jobs:
         id: scd
         uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ env.PAT }}
+          token: ${{ secrets.AIRBYTE_DEMO_TOKEN }}
           commands: |
             test
-            test-performance
-            build-connector
-            publish-connector
             publish
-            publish-external
-            gke-kube-test
-            run-specific-test
           static-args: |
             repo=${{ steps.getref.outputs.repo }}
             gitref=${{ steps.getref.outputs.ref }}
