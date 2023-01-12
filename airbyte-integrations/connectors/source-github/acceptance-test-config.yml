@@ -25,10 +25,6 @@ acceptance_tests:
           exact_order: no
           extra_records: yes
         empty_streams:
-          - name: commit_comment_reactions
-            bypass_reason: "some reason"
-          - name: commit_comments
-            bypass_reason: "some reason"
           - name: events
             bypass_reason: "Only events created within the past 90 days can be showed"
           - name: organizations
