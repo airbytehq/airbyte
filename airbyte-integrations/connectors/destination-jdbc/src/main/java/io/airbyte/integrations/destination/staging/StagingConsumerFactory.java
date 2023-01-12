@@ -8,6 +8,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedBiConsumer;
@@ -166,7 +167,8 @@ public class StagingConsumerFactory {
    * @param catalog collection of configured streams (e.g. API endpoints or database tables)
    * @return
    */
-  private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
+  @VisibleForTesting
+  CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
                                                                                                                final JdbcDatabase database,
                                                                                                                final StagingOperations stagingOperations,
                                                                                                                final List<WriteConfig> writeConfigs,
