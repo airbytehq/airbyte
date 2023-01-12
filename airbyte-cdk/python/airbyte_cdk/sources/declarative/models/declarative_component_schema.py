@@ -36,8 +36,14 @@ class ApiKeyAuthenticator(BaseModel):
 
 class BasicHttpAuthenticator(BaseModel):
     type: Literal["BasicHttpAuthenticator"]
-    username: str
-    password: Optional[str] = ""
+    username: str = Field(
+        ...,
+        description="The username that will be combined with the password, base64 encoded and used to make requests",
+    )
+    password: Optional[str] = Field(
+        "",
+        description="The password that will be combined with the username, base64 encoded and used to make requests",
+    )
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
@@ -109,7 +115,16 @@ class CustomRequester(BaseModel):
 
     type: Literal["CustomRequester"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+
+
+class CustomRequestOptionsProvider(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal["CustomRequestOptionsProvider"]
+    class_name: str
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomRetriever(BaseModel):
@@ -151,7 +166,10 @@ class OAuthAuthenticator(BaseModel):
     refresh_request_body: Optional[Dict[str, Any]] = None
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[str] = None
-    token_expiry_date_format: Optional[str] = None
+    token_expiry_date_format: Optional[str] = Field(
+        None,
+        description="The format of the datetime; provide it if expires_in is returned in datetime instead of seconds",
+    )
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
@@ -232,13 +250,13 @@ class NoPagination(BaseModel):
 
 class OffsetIncrement(BaseModel):
     type: Literal["OffsetIncrement"]
-    page_size: Union[int, str]
+    page_size: Union[int, str] = Field(..., description="The number of records to request")
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class PageIncrement(BaseModel):
     type: Literal["PageIncrement"]
-    page_size: int
+    page_size: int = Field(..., description="The number of records to request")
     start_from_page: Optional[int] = 0
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
@@ -249,7 +267,10 @@ class PrimaryKey(BaseModel):
 
 class RecordFilter(BaseModel):
     type: Literal["RecordFilter"]
-    condition: Optional[str] = ""
+    condition: Optional[str] = Field(
+        "",
+        description="The predicate to filter a record. Records will be removed if evaluated to False",
+    )
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
@@ -417,7 +438,7 @@ class HttpRequester(BaseModel):
     ] = None
     error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = None
     http_method: Optional[Union[str, HttpMethodEnum]] = "GET"
-    request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
+    request_options_provider: Optional[Union[CustomRequestOptionsProvider, InterpolatedRequestOptionsProvider]] = None
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 

@@ -308,6 +308,23 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  CustomRequestOptionsProvider:
+    description: (DO NOT USE) Added for backwards compatibility but this will be deprecated in a future release
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRequestOptionsProvider]
+      class_name:
+        type: string
+        additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
   CustomRetriever:
     description: Retriever component whose behavior is derived from a custom code implementation of the connector
     type: object
@@ -458,15 +475,19 @@ definitions:
         type: string
         enum: [DeclarativeStream]
       retriever:
+        definition: Component used to coordinate how records are extracted across stream slices and request pages
         anyOf:
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
       checkpoint_interval:
+        definition: How often the stream will checkpoint state (i.e. emit a STATE message)
         type: integer
       name:
+        definition: The stream name
         type: string
         default: ""
       primary_key:
+        definition: The primary key of the stream
         anyOf:
           - type: string
           - type: array
@@ -479,16 +500,19 @@ definitions:
                 type: string
         default: ""
       schema_loader:
+        definition: The schema loader used to retrieve the schema for the current stream
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
       stream_cursor_field:
+        definition: The field of the records being read that will be used during checkpointing
         anyOf:
           - type: string
           - type: array
             items:
               - type: string
       transformations:
+        definition: A list of transformations to be applied to each output record in the
         type: array
         items:
           anyOf:
@@ -631,7 +655,9 @@ definitions:
               - POST
         default: GET
       request_options_provider:
-        "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+        anyOf:
+          - "$ref": "#/definitions/CustomRequestOptionsProvider"
+          - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
       $options:
         type: object
         additionalProperties: true

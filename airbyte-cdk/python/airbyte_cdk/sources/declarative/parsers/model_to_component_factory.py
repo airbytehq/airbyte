@@ -38,6 +38,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    CustomRequestOptionsProvider as CustomRequestOptionsProviderModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomStreamSlicer as CustomStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
@@ -249,6 +253,8 @@ def create_custom_component(model, config: Config, **kwargs) -> type:
                         v["type"] = derived_type
                 if _is_component(v):
                     vals.append(_create_nested_component(model, model_field, v, config))
+                else:
+                    vals.append(v)
             model_args[model_field] = vals
 
     kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
@@ -675,6 +681,8 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     CustomBackoffStrategyModel: create_custom_component,
     CustomErrorHandlerModel: create_custom_component,
     CustomRecordExtractorModel: create_custom_component,
+    CustomRequesterModel: create_custom_component,
+    CustomRequestOptionsProviderModel: create_custom_component,  # todo: Remove later when we deprecate request providers from interface
     CustomRetrieverModel: create_custom_component,
     CustomPaginationStrategyModel: create_custom_component,
     CustomStreamSlicerModel: create_custom_component,
