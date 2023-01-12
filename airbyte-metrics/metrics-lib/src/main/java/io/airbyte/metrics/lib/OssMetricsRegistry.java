@@ -42,7 +42,7 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   ATTEMPT_FAILED_BY_FAILURE_ORIGIN(
       MetricEmittingApps.WORKER,
       "attempt_failed_by_failure_origin",
-      "increments for every failure origin a failed attempt has. since a failure can have multiple origins, a single failure can be counted more than once. tagged by failure origin."),
+      "increments for every failure origin a failed attempt has. since a failure can have multiple origins, a single failure can be counted more than once. tagged by failure origin and failure type."),
   ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
       "attempt_succeeded_by_release_stage",
@@ -134,7 +134,10 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "number of bytes synced during replication"),
   REPLICATION_RECORDS_SYNCED(MetricEmittingApps.WORKER,
       "replication_records_synced",
-      "number of records synced during replication");
+      "number of records synced during replication"),
+  RESET_REQUEST(MetricEmittingApps.WORKER,
+      "reset_request",
+      "number of requested resets");
 
   private final MetricEmittingApp application;
   private final String metricName;

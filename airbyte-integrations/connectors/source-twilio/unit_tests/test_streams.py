@@ -9,9 +9,22 @@ import pendulum
 import pytest
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from freezegun import freeze_time
 from source_twilio.auth import HttpBasicAuthenticator
 from source_twilio.source import SourceTwilio
-from source_twilio.streams import Accounts, Addresses, Alerts, Calls, DependentPhoneNumbers, MessageMedia, TwilioNestedStream, UsageTriggers
+from source_twilio.streams import (
+    Accounts,
+    Addresses,
+    Alerts,
+    Calls,
+    DependentPhoneNumbers,
+    MessageMedia,
+    Messages,
+    Recordings,
+    TwilioNestedStream,
+    UsageRecords,
+    UsageTriggers,
+)
 
 TEST_CONFIG = {
     "account_sid": "airbyte.io",
@@ -196,6 +209,44 @@ class TestIncrementalTwilioStream:
                 for kw in extra_slice_keywords:
                     assert kw in slice_
             assert slice_[stream.lower_boundary_filter_field] <= slice_[stream.upper_boundary_filter_field]
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_cls, state, expected_dt_ranges",
+        (
+            (
+                Messages,
+                {"date_sent": "2022-11-13 23:39:00"},
+                [
+                    {'DateSent>': '2022-11-13 23:39:00Z', 'DateSent<': '2022-11-14 23:39:00Z'},
+                    {'DateSent>': '2022-11-14 23:39:00Z', 'DateSent<': '2022-11-15 23:39:00Z'},
+                    {'DateSent>': '2022-11-15 23:39:00Z', 'DateSent<': '2022-11-16 12:03:11Z'}
+                ]
+            ),
+            (
+                UsageRecords,
+                {"start_date": "2021-11-16 00:00:00"},
+                [
+                    {'StartDate': '2021-11-16', 'EndDate': '2022-11-16'}
+                ]
+            ),
+            (
+                Recordings, {"date_created": "2021-11-16 00:00:00"},
+                [
+                    {'DateCreated>': '2021-11-16 00:00:00Z', 'DateCreated<': '2022-11-16 00:00:00Z'},
+                    {'DateCreated>': '2022-11-16 00:00:00Z', 'DateCreated<': '2022-11-16 12:03:11Z'}
+                ]
+            )
+        )
+    )
+    def test_generate_dt_ranges(self, stream_cls, state, expected_dt_ranges):
+        stream = stream_cls(
+            authenticator=TEST_CONFIG.get("authenticator"),
+            start_date="2000-01-01 00:00:00"
+        )
+        stream.state = state
+        dt_ranges = list(stream.generate_date_ranges())
+        assert dt_ranges == expected_dt_ranges
 
 
 class TestTwilioNestedStream:

@@ -66,7 +66,7 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
 
   return (
     <>
-      <div
+      <span
         ref={reference}
         className={classNames(styles.container, containerClassName)}
         style={disabled ? undefined : { cursor }}
@@ -74,7 +74,7 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
         onMouseOut={onMouseOut}
       >
         {control}
-      </div>
+      </span>
       {canShowTooltip &&
         createPortal(
           <div

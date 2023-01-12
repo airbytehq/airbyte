@@ -50,7 +50,7 @@ task prepareBuild(type: Copy) {
     from layout.projectDirectory.file(".")
     exclude '.*'
     exclude 'build'
-
+    exclude '**/*.pyc'
 
     into layout.buildDirectory.dir("docker")
 }

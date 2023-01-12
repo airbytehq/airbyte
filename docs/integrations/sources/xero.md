@@ -1,10 +1,10 @@
-# Airbyte Source Connector for Xero
+# Xero
 
 This is a setup guide for the Xero source connector which ingests data from the Accounting API.
 
 ## Prerequisites
 
-First of all you should create an application in [Xero development center](https://developer.xero.com/app/manage/). The only supported integration type is to use [Xero Custom Connections](https://developer.xero.com/documentation/guides/oauth2/custom-connections/developer) so you should choose it on creating your Xero App. 
+First of all you should create an application in [Xero development center](https://developer.xero.com/app/manage/). The only supported integration type is to use [Xero Custom Connections](https://developer.xero.com/documentation/guides/oauth2/custom-connections/developer) so you should choose it on creating your Xero App.
 After creating an application, on configuration screen, authorize user for your Xero Organisation. Also, issue new Client Secret and remember it - it will be required for setting up Xero connector in your Airbyte instance.
 
 ## Supported streams
@@ -45,7 +45,7 @@ As Xero uses .NET, some date fields in records could be in [.NET JSON date forma
 6. For **Tenant ID** field, enter your Xero Organisation's [Tenant ID](https://developer.xero.com/documentation/guides/oauth2/auth-flow/#xero-tenants)
 7. For **Scopes** field enter scopes you used for user's authorization on "Configuration" screen of your Xero App
 8. Choose **Custom Connections Authentication** as **Authentication** option
-9. For **Start date** enter UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ as the start date and time of ingestion.
+9. For **Start date** enter UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ` as the start date and time of ingestion.
 10. Click **Set up source**.
 
 ## Supported sync modes
@@ -56,3 +56,7 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 - Incremental
 
 ## Changelog
+
+| Version | Date       | Pull Request                                             | Subject                           |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.1.0   | 2021-11-11 | [18666](https://github.com/airbytehq/airbyte/pull/18666) | 🎉 New Source - Xero [python cdk] |

@@ -101,3 +101,10 @@ By default, the find function in IntelliJ is not scoped and will include all fil
 5. Press OK to confirm your options.
 
 ![](../.gitbook/assets/monorepo-exclude-files.png)
+
+#### Manual Workaround
+
+We have seen the above solution not being applied by IntelliJ. The exact reason is not clear to us but as a workaround, you can:
+1. Open `.gitignore` in your IntelliJ
+2. There will be a banner saying `Some of the ignored directories are not excluded from indexing and search`. Click on `View Directories`
+3. A tree with all the git ignored files should be displayed. You can exclude them from IntelliJ by clicking `Exclude`

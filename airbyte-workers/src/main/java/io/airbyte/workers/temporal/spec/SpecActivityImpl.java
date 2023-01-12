@@ -13,7 +13,7 @@ import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.version.Version;
@@ -41,6 +41,7 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Singleton
@@ -55,7 +56,7 @@ public class SpecActivityImpl implements SpecActivity {
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
   private final AirbyteMessageSerDeProvider serDeProvider;
-  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
 
   public SpecActivityImpl(@Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
                           @Named("specProcessFactory") final ProcessFactory processFactory,
@@ -65,7 +66,7 @@ public class SpecActivityImpl implements SpecActivity {
                           final AirbyteApiClient airbyteApiClient,
                           @Value("${airbyte.version}") final String airbyteVersion,
                           final AirbyteMessageSerDeProvider serDeProvider,
-                          final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+                          final AirbyteProtocolVersionedMigratorFactory migratorFactory) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
@@ -83,7 +84,8 @@ public class SpecActivityImpl implements SpecActivity {
     ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), DOCKER_IMAGE_KEY, launcherConfig.getDockerImage(),
         JOB_ID_KEY, jobRunConfig.getJobId()));
 
-    final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
+    final Supplier<JobGetSpecConfig> inputSupplier =
+        () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage()).withIsCustomConnector(launcherConfig.getIsCustomConnector());
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
@@ -111,7 +113,8 @@ public class SpecActivityImpl implements SpecActivity {
           launcherConfig.getAttemptId().intValue(),
           launcherConfig.getDockerImage(),
           processFactory,
-          workerConfigs.getResourceRequirements());
+          workerConfigs.getResourceRequirements(),
+          launcherConfig.getIsCustomConnector());
 
       return new DefaultGetSpecWorker(integrationLauncher, streamFactory);
     };
@@ -121,7 +124,7 @@ public class SpecActivityImpl implements SpecActivity {
     final Version protocolVersion =
         launcherConfig.getProtocolVersion() != null ? launcherConfig.getProtocolVersion() : migratorFactory.getMostRecentVersion();
     // Try to detect version from the stream
-    return new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion).withDetectVersion(true);
+    return new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion, Optional.empty()).withDetectVersion(true);
   }
 
 }

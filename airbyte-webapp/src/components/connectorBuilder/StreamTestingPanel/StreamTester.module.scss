@@ -1,0 +1,33 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: variables.$spacing-lg;
+  min-height: 0;
+  width: 100%;
+}
+
+.resizablePanelsContainer {
+  flex: 1;
+  min-height: 0;
+
+  // required to hide the connector logs splitter underneath the resizable panel overlay
+  z-index: 0;
+}
+
+.url {
+  color: colors.$blue;
+  font-weight: 400;
+}
+
+:export {
+  testIconHeight: 17px;
+}
+
+.fetchingSpinner {
+  margin: auto;
+}

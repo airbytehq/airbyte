@@ -28,7 +28,7 @@ import org.apache.avro.generic.GenericDatumReader;
 
 public class GcsAvroDestinationAcceptanceTest extends GcsAvroParquetDestinationAcceptanceTest {
 
-  protected GcsAvroDestinationAcceptanceTest() {
+  public GcsAvroDestinationAcceptanceTest() {
     super(S3Format.AVRO);
   }
 

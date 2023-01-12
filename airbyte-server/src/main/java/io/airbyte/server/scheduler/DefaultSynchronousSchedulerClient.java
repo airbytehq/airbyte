@@ -62,7 +62,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source,
                                                                                            final String dockerImage,
-                                                                                           final Version protocolVersion)
+                                                                                           final Version protocolVersion,
+                                                                                           final boolean isCustomConnector)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
@@ -71,7 +72,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage)
-        .withProtocolVersion(protocolVersion);
+        .withProtocolVersion(protocolVersion)
+        .withIsCustomConnector(isCustomConnector);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
@@ -88,7 +90,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(final DestinationConnection destination,
                                                                                                 final String dockerImage,
-                                                                                                final Version protocolVersion)
+                                                                                                final Version protocolVersion,
+                                                                                                final boolean isCustomConnector)
       throws IOException {
     final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
         destination.getDestinationDefinitionId(),
@@ -97,7 +100,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destinationConfiguration)
         .withDockerImage(dockerImage)
-        .withProtocolVersion(protocolVersion);
+        .withProtocolVersion(protocolVersion)
+        .withIsCustomConnector(isCustomConnector);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
@@ -115,7 +119,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   public SynchronousResponse<UUID> createDiscoverSchemaJob(final SourceConnection source,
                                                            final String dockerImage,
                                                            final String connectorVersion,
-                                                           final Version protocolVersion)
+                                                           final Version protocolVersion,
+                                                           final boolean isCustomConnector)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
@@ -128,7 +133,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         .withSourceId(source.getSourceId().toString())
         .withConfigHash(HASH_FUNCTION.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
             Charsets.UTF_8)).toString())
-        .withConnectorVersion(connectorVersion);
+        .withConnectorVersion(connectorVersion)
+        .withIsCustomConnector(isCustomConnector);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
@@ -143,8 +149,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @Override
-  public SynchronousResponse<ConnectorSpecification> createGetSpecJob(final String dockerImage) throws IOException {
-    final JobGetSpecConfig jobSpecConfig = new JobGetSpecConfig().withDockerImage(dockerImage);
+  public SynchronousResponse<ConnectorSpecification> createGetSpecJob(final String dockerImage, final boolean isCustomConnector) throws IOException {
+    final JobGetSpecConfig jobSpecConfig = new JobGetSpecConfig().withDockerImage(dockerImage).withIsCustomConnector(isCustomConnector);
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);

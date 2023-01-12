@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.*;
 import org.junit.jupiter.api.Test;
 
 class AwsDatalakeDestinationTest {

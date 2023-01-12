@@ -3,6 +3,8 @@ import dayjs from "dayjs";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { formatBytes } from "utils/numberHelper";
+
 import { AttemptRead, AttemptStatus } from "../../../core/request/AirbyteClient";
 import styles from "./AttemptDetails.module.scss";
 
@@ -22,20 +24,6 @@ const AttemptDetails: React.FC<AttemptDetailsProps> = ({ attempt, className, has
   if (attempt.status !== AttemptStatus.succeeded && attempt.status !== AttemptStatus.failed) {
     return null;
   }
-
-  const formatBytes = (bytes?: number) => {
-    if (!bytes) {
-      return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
-    }
-
-    const k = 1024;
-    const dm = 2;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    const result = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
-
-    return <FormattedMessage id={`sources.count${sizes[i]}`} values={{ count: result }} />;
-  };
 
   const getFailureOrigin = (attempt: AttemptRead) => {
     const failure = getFailureFromAttempt(attempt);

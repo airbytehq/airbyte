@@ -1,0 +1,2169 @@
+[
+  {
+    "schemaName": "simple_schema",
+    "namespace": "namespace1",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123"
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "simple_schema",
+      "namespace": "namespace1",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "nested_record",
+    "namespace": "namespace2",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "user": {
+          "type": ["null", "object"],
+          "properties": {
+            "first_name": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123",
+      "user": {
+        "first_name": "charles",
+        "last_name": "darwin"
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "nested_record",
+      "namespace": "namespace2",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name": "user",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "user",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "first_name",
+                  "type": ["null", "string"],
+                  "default": null
+                },
+                {
+                  "name": "last_name",
+                  "type": ["null", "string"],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "user": {
+        "first_name": "charles",
+        "last_name": "darwin",
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "record_with_airbyte_fields",
+    "namespace": "namespace3",
+    "appendAirbyteFields": true,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "jsonObject": {
+      "_airbyte_ab_id": "752fcd83-7e46-41da-b7ff-f05cb070c893",
+      "_airbyte_emitted_at": 1634982000,
+      "node_id": "abc123"
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_airbyte_fields",
+      "namespace": "namespace3",
+      "fields": [
+        {
+          "name": "_airbyte_ab_id",
+          "type": {
+            "type": "string",
+            "logicalType": "uuid"
+          }
+        },
+        {
+          "name": "_airbyte_emitted_at",
+          "type": {
+            "type": "long",
+            "logicalType": "timestamp-millis"
+          }
+        },
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "_airbyte_ab_id": "752fcd83-7e46-41da-b7ff-f05cb070c893",
+      "_airbyte_emitted_at": 1634982000,
+      "node_id": "abc123",
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "name_with:spécial:characters",
+    "namespace": "namespace4",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node:id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "jsonObject": {
+      "node:id": "abc123"
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "name_with_special_characters",
+      "namespace": "namespace4",
+      "doc": "_airbyte_original_name:name_with:spécial:characters",
+      "fields": [
+        {
+          "name": "node_id",
+          "doc": "_airbyte_original_name:node:id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "record_with_union_type",
+    "namespace": "namespace5",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": ["null", "number", "string"]
+        }
+      }
+    },
+    "jsonObject": {
+      "identifier": 65536.0
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_union_type",
+      "namespace": "namespace5",
+      "fields": [
+        {
+          "name": "identifier",
+          "type": ["null", "double", "string"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "identifier": 65536.0,
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "array_with_same_type",
+    "namespace": "namespace6",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "jsonObject": {
+      "identifier": ["151", "152"]
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_with_same_type",
+      "namespace": "namespace6",
+      "fields": [
+        {
+          "name": "identifier",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": ["null", "string"]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "identifier": ["151", "152"],
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "array_with_union_type",
+    "namespace": "namespace7",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifiers": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "jsonObject": {
+      "identifiers": ["151", 152, true, false]
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_with_union_type",
+      "namespace": "namespace7",
+      "fields": [
+        {
+          "name": "identifiers",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": ["null", "string", "int", "boolean"]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "identifiers": ["151", 152, true, false],
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "field_with_combined_restriction",
+    "namespace": "namespace8",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "properties": {
+        "created_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": ["null", "string"]
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        }
+      }
+    },
+    "jsonObject": {
+      "created_at": 1634982000
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "field_with_combined_restriction",
+      "namespace": "namespace8",
+      "fields": [
+        {
+          "name": "created_at",
+          "type": [
+            "null",
+            {
+              "type": "long",
+              "logicalType": "timestamp-micros"
+            },
+            "string",
+            "int"
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "created_at": 1634982000,
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "record_with_combined_restriction_field",
+    "namespace": "namespace9",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "properties": {
+        "user": {
+          "type": "object",
+          "properties": {
+            "created_at": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": ["null", "string"]
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "jsonObject": {
+      "user": {
+        "created_at": "1634982000"
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_combined_restriction_field",
+      "namespace": "namespace9",
+      "fields": [
+        {
+          "name": "user",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "user",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "created_at",
+                  "type": [
+                    "null",
+                    {
+                      "type": "long",
+                      "logicalType": "timestamp-micros"
+                    },
+                    "string",
+                    "int"
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "user": {
+        "created_at": 1634982000,
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "array_with_combined_restriction_field",
+    "namespace": "namespace10",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "properties": {
+        "identifiers": {
+          "type": "array",
+          "items": [
+            {
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "jsonObject": {
+      "identifiers": [151, 152, "153", "text", true, false]
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_with_combined_restriction_field",
+      "namespace": "namespace10",
+      "fields": [
+        {
+          "name": "identifiers",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": ["null", "int", "string", "boolean"]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "identifiers": [151, 152, 153, "text", true, false],
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "field_with_bad_first_char",
+    "namespace": "namespace11",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "5field_name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "jsonObject": {
+      "_5field_name": "theory of relativity"
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "field_with_bad_first_char",
+      "namespace": "namespace11",
+      "fields": [
+        {
+          "name": "_5field_name",
+          "type": ["null", "string"],
+          "doc": "_airbyte_original_name:5field_name",
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "_5field_name": "theory of relativity",
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "record_with_airbyte_additional_properties",
+    "namespace": "namespace12",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "_airbyte_additional_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": 1439,
+        "active": true
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_airbyte_additional_properties",
+      "namespace": "namespace12",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": "1439",
+        "active": "true"
+      }
+    }
+  },
+  {
+    "schemaName": "record_with_ab_additional_properties",
+    "namespace": "namespace13",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "_ab_additional_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123",
+      "_ab_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": 1439,
+        "active": true
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_ab_additional_properties",
+      "namespace": "namespace13",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": "1439",
+        "active": "true"
+      }
+    }
+  },
+  {
+    "schemaName": "record_without_properties",
+    "namespace": "namespace14",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object"
+    },
+    "jsonObject": {
+      "username": "343-guilty-spark",
+      "password": 1439,
+      "active": true
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_without_properties",
+      "namespace": "namespace14",
+      "fields": [
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": "1439",
+        "active": "true"
+      }
+    }
+  },
+  {
+    "schemaName": "logical_type_date_time_fields",
+    "namespace": "namespace15",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "date_time_field": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "date_field": {
+          "type": "string",
+          "format": "date"
+        },
+        "time_field": {
+          "type": "string",
+          "format": "time"
+        }
+      }
+    },
+    "jsonObject": {
+      "date_time_field": "2021-01-01T01:01:01+01:00",
+      "date_field": "2021-01-01",
+      "time_field": "12:23:01.541"
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "logical_type_date_time_fields",
+      "namespace": "namespace15",
+      "fields": [
+        {
+          "name": "date_time_field",
+          "type": [
+            "null",
+            {
+              "type": "long",
+              "logicalType": "timestamp-micros"
+            },
+            "string"
+          ],
+          "default": null
+        },
+        {
+          "name": "date_field",
+          "type": [
+            "null",
+            {
+              "type": "int",
+              "logicalType": "date"
+            },
+            "string"
+          ],
+          "default": null
+        },
+        {
+          "name": "time_field",
+          "type": [
+            "null",
+            {
+              "type": "long",
+              "logicalType": "time-micros"
+            },
+            "string"
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "date_time_field": 1609459261000000,
+      "date_field": 18628,
+      "time_field": 44581541000,
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "schema_with_same_object_name",
+    "namespace": "namespace16",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "commit": {
+          "type": ["null", "object"],
+          "properties": {
+            "message": {
+              "type": ["null", "string"]
+            },
+            "author": {
+              "type": ["null", "object"],
+              "properties": {
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "pr": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "message": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "jsonObject": {
+      "author": {
+        "id": 12345
+      },
+      "commit": {
+        "message": "test commit message",
+        "author": {
+          "name": "test author",
+          "pr": {
+            "id": "random id",
+            "message": "test pr description"
+          }
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "schema_with_same_object_name",
+      "namespace": "namespace16",
+      "fields": [
+        {
+          "name": "author",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "author",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "id",
+                  "type": ["null", "int"],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "commit",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "commit",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "message",
+                  "type": ["null", "string"],
+                  "default": null
+                },
+                {
+                  "name": "author",
+                  "type": [
+                    "null",
+                    {
+                      "type": "record",
+                      "name": "author",
+                      "namespace": "commit",
+                      "fields": [
+                        {
+                          "name": "name",
+                          "type": ["null", "string"],
+                          "default": null
+                        },
+                        {
+                          "name": "pr",
+                          "type": [
+                            "null",
+                            {
+                              "type": "record",
+                              "name": "pr",
+                              "namespace": "commit.author",
+                              "fields": [
+                                {
+                                  "name": "id",
+                                  "type": ["null", "string"],
+                                  "default": null
+                                },
+                                {
+                                  "name": "message",
+                                  "type": ["null", "string"],
+                                  "default": null
+                                },
+                                {
+                                  "name": "_airbyte_additional_properties",
+                                  "type": [
+                                    "null",
+                                    {
+                                      "type": "map",
+                                      "values": "string"
+                                    }
+                                  ],
+                                  "default": null
+                                }
+                              ]
+                            }
+                          ],
+                          "default": null
+                        },
+                        {
+                          "name": "_airbyte_additional_properties",
+                          "type": [
+                            "null",
+                            {
+                              "type": "map",
+                              "values": "string"
+                            }
+                          ],
+                          "default": null
+                        }
+                      ]
+                    }
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "author": {
+        "id": 12345,
+        "_airbyte_additional_properties": null
+      },
+      "commit": {
+        "message": "test commit message",
+        "author": {
+          "name": "test author",
+          "pr": {
+            "id": "random id",
+            "message": "test pr description",
+            "_airbyte_additional_properties": null
+          },
+          "_airbyte_additional_properties": null
+        },
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "array_without_items_in_schema",
+    "namespace": "namespace17",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "array"
+        }
+      }
+    },
+    "jsonObject": {
+      "identifier": ["151", 152, true, { "id": 153 }]
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_without_items_in_schema",
+      "namespace": "namespace17",
+      "fields": [
+        {
+          "name": "identifier",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": ["null", "string"]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "identifier": ["151", "152", "true", "{\"id\":153}"],
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "array_with_same_object_name",
+    "namespace": "namespace18",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "properties": {
+        "parent_object": {
+          "type": "object",
+          "properties": {
+            "object_array": {
+              "type": "array",
+              "items": [
+                { "type": "integer" },
+                { "type": "boolean" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "object",
+                      "properties": {
+                        "id_part_1": {
+                          "type": "integer"
+                        },
+                        "id_part_2": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "object",
+                      "properties": {
+                        "id_part_1": {
+                          "type": "string"
+                        },
+                        "id_part_2": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    ":message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "jsonObject": {
+      "parent_object": {
+        "object_array": [
+          1234,
+          true,
+          {
+            "id": {
+              "id_part_1": 1000,
+              "id_part_2": "abcde"
+            }
+          },
+          {
+            "id": {
+              "id_part_1": "wxyz",
+              "id_part_2": 2000
+            },
+            ":message": "test message"
+          }
+        ]
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_with_same_object_name",
+      "namespace": "namespace18",
+      "fields": [
+        {
+          "name": "parent_object",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "parent_object",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "object_array",
+                  "type": [
+                    "null",
+                    {
+                      "type": "array",
+                      "items": [
+                        "null",
+                        "int",
+                        "boolean",
+                        {
+                          "type": "record",
+                          "name": "object_array",
+                          "namespace": "parent_object",
+                          "fields": [
+                            {
+                              "name": "id",
+                              "type": [
+                                "null",
+                                {
+                                  "type": "record",
+                                  "namespace": "parent_object.object_array",
+                                  "name": "id",
+                                  "fields": [
+                                    {
+                                      "name": "id_part_1",
+                                      "type": ["null", "int", "string"],
+                                      "default": null
+                                    },
+                                    {
+                                      "name": "id_part_2",
+                                      "type": ["null", "string", "int"],
+                                      "default": null
+                                    },
+                                    {
+                                      "name": "_airbyte_additional_properties",
+                                      "type": [
+                                        "null",
+                                        {
+                                          "type": "map",
+                                          "values": "string"
+                                        }
+                                      ],
+                                      "default": null
+                                    }
+                                  ]
+                                }
+                              ],
+                              "default": null
+                            },
+                            {
+                              "name": "_message",
+                              "type": ["null", "string"],
+                              "doc": "_airbyte_original_name::message",
+                              "default": null
+                            },
+                            {
+                              "name": "_airbyte_additional_properties",
+                              "type": [
+                                "null",
+                                {
+                                  "type": "map",
+                                  "values": "string"
+                                }
+                              ],
+                              "default": null
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "parent_object": {
+        "object_array": [
+          1234,
+          true,
+          {
+            "id": {
+              "id_part_1": 1000,
+              "id_part_2": "abcde",
+              "_airbyte_additional_properties": null
+            },
+            "_message": null,
+            "_airbyte_additional_properties": null
+          },
+          {
+            "id": {
+              "id_part_1": "wxyz",
+              "id_part_2": 2000,
+              "_airbyte_additional_properties": null
+            },
+            "_message": "test message",
+            "_airbyte_additional_properties": null
+          }
+        ],
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "object_inside_array_inside_array",
+    "namespace": "namespace19",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "filters": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "filterFamily": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "object_inside_array_inside_array",
+      "namespace": "namespace19",
+      "fields": [
+        {
+          "name": "filters",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": [
+                "null",
+                {
+                  "type": "array",
+                  "items": [
+                    "null",
+                    {
+                      "type": "record",
+                      "name": "filters_items_items",
+                      "namespace": "",
+                      "doc": "_airbyte_original_name:filters.items.items",
+                      "fields": [
+                        {
+                          "name": "filterFamily",
+                          "type": ["null", "string"],
+                          "default": null
+                        },
+                        {
+                          "name": "_airbyte_additional_properties",
+                          "type": [
+                            "null",
+                            {
+                              "type": "map",
+                              "values": "string"
+                            }
+                          ],
+                          "default": null
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "jsonObject": {
+      "filters": [
+        [
+          {
+            "filterFamily": "type_a"
+          },
+          {
+            "filterFamily": "type_b"
+          }
+        ],
+        [
+          {
+            "filterFamily": "type_b"
+          }
+        ]
+      ]
+    },
+    "avroObject": {
+      "filters": [
+        [
+          {
+            "filterFamily": "type_a",
+            "_airbyte_additional_properties": null
+          },
+          {
+            "filterFamily": "type_b",
+            "_airbyte_additional_properties": null
+          }
+        ],
+        [
+          {
+            "filterFamily": "type_b",
+            "_airbyte_additional_properties": null
+          }
+        ]
+      ],
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "array_field_with_empty_items",
+    "namespace": "namespace20",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "array_field": {
+          "type": "array",
+          "items": {}
+        }
+      }
+    },
+    "jsonObject": {
+      "array_field": [1234, true, "false", 0.001]
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_field_with_empty_items",
+      "namespace": "namespace20",
+      "fields": [
+        {
+          "name": "array_field",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": ["null", "string"]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "array_field": ["1234", "true", "false", "0.001"],
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "namespace_with_special_characters",
+    "namespace": "namespace_with:spécial:characters",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123"
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "namespace_with_special_characters",
+      "namespace": "namespace_with_special_characters",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "nullable_value",
+    "namespace": "namespace22",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": null
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "nullable_value",
+      "namespace": "namespace22",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "double"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": null,
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "any_of_with_same_name",
+    "namespace": "namespace23",
+    "appendAirbyteFields": true,
+    "jsonSchema": {
+      "type": ["null", "object"],
+      "properties": {
+        "same_record_name_field": {
+          "type": ["null", "object"],
+          "properties": {
+            "sub_field_1": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "any_of_field": {
+          "anyOf": [
+            {
+              "type": ["null", "object"],
+              "properties": {
+                "same_record_name_field": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "sub_field_2": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "jsonObject": {
+      "_airbyte_ab_id": "5e8f8f8f-8f8f-8f8f-8f8f-8f8f8f8f8f8f",
+      "_airbyte_emitted_at": 1234567890,
+      "same_record_name_field": null,
+      "any_of_field": {
+        "same_record_name_field": null,
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "any_of_with_same_name",
+      "namespace": "namespace23",
+      "fields": [
+        {
+          "name": "_airbyte_ab_id",
+          "type": {
+            "type": "string",
+            "logicalType": "uuid"
+          }
+        },
+        {
+          "name": "_airbyte_emitted_at",
+          "type": {
+            "type": "long",
+            "logicalType": "timestamp-millis"
+          }
+        },
+        {
+          "name": "same_record_name_field",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "same_record_name_field",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "sub_field_1",
+                  "type": ["null", "string"],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "any_of_field",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "any_of_field",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "same_record_name_field",
+                  "type": [
+                    "null",
+                    {
+                      "type": "record",
+                      "name": "same_record_name_field",
+                      "namespace": "any_of_field",
+                      "fields": [
+                        {
+                          "name": "sub_field_2",
+                          "type": ["null", "string"],
+                          "default": null
+                        },
+                        {
+                          "name": "_airbyte_additional_properties",
+                          "type": [
+                            "null",
+                            {
+                              "type": "map",
+                              "values": "string"
+                            }
+                          ],
+                          "default": null
+                        }
+                      ]
+                    }
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "_airbyte_ab_id": "5e8f8f8f-8f8f-8f8f-8f8f-8f8f8f8f8f8f",
+      "_airbyte_emitted_at": 1234567890,
+      "same_record_name_field": null,
+      "any_of_field": {
+        "same_record_name_field": null,
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "all_of_with_same_name",
+    "namespace": "namespace24",
+    "appendAirbyteFields": true,
+    "jsonSchema": {
+      "type": ["null", "object"],
+      "properties": {
+        "same_record_name_field": {
+          "type": ["null", "object"],
+          "properties": {
+            "sub_field_1": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "any_of_field": {
+          "allOf": [
+            {
+              "type": ["null", "object"],
+              "properties": {
+                "same_record_name_field": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "sub_field_2": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "jsonObject": {
+      "_airbyte_ab_id": "5e8f8f8f-8f8f-8f8f-8f8f-8f8f8f8f8f8f",
+      "_airbyte_emitted_at": 1234567890,
+      "same_record_name_field": null,
+      "any_of_field": {
+        "same_record_name_field": null,
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "all_of_with_same_name",
+      "namespace": "namespace24",
+      "fields": [
+        {
+          "name": "_airbyte_ab_id",
+          "type": {
+            "type": "string",
+            "logicalType": "uuid"
+          }
+        },
+        {
+          "name": "_airbyte_emitted_at",
+          "type": {
+            "type": "long",
+            "logicalType": "timestamp-millis"
+          }
+        },
+        {
+          "name": "same_record_name_field",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "same_record_name_field",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "sub_field_1",
+                  "type": ["null", "string"],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "any_of_field",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "any_of_field",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "same_record_name_field",
+                  "type": [
+                    "null",
+                    {
+                      "type": "record",
+                      "name": "same_record_name_field",
+                      "namespace": "any_of_field",
+                      "fields": [
+                        {
+                          "name": "sub_field_2",
+                          "type": ["null", "string"],
+                          "default": null
+                        },
+                        {
+                          "name": "_airbyte_additional_properties",
+                          "type": [
+                            "null",
+                            {
+                              "type": "map",
+                              "values": "string"
+                            }
+                          ],
+                          "default": null
+                        }
+                      ]
+                    }
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "_airbyte_ab_id": "5e8f8f8f-8f8f-8f8f-8f8f-8f8f8f8f8f8f",
+      "_airbyte_emitted_at": 1234567890,
+      "same_record_name_field": null,
+      "any_of_field": {
+        "same_record_name_field": null,
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "one_of_with_same_name",
+    "namespace": "namespace25",
+    "appendAirbyteFields": true,
+    "jsonSchema": {
+      "type": ["null", "object"],
+      "properties": {
+        "same_record_name_field": {
+          "type": ["null", "object"],
+          "properties": {
+            "sub_field_1": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "any_of_field": {
+          "anyOf": [
+            {
+              "type": ["null", "object"],
+              "properties": {
+                "same_record_name_field": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "sub_field_2": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "jsonObject": {
+      "_airbyte_ab_id": "5e8f8f8f-8f8f-8f8f-8f8f-8f8f8f8f8f8f",
+      "_airbyte_emitted_at": 1234567890,
+      "same_record_name_field": null,
+      "any_of_field": {
+        "same_record_name_field": null,
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "one_of_with_same_name",
+      "namespace": "namespace25",
+      "fields": [
+        {
+          "name": "_airbyte_ab_id",
+          "type": {
+            "type": "string",
+            "logicalType": "uuid"
+          }
+        },
+        {
+          "name": "_airbyte_emitted_at",
+          "type": {
+            "type": "long",
+            "logicalType": "timestamp-millis"
+          }
+        },
+        {
+          "name": "same_record_name_field",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "same_record_name_field",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "sub_field_1",
+                  "type": ["null", "string"],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "any_of_field",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "any_of_field",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "same_record_name_field",
+                  "type": [
+                    "null",
+                    {
+                      "type": "record",
+                      "name": "same_record_name_field",
+                      "namespace": "any_of_field",
+                      "fields": [
+                        {
+                          "name": "sub_field_2",
+                          "type": ["null", "string"],
+                          "default": null
+                        },
+                        {
+                          "name": "_airbyte_additional_properties",
+                          "type": [
+                            "null",
+                            {
+                              "type": "map",
+                              "values": "string"
+                            }
+                          ],
+                          "default": null
+                        }
+                      ]
+                    }
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "_airbyte_additional_properties",
+                  "type": [
+                    "null",
+                    {
+                      "type": "map",
+                      "values": "string"
+                    }
+                  ],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "_airbyte_ab_id": "5e8f8f8f-8f8f-8f8f-8f8f-8f8f8f8f8f8f",
+      "_airbyte_emitted_at": 1234567890,
+      "same_record_name_field": null,
+      "any_of_field": {
+        "same_record_name_field": null,
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
+    }
+  }
+]

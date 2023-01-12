@@ -11208,7 +11208,7 @@
       "name": "Prestashop",
       "dockerRepository": "airbyte/source-prestashop",
       "dockerImageTag": "0.1.0",
-      "documentationUrl": "https://docs.airbyte.io/integrations/sources/presta-shop",
+      "documentationUrl": "https://docs.airbyte.io/integrations/sources/prestashop",
       "icon": "prestashop.svg",
       "sourceType": "api",
       "spec": {

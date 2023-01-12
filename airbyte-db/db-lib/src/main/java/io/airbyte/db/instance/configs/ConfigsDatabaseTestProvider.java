@@ -41,8 +41,7 @@ public class ConfigsDatabaseTestProvider implements TestDatabaseProvider {
     final Database database = new Database(dslContext);
 
     if (runMigration) {
-      final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(
-          database, flyway);
+      final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, flyway);
       migrator.createBaseline();
       migrator.migrate();
     } else {

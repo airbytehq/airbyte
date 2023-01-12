@@ -82,7 +82,7 @@ export const BulkHeader: React.FC = () => {
       <CheckboxCell />
       <ArrowCell />
       <HeaderCell flex={0.4}>
-        <Switch small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
+        <Switch size="sm" checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
       </HeaderCell>
       <HeaderCell />
       <HeaderCell />

@@ -9,6 +9,7 @@ import { isDefined } from "utils/common";
 
 import { DestinationDefinitionCreate, DestinationDefinitionRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
+import { connectorDefinitionKeys } from "./ConnectorDefinitions";
 import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const destinationDefinitionKeys = {
@@ -76,9 +77,10 @@ const useDestinationDefinition = <T extends string | undefined>(
 const useCreateDestinationDefinition = () => {
   const service = useGetDestinationDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<DestinationDefinitionRead, Error, DestinationDefinitionCreate>(
-    (destinationDefinition) => service.create(destinationDefinition),
+    (destinationDefinition) => service.createCustom({ workspaceId, destinationDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(
@@ -116,6 +118,8 @@ const useUpdateDestinationDefinition = () => {
             ) ?? [],
         })
       );
+
+      queryClient.invalidateQueries(connectorDefinitionKeys.count());
     },
   });
 };

@@ -59,6 +59,6 @@ This guide describes in details how you can configure the connector to connect w
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-|:--------|:-----|:-------------|:--------|
-|         |      |              |         |
+| Version | Date       | Pull Request | Subject         |
+|:--------|:-----------|:-------------|:----------------|
+| 0.1.0   | 11-14-2022 | https://github.com/airbytehq/airbyte/pull/18750             | Initial version |

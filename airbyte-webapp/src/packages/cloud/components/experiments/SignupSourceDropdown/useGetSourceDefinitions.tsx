@@ -16,10 +16,11 @@ const fetchCatalog = async (): Promise<Catalog> => {
 };
 
 export const useGetSourceDefinitions = () => {
-  return useQuery<Catalog, Error, Catalog["sources"]>("cloud_catalog", fetchCatalog, {
+  return useQuery("cloud_catalog", fetchCatalog, {
     select: (data) => {
+      const excludedConnectorIds = getExcludedConnectorIds();
       return data.sources
-        .filter(() => getExcludedConnectorIds(""))
+        .filter((source) => !excludedConnectorIds.includes(source.sourceDefinitionId))
         .map((source) => {
           const icon = availableSourceDefinitions.sourceDefinitions.find(
             (src) => src.sourceDefinitionId === source.sourceDefinitionId

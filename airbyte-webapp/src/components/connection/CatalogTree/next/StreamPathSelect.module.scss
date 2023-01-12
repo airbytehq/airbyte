@@ -3,3 +3,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.streamPathSelect {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}

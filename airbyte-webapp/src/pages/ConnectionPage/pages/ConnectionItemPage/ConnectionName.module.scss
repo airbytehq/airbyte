@@ -30,7 +30,7 @@
   composes: textContainer;
   background-color: colors.$grey-100;
   border: variables.$border-thin solid colors.$grey-100;
-  border-radius: variables.$border-radius-sm;
+  border-radius: variables.$border-radius-md;
   padding: 0 variables.$spacing-xl;
 
   div {
@@ -58,7 +58,7 @@
   composes: textContainer;
   background-color: colors.$white;
   border: variables.$border-thin solid colors.$blue;
-  border-radius: variables.$border-radius-sm;
+  border-radius: variables.$border-radius-md;
 }
 
 .inputContainer {
@@ -66,7 +66,7 @@
   width: 100%;
 
   div {
-    border-radius: variables.$border-radius-sm;
+    border-radius: variables.$border-radius-md;
     border: none;
     box-shadow: none;
     background-color: colors.$white !important; // fix style import order issue
@@ -74,7 +74,7 @@
 }
 
 .input {
-  border-radius: variables.$border-radius-sm;
+  border-radius: variables.$border-radius-md;
   background-color: colors.$white;
   font-size: 24px !important; // fix style import order issue
   height: 50px;

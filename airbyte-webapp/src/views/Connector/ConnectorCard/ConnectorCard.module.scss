@@ -7,3 +7,15 @@
 .connectorSelectControl {
   margin-bottom: vars.$spacing-xl;
 }
+
+.loaderContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: vars.$spacing-2xl 0;
+}
+
+.loadingMessage {
+  margin-top: vars.$spacing-md;
+  margin-left: vars.$spacing-lg;
+}

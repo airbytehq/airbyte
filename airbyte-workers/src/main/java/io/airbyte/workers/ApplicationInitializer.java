@@ -115,7 +115,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private boolean shouldRunGetSpecWorkflows;
   @Value("${airbyte.worker.sync.enabled}")
   private boolean shouldRunSyncWorkflows;
-  @Value("${airbyte.worker.sync.enabled}")
+  @Value("${airbyte.worker.notify.enabled}")
   private boolean shouldRunNotifyWorkflows;
 
   @Inject

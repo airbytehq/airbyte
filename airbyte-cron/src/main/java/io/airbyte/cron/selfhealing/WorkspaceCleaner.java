@@ -12,6 +12,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
+import io.micronaut.scheduling.annotation.Scheduled;
 import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +53,7 @@ public class WorkspaceCleaner {
    * NOTE: this is currently only intended to work for docker
    */
   @Trace(operationName = SCHEDULED_TRACE_OPERATION_NAME)
+  @Scheduled(fixedRate = "1d")
   public void deleteOldFiles() throws IOException {
     final Date oldestAllowed = getDateFromDaysAgo(maxAgeFilesInDays);
     log.info("Deleting files older than {} days ({})", maxAgeFilesInDays, oldestAllowed);

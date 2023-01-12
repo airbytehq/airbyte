@@ -5,13 +5,14 @@ PORT=18000
 BASIC_AUTH_USERNAME=airbyte
 BASIC_AUTH_PASSWORD=password
 BASIC_AUTH_UPDATED_PASSWORD=pa55w0rd
+BASIC_AUTH_PROXY_TIMEOUT=120
 TEST_HOST=localhost
 VERSION="${VERSION:-dev}" # defaults to "dev", otherwise it is set by environment's $VERSION
 
 echo "testing with proxy container airbyte/proxy:$VERSION"
 
 function start_container () {
-  CMD="docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --env PROXY_PASS_WEB=http://localhost --env PROXY_PASS_API=http://localhost --env CONNECTOR_BUILDER_SERVER_API=http://localhost --name $NAME airbyte/proxy:$VERSION"
+  CMD="docker run -d -p $PORT:8000 --env BASIC_AUTH_USERNAME=$1 --env BASIC_AUTH_PASSWORD=$2 --env BASIC_AUTH_PROXY_TIMEOUT=$3 --env PROXY_PASS_WEB=http://localhost --env PROXY_PASS_API=http://localhost --env CONNECTOR_BUILDER_SERVER_API=http://localhost --name $NAME airbyte/proxy:$VERSION"
   echo $CMD
   eval $CMD
   wait_for_docker;
@@ -42,7 +43,7 @@ echo "Testing airbyte proxy..."
 stop_container; # just in case there was a failure of a previous test run
 
 echo "Starting $NAME"
-start_container $BASIC_AUTH_USERNAME $BASIC_AUTH_PASSWORD
+start_container $BASIC_AUTH_USERNAME $BASIC_AUTH_PASSWORD $BASIC_AUTH_PROXY_TIMEOUT
 
 echo "Testing access without auth"
 RESPONSE=`curl "http://$TEST_HOST:$PORT" -i --silent`
@@ -67,7 +68,7 @@ fi
 stop_container;
 
 echo "Starting $NAME with updated password"
-start_container $BASIC_AUTH_USERNAME $BASIC_AUTH_UPDATED_PASSWORD
+start_container $BASIC_AUTH_USERNAME $BASIC_AUTH_UPDATED_PASSWORD $BASIC_AUTH_PROXY_TIMEOUT
 
 echo "Testing access with orignial paassword"
 RESPONSE=`curl "http://$BASIC_AUTH_USERNAME:$BASIC_AUTH_PASSWORD@$TEST_HOST:$PORT" -i --silent`

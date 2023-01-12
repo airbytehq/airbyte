@@ -3,7 +3,7 @@
 #
 
 from abc import abstractmethod
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Tuple, Union
 
 import pendulum
 import requests
@@ -29,10 +29,10 @@ class AbstractOauth2Authenticator(AuthBase):
     def get_access_token(self) -> str:
         """Returns the access token"""
         if self.token_has_expired():
-            t0 = pendulum.now()
+            current_datetime = pendulum.now()
             token, expires_in = self.refresh_access_token()
             self.access_token = token
-            self.set_token_expiry_date(t0.add(seconds=expires_in))
+            self.set_token_expiry_date(current_datetime, expires_in)
 
         return self.access_token
 
@@ -64,6 +64,11 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
+    def _get_refresh_access_token_response(self):
+        response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+        response.raise_for_status()
+        return response.json()
+
     def refresh_access_token(self) -> Tuple[str, int]:
         """
         Returns the refresh token and its lifespan in seconds
@@ -71,9 +76,7 @@ class AbstractOauth2Authenticator(AuthBase):
         :return: a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
-            response.raise_for_status()
-            response_json = response.json()
+            response_json = self._get_refresh_access_token_response()
             return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
@@ -99,11 +102,11 @@ class AbstractOauth2Authenticator(AuthBase):
         """List of requested scopes"""
 
     @abstractmethod
-    def get_token_expiry_date(self) -> pendulum.datetime:
+    def get_token_expiry_date(self) -> pendulum.DateTime:
         """Expiration date of the access token"""
 
     @abstractmethod
-    def set_token_expiry_date(self, value: pendulum.datetime):
+    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
         """Setter for access token expiration date"""
 
     @abstractmethod

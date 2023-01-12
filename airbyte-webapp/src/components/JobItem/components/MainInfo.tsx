@@ -4,6 +4,7 @@ import classNames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
+import { JobProgress } from "components/connection/JobProgress";
 import { Cell, Row } from "components/SimpleTableComponents";
 import { StatusIcon } from "components/ui/StatusIcon";
 
@@ -43,8 +44,10 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   const isPartialSuccess = partialSuccessCheck(attempts);
 
   const statusIcon = useMemo(() => {
-    if (jobStatus === JobStatus.cancelled || (!isPartialSuccess && isFailed)) {
+    if (!isPartialSuccess && isFailed) {
       return <StatusIcon status="error" />;
+    } else if (jobStatus === JobStatus.cancelled) {
+      return <StatusIcon status="cancelled" />;
     } else if (jobStatus === JobStatus.running) {
       return <StatusIcon status="loading" />;
     } else if (jobStatus === JobStatus.succeeded) {
@@ -87,6 +90,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         <div className={styles.statusIcon}>{statusIcon}</div>
         <div className={styles.justification}>
           {label}
+          {jobConfigType === "sync" && <JobProgress job={job} expanded={isOpen} />}
           {attempts.length > 0 && (
             <>
               {jobConfigType === "reset_connection" ? (

@@ -4,6 +4,8 @@
 
 package io.airbyte.oauth.flows;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -64,6 +66,15 @@ class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
     return Map.of(
         "access_token", "access_token_response",
         "client_id", MoreOAuthParameters.SECRET_MASK);
+  }
+
+  @Test
+  void testGetAccessTokenUrl() {
+    final SurveymonkeyOAuthFlow oauthFlow = (SurveymonkeyOAuthFlow) getOAuthFlow();
+    final String expectedAccessTokenUrl = "https://api.surveymonkey.com/oauth/token";
+
+    final String accessTokenUrl = oauthFlow.getAccessTokenUrl(getInputOAuthConfiguration());
+    assertEquals(accessTokenUrl, expectedAccessTokenUrl);
   }
 
   @Test

@@ -46,7 +46,6 @@ import io.airbyte.api.client.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
-import io.airbyte.api.client.model.generated.DataType;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
@@ -68,6 +67,7 @@ import io.airbyte.api.client.model.generated.OperatorType;
 import io.airbyte.api.client.model.generated.OperatorWebhook;
 import io.airbyte.api.client.model.generated.OperatorWebhook.WebhookTypeEnum;
 import io.airbyte.api.client.model.generated.OperatorWebhookDbtCloud;
+import io.airbyte.api.client.model.generated.SelectedFieldInfo;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
@@ -99,6 +99,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -146,6 +147,9 @@ class BasicAcceptanceTests {
   private static PostgreSQLContainer sourcePsql;
 
   private static final String TYPE = "type";
+  private static final String REF = "$ref";
+  private static final String INTEGER_REFERENCE = "WellKnownTypes.json#/definitions/Integer";
+  private static final String STRING_REFERENCE = "WellKnownTypes.json#/definitions/String";
   private static final String PUBLIC = "public";
   private static final String E2E_TEST_SOURCE = "E2E Test Source -";
   private static final String INFINITE_FEED = "INFINITE_FEED";
@@ -315,8 +319,8 @@ class BasicAcceptanceTests {
     final AirbyteCatalog actual = testHarness.discoverSourceSchema(sourceId);
 
     final Map<String, Map<String, String>> fields = ImmutableMap.of(
-        COLUMN_ID, ImmutableMap.of(TYPE, DataType.NUMBER.getValue(), "airbyte_type", "integer"),
-        COLUMN_NAME, ImmutableMap.of(TYPE, DataType.STRING.getValue()));
+        COLUMN_ID, ImmutableMap.of(REF, INTEGER_REFERENCE),
+        COLUMN_NAME, ImmutableMap.of(REF, STRING_REFERENCE));
     final JsonNode jsonSchema = Jsons.jsonNode(ImmutableMap.builder()
         .put(TYPE, "object")
         .put("properties", fields)
@@ -354,7 +358,7 @@ class BasicAcceptanceTests {
     final String name = "test-connection-" + UUID.randomUUID();
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode).setFieldSelectionEnabled(false));
     final ConnectionRead createdConnection =
         testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.BASIC, BASIC_SCHEDULE_DATA);
 
@@ -371,7 +375,7 @@ class BasicAcceptanceTests {
   @Test
   @Order(7)
   void testCancelSync() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
@@ -567,8 +571,8 @@ class BasicAcceptanceTests {
     // add new records and run again.
     final Database source = testHarness.getSourceDatabase();
     final List<JsonNode> expectedRawRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, "sherif").build()));
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "7").put(COLUMN_NAME, "chris").build()));
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET id=6 WHERE name='sherif'"));
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(7, 'chris')"));
     // retrieve latest snapshot of source records after modifications; the deduplicated table in
@@ -621,7 +625,7 @@ class BasicAcceptanceTests {
     final Database source = testHarness.getSourceDatabase();
     // get contents of source before mutating records.
     final List<JsonNode> expectedRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, GERALT).build()));
     // add a new record
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // mutate a record that was already synced with out updating its cursor value. if we are actually
@@ -763,7 +767,7 @@ class BasicAcceptanceTests {
   void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
         workspaceId,
@@ -837,7 +841,7 @@ class BasicAcceptanceTests {
   @Test
   @Order(18)
   void testResetCancelsRunningSync() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
@@ -919,7 +923,7 @@ class BasicAcceptanceTests {
     final Database sourceDatabase = testHarness.getSourceDatabase();
     // get contents of source before mutating records.
     final List<JsonNode> expectedRecords = testHarness.retrieveSourceRecords(sourceDatabase, STREAM_NAME);
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, GERALT).build()));
     // add a new record
     sourceDatabase.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // mutate a record that was already synced with out updating its cursor value. if we are actually
@@ -1220,9 +1224,9 @@ class BasicAcceptanceTests {
         testHarness.retrieveSourceRecords(source, STAGING_SCHEMA_NAME + "." + COOL_EMPLOYEES_TABLE_NAME);
     final List<JsonNode> expectedRecordsAwesomePeople =
         testHarness.retrieveSourceRecords(source, STAGING_SCHEMA_NAME + "." + AWESOME_PEOPLE_TABLE_NAME);
-    expectedRecordsIdAndName.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
-    expectedRecordsCoolEmployees.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
-    expectedRecordsAwesomePeople.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 3).put(COLUMN_NAME, GERALT).build()));
+    expectedRecordsIdAndName.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, GERALT).build()));
+    expectedRecordsCoolEmployees.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, GERALT).build()));
+    expectedRecordsAwesomePeople.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "3").put(COLUMN_NAME, GERALT).build()));
     // add a new record to each table
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     source.query(ctx -> ctx.execute("INSERT INTO staging.cool_employees(id, name) VALUES(6, 'geralt')"));
@@ -1417,6 +1421,60 @@ class BasicAcceptanceTests {
 
   }
 
+  @Test
+  @Order(19)
+  void testIncrementalDedupeSyncRemoveOneColumn() throws Exception {
+    // !!! NOTE !!! this test relies on a feature flag that currently defaults to false. If you're
+    // running these tests locally against an external deployment and this test is failing, make sure
+    // the flag is enabled.
+    // Specifically:
+    // APPLY_FIELD_SELECTION=true
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode)
+        .primaryKey(List.of(List.of(COLUMN_ID))));
+    final UUID connectionId =
+        testHarness.createConnection(TEST_CONNECTION, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.MANUAL, null)
+            .getConnectionId();
+
+    // sync from start
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+
+    testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
+
+    // Update the catalog, so we only select the id column.
+    catalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true).addSelectedFieldsItem(new SelectedFieldInfo().addFieldPathItem("id"));
+    testHarness.updateConnectionCatalog(connectionId, catalog);
+
+    // add new records and run again.
+    final Database source = testHarness.getSourceDatabase();
+    final List<JsonNode> expectedRawRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
+    source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'mike')"));
+    source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(7, 'chris')"));
+    // The expected new raw records should only have the ID column.
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").build()));
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "7").build()));
+    final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+
+    // For the normalized records, they should all only have the ID column.
+    final List<JsonNode> expectedNormalizedRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME).stream()
+        .map((record) -> ((ObjectNode) record).retain(COLUMN_ID)).collect(Collectors.toList());
+
+    testHarness.assertRawDestinationContains(expectedRawRecords, new SchemaTableNamePair(PUBLIC, STREAM_NAME));
+    testHarness.assertNormalizedDestinationContainsIdColumn(expectedNormalizedRecords);
+  }
+
   private void assertStreamStateContainsStream(final UUID connectionId, final List<StreamDescriptor> expectedStreamDescriptors) throws ApiException {
     final ConnectionState state = apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     final List<StreamDescriptor> streamDescriptors = state.getStreamState().stream().map(StreamState::getStreamDescriptor).toList();
@@ -1476,8 +1534,8 @@ class BasicAcceptanceTests {
   @Test
   @Disabled
   void testFailureTimeout() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
+    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
