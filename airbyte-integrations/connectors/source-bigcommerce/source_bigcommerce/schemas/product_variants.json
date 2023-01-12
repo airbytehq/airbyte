@@ -78,7 +78,7 @@
             "type": ["null", "string"]
           },
           "label": {
-            "type": ["null", "boolean"]
+            "type": ["null", "string"]
           },
           "id": {
             "type": ["null", "integer"]

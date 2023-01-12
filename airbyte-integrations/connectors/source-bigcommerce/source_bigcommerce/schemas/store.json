@@ -121,13 +121,10 @@
       "type": ["null", "string"]
     },
     "logo": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "url": {
-            "type": ["null", "string"]
-          }
+      "type": ["null", "object"],
+      "properties": {
+        "url": {
+          "type": ["null", "string"]
         }
       }
     },

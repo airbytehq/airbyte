@@ -1692,13 +1692,10 @@
               "type": ["null", "string"]
             },
             "logo": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "object"],
-                "properties": {
-                  "url": {
-                    "type": ["null", "string"]
-                  }
+              "type": ["null", "object"],
+              "properties": {
+                "url": {
+                  "type": ["null", "string"]
                 }
               }
             },
@@ -2192,7 +2189,7 @@
                   "type": ["null", "string"]
                 },
                 "label": {
-                  "type": ["null", "boolean"]
+                  "type": ["null", "string"]
                 },
                 "id": {
                   "type": ["null", "integer"]
