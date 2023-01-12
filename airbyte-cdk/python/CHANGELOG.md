@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.19.1
+Low-code: Make documentation_url in the Spec be optional
+
 ## 0.19.0
 Low-Code: Handle forward references in manifest
 
