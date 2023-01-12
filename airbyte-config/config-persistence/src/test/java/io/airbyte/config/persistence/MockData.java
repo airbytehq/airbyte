@@ -263,9 +263,7 @@ public class MockData {
         .withAdvancedAuth(null)
         .withChangelogUrl(URI.create("whatever"))
         .withSupportedDestinationSyncModes(Arrays.asList(DestinationSyncMode.APPEND, DestinationSyncMode.OVERWRITE, DestinationSyncMode.APPEND_DEDUP))
-        .withSupportsDBT(true)
-        .withSupportsIncremental(true)
-        .withSupportsNormalization(true);
+        .withSupportsIncremental(true);
   }
 
   public static StandardDestinationDefinition publicDestinationDefinition() {
