@@ -71,7 +71,9 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       failureReason.ifPresent(jobOutput::setFailureReason);
 
       final int exitCode = process.exitValue();
-      LOGGER.info( String.format("Spec job subprocess finished with exit code %s", exitCode));
+      if (exitCode != 0) {
+        LOGGER.warn("Spec job subprocess finished with exit code {}", exitCode);
+      }
 
       if (spec.isPresent()) {
         jobOutput.setSpec(spec.get());

@@ -97,7 +97,9 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       failureReason.ifPresent(jobOutput::setFailureReason);
 
       final int exitCode = process.exitValue();
-      LOGGER.info(String.format("Discover job subprocess finished with exit code %s", exitCode));
+      if (exitCode != 0) {
+        LOGGER.warn("Discover job subprocess finished with exit codee {}", exitCode);
+      }
 
       if (catalog.isPresent()) {
         final UUID catalogId =

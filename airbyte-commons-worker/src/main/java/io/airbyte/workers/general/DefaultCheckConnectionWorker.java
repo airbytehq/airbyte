@@ -99,7 +99,9 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
       failureReason.ifPresent(jobOutput::setFailureReason);
 
       final int exitCode = process.exitValue();
-      LOGGER.info("Check connection job subprocess finished with exit code {}", exitCode);
+      if (exitCode != 0) {
+        LOGGER.warn("Check connection job subprocess finished with exit code {}", exitCode);
+      }
 
       if (connectionStatus.isPresent()) {
         final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
