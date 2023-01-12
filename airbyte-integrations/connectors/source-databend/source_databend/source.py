@@ -35,7 +35,7 @@ class SourceDatabend(Source):
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.yaml file
+        the properties of the spec.json file
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
@@ -59,7 +59,7 @@ class SourceDatabend(Source):
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.yaml file
+        the properties of the spec.json file
 
         :return: AirbyteCatalog is an object describing a list of all available streams in this source.
             A stream is an AirbyteStream object that includes:
@@ -91,7 +91,7 @@ class SourceDatabend(Source):
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config: Json object containing the configuration of this source, content of this json is as specified in
-            the properties of the spec.yaml file
+            the properties of the spec.json file
         :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
             returned by discover(), but
         in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
