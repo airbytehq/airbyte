@@ -60,25 +60,26 @@ class SourceExact(AbstractSource):
         if not access_token or not refresh_token:
             return False, "Missing access or refresh token"
 
-        try:
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Accept": "application/json",
-            }
+        # TODO: check with airbyte whether control messages are handled during connection check (for token refresh)
+        # try:
+        #     headers = {
+        #         "Authorization": f"Bearer {access_token}",
+        #         "Accept": "application/json",
+        #     }
 
-            response = requests.get(
-                "https://start.exactonline.nl/api/v1/current/Me",
-                headers=headers,
-                timeout=15,
-            )
+        #     response = requests.get(
+        #         "https://start.exactonline.nl/api/v1/current/Me",
+        #         headers=headers,
+        #         timeout=15,
+        #     )
 
-            response.raise_for_status()
-            logger.info(f"Connection check successful. Details:\n{json.dumps(response.json())}")
-        except requests.RequestException as exc:
-            return (
-                False,
-                f"Exception happened during connection check. Validate that the access_token is still valid at this point. Details\n{exc}",
-            )
+        #     response.raise_for_status()
+        #     logger.info(f"Connection check successful. Details:\n{json.dumps(response.json())}")
+        # except requests.RequestException as exc:
+        #     return (
+        #         False,
+        #         f"Exception happened during connection check. Validate that the access_token is still valid at this point. Details\n{exc}",
+        #     )
 
         return True, None
 
