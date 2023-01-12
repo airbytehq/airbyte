@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .streams import DentclinicBookingStream,DentclinicBookingFrStream, DentclinicClinicIdsStream, DentclinicStaticStream
+from .streams import DentclinicBookingStream, DentclinicBookingFrStream, DentclinicClinicIdsStream, DentclinicStaticStream
 
 
 class BookingsFr(DentclinicBookingStream):
@@ -55,6 +55,7 @@ class Bookings(DentclinicBookingStream):
         """
         return "Time"
 
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
@@ -62,7 +63,7 @@ class Bookings(DentclinicBookingStream):
         """
         state_mapping = current_stream_state.get(self.cursor_field, {})
 
-        print("="*100)
+        print("=" * 100)
         print(state_mapping)
         print("=" * 100)
 
@@ -71,7 +72,6 @@ class Bookings(DentclinicBookingStream):
             state_mapping.update({self.clinic_id: last_record_value})
 
         return {self.cursor_field: state_mapping}
-
 
 
 class Resources(DentclinicClinicIdsStream):
@@ -143,4 +143,6 @@ class SourceDentclinic(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [BookingsFr(config=config), Bookings(config=config)] # ,Clinics(config=config), Services(config=config), Resources(config=config), BookingsFr(config=config)
+        return [BookingsFr(config=config), Bookings(config=config)]
+
+        # ,Clinics(config=config), Services(config=config), Resources(config=config), BookingsFr(config=config)
