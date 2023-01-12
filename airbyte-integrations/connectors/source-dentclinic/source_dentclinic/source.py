@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .streams import DentclinicBookingStream,DentclinicBookingFrStream, DentclinicVisidIdStream, DentclinicStaticStream
+from .streams import DentclinicBookingStream,DentclinicBookingFrStream, DentclinicClinicIdsStream, DentclinicStaticStream
 
 
 class Bookings(DentclinicBookingStream):
@@ -48,7 +48,7 @@ class BookingsFr(DentclinicBookingFrStream):
         return "POST"
 
 
-class Resources(DentclinicVisidIdStream):
+class Resources(DentclinicClinicIdsStream):
     primary_key = "Id"
 
     def path(

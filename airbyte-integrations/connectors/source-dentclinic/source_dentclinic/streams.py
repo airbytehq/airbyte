@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Iterator
+from typing import Any, Iterable, List, Mapping,MutableMapping, Optional, Tuple, Iterator
 import requests
 import pendulum
 import xmltodict
@@ -69,7 +69,7 @@ class DentclinicStaticStream(HttpStream, ABC):
 # Basic full refresh stream
 
 
-class DentclinicVisidIdStream(HttpStream, ABC):
+class DentclinicClinicIdsStream(HttpStream, ABC):
     primary_key = None
     state_checkpoint_interval = 1
 
@@ -182,6 +182,13 @@ class DentclinicBookingStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         return {'Content-Type': 'application/soap+xml; charset=utf-8'}
 
+    @property
+    def cursor_field(self) -> str:
+        """
+        :return str: The name of the cursor field.
+        """
+        return "stop_date"
+
     def get_clinic_ids(self) -> Iterator[str]:
         payload_clinics = f"""<?xml version="1.0" encoding="utf-8"?>
             <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
@@ -260,6 +267,20 @@ class DentclinicBookingStream(HttpStream, ABC):
             data = [data]
 
         yield from data
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+
+        current_stream_value = current_stream_state.get(self.clinic_id, self.start_date)
+        latest_record_value = latest_record.get(self.cursor_field, self.start_date)
+        new_value = max(current_stream_value, latest_record_value)
+        new_state = {self.clinic_id: new_value}
+
+        new_stream_state = {**current_stream_state, **new_state}
+        return new_stream_state
 
     
 
