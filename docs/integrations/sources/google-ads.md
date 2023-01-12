@@ -80,7 +80,7 @@ The Google Ads source connector supports the following [sync modes](https://docs
 
 **Important note**:
 
-    Usage of Conversion Window may lead to duplicates in incremental sync, 
+    Usage of Conversion Window may lead to duplicates in Incremental Sync, 
     because connector is forced to read data in the given range (Last Sync - Conversion window)
 
 ## Supported Streams
