@@ -197,12 +197,12 @@ def as_json(connectors: List[str], definitions) -> json:
 
 def get_status_summary(connectors: json) -> str:
     for connector, value in connectors.items():
+        print(f"{connector}: {value['version_status']} {value['changelog_status']} {value['publish_status']}")
         if value["has_error"]:
             return "❌"
         elif value["has_warning"]:
             return "⚠"
-        else:
-            return "✅"
+    return "✅"
 
 
 def write_report(depended_connectors):
