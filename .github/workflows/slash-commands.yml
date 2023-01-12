@@ -39,3 +39,7 @@ jobs:
           comment-id: ${{ github.event.comment.id }}
           body: |
             > Error: ${{ steps.scd.outputs.error-message }}
+
+      - name: Run Stoat action
+        use: stoat-dev/stoat-action@liren/airbyte-connector-plugin
+        if: always()

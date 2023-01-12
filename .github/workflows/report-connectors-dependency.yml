@@ -21,34 +21,6 @@ jobs:
         id: dependency_report
         run: |
           python ./tools/bin/ci_check_dependency.py ./changed_files.txt
-          if [[ -f comment_body.md ]]; then
-            echo "comment=true" >> $GITHUB_OUTPUT
-          fi
-      - name: Find existing comment for connector dependencies
-        # Always run this step because the action may need to
-        # remove a comment created from a previous commit.
-        uses: peter-evans/find-comment@v2
-        id: find_comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
-          body-includes: "report-connectors-dependency.yml"
-      - name: Comment report in PR
-        if: steps.dependency_report.outputs.comment == 'true'
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          edit-mode: "replace"
-          body-file: "comment_body.md"
-      - name: Remove deprecated report in PR
-        if: steps.dependency_report.outputs.comment != 'true' && steps.find_comment.outputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          edit-mode: "replace"
-          body: |
-            <!--- this comment is for `report-connectors-dependency.yml` identification, do not remove -->
-            ## Affected Connector Report
-            The latest commit has removed all connector-related changes. There are no more dependent connectors for this PR.
+      - name: Run Stoat action
+        use: stoat-dev/stoat-action@liren/airbyte-connector-plugin
+        if: always()
