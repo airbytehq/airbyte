@@ -197,7 +197,6 @@ def as_json(connectors: List[str], definitions) -> json:
 
 def get_status_summary(connectors: json) -> str:
     for connector, value in connectors.items():
-        print(f"{connector}: {value['version_status']} {value['changelog_status']} {value['publish_status']}")
         if value["has_error"]:
             return "❌"
         elif value["has_warning"]:
@@ -229,6 +228,9 @@ def write_report(depended_connectors):
     destination_status_summary = get_status_summary(destination_connectors_json)
 
     result_json = {
+        "show_connectors": len(affected_sources) > 0 or len(affected_destinations) > 0,
+        "show_source": len(affected_sources) > 0,
+        "show_destination": len(affected_destinations) > 0,
         "source_open": source_status_summary == "❌",
         "destination_open": destination_status_summary == "❌",
         "sources": source_connectors_json,

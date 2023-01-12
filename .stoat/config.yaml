@@ -1,0 +1,10 @@
+---
+version: 1
+enabled: true
+comment_template_file: ".stoat/template.hbs"
+plugins:
+  job_runtime:
+    enabled: true
+  json:
+    connectors:
+      path: connector_report.json

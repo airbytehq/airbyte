@@ -1,0 +1,69 @@
+{{#if plugins.json.connectors.show_connectors }}
+### Affected Connector Report
+
+NOTE ⚠️ Changes in this PR affect the following connectors. Make sure to do the following as needed:
+- Run integration tests
+- Bump connector or module version
+- Add changelog
+- Publish the new version
+
+{{#if plugins.json.connectors.show_source }}
+<details {{ plugins.json.connectors.source_open }}>
+<summary>
+
+#### {{ plugins.json.connectors.source_status_summary}} Sources ({{ plugins.json.connectors.num_sources }})
+
+</summary>
+
+| Connector | Version | Changelog | Publish |
+| --- | :---: | :---: | :---: |
+{{#each plugins.json.connectors.sources}}
+| {{ @key }} | {{ this.version_status }} | {{ this.changelog_status }} | {{ this.publish_status }} |
+{{/each}}
+
+* See "Actionable Items" below for how to resolve warnings and errors.
+
+</details>
+{{/if}}
+
+{{#if plugins.json.connectors.show_destination }}
+<details {{ plugins.json.connectors.destination_open }}>
+<summary>
+
+#### {{ plugins.json.connectors.destination_status_summary }} Destinations ({{ plugins.json.connectors.num_destinations }})
+
+</summary>
+
+| Connector | Version | Changelog | Publish |
+| --- | :---: | :---: | :---: |
+{destination_rows}
+
+* See "Actionable Items" below for how to resolve warnings and errors.
+
+</details>
+{{/if}}
+
+<details>
+
+<summary>
+
+#### Actionable Items
+
+(click to expand)
+
+</summary>
+
+| Category | Status | Actionable Item |
+| --- | :---: | --- |
+| Version | ❌<br/>mismatch | The version of the connector is different from its normal variant. Please bump the version of the connector. |
+| | ⚠<br/>doc not found | The connector does not seem to have a documentation file. This can be normal (e.g. basic connector like `source-jdbc` is not published or documented). Please double-check to make sure that it is not a bug. |
+| Changelog | ⚠<br/>doc not found | The connector does not seem to have a documentation file. This can be normal (e.g. basic connector like `source-jdbc` is not published or documented). Please double-check to make sure that it is not a bug. |
+| | ❌<br/>changelog missing | There is no chnagelog for the current version of the connector. If you are the author of the current version, please add a changelog. |
+| Publish | ⚠<br/>not in seed | The connector is not in the seed file (e.g. `source_definitions.yaml`), so its publication status cannot be checked. This can be normal (e.g. some connectors are cloud-specific, and only listed in the cloud seed file). Please double-check to make sure that it is not a bug. |
+| | ❌<br/>diff seed version | The connector exists in the seed file, but the latest version is not listed there. This usually means that the latest version is not published. Please use the `/publish` command to publish the latest version. |
+
+</details>
+
+{{/if}}
+
+{{{ views.plugins.job_runtime.github.chart }}}
