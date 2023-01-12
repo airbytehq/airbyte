@@ -126,10 +126,14 @@ class ManifestComponentTransformer:
                 if excluded_option:
                     current_options[field_name] = excluded_option
             elif isinstance(field_value, typing.List):
+                # We exclude propagating an option that matches the current field name because that would result in an infinite cycle
+                excluded_option = current_options.pop(field_name, None)
                 for i, element in enumerate(field_value):
                     if isinstance(element, dict):
                         parent_type_field_identifier = f"{propagated_component.get('type')}.{field_name}"
                         field_value[i] = self.propagate_types_and_options(parent_type_field_identifier, element, current_options)
+                if excluded_option:
+                    current_options[field_name] = excluded_option
 
         if current_options:
             propagated_component[OPTIONS_STR] = current_options
