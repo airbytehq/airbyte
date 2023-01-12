@@ -1,3 +1,1 @@
-import { CreateConnectionPage } from "./CreateConnectionPage";
-
-export default CreateConnectionPage;
+export { CreateConnectionPage as default } from "./CreateConnectionPage";
