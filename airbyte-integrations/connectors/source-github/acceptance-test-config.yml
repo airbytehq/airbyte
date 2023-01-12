@@ -59,8 +59,6 @@ acceptance_tests:
             bypass_reason: "some reason"
           - name: project_columns
             bypass_reason: "some reason"
-          - name: projects
-            bypass_reason: "some reason"
           - name: pull_request_comment_reactions
             bypass_reason: "some reason"
           - name: pull_request_commits
@@ -84,8 +82,6 @@ acceptance_tests:
           - name: team_members
             bypass_reason: "some reason"
           - name: team_memberships
-            bypass_reason: "some reason"
-          - name: teams
             bypass_reason: "some reason"
           - name: workflow_jobs
             bypass_reason: "some reason"
