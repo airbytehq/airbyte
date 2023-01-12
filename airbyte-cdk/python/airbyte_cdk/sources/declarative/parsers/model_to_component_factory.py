@@ -131,12 +131,12 @@ class ModelToComponentFactory:
 
         component_type = component_definition.get("type")
         if component_definition.get("type") != model_type.__name__:
-            raise ValueError(f"Expected manifest component of type {model_type}, but received {component_type} instead")
+            raise ValueError(f"Expected manifest component of type {model_type.__name__}, but received {component_type} instead")
 
         declarative_component_model = model_type.parse_obj(component_definition)
 
         if not isinstance(declarative_component_model, model_type):
-            raise ValueError(f"Expected DeclarativeStream component, but received {declarative_component_model.__class__.__name__}")
+            raise ValueError(f"Expected {model_type.__name__} component, but received {declarative_component_model.__class__.__name__}")
 
         return _create_component_from_model(model=declarative_component_model, config=config)
 
@@ -184,7 +184,7 @@ def create_cartesian_product_slicer(model: CartesianProductStreamSlicerModel, co
 
 
 def create_check_stream(model: CheckStreamModel, config: Config, **kwargs):
-    return CheckStream(model.stream_names, options={})
+    return CheckStream(stream_names=model.stream_names, options={})
 
 
 def create_composite_error_handler(model: CompositeErrorHandlerModel, config: Config, **kwargs) -> CompositeErrorHandler:

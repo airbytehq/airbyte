@@ -87,7 +87,11 @@ class ManifestDeclarativeSource(DeclarativeSource):
         if "type" not in check:
             check["type"] = "CheckStream"
         if self.construct_using_pydantic_models:
-            return self._constructor.create_component(CheckStreamModel, check, dict())(source=self)
+            check_stream = self._constructor.create_component(CheckStreamModel, check, dict())
+            if isinstance(check_stream, ConnectionChecker):
+                return check_stream
+            else:
+                raise ValueError(f"Expected to generate a ConnectionChecker component, but received {check_stream.__class__}")
         else:
             return self._legacy_factory.create_component(check, dict())(source=self)
 
