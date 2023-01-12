@@ -87,8 +87,6 @@ acceptance_tests:
             bypass_reason: "some reason"
           - name: teams
             bypass_reason: "some reason"
-          - name: users
-            bypass_reason: "some reason"
           - name: workflow_jobs
             bypass_reason: "some reason"
           - name: workflow_runs
