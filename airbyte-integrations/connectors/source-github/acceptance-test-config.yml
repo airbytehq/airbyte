@@ -67,8 +67,6 @@ acceptance_tests:
             bypass_reason: "some reason"
           - name: pull_requests
             bypass_reason: "some reason"
-          - name: releases
-            bypass_reason: "some reason"
           - name: repositories
             bypass_reason: "some reason"
           - name: review_comments
@@ -76,8 +74,6 @@ acceptance_tests:
           - name: reviews
             bypass_reason: "some reason"
           - name: stargazers
-            bypass_reason: "some reason"
-          - name: tags
             bypass_reason: "some reason"
           - name: team_members
             bypass_reason: "some reason"
