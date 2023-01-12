@@ -327,8 +327,6 @@ class ConnectorSpecification(BaseModel):
         None,
         description="(deprecated) If the connector supports incremental mode or not.",
     )
-    supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
-    supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
     supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
         None, description="List of destination sync modes supported by the connector"
     )
