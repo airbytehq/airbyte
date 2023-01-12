@@ -78,7 +78,6 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           Jsons.serialize(discoverSchemaInput.getConnectionConfiguration()));
 
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID);
-
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
       final Map<Type, List<AirbyteMessage>> messagesByType = WorkerUtils.getMessagesByType(process, streamFactory, 30);
@@ -109,15 +108,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
                 discoverSchemaInput.getConnectorVersion(),
                 discoverSchemaInput.getConfigHash());
         jobOutput.setDiscoverCatalogId(catalogId);
-      } else {
-        if (failureReason.isEmpty()) {
-          final String stderr = WorkerUtils.getStdErrFromErrorStream(process.getErrorStream());
-          if (stderr.isEmpty()) {
-            throw new WorkerException("Integration failed to output a catalog struct.");
-          } else {
-            throw new WorkerException("Integration failed to output a catalog struct:\n" + stderr);
-          }
-        }
+      } else if (failureReason.isEmpty()){
+        WorkerUtils.throwWorkerException("Integration failed to output a catalog struct", process);
       }
       return jobOutput;
     } catch (final WorkerException e) {

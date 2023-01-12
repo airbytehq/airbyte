@@ -55,9 +55,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, config.getDockerImage()));
     try {
       process = integrationLauncher.spec(jobRoot);
-      final int exitCode = process.exitValue();
-      final String exitCodeMessage = String.format("Spec job subprocess finished with exit code %s", exitCode);
-      LOGGER.debug(exitCodeMessage);
+
 
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.SPEC);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -72,17 +70,13 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.SPEC, messagesByType);
       failureReason.ifPresent(jobOutput::setFailureReason);
 
+      final int exitCode = process.exitValue();
+      LOGGER.info( String.format("Spec job subprocess finished with exit code %s", exitCode));
+
       if (spec.isPresent()) {
         jobOutput.setSpec(spec.get());
-      } else {
-        if (failureReason.isEmpty()) {
-          final String stderr = WorkerUtils.getStdErrFromErrorStream(process.getErrorStream());
-          if (stderr.isEmpty()) {
-            throw new WorkerException("Integration failed to output a spec struct and did not output a failure reason.");
-          } else {
-            throw new WorkerException("Integration failed to output a spec struct and did not output a failure reason:\n" + stderr);
-          }
-        }
+      } else if (failureReason.isEmpty()) {
+        WorkerUtils.throwWorkerException("Integration failed to output a spec struct and did not output a failure reason.", process);
       }
 
       return jobOutput;

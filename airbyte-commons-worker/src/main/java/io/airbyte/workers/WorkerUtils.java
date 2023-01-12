@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
@@ -182,4 +183,13 @@ public class WorkerUtils {
     return errorOutput.toString();
   }
 
+  public static void throwWorkerException(final String errorMessage, final Process process)
+      throws WorkerException, IOException {
+      final String stderr = getStdErrFromErrorStream(process.getErrorStream());
+      if (stderr.isEmpty()) {
+        throw new WorkerException(errorMessage);
+      } else {
+        throw new WorkerException(errorMessage + ": \n" + stderr);
+      }
+  }
 }
