@@ -253,9 +253,6 @@ const nonPathRequestOptionSchema = yup
   .notRequired()
   .default(undefined);
 
-// eslint-disable-next-line no-useless-escape
-export const timeDeltaRegex = /^(([\.\d]+?)y)?(([\.\d]+?)m)?(([\.\d]+?)w)?(([\.\d]+?)d)?$/;
-
 const regularSlicerShape = {
   cursor_field: yup.mixed().when("type", {
     is: (val: string) => val !== "SubstreamSlicer" && val !== "CartesianProductStreamSlicer",
@@ -280,7 +277,7 @@ const regularSlicerShape = {
   }),
   step: yup.mixed().when("type", {
     is: "DatetimeStreamSlicer",
-    then: yup.string().matches(timeDeltaRegex, "form.pattern.error").required("form.empty.error"),
+    then: yup.string().required("form.empty.error"),
     otherwise: (schema) => schema.strip(),
   }),
   datetime_format: yup.mixed().when("type", {

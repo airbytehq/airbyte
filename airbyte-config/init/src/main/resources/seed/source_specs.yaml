@@ -5383,7 +5383,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-data-api:0.1.0"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -5395,12 +5395,6 @@
       - "date_ranges_start_date"
       additionalProperties: true
       properties:
-        property_id:
-          type: "string"
-          title: "Property ID"
-          description: "A Google Analytics GA4 property identifier whose events are\
-            \ tracked. Specified in the URL path and not the body"
-          order: 1
         credentials:
           order: 0
           type: "object"
@@ -5422,7 +5416,6 @@
                 title: "Client ID"
                 type: "string"
                 description: "The Client ID of your Google Analytics developer application."
-                airbyte_secret: true
                 order: 1
               client_secret:
                 title: "Client Secret"
@@ -5460,6 +5453,13 @@
                 - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID,\
                   \ \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
                 airbyte_secret: true
+                order: 1
+        property_id:
+          type: "string"
+          title: "Property ID"
+          description: "A Google Analytics GA4 property identifier whose events are\
+            \ tracked. Specified in the URL path and not the body"
+          order: 1
         date_ranges_start_date:
           type: "string"
           title: "Start Date"
@@ -5473,7 +5473,7 @@
           type: "string"
           title: "Custom Reports"
           description: "A JSON array describing the custom reports you want to sync\
-            \ from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4#data-processing-latency\"\
+            \ from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#custom-reports\"\
             >the docs</a> for more information about the exact format you can use\
             \ to fill out this field."
         window_in_days:
@@ -9706,7 +9706,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.10"
+- dockerImage: "airbyte/source-notion:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
@@ -11353,7 +11353,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.35"
+- dockerImage: "airbyte/source-postgres:1.0.36"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -13606,7 +13606,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.11"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:

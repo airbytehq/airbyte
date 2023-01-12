@@ -31,13 +31,13 @@ export const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({ field, 
   const [, meta] = useField(field.name);
 
   return (
-    <FlexContainer alignItems="flex-start">
+    <FlexContainer alignItems="center">
       <div className={styles.leftFieldCol}>
         <ControlLabels
           nextLine
           error={!!meta.error && meta.touched}
           label={<FormattedMessage id="connectionForm.namespaceDefinition.title" />}
-          message={<FormattedMessage id="connectionForm.namespaceDefinition.subtitle" />}
+          infoTooltipContent={<FormattedMessage id="connectionForm.namespaceDefinition.subtitle" />}
         />
       </div>
       <div className={styles.rightFieldCol}>
