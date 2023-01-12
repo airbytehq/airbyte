@@ -1,9 +1,12 @@
 import styled from "styled-components";
 
-const FormPageContent = styled.div<{ big?: boolean }>`
-  width: 80%;
-  max-width: ${({ big }) => (big ? 1279 : 813)}px;
-  margin: 13px auto;
+interface FormPageContentProps {
+  big?: boolean;
+}
+
+const FormPageContent = styled.div<FormPageContentProps>`
+  ${({ big }) => (big ? "" : "width: 80%; max-width: 813px;")}
+  margin: 13px auto 0;
 `;
 
 export default FormPageContent;
