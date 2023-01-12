@@ -1575,6 +1575,34 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
+- dockerImage: "airbyte/destination-convex:dev"
+  spec:
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Convex"
+      type: "object"
+      required:
+      - "deployment_url"
+      - "access_key"
+      properties:
+        deployment_url:
+          type: "string"
+          title: "Deployment Url"
+          examples:
+          - "https://murky-swan-635.convex.cloud"
+          - "https://cluttered-owl-337.convex.cloud"
+        access_key:
+          type: "string"
+          title: "Access Key"
+          description: "API access key used to retrieve data from Convex."
+          airbyte_secret: true
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
+    - "append_dedup"
 - dockerImage: "airbyte/destination-databricks:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databricks"
