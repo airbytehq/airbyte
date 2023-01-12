@@ -24,7 +24,7 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    return String.format(
+    String query = String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR(64),\n"
             + "%s VARCHAR(2000000),\n"
@@ -36,12 +36,15 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
         ExasolSqlOperations.COLUMN_NAME_DATA,
         ExasolSqlOperations.COLUMN_NAME_EMITTED_AT,
         ExasolSqlOperations.COLUMN_NAME_AB_ID);
+    LOGGER.info("Create table query: {}", query);
+    return query;
   }
 
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
     // Note: Exasol does not support multi query
     for (final String query : queries) {
+      LOGGER.info("Executing transaction statement ''{}''", query);
       database.execute(query);
     }
   }
@@ -58,6 +61,7 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
              FROM LOCAL CSV FILE '%s'
              ROW SEPARATOR = 'CRLF'
              COLUMN SEPARATOR = ','\s""", schemaName, tableName, tmpFile.toAbsolutePath().toString());
+      LOGGER.info("IMPORT statement: {}", importStatement);
       database.execute(connection -> connection.createStatement().execute(importStatement));
     } finally {
       Files.delete(tmpFile);
