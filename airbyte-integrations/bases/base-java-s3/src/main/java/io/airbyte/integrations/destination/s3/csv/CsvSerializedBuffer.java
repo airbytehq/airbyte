@@ -23,6 +23,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
 
+// mock change
 public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
   public static final String CSV_GZ_SUFFIX = ".csv.gz";
