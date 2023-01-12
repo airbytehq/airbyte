@@ -170,6 +170,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   // Human-readable byte size from
   // https://stackoverflow.com/questions/3758606/how-can-i-convert-byte-size-into-a-human-readable-format-in-java
+  @SuppressWarnings("PMD.AvoidReassigningParameters")
   private String humanReadableByteCountSI(long bytes) {
     if (-1000 < bytes && bytes < 1000) {
       return bytes + " B";
