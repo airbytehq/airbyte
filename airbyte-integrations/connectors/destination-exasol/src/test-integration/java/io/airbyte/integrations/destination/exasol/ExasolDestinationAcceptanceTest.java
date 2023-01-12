@@ -80,11 +80,36 @@ public class ExasolDestinationAcceptanceTest extends JdbcDestinationAcceptanceTe
   }
 
   @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsDBT() {
+    return false;
+  }
+
+  @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema) throws SQLException {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), "\"_"+namespace+"_\"")
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), "\""+namespace+"\"")
             .stream()
             .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
             .map(node -> Jsons.deserialize(node.asText()))
@@ -92,11 +117,11 @@ public class ExasolDestinationAcceptanceTest extends JdbcDestinationAcceptanceTe
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+    String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, ExasolSqlOperations.COLUMN_NAME_EMITTED_AT);
+    LOGGER.info("Retrieving records using query {}", query);
     try (final DSLContext dslContext = getDSLContext(config)) {
       final List<org.jooq.Record> result = new Database(dslContext)
-              .query(ctx -> new ArrayList<>(ctx.fetch(
-                      String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                              ExasolSqlOperations.COLUMN_NAME_EMITTED_AT))));
+              .query(ctx -> new ArrayList<>(ctx.fetch(query)));
       return result
               .stream()
               .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
@@ -115,10 +140,6 @@ public class ExasolDestinationAcceptanceTest extends JdbcDestinationAcceptanceTe
             jdbcUrl,
             null,
             jdbcConnectionProperties);
-  }
-
-  protected boolean implementsNamespaces() {
-    return false;
   }
 
   @Override
