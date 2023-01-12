@@ -18,6 +18,7 @@ connectionSpecification:
       - client_secret
       - access_token
       - refresh_token
+      - token_expiry_date
       properties:
         access_token:
           type: string
@@ -27,6 +28,9 @@ connectionSpecification:
           type: string
           description: Refresh token from Exact.
           airbyte_secret: true
+        token_expiry_date:
+          type: string
+          description: Timestamp when the token expires.
         client_id:
           type: string
           description: OAuth client_id, can be found at apps.exactonline.com.

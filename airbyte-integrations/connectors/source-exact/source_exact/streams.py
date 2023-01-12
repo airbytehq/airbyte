@@ -27,7 +27,6 @@ class ExactStream(HttpStream, IncrementalMixin):
         self._single_refresh_token_authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config=config,
             token_refresh_endpoint="https://start.exactonline.nl/api/oauth2/token",
-            token_expiry_date=pendulum.now().add(minutes=11),
         )
         self._single_refresh_token_authenticator.access_token = config["credentials"]["access_token"]
 
