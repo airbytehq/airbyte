@@ -32,7 +32,6 @@ def config() -> Dict[str, str]:
         "username": "root",
         "password": "root",
         "host": "localhost",
-        "protocol": "http",
         "port": 8081,
         "table": "default",
     }

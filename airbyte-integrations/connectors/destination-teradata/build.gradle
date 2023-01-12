@@ -1,0 +1,26 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.teradata.TeradataDestination'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+	implementation 'com.teradata.jdbc:terajdbc4:17.20.00.12'
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-teradata')
+}
+
