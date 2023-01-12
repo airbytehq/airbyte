@@ -88,7 +88,7 @@ class DefaultGetSpecWorkerTest {
         .isInstanceOf(WorkerException.class)
         .getCause()
         .isInstanceOf(WorkerException.class)
-        .hasMessageContaining("Integration failed to output a spec struct and did not output a failure reason.")
+        .hasMessageContaining("Integration failed to output a spec struct and did not output a failure reason")
         .hasNoCause();
   }
 
