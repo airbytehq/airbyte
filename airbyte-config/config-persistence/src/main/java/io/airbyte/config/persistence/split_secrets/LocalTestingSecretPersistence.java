@@ -6,6 +6,7 @@ package io.airbyte.config.persistence.split_secrets;
 
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.Database;
+import java.sql.SQLException;
 import java.util.Optional;
 
 /**
@@ -15,15 +16,21 @@ public class LocalTestingSecretPersistence implements SecretPersistence {
 
   private final Database configDatabase;
 
+  private boolean initialized = false;
+
   public LocalTestingSecretPersistence(final Database configDatabase) {
     this.configDatabase = configDatabase;
+  }
 
-    Exceptions.toRuntime(() -> {
+  @Override
+  public void initialize() throws SQLException {
+    if (!initialized) {
       this.configDatabase.query(ctx -> {
         ctx.execute("CREATE TABLE IF NOT EXISTS secrets ( coordinate TEXT PRIMARY KEY, payload TEXT);");
         return null;
       });
-    });
+      initialized = true;
+    }
   }
 
   @Override
