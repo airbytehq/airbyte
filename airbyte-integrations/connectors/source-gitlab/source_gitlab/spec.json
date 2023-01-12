@@ -15,7 +15,7 @@
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["client_id", "client_secret", "refresh_token"],
+            "required": ["client_id", "client_secret", "refresh_token", "access_token", "token_expiry_date"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -35,6 +35,11 @@
                 "type": "string",
                 "description": "Access Token for making authenticated requests.",
                 "airbyte_secret": true
+              },
+              "token_expiry_date": {
+                "type": "string",
+                "description": "The date-time when the access token should be refreshed.",
+                "format": "date-time"
               },
               "refresh_token": {
                 "type": "string",
@@ -118,6 +123,11 @@
           "refresh_token": {
             "type": "string",
             "path_in_connector_config": ["credentials", "refresh_token"]
+          },
+          "token_expiry_date": {
+            "type": "string",
+            "format": "date-time",
+            "path_in_connector_config": ["credentials", "token_expiry_date"]
           }
         }
       },
