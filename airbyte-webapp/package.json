@@ -32,6 +32,7 @@
     "@fortawesome/react-fontawesome": "^0.1.18",
     "@headlessui/react": "^1.6.5",
     "@monaco-editor/react": "^4.4.5",
+    "@react-oauth/google": "^0.5.1",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
     "@stripe/react-stripe-js": "^1.16.0",
