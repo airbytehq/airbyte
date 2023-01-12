@@ -59,8 +59,6 @@ acceptance_tests:
             bypass_reason: "some reason"
           - name: stargazers
             bypass_reason: "some reason"
-          - name: team_memberships
-            bypass_reason: "some reason"
           - name: workflow_jobs
             bypass_reason: "some reason"
           - name: workflow_runs
