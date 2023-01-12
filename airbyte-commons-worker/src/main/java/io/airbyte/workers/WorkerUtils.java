@@ -185,11 +185,12 @@ public class WorkerUtils {
 
   public static void throwWorkerException(final String errorMessage, final Process process)
       throws WorkerException, IOException {
-      final String stderr = getStdErrFromErrorStream(process.getErrorStream());
-      if (stderr.isEmpty()) {
-        throw new WorkerException(errorMessage);
-      } else {
-        throw new WorkerException(errorMessage + ": \n" + stderr);
-      }
+    final String stderr = getStdErrFromErrorStream(process.getErrorStream());
+    if (stderr.isEmpty()) {
+      throw new WorkerException(errorMessage);
+    } else {
+      throw new WorkerException(errorMessage + ": \n" + stderr);
+    }
   }
+
 }

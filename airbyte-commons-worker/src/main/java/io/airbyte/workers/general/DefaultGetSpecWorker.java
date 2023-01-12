@@ -56,7 +56,6 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
     try {
       process = integrationLauncher.spec(jobRoot);
 
-
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.SPEC);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
