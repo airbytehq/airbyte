@@ -130,7 +130,7 @@ services:
 Other commands besides `apply` can be run like so:
 
 ```bash
-docker-compose run octavia-cli <command>`
+docker compose run octavia-cli <command>`
 ```
 
 ## Commands reference
