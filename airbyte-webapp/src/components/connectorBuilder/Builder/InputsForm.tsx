@@ -251,7 +251,7 @@ const InputModal = ({
               />
             </>
           ) : (
-            <Callout compact>
+            <Callout className={styles.calloutContainer}>
               {isInferredInputOverride ? (
                 <FormattedMessage id="connectorBuilder.inputModal.inferredInputMessage" />
               ) : (
