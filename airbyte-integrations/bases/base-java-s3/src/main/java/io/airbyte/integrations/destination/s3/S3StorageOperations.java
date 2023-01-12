@@ -8,6 +8,7 @@ import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
@@ -15,6 +16,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
@@ -130,7 +132,13 @@ public class S3StorageOperations extends BlobStorageOperations {
         exceptionsThrown.add(e);
       }
     }
-    throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
+    final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream().filter(e -> e instanceof AmazonS3Exception)
+        .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode()).allMatch(code -> Integer.valueOf(403).equals(code));
+    if (areAllExceptionsAuthExceptions) {
+      throw new ConfigErrorException(exceptionsThrown.get(0).getMessage(), exceptionsThrown.get(0));
+    } else {
+      throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
+    }
   }
 
   /**

@@ -13,6 +13,8 @@ import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.LoadJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
+import com.google.common.collect.ImmutableList;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
@@ -31,6 +33,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsOperations.class);
 
+  private static final List<Integer> AUTH_ERROR_CODES = ImmutableList.of(401, 403);
   private final BigQuery bigQuery;
   private final StandardNameTransformer gcsNameTransformer;
   private final GcsDestinationConfig gcsConfig;
@@ -84,7 +87,15 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public void createSchemaIfNotExists(final String datasetId, final String datasetLocation) {
     if (!existingSchemas.contains(datasetId)) {
       LOGGER.info("Creating dataset {}", datasetId);
-      BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
+      try {
+        BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
+      } catch (BigQueryException bqe) {
+        if (AUTH_ERROR_CODES.contains(bqe.getCode())) {
+          throw new ConfigErrorException(bqe.getMessage(), bqe);
+        } else {
+          throw bqe;
+        }
+      }
       existingSchemas.add(datasetId);
     }
   }
