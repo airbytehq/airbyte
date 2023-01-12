@@ -332,6 +332,7 @@ def create_datetime_stream_slicer(model: DatetimeStreamSlicerModel, config: Conf
 
     return DatetimeStreamSlicer(
         cursor_field=model.cursor_field,
+        cursor_granularity=model.cursor_granularity,
         datetime_format=model.datetime_format,
         end_datetime=end_datetime,
         start_datetime=start_datetime,

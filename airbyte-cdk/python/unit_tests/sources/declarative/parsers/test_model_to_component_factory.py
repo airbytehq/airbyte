@@ -56,7 +56,6 @@ from airbyte_cdk.sources.declarative.stream_slicers import (
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from dateutil.relativedelta import relativedelta
 from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamSlicer, TestingSomeComponent
 
 factory = ModelToComponentFactory()
@@ -444,9 +443,10 @@ def test_datetime_stream_slicer():
           datetime: "{{ config['start_time'] }}"
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
         end_datetime: "{{ config['end_time'] }}"
-        step: "10d"
+        step: "P10D"
         cursor_field: "created"
-        lookback_window: "5d"
+        cursor_granularity: "PT0.000001S"
+        lookback_window: "P5D"
         start_time_option:
           inject_into: request_parameter
           field_name: created[gte]
@@ -466,9 +466,10 @@ def test_datetime_stream_slicer():
 
     assert isinstance(stream_slicer, DatetimeStreamSlicer)
     assert stream_slicer._timezone == datetime.timezone.utc
-    assert stream_slicer._step == relativedelta(days=10)
+    assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
-    assert stream_slicer.lookback_window.string == "5d"
+    assert stream_slicer.cursor_granularity == "PT0.000001S"
+    assert stream_slicer.lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer.start_time_option.field_name == "created[gte]"
     assert stream_slicer.end_time_option.inject_into == RequestOptionType.body_json
