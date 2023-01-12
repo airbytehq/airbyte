@@ -45,9 +45,7 @@ class DestinationConvex(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         config = cast(ConvexConfig, config)
-        writer = ConvexWriter(
-            ConvexClient(config, self.__stream_metadata(configured_catalog.streams))
-        )
+        writer = ConvexWriter(ConvexClient(config, self.__stream_metadata(configured_catalog.streams)))
 
         # Setup: Clear tables if in overwrite mode; add indexes if in append_dedup mode.
         streams_to_delete = []
@@ -55,15 +53,9 @@ class DestinationConvex(Destination):
         for configured_stream in configured_catalog.streams:
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 streams_to_delete.append(configured_stream.stream.name)
-            elif (
-                configured_stream.destination_sync_mode
-                == DestinationSyncMode.append_dedup
-                and configured_stream.primary_key
-            ):
+            elif configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup and configured_stream.primary_key:
 
-                indexes_to_add[
-                    configured_stream.stream.name
-                ] = configured_stream.primary_key
+                indexes_to_add[configured_stream.stream.name] = configured_stream.primary_key
         if len(streams_to_delete) != 0:
             writer.delete_stream_entries(streams_to_delete)
         if len(indexes_to_add) != 0:
@@ -78,9 +70,7 @@ class DestinationConvex(Destination):
                 yield message
             elif message.type == Type.RECORD and message.record is not None:
                 if message.record.namespace is not None:
-                    message.record.stream = (
-                        f"{message.record.namespace}_{message.record.stream}"
-                    )
+                    message.record.stream = f"{message.record.namespace}_{message.record.stream}"
                 msg = message.record.dict()
                 writer.queue_write_operation(msg)
             else:
@@ -90,9 +80,7 @@ class DestinationConvex(Destination):
         # Make sure to flush any records still in the queue
         writer.flush()
 
-    def __stream_metadata(
-        self, streams: List[ConfiguredAirbyteStream]
-    ) -> Mapping[str, Any]:
+    def __stream_metadata(self, streams: List[ConfiguredAirbyteStream]) -> Mapping[str, Any]:
         stream_metadata = {}
         for s in streams:
             # Only send a primary key for dedup sync
@@ -109,9 +97,7 @@ class DestinationConvex(Destination):
             stream_metadata[name] = stream
         return stream_metadata
 
-    def check(
-        self, logger: Logger, config: Mapping[str, Any]
-    ) -> AirbyteConnectionStatus:
+    def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
@@ -132,5 +118,4 @@ class DestinationConvex(Destination):
         if resp.status_code == 200:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         else:
-            return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"An exception occurred: {repr(resp)}"
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(resp)}")

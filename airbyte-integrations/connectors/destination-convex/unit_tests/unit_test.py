@@ -68,11 +68,11 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream, dedup_stream])
 
 
-def _state(data: Dict[str, Any]) -> AirbyteMessage:
+def state(data: Dict[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
 
 
-def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
+def record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, DEDUP_INDEX_FIELD: int_value}, emitted_at=0),
@@ -103,30 +103,43 @@ def test_check(config: ConvexConfig):
 @responses.activate
 def test_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalog):
     setup_responses(config)
-    append_stream, overwrite_stream = configured_catalog.streams[0].stream.name, configured_catalog.streams[1].stream.name
-
-    first_state_message = _state({"state": "1"})
-    first_record_chunk = [_record(append_stream, str(i), i) for i in range(5)] + [_record(overwrite_stream, str(i), i) for i in range(5)]
-
-    second_state_message = _state({"state": "2"})
-    second_record_chunk = [_record(append_stream, str(i), i) for i in range(5, 10)] + [
-        _record(overwrite_stream, str(i), i) for i in range(5, 10)
-    ]
-
-    destination = DestinationConvex()
-
-    expected_states = [first_state_message, second_state_message]
-    output_states = list(
-        destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message]
-        )
+    append_stream, overwrite_stream, dedup_stream = (
+        configured_catalog.streams[0].stream.name,
+        configured_catalog.streams[1].stream.name,
+        configured_catalog.streams[2].stream.name,
     )
-    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    third_state_message = _state({"state": "3"})
-    third_record_chunk = [_record(append_stream, str(i), i) for i in range(10, 15)] + [
-        _record(overwrite_stream, str(i), i) for i in range(10, 15)
-    ]
+    first_state_message = state({"state": "1"})
+    first_append_chunk = [record(append_stream, str(i), i) for i in range(5)]
+    first_overwrite_chunk = [record(overwrite_stream, str(i), i) for i in range(5)]
+    first_dedup_chunk = [record(dedup_stream, str(i), i) for i in range(10)]
+    first_record_chunk = first_append_chunk + first_overwrite_chunk + first_dedup_chunk
+    destination = DestinationConvex()
+    output_state = list(
+        destination.write(
+            config,
+            configured_catalog,
+            [
+                *first_record_chunk,
+                first_state_message,
+            ],
+        )
+    )[0]
+    assert first_state_message == output_state
 
-    output_states = list(destination.write(config, configured_catalog, [*third_record_chunk, third_state_message]))
-    assert [third_state_message] == output_states
+    second_state_message = state({"state": "2"})
+    second_append_chunk = [record(append_stream, str(i), i) for i in range(5, 10)]
+    second_overwrite_chunk = [record(overwrite_stream, str(i), i) for i in range(5, 10)]
+    second_dedup_chunk = [record(dedup_stream, str(i + 2), i) for i in range(5)]
+    second_record_chunk = second_append_chunk + second_overwrite_chunk + second_dedup_chunk
+    output_state = list(
+        destination.write(
+            config,
+            configured_catalog,
+            [
+                *second_record_chunk,
+                second_state_message,
+            ],
+        )
+    )[0]
+    assert second_state_message == output_state
