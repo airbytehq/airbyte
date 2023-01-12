@@ -436,3 +436,9 @@
   icon: teradata.svg
   documentationUrl: https://docs.airbyte.io/integrations/destinations/teradata
   releaseStage: alpha
+- name: Weaviate
+  destinationDefinitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
+  dockerRepository: airbyte/destination-weaviate
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
+  releaseStage: alpha
