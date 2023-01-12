@@ -71,8 +71,6 @@ input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud
 def test_create_check_stream():
     manifest = {"check": {"type": "CheckStream", "stream_names": ["list_stream"]}}
 
-    factory = ModelToComponentFactory()
-
     check = factory.create_component(CheckStreamModel, manifest["check"], {})
 
     assert isinstance(check, CheckStream)
@@ -81,8 +79,6 @@ def test_create_check_stream():
 
 def test_create_component_type_mismatch():
     manifest = {"check": {"type": "MismatchType", "stream_names": ["list_stream"]}}
-
-    factory = ModelToComponentFactory()
 
     with pytest.raises(ValueError):
         factory.create_component(CheckStreamModel, manifest["check"], {})
@@ -181,7 +177,7 @@ spec:
         order: 0
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     resolved_manifest["type"] = "DeclarativeSource"
     manifest = transformer.propagate_types_and_options("", resolved_manifest, {})
 
@@ -278,7 +274,7 @@ def test_interpolate_config():
         interpolated_body_field: "{{ config['apikey'] }}"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     authenticator_manifest = transformer.propagate_types_and_options("", resolved_manifest["authenticator"], {})
 
     authenticator = factory.create_component(
@@ -303,7 +299,7 @@ def test_list_based_stream_slicer_with_values_refd():
       cursor_field: repository
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
@@ -323,7 +319,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
         field_name: repository
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
@@ -377,7 +373,7 @@ def test_create_substream_slicer():
           stream_slice_field: word_id
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(model_type=SubstreamSlicerModel, component_definition=slicer_manifest, config=input_config)
@@ -417,7 +413,7 @@ def test_create_cartesian_stream_slicer():
         - "*ref(stream_slicer_B)"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(
@@ -461,7 +457,7 @@ def test_datetime_stream_slicer():
         stream_state_field_end: en
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(
@@ -510,7 +506,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         field_pointer: ["{record_selector}"]
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     selector_manifest = transformer.propagate_types_and_options("", resolved_manifest["selector"], {})
 
     selector = factory.create_component(model_type=RecordSelectorModel, component_definition=selector_manifest, config=input_config)
@@ -588,7 +584,7 @@ requester:
   {error_handler}
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     requester_manifest = transformer.propagate_types_and_options("", resolved_manifest["requester"], {})
 
     selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config)
@@ -625,7 +621,7 @@ def test_create_composite_error_handler():
                   action: RETRY
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     error_handler_manifest = transformer.propagate_types_and_options("", resolved_manifest["error_handler"], {})
 
     error_handler = factory.create_component(
@@ -686,7 +682,7 @@ def test_config_with_defaults():
       - "*ref(lists_stream)"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     resolved_manifest["type"] = "DeclarativeSource"
     stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["lists_stream"], {})
 
@@ -732,7 +728,7 @@ def test_create_default_paginator():
           cursor_value: "{{ response._metadata.next }}"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     paginator_manifest = transformer.propagate_types_and_options("", resolved_manifest["paginator"], {})
 
     paginator = factory.create_component(model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config)
@@ -951,7 +947,7 @@ class TestCreateTransformations:
                 {self.base_options}
         """
         parsed_manifest = YamlDeclarativeSource._parse(content)
-        resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+        resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
         resolved_manifest["type"] = "DeclarativeSource"
         stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
 
@@ -973,7 +969,7 @@ class TestCreateTransformations:
                         - ["path2"]
         """
         parsed_manifest = YamlDeclarativeSource._parse(content)
-        resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+        resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
         resolved_manifest["type"] = "DeclarativeSource"
         stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
 
@@ -996,7 +992,7 @@ class TestCreateTransformations:
                           value: "static_value"
         """
         parsed_manifest = YamlDeclarativeSource._parse(content)
-        resolved_manifest = resolver.preprocess_manifest(parsed_manifest, {}, "")
+        resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
         resolved_manifest["type"] = "DeclarativeSource"
         stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
 

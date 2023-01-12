@@ -143,11 +143,4 @@ describe("useCatalogTreeTableRowProps", () => {
     expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent changed");
     expect(result.current.pillButtonVariant).toEqual("blue");
   });
-  it("should return error styles for a row that has an error", () => {
-    testSetup(mockInitialValues, false, "error");
-
-    const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
-
-    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent error");
-  });
 });

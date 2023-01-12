@@ -131,7 +131,8 @@ definitions:
               datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
               datetime_format: "%Y-%m-%dT%H:%M:%S%z"
             datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-            step: 30d
+            cursor_granularity: "PT0.000001S"
+            step: "P30D"
             cursor_field: timestamp
             start_time_option:
               field_name: after

@@ -115,11 +115,14 @@ class ModelToComponentFactory:
     @staticmethod
     def create_component(model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config) -> type:
         """
+        Takes a given Pydantic model type and Mapping representing a component definition and creates a declarative component and
+        subcomponents which will be used at runtime. This is done by first parsing the mapping into a Pydantic model and then creating
+        creating declarative components from that model.
 
-        :param model_type:
-        :param component_definition:
-        :param config:
-        :return:
+        :param model_type: The type of declarative component that is being initialized
+        :param component_definition: The mapping that represents a declarative component
+        :param config: The connector config that is provided by the customer
+        :return: The declarative component to be used at runtime
         """
 
         component_type = component_definition.get("type")

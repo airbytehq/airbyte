@@ -1,4 +1,4 @@
-version: "0.1.0"
+version: "0.1.1"
 
 definitions:
   schema_loader:
@@ -91,6 +91,13 @@ definitions:
       function: "TIME_SERIES_MONTHLY_ADJUSTED"
       path: "/query"
       key_field: "date"
+  quote_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "quote"
+      function: "GLOBAL_QUOTE"
+      path: "/query"
+
 
 streams:
   - "*ref(definitions.time_series_intraday_stream)"
@@ -100,6 +107,7 @@ streams:
   - "*ref(definitions.time_series_weekly_adjusted_stream)"
   - "*ref(definitions.time_series_monthly_stream)"
   - "*ref(definitions.time_series_monthly_adjusted_stream)"
+  - "*ref(definitions.quote_stream)"
 
 check:
   stream_names:

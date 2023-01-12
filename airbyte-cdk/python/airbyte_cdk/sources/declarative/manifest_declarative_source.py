@@ -65,8 +65,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         if "type" not in manifest:
             manifest["type"] = "DeclarativeSource"
 
-        evaluated_manifest = {}
-        resolved_source_config = ManifestReferenceResolver().preprocess_manifest(manifest, evaluated_manifest, "")
+        resolved_source_config = ManifestReferenceResolver().preprocess_manifest(manifest)
         propagated_source_config = ManifestComponentTransformer().propagate_types_and_options("", resolved_source_config, {})
         self._new_source_config = propagated_source_config
         self._legacy_source_config = resolved_source_config
@@ -76,6 +75,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
         self._validate_source()
 
+        # todo: The handwritten schema uses additionalProperties: false to validate, when we delete legacy path this can be removed
         # Stopgap to protect the top-level namespace until it's validated through the schema
         unknown_fields = [key for key in self._legacy_source_config.keys() if key not in self.VALID_TOP_LEVEL_FIELDS]
         if unknown_fields:

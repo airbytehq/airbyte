@@ -94,11 +94,12 @@ definitions:
       field_name: "length"
       inject_into: "request_parameter"
     datetime_format: "%Y-%m-%d"
-    step: "100d"
+    step: "P100D"
+    cursor_granularity: "P1D"
 
   datetime_14d_slicer:
     $ref: "*ref(definitions.datetime_100d_slicer)"
-    step: "14d"
+    step: "P14D"
 
   # ----- Sliced streams -----
   sliced_retriever:
