@@ -651,11 +651,11 @@
 - name: Google Analytics 4 (GA4)
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
   dockerRepository: airbyte/source-google-analytics-data-api
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Google Directory
   sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   dockerRepository: airbyte/source-google-directory
@@ -1104,7 +1104,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 0.1.10
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/notion
   icon: notion.svg
   sourceType: api
@@ -1320,7 +1320,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.35
+  dockerImageTag: 1.0.36
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1606,7 +1606,7 @@
 - name: Snapchat Marketing
   sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
   dockerRepository: airbyte/source-snapchat-marketing
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   icon: snapchat.svg
   sourceType: api
