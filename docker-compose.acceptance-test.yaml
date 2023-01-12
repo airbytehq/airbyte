@@ -1,7 +1,7 @@
 # Adds ports to the db and access to the temporal UI for debugging purposes.
 # Expected to be used like this:
-# VERSION=dev docker-compose -f docker-compose.yaml -f docker-compose.debug.yaml up
-version: "3.7"
+# VERSION=dev docker compose -f docker-compose.yaml -f docker-compose.debug.yaml up
+version: "3.8"
 x-logging: &default-logging
   options:
     max-size: "100m"
