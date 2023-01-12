@@ -136,7 +136,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
-| 1.2.10  | 2023-01-12 | [\#21306](https://github.com/airbytehq/airbyte/pull/21306) | Remove `supportsDbt` and `supportsNormalization` from spec                                                               |
+| 1.2.10  | 2023-01-12 | [\#21306](https://github.com/airbytehq/airbyte/pull/21306) | Remove `supportsDbt` and `supportsNormalization` from spec. This requires Airbyte >= 0.43.18                             |
 | 1.2.9   | 2022-12-14 | [#20501](https://github.com/airbytehq/airbyte/pull/20501)  | Report GCS staging failures that occur during connection check                                                           |
 | 1.2.8   | 2022-11-22 | [#19489](https://github.com/airbytehq/airbyte/pull/19489)  | Added non-billable projects handle to check connection stage                                                             |
 | 1.2.7   | 2022-11-11 | [#19358](https://github.com/airbytehq/airbyte/pull/19358)  | Fixed check method to capture mismatch dataset location                                                                  |
