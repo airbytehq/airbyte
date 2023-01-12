@@ -1,6 +1,8 @@
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
+import { Text } from "../Text";
 import { Callout } from "./Callout";
 
 export default {
@@ -14,6 +16,10 @@ export default {
 const Template: ComponentStory<typeof Callout> = (args) => <Callout {...args} />;
 export const Primary = Template.bind({});
 Primary.args = {
-  icon: faEnvelope,
-  children: "Here is some info.",
+  children: (
+    <>
+      <FontAwesomeIcon icon={faEnvelope} size="lg" />
+      <Text>"Here is some info."</Text>
+    </>
+  ),
 };

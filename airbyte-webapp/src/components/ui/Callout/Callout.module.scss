@@ -2,7 +2,7 @@
 @use "scss/variables";
 
 .container {
-  border-radius: vars.$border-radius-md;
+  border-radius: variables.$border-radius-md;
   padding: variables.$spacing-lg variables.$spacing-xl;
   font-size: 14px;
   display: flex;
@@ -11,7 +11,7 @@
 }
 
 .compact {
-  padding: vars.$spacing-md vars.$spacing-lg;
+  padding: variables.$spacing-md variables.$spacing-lg;
 }
 
 .yellow {
@@ -20,4 +20,8 @@
 
 .red {
   background-color: colors.$red-50;
+}
+
+.blue {
+  background-color: colors.$blue-50;
 }

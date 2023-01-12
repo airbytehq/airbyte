@@ -1,4 +1,9 @@
 @use "scss/colors";
+@use "scss/variables";
+
+.calloutContainer {
+  margin-top: variables.$spacing-lg;
+}
 
 .link {
   color: colors.$dark-blue;

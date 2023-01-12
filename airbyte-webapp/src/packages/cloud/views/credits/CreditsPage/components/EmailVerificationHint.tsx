@@ -1,4 +1,5 @@
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AuthErrorCodes } from "firebase/auth";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -76,7 +77,8 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
   };
 
   return (
-    <Callout icon={faEnvelope} className={className}>
+    <Callout className={className}>
+      <FontAwesomeIcon icon={faEnvelope} size="lg" />
       <FormattedMessage id="credits.emailVerificationRequired" />{" "}
       {isEmailResend ? (
         <FormattedMessage id="credits.emailVerification.resendConfirmation" />

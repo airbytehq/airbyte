@@ -1,4 +1,5 @@
 import { faCreditCard, faWarning } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FormattedMessage } from "react-intl";
 
 import { Callout } from "components/ui/Callout";
@@ -24,12 +25,13 @@ export const LowCreditBalanceHint: React.FC<React.PropsWithChildren<unknown>> = 
   const status = cloudWorkspace.remainingCredits <= 0 ? "zeroBalance" : "lowBalance";
   const variant = status === "zeroBalance" ? "red" : "yellow";
 
-  const ICONS = {
+  const Icons = {
     lowBalance: faCreditCard,
     zeroBalance: faWarning,
   };
   return (
-    <Callout className={styles.container} icon={ICONS[status]} variant={variant}>
+    <Callout className={styles.container} variant={variant}>
+      <FontAwesomeIcon icon={Icons[status]} size="lg" />
       <div className={styles.wrapper}>
         <FormattedMessage id={`credits.${status}`} />
         {children}
