@@ -47,3 +47,4 @@ The Commcare source connector supports the following streams:
 
 | Version | Date | Pull Request | Subject |
 | 0.1.0   | 2022-11-16 | [19371](https://github.com/airbytehq/airbyte/pull/19371)   | SurveyCTO Source Connector |
+| 0.1.1   | 2022-11-12 | [21311](https://github.com/airbytehq/airbyte/pull/21311)   | Update Source Connector |
