@@ -178,7 +178,7 @@ public class DockerProcessFactory implements ProcessFactory {
    * environment variable, and it matches the image name of a spawned container, this method will add
    * the necessary params to connect a debugger. For example, to enable this for
    * `destination-bigquery` start the services locally with: ``` VERSION="dev"
-   * DEBUG_CONTAINER_IMAGE="destination-bigquery" docker-compose -f docker-compose.yaml -f
+   * DEBUG_CONTAINER_IMAGE="destination-bigquery" docker compose -f docker-compose.yaml -f
    * docker-compose.debug.yaml up ``` Additionally you may have to update the image version of your
    * target image to 'dev' in the UI of your local airbyte platform. See the
    * `docker-compose.debug.yaml` file for more context.
