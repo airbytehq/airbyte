@@ -1,5 +1,6 @@
 import isEqual from "lodash/isEqual";
 
+import { SyncSchemaField } from "core/domain/catalog";
 import { AirbyteStreamConfiguration, SelectedFieldInfo } from "core/request/AirbyteClient";
 
 /**
@@ -18,6 +19,48 @@ export function mergeFieldPathArrays(...args: SelectedFieldInfo[][]): SelectedFi
   );
 
   return Array.from(set).map((key) => ({ fieldPath: JSON.parse(key) }));
+}
+
+interface onToggleFieldSelectedArguments {
+  config: AirbyteStreamConfiguration;
+  fields: SyncSchemaField[]; // could be calculated again from config, but is potentially expensive
+  fieldPath: string[];
+  isSelected: boolean;
+  numberOfFieldsInStream: number;
+}
+export function updateFieldSelected({
+  config,
+  fields,
+  fieldPath,
+  isSelected,
+  numberOfFieldsInStream,
+}: onToggleFieldSelectedArguments): Partial<AirbyteStreamConfiguration> {
+  const previouslySelectedFields = config?.selectedFields || [];
+
+  if (!config?.fieldSelectionEnabled && !isSelected) {
+    // All fields in a stream are implicitly selected. When deselecting the first one, we also need to explicitly select the rest.
+    const allOtherFields = fields.filter((field: SyncSchemaField) => !isEqual(field.path, fieldPath)) ?? [];
+    const selectedFields: SelectedFieldInfo[] = allOtherFields.map((field) => ({ fieldPath: field.path }));
+    return {
+      selectedFields,
+      fieldSelectionEnabled: true,
+    };
+  } else if (isSelected && previouslySelectedFields.length === numberOfFieldsInStream - 1) {
+    // In this case we are selecting the only unselected field
+    return {
+      selectedFields: [],
+      fieldSelectionEnabled: false,
+    };
+  } else if (isSelected) {
+    return {
+      selectedFields: [...previouslySelectedFields, { fieldPath }],
+      fieldSelectionEnabled: true,
+    };
+  }
+  return {
+    selectedFields: previouslySelectedFields.filter((f) => !isEqual(f.fieldPath, fieldPath)) || [],
+    fieldSelectionEnabled: true,
+  };
 }
 
 /**
