@@ -32,7 +32,7 @@ This section should contain a table with the following format:
 | Replicate Incremental Deletes |  |  |
 | For databases, WAL/Logical replication |  |  |
 | SSL connection | Yes | TLS |
-| SSH Tunnel Support | Yes |  |
+| SSH Tunnel Support | No |  |
 
 ### Performance considerations
 

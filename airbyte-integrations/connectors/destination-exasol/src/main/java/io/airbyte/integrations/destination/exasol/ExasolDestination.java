@@ -33,12 +33,8 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
     super(DRIVER_CLASS, new ExasolSQLNameTransformer(), new ExasolSqlOperations());
   }
 
-  public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new ExasolDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
-  }
-
   public static void main(String[] args) throws Exception {
-    new IntegrationRunner(ExasolDestination.sshWrappedDestination()).run(args);
+    new IntegrationRunner(new ExasolDestination()).run(args);
   }
 
   @Override
