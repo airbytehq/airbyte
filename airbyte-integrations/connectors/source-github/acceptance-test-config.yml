@@ -31,16 +31,6 @@ acceptance_tests:
             bypass_reason: "some reason"
           - name: events
             bypass_reason: "Only events created within the past 90 days can be showed"
-          - name: issue_comment_reactions
-            bypass_reason: "some reason"
-          - name: issue_events
-            bypass_reason: "some reason"
-          - name: issue_labels
-            bypass_reason: "some reason"
-          - name: issue_milestones
-            bypass_reason: "some reason"
-          - name: issue_reactions
-            bypass_reason: "some reason"
           - name: organizations
             bypass_reason: "The objects can mutate quite often"
           - name: project_cards
