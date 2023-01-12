@@ -36,6 +36,7 @@ public class LocalTestingSecretPersistence implements SecretPersistence {
   @Override
   public Optional<String> read(final SecretCoordinate coordinate) {
     return Exceptions.toRuntime(() -> this.configDatabase.query(ctx -> {
+      initialize();
       final var result = ctx.fetch("SELECT payload FROM secrets WHERE coordinate = ?;", coordinate.getFullCoordinate());
       if (result.size() == 0) {
         return Optional.empty();
@@ -48,6 +49,7 @@ public class LocalTestingSecretPersistence implements SecretPersistence {
   @Override
   public void write(final SecretCoordinate coordinate, final String payload) {
     Exceptions.toRuntime(() -> this.configDatabase.query(ctx -> {
+      initialize();
       ctx.query("INSERT INTO secrets(coordinate,payload) VALUES(?, ?) ON CONFLICT (coordinate) DO UPDATE SET payload = ?;",
           coordinate.getFullCoordinate(), payload, payload, coordinate.getFullCoordinate()).execute();
       return null;
