@@ -6,32 +6,29 @@ connectionSpecification:
   required:
     - start_date
     - api_key
-    - fetch_interval_days
+#    - fetch_interval_days
     - days_forward
-    - fr_days_back
-    - fr_days_forward
+#    - fr_days_back
+#    - fr_days_forward
   properties:
     start_date:
       type: string
       description: Start date
       airbyte_secret: false
-      default: "2022-10-01"
-    fetch_interval_days:
-      type: integer
-      description: Bulk fetch interval 
-      default: 7
+      default: "2021-06-20"
     days_forward:
-      type: integer
+      type: string
       description: Days ahead we want to fetch bookings
       default: 2
-    fr_days_back:
-      type: integer
-      description: Full refresh days back
-      default: 7
-    fr_days_forward:
-      type: integer
-      description: Full refresh days forward
-      default: 60
+      airbyte_secret: false
+#    fr_days_back:
+#      type: integer
+#      description: Full refresh days back
+#      default: 7
+#    fr_days_forward:
+#      type: integer
+#      description: Full refresh days forward
+#      default: 60
 
     api_key:
       type: string

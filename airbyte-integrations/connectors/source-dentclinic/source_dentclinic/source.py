@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Iterator
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Iterator, MutableMapping
 
 import requests
 import pendulum
@@ -16,36 +16,62 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from .streams import DentclinicBookingStream,DentclinicBookingFrStream, DentclinicClinicIdsStream, DentclinicStaticStream
 
 
+class BookingsFr(DentclinicBookingStream):
+    primary_key = "Id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "bookings". Required.
+        """
+        return ""
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+
 class Bookings(DentclinicBookingStream):
+    state_checkpoint_interval = 1
     primary_key = "Id"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        should return "bookings". Required.
-        """
+        """should return "bookings". Required."""
         return ""
 
     @property
     def http_method(self) -> str:
         return "POST"
 
-
-class BookingsFr(DentclinicBookingFrStream):
-    primary_key = "Id"
-
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        should return "bookings". Required.
-        """
-        return ""
-
     @property
-    def http_method(self) -> str:
-        return "POST"
+    def cursor_field(self) -> str:
+        """
+        This field's presence tells the framework this in an incremental stream. Required for incremental.
+
+        :return str: The name of the cursor field.
+        """
+        return "Time"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+        state_mapping = current_stream_state.get(self.cursor_field, {})
+
+        print("="*100)
+        print(state_mapping)
+        print("=" * 100)
+
+        last_record_value = latest_record.get(self.cursor_field)
+        if last_record_value:
+            state_mapping.update({self.clinic_id: last_record_value})
+
+        return {self.cursor_field: state_mapping}
+
 
 
 class Resources(DentclinicClinicIdsStream):
@@ -67,8 +93,7 @@ class Resources(DentclinicClinicIdsStream):
 class Clinics(DentclinicStaticStream):
     primary_key = "Id"
     static_endpoint = 'GetClinics'
-    endpoint_data_path = ['soap:Envelope', 'soap:Body',
-                          'GetClinicsResponse', 'GetClinicsResult', 'ClinicModel']
+    endpoint_data_path = ['soap:Envelope', 'soap:Body', 'GetClinicsResponse', 'GetClinicsResult', 'ClinicModel']
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -86,8 +111,7 @@ class Clinics(DentclinicStaticStream):
 class Services(DentclinicStaticStream):
     primary_key = "Id"
     static_endpoint = 'GetServices'
-    endpoint_data_path = ['soap:Envelope', 'soap:Body',
-                          'GetServicesResponse', 'GetServicesResult', 'ServiceModel']
+    endpoint_data_path = ['soap:Envelope', 'soap:Body', 'GetServicesResponse', 'GetServicesResult', 'ServiceModel']
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -119,4 +143,4 @@ class SourceDentclinic(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Bookings(config=config), Clinics(config=config), Services(config=config), Resources(config=config), BookingsFr(config=config)]
+        return [BookingsFr(config=config), Bookings(config=config)] # ,Clinics(config=config), Services(config=config), Resources(config=config), BookingsFr(config=config)

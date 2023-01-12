@@ -52,7 +52,7 @@ and place them into `secrets/config.json`.
 python main.py spec
 python main.py check --config secrets/config.json
 python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
@@ -60,9 +60,9 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-dentclinic:dev
-docker tag airbyte/source-dentclinic:dev askeladden/airbyte-source-dentclinic:dev
-docker push askeladden/airbyte-source-dentclinic:dev
+docker build . -t airbyte/source-dentclinic:0.0.5
+docker tag airbyte/source-dentclinic:0.0.5 askeladden/airbyte-source-dentclinic:0.0.5
+docker push askeladden/airbyte-source-dentclinic:0.0.5
 ```
 
 You can also build the connector image via Gradle:

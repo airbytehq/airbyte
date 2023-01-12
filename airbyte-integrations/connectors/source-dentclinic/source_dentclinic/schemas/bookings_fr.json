@@ -1,4 +1,160 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object"
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Id": {
+      "type": "string"
+    },
+    "Time": {
+      "type": "string"
+    },
+    "Duration": {
+      "type": "string"
+    },
+    "FirstName": {
+      "type": "string"
+    },
+    "LastName": {
+      "type": "string"
+    },
+    "Email": {
+      "type": "string"
+    },
+    "BirthDate": {
+      "type": "object",
+      "properties": {
+        "@xsi:nil": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "@xsi:nil"
+      ]
+    },
+    "Phone": {
+      "type": "string"
+    },
+    "CustomerId": {
+      "type": "string"
+    },
+    "Notes": {
+      "type": "null"
+    },
+    "ClinicId": {
+      "type": "string"
+    },
+    "ClinicName": {
+      "type": "string"
+    },
+    "State": {
+      "type": "string"
+    },
+    "Service": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "ExternalId": {
+          "type": "object",
+          "properties": {
+            "@xsi:nil": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "@xsi:nil"
+          ]
+        },
+        "Price": {
+          "type": "string"
+        },
+        "IsPublished": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "Name",
+        "ExternalId",
+        "Price",
+        "IsPublished"
+      ]
+    },
+    "Resources": {
+      "type": "object",
+      "properties": {
+        "ResourceModel": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "Id": {
+                  "type": "string"
+                },
+                "Name": {
+                  "type": "string"
+                },
+                "Category": {
+                  "type": "string"
+                },
+                "CategoryId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "Id",
+                "Name",
+                "Category",
+                "CategoryId"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "Id": {
+                  "type": "string"
+                },
+                "Name": {
+                  "type": "string"
+                },
+                "Category": {
+                  "type": "string"
+                },
+                "CategoryId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "Id",
+                "Name",
+                "Category",
+                "CategoryId"
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "ResourceModel"
+      ]
+    }
+  },
+  "required": [
+    "Id",
+    "Time",
+    "Duration",
+    "FirstName",
+    "LastName",
+    "Email",
+    "BirthDate",
+    "Phone",
+    "CustomerId",
+    "Notes",
+    "ClinicId",
+    "ClinicName",
+    "State",
+    "Service",
+    "Resources"
+  ]
 }
