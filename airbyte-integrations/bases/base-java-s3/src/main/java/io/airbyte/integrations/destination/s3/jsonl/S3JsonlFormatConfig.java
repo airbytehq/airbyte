@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.s3.jsonl;
 
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_ARG_NAME;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFAULT_COMPRESSION_TYPE;
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.FLATTEN_DATA;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,6 +14,8 @@ import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.CompressionTypeHelper;
+import org.apache.avro.data.Json;
+
 import java.util.Objects;
 
 public class S3JsonlFormatConfig implements S3FormatConfig {
@@ -38,6 +39,8 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
       for (final S3JsonlFormatConfig.Flattening f : S3JsonlFormatConfig.Flattening.values()) {
         if (f.value.equalsIgnoreCase(value)) {
           return f;
+        } else {
+          return Flattening.NO;
         }
       }
       throw new IllegalArgumentException("Unexpected value: " + value);
@@ -54,12 +57,13 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
   private final CompressionType compressionType;
 
   public S3JsonlFormatConfig(final JsonNode formatConfig) {
-    this.compressionType = formatConfig.has(COMPRESSION_ARG_NAME)
-        ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
-        : DEFAULT_COMPRESSION_TYPE;
-    this.flattening = S3JsonlFormatConfig.Flattening.fromValue(formatConfig.has("flattening")
-            ? formatConfig.get("flattening").asText()
-            : S3JsonlFormatConfig.Flattening.NO.value);
+    this(
+            Flattening.fromValue(formatConfig.has("flattening")
+              ? formatConfig.get("flattening").asText()
+              : Flattening.NO.value),
+            formatConfig.has(COMPRESSION_ARG_NAME)
+              ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
+              : DEFAULT_COMPRESSION_TYPE);
   }
 
   public S3JsonlFormatConfig(final Flattening flattening, final CompressionType compressionType) {

@@ -7,12 +7,14 @@ package io.airbyte.integrations.destination.s3.jsonl;
 import static com.amazonaws.services.s3.internal.Constants.MB;
 import static io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.util.ConfigTestUtils;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -21,6 +23,18 @@ import org.junit.jupiter.api.Test;
 
 @DisplayName("S3JsonlFormatConfig")
 public class S3JsonlFormatConfigTest {
+
+  @Test
+  @DisplayName("Flattening enums can be created from value string")
+  public void testFlatteningCreationFromString() {
+    assertEquals(S3JsonlFormatConfig.Flattening.NO, S3JsonlFormatConfig.Flattening.fromValue("no flattening"));
+    assertEquals(S3JsonlFormatConfig.Flattening.ROOT_LEVEL, S3JsonlFormatConfig.Flattening.fromValue("root level flattening"));
+    try {
+      S3JsonlFormatConfig.Flattening.fromValue("invalid flattening value");
+    } catch (final Exception e) {
+      assertTrue(e instanceof IllegalArgumentException);
+    }
+  }
 
   @Test
   public void testHandlePartSizeConfig() throws IllegalAccessException {
