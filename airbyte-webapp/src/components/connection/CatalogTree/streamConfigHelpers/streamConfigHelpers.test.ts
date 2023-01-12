@@ -7,6 +7,7 @@ import {
   updatePrimaryKey,
   updateCursorField,
   updateFieldSelected,
+  toggleAllFieldsSelected,
 } from "./streamConfigHelpers";
 
 const mockStreamConfiguration: AirbyteStreamConfiguration = {
@@ -406,6 +407,58 @@ describe(`${updateFieldSelected.name}`, () => {
     expect(newStreamConfiguration).toEqual({
       fieldSelectionEnabled: false,
       selectedFields: [],
+    });
+  });
+});
+
+describe(`${toggleAllFieldsSelected.name}`, () => {
+  it("unselects all fields if field selection was disabled", () => {
+    const newStreamConfiguration = toggleAllFieldsSelected({ ...mockStreamConfiguration });
+    expect(newStreamConfiguration).toEqual({
+      fieldSelectionEnabled: true,
+      selectedFields: [],
+    });
+  });
+
+  it("selects all fields if field selection was enabled", () => {
+    const newStreamConfiguration = toggleAllFieldsSelected({
+      ...mockStreamConfiguration,
+      fieldSelectionEnabled: true,
+      selectedFields: [{ fieldPath: FIELD_ONE.path }, { fieldPath: FIELD_TWO.path }, { fieldPath: FIELD_THREE.path }],
+    });
+    expect(newStreamConfiguration).toEqual({
+      fieldSelectionEnabled: false,
+      selectedFields: [],
+    });
+  });
+
+  it("keeps cursor field selected if syncMode is incremental", () => {
+    const newStreamConfiguration = toggleAllFieldsSelected({
+      ...mockStreamConfiguration,
+      fieldSelectionEnabled: false,
+      selectedFields: [],
+      syncMode: "incremental",
+      cursorField: FIELD_ONE.path,
+    });
+
+    expect(newStreamConfiguration).toEqual({
+      fieldSelectionEnabled: true,
+      selectedFields: [{ fieldPath: FIELD_ONE.path }],
+    });
+  });
+
+  it("keeps primary key fields selected if destinationSyncMode is append_dedup", () => {
+    const newStreamConfiguration = toggleAllFieldsSelected({
+      ...mockStreamConfiguration,
+      fieldSelectionEnabled: false,
+      selectedFields: [],
+      destinationSyncMode: "append_dedup",
+      primaryKey: [FIELD_ONE.path, FIELD_TWO.path],
+    });
+
+    expect(newStreamConfiguration).toEqual({
+      fieldSelectionEnabled: true,
+      selectedFields: [{ fieldPath: FIELD_ONE.path }, { fieldPath: FIELD_TWO.path }],
     });
   });
 });
