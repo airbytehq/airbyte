@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Alert } from "components/ui/Alert/Alert";
+import { Callout } from "components/ui/Callout";
 import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
@@ -15,7 +15,7 @@ interface WarningMessageProps {
 
 export const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
   return (
-    <Alert variant="yellow">
+    <Callout variant="yellow">
       <Text size="sm">
         <FormattedMessage id={`connector.releaseStage.${stage}.description`} />{" "}
         <FormattedMessage
@@ -29,6 +29,6 @@ export const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
           }}
         />
       </Text>
-    </Alert>
+    </Callout>
   );
 };

@@ -7,18 +7,21 @@ import styles from "./Callout.module.scss";
 interface Props {
   className?: string;
   icon?: IconDefinition;
-  variant?: "default" | "error";
+  variant?: "yellow" | "red";
+  compact?: boolean;
 }
 
 export const Callout: React.FC<React.PropsWithChildren<Props>> = ({
   children,
   className,
   icon,
-  variant = "default",
+  variant = "yellow",
+  compact = false,
 }) => {
   const containerStyles = classNames(styles.container, className, {
-    [styles.default]: variant === "default",
-    [styles.error]: variant === "error",
+    [styles.yellow]: variant === "yellow",
+    [styles.red]: variant === "red",
+    [styles.compact]: compact,
   });
 
   return (
