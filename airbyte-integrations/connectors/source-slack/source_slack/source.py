@@ -77,7 +77,7 @@ class SlackStream(HttpStream, ABC):
         """The name of the field in the response which contains the data"""
 
     def should_retry(self, response: requests.Response) -> bool:
-        return response.status_code == requests.codes.REQUEST_TIMEOUT
+        return response.status_code == requests.codes.REQUEST_TIMEOUT or super().should_retry(response)
 
 
 class ChanneledStream(SlackStream, ABC):
