@@ -1,6 +1,8 @@
 package io.airbyte.integrations.source.postgres;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -47,8 +49,12 @@ public class PostgresSourcePerformanceProcessTest {
       .build());
 
   public static void main(String[] args) throws Exception {
-    var creds = PostgresSourcePerformanceProcessTest.class.getClassLoader().getResource(PERFORMANCE_SECRET_CREDS).getPath();
-    final JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(creds)));
+    // Unfortunately, not getting picked up.
+    //    var creds = PostgresSourcePerformanceProcessTest.class.getClassLoader().getResource(PERFORMANCE_SECRET_CREDS).getPath();
+    ObjectMapper mapper = new ObjectMapper();
+    final JsonNode plainConfig = mapper.readTree(
+            "{\"host\": \"34.172.209.107\", \"port\": 5432, \"schemas\": [\"public\"], \"database\": \"\", \"password\": \"\", \"ssl_mode\": {\"mode\": \"require\"}, \"username\": \"\", \"tunnel_method\": {\"tunnel_method\": \"NO_TUNNEL\"}, \"replication_method\": {\"method\": \"Standard\"}}");
+
 
     var config = Jsons.jsonNode(ImmutableMap.builder()
       .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
@@ -58,7 +64,7 @@ public class PostgresSourcePerformanceProcessTest {
       .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
       .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
       .put(JdbcUtils.SSL_KEY, true)
-        .put("replication_method", "standard")
+        .put("replication_method", "Standard")
         .build());
 
     KubePortManagerSingleton.init(PORTS);
@@ -81,7 +87,7 @@ public class PostgresSourcePerformanceProcessTest {
     ResourceRequirements resourceReqs = null;
 
     var integrationLauncher =
-          new AirbyteIntegrationLauncher("1", 0, "airbyte/source-postgres:dev", processFactory, resourceReqs, false);
+          new AirbyteIntegrationLauncher("1", 0, "airbyte/source-postgres:1.0.35", processFactory, resourceReqs, false);
     var source = new DefaultAirbyteSource(integrationLauncher);
     var jobRoot = "/";
 
@@ -90,7 +96,7 @@ public class PostgresSourcePerformanceProcessTest {
         ConfiguredAirbyteCatalog.class);
 
     final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
-        .withSourceConnectionConfiguration(config)
+        .withSourceConnectionConfiguration(plainConfig)
         .withState(null)
         .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 

@@ -63,7 +63,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         // .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
         // can we move all this validation into the main method? After all we already validate for schema
         .flatMap(this::parseJson)
-        // .filter(this::validate)
+        .filter(this::validate)
         .flatMap(this::toAirbyteMessage)
         .filter(this::filterLog);
   }
