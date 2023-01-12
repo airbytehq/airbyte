@@ -57,8 +57,6 @@ acceptance_tests:
             bypass_reason: "some reason"
           - name: review_comments
             bypass_reason: "some reason"
-          - name: reviews
-            bypass_reason: "some reason"
           - name: stargazers
             bypass_reason: "some reason"
           - name: team_members
