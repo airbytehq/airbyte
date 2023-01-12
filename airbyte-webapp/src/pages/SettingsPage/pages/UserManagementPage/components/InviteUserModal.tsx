@@ -1,7 +1,7 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
@@ -17,6 +17,8 @@ import UserRoleDropDown from "./UserRoleDropdown";
 interface IProps {
   roles: DropDownRow.IDataItem[];
   onClose?: () => void;
+  setMessageId: React.Dispatch<React.SetStateAction<string>>;
+  setMessageType: React.Dispatch<React.SetStateAction<"info" | "error">>;
 }
 
 const ModalBodyContainer = styled.div`
@@ -93,7 +95,9 @@ const BtnIcon = styled(FontAwesomeIcon)`
   margin-right: 10px;
 `;
 
-const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
+const AddUserModal: React.FC<IProps> = ({ onClose, roles, setMessageId, setMessageType }) => {
+  const [loading, setLoading] = useState(false);
+
   const inviteUsersSchema = yup.object({
     users: yup.array().of(
       yup.object().shape({
@@ -118,16 +122,20 @@ const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
           initialValues={{ users: [{ email: "", role: 3 }] }}
           onSubmit={(values) => {
             const { users } = values;
+            setLoading(true);
             onAddUser(users)
               .then(() => {
+                setLoading(false);
                 onClose?.();
               })
               .catch((error: any) => {
-                console.log(error);
+                setLoading(false);
+                setMessageId(error.message);
+                setMessageType("error");
               });
           }}
         >
-          {({ values, isValid, isSubmitting, dirty, setFieldValue }) => {
+          {({ values, isValid, dirty, setFieldValue }) => {
             return (
               <Form>
                 <ModalBodyContainer>
@@ -221,7 +229,7 @@ const AddUserModal: React.FC<IProps> = ({ onClose, roles }) => {
                       white
                       type="submit"
                       disabled={!isValid || !dirty}
-                      isLoading={isSubmitting}
+                      isLoading={loading}
                     >
                       <FormattedMessage id="user.addUserModal.sendInviteBtn" />
                     </SendInvitationButton>
