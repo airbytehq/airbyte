@@ -1,5 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3",
+  "protocol_version": "1.0.0",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
