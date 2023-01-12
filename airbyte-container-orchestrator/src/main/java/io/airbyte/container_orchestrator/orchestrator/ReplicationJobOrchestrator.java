@@ -74,13 +74,13 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final DestinationApi destinationApi;
 
   public ReplicationJobOrchestrator(final Configs configs,
-      final ProcessFactory processFactory,
-      final FeatureFlagClient featureFlag,
-      final AirbyteMessageSerDeProvider serDeProvider,
-      final AirbyteMessageVersionedMigratorFactory migratorFactory,
-      final JobRunConfig jobRunConfig,
-      final SourceApi sourceApi,
-      final DestinationApi destinationApi) {
+                                    final ProcessFactory processFactory,
+                                    final FeatureFlagClient featureFlag,
+                                    final AirbyteMessageSerDeProvider serDeProvider,
+                                    final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                    final JobRunConfig jobRunConfig,
+                                    final SourceApi sourceApi,
+                                    final DestinationApi destinationApi) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlag = featureFlag;
@@ -151,8 +151,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
       final var contexts = new Multi(List.of(
           new Workspace(syncInput.getWorkspaceId()),
           new Source(syncInput.getSourceId()),
-          new Destination(syncInput.getDestinationId())
-      ));
+          new Destination(syncInput.getDestinationId())));
       airbyteSource = new EmptyAirbyteSource(featureFlag.enabled(StreamCapableState.INSTANCE, contexts));
     } else {
       airbyteSource = new DefaultAirbyteSource(sourceLauncher,

@@ -52,12 +52,12 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final boolean useIsolatedPool;
 
   public AirbyteIntegrationLauncher(final String jobId,
-      final int attempt,
-      final String imageName,
-      final ProcessFactory processFactory,
-      final ResourceRequirements resourceRequirement,
-      final boolean useIsolatedPool,
-      final FeatureFlagClient featureFlag) {
+                                    final int attempt,
+                                    final String imageName,
+                                    final ProcessFactory processFactory,
+                                    final ResourceRequirements resourceRequirement,
+                                    final boolean useIsolatedPool,
+                                    final FeatureFlagClient featureFlag) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
@@ -135,12 +135,12 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process read(final Path jobRoot,
-      final String configFilename,
-      final String configContents,
-      final String catalogFilename,
-      final String catalogContents,
-      final String stateFilename,
-      final String stateContents)
+                      final String configFilename,
+                      final String configContents,
+                      final String catalogFilename,
+                      final String catalogContents,
+                      final String stateFilename,
+                      final String stateContents)
       throws WorkerException {
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, imageName));
     final List<String> arguments = Lists.newArrayList(
@@ -180,10 +180,10 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process write(final Path jobRoot,
-      final String configFilename,
-      final String configContents,
-      final String catalogFilename,
-      final String catalogContents)
+                       final String configFilename,
+                       final String configContents,
+                       final String catalogFilename,
+                       final String catalogContents)
       throws WorkerException {
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, imageName));
     final Map<String, String> files = ImmutableMap.of(

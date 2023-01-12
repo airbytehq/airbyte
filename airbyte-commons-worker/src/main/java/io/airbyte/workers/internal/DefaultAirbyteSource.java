@@ -65,16 +65,16 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-      final AirbyteStreamFactory streamFactory,
-      final FeatureFlagClient featureFlag) {
+                              final AirbyteStreamFactory streamFactory,
+                              final FeatureFlagClient featureFlag) {
     this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION), featureFlag);
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-      final AirbyteStreamFactory streamFactory,
-      final HeartbeatMonitor heartbeatMonitor,
-      final FeatureFlagClient featureFlag) {
+                       final AirbyteStreamFactory streamFactory,
+                       final HeartbeatMonitor heartbeatMonitor,
+                       final FeatureFlagClient featureFlag) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;

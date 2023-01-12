@@ -47,9 +47,11 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This class is responsible for stats and metadata tracking surrounding {@link AirbyteRecordMessage}.
+ * This class is responsible for stats and metadata tracking surrounding
+ * {@link AirbyteRecordMessage}.
  * <p>
- * It is not intended to perform meaningful operations - transforming, mutating, triggering downstream actions etc. - on specific messages.
+ * It is not intended to perform meaningful operations - transforming, mutating, triggering
+ * downstream actions etc. - on specific messages.
  */
 @Slf4j
 public class AirbyteMessageTracker implements MessageTracker {
@@ -78,12 +80,13 @@ public class AirbyteMessageTracker implements MessageTracker {
   private short nextStreamIndex;
 
   /**
-   * If the StateDeltaTracker throws an exception, this flag is set to true and committed counts are not returned.
+   * If the StateDeltaTracker throws an exception, this flag is set to true and committed counts are
+   * not returned.
    */
   private boolean unreliableCommittedCounts;
   /**
-   * If the StateMetricsTracker throws an exception, this flag is set to true and the metrics around max and mean time between state message emitted
-   * and committed are unreliable
+   * If the StateMetricsTracker throws an exception, this flag is set to true and the metrics around
+   * max and mean time between state message emitted and committed are unreliable
    */
   private boolean unreliableStateTimingMetrics;
 
@@ -101,9 +104,9 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @VisibleForTesting
   protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker,
-      final StateAggregator stateAggregator,
-      final StateMetricsTracker stateMetricsTracker,
-      final FeatureFlagClient featureFlag) {
+                                  final StateAggregator stateAggregator,
+                                  final StateMetricsTracker stateMetricsTracker,
+                                  final FeatureFlagClient featureFlag) {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
     this.streamToRunningCount = new HashMap<>();
@@ -149,7 +152,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * When a source emits a record, increment the running record count, the total record count, and the total byte count for the record's stream.
+   * When a source emits a record, increment the running record count, the total record count, and the
+   * total byte count for the record's stream.
    */
   private void handleSourceEmittedRecord(final AirbyteRecordMessage recordMessage) {
     if (stateMetricsTracker.getFirstRecordReceivedAt() == null) {
@@ -172,8 +176,10 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * When a source emits a state, persist the current running count per stream to the {@link StateDeltaTracker}. Then, reset the running count per
-   * stream so that new counts can start recording for the next state. Also add the state to list so that state order is tracked correctly.
+   * When a source emits a state, persist the current running count per stream to the
+   * {@link StateDeltaTracker}. Then, reset the running count per stream so that new counts can start
+   * recording for the next state. Also add the state to list so that state order is tracked
+   * correctly.
    */
   private void handleSourceEmittedState(final AirbyteStateMessage stateMessage) {
     final LocalDateTime timeEmittedStateMessage = LocalDateTime.now();
@@ -204,8 +210,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * When a destination emits a state, mark all uncommitted states up to and including this state as committed in the {@link StateDeltaTracker}. Also
-   * record this state as the last committed state.
+   * When a destination emits a state, mark all uncommitted states up to and including this state as
+   * committed in the {@link StateDeltaTracker}. Also record this state as the last committed state.
    */
   private void handleDestinationEmittedState(final AirbyteStateMessage stateMessage) {
     final LocalDateTime timeCommitted = LocalDateTime.now();
@@ -252,14 +258,14 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   @SuppressWarnings("PMD") // until method is implemented
   private void handleEmittedOrchestratorConnectorConfig(final AirbyteControlConnectorConfigMessage configMessage,
-      final ConnectorType connectorType) {
+                                                        final ConnectorType connectorType) {
     // Config updates are being persisted as part of the DefaultReplicationWorker.
     // In the future, we could add tracking of these kinds of messages here. Nothing to do for now.
   }
 
   /**
-   * When a connector emits a trace message, check the type and call the correct function. If it is an error trace message, add it to the list of
-   * errorTraceMessages for the connector type
+   * When a connector emits a trace message, check the type and call the correct function. If it is an
+   * error trace message, add it to the list of errorTraceMessages for the connector type
    */
   private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final ConnectorType connectorType) {
     switch (traceMessage.getType()) {
@@ -280,7 +286,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   /**
    * There are several assumptions here:
    * <p>
-   * - Assume the estimate is a whole number and not a sum i.e. each estimate replaces the previous estimate.
+   * - Assume the estimate is a whole number and not a sum i.e. each estimate replaces the previous
+   * estimate.
    * <p>
    * - Sources cannot emit both STREAM and SYNC estimates in a same sync. Error out if this happens.
    */
@@ -382,8 +389,9 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * Fetch committed stream index to record count from the {@link StateDeltaTracker}. Then, swap out stream indices for stream names. If the delta
-   * tracker has exceeded its capacity, return empty because committed record counts cannot be reliably computed.
+   * Fetch committed stream index to record count from the {@link StateDeltaTracker}. Then, swap out
+   * stream indices for stream names. If the delta tracker has exceeded its capacity, return empty
+   * because committed record counts cannot be reliably computed.
    */
   @Override
   public Optional<Map<AirbyteStreamNameNamespacePair, Long>> getStreamToCommittedRecords() {
@@ -486,8 +494,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * Compute sum of committed record counts across all streams. If the delta tracker has exceeded its capacity, return empty because committed record
-   * counts cannot be reliably computed.
+   * Compute sum of committed record counts across all streams. If the delta tracker has exceeded its
+   * capacity, return empty because committed record counts cannot be reliably computed.
    */
   @Override
   public Optional<Long> getTotalRecordsCommitted() {

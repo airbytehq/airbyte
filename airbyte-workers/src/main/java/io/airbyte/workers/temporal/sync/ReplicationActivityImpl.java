@@ -18,8 +18,6 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
-import io.airbyte.commons.features.FeatureFlagHelper;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
@@ -37,6 +35,13 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.featureflag.Destination;
+import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.FieldSelectionWorkspaces;
+import io.airbyte.featureflag.Multi;
+import io.airbyte.featureflag.Source;
+import io.airbyte.featureflag.StreamCapableState;
+import io.airbyte.featureflag.Workspace;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
@@ -74,6 +79,7 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -95,7 +101,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final String airbyteVersion;
-  private final FeatureFlags featureFlags;
+  private final FeatureFlagClient featureFlag;
   private final Integer serverPort;
   private final AirbyteConfigValidator airbyteConfigValidator;
   private final TemporalUtils temporalUtils;
@@ -104,14 +110,15 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
   private final WorkerConfigs workerConfigs;
 
-  public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
+  public ReplicationActivityImpl(
+                                 @Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
                                  @Named("replicationProcessFactory") final ProcessFactory processFactory,
                                  final SecretsHydrator secretsHydrator,
                                  @Named("workspaceRoot") final Path workspaceRoot,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
                                  @Value("${airbyte.version}") final String airbyteVersion,
-                                 final FeatureFlags featureFlags,
+                                 final FeatureFlagClient featureFlag,
                                  @Value("${micronaut.server.port}") final Integer serverPort,
                                  final AirbyteConfigValidator airbyteConfigValidator,
                                  final TemporalUtils temporalUtils,
@@ -126,7 +133,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.airbyteVersion = airbyteVersion;
-    this.featureFlags = featureFlags;
+    this.featureFlag = featureFlag;
     this.serverPort = serverPort;
     this.airbyteConfigValidator = airbyteConfigValidator;
     this.temporalUtils = temporalUtils;
@@ -278,7 +285,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           processFactory,
           syncInput.getSourceResourceRequirements(),
           sourceLauncherConfig.getIsCustomConnector(),
-          featureFlags);
+          featureFlag);
       final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
           destinationLauncherConfig.getJobId(),
           Math.toIntExact(destinationLauncherConfig.getAttemptId()),
@@ -286,15 +293,23 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           processFactory,
           syncInput.getDestinationResourceRequirements(),
           destinationLauncherConfig.getIsCustomConnector(),
-          featureFlags);
+          featureFlag);
 
       // reset jobs use an empty source to induce resetting all data in destination.
-      final AirbyteSource airbyteSource = isResetJob(sourceLauncherConfig.getDockerImage())
-          ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
-          : new DefaultAirbyteSource(sourceLauncher,
-              new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
-                  DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER),
-              featureFlags);
+      final AirbyteSource airbyteSource;
+      if (isResetJob(sourceLauncherConfig.getDockerImage())) {
+        final var contexts = new Multi(List.of(
+            new Workspace(syncInput.getWorkspaceId()),
+            new Source(syncInput.getSourceId()),
+            new Destination(syncInput.getDestinationId())));
+        airbyteSource = new EmptyAirbyteSource(featureFlag.enabled(StreamCapableState.INSTANCE, contexts));
+      } else {
+        airbyteSource = new DefaultAirbyteSource(sourceLauncher,
+            new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
+                DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER),
+            featureFlag);
+      }
+
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
@@ -308,11 +323,11 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
                   DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
-          new AirbyteMessageTracker(featureFlags),
+          new AirbyteMessageTracker(featureFlag),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
           metricReporter,
           new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()),
-          FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
+          featureFlag.enabled(FieldSelectionWorkspaces.INSTANCE, new Workspace(syncInput.getWorkspaceId())));
     };
   }
 
