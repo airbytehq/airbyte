@@ -22,9 +22,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
+import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
@@ -42,7 +42,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final String imageName;
   private final ProcessFactory processFactory;
   private final ResourceRequirements resourceRequirement;
-  private final FeatureFlags featureFlags;
+  private final FeatureFlagClient featureFlag;
 
   /**
    * If true, launcher will use a separated isolated pool to run the job.
@@ -52,18 +52,18 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final boolean useIsolatedPool;
 
   public AirbyteIntegrationLauncher(final String jobId,
-                                    final int attempt,
-                                    final String imageName,
-                                    final ProcessFactory processFactory,
-                                    final ResourceRequirements resourceRequirement,
-                                    final boolean useIsolatedPool,
-                                    final FeatureFlags featureFlags) {
+      final int attempt,
+      final String imageName,
+      final ProcessFactory processFactory,
+      final ResourceRequirements resourceRequirement,
+      final boolean useIsolatedPool,
+      final FeatureFlagClient featureFlag) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
-    this.featureFlags = featureFlags;
+    this.featureFlag = featureFlag;
     this.useIsolatedPool = useIsolatedPool;
   }
 
@@ -135,12 +135,12 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process read(final Path jobRoot,
-                      final String configFilename,
-                      final String configContents,
-                      final String catalogFilename,
-                      final String catalogContents,
-                      final String stateFilename,
-                      final String stateContents)
+      final String configFilename,
+      final String configContents,
+      final String catalogFilename,
+      final String catalogContents,
+      final String stateFilename,
+      final String stateContents)
       throws WorkerException {
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, imageName));
     final List<String> arguments = Lists.newArrayList(
@@ -180,10 +180,10 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process write(final Path jobRoot,
-                       final String configFilename,
-                       final String configContents,
-                       final String catalogFilename,
-                       final String catalogContents)
+      final String configFilename,
+      final String configContents,
+      final String catalogFilename,
+      final String catalogContents)
       throws WorkerException {
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, imageName));
     final Map<String, String> files = ImmutableMap.of(
@@ -214,10 +214,10 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
         WorkerEnvConstants.WORKER_JOB_ID, jobId,
         WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt),
-        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()),
-        EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()),
-        EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()),
-        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
+        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlag.useStreamCapableState()),
+        EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlag.autoDetectSchema()),
+        EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlag.applyFieldSelection()),
+        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlag.fieldSelectionWorkspaces());
   }
 
 }

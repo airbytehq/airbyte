@@ -9,7 +9,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -17,6 +16,9 @@ import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.LogConnectorMessages;
+import io.airbyte.featureflag.Source;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
@@ -56,27 +58,27 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
-  private final FeatureFlags featureFlags;
+  private final FeatureFlagClient featureFlag;
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), featureFlags);
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlagClient featureFlag) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), featureFlag);
   }
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                              final AirbyteStreamFactory streamFactory,
-                              final FeatureFlags featureFlags) {
-    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION), featureFlags);
+      final AirbyteStreamFactory streamFactory,
+      final FeatureFlagClient featureFlag) {
+    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION), featureFlag);
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory,
-                       final HeartbeatMonitor heartbeatMonitor,
-                       final FeatureFlags featureFlags) {
+      final AirbyteStreamFactory streamFactory,
+      final HeartbeatMonitor heartbeatMonitor,
+      final FeatureFlagClient featureFlag) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;
-    this.featureFlags = featureFlags;
+    this.featureFlag = featureFlag;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -171,7 +173,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   private void logInitialStateAsJSON(final WorkerSourceConfig sourceConfig) {
-    if (!featureFlags.logConnectorMessages()) {
+    if (!featureFlag.enabled(LogConnectorMessages.INSTANCE, new Source(sourceConfig.getSourceId()))) {
       return;
     }
 
