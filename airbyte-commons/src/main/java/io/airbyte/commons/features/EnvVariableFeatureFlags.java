@@ -39,7 +39,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean autoDetectSchema() {
-    return getEnvOrDefault(AUTO_DETECT_SCHEMA, true, Boolean::parseBoolean);
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false, Boolean::parseBoolean);
   }
 
   @Override
