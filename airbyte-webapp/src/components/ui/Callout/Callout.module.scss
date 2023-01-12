@@ -9,11 +9,15 @@
   align-items: center;
 }
 
-.default {
+.compact {
+  padding: vars.$spacing-md vars.$spacing-lg;
+}
+
+.yellow {
   background-color: colors.$yellow-100;
 }
 
-.error {
+.red {
   background-color: colors.$red-50;
 }
 
