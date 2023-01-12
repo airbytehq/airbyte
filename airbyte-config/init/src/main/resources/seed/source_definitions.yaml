@@ -2121,3 +2121,11 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/braze
   sourceType: api
   releaseStage: alpha
+- name: Databend
+  sourceDefinitionId: d2afb200-c46f-4087-a802-faac426b581c
+  dockerRepository: airbyte/source-databend
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/databend
+  sourceType: database
+  icon: databend.svg
+  releaseStage: alpha
