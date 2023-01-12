@@ -1,9 +1,7 @@
 .container {
-  margin-bottom: 29px;
   max-height: 600px;
-  overflow-y: auto;
+  overflow: unset;
+  min-width: fit-content;
 
   --webkit-overlay: true;
-
-  width: 100%;
 }

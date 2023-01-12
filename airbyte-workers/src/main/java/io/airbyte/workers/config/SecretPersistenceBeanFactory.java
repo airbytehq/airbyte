@@ -7,6 +7,7 @@ package io.airbyte.workers.config;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
+import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -68,6 +69,15 @@ public class SecretPersistenceBeanFactory {
   }
 
   @Singleton
+  @Requires(property = "airbyte.acceptance.test.enabled",
+            value = "true")
+  public SecretsHydrator noOpSecretsHydrator() {
+    return new NoOpSecretsHydrator();
+  }
+
+  @Singleton
+  @Requires(property = "airbyte.acceptance.test.enabled",
+            value = "false")
   public SecretsHydrator secretsHydrator(@Named("secretPersistence") final SecretPersistence secretPersistence) {
     return new RealSecretsHydrator(secretPersistence);
   }
