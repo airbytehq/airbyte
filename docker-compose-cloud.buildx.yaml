@@ -35,7 +35,7 @@ services:
           - airbyte/server:${ALT_TAG:-${VERSION}}
         platforms:
           - linux/amd64
-          - linux/arm64          
+          - linux/arm64
   worker:
     image: airbyte/worker:${VERSION}
     build:
