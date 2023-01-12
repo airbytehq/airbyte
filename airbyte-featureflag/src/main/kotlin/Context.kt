@@ -7,6 +7,14 @@ package io.airbyte.featureflag
 import java.util.*
 
 /**
+ * Anonymous UUID to be used with anonymous contexts.
+ *
+ * Annotated with @JvmField for java interop.
+ */
+@JvmField
+val ANONYMOUS = UUID(0, 0)
+
+/**
  * Context abstraction around LaunchDarkly v6 context idea
  *
  * I'm still playing around with this.  Basically the idea is to define our own custom context types

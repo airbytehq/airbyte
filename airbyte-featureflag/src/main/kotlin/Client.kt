@@ -176,7 +176,13 @@ private fun Path.onChange(block: () -> Unit) {
  */
 private fun Context.toLDUser(): LDUser = when (this) {
     is Multi -> throw IllegalArgumentException("LDv5 does not support multiple contexts")
-    else -> LDUser(key)
+    else -> {
+        val builder = LDUser.Builder(key)
+        if (this.key == ANONYMOUS.toString()) {
+            builder.anonymous(true)
+        }
+        builder.build()
+    }
 }
 
 /**
@@ -192,9 +198,14 @@ private fun Context.toLDContext(): LDContext {
     }
 
     val builder = LDContext.builder(ContextKind.of(kind), key)
+    if (key == ANONYMOUS.toString()) {
+        builder.anonymous(true)
+    }
+
     when (this) {
         is Workspace -> user?.let { builder.set("user", it) }
         else -> Unit
     }
+
     return builder.build()
 }

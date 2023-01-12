@@ -4,6 +4,7 @@
 
 import com.launchdarkly.sdk.LDUser
 import com.launchdarkly.sdk.server.LDClient
+import io.airbyte.featureflag.ANONYMOUS
 import io.airbyte.featureflag.ConfigFileClient
 import io.airbyte.featureflag.EnvVar
 import io.airbyte.featureflag.FeatureFlagClient
@@ -13,6 +14,7 @@ import io.airbyte.featureflag.Multi
 import io.airbyte.featureflag.Temporary
 import io.airbyte.featureflag.TestClient
 import io.airbyte.featureflag.User
+import io.airbyte.featureflag.Workspace
 import io.mockk.called
 import io.mockk.every
 import io.mockk.mockk
@@ -186,6 +188,23 @@ class LaunchDarklyClient {
 
         // EnvVar flags should not interact with the LDClient
         verify { ldClient wasNot called }
+    }
+
+    @Test
+    fun `verify ANONYMOUS context support`() {
+        val testFlag = Temporary(key = "test-true")
+        val ctxAnon = Workspace(ANONYMOUS)
+
+        val ldClient: LDClient = mockk()
+        val context = slot<LDUser>()
+        every {
+            ldClient.boolVariation(testFlag.key, capture(context), any())
+        } answers {
+            true
+        }
+
+        LaunchDarklyClient(ldClient).enabled(testFlag, ctxAnon)
+        assertTrue(context.captured.isAnonymous)
     }
 }
 
