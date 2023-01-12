@@ -64,6 +64,9 @@ airbyte:
   secret:
     persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
     store:
+      aws:
+        access-key: ${AWS_ACCESS_KEY:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
       gcp:
         credentials: ${SECRET_STORE_GCP_CREDENTIALS:}
         project-id: ${SECRET_STORE_GCP_PROJECT_ID:}
@@ -105,6 +108,7 @@ datasources:
     maximum-pool-size: 10
     minimum-idle: 0
     idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
     url: ${DATABASE_URL}
     driverClassName: org.postgresql.Driver
     username: ${DATABASE_USER}
