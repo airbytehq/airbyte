@@ -283,8 +283,7 @@ public class IntegrationRunner {
    *         provided message.
    */
   @VisibleForTesting
-  static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString)
-      throws Exception {
+  static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
 
     final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
     if (messageOptional.isPresent()) {
