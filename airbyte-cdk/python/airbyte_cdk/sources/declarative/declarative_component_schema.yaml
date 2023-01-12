@@ -23,8 +23,11 @@ properties:
     type: string
   schemas:
     "$ref": "#/definitions/Schemas"
+  definitions:
+    type: object
   spec:
     "$ref": "#/definitions/Spec"
+additionalProperties: false
 definitions:
   AddedFieldDefinition:
     description: Defines the field to add on a record
