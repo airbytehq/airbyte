@@ -1064,7 +1064,6 @@ definitions:
     required:
       - type
       - connection_specification
-      - documentation_url
     properties:
       type:
         type: string
