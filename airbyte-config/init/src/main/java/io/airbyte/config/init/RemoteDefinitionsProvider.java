@@ -10,8 +10,14 @@ import io.airbyte.config.CombinedConnectorCatalog;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.micronaut.context.annotation.Primary;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.annotation.Value;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -21,32 +27,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This provider pulls the definitions from a remotely hosted catalog.
  */
-final public class RemoteDefinitionsProvider implements DefinitionsProvider {
+@Singleton
+@Primary
+@Requires(property = "airbyte.platform.remote-connector-catalog.url",
+          notEquals = "")
+@Slf4j
+public final class RemoteDefinitionsProvider implements DefinitionsProvider {
 
   private Map<UUID, StandardSourceDefinition> sourceDefinitions;
   private Map<UUID, StandardDestinationDefinition> destinationDefinitions;
 
   private static final HttpClient httpClient = HttpClient.newHttpClient();
   private final URI remoteDefinitionCatalogUrl;
-  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
   private final Duration timeout;
 
-  public RemoteDefinitionsProvider(final URI remoteDefinitionCatalogUrl) throws InterruptedException, IOException {
-    this(remoteDefinitionCatalogUrl, DEFAULT_TIMEOUT);
+  public RemoteDefinitionsProvider(@Value("${airbyte.platform.remote-connector-catalog.url}") final String remoteCatalogUrl,
+                                   @Value("${airbyte.platform.remote-connector-catalog.timeout-ms}") final long remoteCatalogTimeoutMs)
+      throws URISyntaxException {
+    log.info("Creating remote definitions provider for URL '{}'...", remoteCatalogUrl);
+    this.remoteDefinitionCatalogUrl = new URI(remoteCatalogUrl);
+    this.timeout = Duration.ofMillis(remoteCatalogTimeoutMs);
   }
 
-  public RemoteDefinitionsProvider(final URI remoteDefinitionCatalogUrl, final Duration timeout) throws InterruptedException, IOException {
-    this.remoteDefinitionCatalogUrl = remoteDefinitionCatalogUrl;
-    this.timeout = timeout;
-    // TODO remove this call once dependency injection framework manages object creation
-    initialize();
-  }
-
-  // TODO will be called automatically by the dependency injection framework on object creation
+  @PostConstruct
   public void initialize() throws InterruptedException, IOException {
     final CombinedConnectorCatalog catalog = getRemoteDefinitionCatalog(this.remoteDefinitionCatalogUrl, this.timeout);
     this.sourceDefinitions = catalog.getSources().stream().collect(Collectors.toMap(
