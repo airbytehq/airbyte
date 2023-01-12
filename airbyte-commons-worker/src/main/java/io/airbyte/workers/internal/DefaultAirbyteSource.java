@@ -56,7 +56,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
-  private final FeatureFlags featureFlags;
   private final boolean featureFlagLogConnectorMsgs;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
@@ -77,7 +76,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;
-    this.featureFlags = featureFlags;
     this.featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
   }
 
