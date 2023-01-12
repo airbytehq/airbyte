@@ -19,8 +19,8 @@ class StagingConsumerFactoryTest {
             null,
             null,
             List.of(
-                new WriteConfig("source_schema1", "example_stream", "destination_default_schema", null, null, null),
-                new WriteConfig("source_schema2", "example_stream", "destination_default_schema", null, null, null)
+                new WriteConfig("example_stream", "source_schema1", "destination_default_schema", null, null, null),
+                new WriteConfig("example_stream", "source_schema2", "destination_default_schema", null, null, null)
             ),
             null
         ));
