@@ -17,6 +17,14 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
 
+# TEMP: patch SingleUseRefreshTokenOauth2Authenticator to mitigate expires_in bug
+# See https://github.com/airbytehq/airbyte/pull/20301
+class MySingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
+    def refresh_access_token(self):
+        access_token, expires_in, refresh_token = super().refresh_access_token()
+        return access_token, int(expires_in), refresh_token
+
+
 class ExactStream(HttpStream, IncrementalMixin):
     _cursor_value = None
     _single_refresh_token_authenticator = None
@@ -24,7 +32,7 @@ class ExactStream(HttpStream, IncrementalMixin):
     def __init__(self, config: Mapping[str, Any]):
         self._url_base = f"https://start.exactonline.nl/api/v1/{config['division']}/"
 
-        self._single_refresh_token_authenticator = SingleUseRefreshTokenOauth2Authenticator(
+        self._single_refresh_token_authenticator = MySingleUseRefreshTokenOauth2Authenticator(
             connector_config=config,
             token_refresh_endpoint="https://start.exactonline.nl/api/oauth2/token",
         )
