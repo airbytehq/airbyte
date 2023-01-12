@@ -17,6 +17,16 @@ export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) =
   );
 };
 export const InlineEnrollmentCallout: React.FC = () => {
+  const isFreeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
+
+  // todo: implement actual call once merged with issue #4006
+  // for now, we'll just default to true
+  const enrolledInFreeConnectorProgram = false;
+
+  if (!isFreeConnectorProgramEnabled || enrolledInFreeConnectorProgram) {
+    return null;
+  }
+
   return (
     <Callout variant="info" className={styles.container}>
       <Text size="sm">
