@@ -210,9 +210,11 @@ const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string
   const [field, meta, helpers] = useField<string | undefined>(streamFieldPath("schema"));
   const { streamRead: readStream } = useConnectorBuilderTestState();
 
+  const showImportButton = !field.value && readStream.data?.inferred_schema;
+
   return (
     <>
-      {!field.value && readStream.data?.inferred_schema && (
+      {showImportButton && (
         <Button
           full
           variant="secondary"
@@ -223,15 +225,21 @@ const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string
           <FormattedMessage id="connectorBuilder.useSchemaButton" />
         </Button>
       )}
-      <CodeEditor
-        value={field.value || ""}
-        language="json"
-        theme="airbyte-light"
-        onChange={(val: string | undefined) => {
-          helpers.setValue(val);
-        }}
-      />
-      <Text className={styles.errorMessage}>{meta.error && <FormattedMessage id={meta.error} />}</Text>
+      <div className={styles.editorContainer}>
+        <CodeEditor
+          value={field.value || ""}
+          language="json"
+          theme="airbyte-light"
+          onChange={(val: string | undefined) => {
+            helpers.setValue(val);
+          }}
+        />
+      </div>
+      {meta.error && (
+        <Text className={styles.errorMessage}>
+          <FormattedMessage id={meta.error} />
+        </Text>
+      )}
     </>
   );
 };
