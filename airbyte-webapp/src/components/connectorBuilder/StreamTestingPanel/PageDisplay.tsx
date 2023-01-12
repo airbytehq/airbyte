@@ -40,7 +40,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
   const formattedRecords = useMemo(() => formatJson(page.records), [page.records]);
   const formattedRequest = useMemo(() => formatJson(page.request), [page.request]);
   const formattedResponse = useMemo(() => formatJson(page.response), [page.response]);
-  const formattedSchema = useMemo(() => inferredSchema && formatJson(inferredSchema), [inferredSchema]);
+  const formattedSchema = useMemo(() => inferredSchema && formatJson(inferredSchema, true), [inferredSchema]);
 
   let defaultTabIndex = 0;
   const tabs: TabData[] = [
@@ -84,7 +84,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
             {inferredSchema && (
               <Tab className={styles.tab}>
                 {({ selected }) => (
-                  <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })}>
+                  <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} as="div">
                     <FlexContainer direction="row" justifyContent="center">
                       {formatMessage({ id: "connectorBuilder.schemaTab" })}
                       {editorView === "ui" && field.value !== formattedSchema && <SchemaConflictIndicator />}

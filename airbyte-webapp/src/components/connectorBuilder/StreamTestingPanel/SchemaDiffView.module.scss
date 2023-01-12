@@ -17,4 +17,8 @@
 .infoBox {
   align-items: flex-start;
   width: 100%;
+
+  svg {
+    color: colors.$yellow;
+  }
 }

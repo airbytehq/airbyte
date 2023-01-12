@@ -52,7 +52,7 @@ interface TestStateContext {
   setTestInputJson: (value: StreamReadRequestBodyConfig) => void;
   setTestStreamIndex: (streamIndex: number) => void;
   testStreamIndex: number;
-  readStream: UseQueryResult<StreamRead, unknown>;
+  streamRead: UseQueryResult<StreamRead, unknown>;
 }
 
 export const ConnectorBuilderFormStateContext = React.createContext<FormStateContext | null>(null);
@@ -185,7 +185,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     }
   }, [selectedView]);
 
-  const readStream = useReadStream({
+  const streamRead = useReadStream({
     manifest,
     stream: streams[testStreamIndex]?.name,
     config: testInputJson,
@@ -198,7 +198,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     setTestInputJson,
     testStreamIndex,
     setTestStreamIndex,
-    readStream,
+    streamRead,
   };
 
   return <ConnectorBuilderTestStateContext.Provider value={ctx}>{children}</ConnectorBuilderTestStateContext.Provider>;

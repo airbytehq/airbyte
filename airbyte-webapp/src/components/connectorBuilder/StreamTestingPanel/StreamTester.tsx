@@ -20,7 +20,7 @@ export const StreamTester: React.FC<{
   const {
     streams,
     testStreamIndex,
-    readStream: { data: streamReadData, refetch: readStream, isError, error, isFetching },
+    streamRead: { data: streamReadData, refetch: readStream, isError, error, isFetching },
   } = useConnectorBuilderTestState();
 
   const [logsFlex, setLogsFlex] = useState(0);

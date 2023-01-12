@@ -131,10 +131,10 @@ const StreamControls = ({
   const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { setSelectedView } = useConnectorBuilderFormState();
-  const { readStream } = useConnectorBuilderTestState();
+  const { streamRead: readStream } = useConnectorBuilderTestState();
   const [schema, meta] = useField<string | undefined>(streamFieldPath("schema"));
   const formattedDetectedSchema = useMemo(
-    () => readStream.data?.inferred_schema && formatJson(readStream.data?.inferred_schema),
+    () => readStream.data?.inferred_schema && formatJson(readStream.data?.inferred_schema, true),
     [readStream.data?.inferred_schema]
   );
   const hasSchemaErrors = Boolean(meta.error);
@@ -208,7 +208,7 @@ const StreamTab = ({
 
 const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string) => string }) => {
   const [field, meta, helpers] = useField<string | undefined>(streamFieldPath("schema"));
-  const { readStream } = useConnectorBuilderTestState();
+  const { streamRead: readStream } = useConnectorBuilderTestState();
 
   return (
     <>
@@ -217,7 +217,7 @@ const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string
           full
           variant="secondary"
           onClick={() => {
-            helpers.setValue(formatJson(readStream.data?.inferred_schema));
+            helpers.setValue(formatJson(readStream.data?.inferred_schema, true));
           }}
         >
           <FormattedMessage id="connectorBuilder.useSchemaButton" />

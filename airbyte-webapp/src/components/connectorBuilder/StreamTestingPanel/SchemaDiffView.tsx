@@ -45,7 +45,7 @@ function getDiff(existingSchema: string | undefined, detectedSchema: object): Di
   }
   try {
     const existingObject = existingSchema ? JSON.parse(existingSchema) : undefined;
-    const mergedSchemaPreferExisting = formatJson(merge({}, detectedSchema, existingObject));
+    const mergedSchemaPreferExisting = formatJson(merge({}, detectedSchema, existingObject), true);
     const changes = diffJson(existingObject, detectedSchema);
     // The override would be lossy if lines are removed in the diff
     const lossyOverride = changes.some((change) => change.removed);
@@ -63,7 +63,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
   const { testStreamIndex } = useConnectorBuilderTestState();
   const { editorView } = useConnectorBuilderFormState();
   const [field, , helpers] = useField(`streams[${testStreamIndex}].schema`);
-  const formattedSchema = useMemo(() => inferredSchema && formatJson(inferredSchema), [inferredSchema]);
+  const formattedSchema = useMemo(() => inferredSchema && formatJson(inferredSchema, true), [inferredSchema]);
 
   const [schemaDiff, setSchemaDiff] = useState<Diff>(() =>
     editorView === "ui" ? getDiff(field.value, inferredSchema) : { changes: [], lossyOverride: false }
@@ -123,7 +123,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
           </FlexItem>
         </InfoBox>
       )}
-      {!field.value && (
+      {editorView === "ui" && !field.value && (
         <Button
           full
           variant="secondary"
