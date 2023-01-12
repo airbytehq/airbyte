@@ -1,1 +1,1 @@
-export { Callout as InfoBox } from "./Callout";
+export { Callout } from "./Callout";

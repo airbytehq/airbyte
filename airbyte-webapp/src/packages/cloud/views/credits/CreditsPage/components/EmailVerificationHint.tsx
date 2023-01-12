@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { InfoBox } from "components/ui/Callout";
+import { Callout } from "components/ui/Callout";
 import { ToastType } from "components/ui/Toast";
 
 import { useNotificationService } from "hooks/services/Notification";
@@ -76,7 +76,7 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
   };
 
   return (
-    <InfoBox icon={faEnvelope} className={className}>
+    <Callout icon={faEnvelope} className={className}>
       <FormattedMessage id="credits.emailVerificationRequired" />{" "}
       {isEmailResend ? (
         <FormattedMessage id="credits.emailVerification.resendConfirmation" />
@@ -85,6 +85,6 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
           <FormattedMessage id="credits.emailVerification.resend" />
         </ResendEmailLink>
       )}
-    </InfoBox>
+    </Callout>
   );
 };

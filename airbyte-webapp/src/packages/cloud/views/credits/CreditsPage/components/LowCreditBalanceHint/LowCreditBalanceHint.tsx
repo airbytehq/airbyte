@@ -1,7 +1,7 @@
 import { faCreditCard, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 
-import { InfoBox } from "components/ui/Callout";
+import { Callout } from "components/ui/Callout";
 
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
@@ -29,11 +29,11 @@ export const LowCreditBalanceHint: React.FC<React.PropsWithChildren<unknown>> = 
     zeroBalance: faWarning,
   };
   return (
-    <InfoBox className={styles.container} icon={ICONS[status]} variant={variant}>
+    <Callout className={styles.container} icon={ICONS[status]} variant={variant}>
       <div className={styles.wrapper}>
         <FormattedMessage id={`credits.${status}`} />
         {children}
       </div>
-    </InfoBox>
+    </Callout>
   );
 };

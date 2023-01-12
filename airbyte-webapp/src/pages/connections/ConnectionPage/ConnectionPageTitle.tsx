@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { ConnectionInfoCard } from "components/connection/ConnectionInfoCard";
 import { ConnectionName } from "components/connection/ConnectionName";
-import { InfoBox } from "components/ui/Callout";
+import { Callout } from "components/ui/Callout";
 import { StepsMenu } from "components/ui/StepsMenu";
 import { Text } from "components/ui/Text";
 
@@ -61,9 +61,9 @@ export const ConnectionPageTitle: React.FC = () => {
   return (
     <div className={styles.container}>
       {connection.status === ConnectionStatus.deprecated && (
-        <InfoBox className={styles.connectionDeleted} icon={faTrash}>
+        <Callout className={styles.connectionDeleted} icon={faTrash}>
           <FormattedMessage id="connection.connectionDeletedView" />
-        </InfoBox>
+        </Callout>
       )}
       <Text as="div" centered bold className={styles.connectionTitle}>
         <FormattedMessage id="connection.title" />
