@@ -1,0 +1,20 @@
+@use "scss/colors";
+
+.lightContentCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  padding: 20px 21px 19px;
+  margin-bottom: 12px;
+}
+
+.arrow {
+  font-size: 29px;
+  line-height: 29px;
+  color: colors.$blue-500;
+}
+
+.extraBlock {
+  background: none;
+}
