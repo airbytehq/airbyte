@@ -15,6 +15,7 @@ import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import {
   ConnectionScheduleData,
   ConnectionScheduleType,
+  DestinationDefinitionRead,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
   Geography,
@@ -27,7 +28,9 @@ import {
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { ConnectionFormMode, ConnectionOrPartialConnection } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { validateCronExpression, validateCronFrequencyOneHourOrMore } from "utils/cron";
@@ -80,19 +83,12 @@ export function useDefaultTransformation(): OperationCreate {
   };
 }
 
-interface CreateConnectionValidationSchemaArgs {
-  allowSubOneHourCronExpressions: boolean;
-  mode: ConnectionFormMode;
-  allowAutoDetectSchema: boolean;
-}
-
-export const createConnectionValidationSchema = ({
-  mode,
-  allowSubOneHourCronExpressions,
-  allowAutoDetectSchema,
-}: CreateConnectionValidationSchemaArgs) => {
-  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
-
+const createConnectionValidationSchema = (
+  mode: ConnectionFormMode,
+  allowSubOneHourCronExpressions: boolean,
+  allowAutoDetectSchema: boolean,
+  isNewTableDesignEnabled: boolean
+) => {
   return yup
     .object({
       // The connection name during Editing is handled separately from the form
@@ -148,7 +144,7 @@ export const createConnectionValidationSchema = ({
         then: yup.string().trim().required("form.empty.error"),
       }),
       prefix: yup.string(),
-      syncCatalog: isNewStreamsTableEnabled
+      syncCatalog: isNewTableDesignEnabled
         ? yup.object({
             streams: yup.array().of(
               yup.object({
@@ -248,6 +244,29 @@ export const createConnectionValidationSchema = ({
     .noUnknown();
 };
 
+interface CreateConnectionValidationSchemaArgs {
+  mode: ConnectionFormMode;
+}
+
+export const useConnectionValidationSchema = ({ mode }: CreateConnectionValidationSchemaArgs) => {
+  const allowSubOneHourCronExpressions = useFeature(FeatureItem.AllowSyncSubOneHourCronExpressions);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
+
+  return useMemo(
+    () =>
+      createConnectionValidationSchema(
+        mode,
+        allowSubOneHourCronExpressions,
+        allowAutoDetectSchema,
+        isNewTableDesignEnabled
+      ),
+    [allowAutoDetectSchema, allowSubOneHourCronExpressions, isNewTableDesignEnabled, mode]
+  );
+};
+
+export type ConnectionValidationSchema = ReturnType<typeof useConnectionValidationSchema>;
+
 /**
  * Returns {@link Operation}[]
  *
@@ -316,7 +335,8 @@ export const getInitialNormalization = (
 
 export const useInitialValues = (
   connection: ConnectionOrPartialConnection,
-  destDefinition: DestinationDefinitionSpecificationRead,
+  destDefinition: DestinationDefinitionRead,
+  destDefinitionSpecification: DestinationDefinitionSpecificationRead,
   isNotCreateMode?: boolean
 ): FormikConnectionFormValues => {
   const workspace = useCurrentWorkspace();
@@ -344,7 +364,7 @@ export const useInitialValues = (
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
-        destDefinition?.supportedDestinationSyncModes || [],
+        destDefinitionSpecification?.supportedDestinationSyncModes || [],
         streamTransformsWithBreakingChange,
         isNotCreateMode,
         newStreamDescriptors
@@ -352,7 +372,7 @@ export const useInitialValues = (
     [
       streamTransformsWithBreakingChange,
       connection.syncCatalog,
-      destDefinition?.supportedDestinationSyncModes,
+      destDefinitionSpecification?.supportedDestinationSyncModes,
       isNotCreateMode,
       newStreamDescriptors,
     ]
@@ -381,7 +401,7 @@ export const useInitialValues = (
       initialValues.transformations = getInitialTransformations(operations);
     }
 
-    if (destDefinition.supportsNormalization) {
+    if (destDefinition.normalizationConfig.supported) {
       initialValues.normalization = getInitialNormalization(operations, isNotCreateMode);
     }
 
@@ -400,7 +420,7 @@ export const useInitialValues = (
     connection.scheduleType,
     connection.source.name,
     destDefinition.supportsDbt,
-    destDefinition.supportsNormalization,
+    destDefinition.normalizationConfig,
     initialSchema,
     isNotCreateMode,
     workspace,

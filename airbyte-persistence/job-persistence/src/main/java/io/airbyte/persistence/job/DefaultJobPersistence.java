@@ -515,6 +515,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public Map<JobAttemptPair, AttemptStats> getAttemptStats(final List<Long> jobIds) throws IOException {
+    if (jobIds == null || jobIds.isEmpty()) {
+      return Map.of();
+    }
+
     final var jobIdsStr = StringUtils.join(jobIds, ',');
     return jobDatabase.query(ctx -> {
       // Instead of one massive join query, separate this query into two queries for better readability
@@ -596,6 +600,10 @@ public class DefaultJobPersistence implements JobPersistence {
     final Optional<Record> record =
         ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
             attemptNumber).stream().findFirst();
+    if (record.isEmpty()) {
+      return -1L;
+    }
+
     return record.get().get("id", Long.class);
   }
 
