@@ -71,12 +71,17 @@ To set up Google Ads as a source in Airbyte Open Source:
 
 ## Supported sync modes
 
-The Google Ads source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+
+**Important note**:
+
+    Usage of Conversion Window may lead to duplicates in incremental sync, 
+    because connector is forced to read data in the given range (Last Sync - Conversion window)
 
 ## Supported Streams
 
