@@ -429,6 +429,14 @@
   icon: dockerhub.svg
   sourceType: api
   releaseStage: alpha
+- name: Dremio
+  sourceDefinitionId: d99e9ace-8621-46c2-9144-76ae4751d64b
+  dockerRepository: airbyte/source-dremio
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dremio
+  icon: dremio.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Drift
   sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   dockerRepository: airbyte/source-drift
