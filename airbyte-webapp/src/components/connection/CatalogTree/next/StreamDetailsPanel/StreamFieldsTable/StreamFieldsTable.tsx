@@ -61,9 +61,9 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
 }) => {
   const { formatMessage } = useIntl();
   const isColumnSelectionEnabled = useExperiment("connection.columnSelection", false);
-  const isCursor = useMemo(() => (path: string[]) => equal(config?.cursorField, path), [config?.cursorField]);
-  const isPrimaryKey = useMemo(
-    () => (path: string[]) => !!config?.primaryKey?.some((p) => equal(p, path)),
+  const isCursor = useCallback((path: string[]) => equal(config?.cursorField, path), [config?.cursorField]);
+  const isPrimaryKey = useCallback(
+    (path: string[]) => !!config?.primaryKey?.some((p) => equal(p, path)),
     [config?.primaryKey]
   );
   const checkIsFieldSelected = useCallback(
@@ -126,8 +126,8 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
                   handleFieldToggle={handleFieldToggle}
                   checkIsCursor={isCursor}
                   checkIsPrimaryKey={isPrimaryKey}
-                  shouldDefineCursor={shouldDefineCursor}
-                  shouldDefinePrimaryKey={shouldDefinePk}
+                  syncMode={config?.syncMode}
+                  destinationSyncMode={config?.destinationSyncMode}
                 />
               ),
               meta: {
@@ -204,9 +204,9 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       isPKDefinitionSupported,
       onCursorSelect,
       onPkSelect,
-      shouldDefineCursor,
-      shouldDefinePk,
       toggleAllFieldsSelected,
+      config?.syncMode,
+      config?.destinationSyncMode,
     ]
   );
 

@@ -5,6 +5,7 @@ import { CheckBox } from "components/ui/CheckBox";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
+import { SyncMode, DestinationSyncMode } from "core/request/AirbyteClient";
 
 interface SyncFieldCellProps {
   field: SyncSchemaField;
@@ -12,8 +13,8 @@ interface SyncFieldCellProps {
   checkIsPrimaryKey: (path: string[]) => boolean;
   isFieldSelected: boolean;
   handleFieldToggle: (fieldPath: string[], isSelected: boolean) => void;
-  shouldDefineCursor: boolean;
-  shouldDefinePrimaryKey: boolean;
+  syncMode?: SyncMode;
+  destinationSyncMode?: DestinationSyncMode;
 }
 
 export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
@@ -22,13 +23,16 @@ export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
   isFieldSelected,
   field,
   handleFieldToggle,
-  shouldDefineCursor,
-  shouldDefinePrimaryKey,
+  syncMode,
+  destinationSyncMode,
 }) => {
   const isNestedField = SyncSchemaFieldObject.isNestedField(field);
   const isCursor = checkIsCursor(field.path);
   const isPrimaryKey = checkIsPrimaryKey(field.path);
-  const isDisabled = (shouldDefineCursor && isCursor) || (shouldDefinePrimaryKey && isPrimaryKey) || isNestedField;
+  const isDisabled =
+    (syncMode === SyncMode.incremental && isCursor) ||
+    (destinationSyncMode === DestinationSyncMode.append_dedup && isPrimaryKey) ||
+    isNestedField;
 
   const renderDisabledReasonMessage = useCallback(() => {
     if (isNestedField) {

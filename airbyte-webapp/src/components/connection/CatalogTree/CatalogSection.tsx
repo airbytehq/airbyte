@@ -26,6 +26,7 @@ import {
   toggleFieldInPrimaryKey,
   updateCursorField,
   updateFieldSelected,
+  toggleAllFieldsSelected,
 } from "./streamConfigHelpers/streamConfigHelpers";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
@@ -118,26 +119,13 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     [config, updateStreamWithConfig, numberOfFieldsInStream]
   );
 
-  const toggleAllFieldsSelected = () => {
-    const wasFieldSelectionEnabled = config?.fieldSelectionEnabled;
-    const fieldSelectionEnabled = !wasFieldSelectionEnabled;
-    const selectedFields: string[][] = [];
-
-    // When deselecting all fields, we need to be careful not to deselect any primary keys or the cursor field
-    if (!wasFieldSelectionEnabled) {
-      if (config?.primaryKey) {
-        selectedFields.push(...config.primaryKey);
-      }
-      if (config?.cursorField) {
-        selectedFields.push(config.cursorField);
-      }
+  const onToggleAllFieldsSelected = useCallback(() => {
+    if (!config) {
+      return;
     }
-
-    updateStreamWithConfig({
-      fieldSelectionEnabled,
-      selectedFields: selectedFields.map((fieldPath) => ({ fieldPath })),
-    });
-  };
+    const updatedConfig = toggleAllFieldsSelected(config);
+    updateStreamWithConfig(updatedConfig);
+  }, [config, updateStreamWithConfig]);
 
   const onToggleFieldSelected = useCallback(
     (fieldPath: string[], isSelected: boolean) => {
@@ -231,7 +219,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             isCursorDefinitionSupported={cursorRequired}
             isPKDefinitionSupported={pkRequired}
             stream={stream}
-            toggleAllFieldsSelected={toggleAllFieldsSelected}
+            toggleAllFieldsSelected={onToggleAllFieldsSelected}
           />
         ) : (
           <div className={styles.streamFieldTableContainer}>
