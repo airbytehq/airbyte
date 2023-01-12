@@ -1,17 +1,17 @@
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { InfoBox } from "./InfoBox";
+import { Callout } from "./Callout";
 
 export default {
-  title: "UI/InfoBox",
-  component: InfoBox,
+  title: "UI/Callout",
+  component: Callout,
   argTypes: {
     children: { type: "string", required: true },
   },
-} as ComponentMeta<typeof InfoBox>;
+} as ComponentMeta<typeof Callout>;
 
-const Template: ComponentStory<typeof InfoBox> = (args) => <InfoBox {...args} />;
+const Template: ComponentStory<typeof Callout> = (args) => <Callout {...args} />;
 export const Primary = Template.bind({});
 Primary.args = {
   icon: faEnvelope,

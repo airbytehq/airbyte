@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
-import { InfoBox } from "components/ui/InfoBox";
+import { InfoBox } from "components/ui/Callout";
 
 import { FormBuildError, isFormBuildError } from "core/form/FormBuildError";
 import { EditorView } from "services/connectorBuilder/ConnectorBuilderStateService";

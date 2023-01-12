@@ -6,7 +6,7 @@ import { useEffectOnce } from "react-use";
 import * as yup from "yup";
 
 import { Button } from "components/ui/Button";
-import { InfoBox } from "components/ui/InfoBox";
+import { InfoBox } from "components/ui/Callout";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { FormikPatch } from "core/form/FormikPatch";

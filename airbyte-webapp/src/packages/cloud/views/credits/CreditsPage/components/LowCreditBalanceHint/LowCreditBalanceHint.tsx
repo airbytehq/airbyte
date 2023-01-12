@@ -1,7 +1,7 @@
 import { faCreditCard, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 
-import { InfoBox } from "components/ui/InfoBox";
+import { InfoBox } from "components/ui/Callout";
 
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";

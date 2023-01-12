@@ -1,0 +1,19 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  border-radius: 8px;
+  padding: 18px 25px 22px;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.default {
+  background-color: colors.$yellow-100;
+}
+
+.error {
+  background-color: colors.$red-50;
+}

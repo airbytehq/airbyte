@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { ConnectionInfoCard } from "components/connection/ConnectionInfoCard";
 import { ConnectionName } from "components/connection/ConnectionName";
-import { InfoBox } from "components/ui/InfoBox";
+import { InfoBox } from "components/ui/Callout";
 import { StepsMenu } from "components/ui/StepsMenu";
 import { Text } from "components/ui/Text";
 

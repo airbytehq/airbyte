@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
 import { Button } from "components/ui/Button";
-import { InfoBox } from "components/ui/InfoBox";
+import { InfoBox } from "components/ui/Callout";
 import { Modal, ModalBody } from "components/ui/Modal";
 import { NumberBadge } from "components/ui/NumberBadge";
 import { Tooltip } from "components/ui/Tooltip";
