@@ -7,6 +7,7 @@ package io.airbyte.server.config;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.split_secrets.AWSSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
@@ -92,6 +93,24 @@ public class SecretPersistenceBeanFactory {
                                                            @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
                                                            @Value("${airbyte.secret.store.vault.token}") final String token) {
     return new VaultSecretPersistence(address, prefix, token);
+  }
+
+  @Singleton
+  @Requires(property = "airbyte.secret.persistence",
+            pattern = "(?i)^aws_secret_manager$")
+  @Named("secretPersistence")
+  public SecretPersistence awsSecretPersistence(@Value("${airbyte.secret.store.aws.access-key}") final String awsAccessKey,
+                                                @Value("${airbyte.secret.store.aws.secret-key}") final String awsSecretKey) {
+    return new AWSSecretManagerPersistence(awsAccessKey, awsSecretKey);
+  }
+
+  @Singleton
+  @Requires(property = "airbyte.secret.persistence",
+            pattern = "(?i)^aws_secret_manager$")
+  @Named("ephemeralSecretPersistence")
+  public SecretPersistence ephemeralAwsSecretPersistence(@Value("${airbyte.secret.store.aws.access-key}") final String awsAccessKey,
+                                                         @Value("${airbyte.secret.store.aws.secret-key}") final String awsSecretKey) {
+    return new AWSSecretManagerPersistence(awsAccessKey, awsSecretKey);
   }
 
   @Singleton
