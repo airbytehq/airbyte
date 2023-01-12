@@ -29,8 +29,6 @@ acceptance_tests:
             bypass_reason: "Only events created within the past 90 days can be showed"
           - name: organizations
             bypass_reason: "The objects can mutate quite often"
-          - name: project_cards
-            bypass_reason: "some reason"
           - name: project_columns
             bypass_reason: "some reason"
           - name: pull_request_comment_reactions
@@ -40,8 +38,6 @@ acceptance_tests:
           - name: pull_request_stats
             bypass_reason: "some reason"
           - name: pull_requests
-            bypass_reason: "some reason"
-          - name: review_comments
             bypass_reason: "some reason"
           - name: stargazers
             bypass_reason: "some reason"
