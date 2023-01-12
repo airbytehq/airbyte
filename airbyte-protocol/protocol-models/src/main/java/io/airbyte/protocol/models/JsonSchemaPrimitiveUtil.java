@@ -26,6 +26,7 @@ public class JsonSchemaPrimitiveUtil {
     // V0 schema primitives
     STRING,
     NUMBER,
+    INTEGER,
     OBJECT,
     ARRAY,
     BOOLEAN,
@@ -47,6 +48,7 @@ public class JsonSchemaPrimitiveUtil {
       ImmutableSet.of(
           JsonSchemaPrimitive.STRING,
           JsonSchemaPrimitive.NUMBER,
+          JsonSchemaPrimitive.INTEGER,
           JsonSchemaPrimitive.OBJECT,
           JsonSchemaPrimitive.ARRAY,
           JsonSchemaPrimitive.BOOLEAN,

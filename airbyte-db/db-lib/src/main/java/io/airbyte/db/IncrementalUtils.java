@@ -82,7 +82,7 @@ public class IncrementalUtils {
       case STRING, STRING_V1, DATE_V1, TIME_WITH_TIMEZONE_V1, TIME_WITHOUT_TIMEZONE_V1, TIMESTAMP_WITH_TIMEZONE_V1, TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
         return original.compareTo(candidate);
       }
-      case NUMBER, NUMBER_V1, INTEGER_V1 -> {
+      case NUMBER, NUMBER_V1, INTEGER, INTEGER_V1 -> {
         // todo (cgardens) - handle big decimal. this is currently an overflow risk.
         return Double.compare(Double.parseDouble(original), Double.parseDouble(candidate));
       }
