@@ -1,0 +1,4 @@
+{
+  "authPage.signup.hideName": false,
+  "connector.orderOverwrite": { "connectorId": 5 }
+}
