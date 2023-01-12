@@ -1183,7 +1183,7 @@
   sourceDefinitionId: 77d5ca6b-d345-4dce-ba1e-1935a75778b8
   dockerRepository: airbyte/source-open-exchange-rates
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/sources/openexchangerates
+  documentationUrl: https://docs.airbyte.com/integrations/sources/open-exchange-rates
   sourceType: api
   releaseStage: alpha
 - name: OpenWeather
