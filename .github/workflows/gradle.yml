@@ -623,7 +623,7 @@ jobs:
           attempt_delay: 5000 # in ms
 
       - name: Add coverage to PR
-        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        if: github.event_name == 'pull_request'
         id: jacoco
         uses: madrapps/jacoco-report@v1.3
         with:
