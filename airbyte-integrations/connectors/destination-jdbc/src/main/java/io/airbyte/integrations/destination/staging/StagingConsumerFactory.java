@@ -189,7 +189,7 @@ public class StagingConsumerFactory {
     if (!conflictingStreams.isEmpty()) {
       final String message = String.format(
           "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using ${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-          conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getNamespace()).collect(joining(", "))
+          conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", "))
       );
       throw new ConfigErrorException(message);
     }
