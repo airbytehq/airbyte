@@ -5,6 +5,8 @@
 package io.airbyte.metrics.lib;
 
 import com.google.api.client.util.Preconditions;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Enum source of truth of all Airbyte metrics. Each enum value represent a metric and is linked to
@@ -137,21 +139,53 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "number of records synced during replication"),
   RESET_REQUEST(MetricEmittingApps.WORKER,
       "reset_request",
-      "number of requested resets");
+      "number of requested resets"),
+
+  ATTEMPT_CREATED(
+      MetricEmittingApps.WORKER,
+      "attempt_created",
+      "increments when a new attempt is created. one is emitted per attempt",
+      MetricTags.DATA_PLANE_ID,
+      MetricTags.MIN_CONNECTOR_RELEASE_STATE, // max
+      MetricTags.MAX_CONNECTOR_RELEASE_STATE // min
+  ),
+  // ATTEMPT_PENDING (doesn't actually mean anything)
+  ATTEMPTS_RUNNING(
+      MetricEmittingApps.METRICS_REPORTER,
+      "attempts_running",
+      "number attempts in status running at a moment in time.",
+      MetricTags.DATA_PLANE_ID, // really should be data-plane id
+      MetricTags.MIN_CONNECTOR_RELEASE_STATE, // max
+      MetricTags.MAX_CONNECTOR_RELEASE_STATE // min
+  ),
+  ATTEMPT_COMPLETED(
+      MetricEmittingApps.WORKER,
+      "attempt_completed",
+      "increments when a new attempt is completed. one is emitted per attempt",
+      MetricTags.DATA_PLANE_ID,
+      MetricTags.MIN_CONNECTOR_RELEASE_STATE, // max
+      MetricTags.MAX_CONNECTOR_RELEASE_STATE, // min
+      MetricTags.ATTEMPT_OUTCOME,
+      MetricTags.FAILURE_ORIGIN,
+      MetricTags.FAILURE_TYPE);
 
   private final MetricEmittingApp application;
   private final String metricName;
   private final String metricDescription;
 
+  private final List<String> metricTags;
+
   OssMetricsRegistry(final MetricEmittingApp application,
                      final String metricName,
-                     final String metricDescription) {
+                     final String metricDescription,
+                     final String... metricTags) {
     Preconditions.checkNotNull(metricDescription);
     Preconditions.checkNotNull(application);
 
     this.application = application;
     this.metricName = metricName;
     this.metricDescription = metricDescription;
+    this.metricTags = Arrays.asList(metricTags);
   }
 
   @Override
