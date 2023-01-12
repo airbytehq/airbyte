@@ -37,7 +37,7 @@ Deploy Airbyte Open Source in a private network or use a firewall to filter whic
 You can secure access to Airbyte using the following methods:
 
 - Deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
-- Deploy Airbyte behind a reverse proxy and handle the access control and ssl encryption on the reverse proxy side.
+- Deploy Airbyte behind a reverse proxy and handle the access control and SSL encryption on the reverse proxy side.
   ```
   # Example nginx reverse proxy config
   server {
