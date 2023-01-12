@@ -12,8 +12,9 @@ import java.util.UUID;
 import org.joda.time.DateTime;
 
 /**
- * Staging operations focuses on the SQL queries that are needed to success move data into a staging environment like GCS or S3. In general, the
- * reference of staging is the usage of an object storage for the purposes of efficiently uploading bulk data to destinations
+ * Staging operations focuses on the SQL queries that are needed to success move data into a staging
+ * environment like GCS or S3. In general, the reference of staging is the usage of an object
+ * storage for the purposes of efficiently uploading bulk data to destinations
  */
 public interface StagingOperations extends SqlOperations {
 

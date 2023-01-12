@@ -38,7 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Uses both Factory and Consumer design pattern to create a single point of creation for consuming {@link AirbyteMessage} for processing
+ * Uses both Factory and Consumer design pattern to create a single point of creation for consuming
+ * {@link AirbyteMessage} for processing
  */
 public class StagingConsumerFactory {
 
@@ -77,12 +78,15 @@ public class StagingConsumerFactory {
   }
 
   /**
-   * Creates a list of all {@link WriteConfig} for each stream within a {@link ConfiguredAirbyteCatalog}. Each write config represents the configuration
-   * settings for writing to a destination connector
+   * Creates a list of all {@link WriteConfig} for each stream within a
+   * {@link ConfiguredAirbyteCatalog}. Each write config represents the configuration settings for
+   * writing to a destination connector
    *
-   * @param namingResolver {@link NamingConventionTransformer} used to transform names that are acceptable by each destination connector
+   * @param namingResolver {@link NamingConventionTransformer} used to transform names that are
+   *        acceptable by each destination connector
    * @param config destination connector configuration parameters
-   * @param catalog {@link ConfiguredAirbyteCatalog} collection of configured {@link ConfiguredAirbyteStream}
+   * @param catalog {@link ConfiguredAirbyteCatalog} collection of configured
+   *        {@link ConfiguredAirbyteStream}
    * @return list of all write configs for each stream in a {@link ConfiguredAirbyteCatalog}
    */
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
@@ -200,7 +204,8 @@ public class StagingConsumerFactory {
    *
    * @param database database used for syncing
    * @param stagingOperations SQL queries used to write and delete data from the staging folder
-   * @param writeConfigs list of all write configs for each stream in a {@link ConfiguredAirbyteCatalog}
+   * @param writeConfigs list of all write configs for each stream in a
+   *        {@link ConfiguredAirbyteCatalog}
    * @param purgeStagingData purges staging data if true otherwise data retained
    * @return
    */
@@ -224,7 +229,8 @@ public class StagingConsumerFactory {
               streamName, schemaName, srcTableName, dstTableName, stagingPath, writeConfig.getStagedFiles().size(),
               String.join(",", writeConfig.getStagedFiles()));
 
-          // Copies all the data stored in the staging files into a temporary table and creates final table if nonexistent
+          // Copies all the data stored in the staging files into a temporary table and creates final table if
+          // nonexistent
           try {
             stagingOperations.copyIntoTmpTableFromStage(database, stageName, stagingPath, writeConfig.getStagedFiles(), srcTableName, schemaName);
           } catch (final Exception e) {
@@ -247,7 +253,8 @@ public class StagingConsumerFactory {
         stagingOperations.executeTransaction(database, queryList);
         LOGGER.info("Finalizing tables in destination completed.");
       }
-      // After moving data from staging area to the finalized table (airybte_raw) clean up temporary tables and the staging area (if user configured)
+      // After moving data from staging area to the finalized table (airybte_raw) clean up temporary
+      // tables and the staging area (if user configured)
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
