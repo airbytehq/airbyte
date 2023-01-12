@@ -23,7 +23,7 @@ export const LowCreditBalanceHint: React.FC<React.PropsWithChildren<unknown>> = 
   }
 
   const status = cloudWorkspace.remainingCredits <= 0 ? "zeroBalance" : "lowBalance";
-  const variant = status === "zeroBalance" ? "error" : "default";
+  const variant = status === "zeroBalance" ? "red" : "yellow";
 
   const Icons = {
     lowBalance: faCreditCard,
