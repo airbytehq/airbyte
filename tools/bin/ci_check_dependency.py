@@ -3,6 +3,7 @@ import os
 import os.path
 import yaml
 import re
+import json
 from typing import Any, Dict, Text, List
 
 CONNECTORS_PATH = "./airbyte-integrations/connectors/"
@@ -166,8 +167,8 @@ def as_bulleted_markdown_list(items):
     return text
 
 
-def as_markdown_table_rows(connectors: List[str], definitions) -> str:
-    text = ""
+def as_json(connectors: List[str], definitions) -> json:
+    result: json = {}
     for connector in connectors:
         version = get_connector_version(connector)
         version_status = get_connector_version_status(connector, version)
@@ -183,33 +184,35 @@ def as_markdown_table_rows(connectors: List[str], definitions) -> str:
             publish_status = "✅"
         else:
             publish_status = "❌<br/>(diff seed version)"
-        text += f"| `{connector}` | {version_status} | {changelog_status} | {publish_status} |\n"
-    return text
+        result[connector] = {
+            "version": version,
+            "version_status": version_status,
+            "changelog_status": changelog_status,
+            "publish_status": publish_status,
+            "has_error": "❌" in version_status or "❌" in changelog_status or "❌" in publish_status,
+            "has_warning": "⚠" in version_status or "⚠" in changelog_status or "⚠" in publish_status,
+        }
+    return result
 
 
-def get_status_summary(rows: str) -> str:
-    if "❌" in rows:
-        return "❌"
-    elif "⚠" in rows:
-        return "⚠"
-    else:
-        return "✅"
+def get_status_summary(connectors: json) -> str:
+    for connector, value in connectors.items():
+        if value["has_error"]:
+            return "❌"
+        elif value["has_warning"]:
+            return "⚠"
+        else:
+            return "✅"
 
 
 def write_report(depended_connectors):
     affected_sources = []
     affected_destinations = []
-    affected_others = []
     for depended_connector in depended_connectors:
         if depended_connector.startswith("source"):
             affected_sources.append(depended_connector)
         elif depended_connector.startswith("destination"):
             affected_destinations.append(depended_connector)
-        else:
-            affected_others.append(depended_connector)
-
-    with open(COMMENT_TEMPLATE_PATH, "r") as f:
-        template = f.read()
 
     with open(SOURCE_DEFINITIONS_PATH, 'r') as stream:
         source_definitions = yaml.safe_load(stream)
@@ -218,31 +221,26 @@ def write_report(depended_connectors):
 
     affected_sources.sort()
     affected_destinations.sort()
-    affected_others.sort()
 
-    source_rows = as_markdown_table_rows(affected_sources, source_definitions)
-    destination_rows = as_markdown_table_rows(affected_destinations, destination_definitions)
+    source_connectors_json = as_json(affected_sources, source_definitions)
+    destination_connectors_json = as_json(affected_destinations, destination_definitions)
 
-    other_status_summary = "✅" if len(affected_others) == 0 else "👀"
-    source_status_summary = get_status_summary(source_rows)
-    destination_status_summary = get_status_summary(destination_rows)
+    source_status_summary = get_status_summary(source_connectors_json)
+    destination_status_summary = get_status_summary(destination_connectors_json)
 
-    comment = template.format(
-        source_open="open" if source_status_summary == "❌" else "closed",
-        destination_open="open" if destination_status_summary == "❌" else "closed",
-        source_status_summary=source_status_summary,
-        destination_status_summary=destination_status_summary,
-        other_status_summary=other_status_summary,
-        source_rows=source_rows,
-        destination_rows=destination_rows,
-        others_rows=as_bulleted_markdown_list(affected_others),
-        num_sources=len(affected_sources),
-        num_destinations=len(affected_destinations),
-        num_others=len(affected_others),
-    )
+    result_json = {
+        "source_open": source_status_summary == "❌",
+        "destination_open": destination_status_summary == "❌",
+        "sources": source_connectors_json,
+        "destinations": destination_connectors_json,
+        "source_status_summary": source_status_summary,
+        "destination_status_summary": destination_status_summary,
+        "num_sources": len(affected_sources),
+        "num_destinations": len(affected_destinations),
+    }
 
-    with open("comment_body.md", "w") as f:
-        f.write(comment)
+    with open("connector_report.json", "w") as f:
+        f.write(json.dumps(result_json, indent=2))
 
 
 if __name__ == "__main__":
