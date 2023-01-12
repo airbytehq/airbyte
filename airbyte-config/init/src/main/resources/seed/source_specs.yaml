@@ -13667,7 +13667,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.27"
+- dockerImage: "airbyte/source-snowflake:0.1.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -13679,7 +13679,6 @@
       - "role"
       - "warehouse"
       - "database"
-      - "schema"
       properties:
         credentials:
           title: "Authorization Method"
@@ -13778,7 +13777,8 @@
           title: "Database"
           order: 4
         schema:
-          description: "The source Snowflake schema tables."
+          description: "The source Snowflake schema tables. Leave empty to access\
+            \ tables from multiple schemas."
           examples:
           - "AIRBYTE_SCHEMA"
           type: "string"
