@@ -50,7 +50,7 @@ spec:
     properties:
       api_key:
         type: string
-        description: "API Key to use to connector to the Dremio API"
+        description: "API Key that is generated when you authenticate to Dremio API"
         airbyte_secret: true
       base_url:
         type: string
