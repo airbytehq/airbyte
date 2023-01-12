@@ -5,10 +5,11 @@ import styles from "./Alert.module.scss";
 
 interface AlertProps {
   variant: "yellow" | "blue";
+  className?: string;
 }
 
-export const Alert: React.FC<PropsWithChildren<AlertProps>> = ({ variant, children }) => {
-  const containerStyles = classNames(styles.container, {
+export const Alert: React.FC<PropsWithChildren<AlertProps>> = ({ variant, children, className }) => {
+  const containerStyles = classNames(styles.container, className, {
     [styles.yellow]: variant === "yellow",
     [styles.blue]: variant === "blue",
   });
