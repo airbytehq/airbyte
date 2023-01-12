@@ -95,21 +95,8 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        self.response_json = response.json()
-
-        for data in self.response_json:
-            try:
-                dateformat_in = "%b %d, %Y %I:%M:%S %p"
-                dateformat_out = "%Y-%m-%dT%H:%M:%S+00:00"
-                data["starttime"] = datetime.strptime(data["starttime"], dateformat_in).strftime(dateformat_out)
-                data["endtime"] = datetime.strptime(data["endtime"], dateformat_in).strftime(dateformat_out)
-                data["CompletionDate"] = datetime.strptime(data["CompletionDate"], dateformat_in).strftime(dateformat_out)
-                data["SubmissionDate"] = datetime.strptime(data["SubmissionDate"], dateformat_in).strftime(dateformat_out)
-                yield data
-            except Exception as e:
-                msg = "Encountered an exception parsing schema"
-                self.logger.exception(msg)
-                raise e
+        response_json = response.json()
+        Helpers.modify_date(response_json)
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):

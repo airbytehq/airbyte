@@ -13,6 +13,20 @@ from requests.packages.urllib3.util.retry import Retry
 
 
 class Helpers(object):
+
+    @staticmethod
+    def modify_date(response_json):
+        data_mod = ["startdata", "enddata", "CompletionDate", "SubmissionDate"]
+        dateformat_in = "%b %d, %Y %I:%M:%S %p"
+        dateformat_out = "%Y-%m-%dT%H:%M:%S+00:00"
+
+        for data in response_json:
+            for key in data_mod:
+                if key in data:
+                    data[key] = datetime.strptime(data[key], dateformat_in).strftime(dateformat_out)
+
+                yield data
+
     @staticmethod
     def _base64_encode(string: str) -> str:
         return base64.b64encode(string.encode("ascii")).decode("ascii")
@@ -38,20 +52,8 @@ class Helpers(object):
         if response.status_code != 200 and response_json["error"]:
             message = response_json["error"]["message"]
             raise Exception(message)
-
-        for data in response_json:
-            try:
-                dateformat_in = "%b %d, %Y %I:%M:%S %p"
-                dateformat_out = "%Y-%m-%dT%H:%M:%S+00:00"
-                data["starttime"] = datetime.strptime(data["starttime"], dateformat_in).strftime(dateformat_out)
-                data["endtime"] = datetime.strptime(data["endtime"], dateformat_in).strftime(dateformat_out)
-                data["CompletionDate"] = datetime.strptime(data["CompletionDate"], dateformat_in).strftime(dateformat_out)
-                data["SubmissionDate"] = datetime.strptime(data["SubmissionDate"], dateformat_in).strftime(dateformat_out)
-                yield data
-            except Exception as e:
-                raise e
-
-        return data
+    
+        Helpers.modify_date(response_json)
 
     @staticmethod
     def get_filter_data(data):
@@ -71,3 +73,5 @@ class Helpers(object):
             "properties": schema,
         }
         return json_schema
+
+  
