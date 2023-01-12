@@ -30,7 +30,7 @@ class Spec(JsonSchemaMixin):
 
         obj = {"connectionSpecification": self.connection_specification}
 
-        if self.documentation_url is not None and self.documentation_url != '':
+        if self.documentation_url:
             obj["documentationUrl"] = self.documentation_url
 
         # We remap these keys to camel case because that's the existing format expected by the rest of the platform
