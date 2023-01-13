@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
@@ -10,23 +10,6 @@ import { Text } from "components/ui/Text";
 import { ReactComponent as ConnectorsBadges } from "./connectors-badges.svg";
 import styles from "./LargeEnrollmentCallout.module.scss";
 
-export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
-  const onEnrollClick = () => {
-    return null;
-  };
-
-  return (
-    <span
-      role="button"
-      onClick={() => onEnrollClick()}
-      onKeyDown={(e) => e.keyCode === 13 && onEnrollClick()}
-      tabIndex={0}
-      className={styles.enrollLink}
-    >
-      {children}
-    </span>
-  );
-};
 export const LargeEnrollmentCallout: React.FC = () => {
   return (
     <Callout variant="boldInfo" className={styles.container}>
