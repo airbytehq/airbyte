@@ -10,7 +10,7 @@ import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
+from airbyte_cdk.sources.declarative.parsers.custom_exceptions import UndefinedReferenceException
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
