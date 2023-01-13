@@ -199,8 +199,6 @@ The specification also contains information about what features the Actor suppor
 The following are fields that still exist in the specification but are slated to be removed as they leak choices about how Airbyte implements the protocol as opposed to being strictly necessary part of the protocol.
 
 - `supportsIncremental` is deprecated and can be ignored. It is vestigial from when full refresh / incremental was specified at the Actor level.
-- `supportsNormalization` determines whether the Destination supports Basic Normalization
-- `supportsDBT` - determines whether the Destination supports Basic Normalization
 - `authSpecification` and `advanced_auth` will be removed from the protocol and as such are not documented. Information on their use can be found here.
 
 ```yaml
@@ -230,16 +228,6 @@ ConnectorSpecification:
     supportsIncremental:
       description: (deprecated) If the connector supports incremental mode or not.
       type: boolean
-    # Destination Connectors Properties
-    # Normalization is currently implemented using dbt, so it requires `supportsDBT` to be true for this to be true.
-    supportsNormalization:
-      description: If the connector supports normalization or not.
-      type: boolean
-      default: false
-    supportsDBT:
-      description: If the connector supports DBT or not.
-      type: boolean
-      default: false
     supported_destination_sync_modes:
       description: List of destination sync modes supported by the connector
       type: array
