@@ -38,7 +38,7 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
     <Card>
       <Section>
         {supportsNormalization || supportsTransformations ? (
-          <Heading as="h5">
+          <Heading as="h2" size="sm">
             {[
               supportsNormalization && formatMessage({ id: "connectionForm.normalization.title" }),
               supportsTransformations && formatMessage({ id: "connectionForm.transformation.title" }),
