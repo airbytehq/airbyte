@@ -20,6 +20,7 @@ import {
   SubstreamSlicer,
   SubstreamSlicerType,
   CartesianProductStreamSlicer,
+  DeclarativeStreamSchemaLoader,
 } from "core/request/ConnectorManifest";
 
 export interface BuilderFormInput {
@@ -506,14 +507,16 @@ function builderFormStreamSlicerToStreamSlicer(
   };
 }
 
-function parseSchemaString(schema?: string) {
+const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} };
+
+function parseSchemaString(schema?: string): DeclarativeStreamSchemaLoader {
   if (!schema) {
-    return undefined;
+    return EMPTY_SCHEMA;
   }
   try {
     return { type: "InlineSchemaLoader", schema: JSON.parse(schema) };
   } catch {
-    return undefined;
+    return EMPTY_SCHEMA;
   }
 }
 
