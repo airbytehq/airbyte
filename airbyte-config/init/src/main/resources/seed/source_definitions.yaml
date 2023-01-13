@@ -751,6 +751,14 @@
   icon: instagram.svg
   sourceType: api
   releaseStage: generally_available
+- name: Instatus
+  sourceDefinitionId: 1901024c-0249-45d0-bcac-31a954652927
+  dockerRepository: airbyte/source-instatus
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/instatus
+  icon: instatus.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
