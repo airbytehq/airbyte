@@ -145,7 +145,6 @@
     "optionator": "^0.9.1",
     "orval": "^6.11.0-alpha.10",
     "prettier": "^2.6.2",
-    "react-scripts": "^5.0.1",
     "react-select-event": "^5.5.0",
     "storybook-addon-mock": "^2.4.1",
     "stylelint": "^14.9.1",
