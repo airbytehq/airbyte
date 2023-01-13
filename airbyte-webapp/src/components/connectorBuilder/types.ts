@@ -235,9 +235,11 @@ export const inferredAuthValues = (type: BuilderFormAuthenticator["type"]): Reco
 
 function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormInput[] {
   const authKeyToInferredInput = authTypeToKeyToInferredInput[global.authenticator.type];
-  const authKeys = Object.keys(authKeyToInferredInput) as Array<keyof typeof global.authenticator>;
+  const authKeys = Object.keys(authKeyToInferredInput);
   return authKeys.flatMap((authKey) => {
-    if (extractInterpolatedConfigKey(global.authenticator[authKey]) === authKeyToInferredInput[authKey].key) {
+    if (
+      extractInterpolatedConfigKey(Reflect.get(global.authenticator, authKey)) === authKeyToInferredInput[authKey].key
+    ) {
       return [authKeyToInferredInput[authKey]];
     }
     return [];
@@ -775,12 +777,10 @@ function manifestAuthenticatorToBuilder(
 
   // verify that all auth keys which require a user input have a {{config[]}} value
 
-  const userInputAuthKeys = Object.keys(authTypeToKeyToInferredInput[builderAuthenticator.type]) as Array<
-    keyof typeof builderAuthenticator
-  >;
+  const userInputAuthKeys = Object.keys(authTypeToKeyToInferredInput[builderAuthenticator.type]);
 
   for (const userInputAuthKey of userInputAuthKeys) {
-    if (!isInterpolatedConfigKey(builderAuthenticator[userInputAuthKey])) {
+    if (!isInterpolatedConfigKey(Reflect.get(builderAuthenticator, userInputAuthKey))) {
       throw new ManifestCompatibilityError(
         undefined,
         `Authenticator's ${userInputAuthKey} value must be of the form {{ config['key'] }}`
