@@ -22,7 +22,6 @@ const STRIPE_SUCCESS_QUERY = "stripeCheckoutSuccess";
 interface EnrollmentModalContentProps {
   closeModal: () => void;
   createCheckout: (p: StripeCheckoutSessionCreate) => Promise<StripeCheckoutSessionRead>;
-
   workspaceId: string;
 }
 
@@ -108,10 +107,8 @@ export const FreeConnectorProgramEnrollmentButton: React.FC<FreeConnectorProgram
   variant = "primary",
 }) => {
   const { openModal, closeModal } = useModalService();
-  const { error, mutateAsync: createCheckout } = useStripeCheckout();
+  const { mutateAsync: createCheckout } = useStripeCheckout();
   const workspaceId = useCurrentWorkspaceId();
-
-  console.log(error);
 
   const showEnrollmentModal = () => {
     openModal({
