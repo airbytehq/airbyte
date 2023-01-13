@@ -29,20 +29,14 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
 
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
+    final Lsn recordLsn = extractLsn(valueAsJson);
 
-    if (SnapshotMetadata.TRUE == snapshotMetadata) {
+    if (targetLsn.compareTo(recordLsn) > 0) {
       return false;
-    } else if (SnapshotMetadata.LAST == snapshotMetadata) {
-      LOGGER.info("Signalling close because Snapshot is complete");
-      return true;
     } else {
-      final Lsn recordLsn = extractLsn(valueAsJson);
-      boolean isEventLSNAfter = targetLsn.compareTo(recordLsn) <= 0;
-      if (isEventLSNAfter) {
-        LOGGER.info("Signalling close because record's LSN : " + recordLsn + " is after target LSN : " + targetLsn);
-      }
-      return isEventLSNAfter;
+      final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
+      // if not snapshot or is snapshot but last record in snapshot.
+      return SnapshotMetadata.TRUE != snapshotMetadata;
     }
   }
 

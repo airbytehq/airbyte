@@ -52,8 +52,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "lts/*"
-
+          node-version: "lts/gallium"
       # necessary to install pip
       - uses: actions/setup-python@v4
         with:
@@ -84,6 +83,9 @@ jobs:
           distribution: "zulu"
           java-version: "17"
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "lts/gallium"
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"

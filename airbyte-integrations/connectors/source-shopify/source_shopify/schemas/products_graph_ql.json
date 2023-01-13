@@ -29,7 +29,10 @@
       "type": "string"
     },
     "onlineStoreUrl": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "options": {
       "items": {
@@ -58,7 +61,10 @@
       "type": "string"
     },
     "publishedAt": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "shop_url": {
       "type": "string"

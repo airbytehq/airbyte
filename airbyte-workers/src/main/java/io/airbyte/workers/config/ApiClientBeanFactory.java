@@ -37,9 +37,7 @@ public class ApiClientBeanFactory {
   private static final int JWT_TTL_MINUTES = 5;
 
   @Singleton
-  @Named("apiClient")
-  public ApiClient apiClient(
-                             @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
+  public ApiClient apiClient(@Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
                              @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
                              @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
                              @Named("internalApiScheme") final String internalApiScheme) {
@@ -60,12 +58,12 @@ public class ApiClientBeanFactory {
   }
 
   @Singleton
-  public AirbyteApiClient airbyteApiClient(@Named("apiClient") final ApiClient apiClient) {
+  public AirbyteApiClient airbyteApiClient(ApiClient apiClient) {
     return new AirbyteApiClient(apiClient);
   }
 
   @Singleton
-  public SourceApi sourceApi(@Named("apiClient") final ApiClient apiClient) {
+  public SourceApi sourceApi(final ApiClient apiClient) {
     return new SourceApi(apiClient);
   }
 

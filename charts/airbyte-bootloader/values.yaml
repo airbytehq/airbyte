@@ -31,10 +31,6 @@ image:
 ##
 podAnnotations: {}
 
-##  podLabels [object] Add extra labels to the bootloader pod
-##
-podLabels: {}
-
 ##  containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:

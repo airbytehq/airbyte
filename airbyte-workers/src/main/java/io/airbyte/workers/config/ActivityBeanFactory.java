@@ -58,8 +58,8 @@ public class ActivityBeanFactory {
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("notifyActivities")
   public List<Object> notifyActivities(final NotifySchemaChangeActivity notifySchemaChangeActivity,
-                                       final SlackConfigActivity slackConfigActivity,
-                                       final ConfigFetchActivity configFetchActivity) {
+                                       SlackConfigActivity slackConfigActivity,
+                                       ConfigFetchActivity configFetchActivity) {
     return List.of(notifySchemaChangeActivity, slackConfigActivity, configFetchActivity);
   }
 
@@ -112,12 +112,10 @@ public class ActivityBeanFactory {
                                      final PersistStateActivity persistStateActivity,
                                      final NormalizationSummaryCheckActivity normalizationSummaryCheckActivity,
                                      final WebhookOperationActivity webhookOperationActivity,
-                                     /*
-                                      * Temporarily disabled to address OC issue #1210 final ConfigFetchActivity configFetchActivity,
-                                      */
+                                     final ConfigFetchActivity configFetchActivity,
                                      final RefreshSchemaActivity refreshSchemaActivity) {
     return List.of(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity, normalizationSummaryCheckActivity,
-        webhookOperationActivity, /* configFetchActivity, */ refreshSchemaActivity);
+        webhookOperationActivity, configFetchActivity, refreshSchemaActivity);
   }
 
   @Singleton

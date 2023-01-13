@@ -27,5 +27,4 @@ export interface Experiments {
   "connection.onboarding.sources": string;
   "connection.onboarding.destinations": string;
   "connection.autoDetectSchemaChanges": boolean;
-  "connection.columnSelection": boolean;
 }

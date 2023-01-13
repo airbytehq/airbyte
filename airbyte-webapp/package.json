@@ -1,9 +1,9 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.26",
+  "version": "0.40.25",
   "private": true,
   "engines": {
-    "node": "16.18.1"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "prepare": "cd .. && husky install airbyte-webapp/.husky",

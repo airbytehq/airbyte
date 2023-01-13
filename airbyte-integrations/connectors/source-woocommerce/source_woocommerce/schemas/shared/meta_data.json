@@ -11,7 +11,7 @@
           "type": ["null", "string"]
         },
         "value": {
-          "type": ["null", "object", "string", "array"]
+          "type": ["null", "object", "string"]
         }
       }
     },
@@ -27,7 +27,7 @@
             "type": ["null", "string"]
           },
           "value": {
-            "type": ["null", "object", "string", "array"]
+            "type": ["null", "object", "string"]
           }
         }
       }

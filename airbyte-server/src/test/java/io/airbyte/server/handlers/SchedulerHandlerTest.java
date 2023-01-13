@@ -159,11 +159,6 @@ class SchedulerHandlerTest {
   void setup() {
     completedJob = mock(Job.class, RETURNS_DEEP_STUBS);
     jobResponse = mock(SynchronousResponse.class, RETURNS_DEEP_STUBS);
-    final SynchronousJobMetadata synchronousJobMetadata = mock(SynchronousJobMetadata.class);
-    when(synchronousJobMetadata.getConfigType())
-        .thenReturn(ConfigType.SYNC);
-    when(jobResponse.getMetadata())
-        .thenReturn(synchronousJobMetadata);
     configurationUpdate = mock(ConfigurationUpdate.class);
     jsonSchemaValidator = mock(JsonSchemaValidator.class);
     when(completedJob.getStatus()).thenReturn(JobStatus.SUCCEEDED);
@@ -957,9 +952,9 @@ class SchedulerHandlerTest {
     assertEquals(expectedActorCatalog, actual.getCatalog());
     assertEquals(ConnectionStatus.ACTIVE, actual.getConnectionStatus());
 
-    final ArgumentCaptor<ConnectionUpdate> expectedArgumentCaptor = ArgumentCaptor.forClass(ConnectionUpdate.class);
+    ArgumentCaptor<ConnectionUpdate> expectedArgumentCaptor = ArgumentCaptor.forClass(ConnectionUpdate.class);
     verify(connectionsHandler, times(3)).updateConnection(expectedArgumentCaptor.capture());
-    final List<ConnectionUpdate> connectionUpdateValues = expectedArgumentCaptor.getAllValues();
+    List<ConnectionUpdate> connectionUpdateValues = expectedArgumentCaptor.getAllValues();
     assertEquals(ConnectionStatus.ACTIVE, connectionUpdateValues.get(0).getStatus());
     assertEquals(ConnectionStatus.ACTIVE, connectionUpdateValues.get(1).getStatus());
     assertEquals(ConnectionStatus.INACTIVE, connectionUpdateValues.get(2).getStatus());

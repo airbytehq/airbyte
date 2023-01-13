@@ -17,7 +17,6 @@ interface StreamDetailsPanelProps extends StreamFieldsTableProps {
 }
 
 export const StreamDetailsPanel: React.FC<StreamDetailsPanelProps> = ({
-  stream,
   config,
   disabled,
   onPkSelect,
@@ -26,8 +25,7 @@ export const StreamDetailsPanel: React.FC<StreamDetailsPanelProps> = ({
   onSelectedChange,
   shouldDefinePk,
   shouldDefineCursor,
-  isCursorDefinitionSupported,
-  isPKDefinitionSupported,
+  stream,
   syncSchemaFields,
 }) => {
   return (
@@ -49,8 +47,6 @@ export const StreamDetailsPanel: React.FC<StreamDetailsPanelProps> = ({
             onPkSelect={onPkSelect}
             shouldDefinePk={shouldDefinePk}
             shouldDefineCursor={shouldDefineCursor}
-            isCursorDefinitionSupported={isCursorDefinitionSupported}
-            isPKDefinitionSupported={isPKDefinitionSupported}
           />
         </div>
       </Dialog.Panel>

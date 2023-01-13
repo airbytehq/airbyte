@@ -7,9 +7,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
-import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
@@ -20,10 +18,8 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -34,35 +30,22 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTimeZone;
 import org.quartz.CronExpression;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Slf4j
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFetchActivityImpl.class);
   private final static long MS_PER_SECOND = 1000L;
   private final static long MIN_CRON_INTERVAL_SECONDS = 60;
-  private static final Set<UUID> SCHEDULING_NOISE_WORKSPACE_IDS = Set.of(
-      // Testing
-      UUID.fromString("0ace5e1f-4787-43df-8919-456f5f4d03d1"),
-      UUID.fromString("20810d92-41a4-4cfd-85db-fb50e77cf36b"),
-      // Prod
-      UUID.fromString("226edbc1-4a9c-4401-95a9-90435d667d9d"));
-  private static final long SCHEDULING_NOISE_CONSTANT = 15;
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
-  private final WorkspaceHelper workspaceHelper;
   private final Integer syncJobMaxAttempts;
   private final Supplier<Long> currentSecondsSupplier;
 
@@ -70,18 +53,8 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
                                  final JobPersistence jobPersistence,
                                  @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
                                  @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier) {
-    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), syncJobMaxAttempts, currentSecondsSupplier);
-  }
-
-  @VisibleForTesting
-  protected ConfigFetchActivityImpl(final ConfigRepository configRepository,
-                                    final JobPersistence jobPersistence,
-                                    final WorkspaceHelper workspaceHelper,
-                                    @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
-                                    @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
-    this.workspaceHelper = workspaceHelper;
     this.syncJobMaxAttempts = syncJobMaxAttempts;
     this.currentSecondsSupplier = currentSecondsSupplier;
   }
@@ -152,39 +125,13 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
                     + MIN_CRON_INTERVAL_SECONDS
                 : currentSecondsSupplier.get()) * MS_PER_SECOND);
         final Date nextRunStart = cronExpression.getNextValidTimeAfter(new Date(earliestNextRun));
-        Duration timeToWait = Duration.ofSeconds(
+        final Duration timeToWait = Duration.ofSeconds(
             Math.max(0, nextRunStart.getTime() / MS_PER_SECOND - currentSecondsSupplier.get()));
-
-        timeToWait = addSchedulingNoiseForAllowListedWorkspace(timeToWait, standardSync);
         return new ScheduleRetrieverOutput(timeToWait);
       } catch (final ParseException e) {
         throw (DateTimeException) new DateTimeException(e.getMessage()).initCause(e);
       }
     }
-  }
-
-  private Duration addSchedulingNoiseForAllowListedWorkspace(final Duration timeToWait, final StandardSync standardSync) {
-    final UUID workspaceId;
-    try {
-      workspaceId = workspaceHelper.getWorkspaceForConnectionId(standardSync.getConnectionId());
-    } catch (final JsonValidationException | ConfigNotFoundException e) {
-      // We tolerate exceptions and fail open by doing nothing.
-      return timeToWait;
-    }
-    if (!SCHEDULING_NOISE_WORKSPACE_IDS.contains(workspaceId)) {
-      // Only apply to a specific set of workspaces.
-      return timeToWait;
-    }
-    if (!standardSync.getScheduleType().equals(ScheduleType.CRON)) {
-      // Only apply noise to cron connections.
-      return timeToWait;
-    }
-
-    // We really do want to add some scheduling noise for this connection.
-    final long minutesToWait = (long) (Math.random() * SCHEDULING_NOISE_CONSTANT);
-    LOGGER.debug("Adding {} minutes noise to wait", minutesToWait);
-    // Note: we add an extra second to make the unit tests pass in case `minutesToWait` was 0.
-    return timeToWait.plusMinutes(minutesToWait).plusSeconds(1);
   }
 
   /**

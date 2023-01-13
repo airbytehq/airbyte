@@ -18,6 +18,7 @@ interface SourceFormProps {
     connectionConfiguration?: ConnectionConfiguration;
   }) => Promise<void>;
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
+  hasSuccess?: boolean;
   error?: FormError | null;
 }
 
@@ -29,7 +30,7 @@ const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: s
   );
 };
 
-export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefinitions, error }) => {
+export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefinitions, error, hasSuccess }) => {
   const location = useLocation();
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
@@ -59,6 +60,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
       description={<FormattedMessage id="sources.description" />}
       isLoading={isLoading}
+      hasSuccess={hasSuccess}
       fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
       availableConnectorDefinitions={sourceDefinitions}
       onConnectorDefinitionSelect={onDropDownSelect}

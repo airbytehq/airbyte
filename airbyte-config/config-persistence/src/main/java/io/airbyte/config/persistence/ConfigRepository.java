@@ -122,7 +122,7 @@ public class ConfigRepository {
    */
   public boolean healthCheck() {
     try {
-      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch()).stream().count();
+      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
     } catch (final Exception e) {
       LOGGER.error("Health check error: ", e);
       return false;
@@ -290,8 +290,7 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source))
         .and(sourceDefId.map(ACTOR_DEFINITION.ID::eq).orElse(noCondition()))
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
-        .fetch())
-        .stream()
+        .fetchStream())
         .map(DbConverter::buildStandardSourceDefinition)
         // Ensure version is set. Needed for connectors not upgraded since we added versioning.
         .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
@@ -353,8 +352,7 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination))
         .and(destDefId.map(ACTOR_DEFINITION.ID::eq).orElse(noCondition()))
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
-        .fetch())
-        .stream()
+        .fetchStream())
         .map(DbConverter::buildStandardDestinationDefinition)
         // Ensure version is set. Needed for connectors not upgraded since we added versioning.
         .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
@@ -1307,22 +1305,13 @@ public class ConfigRepository {
     return records.stream().findFirst().map(DbConverter::buildActorCatalog);
   }
 
-  public Optional<ActorCatalog> getMostRecentActorCatalogForSource(final UUID sourceId) throws IOException {
-    final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
-        .from(ACTOR_CATALOG)
-        .join(ACTOR_CATALOG_FETCH_EVENT)
-        .on(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID.eq(ACTOR_CATALOG.ID))
-        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
-        .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
-    return records.stream().findFirst().map(DbConverter::buildActorCatalog);
-  }
-
   public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final UUID sourceId) throws IOException {
 
     final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
         .from(ACTOR_CATALOG_FETCH_EVENT)
         .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
+
     return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 

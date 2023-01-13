@@ -74,10 +74,6 @@ image:
 ##
 podAnnotations: {}
 
-##  podLabels [object] Add extra labels to the server pod
-##
-podLabels: {}
-
 ##  containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:

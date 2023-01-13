@@ -35,7 +35,6 @@ from source_facebook_marketing.streams import (
 from .utils import validate_end_date, validate_start_date
 
 logger = logging.getLogger("airbyte")
-UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
@@ -184,18 +183,10 @@ class SourceFacebookMarketing(AbstractSource):
         """return custom insights streams"""
         streams = []
         for insight in config.custom_insights or []:
-            insight_fields = set(insight.fields)
-            if insight_fields.intersection(UNSUPPORTED_FIELDS):
-                # https://github.com/airbytehq/oncall/issues/1137
-                mes = (
-                    f"Please remove Following fields from the Custom {insight.name} fields list due to possible "
-                    f"errors on Facebook side: {insight_fields.intersection(UNSUPPORTED_FIELDS)}"
-                )
-                raise ValueError(mes)
             stream = AdsInsights(
                 api=api,
                 name=f"Custom{insight.name}",
-                fields=list(insight_fields),
+                fields=list(set(insight.fields)),
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,

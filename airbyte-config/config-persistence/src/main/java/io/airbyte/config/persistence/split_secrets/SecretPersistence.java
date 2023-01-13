@@ -34,9 +34,6 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
       case VAULT -> {
         return Optional.of(new VaultSecretPersistence(configs.getVaultAddress(), configs.getVaultPrefix(), configs.getVaultToken()));
       }
-      case AWS_SECRET_MANAGER -> {
-        return Optional.of(new AWSSecretManagerPersistence(configs.getAwsAccessKey(), configs.getAwsSecretAccessKey()));
-      }
       default -> {
         return Optional.empty();
       }
@@ -64,9 +61,6 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
       }
       case VAULT -> {
         return Optional.of(new VaultSecretPersistence(configs.getVaultAddress(), configs.getVaultPrefix(), configs.getVaultToken()));
-      }
-      case AWS_SECRET_MANAGER -> {
-        return Optional.of(new AWSSecretManagerPersistence(configs.getAwsAccessKey(), configs.getAwsSecretAccessKey()));
       }
       default -> {
         return Optional.empty();

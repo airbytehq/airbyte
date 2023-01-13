@@ -140,7 +140,7 @@ public class KubeProcessFactory implements ProcessFactory {
           workerConfigs.getJobCurlImage(),
           MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap()),
           internalToExternalPorts,
-          args).toProcess();
+          args);
     } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);
     }

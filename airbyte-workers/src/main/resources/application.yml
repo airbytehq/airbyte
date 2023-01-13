@@ -1,6 +1,12 @@
 micronaut:
   application:
     name: airbyte-workers
+  security:
+    intercept-url-map:
+      - pattern: /**
+        httpMethod: GET
+        access:
+          - isAnonymous()
   server:
     port: 9000
 
@@ -46,7 +52,6 @@ airbyte:
     specific-resource-defaults-enabled: ${CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED:false}
   container:
     orchestrator:
-      enabled: ${CONTAINER_ORCHESTRATOR_ENABLED:false}
       image: ${CONTAINER_ORCHESTRATOR_IMAGE:}
       java-opts: ${CONTAINER_ORCHESTRATOR_JAVA_OPTS:}
       secret-mount-path: ${CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH:}
@@ -98,8 +103,8 @@ airbyte:
             request: ${CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
     isolated:
       kube:
-        use-custom-node-selector: ${USE_CUSTOM_NODE_SELECTOR:false}
-        node-selectors: ${JOB_ISOLATED_KUBE_NODE_SELECTORS:}
+        use-isolated-node-selector: ${USE_ISOLATED_NODE_SELECTOR:false}
+        node-selectors: ${ISOLATED_JOB_KUBE_NODE_SELECTORS:}
     connection:
       enabled: ${SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS:true}
     discover:
@@ -205,30 +210,8 @@ docker:
   network: ${DOCKER_NETWORK:host}
 
 endpoints:
-  beans:
+  all:
     enabled: true
-    sensitive: false
-  env:
-    enabled: true
-    sensitive: false
-  health:
-    enabled: true
-    sensitive: false
-  info:
-    enabled: true
-    sensitive: true
-  loggers:
-    enabled: true
-    sensitive: true
-  refresh:
-    enabled: false
-    sensitive: true
-  routes:
-    enabled: true
-    sensitive: false
-  threaddump:
-    enabled: true
-    sensitive: true
 
 google:
   application:

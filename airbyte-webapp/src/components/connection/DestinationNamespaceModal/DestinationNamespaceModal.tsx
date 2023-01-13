@@ -10,7 +10,6 @@ import { ModalBody, ModalFooter } from "components/ui/Modal";
 import { Text } from "components/ui/Text";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { links } from "utils/links";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./DestinationNamespaceModal.module.scss";
@@ -144,11 +143,6 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
                 <FormattedMessage id="connectionForm.modal.destinationNamespace.description" />
               </Text>
               <ExampleSettingsTable namespaceDefinitionType={values.namespaceDefinition} />
-              <a className={styles.namespaceLink} href={links.namespaceLink} target="_blank" rel="noreferrer">
-                <Text className={styles.text} size="xs">
-                  <FormattedMessage id="connectionForm.modal.destinationNamespace.learnMore.link" />
-                </Text>
-              </a>
             </div>
           </ModalBody>
           <ModalFooter>

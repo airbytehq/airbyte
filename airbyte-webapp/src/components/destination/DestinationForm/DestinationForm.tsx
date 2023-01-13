@@ -22,6 +22,7 @@ interface DestinationFormProps {
     connectionConfiguration?: ConnectionConfiguration;
   }) => Promise<void>;
   destinationDefinitions: DestinationDefinitionRead[];
+  hasSuccess?: boolean;
   error?: FormError | null;
 }
 
@@ -33,7 +34,12 @@ const hasDestinationDefinitionId = (state: unknown): state is { destinationDefin
   );
 };
 
-export const DestinationForm: React.FC<DestinationFormProps> = ({ onSubmit, destinationDefinitions, error }) => {
+export const DestinationForm: React.FC<DestinationFormProps> = ({
+  onSubmit,
+  destinationDefinitions,
+  error,
+  hasSuccess,
+}) => {
   const location = useLocation();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
@@ -82,6 +88,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({ onSubmit, dest
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
         description={<FormattedMessage id="destinations.description" />}
         isLoading={isLoading}
+        hasSuccess={hasSuccess}
         fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
         availableConnectorDefinitions={destinationDefinitions}
         onConnectorDefinitionSelect={onDropDownSelect}

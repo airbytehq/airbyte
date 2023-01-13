@@ -1,6 +1,5 @@
 @use "scss/colors";
 @use "scss/variables" as vars;
-@use "scss/z-indices";
 
 // ------- <table/> --------
 .table {
@@ -13,7 +12,6 @@
 .thead {
   position: sticky;
   top: 0;
-  z-index: z-indices.$tableScroll;
 }
 
 // --------- <th/> ---------

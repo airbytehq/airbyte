@@ -19,7 +19,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -62,7 +61,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -155,7 +153,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     worker.run(syncInput, jobRoot);
 
@@ -183,7 +181,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     worker.run(syncInput, jobRoot);
 
@@ -213,7 +211,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
@@ -233,7 +231,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -255,7 +253,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -276,7 +274,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertTrue(output.getFailures().stream()
@@ -298,7 +296,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -324,7 +322,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     worker.run(syncInput, jobRoot);
 
@@ -334,68 +332,6 @@ class DefaultReplicationWorkerTest {
     verify(destination).accept(RECORD_MESSAGE2);
     verify(destination, never()).accept(LOG_MESSAGE);
     verify(destination, never()).accept(TRACE_MESSAGE);
-  }
-
-  @Test
-  void testOnlySelectedFieldsDeliveredToDestinationWithFieldSelectionEnabled() throws Exception {
-    // Generate a record with an extra field.
-    final AirbyteMessage recordWithExtraFields = Jsons.clone(RECORD_MESSAGE1);
-    ((ObjectNode) recordWithExtraFields.getRecord().getData()).put("AnUnexpectedField", "SomeValue");
-    when(mapper.mapMessage(recordWithExtraFields)).thenReturn(recordWithExtraFields);
-    when(source.attemptRead()).thenReturn(Optional.of(recordWithExtraFields));
-    when(source.isFinished()).thenReturn(false, true);
-    // Use a real schema validator to make sure validation doesn't affect this.
-    final String streamName = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
-    final String streamNamespace = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
-    recordSchemaValidator = new RecordSchemaValidator(Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
-        sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()));
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        messageTracker,
-        recordSchemaValidator,
-        workerMetricReporter,
-        true);
-
-    worker.run(syncInput, jobRoot);
-
-    // Despite reading recordWithExtraFields from the source, we write the original RECORD_MESSAGE1 to
-    // the destination because the new field has been filtered out.
-    verify(destination).accept(RECORD_MESSAGE1);
-  }
-
-  @Test
-  void testAllFieldsDeliveredWithFieldSelectionDisabled() throws Exception {
-    // Generate a record with an extra field.
-    final AirbyteMessage recordWithExtraFields = Jsons.clone(RECORD_MESSAGE1);
-    ((ObjectNode) recordWithExtraFields.getRecord().getData()).put("AnUnexpectedField", "SomeValue");
-    when(mapper.mapMessage(recordWithExtraFields)).thenReturn(recordWithExtraFields);
-    when(source.attemptRead()).thenReturn(Optional.of(recordWithExtraFields));
-    when(source.isFinished()).thenReturn(false, true);
-    // Use a real schema validator to make sure validation doesn't affect this.
-    final String streamName = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
-    final String streamNamespace = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
-    recordSchemaValidator = new RecordSchemaValidator(Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
-        sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()));
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        messageTracker,
-        recordSchemaValidator,
-        workerMetricReporter,
-        false);
-
-    worker.run(syncInput, jobRoot);
-
-    // Despite the field not being in the catalog, we write the extra field anyway because field
-    // selection is disabled.
-    verify(destination).accept(recordWithExtraFields);
   }
 
   @Test
@@ -410,7 +346,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -431,7 +367,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -453,7 +389,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -476,7 +412,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     worker.run(syncInput, jobRoot);
 
@@ -517,7 +453,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final Thread workerThread = new Thread(() -> {
       try {
@@ -565,7 +501,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final ReplicationOutput replicationOutput = new ReplicationOutput()
@@ -632,7 +568,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     assertNotNull(actual);
@@ -651,7 +587,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
@@ -685,7 +621,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final SyncStats expectedTotalStats = new SyncStats()
@@ -731,7 +667,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
 
@@ -751,7 +687,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 

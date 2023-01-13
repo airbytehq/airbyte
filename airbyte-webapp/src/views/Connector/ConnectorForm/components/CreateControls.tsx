@@ -13,7 +13,7 @@ interface CreateControlProps {
   formType: "source" | "destination";
   isSubmitting: boolean;
   errorMessage?: React.ReactNode;
-  connectionTestSuccess?: boolean;
+  hasSuccess?: boolean;
 
   isTestConnectionInProgress: boolean;
   onCancelTesting?: () => void;
@@ -30,7 +30,7 @@ const CreateControls: React.FC<CreateControlProps> = ({
   isTestConnectionInProgress,
   isSubmitting,
   formType,
-  connectionTestSuccess,
+  hasSuccess,
   errorMessage,
   onCancelTesting,
 }) => {
@@ -38,7 +38,7 @@ const CreateControls: React.FC<CreateControlProps> = ({
     return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
   }
 
-  if (connectionTestSuccess) {
+  if (hasSuccess) {
     return <TestingConnectionSuccess />;
   }
 

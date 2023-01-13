@@ -49,7 +49,6 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean signalledClose;
   private LocalDateTime tsLastHeartbeat;
   private Long lastHeartbeatPosition;
-  private int maxInstanceOfNoRecordsFound;
 
   public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 final CdcTargetPosition targetPosition,
@@ -67,7 +66,6 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.signalledClose = false;
     tsLastHeartbeat = null;
     lastHeartbeatPosition = null;
-    this.maxInstanceOfNoRecordsFound = 0;
   }
 
   // The following logic incorporates heartbeat (CDC postgres only for now):
@@ -84,13 +82,12 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     // emitted.
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
-
-      // #18987: waitTime is still required with heartbeats for backward
-      // compatibility with connectors not implementing heartbeat
-      // yet (MySql, MSSql), And also due to postgres taking a long time
-      // initially staying on "searching for WAL resume position"
-      final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
       try {
+        // #18987: waitTime is still required with heartbeats for backward
+        // compatibility with connectors not implementing heartbeat
+        // yet (MySql, MSSql), And also due to postgres taking a long time
+        // initially staying on "searching for WAL resume position"
+        final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
@@ -102,12 +99,9 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       // position"
       // when no changes exist. In that case queue will pop after timeout with null value for next
       if (next == null) {
-        if ((!receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10) && !signalledClose) {
-          LOGGER.info("No records were returned by Debezium in the timeout seconds {}, closing the engine and iterator", waitTime.getSeconds());
-          requestClose();
-        }
+        LOGGER.info("Closing: queue returned null event");
+        requestClose();
         LOGGER.info("no record found. polling again.");
-        maxInstanceOfNoRecordsFound++;
         continue;
       }
 
@@ -119,7 +113,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
           // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
           // too long
           if (targetPosition.reachedTargetPosition(heartbeatPos)
-              || (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging()) && !signalledClose) {
+              || (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging())) {
             LOGGER.info("Closing: Heartbeat indicates sync is done");
             requestClose();
           }
@@ -142,8 +136,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       }
       this.tsLastHeartbeat = null;
       this.lastHeartbeatPosition = null;
-      this.receivedFirstRecord = true;
-      this.maxInstanceOfNoRecordsFound = 0;
+      receivedFirstRecord = true;
       return next;
     }
     return endOfData();

@@ -11,7 +11,7 @@
             "$ref": "WellKnownTypes.json#/definitions/String"
           },
           "date": {
-            "$ref": "WellKnownTypes.json#/definitions/String"
+            "$ref": "WellKnownTypes.json#/definitions/Date"
           },
           "HKD": {
             "$ref": "WellKnownTypes.json#/definitions/Number"
