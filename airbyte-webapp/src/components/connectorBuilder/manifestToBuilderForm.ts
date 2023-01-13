@@ -1,5 +1,4 @@
 import isEqual from "lodash/isEqual";
-import { v4 as uuid } from "uuid";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import {
@@ -46,27 +45,34 @@ export const convertToBuilderFormValues = (
     const { inputs, inferredInputOverrides } = manifestSpecAndAuthToBuilder(manifest.spec, undefined);
     builderFormValues.inputs = inputs;
     builderFormValues.inferredInputOverrides = inferredInputOverrides;
-  } else {
-    assertType<SimpleRetriever>(streams[0].retriever, "SimpleRetriever", streams[0].name);
-    assertType<HttpRequester>(streams[0].retriever.requester, "HttpRequester", streams[0].name);
-    builderFormValues.global.urlBase = streams[0].retriever.requester.url_base;
 
-    const { inputs, inferredInputOverrides, auth } = manifestSpecAndAuthToBuilder(
-      manifest.spec,
-      streams[0].retriever.requester.authenticator
-    );
-    builderFormValues.inputs = inputs;
-    builderFormValues.inferredInputOverrides = inferredInputOverrides;
-    builderFormValues.global.authenticator = auth;
-
-    builderFormValues.streams = streams.map((stream) => manifestStreamToBuilder(stream, builderFormValues.global));
+    return builderFormValues;
   }
+
+  assertType<SimpleRetriever>(streams[0].retriever, "SimpleRetriever", streams[0].name);
+  assertType<HttpRequester>(streams[0].retriever.requester, "HttpRequester", streams[0].name);
+  builderFormValues.global.urlBase = streams[0].retriever.requester.url_base;
+
+  const { inputs, inferredInputOverrides, auth } = manifestSpecAndAuthToBuilder(
+    manifest.spec,
+    streams[0].retriever.requester.authenticator
+  );
+  builderFormValues.inputs = inputs;
+  builderFormValues.inferredInputOverrides = inferredInputOverrides;
+  builderFormValues.global.authenticator = auth;
+
+  const serializedStreamToIndex = Object.fromEntries(streams.map((stream, index) => [JSON.stringify(stream), index]));
+  builderFormValues.streams = streams.map((stream, index) =>
+    manifestStreamToBuilder(stream, index, serializedStreamToIndex, builderFormValues.global)
+  );
 
   return builderFormValues;
 };
 
 const manifestStreamToBuilder = (
   stream: DeclarativeStream,
+  index: number,
+  serializedStreamToIndex: Record<string, number>,
   builderFormGlobal: BuilderFormValues["global"]
 ): BuilderStream => {
   assertType<SimpleRetriever>(stream.retriever, "SimpleRetriever", stream.name);
@@ -106,7 +112,7 @@ const manifestStreamToBuilder = (
 
   return {
     ...DEFAULT_BUILDER_STREAM_VALUES,
-    id: uuid(),
+    id: index.toString(),
     name: stream.name ?? "",
     urlPath: requester.path,
     httpMethod: (requester.http_method as "GET" | "POST" | undefined) ?? "GET",
@@ -123,13 +129,14 @@ const manifestStreamToBuilder = (
     },
     primaryKey: manifestPrimaryKeyToBuilder(stream),
     paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, builderFormGlobal.urlBase),
-    streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, stream.name),
+    streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, serializedStreamToIndex, stream.name),
     schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
   };
 };
 
 function manifestStreamSlicerToBuilder(
   manifestStreamSlicer: SimpleRetrieverStreamSlicer | undefined,
+  serializedStreamToIndex: Record<string, number>,
   streamName?: string
 ): BuilderStream["streamSlicer"] {
   if (manifestStreamSlicer === undefined) {
@@ -156,18 +163,35 @@ function manifestStreamSlicerToBuilder(
     return {
       type: "CartesianProductStreamSlicer",
       stream_slicers: manifestStreamSlicer.stream_slicers.map((subSlicer) => {
-        return manifestStreamSlicerToBuilder(subSlicer, streamName) as
+        return manifestStreamSlicerToBuilder(subSlicer, serializedStreamToIndex, streamName) as
           | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
           | BuilderSubstreamSlicer;
       }),
     };
   }
 
-  // TODO: add support for substream slicer..
-  // This will be fairly complex as it would need to compare the manifestStreamSlicer's parent stream configs' streams to every other stream in the manifest to find one with an exact match,
-  // and once it does it will need to map that back to the id that was assigned to that stream, which may not have been assigned yet since this conversion is happening stream by stream...
   if (manifestStreamSlicer.type === "SubstreamSlicer") {
-    throw new ManifestCompatibilityError(streamName, "stream_slicer contains a SubstreamSlicer");
+    const manifestSubstreamSlicer = manifestStreamSlicer as SubstreamSlicer;
+
+    if (manifestSubstreamSlicer.parent_stream_configs.length > 1) {
+      throw new ManifestCompatibilityError(streamName, "SubstreamSlicer has more than one parent stream");
+    }
+    const parentStreamConfig = manifestSubstreamSlicer.parent_stream_configs[0];
+
+    const matchingStreamIndex = serializedStreamToIndex[JSON.stringify(parentStreamConfig.stream)];
+    if (matchingStreamIndex === undefined) {
+      throw new ManifestCompatibilityError(
+        streamName,
+        "SubstreamSlicer's parent stream doesn't match any other stream"
+      );
+    }
+
+    return {
+      type: "SubstreamSlicer",
+      parent_key: parentStreamConfig.parent_key,
+      stream_slice_field: parentStreamConfig.stream_slice_field,
+      parentStreamReference: matchingStreamIndex.toString(),
+    };
   }
 
   throw new ManifestCompatibilityError(streamName, "stream_slicer type is unsupported");
