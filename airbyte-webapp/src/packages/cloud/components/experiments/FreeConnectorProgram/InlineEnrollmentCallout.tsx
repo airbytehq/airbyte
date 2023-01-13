@@ -25,7 +25,7 @@ export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) =
 };
 export const InlineEnrollmentCallout: React.FC = () => {
   return (
-    <Callout variant="blue" className={styles.container}>
+    <Callout variant="info" className={styles.container}>
       <Text size="sm">
         <FormattedMessage
           id="freeConnectorProgram.youCanEnroll"
