@@ -8,12 +8,11 @@ from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
 import requests
-from facebook_business.adobjects.adimage import AdImage
-
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
+from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 
 from .base_insight_streams import AdsInsights
