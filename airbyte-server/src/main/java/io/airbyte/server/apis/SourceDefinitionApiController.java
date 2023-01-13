@@ -16,10 +16,13 @@ import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.micronaut.context.annotation.Context;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 
 @Controller("/api/v1/source_definitions")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 @Context
 public class SourceDefinitionApiController implements SourceDefinitionApi {
 
