@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
 import { Callout } from "components/ui/Callout";
-import { FlexContainer } from "components/ui/Flex";
+import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
@@ -30,9 +30,11 @@ export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) =
 export const LargeEnrollmentCallout: React.FC = () => {
   return (
     <Callout variant="blueBold" className={styles.container}>
-      <FlexContainer direction="row" justifyContent="space-between" alignItems="center" className={styles.flexRow}>
-        <FlexContainer direction="column" gap="xs" className={styles.textContainer}>
+      <FlexContainer direction="row" alignItems="center" className={styles.flexRow}>
+        <FlexItem grow={false} alignSelf="center">
           <ConnectorsBadges />
+        </FlexItem>
+        <FlexContainer direction="column" gap="xs" className={styles.textContainer}>
           <Heading size="sm" className={styles.title} as="h3">
             <FormattedMessage id="freeConnectorProgram.title" />
           </Heading>
@@ -40,7 +42,7 @@ export const LargeEnrollmentCallout: React.FC = () => {
             <FormattedMessage id="freeConnectorProgram.enroll.description" />
           </Text>
         </FlexContainer>
-        <Button variant="dark">
+        <Button variant="dark" className={styles.enrollButton}>
           <FormattedMessage id="freeConnectorProgram.enrollNow" />
         </Button>
       </FlexContainer>
