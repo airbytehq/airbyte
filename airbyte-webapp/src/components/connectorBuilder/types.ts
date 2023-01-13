@@ -741,12 +741,18 @@ function manifestSchemaLoaderToBuilderSchema(
 
 const interpolatedConfigValueRegex = /^{{config\[('|"+)(.+)('|"+)\]}}$/;
 
-function isInterpolatedConfigKey(str: string): boolean {
+function isInterpolatedConfigKey(str: string | undefined): boolean {
+  if (str === undefined) {
+    return false;
+  }
   const noWhitespaceString = str.replace(/\s/g, "");
   return interpolatedConfigValueRegex.test(noWhitespaceString);
 }
 
-function extractInterpolatedConfigKey(str: string): string | undefined {
+function extractInterpolatedConfigKey(str: string | undefined): string | undefined {
+  if (str === undefined) {
+    return undefined;
+  }
   const noWhitespaceString = str.replace(/\s/g, "");
   const regexResult = interpolatedConfigValueRegex.exec(noWhitespaceString);
   if (regexResult === null) {
