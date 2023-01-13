@@ -37,7 +37,7 @@ describe("<StatusCell />", () => {
       wrapper: TestWrapper,
     });
 
-    expect(getByTestId("enable-connection-switch")).toBeDisabled();
+    expect(getByTestId("enable-connection-switch")).toBeEnabled();
   });
 
   it("disables manual sync button when hasBreakingChange is true", () => {
