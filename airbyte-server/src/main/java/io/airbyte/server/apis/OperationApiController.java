@@ -14,11 +14,14 @@ import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
 import io.airbyte.api.model.generated.OperatorConfiguration;
 import io.airbyte.server.handlers.OperationsHandler;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 
 @Controller("/api/v1/operations")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 public class OperationApiController implements OperationApi {
 
   private final OperationsHandler operationsHandler;
