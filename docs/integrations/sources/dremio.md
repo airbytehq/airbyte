@@ -31,8 +31,9 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 * Base URL
 
 ### Setup guide
+Connector needs a self-hosted instance of Dremio, this way you can access the Dremio REST API on which this source is based. Please refer to [Dremio Deployment Models](https://docs.dremio.com/software/deployment/deployment-models/) document, or take a look at [Dremio OSS](https://github.com/dremio/dremio-oss) for reference.
 
-Please read [How to get your APIs credentials](https://docs.dremio.com/software/rest-api/overview/#authentication).
+Please read [How to get your APIs credentials](https://docs.dremio.com/software/rest-api/#authenticationn).
 
 ## Changelog
 
