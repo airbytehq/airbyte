@@ -1,4 +1,4 @@
 /// <reference types="vite/client" />
 
-// TODO: Documentation
+// Make sure to set `process` to undefined, so we can't access it.
 declare const process: undefined;

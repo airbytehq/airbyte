@@ -5,6 +5,7 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 import react from "@vitejs/plugin-react";
 import { loadEnv, Plugin, UserConfig } from "vite";
 import { defineConfig } from "vite";
+import checker from "vite-plugin-checker";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
@@ -40,7 +41,26 @@ export default defineConfig(({ mode }) => {
   };
 
   const config: UserConfig = {
-    plugins: [basicSsl(), react(), viteTsconfigPaths(), svgrPlugin(), patchReactVirtualized()],
+    plugins: [
+      basicSsl(),
+      react(),
+      viteTsconfigPaths(),
+      svgrPlugin(),
+      checker({
+        // Make sure checks work while building
+        enableBuild: true,
+        overlay: {
+          initialIsOpen: false,
+          position: "br",
+          // Align error popover button with the react-query dev tool button
+          badgeStyle: "transform: translate(-60px,-11px)",
+        },
+        eslint: { lintCommand: `eslint --ext js,ts,tsx src` },
+        stylelint: { lintCommand: `stylelint '${path.join(__dirname, "src")}/**/*.{css,scss}'` },
+        typescript: true,
+      }),
+      patchReactVirtualized(),
+    ],
     // Use `REACT_APP_` as a prefix for environment variables that should be accessible from within FE code.
     envPrefix: ["REACT_APP_"],
     build: {
