@@ -14,10 +14,10 @@ on:
         type: choice
         description: "Choose the type of version upgrade : major|minor|patch"
         options:
+          - none
           - major
           - minor
           - patch
-          - none
         required: true
       skip-publish-test:
         description: 'By default, the job publishes to Test PyPi. Use "true" to only publish to actual PyPi servers.'
@@ -63,7 +63,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C02TL38U5L7
+          channel-id: C04J1M66D8B
           payload: |
             {
                 "text": "Error while publishing Airbyte CDK!"
@@ -110,7 +110,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C02TL38U5L7
+          channel-id: C04J1M66D8B
           payload: |
             {
                 "text": "Error while publishing Airbyte CDK!"
@@ -170,7 +170,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C02TL38U5L7
+          channel-id: C04J1M66D8B
           payload: |
             {
                 "text": "A new version of Airbyte CDK has been released!"
@@ -198,7 +198,7 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
-          channel-id: C02TL38U5L7
+          channel-id: C04J1M66D8B
           payload: |
             {
                 "text": "Error while publishing Airbyte CDK!"
