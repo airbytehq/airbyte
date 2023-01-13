@@ -25,9 +25,9 @@ acceptance_tests:
           exact_order: no
           extra_records: yes
         empty_streams:
-          - name: events
+          - name: "events"
             bypass_reason: "Only events created within the past 90 days can be showed"
-          - name: organizations
+          - name: "organizations"
             bypass_reason: "The objects can mutate quite often"
   incremental:
     tests:
