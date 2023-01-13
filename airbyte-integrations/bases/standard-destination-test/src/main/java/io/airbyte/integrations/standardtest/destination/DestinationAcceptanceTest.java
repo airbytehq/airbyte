@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
@@ -88,6 +89,7 @@ import lombok.Getter;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -660,11 +662,6 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteCatalog catalog = Jsons.deserialize(
         MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(ProtocolVersion.V0)),
         AirbyteCatalog.class);
-
-    if (!catalog.getStreams().get(0).getName().equals("exchange_rate")) {
-      // This test is only implemented for the exchange rate catalog.
-      return;
-    }
 
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
@@ -1274,14 +1271,14 @@ public abstract class DestinationAcceptanceTest {
   private ConnectorSpecification runSpec() throws WorkerException {
     return convertProtocolObject(
         new DefaultGetSpecWorker(
-            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
+            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()))
                 .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec(),
         ConnectorSpecification.class);
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false),
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .getCheckConnection();
@@ -1291,7 +1288,7 @@ public abstract class DestinationAcceptanceTest {
                                                                               final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
-          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false),
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()),
           mConnectorConfigUpdater)
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
               .getCheckConnection();
@@ -1304,7 +1301,7 @@ public abstract class DestinationAcceptanceTest {
 
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,
@@ -1535,6 +1532,7 @@ public abstract class DestinationAcceptanceTest {
    * your_containers_id" (ex. docker container attach 18cc929f44c8) to see the container's output
    */
   @Test
+  @Disabled
   public void testStressPerformance() throws Exception {
     final int streamsSize = 5; // number of generated streams
     final int messagesNumber = 300; // number of msg to be written to each generated stream

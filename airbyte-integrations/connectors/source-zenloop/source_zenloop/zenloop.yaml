@@ -32,6 +32,7 @@ definitions:
       page_token_option:
         inject_into: "path"
   base_stream:
+    type: DeclarativeStream
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
