@@ -1,16 +1,9 @@
-FROM python:3.9-slim
+FROM airbyte/source-lowcode:dev
 
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+# copy payload code only
+COPY source_posthog/ source_posthog
+COPY source_posthog/spec.* source_lowcode/
+COPY source_posthog/posthog.yaml source_lowcode/manifest.yaml
 
-WORKDIR /airbyte/integration_code
-COPY source_posthog ./source_posthog
-COPY main.py ./
-COPY setup.py ./
-RUN pip install .
-
-ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
-
-LABEL io.airbyte.version=0.1.8
+LABEL io.airbyte.version=0.1.0
 LABEL io.airbyte.name=airbyte/source-posthog

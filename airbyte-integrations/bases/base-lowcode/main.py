@@ -4,10 +4,10 @@
 
 
 import sys
-
 from airbyte_cdk.entrypoint import launch
-from source_posthog import SourcePosthog
+
+from source_lowcode import SourceLowcode
 
 if __name__ == "__main__":
-    source = SourcePosthog()
+    source = SourceLowcode()
     launch(source, sys.argv[1:])

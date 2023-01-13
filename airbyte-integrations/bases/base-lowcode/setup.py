@@ -13,8 +13,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_posthog",
-    description="Source implementation for Posthog.",
+    name="base_lowcode",
+    description="Base source for low-code connectors",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
