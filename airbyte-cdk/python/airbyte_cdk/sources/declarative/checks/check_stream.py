@@ -38,25 +38,23 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
                 stream = stream_name_to_stream[stream_name]
                 try:
                     # Some streams need a stream slice to read records (eg if they have a SubstreamSlicer)
-                    stream_slice = self._get_stream_slice(stream)
+                    stream_slice = self._get_first_stream_slice(stream)
                 except StopIteration:
-                    return (
-                        False,
-                        f"Cannot attempt to connect to stream {stream_name} - no stream slices were found, likely because the parent stream is empty.",
-                    )
+                    reason = f"Cannot attempt to connect to stream {stream_name} - no stream slices were found, likely because the parent stream is empty."
+                    return False, reason
                 try:
-                    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-                    next(records)
+                    self._get_first_record_for_slice(stream, stream_slice)
+                    return True, None
                 except StopIteration:
                     logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
                     return True, None
                 except Exception as error:
+                    logger.error(f"Encountered an error trying to connect to stream {stream.name}. Error: \n {traceback.format_exc()}")
                     return False, f"Unable to connect to stream {stream_name} - {error}"
             else:
-                raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}")
-        return True, None
+                raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}.")
 
-    def _get_stream_slice(self, stream):
+    def _get_first_stream_slice(self, stream):
         # We wrap the return output of stream_slices() because some implementations return types that are iterable,
         # but not iterators such as lists or tuples
         slices = iter(
@@ -66,3 +64,7 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
             )
         )
         return next(slices)
+
+    def _get_first_record_for_slice(self, stream, stream_slice):
+        records_for_slice = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+        return next(records_for_slice)
