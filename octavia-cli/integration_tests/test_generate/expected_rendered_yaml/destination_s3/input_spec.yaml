@@ -325,8 +325,6 @@ spec:
                 type: "boolean"
                 default: true
   supportsIncremental: true
-  supportsNormalization: false
-  supportsDBT: false
   supported_destination_sync_modes:
     - "overwrite"
     - "append"
