@@ -13,8 +13,8 @@ import { Text } from "components/ui/Text";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { useFreeConnectorProgram } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
 import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
-import { useFreeConnectorProgram } from "packages/cloud/components/experiments/FreeConnectorProgram/useFreeConnectorProgram";
 
 import { ConnectionRoutePaths } from "../types";
 import styles from "./ConnectionPageTitle.module.scss";
