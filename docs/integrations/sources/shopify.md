@@ -82,14 +82,8 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 3. Create a private application.
 4. Select the resources you want to allow access to. Airbyte only needs read-level access.
    * Note: The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource.
-5. The password under the `Admin API` section is what you'll use as the `api_password` for the integration.
+5. The password under the `Admin API` section is what you'll use as the `API PASSWORD` for the integration.
 6. You're ready to set up Shopify in Airbyte!
-
-### Connect using `OAuth 2.0` option
-
-1. Select `OAuth 2.0` in `Shopify Authorization Method`
-2. Click on `authenticate`
-2. Proceed the authentication using your credentials for your Shopify account.
 
 ### Output Streams Schemas
 
