@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.process;
 
+import static io.airbyte.featureflag.ContextKt.ANONYMOUS;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
@@ -24,7 +25,11 @@ import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
+import io.airbyte.featureflag.ApplyFieldSelection;
+import io.airbyte.featureflag.AutoDetectSchema;
 import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.StreamCapableState;
+import io.airbyte.featureflag.Workspace;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
@@ -210,14 +215,15 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   private Map<String, String> getWorkerMetadata() {
+    final var context = new Workspace(ANONYMOUS);
     return Map.of(
         WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
         WorkerEnvConstants.WORKER_JOB_ID, jobId,
         WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt),
-        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlag.useStreamCapableState()),
-        EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlag.autoDetectSchema()),
-        EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlag.applyFieldSelection()),
-        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlag.fieldSelectionWorkspaces());
+        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlag.enabled(StreamCapableState.INSTANCE, context)),
+        EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlag.enabled(AutoDetectSchema.INSTANCE, context)),
+        EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlag.enabled(ApplyFieldSelection.INSTANCE, context)));// ,
+    // EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlag.fieldSelectionWorkspaces());
   }
 
 }
