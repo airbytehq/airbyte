@@ -16,7 +16,6 @@ import {
   SessionTokenAuthenticator,
   RequestOption,
   OAuthAuthenticator,
-  DefaultPaginatorPaginationStrategy,
   SimpleRetrieverStreamSlicer,
   HttpRequesterAuthenticator,
   SubstreamSlicer,
@@ -27,6 +26,12 @@ import {
   InlineSchemaLoader,
   SimpleRetrieverPaginator,
   DeclarativeStreamSchemaLoader,
+  SimpleRetriever,
+  HttpRequester,
+  DpathExtractor,
+  PageIncrement,
+  OffsetIncrement,
+  CursorPagination,
 } from "core/request/ConnectorManifest";
 
 import { formatJson } from "./utils";
@@ -60,7 +65,7 @@ export interface BuilderFormValues {
 }
 
 export interface BuilderPaginator {
-  strategy: DefaultPaginatorPaginationStrategy;
+  strategy: PageIncrement | OffsetIncrement | CursorPagination;
   pageTokenOption: RequestOption;
   pageSizeOption?: RequestOption;
 }
@@ -711,6 +716,11 @@ function manifestPaginatorToBuilder(
     throw new ManifestCompatibilityError(streamName, "paginator.url_base does not match the first stream's url_base");
   }
 
+  console.log(streamName);
+  if (manifestPaginator.pagination_strategy.type === "CustomPaginationStrategy") {
+    throw new ManifestCompatibilityError(streamName, "paginator.pagination_strategy uses a CustomPaginationStrategy");
+  }
+
   return {
     strategy: manifestPaginator.pagination_strategy,
     pageTokenOption: manifestPaginator.page_token_option,
@@ -830,6 +840,16 @@ function manifestSpecAndAuthToBuilder(
   return result;
 }
 
+function assertType<T extends { type: string }>(
+  object: { type: string },
+  typeString: string,
+  streamName: string | undefined
+): asserts object is T {
+  if (object.type !== typeString) {
+    throw new ManifestCompatibilityError(streamName, `doesn't use a ${typeString}`);
+  }
+}
+
 export const convertToBuilderFormValues = (
   manifest: ConnectorManifest,
   currentBuilderFormValues: BuilderFormValues
@@ -841,9 +861,8 @@ export const convertToBuilderFormValues = (
   if (streams === undefined || streams.length === 0) {
     builderFormValues.inputs = manifestSpecAndAuthToBuilder(manifest.spec, undefined).inputs;
   } else {
-    if (streams[0].retriever.type !== "SimpleRetriever") {
-      throw new ManifestCompatibilityError(streams[0].name, "doesn't use a SimpleRetriever");
-    }
+    assertType<SimpleRetriever>(streams[0].retriever, "SimpleRetriever", streams[0].name);
+    assertType<HttpRequester>(streams[0].retriever.requester, "HttpRequester", streams[0].name);
     builderFormValues.global.urlBase = streams[0].retriever.requester.url_base;
 
     const { inputs, auth } = manifestSpecAndAuthToBuilder(manifest.spec, streams[0].retriever.requester.authenticator);
@@ -851,11 +870,10 @@ export const convertToBuilderFormValues = (
     builderFormValues.global.authenticator = auth;
 
     builderFormValues.streams = streams.map((stream) => {
-      if (stream.retriever.type !== "SimpleRetriever") {
-        throw new ManifestCompatibilityError(stream.name, "doesn't use a SimpleRetriever");
-      }
-
+      assertType<SimpleRetriever>(stream.retriever, "SimpleRetriever", stream.name);
       const retriever = stream.retriever;
+
+      assertType<HttpRequester>(retriever.requester, "HttpRequester", stream.name);
       const requester = retriever.requester;
 
       if (!isEqual(retriever.requester.authenticator, builderFormValues.global.authenticator)) {
@@ -877,13 +895,23 @@ export const convertToBuilderFormValues = (
         throw new ManifestCompatibilityError(stream.name, "http_method is not GET or POST");
       }
 
+      assertType<DpathExtractor>(retriever.record_selector.extractor, "DpathExtractor", stream.name);
+
+      if (requester.request_options_provider) {
+        assertType<InterpolatedRequestOptionsProvider>(
+          requester.request_options_provider,
+          "InterpolatedRequestOptionsProvider",
+          stream.name
+        );
+      }
+
       const builderStream: BuilderStream = {
         ...DEFAULT_BUILDER_STREAM_VALUES,
         id: uuid(),
         name: stream.name ?? "",
         urlPath: requester.path,
         httpMethod: (requester.http_method as "GET" | "POST" | undefined) ?? "GET",
-        fieldPointer: retriever.record_selector.extractor.field_pointer,
+        fieldPointer: retriever.record_selector.extractor.field_pointer as string[],
         requestOptions: {
           requestParameters: Object.entries(requester.request_options_provider?.request_parameters ?? {}),
           requestHeaders: Object.entries(requester.request_options_provider?.request_headers ?? {}),
@@ -911,7 +939,9 @@ export class ManifestCompatibilityError extends Error {
   __type = "connectorBuilder.manifestCompatibility";
 
   constructor(public streamName: string | undefined, public message: string) {
-    super(`${streamName ? `Stream ${streamName}: ` : ""} ${message}`);
+    const errorMessage = `${streamName ? `Stream ${streamName}:` : ""} ${message}`;
+    super(errorMessage);
+    this.message = errorMessage;
   }
 }
 
