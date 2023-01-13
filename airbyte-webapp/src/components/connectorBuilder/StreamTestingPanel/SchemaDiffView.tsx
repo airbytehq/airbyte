@@ -10,6 +10,7 @@ import { useDebounce } from "react-use";
 import { Button } from "components/ui/Button";
 import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { InfoBox } from "components/ui/InfoBox";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { StreamReadInferredSchema } from "core/request/ConnectorBuilderClient";
 import {
@@ -107,15 +108,21 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
                 </FlexItem>
                 {schemaDiff.mergedSchema && schemaDiff.lossyOverride && (
                   <FlexItem grow>
-                    <Button
-                      full
-                      variant="dark"
-                      onClick={() => {
-                        helpers.setValue(schemaDiff.mergedSchema);
-                      }}
+                    <Tooltip
+                      control={
+                        <Button
+                          full
+                          variant="dark"
+                          onClick={() => {
+                            helpers.setValue(schemaDiff.mergedSchema);
+                          }}
+                        >
+                          <FormattedMessage id="connectorBuilder.mergeSchemaButton" />
+                        </Button>
+                      }
                     >
-                      <FormattedMessage id="connectorBuilder.mergeSchemaButton" />
-                    </Button>
+                      <FormattedMessage id="connectorBuilder.mergeSchemaTooltip" />
+                    </Tooltip>
                   </FlexItem>
                 )}
               </FlexContainer>

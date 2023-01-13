@@ -208,9 +208,9 @@ const StreamTab = ({
 
 const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string) => string }) => {
   const [field, meta, helpers] = useField<string | undefined>(streamFieldPath("schema"));
-  const { streamRead: readStream } = useConnectorBuilderTestState();
+  const { streamRead } = useConnectorBuilderTestState();
 
-  const showImportButton = !field.value && readStream.data?.inferred_schema;
+  const showImportButton = !field.value && streamRead.data?.inferred_schema;
 
   return (
     <>
@@ -219,7 +219,7 @@ const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string
           full
           variant="secondary"
           onClick={() => {
-            helpers.setValue(formatJson(readStream.data?.inferred_schema, true));
+            helpers.setValue(formatJson(streamRead.data?.inferred_schema, true));
           }}
         >
           <FormattedMessage id="connectorBuilder.useSchemaButton" />
