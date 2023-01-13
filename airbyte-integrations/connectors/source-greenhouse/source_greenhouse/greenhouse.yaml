@@ -8,7 +8,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: []
+      field_pointer: [ ]
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
@@ -20,7 +20,7 @@ definitions:
       error_handlers:
         - type: DefaultErrorHandler
           response_filters:
-            - http_codes: [403]
+            - http_codes: [ 403 ]
               action: IGNORE
         - type: DefaultErrorHandler
     authenticator:
@@ -301,4 +301,4 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["applications"]
+  stream_names: [ "demographics_answers_answer_options" ]
