@@ -1,3 +1,4 @@
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import React, { Suspense } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
@@ -74,7 +75,9 @@ const App: React.FC = () => {
                 <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
                   <Router>
                     <Services>
-                      <Routing />
+                      <GoogleOAuthProvider clientId="797465575128-he9j9jrtastc66su472tnv3uvbtkllid.apps.googleusercontent.com">
+                        <Routing />
+                      </GoogleOAuthProvider>
                     </Services>
                   </Router>
                 </ConfigServiceProvider>

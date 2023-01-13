@@ -1,16 +1,19 @@
 import { Field, FieldProps, Formik } from "formik";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
 import Alert from "components/Alert";
+import { Separator } from "components/Separator";
 
 import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
+import { GoogleAuthBtn } from "../../GoogleAuthBtn";
 import styles from "./SignupForm.module.scss";
 
 interface FormValues {
@@ -21,10 +24,6 @@ interface FormValues {
   password: string;
   confirmPassword: string;
 }
-
-// const MarginBlock = styled.div`
-//   margin-bottom: 15px;
-// `;
 
 export const FirstNameField: React.FC = () => {
   const { formatMessage } = useIntl();
@@ -172,6 +171,26 @@ export const SignupFormStatusMessage: React.FC = ({ children }) => (
   <div className={styles.statusMessage}>{children}</div>
 );
 
+const AuthSeperatorContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const Line = styled.div`
+  width: 100%;
+  border-top: 1px solid #d6dadf;
+`;
+
+const SeperatorText = styled.div`
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  color: #6b6b6f;
+  margin: 0 37px;
+`;
+
 export const SignupForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const signUp = useAuthenticationService();
@@ -227,6 +246,14 @@ export const SignupForm: React.FC = () => {
       >
         {({ isValid, dirty, isSubmitting, status }) => (
           <Form className={styles.form}>
+            <GoogleAuthBtn />
+            <Separator height="28px" />
+            <AuthSeperatorContainer>
+              <Line />
+              <SeperatorText>Or</SeperatorText>
+              <Line />
+            </AuthSeperatorContainer>
+            <Separator height="40px" />
             <RowFieldItem>
               <FirstNameField />
               <LastNameField />
