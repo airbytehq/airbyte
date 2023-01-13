@@ -29,6 +29,8 @@ import {
   DeclarativeStreamSchemaLoader,
 } from "core/request/ConnectorManifest";
 
+import { formatJson } from "./utils";
+
 export interface BuilderFormInput {
   key: string;
   required: boolean;
@@ -717,25 +719,19 @@ function manifestPaginatorToBuilder(
 }
 
 function manifestSchemaLoaderToBuilderSchema(
-  manifestSchemaLoader: DeclarativeStreamSchemaLoader | undefined,
-  streamName: string | undefined
+  manifestSchemaLoader: DeclarativeStreamSchemaLoader | undefined
 ): BuilderStream["schema"] {
   if (manifestSchemaLoader === undefined) {
     return undefined;
   }
 
-  if (manifestSchemaLoader.type !== "InlineSchemaLoader") {
-    throw new ManifestCompatibilityError(
-      streamName,
-      "schema_loader type is unsupported. Only InlineSchemaLoader is supported."
-    );
+  if (manifestSchemaLoader.type === "InlineSchemaLoader") {
+    const inlineSchemaLoader = manifestSchemaLoader as InlineSchemaLoader;
+    return inlineSchemaLoader.schema ? formatJson(inlineSchemaLoader.schema) : undefined;
   }
 
-  const inlineSchemaLoader = manifestSchemaLoader as InlineSchemaLoader;
-
-  if (inlineSchemaLoader.schema) {
-    return JSON.stringify(inlineSchemaLoader.schema);
-  }
+  // Return undefined if schema loader is not inline.
+  // In this case, users can copy-paste the schema into the Builder, or they can re-infer it
   return undefined;
 }
 
@@ -901,7 +897,7 @@ export const convertToBuilderFormValues = (
         primaryKey: manifestPrimaryKeyToBuilder(stream),
         paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, builderFormValues.global.urlBase),
         streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, stream.name),
-        schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader, stream.name),
+        schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
       };
 
       return builderStream;
