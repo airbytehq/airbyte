@@ -16,7 +16,7 @@ class Helpers(object):
 
     @staticmethod
     def modify_date(response_json):
-        data_mod = ["startdata", "enddata", "CompletionDate", "SubmissionDate"]
+        data_mod = ["starttime", "endtime", "CompletionDate", "SubmissionDate"]
         dateformat_in = "%b %d, %Y %I:%M:%S %p"
         dateformat_out = "%Y-%m-%dT%H:%M:%S+00:00"
 
