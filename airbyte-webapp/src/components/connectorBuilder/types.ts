@@ -1,12 +1,9 @@
 import { JSONSchema7 } from "json-schema";
-import isEqual from "lodash/isEqual";
-import { v4 as uuid } from "uuid";
 import * as yup from "yup";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import {
   ConnectorManifest,
-  InterpolatedRequestOptionsProvider,
   Spec,
   ApiKeyAuthenticator,
   BasicHttpAuthenticator,
@@ -21,20 +18,11 @@ import {
   SubstreamSlicer,
   SubstreamSlicerType,
   CartesianProductStreamSlicer,
-  DatetimeStreamSlicer,
-  ListStreamSlicer,
-  InlineSchemaLoader,
-  SimpleRetrieverPaginator,
   DeclarativeStreamSchemaLoader,
-  SimpleRetriever,
-  HttpRequester,
-  DpathExtractor,
   PageIncrement,
   OffsetIncrement,
   CursorPagination,
 } from "core/request/ConnectorManifest";
-
-import { formatJson } from "./utils";
 
 export interface BuilderFormInput {
   key: string;
@@ -42,7 +30,7 @@ export interface BuilderFormInput {
   definition: AirbyteJSONSchema;
 }
 
-type BuilderFormAuthenticator = (
+export type BuilderFormAuthenticator = (
   | NoAuth
   | (Omit<OAuthAuthenticator, "refresh_request_body"> & {
       refresh_request_body: Array<[string, string]>;
@@ -129,7 +117,7 @@ export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
   },
 };
 
-const authTypeToKeyToInferredInput: Record<string, Record<string, BuilderFormInput>> = {
+export const authTypeToKeyToInferredInput: Record<string, Record<string, BuilderFormInput>> = {
   NoAuth: {},
   ApiKeyAuthenticator: {
     api_token: {
@@ -271,6 +259,28 @@ export function getInferredInputs(
 const interpolateConfigKey = (key: string): string => {
   return `{{ config['${key}'] }}`;
 };
+
+const interpolatedConfigValueRegex = /^{{config\[('|"+)(.+)('|"+)\]}}$/;
+
+export function isInterpolatedConfigKey(str: string | undefined): boolean {
+  if (str === undefined) {
+    return false;
+  }
+  const noWhitespaceString = str.replace(/\s/g, "");
+  return interpolatedConfigValueRegex.test(noWhitespaceString);
+}
+
+function extractInterpolatedConfigKey(str: string | undefined): string | undefined {
+  if (str === undefined) {
+    return undefined;
+  }
+  const noWhitespaceString = str.replace(/\s/g, "");
+  const regexResult = interpolatedConfigValueRegex.exec(noWhitespaceString);
+  if (regexResult === null) {
+    return undefined;
+  }
+  return regexResult[2];
+}
 
 export const injectIntoValues = ["request_parameter", "header", "path", "body_data", "body_json"];
 const nonPathRequestOptionSchema = yup
@@ -533,51 +543,6 @@ function builderStreamSlicerToManifest(
   };
 }
 
-function manifestStreamSlicerToBuilder(
-  manifestStreamSlicer: SimpleRetrieverStreamSlicer | undefined,
-  streamName?: string
-): BuilderStream["streamSlicer"] {
-  if (manifestStreamSlicer === undefined) {
-    return undefined;
-  }
-
-  if (manifestStreamSlicer.type === undefined) {
-    throw new ManifestCompatibilityError(streamName, "stream_slicer has no type");
-  }
-
-  if (manifestStreamSlicer.type === "CustomStreamSlicer") {
-    throw new ManifestCompatibilityError(streamName, "stream_slicer contains a CustomStreamSlicer");
-  }
-
-  if (manifestStreamSlicer.type === "SingleSlice") {
-    throw new ManifestCompatibilityError(streamName, "stream_slicer contains a SingleSlice");
-  }
-
-  if (manifestStreamSlicer.type === "DatetimeStreamSlicer" || manifestStreamSlicer.type === "ListStreamSlicer") {
-    return manifestStreamSlicer as DatetimeStreamSlicer | ListStreamSlicer;
-  }
-
-  if (manifestStreamSlicer.type === "CartesianProductStreamSlicer") {
-    return {
-      type: "CartesianProductStreamSlicer",
-      stream_slicers: manifestStreamSlicer.stream_slicers.map((subSlicer) => {
-        return manifestStreamSlicerToBuilder(subSlicer, streamName) as
-          | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
-          | BuilderSubstreamSlicer;
-      }),
-    };
-  }
-
-  // TODO: add support for substream slicer..
-  // This will be fairly complex as it would need to compare the manifestStreamSlicer's parent stream configs' streams to every other stream in the manifest to find one with an exact match,
-  // and once it does it will need to map that back to the id that was assigned to that stream, which may not have been assigned yet since this conversion is happening stream by stream...
-  if (manifestStreamSlicer.type === "SubstreamSlicer") {
-    throw new ManifestCompatibilityError(streamName, "stream_slicer contains a SubstreamSlicer");
-  }
-
-  throw new ManifestCompatibilityError(streamName, "stream_slicer type is unsupported");
-}
-
 const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} };
 
 function parseSchemaString(schema?: string): DeclarativeStreamSchemaLoader {
@@ -677,276 +642,3 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     spec,
   };
 };
-
-function manifestPrimaryKeyToBuilder(manifestStream: DeclarativeStream): BuilderStream["primaryKey"] {
-  if (!isEqual(manifestStream.primary_key, manifestStream.retriever.primary_key)) {
-    throw new ManifestCompatibilityError(
-      manifestStream.name,
-      "primary_key is not consistent across stream and retriever levels"
-    );
-  }
-  if (manifestStream.primary_key === undefined) {
-    return [];
-  } else if (Array.isArray(manifestStream.retriever.primary_key)) {
-    if (manifestStream.retriever.primary_key.length > 0 && Array.isArray(manifestStream.retriever.primary_key[0])) {
-      throw new ManifestCompatibilityError(manifestStream.stream.name, "primary_key contains nested arrays");
-    } else {
-      return manifestStream.retriever.primary_key as string[];
-    }
-  } else {
-    return [manifestStream.retriever.primary_key];
-  }
-}
-
-function manifestPaginatorToBuilder(
-  manifestPaginator: SimpleRetrieverPaginator | undefined,
-  streamName: string | undefined,
-  globalUrlBase: string
-): BuilderPaginator | undefined {
-  if (manifestPaginator === undefined || manifestPaginator.type === "NoPagination") {
-    return undefined;
-  }
-
-  if (manifestPaginator.page_token_option === undefined) {
-    throw new ManifestCompatibilityError(streamName, "paginator does not define a page_token_option");
-  }
-
-  if (manifestPaginator.url_base !== globalUrlBase) {
-    throw new ManifestCompatibilityError(streamName, "paginator.url_base does not match the first stream's url_base");
-  }
-
-  console.log(streamName);
-  if (manifestPaginator.pagination_strategy.type === "CustomPaginationStrategy") {
-    throw new ManifestCompatibilityError(streamName, "paginator.pagination_strategy uses a CustomPaginationStrategy");
-  }
-
-  return {
-    strategy: manifestPaginator.pagination_strategy,
-    pageTokenOption: manifestPaginator.page_token_option,
-    pageSizeOption: manifestPaginator.page_size_option,
-  };
-}
-
-function manifestSchemaLoaderToBuilderSchema(
-  manifestSchemaLoader: DeclarativeStreamSchemaLoader | undefined
-): BuilderStream["schema"] {
-  if (manifestSchemaLoader === undefined) {
-    return undefined;
-  }
-
-  if (manifestSchemaLoader.type === "InlineSchemaLoader") {
-    const inlineSchemaLoader = manifestSchemaLoader as InlineSchemaLoader;
-    return inlineSchemaLoader.schema ? formatJson(inlineSchemaLoader.schema) : undefined;
-  }
-
-  // Return undefined if schema loader is not inline.
-  // In this case, users can copy-paste the schema into the Builder, or they can re-infer it
-  return undefined;
-}
-
-const interpolatedConfigValueRegex = /^{{config\[('|"+)(.+)('|"+)\]}}$/;
-
-function isInterpolatedConfigKey(str: string | undefined): boolean {
-  if (str === undefined) {
-    return false;
-  }
-  const noWhitespaceString = str.replace(/\s/g, "");
-  return interpolatedConfigValueRegex.test(noWhitespaceString);
-}
-
-function extractInterpolatedConfigKey(str: string | undefined): string | undefined {
-  if (str === undefined) {
-    return undefined;
-  }
-  const noWhitespaceString = str.replace(/\s/g, "");
-  const regexResult = interpolatedConfigValueRegex.exec(noWhitespaceString);
-  if (regexResult === null) {
-    return undefined;
-  }
-  return regexResult[2];
-}
-
-function manifestAuthenticatorToBuilder(
-  manifestAuthenticator: HttpRequesterAuthenticator | undefined,
-  streamName?: string
-): BuilderFormAuthenticator {
-  let builderAuthenticator: BuilderFormAuthenticator;
-  if (manifestAuthenticator === undefined) {
-    builderAuthenticator = {
-      type: "NoAuth",
-    };
-  } else if (manifestAuthenticator.type === "CustomAuthenticator") {
-    throw new ManifestCompatibilityError(streamName, "uses a CustomAuthenticator");
-  } else if (manifestAuthenticator.type === "OAuthAuthenticator") {
-    builderAuthenticator = {
-      ...manifestAuthenticator,
-      refresh_request_body: Object.entries(manifestAuthenticator.refresh_request_body ?? {}),
-    };
-  } else {
-    builderAuthenticator = manifestAuthenticator;
-  }
-
-  // verify that all auth keys which require a user input have a {{config[]}} value
-
-  const userInputAuthKeys = Object.keys(authTypeToKeyToInferredInput[builderAuthenticator.type]);
-
-  for (const userInputAuthKey of userInputAuthKeys) {
-    if (!isInterpolatedConfigKey(Reflect.get(builderAuthenticator, userInputAuthKey))) {
-      throw new ManifestCompatibilityError(
-        undefined,
-        `Authenticator's ${userInputAuthKey} value must be of the form {{ config['key'] }}`
-      );
-    }
-  }
-
-  return builderAuthenticator;
-}
-
-function manifestSpecAndAuthToBuilder(
-  manifestSpec: Spec | undefined,
-  manifestAuthenticator: HttpRequesterAuthenticator | undefined
-): { inputs: BuilderFormValues["inputs"]; auth: BuilderFormAuthenticator } {
-  const result: { inputs: BuilderFormValues["inputs"]; auth: BuilderFormAuthenticator } = {
-    inputs: [],
-    auth: manifestAuthenticatorToBuilder(manifestAuthenticator),
-  };
-
-  if (manifestSpec === undefined) {
-    return result;
-  }
-
-  const required = manifestSpec.connection_specification.required as string[];
-  result.inputs = Object.entries(
-    manifestSpec.connection_specification.properties as Record<string, AirbyteJSONSchema>
-  ).flatMap(([key, definition]) => {
-    // filter out spec properties with keys matching inferred inputs to avoid duplicate inputs
-    if (
-      Object.values(authTypeToKeyToInferredInput[result.auth.type])
-        .map((input) => input.key)
-        .includes(key)
-    ) {
-      return [];
-    }
-    return [
-      {
-        key,
-        definition,
-        required: required.includes(key),
-      },
-    ];
-  });
-
-  return result;
-}
-
-function assertType<T extends { type: string }>(
-  object: { type: string },
-  typeString: string,
-  streamName: string | undefined
-): asserts object is T {
-  if (object.type !== typeString) {
-    throw new ManifestCompatibilityError(streamName, `doesn't use a ${typeString}`);
-  }
-}
-
-const manifestStreamToBuilder = (
-  stream: DeclarativeStream,
-  builderFormGlobal: BuilderFormValues["global"]
-): BuilderStream => {
-  assertType<SimpleRetriever>(stream.retriever, "SimpleRetriever", stream.name);
-  const retriever = stream.retriever;
-
-  assertType<HttpRequester>(retriever.requester, "HttpRequester", stream.name);
-  const requester = retriever.requester;
-
-  if (!isEqual(retriever.requester.authenticator, builderFormGlobal.authenticator)) {
-    throw new ManifestCompatibilityError(stream.name, "authenticator does not match the first stream's");
-  }
-
-  if (retriever.requester.url_base !== builderFormGlobal.urlBase) {
-    throw new ManifestCompatibilityError(stream.name, "url_base does not match the first stream's");
-  }
-
-  if (retriever.name !== stream.name || requester.name !== stream.name) {
-    throw new ManifestCompatibilityError(
-      stream.name,
-      "name is not consistent across stream, retriever, and requester levels"
-    );
-  }
-
-  if (![undefined, "GET", "POST"].includes(requester.http_method)) {
-    throw new ManifestCompatibilityError(stream.name, "http_method is not GET or POST");
-  }
-
-  assertType<DpathExtractor>(retriever.record_selector.extractor, "DpathExtractor", stream.name);
-
-  if (requester.request_options_provider) {
-    assertType<InterpolatedRequestOptionsProvider>(
-      requester.request_options_provider,
-      "InterpolatedRequestOptionsProvider",
-      stream.name
-    );
-  }
-
-  return {
-    ...DEFAULT_BUILDER_STREAM_VALUES,
-    id: uuid(),
-    name: stream.name ?? "",
-    urlPath: requester.path,
-    httpMethod: (requester.http_method as "GET" | "POST" | undefined) ?? "GET",
-    fieldPointer: retriever.record_selector.extractor.field_pointer as string[],
-    requestOptions: {
-      requestParameters: Object.entries(requester.request_options_provider?.request_parameters ?? {}),
-      requestHeaders: Object.entries(requester.request_options_provider?.request_headers ?? {}),
-      // try getting this from request_body_data first, and if not set then pull from request_body_json
-      requestBody: Object.entries(
-        requester.request_options_provider?.request_body_data ??
-          requester.request_options_provider?.request_body_json ??
-          {}
-      ),
-    },
-    primaryKey: manifestPrimaryKeyToBuilder(stream),
-    paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, builderFormGlobal.urlBase),
-    streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, stream.name),
-    schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
-  };
-};
-
-export const convertToBuilderFormValues = (
-  manifest: ConnectorManifest,
-  currentBuilderFormValues: BuilderFormValues
-) => {
-  const builderFormValues = DEFAULT_BUILDER_FORM_VALUES;
-  builderFormValues.global.connectorName = currentBuilderFormValues.global.connectorName;
-
-  const streams = manifest.streams;
-  if (streams === undefined || streams.length === 0) {
-    builderFormValues.inputs = manifestSpecAndAuthToBuilder(manifest.spec, undefined).inputs;
-  } else {
-    assertType<SimpleRetriever>(streams[0].retriever, "SimpleRetriever", streams[0].name);
-    assertType<HttpRequester>(streams[0].retriever.requester, "HttpRequester", streams[0].name);
-    builderFormValues.global.urlBase = streams[0].retriever.requester.url_base;
-
-    const { inputs, auth } = manifestSpecAndAuthToBuilder(manifest.spec, streams[0].retriever.requester.authenticator);
-    builderFormValues.inputs = inputs;
-    builderFormValues.global.authenticator = auth;
-
-    builderFormValues.streams = streams.map((stream) => manifestStreamToBuilder(stream, builderFormValues.global));
-  }
-
-  return builderFormValues;
-};
-
-export class ManifestCompatibilityError extends Error {
-  __type = "connectorBuilder.manifestCompatibility";
-
-  constructor(public streamName: string | undefined, public message: string) {
-    const errorMessage = `${streamName ? `Stream ${streamName}:` : ""} ${message}`;
-    super(errorMessage);
-    this.message = errorMessage;
-  }
-}
-
-export function isManifestCompatibilityError(error: { __type?: string }): error is ManifestCompatibilityError {
-  return error.__type === "connectorBuilder.manifestCompatibility";
-}

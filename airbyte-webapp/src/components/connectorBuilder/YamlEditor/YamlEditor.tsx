@@ -14,7 +14,8 @@ import { useConnectorBuilderFormState } from "services/connectorBuilder/Connecto
 
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "../DownloadYamlButton";
-import { convertToBuilderFormValues, convertToManifest } from "../types";
+import { convertToBuilderFormValues } from "../manifestToBuilderForm";
+import { convertToManifest } from "../types";
 import styles from "./YamlEditor.module.scss";
 
 interface YamlEditorProps {
