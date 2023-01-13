@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => {
       viteTsconfigPaths(),
       svgrPlugin(),
       checker({
-        // Make sure checks work while building
+        // Enable checks while building the app (not just in dev mode)
         enableBuild: true,
         overlay: {
           initialIsOpen: false,
@@ -56,7 +56,12 @@ export default defineConfig(({ mode }) => {
           badgeStyle: "transform: translate(-60px,-11px)",
         },
         eslint: { lintCommand: `eslint --ext js,ts,tsx src` },
-        stylelint: { lintCommand: `stylelint '${path.join(__dirname, "src")}/**/*.{css,scss}'` },
+        stylelint: {
+          lintCommand: 'stylelint "src/**/*.{css,scss}"',
+          // We need to overwrite this during development, since otherwise `files` are wrongly
+          // still containing the quotes around them, which they shouldn't
+          dev: { overrideConfig: { files: "src/**/*.{css,scss}" } },
+        },
         typescript: true,
       }),
       patchReactVirtualized(),
