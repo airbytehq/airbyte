@@ -51,4 +51,9 @@ You should now have all the requirements needed to configure Databend as a desti
 
 
 ## Changelog
-######TODO: more info
+
+| Version | Date       | Pull Request                                             | Subject                                  |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------|
+| 0.1.1   | 2022-01-09 | [21182](https://github.com/airbytehq/airbyte/pull/21182)   | Remove protocol option and enforce HTTPS |
+| 0.1.0   | 2022-01-09 | [20909](https://github.com/airbytehq/airbyte/pull/20909)   | Destination Databend                     |
+

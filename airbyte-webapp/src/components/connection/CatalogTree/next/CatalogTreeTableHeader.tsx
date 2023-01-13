@@ -12,6 +12,7 @@ import { Text } from "components/ui/Text";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useModalService } from "hooks/services/Modal";
@@ -43,13 +44,12 @@ const HeaderCell: React.FC<React.PropsWithChildren<Parameters<typeof CatalogTree
   );
 };
 
-const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
-
 export const CatalogTreeTableHeader: React.FC = () => {
   const { mode } = useConnectionFormService();
   const { openModal, closeModal } = useModalService();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEditService();
   const formikProps = useFormikContext<FormikConnectionFormValues>();
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
 
   const destinationNamespaceChange = (value: DestinationNamespaceFormValueType) => {
     formikProps.setFieldValue("namespaceDefinition", value.namespaceDefinition);
@@ -67,7 +67,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
   };
 
   return (
-    <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewStreamsTableEnabled })}>
+    <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewTableDesignEnabled })}>
       <CatalogTreeTableCell size="small" className={styles.checkboxCell}>
         {mode !== "readonly" && (
           <CheckBox
