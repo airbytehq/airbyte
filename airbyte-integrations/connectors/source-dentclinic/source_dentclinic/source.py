@@ -63,10 +63,6 @@ class Bookings(DentclinicBookingStream):
         """
         state_mapping = current_stream_state.get(self.cursor_field, {})
 
-        print("=" * 100)
-        print(state_mapping)
-        print("=" * 100)
-
         last_record_value = latest_record.get(self.cursor_field)
         if last_record_value:
             state_mapping.update({self.clinic_id: last_record_value})

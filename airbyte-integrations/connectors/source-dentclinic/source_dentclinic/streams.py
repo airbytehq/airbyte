@@ -87,26 +87,29 @@ class DentclinicBookingStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
 
-        if self.cursor_end_date >= self.stop_date:
-            self.clinic_id = next(self.clinic_ids, None)
-            if self.clinic_id is None:
-                return None
-
-            self.cursor_start_date = self.start_date
-            self.cursor_end_date = self.start_date.add(days=self.fetch_interval_days)
-        else:
-            self.cursor_start_date = self.cursor_start_date.add(days=self.fetch_interval_days)
-            self.cursor_end_date = self.cursor_end_date.add(days=self.fetch_interval_days)
-
         print("*" * 100)
         print({"clinic_id": self.clinic_id, "start_date": self.cursor_start_date, "end_date": self.cursor_end_date})
         print("*" * 100)
+
+        if self.clinic_id is None:
+            return None
 
         return {"start_date": self.cursor_start_date, "end_date": self.cursor_end_date}
 
 
     def request_body_data(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
                           next_page_token: Mapping[str, Any] = None, ) -> Optional[Mapping]:
+
+        if self.cursor_end_date >= self.stop_date:
+            self.clinic_id = next(self.clinic_ids, None)
+            if self.clinic_id is None:
+                return ""
+
+            self.cursor_start_date = self.start_date
+            self.cursor_end_date = self.start_date.add(days=self.fetch_interval_days)
+        else:
+            self.cursor_start_date = self.cursor_start_date.add(days=self.fetch_interval_days)
+            self.cursor_end_date = self.cursor_end_date.add(days=self.fetch_interval_days)
 
         start_ts = self.cursor_start_date
         end_ts = self.cursor_end_date
@@ -146,7 +149,6 @@ class DentclinicBookingStream(HttpStream, ABC):
             data = [data]
 
         yield from data
-
 
 
 class DentclinicStaticStream(HttpStream, ABC):

@@ -60,9 +60,9 @@ python main.py read --config secrets/config.json --catalog sample_files/configur
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-dentclinic:0.0.10
-docker tag airbyte/source-dentclinic:0.0.10 askeladden/airbyte-source-dentclinic:0.0.10
-docker push askeladden/airbyte-source-dentclinic:0.0.10
+docker build . -t airbyte/source-dentclinic:0.0.11
+docker tag airbyte/source-dentclinic:0.0.11 askeladden/airbyte-source-dentclinic:0.0.11
+docker push askeladden/airbyte-source-dentclinic:0.0.11
 ```
 
 You can also build the connector image via Gradle:
