@@ -237,10 +237,6 @@ function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormI
   const authKeyToInferredInput = authTypeToKeyToInferredInput[global.authenticator.type];
   const authKeys = Object.keys(authKeyToInferredInput) as Array<keyof typeof global.authenticator>;
   return authKeys.flatMap((authKey) => {
-    console.log(
-      "extractInterpolatedConfigKey(global.authenticator[authKey]) === authKeyToInferredInput[authKey].key",
-      extractInterpolatedConfigKey(global.authenticator[authKey]) === authKeyToInferredInput[authKey].key
-    );
     if (extractInterpolatedConfigKey(global.authenticator[authKey]) === authKeyToInferredInput[authKey].key) {
       return [authKeyToInferredInput[authKey]];
     }
@@ -752,7 +748,6 @@ function isInterpolatedConfigKey(str: string): boolean {
 function extractInterpolatedConfigKey(str: string): string | undefined {
   const noWhitespaceString = str.replace(/\s/g, "");
   const regexResult = interpolatedConfigValueRegex.exec(noWhitespaceString);
-  console.log("regexResult", regexResult);
   if (regexResult === null) {
     return undefined;
   }
@@ -814,7 +809,12 @@ function manifestSpecAndAuthToBuilder(
   result.inputs = Object.entries(
     manifestSpec.connection_specification.properties as Record<string, AirbyteJSONSchema>
   ).flatMap(([key, definition]) => {
-    if (Object.keys(authTypeToKeyToInferredInput[result.auth.type]).includes(key)) {
+    // filter out spec properties with keys matching inferred inputs to avoid duplicate inputs
+    if (
+      Object.values(authTypeToKeyToInferredInput[result.auth.type])
+        .map((input) => input.key)
+        .includes(key)
+    ) {
       return [];
     }
     return [

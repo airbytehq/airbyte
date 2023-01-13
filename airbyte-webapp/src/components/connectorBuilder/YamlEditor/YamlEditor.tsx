@@ -2,7 +2,7 @@ import { useMonaco } from "@monaco-editor/react";
 import { useFormikContext } from "formik";
 import { load, YAMLException } from "js-yaml";
 import debounce from "lodash/debounce";
-import isMatch from "lodash/isMatch";
+import isEqual from "lodash/isEqual";
 import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -79,22 +79,11 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
   }, [yamlValue, monaco, debouncedSetJsonManifest, setYamlIsValid]);
 
   const yamlIsDirty = useMemo(() => {
-    return !isMatch(convertToManifest(builderFormValues), jsonManifest);
+    return !isEqual(convertToManifest(builderFormValues), jsonManifest);
   }, [jsonManifest, builderFormValues]);
 
   const handleToggleYamlEditor = () => {
     if (yamlIsDirty) {
-      // openConfirmationModal({
-      //   text: "connectorBuilder.toggleModal.text",
-      //   title: "connectorBuilder.toggleModal.title",
-      //   submitButtonText: "connectorBuilder.toggleModal.submitButton",
-      //   onSubmit: () => {
-      //     setYamlIsValid(true);
-      //     toggleYamlEditor();
-      //     closeConfirmationModal();
-      //   },
-      // });
-      // setBuilderFormValues(convertToBuilderFormValues(jsonManifest), false);
       try {
         setValues(convertToBuilderFormValues(jsonManifest, builderFormValues));
         toggleYamlEditor();
