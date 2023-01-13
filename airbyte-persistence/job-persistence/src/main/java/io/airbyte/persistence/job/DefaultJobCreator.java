@@ -60,7 +60,8 @@ public class DefaultJobCreator implements JobCreator {
                                       final List<StandardSyncOperation> standardSyncOperations,
                                       @Nullable final JsonNode webhookOperationConfigs,
                                       final StandardSourceDefinition sourceDefinition,
-                                      final StandardDestinationDefinition destinationDefinition)
+                                      final StandardDestinationDefinition destinationDefinition,
+                                      final UUID workspaceId)
       throws IOException {
     // reusing this isn't going to quite work.
 
@@ -96,7 +97,8 @@ public class DefaultJobCreator implements JobCreator {
         .withSourceResourceRequirements(mergedSrcResourceReq)
         .withDestinationResourceRequirements(mergedDstResourceReq)
         .withIsSourceCustomConnector(sourceDefinition.getCustom())
-        .withIsDestinationCustomConnector(destinationDefinition.getCustom());
+        .withIsDestinationCustomConnector(destinationDefinition.getCustom())
+        .withWorkspaceId(workspaceId);
 
     getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 

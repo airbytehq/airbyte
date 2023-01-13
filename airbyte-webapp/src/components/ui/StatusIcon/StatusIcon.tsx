@@ -1,14 +1,15 @@
-import { faBan, faCheck, faExclamationTriangle, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faBan, faCheck, faExclamationTriangle, faMinus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
 
+import { CrossIcon } from "components/icons/CrossIcon";
 import { MoonIcon } from "components/icons/MoonIcon";
 import { PauseIcon } from "components/icons/PauseIcon";
 
 import { CircleLoader } from "./CircleLoader";
 
-export type StatusIconStatus = "sleep" | "inactive" | "success" | "warning" | "loading" | "error";
+export type StatusIconStatus = "sleep" | "inactive" | "success" | "warning" | "loading" | "error" | "cancelled";
 
 interface StatusIconProps {
   className?: string;
@@ -24,7 +25,7 @@ const _iconByStatus = {
   sleep: faBan,
   success: faCheck,
   warning: faExclamationTriangle,
-  error: faTimes,
+  cancelled: faMinus,
 } as const;
 
 const _themeByStatus = {
@@ -33,6 +34,7 @@ const _themeByStatus = {
   success: "successColor",
   warning: "warningColor",
   error: "dangerColor",
+  cancelled: "lightTextColor",
 } as const;
 
 const Container = styled.div<Pick<StatusIconProps, "big" | "value">>`
@@ -86,6 +88,8 @@ export const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error",
         <PauseIcon title={title} />
       ) : status === "sleep" ? (
         <MoonIcon title={title} />
+      ) : status === "error" ? (
+        <CrossIcon title={title} />
       ) : (
         <FontAwesomeIcon icon={_iconByStatus[status]} title={title} />
       )}

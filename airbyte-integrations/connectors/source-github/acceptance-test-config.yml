@@ -1,7 +1,8 @@
 connector_image: airbyte/source-github:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_github/spec.json"
+    tests:
+      - spec_path: "source_github/spec.json"
   connection:
     - config_path: "secrets/test_config.json"
       status: "succeed"

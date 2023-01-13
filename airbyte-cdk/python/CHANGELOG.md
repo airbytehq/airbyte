@@ -1,7 +1,25 @@
 # Changelog
 
+## 0.20.0
+Low-Code: Refactor low-code to use Pydantic model based manifest parsing and component creation
+
+## 0.19.1
+Low-code: Make documentation_url in the Spec be optional
+
+## 0.19.0
+Low-Code: Handle forward references in manifest
+
+## 0.18.1
+Allow for CustomRequester to be defined within declarative manifests
+
+## 0.18.0
+Adding `cursor_granularity` to the declarative API of DatetimeStreamSlicer
+
 ## 0.17.0
-TODO: PLACEHOLDER - Fill once all dependent PRs are merged in
+Add utility class to infer schemas from real records
+
+## 0.16.3
+Do not eagerly refresh access token in `SingleUseRefreshTokenOauth2Authenticator` [#20923](https://github.com/airbytehq/airbyte/pull/20923)
 
 ## 0.16.2
 Fix the naming of OAuthAuthenticator

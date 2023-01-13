@@ -20,7 +20,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
       - config_path: "secrets/config_users_only.json"
         # test we do not fail when encounter 403 error
         configured_catalog_path: "integration_tests/configured_catalog.json"
