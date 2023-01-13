@@ -29,7 +29,7 @@ export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) =
 };
 export const LargeEnrollmentCallout: React.FC = () => {
   return (
-    <Callout variant="blueBold" className={styles.container}>
+    <Callout variant="boldInfo" className={styles.container}>
       <FlexContainer direction="row" alignItems="center" className={styles.flexRow}>
         <FlexItem grow={false} alignSelf="center">
           <ConnectorsBadges />
