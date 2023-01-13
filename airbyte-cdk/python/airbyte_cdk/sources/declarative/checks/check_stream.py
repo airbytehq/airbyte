@@ -7,9 +7,9 @@ import traceback
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
+from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice, get_first_stream_slice
 from dataclasses_jsonschema import JsonSchemaMixin
 
 
@@ -42,7 +42,7 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
             try:
                 # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
                 # Streams that don't need a stream slice will return `None` as their first stream slice.
-                stream_slice = self._get_first_stream_slice(stream)
+                stream_slice = get_first_stream_slice(stream)
             except StopIteration:
                 # If stream_slices has no `next()` item (Note - this is different from stream_slices returning [None]!)
                 # This can happen when a substream's `stream_slices` method does a `for record in parent_records: yield <something>`
@@ -51,7 +51,7 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
                 return False, reason
 
             try:
-                self._get_first_record_for_slice(stream, stream_slice)
+                get_first_record_for_slice(stream, stream_slice)
                 return True, None
             except StopIteration:
                 logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
@@ -59,18 +59,3 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
             except Exception as error:
                 logger.error(f"Encountered an error trying to connect to stream {stream.name}. Error: \n {traceback.format_exc()}")
                 return False, f"Unable to connect to stream {stream_name} - {error}"
-
-    def _get_first_stream_slice(self, stream):
-        # We wrap the return output of stream_slices() because some implementations return types that are iterable,
-        # but not iterators such as lists or tuples
-        slices = iter(
-            stream.stream_slices(
-                cursor_field=stream.cursor_field,
-                sync_mode=SyncMode.full_refresh,
-            )
-        )
-        return next(slices)
-
-    def _get_first_record_for_slice(self, stream, stream_slice):
-        records_for_slice = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-        return next(records_for_slice)
