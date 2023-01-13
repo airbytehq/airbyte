@@ -98,7 +98,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         SELECT
           (EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
         AND
-          (EXISTS (SELECT from %s.\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+          (EXISTS (SELECT from \"%s\".\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
       """;
   public static final String NULL_CURSOR_VALUE_NO_SCHEMA =
       """
@@ -474,9 +474,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
     return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
@@ -541,7 +538,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       query = String.format(NULL_CURSOR_VALUE_NO_SCHEMA,
           tableName, columnName, tableName, columnName, resultColName);
     }
-    LOGGER.debug("null value query: {}", query);
+    LOGGER.info("null value query: {}", query);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
