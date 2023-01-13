@@ -1,7 +1,7 @@
 # Defines the minimum set of images needed to run Cloud.
 # Used to push OSS images that Cloud depends on.
 
-version: "3.7"
+version: "3.8"
 
 services:
   bootloader:
@@ -35,7 +35,7 @@ services:
           - airbyte/server:${ALT_TAG:-${VERSION}}
         platforms:
           - linux/amd64
-          - linux/arm64          
+          - linux/arm64
   worker:
     image: airbyte/worker:${VERSION}
     build:

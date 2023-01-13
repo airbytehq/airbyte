@@ -429,6 +429,14 @@
   icon: dockerhub.svg
   sourceType: api
   releaseStage: alpha
+- name: Dremio
+  sourceDefinitionId: d99e9ace-8621-46c2-9144-76ae4751d64b
+  dockerRepository: airbyte/source-dremio
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dremio
+  icon: dremio.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Drift
   sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   dockerRepository: airbyte/source-drift
@@ -826,7 +834,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -1614,7 +1622,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.27
+  dockerImageTag: 0.1.28
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
