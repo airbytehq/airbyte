@@ -678,6 +678,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 25
           min-coverage-changed-files: 60
+          title: Airbyte Code Coverage
+          update-comment: true
           debug-mode: false
 
       - name: Integration test
