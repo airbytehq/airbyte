@@ -20,6 +20,7 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +34,6 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsOperations.class);
 
-  private static final List<Integer> AUTH_ERROR_CODES = ImmutableList.of(401, 403);
   private final BigQuery bigQuery;
   private final StandardNameTransformer gcsNameTransformer;
   private final GcsDestinationConfig gcsConfig;
@@ -89,11 +89,11 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
       LOGGER.info("Creating dataset {}", datasetId);
       try {
         BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
-      } catch (BigQueryException bqe) {
-        if (AUTH_ERROR_CODES.contains(bqe.getCode())) {
-          throw new ConfigErrorException(bqe.getMessage(), bqe);
+      } catch (BigQueryException e) {
+        if (ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.getCode())) {
+          throw new ConfigErrorException(e.getMessage(), e);
         } else {
-          throw bqe;
+          throw e;
         }
       }
       existingSchemas.add(datasetId);
