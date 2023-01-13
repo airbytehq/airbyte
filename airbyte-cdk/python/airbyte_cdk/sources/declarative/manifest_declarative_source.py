@@ -58,7 +58,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 
         # Controls whether we build components using the manual handwritten schema and Pydantic models or the legacy flow
-        self.construct_using_pydantic_models = construct_using_pydantic_models
+        self.construct_using_pydantic_models = True
 
         # For ease of use we don't require the type to be specified at the top level manifest, but it should be included during processing
         manifest = dict(source_config)
@@ -87,7 +87,11 @@ class ManifestDeclarativeSource(DeclarativeSource):
         if "type" not in check:
             check["type"] = "CheckStream"
         if self.construct_using_pydantic_models:
-            return self._constructor.create_component(CheckStreamModel, check, dict())(source=self)
+            check_stream = self._constructor.create_component(CheckStreamModel, check, dict())
+            if isinstance(check_stream, ConnectionChecker):
+                return check_stream
+            else:
+                raise ValueError(f"Expected to generate a ConnectionChecker component, but received {check_stream.__class__}")
         else:
             return self._legacy_factory.create_component(check, dict())(source=self)
 

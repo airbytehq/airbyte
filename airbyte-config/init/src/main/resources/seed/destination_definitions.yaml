@@ -347,7 +347,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.41
+  dockerImageTag: 0.4.42
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
@@ -435,4 +435,10 @@
   dockerImageTag: 0.1.0
   icon: teradata.svg
   documentationUrl: https://docs.airbyte.io/integrations/destinations/teradata
+  releaseStage: alpha
+- name: Weaviate
+  destinationDefinitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
+  dockerRepository: airbyte/destination-weaviate
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   releaseStage: alpha
