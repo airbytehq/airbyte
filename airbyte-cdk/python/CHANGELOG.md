@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.0
+Low-Code: Refactor low-code to use Pydantic model based manifest parsing and component creation
+
+## 0.19.1
+Low-code: Make documentation_url in the Spec be optional
+
 ## 0.19.0
 Low-Code: Handle forward references in manifest
 
