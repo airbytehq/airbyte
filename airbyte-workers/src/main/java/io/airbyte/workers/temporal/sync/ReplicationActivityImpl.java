@@ -62,8 +62,6 @@ import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
-import io.airbyte.workers.internal.exception.DestinationException;
-import io.airbyte.workers.internal.exception.SourceException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -295,7 +293,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
           : new DefaultAirbyteSource(sourceLauncher,
               new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
-                  DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER, Optional.of(SourceException.class)),
+                  DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER),
               featureFlags);
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
@@ -308,7 +306,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(destinationLauncher,
               new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
-                  DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER, Optional.of(DestinationException.class)),
+                  DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(featureFlags),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),

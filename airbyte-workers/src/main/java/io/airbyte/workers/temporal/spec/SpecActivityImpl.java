@@ -42,7 +42,6 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @Singleton
@@ -129,7 +128,7 @@ public class SpecActivityImpl implements SpecActivity {
     final Version protocolVersion =
         launcherConfig.getProtocolVersion() != null ? launcherConfig.getProtocolVersion() : migratorFactory.getMostRecentVersion();
     // Try to detect version from the stream
-    return new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion, Optional.empty()).withDetectVersion(true);
+    return new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion).withDetectVersion(true);
   }
 
 }
