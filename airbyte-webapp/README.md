@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.01.13
+1. Change link in connection config (file:links.ts(syncModeLink))
 #### 2022.12.29
 1. Add copy function for ource/destination page
 #### 2022.12.28
