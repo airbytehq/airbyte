@@ -1,0 +1,7 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.error {
+  margin-top: variables.$spacing-sm;
+  color: colors.$red;
+}

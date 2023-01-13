@@ -25,6 +25,10 @@ image:
 ##
 podAnnotations: {}
 
+##  webapp.podLabels [object] Add extra labels to the webapp pod(s)
+##
+podLabels: {}
+
 ##  webapp.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:

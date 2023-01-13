@@ -54,6 +54,8 @@ public class ConnectionHelpers {
   private static final String STREAM_NAME_BASE = "users-data";
   private static final String STREAM_NAME = STREAM_NAME_BASE + "0";
   public static final String FIELD_NAME = "id";
+
+  public static final String SECOND_FIELD_NAME = "id2";
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
   private static final String BASIC_SCHEDULE_DATA_TIME_UNITS = "days";
@@ -284,7 +286,7 @@ public class ConnectionHelpers {
   public static JsonNode generateJsonSchemaWithTwoFields() {
     return CatalogHelpers.fieldsToJsonSchema(
         Field.of(FIELD_NAME, JsonSchemaType.STRING),
-        Field.of(FIELD_NAME + "2", JsonSchemaType.STRING));
+        Field.of(SECOND_FIELD_NAME, JsonSchemaType.STRING));
   }
 
   public static ConfiguredAirbyteCatalog generateBasicConfiguredAirbyteCatalog() {

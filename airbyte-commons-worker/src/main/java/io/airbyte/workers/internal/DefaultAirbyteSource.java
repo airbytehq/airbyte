@@ -164,6 +164,11 @@ public class DefaultAirbyteSource implements AirbyteSource {
       return;
     }
 
+    if (sourceConfig.getState() == null) {
+      LOGGER.info("source starting state | empty");
+      return;
+    }
+
     LOGGER.info("source starting state | " + Jsons.serialize(sourceConfig.getState().getState()));
   }
 

@@ -97,7 +97,6 @@ METRICS_NOT_HOURLY = [
     "earned_reach",
 ]
 
-
 logger = logging.getLogger("airbyte")
 
 
@@ -476,7 +475,7 @@ class StatsIncremental(Stats, IncrementalMixin):
             self.number_of_last_records += 1
             # Update state if 'last' records for all dependant entities have been read
             if self.number_of_parent_ids == self.number_of_last_records:
-                self.state = record_end_date
+                self.state = {self.cursor_field: record_end_date}
 
     @property
     def state(self):
@@ -484,7 +483,7 @@ class StatsIncremental(Stats, IncrementalMixin):
 
     @state.setter
     def state(self, value):
-        self._state[self.cursor_field] = value
+        self._state = value
 
     def parse_response(
         self,
@@ -498,7 +497,7 @@ class StatsIncremental(Stats, IncrementalMixin):
 
         # Update state for each date slice (start_date), it ensures that previous date slices have been read
         # and can be skipped in next incremental sync
-        self.state = stream_slice[self.cursor_field]
+        self.state = {self.cursor_field: stream_slice[self.cursor_field]}
 
         for record in super().parse_response(
             response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token

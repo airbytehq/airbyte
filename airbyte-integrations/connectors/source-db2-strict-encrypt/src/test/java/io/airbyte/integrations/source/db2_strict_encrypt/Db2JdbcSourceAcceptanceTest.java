@@ -15,7 +15,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;

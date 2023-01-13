@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import static io.airbyte.server.helpers.ConnectionHelpers.FIELD_NAME;
+import static io.airbyte.server.helpers.ConnectionHelpers.SECOND_FIELD_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -351,6 +352,47 @@ class ConnectionsHandlerTest {
         standardSync.withFieldSelectionData(new FieldSelectionData().withAdditionalProperty("null/users-data0", true));
 
         verify(configRepository).writeStandardSync(standardSync);
+      }
+
+      @Test
+      void testFieldSelectionRemoveCursorFails() throws JsonValidationException, ConfigNotFoundException, IOException {
+        // Test that if we try to de-select a field that's being used for the cursor, the request will fail.
+        // The connection initially has a catalog with one stream, and two fields in that stream.
+        standardSync.setCatalog(ConnectionHelpers.generateAirbyteCatalogWithTwoFields());
+
+        // Send an update that sets a cursor but de-selects that field.
+        final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateApiCatalogWithTwoFields();
+        catalogForUpdate.getStreams().get(0).getConfig()
+            .fieldSelectionEnabled(true)
+            .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)))
+            .cursorField(List.of(SECOND_FIELD_NAME));
+
+        final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+            .connectionId(standardSync.getConnectionId())
+            .syncCatalog(catalogForUpdate);
+
+        assertThrows(JsonValidationException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
+      }
+
+      @Test
+      void testFieldSelectionRemovePrimaryKeyFails() throws JsonValidationException, ConfigNotFoundException, IOException {
+        // Test that if we try to de-select a field that's being used for the primary key, the request will
+        // fail.
+        // The connection initially has a catalog with one stream, and two fields in that stream.
+        standardSync.setCatalog(ConnectionHelpers.generateAirbyteCatalogWithTwoFields());
+
+        // Send an update that sets a primary key but deselects that field.
+        final AirbyteCatalog catalogForUpdate = ConnectionHelpers.generateApiCatalogWithTwoFields();
+        catalogForUpdate.getStreams().get(0).getConfig()
+            .fieldSelectionEnabled(true)
+            .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)))
+            .primaryKey(List.of(List.of(SECOND_FIELD_NAME)));
+
+        final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+            .connectionId(standardSync.getConnectionId())
+            .syncCatalog(catalogForUpdate);
+
+        assertThrows(JsonValidationException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
       }
 
       @Test

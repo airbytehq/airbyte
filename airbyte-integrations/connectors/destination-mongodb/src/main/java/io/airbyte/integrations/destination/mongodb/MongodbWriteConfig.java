@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.mongodb;
 
 import com.mongodb.client.MongoCollection;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;

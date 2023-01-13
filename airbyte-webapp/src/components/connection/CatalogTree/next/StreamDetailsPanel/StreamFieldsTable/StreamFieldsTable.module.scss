@@ -79,15 +79,10 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   }
 }
 
-.checkboxCell {
+.radioBtnCell {
   display: flex;
   align-items: center;
   height: $cell-height;
   overflow: unset;
   padding-left: 0;
-}
-
-// need to fix styled-component z-index issue
-.checkbox {
-  position: unset !important;
 }

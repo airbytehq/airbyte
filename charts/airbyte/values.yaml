@@ -172,6 +172,10 @@ webapp:
   ##
   podAnnotations: {}
 
+  ##  webapp.podLabels [object] Add extra labels to the webapp pod(s)
+  ##
+  podLabels: {}
+
   ##  webapp.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
@@ -397,6 +401,10 @@ pod-sweeper:
   ##
   podAnnotations: {}
 
+  ##  podSweeper.podLabels [object] Add extra labels to the podSweeper pod
+  ##
+  podLabels: {}
+
   ##  podSweeper.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
@@ -505,6 +513,10 @@ server:
   ##  server.podAnnotations [object] Add extra annotations to the server pod(s)
   ##
   podAnnotations: {}
+
+  ##  server.podLabels [object] Add extra labels to the server pod(s)
+  ##
+  podLabels: {}
 
   ##  server.containerSecurityContext Security context for the container
   ## Examples:
@@ -688,6 +700,10 @@ worker:
   ##
   podAnnotations: {}
 
+  ##  worker.podLabels [object] Add extra labels to the worker pod(s)
+  ##
+  podLabels: {}
+
   ##  worker.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
@@ -795,7 +811,14 @@ worker:
 
   hpa:
     enabled: false
-    
+  ## Container Orchestrator
+  ## enabled -- Enable or disable Orchestrator
+  ## image -- Orchestrator image
+
+  containerOrchestrator:
+    enabled: true
+    image: ""
+
 ## @section Metrics parameters
 metrics:
   enabled: false
@@ -813,6 +836,10 @@ metrics:
   ##  metrics.podAnnotations [object] Add extra annotations to the metrics-reporter pod
   ##
   podAnnotations: {}
+
+  ##  metrics.podLabels [object] Add extra labels to the metrics-reporter pod
+  ##
+  podLabels: {}
 
   ##  metrics.containerSecurityContext Security context for the container
   ## Examples:
@@ -901,6 +928,10 @@ airbyte-bootloader:
   ##  podAnnotations [object] Add extra annotations to the bootloader pod
   ##
   podAnnotations: {}
+
+  ##  podLabels [object] Add extra labels to the bootloader pod
+  ##
+  podLabels: {}
 
   ##  nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -1038,9 +1069,9 @@ temporal:
   ##  temporal.image.pullPolicy The pull policy for the temporal image
   ##  temporal.image.tag The temporal image tag to use
   image:
-    repository: temporalio/auto-setup
+    repository: airbyte/temporal-auto-setup
     pullPolicy: IfNotPresent
-    tag: "1.7.0"
+    tag: "1.13.0"
 
   ##  temporal.service.type The Kubernetes Service Type
   ##  temporal.service.port The temporal port and exposed kubernetes port
@@ -1051,6 +1082,10 @@ temporal:
   ##  temporal.podAnnotations [object] Add extra annotations to the temporal pod
   ##
   podAnnotations: {}
+
+  ##  temporal.podLabels [object] Add extra labels to the temporal pod
+  ##
+  podLabels: {}
 
   ##  temporal.containerSecurityContext Security context for the container
   ## Examples:
@@ -1064,7 +1099,7 @@ temporal:
   ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
   ## extraInitContainers:
   ##   - name: config-loader
-  ##     image: temporalio/auto-setup:1.7.0
+  ##     image: airbyte/temporal-auto-setup:1.13.4
   ##     command:
   ##       - /bin/sh
   ##       - -c
@@ -1237,6 +1272,10 @@ cron:
   ##
   podAnnotations: {}
 
+  ##  cron.podLabels [object] Add extra labels to the cron pod(s)
+  ##
+  podLabels: {}
+
   ##  cron.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
@@ -1400,7 +1439,6 @@ cron:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
   env_vars: {}
-
 connectorBuilderServer:
   enabled: true
   service:

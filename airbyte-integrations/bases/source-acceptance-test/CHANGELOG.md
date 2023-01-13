@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.23
+Skip backward compatibility tests on specifications if actual and previous specifications and discovered catalogs are identical.[#20435](https://github.com/airbytehq/airbyte/pull/20435)
+
 ## 0.2.22
 Capture control messages to store and use updated configurations. [#19979](https://github.com/airbytehq/airbyte/pull/19979).
 

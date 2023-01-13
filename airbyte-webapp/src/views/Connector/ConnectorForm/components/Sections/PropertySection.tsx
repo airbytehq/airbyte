@@ -22,7 +22,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
   const propertyPath = path ?? property.path;
   const formikBag = useField(propertyPath);
   const [field, meta] = formikBag;
-  const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows, widgetsInfo } = useConnectorForm();
+  const { widgetsInfo } = useConnectorForm();
 
   const overriddenComponent = widgetsInfo[propertyPath]?.component;
   if (overriddenComponent) {
@@ -59,15 +59,7 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
 
   return (
     <PropertyLabel className={styles.defaultLabel} property={property} label={labelText}>
-      <Control
-        property={property}
-        name={propertyPath}
-        addUnfinishedFlow={addUnfinishedFlow}
-        removeUnfinishedFlow={removeUnfinishedFlow}
-        unfinishedFlows={unfinishedFlows}
-        disabled={disabled}
-        error={hasError}
-      />
+      <Control property={property} name={propertyPath} disabled={disabled} error={hasError} />
       {hasError && <PropertyError>{errorMessage}</PropertyError>}
     </PropertyLabel>
   );

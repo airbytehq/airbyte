@@ -4,6 +4,9 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.Cron;
 import io.airbyte.config.Schedule;
@@ -14,11 +17,13 @@ import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Optional;
@@ -31,7 +36,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +48,9 @@ class ConfigFetchActivityTest {
 
   @Mock
   private JobPersistence mJobPersistence;
+
+  @Mock
+  private WorkspaceHelper mWorkspaceHelper;
 
   @Mock
   private Job mJob;
@@ -69,13 +76,14 @@ class ConfigFetchActivityTest {
               .withTimeUnit(BasicSchedule.TimeUnit.MINUTES)
               .withUnits(5L)));
 
+  public static final String UTC = "UTC";
   private final static StandardSync standardSyncWithCronScheduleType = new StandardSync()
       .withScheduleType(ScheduleType.CRON)
       .withStatus(Status.ACTIVE)
       .withScheduleData(new ScheduleData()
           .withCron(new Cron()
               .withCronExpression("0 0 12 * * ?")
-              .withCronTimeZone("UTC")));
+              .withCronTimeZone(UTC)));
 
   private final static StandardSync standardSyncWithScheduleDisable = new StandardSync()
       .withSchedule(new Schedule()
@@ -93,7 +101,8 @@ class ConfigFetchActivityTest {
   @BeforeEach
   void setup() {
     configFetchActivity =
-        new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> Instant.now().getEpochSecond());
+        new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mWorkspaceHelper, SYNC_JOB_MAX_ATTEMPTS,
+            () -> Instant.now().getEpochSecond());
   }
 
   @Nested
@@ -102,10 +111,10 @@ class ConfigFetchActivityTest {
     @Test
     @DisplayName("Test that the job gets scheduled if it is not manual and if it is the first run with legacy schedule schema")
     void testFirstJobNonManual() throws IOException, JsonValidationException, ConfigNotFoundException {
-      Mockito.when(mJobPersistence.getLastReplicationJob(connectionId))
+      when(mJobPersistence.getLastReplicationJob(connectionId))
           .thenReturn(Optional.empty());
 
-      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+      when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSyncWithLegacySchedule);
 
       final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -119,7 +128,7 @@ class ConfigFetchActivityTest {
     @Test
     @DisplayName("Test that the job will wait for a long time if it is manual in the legacy schedule schema")
     void testManual() throws IOException, JsonValidationException, ConfigNotFoundException {
-      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+      when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSyncWithoutSchedule);
 
       final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -133,7 +142,7 @@ class ConfigFetchActivityTest {
     @Test
     @DisplayName("Test that the job will wait for a long time if it is disabled")
     void testDisable() throws IOException, JsonValidationException, ConfigNotFoundException {
-      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+      when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSyncWithScheduleDisable);
 
       final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -147,7 +156,7 @@ class ConfigFetchActivityTest {
     @Test
     @DisplayName("Test that the connection will wait for a long time if it is deleted")
     void testDeleted() throws IOException, JsonValidationException, ConfigNotFoundException {
-      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+      when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSyncWithScheduleDeleted);
 
       final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -163,13 +172,13 @@ class ConfigFetchActivityTest {
     void testWait() throws IOException, JsonValidationException, ConfigNotFoundException {
       configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> 60L * 3);
 
-      Mockito.when(mJob.getStartedAtInSecond())
+      when(mJob.getStartedAtInSecond())
           .thenReturn(Optional.of(60L));
 
-      Mockito.when(mJobPersistence.getLastReplicationJob(connectionId))
+      when(mJobPersistence.getLastReplicationJob(connectionId))
           .thenReturn(Optional.of(mJob));
 
-      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+      when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSyncWithLegacySchedule);
 
       final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -185,13 +194,13 @@ class ConfigFetchActivityTest {
     void testNotWaitIfLate() throws IOException, JsonValidationException, ConfigNotFoundException {
       configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> 60L * 10);
 
-      Mockito.when(mJob.getStartedAtInSecond())
+      when(mJob.getStartedAtInSecond())
           .thenReturn(Optional.of(60L));
 
-      Mockito.when(mJobPersistence.getLastReplicationJob(connectionId))
+      when(mJobPersistence.getLastReplicationJob(connectionId))
           .thenReturn(Optional.of(mJob));
 
-      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+      when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSyncWithLegacySchedule);
 
       final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -207,7 +216,7 @@ class ConfigFetchActivityTest {
   @Test
   @DisplayName("Test that the job will wait a long time if it is MANUAL scheduleType")
   void testManualScheduleType() throws IOException, JsonValidationException, ConfigNotFoundException {
-    Mockito.when(mConfigRepository.getStandardSync(connectionId))
+    when(mConfigRepository.getStandardSync(connectionId))
         .thenReturn(standardSyncWithManualScheduleType);
 
     final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -221,10 +230,10 @@ class ConfigFetchActivityTest {
   @Test
   @DisplayName("Test that the job will be immediately scheduled if it is a BASIC_SCHEDULE type on the first run")
   void testBasicScheduleTypeFirstRun() throws IOException, JsonValidationException, ConfigNotFoundException {
-    Mockito.when(mJobPersistence.getLastReplicationJob(connectionId))
+    when(mJobPersistence.getLastReplicationJob(connectionId))
         .thenReturn(Optional.empty());
 
-    Mockito.when(mConfigRepository.getStandardSync(connectionId))
+    when(mConfigRepository.getStandardSync(connectionId))
         .thenReturn(standardSyncWithBasicScheduleType);
 
     final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -240,13 +249,13 @@ class ConfigFetchActivityTest {
   void testBasicScheduleSubsequentRun() throws IOException, JsonValidationException, ConfigNotFoundException {
     configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> 60L * 3);
 
-    Mockito.when(mJob.getStartedAtInSecond())
+    when(mJob.getStartedAtInSecond())
         .thenReturn(Optional.of(60L));
 
-    Mockito.when(mJobPersistence.getLastReplicationJob(connectionId))
+    when(mJobPersistence.getLastReplicationJob(connectionId))
         .thenReturn(Optional.of(mJob));
 
-    Mockito.when(mConfigRepository.getStandardSync(connectionId))
+    when(mConfigRepository.getStandardSync(connectionId))
         .thenReturn(standardSyncWithBasicScheduleType);
 
     final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -260,19 +269,22 @@ class ConfigFetchActivityTest {
   @Test
   @DisplayName("Test that the job will wait to be scheduled if it is a CRON type")
   void testCronScheduleSubsequentRun() throws IOException, JsonValidationException, ConfigNotFoundException {
-    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone(UTC));
     mockRightNow.set(Calendar.HOUR_OF_DAY, 0);
     mockRightNow.set(Calendar.MINUTE, 0);
     mockRightNow.set(Calendar.SECOND, 0);
     mockRightNow.set(Calendar.MILLISECOND, 0);
 
-    configFetchActivity =
-        new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> mockRightNow.getTimeInMillis() / 1000L);
+    when(mWorkspaceHelper.getWorkspaceForConnectionId(any())).thenReturn(UUID.randomUUID());
 
-    Mockito.when(mJobPersistence.getLastReplicationJob(connectionId))
+    configFetchActivity =
+        new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mWorkspaceHelper, SYNC_JOB_MAX_ATTEMPTS,
+            () -> mockRightNow.getTimeInMillis() / 1000L);
+
+    when(mJobPersistence.getLastReplicationJob(connectionId))
         .thenReturn(Optional.of(mJob));
 
-    Mockito.when(mConfigRepository.getStandardSync(connectionId))
+    when(mConfigRepository.getStandardSync(connectionId))
         .thenReturn(standardSyncWithCronScheduleType);
 
     final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -286,20 +298,23 @@ class ConfigFetchActivityTest {
   @Test
   @DisplayName("Test that the job will only be scheduled once per minimum cron interval")
   void testCronScheduleMinimumInterval() throws IOException, JsonValidationException, ConfigNotFoundException {
-    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone(UTC));
     mockRightNow.set(Calendar.HOUR_OF_DAY, 12);
     mockRightNow.set(Calendar.MINUTE, 0);
     mockRightNow.set(Calendar.SECOND, 0);
     mockRightNow.set(Calendar.MILLISECOND, 0);
 
-    configFetchActivity =
-        new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, SYNC_JOB_MAX_ATTEMPTS, () -> mockRightNow.getTimeInMillis() / 1000L);
+    when(mWorkspaceHelper.getWorkspaceForConnectionId(any())).thenReturn(UUID.randomUUID());
 
-    Mockito.when(mJob.getStartedAtInSecond()).thenReturn(Optional.of(mockRightNow.getTimeInMillis() / 1000L));
-    Mockito.when(mJobPersistence.getLastReplicationJob(connectionId))
+    configFetchActivity =
+        new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mWorkspaceHelper, SYNC_JOB_MAX_ATTEMPTS,
+            () -> mockRightNow.getTimeInMillis() / 1000L);
+
+    when(mJob.getStartedAtInSecond()).thenReturn(Optional.of(mockRightNow.getTimeInMillis() / 1000L));
+    when(mJobPersistence.getLastReplicationJob(connectionId))
         .thenReturn(Optional.of(mJob));
 
-    Mockito.when(mConfigRepository.getStandardSync(connectionId))
+    when(mConfigRepository.getStandardSync(connectionId))
         .thenReturn(standardSyncWithCronScheduleType);
 
     final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
@@ -308,6 +323,36 @@ class ConfigFetchActivityTest {
 
     Assertions.assertThat(output.getTimeToWait())
         .hasHours(24);
+  }
+
+  @Test
+  @DisplayName("Test that for specific workspace ids, we add some noise in the cron scheduling")
+  void testCronSchedulingNoise() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone(UTC));
+    mockRightNow.set(Calendar.HOUR_OF_DAY, 0);
+    mockRightNow.set(Calendar.MINUTE, 0);
+    mockRightNow.set(Calendar.SECOND, 0);
+    mockRightNow.set(Calendar.MILLISECOND, 0);
+
+    when(mWorkspaceHelper.getWorkspaceForConnectionId(any())).thenReturn(UUID.fromString("226edbc1-4a9c-4401-95a9-90435d667d9d"));
+
+    configFetchActivity =
+        new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mWorkspaceHelper, SYNC_JOB_MAX_ATTEMPTS,
+            () -> mockRightNow.getTimeInMillis() / 1000L);
+
+    when(mJob.getStartedAtInSecond()).thenReturn(Optional.of(mockRightNow.getTimeInMillis() / 1000L));
+    when(mJobPersistence.getLastReplicationJob(connectionId))
+        .thenReturn(Optional.of(mJob));
+
+    when(mConfigRepository.getStandardSync(connectionId))
+        .thenReturn(standardSyncWithCronScheduleType);
+
+    final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
+
+    final ScheduleRetrieverOutput output = configFetchActivity.getTimeToWait(input);
+
+    // Note: compareTo returns positive if the left side is greater than the right.
+    Assertions.assertThat(output.getTimeToWait().compareTo(Duration.ofHours(12)) > 0).isTrue();
   }
 
   @Nested

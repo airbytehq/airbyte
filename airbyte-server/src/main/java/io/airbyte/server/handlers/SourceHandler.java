@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.SourceCloneConfiguration;
@@ -28,11 +29,14 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+@Singleton
 public class SourceHandler {
 
   private final Supplier<UUID> uuidGenerator;
@@ -44,24 +48,7 @@ public class SourceHandler {
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
 
-  SourceHandler(final ConfigRepository configRepository,
-                final SecretsRepositoryReader secretsRepositoryReader,
-                final SecretsRepositoryWriter secretsRepositoryWriter,
-                final JsonSchemaValidator integrationSchemaValidation,
-                final ConnectionsHandler connectionsHandler,
-                final Supplier<UUID> uuidGenerator,
-                final JsonSecretsProcessor secretsProcessor,
-                final ConfigurationUpdate configurationUpdate) {
-    this.configRepository = configRepository;
-    this.secretsRepositoryReader = secretsRepositoryReader;
-    this.secretsRepositoryWriter = secretsRepositoryWriter;
-    validator = integrationSchemaValidation;
-    this.connectionsHandler = connectionsHandler;
-    this.uuidGenerator = uuidGenerator;
-    this.configurationUpdate = configurationUpdate;
-    this.secretsProcessor = secretsProcessor;
-  }
-
+  @Inject
   public SourceHandler(final ConfigRepository configRepository,
                        final SecretsRepositoryReader secretsRepositoryReader,
                        final SecretsRepositoryWriter secretsRepositoryWriter,
@@ -78,6 +65,25 @@ public class SourceHandler {
             .copySecrets(true)
             .build(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
+  }
+
+  @VisibleForTesting
+  SourceHandler(final ConfigRepository configRepository,
+                final SecretsRepositoryReader secretsRepositoryReader,
+                final SecretsRepositoryWriter secretsRepositoryWriter,
+                final JsonSchemaValidator integrationSchemaValidation,
+                final ConnectionsHandler connectionsHandler,
+                final Supplier<UUID> uuidGenerator,
+                final JsonSecretsProcessor secretsProcessor,
+                final ConfigurationUpdate configurationUpdate) {
+    this.configRepository = configRepository;
+    this.secretsRepositoryReader = secretsRepositoryReader;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
+    validator = integrationSchemaValidation;
+    this.connectionsHandler = connectionsHandler;
+    this.uuidGenerator = uuidGenerator;
+    this.configurationUpdate = configurationUpdate;
+    this.secretsProcessor = secretsProcessor;
   }
 
   public SourceRead createSource(final SourceCreate sourceCreate)

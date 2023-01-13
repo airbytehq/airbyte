@@ -100,6 +100,7 @@ quartz-scheduler = { module = "org.quartz-scheduler:quartz", version = "2.3.2" }
 temporal-sdk = { module = "io.temporal:temporal-sdk", version.ref = "temporal" }
 temporal-serviceclient = { module = "io.temporal:temporal-serviceclient", version.ref = "temporal" }
 temporal-testing = { module = "io.temporal:temporal-testing", version.ref = "temporal" }
+reactor-core = { module = "io.projectreactor:reactor-core" }
 
 # Micronaut-related dependencies
 h2-database = { module = "com.h2database:h2", version = "2.1.214" }
@@ -108,6 +109,7 @@ jakarta-inject = { module = "jakarta.annotation:jakarta.annotation-api", version
 javax-transaction = { module = "javax.transaction:javax.transaction-api", version = "1.3" }
 micronaut-bom = { module = "io.micronaut:micronaut-bom", version.ref = "micronaut" }
 micronaut-data-processor = { module = "io.micronaut.data:micronaut-data-processor", version = "3.8.1" }
+micronaut-data-tx = { module = "io.micronaut.data:micronaut-data-tx", version = "3.8.1" }
 micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway", version = "5.4.1" }
 micronaut-inject = { module = "io.micronaut:micronaut-inject" }
 micronaut-http-client = { module = "io.micronaut:micronaut-http-client" }
@@ -115,6 +117,7 @@ micronaut-http-server-netty = { module = "io.micronaut:micronaut-http-server-net
 micronaut-inject-java = { module = "io.micronaut:micronaut-inject-java", version.ref = "micronaut" }
 micronaut-jaxrs-processor = { module = "io.micronaut.jaxrs:micronaut-jaxrs-processor", version = "3.4.0" }
 micronaut-jaxrs-server = { module = "io.micronaut.jaxrs:micronaut-jaxrs-server", version = "3.4.0" }
+micronaut-jdbc = { module = "io.micronaut.sql:micronaut-jdbc", version = "4.7.2" }
 micronaut-jdbc-hikari = { module = "io.micronaut.sql:micronaut-jdbc-hikari" }
 micronaut-jooq = { module = "io.micronaut.sql:micronaut-jooq" }
 micronaut-management = { module = "io.micronaut:micronaut-management" }
@@ -134,6 +137,7 @@ junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
 micronaut = ["jakarta-inject", "javax-transaction", "micronaut-http-server-netty", "micronaut-http-client", "micronaut-inject", "micronaut-validation", "micronaut-runtime", "micronaut-management", "micronaut-security", "micronaut-jaxrs-server", "micronaut-flyway", "micronaut-jdbc-hikari", "micronaut-jooq"]
 micronaut-annotation = ["jakarta-inject", "micronaut-inject-java"]
 micronaut-annotation-processor = ["micronaut-inject-java", "micronaut-management", "micronaut-validation", "micronaut-data-processor", "micronaut-jaxrs-processor"]
+micronaut-server = ["micronaut-jaxrs-processor", "micronaut-jaxrs-server"]
 micronaut-test = ["micronaut-test-core", "micronaut-test-junit5", "h2-database"]
 micronaut-test-annotation-processor = ["micronaut-inject-java"]
 temporal = ["temporal-sdk", "temporal-serviceclient"]

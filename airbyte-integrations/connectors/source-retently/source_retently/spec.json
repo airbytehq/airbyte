@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/retently",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Retently Api Spec",
@@ -15,13 +15,11 @@
             "type": "object",
             "title": "Authenticate via Retently (OAuth)",
             "required": ["client_id", "client_secret", "refresh_token"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "Client",
-                "enum": ["Client"],
-                "default": "Client",
                 "order": 0
               },
               "client_id": {
@@ -47,13 +45,11 @@
             "type": "object",
             "title": "Authenticate with API Token",
             "required": ["api_key"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "Token",
-                "enum": ["Token"],
-                "default": "Token",
                 "order": 0
               },
               "api_key": {
@@ -75,7 +71,7 @@
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "refresh_token": {
             "type": "string",
@@ -85,7 +81,7 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string"
@@ -97,7 +93,7 @@
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string",

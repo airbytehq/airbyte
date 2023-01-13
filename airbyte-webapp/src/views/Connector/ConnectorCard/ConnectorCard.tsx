@@ -51,7 +51,6 @@ interface ConnectorCardBaseProps {
   // used in ConnectorForm
   formId?: string;
   fetchingConnectorError?: Error | null;
-  hasSuccess?: boolean;
   isLoading?: boolean;
 }
 
@@ -85,7 +84,14 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const [advancedMode] = useAdvancedModeSetting();
 
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
-  const { testConnector, isTestConnectionInProgress, onStopTesting, error, reset } = useTestConnector(props);
+  const {
+    testConnector,
+    isTestConnectionInProgress,
+    onStopTesting,
+    error,
+    reset,
+    isSuccess: connectionTestSuccess,
+  } = useTestConnector(props);
   const { trackTestConnectorFailure, trackTestConnectorSuccess, trackTestConnectorStarted } =
     useAnalyticsTrackFunctions(props.formType);
 
@@ -202,6 +208,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
               selectedConnectorDefinition={selectedConnectorDefinition}
               selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
               isTestConnectionInProgress={isTestConnectionInProgress}
+              connectionTestSuccess={connectionTestSuccess}
               onStopTesting={onStopTesting}
               testConnector={testConnector}
               onSubmit={onHandleSubmit}

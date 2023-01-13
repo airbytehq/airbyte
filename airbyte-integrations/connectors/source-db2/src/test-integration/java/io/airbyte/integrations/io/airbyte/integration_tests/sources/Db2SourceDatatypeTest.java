@@ -16,6 +16,7 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.math.BigDecimal;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.Db2Container;
@@ -126,7 +127,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("DECIMAL(31, 0)")
             .addInsertValues("null", "1", "DECIMAL((-1 + 10E+29), 31, 0)", "DECIMAL((1 - 10E+29), 31, 0)")
-            .addExpectedValues(null, "1", "1.0E30", "-1.0E30")
+            .addExpectedValues(null, "1", "%.0f".formatted(Double.valueOf("1.0E30")), "%.0f".formatted(Double.valueOf("-1.0E30")))
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()

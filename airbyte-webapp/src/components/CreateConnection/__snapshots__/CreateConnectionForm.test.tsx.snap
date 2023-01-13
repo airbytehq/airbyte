@@ -424,7 +424,7 @@ exports[`CreateConnectionForm should render 1`] = `
                         class="<removed-for-snapshot-test>"
                       >
                         <input
-                          class="<removed-for-snapshot-test>"
+                          aria-checked="false"
                           type="checkbox"
                         />
                       </label>
@@ -638,7 +638,7 @@ exports[`CreateConnectionForm should render 1`] = `
                             class="<removed-for-snapshot-test>"
                           >
                             <input
-                              class="<removed-for-snapshot-test>"
+                              aria-checked="false"
                               type="checkbox"
                             />
                           </label>

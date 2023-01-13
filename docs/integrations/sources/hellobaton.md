@@ -6,37 +6,37 @@ This source can sync data from the [baton API](https://app.hellobaton.com/api/re
 
 ## This Source Supports the Following Streams
 
-* activity
-* companies
-* milestones
-* phases
-* project_attachments
-* projects
-* task_attachemnts
-* tasks
-* templates
-* time_entries
-* users
+- activity
+- companies
+- milestones
+- phases
+- project_attachments
+- projects
+- task_attachemnts
+- tasks
+- templates
+- time_entries
+- users
 
 Baton adds new streams fairly regularly please submit an issue or PR if this project doesn't support required streams for your use case.
 
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `integer` | `integer` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| :--------------- | :----------- | :---- |
+| `string`         | `string`     |       |
+| `integer`        | `integer`    |       |
+| `number`         | `number`     |       |
+| `array`          | `array`      |       |
+| `object`         | `object`     |       |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
-| Namespaces | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
+| Namespaces        | No                   |       |
 
 ### Performance considerations
 
@@ -46,5 +46,11 @@ The connector is rate limited at 1000 requests per minute per api key. If you fi
 
 ### Requirements
 
-* Baton account
-* Baton api key
+- Baton account
+- Baton api key
+
+## Changelog
+
+| Version | Date       | Pull Request                                           | Subject                   |
+| :------ | :--------- | :----------------------------------------------------- | :------------------------ |
+| 0.1.0   | 2022-01-14 | [8461](https://github.com/airbytehq/airbyte/pull/8461) | 🎉 New Source: Hellobaton |

@@ -7,16 +7,22 @@ package io.airbyte.server.apis;
 import io.airbyte.api.generated.LogsApi;
 import io.airbyte.api.model.generated.LogsRequestBody;
 import io.airbyte.server.handlers.LogsHandler;
+import io.micronaut.context.annotation.Context;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
 import java.io.File;
-import javax.ws.rs.Path;
-import lombok.AllArgsConstructor;
 
-@Path("/v1/logs/get")
-@AllArgsConstructor
+@Controller("/api/v1/logs")
+@Context
 public class LogsApiController implements LogsApi {
 
   private final LogsHandler logsHandler;
 
+  public LogsApiController(final LogsHandler logsHandler) {
+    this.logsHandler = logsHandler;
+  }
+
+  @Post("/get")
   @Override
   public File getLogs(final LogsRequestBody logsRequestBody) {
     return ApiHelper.execute(() -> logsHandler.getLogs(logsRequestBody));

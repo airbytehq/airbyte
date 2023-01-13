@@ -31,7 +31,7 @@ import io.airbyte.integrations.destination.bigquery.JsonSchemaFormat;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
 import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.ArrayFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.DefaultArrayFormatter;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
