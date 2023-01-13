@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
           notEquals = "")
 @CacheConfig("remote-definitions-provider")
 @Slf4j
-public final class RemoteDefinitionsProvider implements DefinitionsProvider {
+public class RemoteDefinitionsProvider implements DefinitionsProvider {
 
   private static final HttpClient httpClient = HttpClient.newHttpClient();
   private final URI remoteDefinitionCatalogUrl;
