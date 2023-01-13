@@ -24,13 +24,13 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    String query = String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR(64),\n"
-            + "%s VARCHAR(2000000),\n"
-            + "%s TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n"
-            + "PRIMARY KEY(%s)\n"
-            + ")\n",
+    String query = String.format("""
+                    CREATE TABLE IF NOT EXISTS %s.%s (
+                      %s VARCHAR(64),
+                      %s VARCHAR(2000000),
+                      %s TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      PRIMARY KEY(%s)
+                    )""",
         schemaName, tableName,
         ExasolSqlOperations.COLUMN_NAME_AB_ID,
         ExasolSqlOperations.COLUMN_NAME_DATA,
@@ -42,11 +42,18 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
-    // Note: Exasol does not support multi query
-    for (final String query : queries) {
-      LOGGER.info("Executing transaction statement ''{}''", query);
-      database.execute(query);
+    try {
+      for (final String query : queries) {
+        LOGGER.info("Executing statement in transaction: {}", query);
+        database.execute(query);
+      }
+    } catch(Exception e) {
+      LOGGER.warn("Rolling back transaction after exception", e);
+      database.execute("ROLLBACK");
+      throw e;
     }
+    LOGGER.info("Committing transaction after executing {} statements", queries.size());
+    database.execute("COMMIT");
   }
 
   @Override
@@ -60,7 +67,7 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
              IMPORT INTO %s.%s
              FROM LOCAL CSV FILE '%s'
              ROW SEPARATOR = 'CRLF'
-             COLUMN SEPARATOR = ','\s""", schemaName, tableName, tmpFile.toAbsolutePath().toString());
+             COLUMN SEPARATOR = ','\s""", schemaName, tableName, tmpFile.toAbsolutePath());
       LOGGER.info("IMPORT statement: {}", importStatement);
       database.execute(connection -> connection.createStatement().execute(importStatement));
     } finally {

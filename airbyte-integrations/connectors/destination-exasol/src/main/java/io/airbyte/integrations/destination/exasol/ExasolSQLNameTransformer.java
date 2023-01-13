@@ -6,10 +6,6 @@ package io.airbyte.integrations.destination.exasol;
 
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.UUID;
 
 public class ExasolSQLNameTransformer extends ExtendedNameTransformer {
   @Override

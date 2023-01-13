@@ -82,12 +82,12 @@ class ExasolDestinationTest {
     @Test
     void getDefaultConnectionProperties() {
         var result = destination.getDefaultConnectionProperties(createConfig());
-        assertThat(result.size(), is(0));
+        assertThat(result, equalTo(Map.of("autocommit", "0")));
     }
 
     @Test
     void getDefaultConnectionPropertiesWithFingerprint() {
         var result = destination.getDefaultConnectionProperties(createConfig(Map.of("certificateFingerprint", "ABC")));
-        assertThat(result, equalTo(Map.of("fingerprint", "ABC")));
+        assertThat(result, equalTo(Map.of("fingerprint", "ABC", "autocommit", "0")));
     }
 }
