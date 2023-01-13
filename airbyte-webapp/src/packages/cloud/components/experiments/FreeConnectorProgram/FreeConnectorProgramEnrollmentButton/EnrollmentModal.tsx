@@ -5,6 +5,7 @@ import { Button, ButtonVariant } from "components/ui/Button";
 import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 import { ModalFooter } from "components/ui/Modal/ModalFooter";
+import { Text } from "components/ui/Text";
 
 import { useModalService } from "hooks/services/Modal";
 import { StripeCheckoutSessionCreate, StripeCheckoutSessionRead } from "packages/cloud/lib/domain/stripe";
@@ -62,19 +63,31 @@ const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({ closeMo
             <FlexContainer justifyContent="center" className={styles.iconContainer}>
               <FreeSVG />
             </FlexContainer>
-            <FormattedMessage id="freeConnectorProgram.enrollmentModal.free" />
+            <FlexContainer direction="column" gap="lg">
+              <FormattedMessage
+                id="freeConnectorProgram.enrollmentModal.free"
+                values={{
+                  p1: (content: React.ReactNode) => <Text size="lg">{content}</Text>,
+                  p2: (content: React.ReactNode) => <Text size="lg">{content}</Text>,
+                }}
+              />
+            </FlexContainer>
           </FlexContainer>
           <FlexContainer>
             <FlexContainer justifyContent="center" className={styles.iconContainer}>
               <MailSVG />
             </FlexContainer>
-            <FormattedMessage id="freeConnectorProgram.enrollmentModal.emailNotification" />
+            <Text size="lg">
+              <FormattedMessage id="freeConnectorProgram.enrollmentModal.emailNotification" />
+            </Text>
           </FlexContainer>
           <FlexContainer>
             <FlexContainer justifyContent="center" className={styles.iconContainer}>
               <CardSVG />
             </FlexContainer>
-            <FormattedMessage id="freeConnectorProgram.enrollmentModal.cardOnFile" />
+            <Text size="lg">
+              <FormattedMessage id="freeConnectorProgram.enrollmentModal.cardOnFile" />
+            </Text>
           </FlexContainer>
         </FlexContainer>
       </div>

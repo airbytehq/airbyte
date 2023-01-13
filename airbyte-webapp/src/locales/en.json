@@ -746,7 +746,7 @@
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again.",
 
   "freeConnectorProgram.enrollmentModal.title": "Free connector program",
-  "freeConnectorProgram.enrollmentModal.free": "Alpha and Beta Connectors are free while you're in the program. The whole Connection is free until both Connectors have move into General Availability (GA)",
+  "freeConnectorProgram.enrollmentModal.free": "<p1>Alpha and Beta Connectors are free while you're in the program.</p1><p2>The whole Connection is free until both Connectors have move into General Availability (GA)</p2>",
   "freeConnectorProgram.enrollmentModal.emailNotification": "We will let you know through email before a Connector you use moves to GA",
   "freeConnectorProgram.enrollmentModal.cardOnFile": "When both Connectors are in GA, the Connection will no longer be free. You'll need to have a credit card on file to enroll so Airbyte can handle a Connection's transition to paid service.",
   "freeConnectorProgram.enrollmentModal.cancelButtonText": "Cancel",
