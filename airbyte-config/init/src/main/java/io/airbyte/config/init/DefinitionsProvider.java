@@ -12,6 +12,8 @@ import java.util.UUID;
 
 public interface DefinitionsProvider {
 
+  void loadDefinitions();
+
   StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException;
 
   List<StandardSourceDefinition> getSourceDefinitions();

@@ -55,16 +55,20 @@ public final class RemoteDefinitionsProvider implements DefinitionsProvider {
   }
 
   @PostConstruct
-  public void initialize() throws InterruptedException, IOException {
-    final CombinedConnectorCatalog catalog = getRemoteDefinitionCatalog(this.remoteDefinitionCatalogUrl, this.timeout);
-    this.sourceDefinitions = catalog.getSources().stream().collect(Collectors.toMap(
-        StandardSourceDefinition::getSourceDefinitionId,
-        source -> source.withProtocolVersion(
-            AirbyteProtocolVersion.getWithDefault(source.getSpec() != null ? source.getSpec().getProtocolVersion() : null).serialize())));
-    this.destinationDefinitions = catalog.getDestinations().stream().collect(Collectors.toMap(
-        StandardDestinationDefinition::getDestinationDefinitionId,
-        destination -> destination.withProtocolVersion(
-            AirbyteProtocolVersion.getWithDefault(destination.getSpec() != null ? destination.getSpec().getProtocolVersion() : null).serialize())));
+  public void loadDefinitions() {
+    try {
+      final CombinedConnectorCatalog catalog = getRemoteDefinitionCatalog(this.remoteDefinitionCatalogUrl, this.timeout);
+      this.sourceDefinitions = catalog.getSources().stream().collect(Collectors.toMap(
+          StandardSourceDefinition::getSourceDefinitionId,
+          source -> source.withProtocolVersion(
+              AirbyteProtocolVersion.getWithDefault(source.getSpec() != null ? source.getSpec().getProtocolVersion() : null).serialize())));
+      this.destinationDefinitions = catalog.getDestinations().stream().collect(Collectors.toMap(
+          StandardDestinationDefinition::getDestinationDefinitionId,
+          destination -> destination.withProtocolVersion(
+              AirbyteProtocolVersion.getWithDefault(destination.getSpec() != null ? destination.getSpec().getProtocolVersion() : null).serialize())));
+    } catch (final IOException | InterruptedException e) {
+      throw new RuntimeException("Failed to load remote definitions", e);
+    }
   }
 
   @Override
@@ -104,6 +108,8 @@ public final class RemoteDefinitionsProvider implements DefinitionsProvider {
       throw new IOException(
           "getRemoteDefinitionCatalog request ran into status code error: " + response.statusCode() + " with message: " + response.getClass());
     }
+
+    log.info("Fetched latest remote definitions ({})", response.body().hashCode());
     return Jsons.deserialize(response.body(), CombinedConnectorCatalog.class);
   }
 

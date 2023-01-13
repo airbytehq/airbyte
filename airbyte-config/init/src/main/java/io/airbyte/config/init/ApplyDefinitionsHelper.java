@@ -54,6 +54,8 @@ public class ApplyDefinitionsHelper {
       final DefinitionsProvider definitionsProvider = definitionsProviderOptional.get();
       final Optional<AirbyteProtocolVersionRange> currentProtocolRange = getCurrentProtocolRange();
 
+      definitionsProvider.loadDefinitions();
+
       if (updateAll) {
         final List<StandardSourceDefinition> latestSourceDefinitions = definitionsProvider.getSourceDefinitions();
         for (final StandardSourceDefinition def : filterStandardSourceDefinitions(currentProtocolRange, latestSourceDefinitions)) {

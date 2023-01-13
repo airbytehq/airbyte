@@ -48,22 +48,26 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
     this.seedResourceClass = seedResourceClass;
 
     // TODO remove this call once dependency injection framework manages object creation
-    initialize();
+    loadDefinitions();
   }
 
   // TODO will be called automatically by the dependency injection framework on object creation
-  public void initialize() throws IOException {
-    this.sourceDefinitions =
-        parseDefinitions(this.seedResourceClass, SeedType.STANDARD_SOURCE_DEFINITION.getResourcePath(), SeedType.SOURCE_SPEC.getResourcePath(),
-            SeedType.STANDARD_SOURCE_DEFINITION.getIdName(), SeedType.SOURCE_SPEC.getIdName(), StandardSourceDefinition.class);
-    this.destinationDefinitions = parseDefinitions(this.seedResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION.getResourcePath(),
-        SeedType.DESTINATION_SPEC.getResourcePath(), SeedType.STANDARD_DESTINATION_DEFINITION.getIdName(), SeedType.DESTINATION_SPEC.getIdName(),
-        StandardDestinationDefinition.class);
+  public void loadDefinitions() {
+    try {
+      this.sourceDefinitions =
+          parseDefinitions(this.seedResourceClass, SeedType.STANDARD_SOURCE_DEFINITION.getResourcePath(), SeedType.SOURCE_SPEC.getResourcePath(),
+              SeedType.STANDARD_SOURCE_DEFINITION.getIdName(), SeedType.SOURCE_SPEC.getIdName(), StandardSourceDefinition.class);
+      this.destinationDefinitions = parseDefinitions(this.seedResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION.getResourcePath(),
+          SeedType.DESTINATION_SPEC.getResourcePath(), SeedType.STANDARD_DESTINATION_DEFINITION.getIdName(), SeedType.DESTINATION_SPEC.getIdName(),
+          StandardDestinationDefinition.class);
+    } catch (final IOException e) {
+      throw new RuntimeException("Failed to load definitions", e);
+    }
   }
 
   @Override
   public StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException {
-    StandardSourceDefinition definition = this.sourceDefinitions.get(definitionId);
+    final StandardSourceDefinition definition = this.sourceDefinitions.get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException(SeedType.STANDARD_SOURCE_DEFINITION.name(), definitionId.toString());
     }
@@ -77,7 +81,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   @Override
   public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
-    StandardDestinationDefinition definition = this.destinationDefinitions.get(definitionId);
+    final StandardDestinationDefinition definition = this.destinationDefinitions.get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException(SeedType.STANDARD_DESTINATION_DEFINITION.name(), definitionId.toString());
     }
@@ -142,7 +146,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
     return definitionJson;
   }
 
-  private static JsonNode addMissingFields(JsonNode element) {
+  private static JsonNode addMissingFields(final JsonNode element) {
     return addMissingPublicField(addMissingCustomField(addMissingTombstoneField(element)));
   }
 
