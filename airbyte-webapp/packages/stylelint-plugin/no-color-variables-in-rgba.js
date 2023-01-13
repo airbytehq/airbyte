@@ -3,8 +3,11 @@ const stylelint = require("stylelint");
 const { ruleMessages } = stylelint.utils;
 const ruleName = "airbyte/no-color-variables-in-rgba";
 const messages = ruleMessages(ruleName, {
-  variableFoundInRgba: () => `A color variable can't be used within an rgba() function.`,
+  variableFoundInRgba: () =>
+    `A color variable can't be used within an rgba() function. Explanation: ${LINK_TO_STYLEGUIDE}`,
 });
+const LINK_TO_STYLEGUIDE =
+  "https://github.com/airbytehq/airbyte/blob/master/airbyte-webapp/STYLEGUIDE.md#color-variables-cannot-be-used-inside-of-rgba-functions";
 
 module.exports.ruleName = ruleName;
 module.exports.messages = messages;
