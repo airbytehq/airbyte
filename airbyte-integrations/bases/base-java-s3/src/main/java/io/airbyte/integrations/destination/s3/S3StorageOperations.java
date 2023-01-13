@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateManager;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -132,8 +133,12 @@ public class S3StorageOperations extends BlobStorageOperations {
         exceptionsThrown.add(e);
       }
     }
+    // Verifying that ALL exceptions are authentication related before assuming this is a configuration issue
+    // reduces risk of misidentifying errors or reporting a transient error.
     final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream().filter(e -> e instanceof AmazonS3Exception)
-        .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode()).allMatch(code -> Integer.valueOf(403).equals(code));
+        .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode())
+        .filter(ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES::contains)
+        .count() == exceptionsThrown.size();
     if (areAllExceptionsAuthExceptions) {
       throw new ConfigErrorException(exceptionsThrown.get(0).getMessage(), exceptionsThrown.get(0));
     } else {
