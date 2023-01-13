@@ -16,5 +16,5 @@ ENV APPLICATION destination-csv
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.2.10
+LABEL io.airbyte.version=1.0.0
 LABEL io.airbyte.name=airbyte/destination-csv

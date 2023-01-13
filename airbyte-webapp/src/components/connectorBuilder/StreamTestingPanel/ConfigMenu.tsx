@@ -58,6 +58,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJson
             <Button
               size="sm"
               variant="secondary"
+              data-testid="test-inputs"
               onClick={() => setIsOpen(true)}
               disabled={
                 !jsonManifest.spec ||
