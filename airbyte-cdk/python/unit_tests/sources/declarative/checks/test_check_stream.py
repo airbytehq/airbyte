@@ -49,3 +49,16 @@ def test_check_stream_with_slices_as_list(test_name, record, streams_to_check, s
 
 def mock_read_records(responses, default_response=None, **kwargs):
     return lambda stream_slice, sync_mode: responses[frozenset(stream_slice)] if frozenset(stream_slice) in responses else default_response
+
+
+def test_check_empty_stream():
+    stream = MagicMock()
+    stream.name = "s1"
+    stream.read_records.return_value = iter([])
+
+    source = MagicMock()
+    source.streams.return_value = [stream]
+
+    check_stream = CheckStream(["s1"], options={})
+    stream_is_available, reason = check_stream.check_connection(source, logger, config)
+    assert stream_is_available
