@@ -221,7 +221,7 @@ services:
     container_name: airbyte-connector-builder-server
     restart: unless-stopped
     ports:
-      - 80
+      - 8003:80
     environment:
       - AIRBYTE_VERSION=${VERSION}
     networks:
@@ -233,7 +233,6 @@ services:
     ports:
       - 8000:8000
       - 8001:8001
-      - 8003:8003
     environment:
       - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
       - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
