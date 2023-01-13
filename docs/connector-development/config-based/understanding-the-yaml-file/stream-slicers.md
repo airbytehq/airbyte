@@ -299,7 +299,7 @@ Example:
 stream_slicer:
   type: "SubstreamSlicer"
   parent_streams_configs:
-    - stream: "*ref(repositories_stream)"
+    - stream: "#/repositories_stream"
       parent_key: "id"
       stream_slice_field: "repository"
       request_option:
@@ -321,7 +321,7 @@ retriever:
   stream_slicer:
     type: "SubstreamSlicer"
 parent_streams_configs:
-  - stream: "*ref(repositories_stream)"
+  - stream: "#/repositories_stream"
     parent_key: "id"
     stream_slice_field: "repository"
 ```

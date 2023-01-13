@@ -105,11 +105,11 @@ In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
 Strings can contain references to previously defined values.
 The parser will dereference these values to produce a complete object definition.
 
-References can be defined using a "*ref({arg})" string.
+References can be defined using a "#/{arg}" string.
 
 ```yaml
 key: 1234
-reference: "*ref(key)"
+reference: "#/key"
 ```
 
 will produce the following definition:
@@ -125,7 +125,7 @@ This also works with objects:
 key_value_pairs:
   k1: v1
   k2: v2
-same_key_value_pairs: "*ref(key_value_pairs)"
+same_key_value_pairs: "#/key_value_pairs"
 ```
 
 will produce the following definition:
@@ -146,7 +146,7 @@ key_value_pairs:
   k1: v1
   k2: v2
 same_key_value_pairs:
-  $ref: "*ref(key_value_pairs)"
+  $ref: "#/key_value_pairs"
   k3: v3
 ```
 
@@ -163,13 +163,13 @@ same_key_value_pairs:
 ```
 
 References can also point to nested values.
-Nested references are ambiguous because one could define a key containing with `.`
+Nested references are ambiguous because one could define a key containing with `/`
 in this example, we want to refer to the limit key in the dict object:
 
 ```yaml
 dict:
   limit: 50
-limit_ref: "*ref(dict.limit)"
+limit_ref: "#/dict/limit"
 ```
 
 will produce the following definition:
@@ -180,7 +180,7 @@ limit: 50
 limit-ref: 50
 ```
 
-whereas here we want to access the `nested.path` value.
+whereas here we want to access the `nested/path` value.
 
 ```yaml
 nested:
@@ -194,7 +194,7 @@ will produce the following definition:
 ```yaml
 nested:
   path: "first one"
-nested.path: "uh oh"
+nested/path: "uh oh"
 value: "uh oh"
 ```
 
