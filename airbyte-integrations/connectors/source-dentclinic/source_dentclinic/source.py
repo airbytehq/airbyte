@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .streams import DentclinicBookingStream, DentclinicBookingFrStream, DentclinicClinicIdsStream, DentclinicStaticStream
+from .streams import DentclinicBookingStream, DentclinicClinicIdsStream, DentclinicStaticStream
 
 
 class BookingsFr(DentclinicBookingStream):
@@ -139,6 +139,6 @@ class SourceDentclinic(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [BookingsFr(config=config), Bookings(config=config)]
+        return [BookingsFr(config=config, enable_days_back_limit=True), Bookings(config=config)]
 
         # ,Clinics(config=config), Services(config=config), Resources(config=config), BookingsFr(config=config)
