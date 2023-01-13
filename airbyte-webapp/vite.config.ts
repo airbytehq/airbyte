@@ -74,6 +74,9 @@ export default defineConfig(({ mode }) => {
     server: {
       port: Number(process.env.PORT) || 3000,
       strictPort: true,
+      headers: {
+        "Content-Security-Policy": "script-src * 'unsafe-inline'; worker-src self blob:;",
+      },
     },
     resolve: {
       alias: {
