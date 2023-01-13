@@ -1,1 +1,1 @@
-export * from "./EnrollmentModal";
+export { FCPEnrollmentButton } from "./EnrollmentButton";

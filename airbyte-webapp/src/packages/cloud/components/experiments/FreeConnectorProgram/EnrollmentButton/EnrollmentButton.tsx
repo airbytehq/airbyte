@@ -10,12 +10,12 @@ import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 import { EnrollmentModalContent } from "./EnrollmentModal";
 
-interface FreeConnectorProgramEnrollmentButtonProps {
+interface FCPEnrollmentButtonProps {
   buttonTextKey?: string;
   variant?: ButtonVariant;
 }
 
-export const FreeConnectorProgramEnrollmentButton: React.FC<FreeConnectorProgramEnrollmentButtonProps> = ({
+export const FCPEnrollmentButton: React.FC<FCPEnrollmentButtonProps> = ({
   buttonTextKey = "freeConnectorProgram.enrollmentModal.enrollButtonText",
   variant = "primary",
 }) => {
