@@ -151,7 +151,26 @@ class Videos(FBMarketingIncrementalStream):
     entity_prefix = "video"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        # Remove filtering as it is not working for this stream since 2023-01-13
+        del(params["filtering"])
         return self._api.account.get_ad_videos(params=params)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Main read method used by CDK"""
+        records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
+        loaded_records_iter = (record.api_get(fields=self.fields, pending=self.use_batch) for record in records_iter)
+        if self.use_batch:
+            loaded_records_iter = self.execute_in_batch(loaded_records_iter)
+        start_date = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
+        for record in loaded_records_iter:
+            if pendulum.parse(record.get(self.cursor_field)) > start_date:
+                yield record
 
 
 class AdAccount(FBMarketingStream):
