@@ -54,7 +54,13 @@ export const Auth: React.FC = () => {
               <Route path={CloudRoutes.FirebaseAction} element={<FirebaseActionRoute />} />
               <Route
                 path="*"
-                element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${pathname}`}`} />}
+                element={
+                  <Navigate
+                    to={`${CloudRoutes.Login}${
+                      loggedOut && pathname.includes("/settings/account") ? "" : `?from=${pathname}`
+                    }`}
+                  />
+                }
               />
             </Routes>
           </Suspense>
