@@ -1,5 +1,5 @@
 import { User as FirebaseUser } from "firebase/auth";
-import React, { useCallback, useContext, useMemo, useRef } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
 import { useEffectOnce } from "react-use";
 import { Observable, Subject } from "rxjs";
@@ -159,6 +159,23 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
       }
     });
   });
+
+  useEffect(() => {
+    const onFocus = async () => {
+      return auth.onAuthStateChanged(async (currentUser) => {
+        if (!currentUser) {
+          loggedOut();
+        } else {
+          await onAfterAuth(currentUser);
+        }
+      });
+    };
+
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [auth, loggedOut, onAfterAuth]);
 
   const queryClient = useQueryClient();
 

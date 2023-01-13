@@ -9,7 +9,6 @@ from typing import Any, Mapping
 OPTIONS_STR = "$options"
 
 
-# todo: For better granularity, we may want this to be keyed on the object + field
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # CompositeErrorHandler
     "CompositeErrorHandler.error_handlers": "DefaultErrorHandler",
@@ -56,7 +55,11 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # AddFields
     "AddFields.fields": "AddedFieldDefinition",
     # CustomStreamSlicer
+    "CustomStreamSlicer.end_datetime": "MinMaxDatetime",
+    "CustomStreamSlicer.end_time_option": "RequestOption",
     "CustomStreamSlicer.parent_stream_configs": "ParentStreamConfig",
+    "CustomStreamSlicer.start_datetime": "MinMaxDatetime",
+    "CustomStreamSlicer.start_time_option": "RequestOption",
 }
 
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
