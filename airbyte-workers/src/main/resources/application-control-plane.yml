@@ -3,6 +3,7 @@ datasources:
     connection-test-query: SELECT 1
     connection-timeout: 30000
     idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
     maximum-pool-size: 5
     minimum-idle: 0
     url: ${DATABASE_URL}
@@ -13,6 +14,7 @@ datasources:
     connection-test-query: SELECT 1
     connection-timeout: 30000
     idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
     maximum-pool-size: 5
     minimum-idle: 0
     url: ${DATABASE_URL}
