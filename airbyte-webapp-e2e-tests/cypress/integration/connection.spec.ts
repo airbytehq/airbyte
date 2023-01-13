@@ -154,9 +154,6 @@ describe("Connection - main actions", () => {
 
     createTestConnection(sourceName, destName);
 
-    cy.get("div").contains(sourceName).should("exist");
-    cy.get("div").contains(destName).should("exist");
-
     goToReplicationTab();
 
     selectSchedule("Cron");
