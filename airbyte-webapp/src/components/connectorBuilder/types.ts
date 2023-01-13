@@ -611,12 +611,11 @@ function builderStreamToDeclarativeSteam(
         url_base: values.global?.urlBase,
         path: stream.urlPath,
         request_options_provider: {
-          // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
-          // type: "InterpolatedRequestOptionsProvider",
+          type: "InterpolatedRequestOptionsProvider",
           request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
           request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
           request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
-        } as InterpolatedRequestOptionsProvider,
+        },
         authenticator: builderAuthenticatorToManifest(values.global),
       },
       record_selector: {
@@ -850,6 +849,69 @@ function assertType<T extends { type: string }>(
   }
 }
 
+const manifestStreamToBuilder = (
+  stream: DeclarativeStream,
+  builderFormGlobal: BuilderFormValues["global"]
+): BuilderStream => {
+  assertType<SimpleRetriever>(stream.retriever, "SimpleRetriever", stream.name);
+  const retriever = stream.retriever;
+
+  assertType<HttpRequester>(retriever.requester, "HttpRequester", stream.name);
+  const requester = retriever.requester;
+
+  if (!isEqual(retriever.requester.authenticator, builderFormGlobal.authenticator)) {
+    throw new ManifestCompatibilityError(stream.name, "authenticator does not match the first stream's");
+  }
+
+  if (retriever.requester.url_base !== builderFormGlobal.urlBase) {
+    throw new ManifestCompatibilityError(stream.name, "url_base does not match the first stream's");
+  }
+
+  if (retriever.name !== stream.name || requester.name !== stream.name) {
+    throw new ManifestCompatibilityError(
+      stream.name,
+      "name is not consistent across stream, retriever, and requester levels"
+    );
+  }
+
+  if (![undefined, "GET", "POST"].includes(requester.http_method)) {
+    throw new ManifestCompatibilityError(stream.name, "http_method is not GET or POST");
+  }
+
+  assertType<DpathExtractor>(retriever.record_selector.extractor, "DpathExtractor", stream.name);
+
+  if (requester.request_options_provider) {
+    assertType<InterpolatedRequestOptionsProvider>(
+      requester.request_options_provider,
+      "InterpolatedRequestOptionsProvider",
+      stream.name
+    );
+  }
+
+  return {
+    ...DEFAULT_BUILDER_STREAM_VALUES,
+    id: uuid(),
+    name: stream.name ?? "",
+    urlPath: requester.path,
+    httpMethod: (requester.http_method as "GET" | "POST" | undefined) ?? "GET",
+    fieldPointer: retriever.record_selector.extractor.field_pointer as string[],
+    requestOptions: {
+      requestParameters: Object.entries(requester.request_options_provider?.request_parameters ?? {}),
+      requestHeaders: Object.entries(requester.request_options_provider?.request_headers ?? {}),
+      // try getting this from request_body_data first, and if not set then pull from request_body_json
+      requestBody: Object.entries(
+        requester.request_options_provider?.request_body_data ??
+          requester.request_options_provider?.request_body_json ??
+          {}
+      ),
+    },
+    primaryKey: manifestPrimaryKeyToBuilder(stream),
+    paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, builderFormGlobal.urlBase),
+    streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, stream.name),
+    schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
+  };
+};
+
 export const convertToBuilderFormValues = (
   manifest: ConnectorManifest,
   currentBuilderFormValues: BuilderFormValues
@@ -869,67 +931,7 @@ export const convertToBuilderFormValues = (
     builderFormValues.inputs = inputs;
     builderFormValues.global.authenticator = auth;
 
-    builderFormValues.streams = streams.map((stream) => {
-      assertType<SimpleRetriever>(stream.retriever, "SimpleRetriever", stream.name);
-      const retriever = stream.retriever;
-
-      assertType<HttpRequester>(retriever.requester, "HttpRequester", stream.name);
-      const requester = retriever.requester;
-
-      if (!isEqual(retriever.requester.authenticator, builderFormValues.global.authenticator)) {
-        throw new ManifestCompatibilityError(stream.name, "authenticator does not match the first stream's");
-      }
-
-      if (retriever.requester.url_base !== builderFormValues.global.urlBase) {
-        throw new ManifestCompatibilityError(stream.name, "url_base does not match the first stream's");
-      }
-
-      if (retriever.name !== stream.name || requester.name !== stream.name) {
-        throw new ManifestCompatibilityError(
-          stream.name,
-          "name is not consistent across stream, retriever, and requester levels"
-        );
-      }
-
-      if (![undefined, "GET", "POST"].includes(requester.http_method)) {
-        throw new ManifestCompatibilityError(stream.name, "http_method is not GET or POST");
-      }
-
-      assertType<DpathExtractor>(retriever.record_selector.extractor, "DpathExtractor", stream.name);
-
-      if (requester.request_options_provider) {
-        assertType<InterpolatedRequestOptionsProvider>(
-          requester.request_options_provider,
-          "InterpolatedRequestOptionsProvider",
-          stream.name
-        );
-      }
-
-      const builderStream: BuilderStream = {
-        ...DEFAULT_BUILDER_STREAM_VALUES,
-        id: uuid(),
-        name: stream.name ?? "",
-        urlPath: requester.path,
-        httpMethod: (requester.http_method as "GET" | "POST" | undefined) ?? "GET",
-        fieldPointer: retriever.record_selector.extractor.field_pointer as string[],
-        requestOptions: {
-          requestParameters: Object.entries(requester.request_options_provider?.request_parameters ?? {}),
-          requestHeaders: Object.entries(requester.request_options_provider?.request_headers ?? {}),
-          // try getting this from request_body_data first, and if not set then pull from request_body_json
-          requestBody: Object.entries(
-            requester.request_options_provider?.request_body_data ??
-              requester.request_options_provider?.request_body_json ??
-              {}
-          ),
-        },
-        primaryKey: manifestPrimaryKeyToBuilder(stream),
-        paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, builderFormValues.global.urlBase),
-        streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, stream.name),
-        schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
-      };
-
-      return builderStream;
-    });
+    builderFormValues.streams = streams.map((stream) => manifestStreamToBuilder(stream, builderFormValues.global));
   }
 
   return builderFormValues;
