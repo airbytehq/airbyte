@@ -3,6 +3,7 @@
 #
 
 import logging
+import traceback
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Tuple
 
@@ -38,10 +39,16 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
                 try:
                     # Some streams need a stream slice to read records (eg if they have a SubstreamSlicer)
                     stream_slice = self._get_stream_slice(stream)
+                except StopIteration:
+                    return (
+                        False,
+                        f"Cannot attempt to connect to stream {stream_name} - no stream slices were found, likely because the parent stream is empty.",
+                    )
+                try:
                     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
                     next(records)
                 except StopIteration:
-                    # StopIteration is raised if we successfully connect to an empty stream
+                    logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")
                     return True, None
                 except Exception as error:
                     return False, f"Unable to connect to stream {stream_name} - {error}"
@@ -58,7 +65,4 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
                 sync_mode=SyncMode.full_refresh,
             )
         )
-        try:
-            return next(slices)
-        except StopIteration:
-            return {}
+        return next(slices)
