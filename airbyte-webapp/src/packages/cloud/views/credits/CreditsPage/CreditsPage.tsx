@@ -8,6 +8,7 @@ import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
+import { LargeEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/LargeEnrollmentCallout";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import CreditsUsage from "./components/CreditsUsage";
@@ -26,6 +27,7 @@ const CreditsPage: React.FC = () => {
       <div className={styles.content}>
         {!emailVerified && <EmailVerificationHint className={styles.emailVerificationHint} />}
         <RemainingCredits selfServiceCheckoutEnabled={emailVerified} />
+        <LargeEnrollmentCallout />
         <React.Suspense
           fallback={
             <div className={styles.creditUsageLoading}>
