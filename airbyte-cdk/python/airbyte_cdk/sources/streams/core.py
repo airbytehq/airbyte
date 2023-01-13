@@ -126,6 +126,9 @@ class Stream(ABC):
         if self.namespace:
             stream.namespace = self.namespace
 
+        if self.suggested != None:
+            stream.suggested = self.suggested
+
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
             stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
@@ -204,6 +207,13 @@ class Stream(ABC):
         created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.
         """
         return None
+
+    @property
+    def suggested(self) -> Optional[bool]:
+        """
+        When used with a catalog which has suggesting_streams=True, determine if this stream should be default-enabled for new connections
+        """
+        return True
 
     @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):

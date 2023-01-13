@@ -281,6 +281,10 @@ class AirbyteStream(BaseModel):
         None,
         description="Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.",
     )
+    suggested: Optional[bool] = Field(
+        None,
+        description="Should this stream be enabled by default?  This property is considered when the catalog suggesting this stream has suggesting_streams=true",
+    )
 
 
 class ConfiguredAirbyteStream(BaseModel):
@@ -358,6 +362,10 @@ class AirbyteCatalog(BaseModel):
         extra = Extra.allow
 
     streams: List[AirbyteStream]
+    suggesting_streams: Optional[bool] = Field(
+        None,
+        description="Does this catalog suggest a subset of streams to be selected when discovered?  If false or null, the previous behavior of pre-selecting all streams should be used.",
+    )
 
 
 class ConfiguredAirbyteCatalog(BaseModel):

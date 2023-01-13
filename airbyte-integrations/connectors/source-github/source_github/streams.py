@@ -319,6 +319,8 @@ class RepositoryStats(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#get-a-repository
     """
 
+    suggested = False
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}"
 
@@ -331,11 +333,15 @@ class Assignees(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-assignees
     """
 
+    suggested = False
+
 
 class Branches(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-branches
     """
+
+    suggested = True
 
     primary_key = ["repository", "name"]
 
@@ -348,11 +354,15 @@ class Collaborators(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
     """
 
+    suggested = False
+
 
 class IssueLabels(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/issues/labels#list-labels-for-a-repository
     """
+
+    suggested = False
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/labels"
@@ -362,6 +372,8 @@ class Organizations(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
     """
+
+    suggested = True
 
     # GitHub pagination could be from 1 to 100.
     page_size = 100
@@ -390,6 +402,8 @@ class Repositories(SemiIncrementalMixin, Organizations):
     API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
     """
 
+    suggested = True
+
     is_sorted = "desc"
     stream_base_params = {
         "sort": "updated",
@@ -409,6 +423,7 @@ class Tags(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-repository-tags
     """
 
+    suggested = True
     primary_key = ["repository", "name"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -420,6 +435,7 @@ class Teams(Organizations):
     API docs: https://docs.github.com/en/rest/reference/teams#list-teams
     """
 
+    suggested = True
     use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -434,6 +450,8 @@ class Users(Organizations):
     """
     API docs: https://docs.github.com/en/rest/reference/orgs#list-organization-members
     """
+
+    suggested = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/members"
@@ -451,6 +469,7 @@ class Releases(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-releases
     """
 
+    suggested = False
     cursor_field = "created_at"
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -469,6 +488,7 @@ class Events(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/activity#list-repository-events
     """
 
+    suggested = False
     cursor_field = "created_at"
 
 
@@ -477,6 +497,7 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/pulls/pulls#list-pull-requests
     """
 
+    suggested = True
     use_cache = True
     large_stream = True
 
@@ -526,6 +547,7 @@ class CommitComments(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository
     """
 
+    suggested = False
     use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -537,6 +559,7 @@ class IssueMilestones(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
     """
 
+    suggested = False
     is_sorted = "desc"
     stream_base_params = {
         "state": "all",
@@ -553,6 +576,7 @@ class Stargazers(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/activity#list-stargazers
     """
 
+    suggested = True
     primary_key = "user_id"
     cursor_field = "starred_at"
 
@@ -579,6 +603,7 @@ class Projects(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
     """
 
+    suggested = False
     use_cache = True
     stream_base_params = {
         "state": "all",
@@ -598,6 +623,7 @@ class IssueEvents(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository
     """
 
+    suggested = False
     cursor_field = "created_at"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -612,6 +638,7 @@ class Comments(IncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
 
+    suggested = True
     use_cache = True
     large_stream = True
     max_retries = 7
@@ -627,6 +654,7 @@ class Commits(IncrementalMixin, GithubStream):
     Pull commits from each branch of each repository, tracking state for each branch
     """
 
+    suggested = False
     primary_key = "sha"
     cursor_field = "created_at"
 
@@ -698,6 +726,7 @@ class Issues(IncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/issues/issues#list-repository-issues
     """
 
+    suggested = True
     use_cache = True
     large_stream = True
     is_sorted = "asc"
@@ -726,6 +755,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
     """
 
+    suggested = False
     is_sorted = "asc"
     http_method = "POST"
 
@@ -793,6 +823,7 @@ class Reviews(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequestreview
     """
 
+    suggested = False
     is_sorted = False
     http_method = "POST"
     cursor_field = "updated_at"
@@ -886,6 +917,7 @@ class PullRequestCommits(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-commits-on-a-pull-request
     """
 
+    suggested = False
     primary_key = "sha"
 
     def __init__(self, parent: HttpStream, **kwargs):
@@ -919,6 +951,7 @@ class PullRequestCommits(GithubStream):
 
 class ReactionStream(GithubStream, ABC):
 
+    suggested = False
     parent_key = "id"
     copy_parent_key = "comment_id"
     cursor_field = "created_at"
@@ -989,6 +1022,7 @@ class CommitCommentReactions(ReactionStream):
     API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment
     """
 
+    suggested = False
     parent_entity = CommitComments
 
 
@@ -997,6 +1031,7 @@ class IssueCommentReactions(ReactionStream):
     API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment
     """
 
+    suggested = False
     parent_entity = Comments
 
 
@@ -1005,6 +1040,7 @@ class IssueReactions(ReactionStream):
     API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue
     """
 
+    suggested = False
     parent_entity = Issues
     parent_key = "number"
     copy_parent_key = "issue_number"
@@ -1017,6 +1053,7 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
     https://docs.github.com/en/graphql/reference/objects#reaction
     """
 
+    suggested = False
     http_method = "POST"
     cursor_field = "created_at"
 
@@ -1150,6 +1187,8 @@ class Deployments(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/deployments/deployments#list-deployments
     """
 
+    suggested = False
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/deployments"
 
@@ -1159,6 +1198,7 @@ class ProjectColumns(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-project-columns
     """
 
+    suggested = False
     use_cache = True
     cursor_field = "updated_at"
 
@@ -1227,6 +1267,7 @@ class ProjectCards(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-project-cards
     """
 
+    suggested = False
     cursor_field = "updated_at"
 
     def __init__(self, parent: HttpStream, start_date: str, **kwargs):
@@ -1300,6 +1341,8 @@ class Workflows(SemiIncrementalMixin, GithubStream):
     API documentation: https://docs.github.com/en/rest/actions/workflows#list-repository-workflows
     """
 
+    suggested = False
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/actions/workflows"
 
@@ -1317,6 +1360,8 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     Get all workflow runs for a GitHub repository
     API documentation: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
     """
+
+    suggested = False
 
     # key for accessing slice value from record
     record_slice_key = ["repository", "full_name"]
@@ -1364,6 +1409,7 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
     API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
     """
 
+    suggested = False
     cursor_field = "completed_at"
 
     def __init__(self, parent: WorkflowRuns, **kwargs):
@@ -1420,6 +1466,7 @@ class TeamMembers(GithubStream):
 
     use_cache = True
     primary_key = ["id", "team_slug"]
+    suggested = False
 
     def __init__(self, parent: Teams, **kwargs):
         super().__init__(**kwargs)
@@ -1452,6 +1499,7 @@ class TeamMemberships(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user
     """
 
+    suggested = False
     primary_key = ["url"]
 
     def __init__(self, parent: TeamMembers, **kwargs):

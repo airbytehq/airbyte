@@ -3821,7 +3821,7 @@ components:
           description: Alias name to the stream to be used in the destination
           type: string
         selected:
-          description: If this is true, the stream is selected with all of its properties.
+          description: If this is true, the stream is selected with all of its properties. For new connections, this considered if the stream is suggested or not
           type: boolean
         fieldSelectionEnabled:
           description: Whether field selection should be enabled. If this is true, only the properties in `selectedFields` will be included.

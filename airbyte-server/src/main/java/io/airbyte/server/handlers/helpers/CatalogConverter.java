@@ -105,22 +105,34 @@ public class CatalogConverter {
             .map(CatalogConverter::toApi)
             .map(s -> new io.airbyte.api.model.generated.AirbyteStreamAndConfiguration()
                 .stream(s)
-                .config(generateDefaultConfiguration(s)))
+                .config(generateDefaultConfiguration(s, catalog)))
             .collect(Collectors.toList()));
   }
 
-  private static io.airbyte.api.model.generated.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.generated.AirbyteStream stream) {
+  private static io.airbyte.api.model.generated.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.generated.AirbyteStream stream,
+                                                                                                        final io.airbyte.protocol.models.AirbyteCatalog catalog) {
     final io.airbyte.api.model.generated.AirbyteStreamConfiguration result = new io.airbyte.api.model.generated.AirbyteStreamConfiguration()
         .aliasName(Names.toAlphanumericAndUnderscore(stream.getName()))
         .cursorField(stream.getDefaultCursorField())
         .destinationSyncMode(io.airbyte.api.model.generated.DestinationSyncMode.APPEND)
         .primaryKey(stream.getSourceDefinedPrimaryKey())
         .selected(true);
+
+    if (catalog.getSuggestingStreams()) {
+      final io.airbyte.protocol.models.AirbyteStream modelStream = catalog.getStreams().stream()
+          .filter(s -> s.getName().equals(stream.getName()) && (s.getNamespace() == null || s.getNamespace().equals(stream.getNamespace())))
+          .findFirst().orElseThrow();
+      if (!modelStream.getSuggested()) {
+        result.setSelected(false);
+      }
+    }
+
     if (stream.getSupportedSyncModes().size() > 0) {
       result.setSyncMode(stream.getSupportedSyncModes().get(0));
     } else {
       result.setSyncMode(io.airbyte.api.model.generated.SyncMode.INCREMENTAL);
     }
+
     return result;
   }
 

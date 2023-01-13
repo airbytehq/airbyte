@@ -68,7 +68,11 @@ class AbstractSource(Source, ABC):
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.
         """
         streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
-        return AirbyteCatalog(streams=streams)
+        return AirbyteCatalog(streams=streams, suggesting_streams=self.suggesting_streams)
+
+    @property
+    def suggesting_streams(self) -> bool:
+        return True
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Implements the Check Connection operation from the Airbyte Specification.

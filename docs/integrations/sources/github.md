@@ -10,6 +10,7 @@ This page contains the setup guide and reference information for the GitHub sour
 - Page size for large streams (Optional)
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
@@ -17,6 +18,7 @@ This page contains the setup guide and reference information for the GitHub sour
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
@@ -29,12 +31,15 @@ This page contains the setup guide and reference information for the GitHub sour
 Create a [GitHub Account](https://github.com).
 
 <!-- env:oss -->
+
 **Airbyte Open Source additional setup steps**
 
 Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+
 <!-- /env:oss -->
 
 <!-- env:cloud -->
+
 ### Step 2: Set up the GitHub connector in Airbyte
 
 **For Airbyte Cloud:**
@@ -51,6 +56,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Authenticate with **Personal Access Token**.
@@ -162,7 +168,8 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
-|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0.3.12  | 2023-01-13 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)                                                              | Suggested streams                                                                                                                                                   |
 | 0.3.11  | 2023-01-06 | [21084](https://github.com/airbytehq/airbyte/pull/21084)                                                          | Raise Error if no organizations or repos are available during read                                                                                                  |
 | 0.3.10  | 2022-12-15 | [20523](https://github.com/airbytehq/airbyte/pull/20523)                                                          | Revert changes from 0.3.9                                                                                                                                           |
 | 0.3.9   | 2022-12-14 | [19978](https://github.com/airbytehq/airbyte/pull/19978)                                                          | Update CDK dependency; move custom HTTPError handling into `AvailabilityStrategy` classes                                                                           |
