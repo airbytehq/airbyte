@@ -75,6 +75,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       process = integrationLauncher.discover(
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+          // pass it to the launcher in AirbyteIntegrationLauncher
+          discoverSchemaInput.getManifest(),
           Jsons.serialize(discoverSchemaInput.getConnectionConfiguration()));
 
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID);

@@ -82,6 +82,7 @@ public class KubeProcessFactory implements ProcessFactory {
                         final String imageName,
                         final boolean isCustomConnector,
                         final boolean usesStdin,
+                        manifest,
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
@@ -123,6 +124,8 @@ public class KubeProcessFactory implements ProcessFactory {
           kubeHeartbeatUrl,
           usesStdin,
           files,
+          // pass it to the actual process, KubePodProcess
+          manifest,
           entrypoint,
           resourceRequirements,
           workerConfigs.getJobImagePullSecrets(),

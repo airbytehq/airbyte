@@ -364,6 +364,8 @@ public class TemporalClient {
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
         .withProtocolVersion(config.getProtocolVersion())
+        // make it part of the config to actually execute in a worker in DefaultDiscoverCatalogWorker
+        .withManifest(config.getManifest())
         .withIsCustomConnector(config.getIsCustomConnector());
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration())
         .withSourceId(config.getSourceId()).withConnectorVersion(config.getConnectorVersion()).withConfigHash(config.getConfigHash());

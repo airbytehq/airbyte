@@ -124,6 +124,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   public SynchronousResponse<UUID> createDiscoverSchemaJob(final SourceConnection source,
                                                            final String dockerImage,
                                                            final String connectorVersion,
+                                                           manifest,
                                                            final Version protocolVersion,
                                                            final boolean isCustomConnector)
       throws IOException {
@@ -134,6 +135,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage)
+        // pass it down to the temporal client TemporalClient
+        .withManifest(manifest)
         .withProtocolVersion(protocolVersion)
         .withSourceId(source.getSourceId().toString())
         .withConfigHash(HASH_FUNCTION.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(

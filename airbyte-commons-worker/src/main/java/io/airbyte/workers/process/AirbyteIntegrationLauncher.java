@@ -120,6 +120,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
+        // pass it to the process factory, e.g. KubeProcessFactory
+        manifest,
         useIsolatedPool,
         false,
         ImmutableMap.of(configFilename, configContents),

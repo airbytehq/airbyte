@@ -365,6 +365,8 @@ public class KubePodProcess implements KubePod {
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypointOverride,
+                        // this is where the container is set up and the manifest can be mounted as a file
+                        manifest,
                         final ResourceRequirements resourceRequirements,
                         final List<String> imagePullSecrets,
                         final List<TolerationPOJO> tolerations,
@@ -389,6 +391,8 @@ public class KubePodProcess implements KubePod {
     if (entrypointOverride != null) {
       LOGGER.info("Found entrypoint override: {}", entrypointOverride);
     }
+
+    // TODO put it into a volume here
 
     final Volume pipeVolume = new VolumeBuilder()
         .withName("airbyte-pipes")

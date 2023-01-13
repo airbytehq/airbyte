@@ -249,6 +249,8 @@ public class SchedulerHandler {
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
+    // This is where we can access the database the last time
+    manifest = configRepository.getManifest(...)
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     final boolean isCustomConnector = sourceDef.getCustom();
@@ -266,6 +268,8 @@ public class SchedulerHandler {
               imageName,
               connectorVersion,
               new Version(sourceDef.getProtocolVersion()),
+              // pass it down to the scheduler DefaultSynchronousSchedulerClient
+              manifest
               isCustomConnector);
       final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId);
 
