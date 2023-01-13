@@ -38,6 +38,7 @@ definitions:
       $ref: "*ref(definitions.requester)"
 
   base_stream:
+    type: DeclarativeStream
     retriever:
       $ref: "*ref(definitions.retriever)"
       paginator:
