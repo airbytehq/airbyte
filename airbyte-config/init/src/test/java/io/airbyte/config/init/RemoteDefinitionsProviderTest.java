@@ -125,17 +125,23 @@ class RemoteDefinitionsProviderTest {
   @Test
   void testBadResponseStatus() {
     webServer.enqueue(new MockResponse().setResponseCode(404));
-    assertThrows(IOException.class, () -> {
+    final RuntimeException ex = assertThrows(RuntimeException.class, () -> {
       new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(1)).loadDefinitions();
     });
+
+    assertTrue(ex.getMessage().contains("Failed to load remote definitions"));
+    assertTrue(ex.getCause() instanceof IOException);
   }
 
   @Test
   void testTimeOut() {
     // No request enqueued -> Timeout
-    assertThrows(HttpTimeoutException.class, () -> {
+    final RuntimeException ex = assertThrows(RuntimeException.class, () -> {
       new RemoteDefinitionsProvider(catalogUrl, TimeUnit.SECONDS.toMillis(1)).loadDefinitions();
     });
+
+    assertTrue(ex.getMessage().contains("Failed to load remote definitions"));
+    assertTrue(ex.getCause() instanceof HttpTimeoutException);
   }
 
   @Test
