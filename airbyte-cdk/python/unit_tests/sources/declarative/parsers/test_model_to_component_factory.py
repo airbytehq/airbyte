@@ -107,10 +107,6 @@ metadata_paginator:
       cursor_value: "{{ response._metadata.next }}"
       page_size: 10
     url_base: "https://api.sendgrid.com/v3/"
-request_options_provider:
-  type: InterpolatedRequestOptionsProvider
-  request_parameters:
-    unit: "day"
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
@@ -119,7 +115,8 @@ requester:
   authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['apikey'] }}"
-  request_options_provider: "*ref(request_options_provider)"
+  request_parameters:
+    unit: "day"
 retriever:
   name: "{{ options['name'] }}"
   stream_slicer:
@@ -577,11 +574,10 @@ requester:
     type: "BasicHttpAuthenticator"
     username: "{{{{ options.name}}}}"
     password: "{{{{ config.apikey }}}}"
-  request_options_provider:
-    request_parameters:
-      a_parameter: "something_here"
-    request_headers:
-      header: header_value
+  request_parameters:
+    a_parameter: "something_here"
+  request_headers:
+    header: header_value
   {error_handler}
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)

@@ -7,11 +7,10 @@ definitions:
   requester:
     url_base: "https://{{ 'api' if not config['api_key'] else 'pro-api' }}.coingecko.com/api/v3/coins/{{ config['coin_id'] }}"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        x_cg_pro_api_key: "{{ config['api_key'] }}"
-        vs_currency: "{{ config['vs_currency'] }}"
-        days: "{{ config['days'] }}"
+    request_parameters:
+      x_cg_pro_api_key: "{{ config['api_key'] }}"
+      vs_currency: "{{ config['vs_currency'] }}"
+      days: "{{ config['days'] }}"
   stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime:

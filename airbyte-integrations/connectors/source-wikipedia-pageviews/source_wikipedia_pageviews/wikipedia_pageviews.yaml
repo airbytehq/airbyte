@@ -7,9 +7,8 @@ definitions:
   requester:
     url_base: "https://wikimedia.org/api/rest_v1/metrics/pageviews"
     http_method: "GET"
-    request_options_provider:
-      request_headers:
-        "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
+    request_headers:
+      "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
   top_stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime:

@@ -8,11 +8,10 @@ definitions:
   requester:
     url_base: "https://sonarcloud.io/api"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        organization: "{{ config['organization'] }}"
-        createdAfter: "{{ config['start_date'] }}"
-        createdBefore: "{{ config['end_date'] }}"
+    request_parameters:
+      organization: "{{ config['organization'] }}"
+      createdAfter: "{{ config['start_date'] }}"
+      createdBefore: "{{ config['end_date'] }}"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['user_token'] }}"

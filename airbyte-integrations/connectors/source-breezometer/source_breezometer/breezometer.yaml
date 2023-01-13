@@ -14,11 +14,10 @@ definitions:
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_options_provider:
-          request_parameters:
-            key: "{{ config['api_key'] }}"
-            lat: "{{ config['latitude'] }}"
-            lon: "{{ config['longitude'] }}"
+        request_parameters:
+          key: "{{ config['api_key'] }}"
+          lat: "{{ config['latitude'] }}"
+          lon: "{{ config['longitude'] }}"
     $options:
       name: "air_quality_current"
       primary_key: "datetime"
@@ -33,12 +32,11 @@ definitions:
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_options_provider:
-          request_parameters:
-            key: "{{ config['api_key'] }}"
-            lat: "{{ config['latitude'] }}"
-            lon: "{{ config['longitude'] }}"
-            hours: "{{ config['hours_to_forecast'] }}"
+        request_parameters:
+          key: "{{ config['api_key'] }}"
+          lat: "{{ config['latitude'] }}"
+          lon: "{{ config['longitude'] }}"
+          hours: "{{ config['hours_to_forecast'] }}"
     $options:
       name: "air_quality_forecast"
       primary_key: "datetime"
@@ -53,12 +51,11 @@ definitions:
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_options_provider:
-          request_parameters:
-            key: "{{ config['api_key'] }}"
-            lat: "{{ config['latitude'] }}"
-            lon: "{{ config['longitude'] }}"
-            hours: "{{ config['historic_hours'] }}"
+        request_parameters:
+          key: "{{ config['api_key'] }}"
+          lat: "{{ config['latitude'] }}"
+          lon: "{{ config['longitude'] }}"
+          hours: "{{ config['historic_hours'] }}"
     $options:
       name: "air_quality_historical"
       primary_key: "datetime"
@@ -73,12 +70,11 @@ definitions:
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_options_provider:
-          request_parameters:
-            key: "{{ config['api_key'] }}"
-            lat: "{{ config['latitude'] }}"
-            lon: "{{ config['longitude'] }}"
-            days: "{{ config['days_to_forecast'] }}"
+        request_parameters:
+          key: "{{ config['api_key'] }}"
+          lat: "{{ config['latitude'] }}"
+          lon: "{{ config['longitude'] }}"
+          days: "{{ config['days_to_forecast'] }}"
     $options:
       name: "pollen_forecast"
       primary_key: "index_id"
@@ -93,11 +89,10 @@ definitions:
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_options_provider:
-          request_parameters:
-            key: "{{ config['api_key'] }}"
-            lat: "{{ config['latitude'] }}"
-            lon: "{{ config['longitude'] }}"
+        request_parameters:
+          key: "{{ config['api_key'] }}"
+          lat: "{{ config['latitude'] }}"
+          lon: "{{ config['longitude'] }}"
     $options:
       name: "weather_current"
       primary_key: "datetime"
@@ -112,12 +107,11 @@ definitions:
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_options_provider:
-          request_parameters:
-            key: "{{ config['api_key'] }}"
-            lat: "{{ config['latitude'] }}"
-            lon: "{{ config['longitude'] }}"
-            days: "{{ config['days_to_forecast'] }}"
+        request_parameters:
+          key: "{{ config['api_key'] }}"
+          lat: "{{ config['latitude'] }}"
+          lon: "{{ config['longitude'] }}"
+          days: "{{ config['days_to_forecast'] }}"
     $options:
       name: "weather_forecast"
       path: "/weather/v1/forecast/daily"
@@ -131,12 +125,11 @@ definitions:
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_options_provider:
-          request_parameters:
-            key: "{{ config['api_key'] }}"
-            lat: "{{ config['latitude'] }}"
-            lon: "{{ config['longitude'] }}"
-            radius: "{{ config['radius'] }}"
+        request_parameters:
+          key: "{{ config['api_key'] }}"
+          lat: "{{ config['latitude'] }}"
+          lon: "{{ config['longitude'] }}"
+          radius: "{{ config['radius'] }}"
     $options:
       name: "wildfire_burnt_area"
       path: "/fires/v1/burnt-area"
@@ -150,12 +143,11 @@ definitions:
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_options_provider:
-          request_parameters:
-            key: "{{ config['api_key'] }}"
-            lat: "{{ config['latitude'] }}"
-            lon: "{{ config['longitude'] }}"
-            radius: "{{ config['radius'] }}"
+        request_parameters:
+          key: "{{ config['api_key'] }}"
+          lat: "{{ config['latitude'] }}"
+          lon: "{{ config['longitude'] }}"
+          radius: "{{ config['radius'] }}"
     $options:
       name: "wildfire_locate"
       path: "/fires/v1/locate-and-track"

@@ -11,13 +11,12 @@ definitions:
       type: ApiKeyAuthenticator
       header: "apikey"
       api_token: "{{ config['apikey'] }}"
-    request_options_provider:
-      request_parameters:
-        # Added a hidden parameter in config to be able to run tests
-        # Maybe this can be add in the future to the config to people
-        # query more granular data.
-        # Example is `query_campsites: "BIKING"`
-        query: "{{ config['query_' + options.name] }}"
+    request_parameters:
+      # Added a hidden parameter in config to be able to run tests
+      # Maybe this can be add in the future to the config to people
+      # query more granular data.
+      # Example is `query_campsites: "BIKING"`
+      query: "{{ config['query_' + options.name] }}"
 
   retriever:
     record_selector:

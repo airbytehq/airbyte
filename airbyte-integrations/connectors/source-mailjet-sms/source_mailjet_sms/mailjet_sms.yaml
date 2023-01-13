@@ -7,10 +7,9 @@ definitions:
   requester:
     url_base: "https://api.mailjet.com/v4"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        fromTS: "{{ config['start_date'] }}"
-        ToTS: "{{ config['end_date'] }}"
+    request_parameters:
+      fromTS: "{{ config['start_date'] }}"
+      ToTS: "{{ config['end_date'] }}"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['token'] }}"

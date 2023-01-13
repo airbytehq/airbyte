@@ -46,9 +46,8 @@ definitions:
       $ref: "*ref(definitions.base_stream.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            status: "{{ config['status'] }}"
+        request_parameters:
+          status: "{{ config['status'] }}"
   admins_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:

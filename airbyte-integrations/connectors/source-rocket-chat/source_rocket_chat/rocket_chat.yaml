@@ -16,9 +16,8 @@ definitions:
       type: ApiKeyAuthenticator
       header: "X-Auth-Token"
       api_token: "{{ config['token'] }}"
-    request_options_provider:
-      request_headers:
-        X-User-Id: "{{ config['user_id'] }}"
+    request_headers:
+      X-User-Id: "{{ config['user_id'] }}"
   offset_paginator:
     type: DefaultPaginator
     $options:

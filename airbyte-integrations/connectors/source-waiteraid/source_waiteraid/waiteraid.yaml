@@ -7,11 +7,10 @@ definitions:
   requester:
     url_base: "https://app.waiteraid.com"
     http_method: "POST"
-    request_options_provider:
-      request_parameters:
-        date: "{{ config['start_date'] }}"
-        auth_hash: "{{ config['auth_hash'] }}"
-        restid: "{{ config['restid'] }}"
+    request_parameters:
+      date: "{{ config['start_date'] }}"
+      auth_hash: "{{ config['auth_hash'] }}"
+      restid: "{{ config['restid'] }}"
   stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:

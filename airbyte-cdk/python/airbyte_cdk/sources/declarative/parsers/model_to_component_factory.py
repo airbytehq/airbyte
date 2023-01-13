@@ -39,9 +39,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
-    CustomRequestOptionsProvider as CustomRequestOptionsProviderModel,
-)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomStreamSlicer as CustomStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
@@ -56,9 +53,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpRequester as HttpRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
-    InterpolatedRequestOptionsProvider as InterpolatedRequestOptionsProviderModel,
-)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListStreamSlicer as ListStreamSlicerModel
@@ -440,8 +434,14 @@ def create_http_requester(model: HttpRequesterModel, config: Config, **kwargs) -
         if model.error_handler
         else DefaultErrorHandler(backoff_strategies=[], response_filters=[], config=config, options=model.options)
     )
-    request_options_provider = (
-        _create_component_from_model(model=model.request_options_provider, config=config) if model.request_options_provider else None
+
+    request_options_provider = InterpolatedRequestOptionsProvider(
+        request_body_data=model.request_body_data,
+        request_body_json=model.request_body_json,
+        request_headers=model.request_headers,
+        request_parameters=model.request_parameters,
+        config=config,
+        options=model.options,
     )
 
     return HttpRequester(
@@ -476,19 +476,6 @@ def create_http_response_filter(model: HttpResponseFilterModel, config: Config, 
 
 def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs) -> InlineSchemaLoader:
     return InlineSchemaLoader(schema=model.schema_, options={})
-
-
-def create_interpolated_request_options_provider(
-    model: InterpolatedRequestOptionsProviderModel, config: Config, **kwargs
-) -> InterpolatedRequestOptionsProvider:
-    return InterpolatedRequestOptionsProvider(
-        request_body_data=model.request_body_data,
-        request_body_json=model.request_body_json,
-        request_headers=model.request_headers,
-        request_parameters=model.request_parameters,
-        config=config,
-        options=model.options,
-    )
 
 
 def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs) -> JsonDecoder:
@@ -682,7 +669,6 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     CustomErrorHandlerModel: create_custom_component,
     CustomRecordExtractorModel: create_custom_component,
     CustomRequesterModel: create_custom_component,
-    CustomRequestOptionsProviderModel: create_custom_component,  # todo: Remove later when we deprecate request providers from interface
     CustomRetrieverModel: create_custom_component,
     CustomPaginationStrategyModel: create_custom_component,
     CustomStreamSlicerModel: create_custom_component,
@@ -696,7 +682,6 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     HttpRequesterModel: create_http_requester,
     HttpResponseFilterModel: create_http_response_filter,
     InlineSchemaLoaderModel: create_inline_schema_loader,
-    InterpolatedRequestOptionsProviderModel: create_interpolated_request_options_provider,
     JsonDecoderModel: create_json_decoder,
     JsonFileSchemaLoaderModel: create_json_file_schema_loader,
     ListStreamSlicerModel: create_list_stream_slicer,

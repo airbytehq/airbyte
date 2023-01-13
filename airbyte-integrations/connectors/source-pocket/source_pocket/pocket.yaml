@@ -7,19 +7,18 @@ definitions:
   requester:
     url_base: "https://getpocket.com/v3"
     http_method: "POST"
-    request_options_provider:
-      request_parameters:
-        consumer_key: "{{ config['consumer_key'] }}"
-        access_token: "{{ config['access_token'] }}"
-        state: "{{ config['state'] }}"
-        favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
-        tag: "{{ config['tag'] }}"
-        contentType: "{{ config['content_type'] }}"
-        sort: "{{ config['sort'] }}"
-        detailType: "{{ config['detail_type'] }}"
-        search: "{{ config['search'] }}"
-        domain: "{{ config['domain'] }}"
-        since: "{{ timestamp(config['since']) }}"
+    request_parameters:
+      consumer_key: "{{ config['consumer_key'] }}"
+      access_token: "{{ config['access_token'] }}"
+      state: "{{ config['state'] }}"
+      favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
+      tag: "{{ config['tag'] }}"
+      contentType: "{{ config['content_type'] }}"
+      sort: "{{ config['sort'] }}"
+      detailType: "{{ config['detail_type'] }}"
+      search: "{{ config['search'] }}"
+      domain: "{{ config['domain'] }}"
+      since: "{{ timestamp(config['since']) }}"
     error_handler:
       type: "DefaultErrorHandler"
       error_handlers:

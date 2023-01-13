@@ -10,9 +10,8 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_token'] }}"
-    request_options_provider:
-      request_parameters:
-        limit: "100"
+    request_parameters:
+      limit: "100"
   stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:

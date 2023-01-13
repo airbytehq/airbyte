@@ -12,16 +12,14 @@ definitions:
       api_token: "{{ config['api_key'] }}"
   date_requester:
     $ref: "*ref(definitions.base_requester)"
-    request_options_provider:
-      request_parameters:
-        start_date: "{{ config['start_date'].split('T')[0] }}"
-        end_date: "{{ config['end_date'].split('T')[0] }}"
+    request_parameters:
+      start_date: "{{ config['start_date'].split('T')[0] }}"
+      end_date: "{{ config['end_date'].split('T')[0] }}"
   datetime_requester:
     $ref: "*ref(definitions.base_requester)"
-    request_options_provider:
-      request_parameters:
-        start_datetime: "{{ config['start_datetime'] }}"
-        end_datetime: "{{ config['end_datetime'] }}"
+    request_parameters:
+      start_datetime: "{{ config['start_datetime'] }}"
+      end_datetime: "{{ config['end_datetime'] }}"
   paginator:
     type: DefaultPaginator
     pagination_strategy:

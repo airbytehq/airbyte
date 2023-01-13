@@ -9,15 +9,14 @@ definitions:
   requester:
     url_base: "https://content.guardianapis.com"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        api-key: "{{ config['api_key'] }}"
-        q: "{{ config['query'] }}"
-        tag: "{{ config['tag'] }}"
-        section: "{{ config['section'] }}"
-        order-by: "oldest"
-        # from-date: "{{ config['start_date'] }}"
-        # to-date: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
+    request_parameters:
+      api-key: "{{ config['api_key'] }}"
+      q: "{{ config['query'] }}"
+      tag: "{{ config['tag'] }}"
+      section: "{{ config['section'] }}"
+      order-by: "oldest"
+      # from-date: "{{ config['start_date'] }}"
+      # to-date: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
   stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:

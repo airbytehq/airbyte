@@ -17,11 +17,10 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
-    request_options_provider:
-      request_headers:
-        GoCardless-Version: "{{ config['gocardless_version'] }}"
-      request_parameters:
-        created_at[gte]: "{{ config['start_date'] }}"
+    request_headers:
+      GoCardless-Version: "{{ config['gocardless_version'] }}"
+    request_parameters:
+      created_at[gte]: "{{ config['start_date'] }}"
   retriever:
     type: SimpleRetriever
     $options:

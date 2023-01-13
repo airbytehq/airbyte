@@ -32,9 +32,8 @@ definitions:
         field_name: "page"
     requester:
       $ref: "*ref(definitions.requester)"
-      request_options_provider:
-        request_parameters:
-          last_edit.time[gt]: "{{ config['start_date'] }}"
+      request_parameters:
+        last_edit.time[gt]: "{{ config['start_date'] }}"
 
   # ----- Stream bases -----
   list_stream:
@@ -227,9 +226,8 @@ definitions:
       $ref: "*ref(definitions.sliced_retriever)"
       requester:
         $ref: "*ref(definitions.sliced_retriever.requester)"
-        request_options_provider:
-          request_parameters:
-            unit: "day"
+        request_parameters:
+          unit: "day"
       stream_slicer:
         type: CartesianProductStreamSlicer
         stream_slicers:

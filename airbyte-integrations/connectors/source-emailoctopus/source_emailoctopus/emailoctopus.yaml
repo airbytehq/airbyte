@@ -7,9 +7,8 @@ definitions:
   requester:
     url_base: "https://emailoctopus.com/api/1.6"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        api_key: "{{ config['api_key'] }}"
+    request_parameters:
+      api_key: "{{ config['api_key'] }}"
   increment_paginator:
     type: DefaultPaginator
     url_base: "*ref(definitions.requester.url_base)"

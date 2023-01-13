@@ -7,14 +7,13 @@ definitions:
   requester:
     url_base: "https://api.punkapi.com/v2/"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        id: |
-          {{
-            config['id']
-            if options['name'] == 'beers_with_id'
-            else ''
-          }}
+    request_parameters:
+      id: |
+        {{
+          config['id']
+          if options['name'] == 'beers_with_id'
+          else ''
+        }}
 
   stream_slicer:
     type: DatetimeStreamSlicer
