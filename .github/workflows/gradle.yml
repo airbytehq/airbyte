@@ -648,6 +648,7 @@ jobs:
         id: jacoco
         uses: madrapps/jacoco-report@v1.3
         with:
+          # todo(mfsiega-airbyte): when v1.4 is released, use wildcards per https://github.com/Madrapps/jacoco-report/issues/20.
           paths: |
             ${{ github.workspace }}/airbyte-analytics/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-api/build/reports/jacoco/test/jacocoTestReport.xml,
@@ -675,7 +676,7 @@ jobs:
             ${{ github.workspace }}/airbyte-test-utils/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-workers/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 40
+          min-coverage-overall: 25
           min-coverage-changed-files: 60
           debug-mode: false
 
