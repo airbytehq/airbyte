@@ -23,6 +23,7 @@ dependencies {
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.postgresql
+    implementation libs.bundles.datadog
 
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-6'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))

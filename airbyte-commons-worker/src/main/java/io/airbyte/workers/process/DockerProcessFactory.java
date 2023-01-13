@@ -146,6 +146,18 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
       }
 
+      if (imageName.contains("postgres")) {
+        cmd.add("-e");
+        cmd.add("JAVA_OPTS" + "="
+            + "-XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=75.0 -javaagent:/airbyte/dd-java-agent.jar -Ddd.profiling.enabled=true -XX:FlightRecorderOptions=stackdepth=256 -Ddd.trace.sample.rate=5 -Ddd.trace.request_header.tags=User-Agent:http.useragent");
+
+        cmd.add("-e");
+        cmd.add("DD_SERVICE" + "=" + "source-postgres");
+
+        cmd.add("-e");
+        cmd.add("DD_VERSION" + "=" + "1.0.35");
+      }
+
       if (!Strings.isNullOrEmpty(entrypoint)) {
         cmd.add("--entrypoint");
         cmd.add(entrypoint);
