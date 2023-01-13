@@ -18,29 +18,39 @@ class AddedFieldDefinition(BaseModel):
     type: Literal["AddedFieldDefinition"]
     path: List[str]
     value: str
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class AddFields(BaseModel):
     type: Literal["AddFields"]
     fields: List[AddedFieldDefinition]
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class ApiKeyAuthenticator(BaseModel):
     type: Literal["ApiKeyAuthenticator"]
     api_token: str
     header: Optional[str] = None
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class BasicHttpAuthenticator(BaseModel):
     type: Literal["BasicHttpAuthenticator"]
-    username: str
-    password: Optional[str] = None
+    username: str = Field(
+        ...,
+        description="The username that will be combined with the password, base64 encoded and used to make requests",
+    )
+    password: Optional[str] = Field(
+        "",
+        description="The password that will be combined with the username, base64 encoded and used to make requests",
+    )
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class BearerAuthenticator(BaseModel):
     type: Literal["BearerAuthenticator"]
     api_token: str
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CheckStream(BaseModel):
@@ -51,7 +61,7 @@ class CheckStream(BaseModel):
 class ConstantBackoffStrategy(BaseModel):
     type: Literal["ConstantBackoffStrategy"]
     backoff_time_in_seconds: Union[float, str]
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomAuthenticator(BaseModel):
@@ -60,7 +70,7 @@ class CustomAuthenticator(BaseModel):
 
     type: Literal["CustomAuthenticator"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomBackoffStrategy(BaseModel):
@@ -69,7 +79,7 @@ class CustomBackoffStrategy(BaseModel):
 
     type: Literal["CustomBackoffStrategy"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomErrorHandler(BaseModel):
@@ -78,7 +88,7 @@ class CustomErrorHandler(BaseModel):
 
     type: Literal["CustomErrorHandler"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomPaginationStrategy(BaseModel):
@@ -87,7 +97,7 @@ class CustomPaginationStrategy(BaseModel):
 
     type: Literal["CustomPaginationStrategy"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomRecordExtractor(BaseModel):
@@ -96,7 +106,7 @@ class CustomRecordExtractor(BaseModel):
 
     type: Literal["CustomRecordExtractor"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomRequester(BaseModel):
@@ -105,7 +115,16 @@ class CustomRequester(BaseModel):
 
     type: Literal["CustomRequester"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+
+
+class CustomRequestOptionsProvider(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal["CustomRequestOptionsProvider"]
+    class_name: str
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomRetriever(BaseModel):
@@ -114,7 +133,7 @@ class CustomRetriever(BaseModel):
 
     type: Literal["CustomRetriever"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomStreamSlicer(BaseModel):
@@ -123,7 +142,7 @@ class CustomStreamSlicer(BaseModel):
 
     type: Literal["CustomStreamSlicer"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomTransformation(BaseModel):
@@ -132,7 +151,7 @@ class CustomTransformation(BaseModel):
 
     type: Literal["CustomTransformation"]
     class_name: str
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class OAuthAuthenticator(BaseModel):
@@ -141,23 +160,23 @@ class OAuthAuthenticator(BaseModel):
     client_secret: str
     refresh_token: str
     token_refresh_endpoint: str
-    access_token_name: Optional[str] = None
-    expires_in_name: Optional[str] = None
-    grant_type: Optional[str] = None
+    access_token_name: Optional[str] = "access_token"
+    expires_in_name: Optional[str] = "expires_in"
+    grant_type: Optional[str] = "refresh_token"
     refresh_request_body: Optional[Dict[str, Any]] = None
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[str] = None
-
-
-class DefaultSchemaLoader(BaseModel):
-    type: Literal["DefaultSchemaLoader"]
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    token_expiry_date_format: Optional[str] = Field(
+        None,
+        description="The format of the datetime; provide it if expires_in is returned in datetime instead of seconds",
+    )
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class ExponentialBackoffStrategy(BaseModel):
     type: Literal["ExponentialBackoffStrategy"]
     factor: Optional[Union[float, str]] = 5
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class HttpMethodEnum(Enum):
@@ -179,7 +198,7 @@ class HttpResponseFilter(BaseModel):
     error_message_contains: Optional[str] = None
     http_codes: Optional[List[int]] = None
     predicate: Optional[str] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class InlineSchemaLoader(BaseModel):
@@ -193,7 +212,7 @@ class InterpolatedRequestOptionsProvider(BaseModel):
     request_body_json: Optional[Union[str, Dict[str, str]]] = None
     request_headers: Optional[Union[str, Dict[str, str]]] = None
     request_parameters: Optional[Union[str, Dict[str, str]]] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class Type(Enum):
@@ -204,7 +223,7 @@ class Type(Enum):
 class JsonFileSchemaLoader(BaseModel):
     type: Type
     file_path: Optional[str] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class JsonDecoder(BaseModel):
@@ -217,12 +236,12 @@ class MinMaxDatetime(BaseModel):
     datetime_format: Optional[str] = ""
     max_datetime: Optional[str] = None
     min_datetime: Optional[str] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class NoAuth(BaseModel):
     type: Literal["NoAuth"]
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class NoPagination(BaseModel):
@@ -231,15 +250,15 @@ class NoPagination(BaseModel):
 
 class OffsetIncrement(BaseModel):
     type: Literal["OffsetIncrement"]
-    page_size: Union[float, str]
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    page_size: Union[int, str] = Field(..., description="The number of records to request")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class PageIncrement(BaseModel):
     type: Literal["PageIncrement"]
-    page_size: int
+    page_size: int = Field(..., description="The number of records to request")
     start_from_page: Optional[int] = 0
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class PrimaryKey(BaseModel):
@@ -248,8 +267,11 @@ class PrimaryKey(BaseModel):
 
 class RecordFilter(BaseModel):
     type: Literal["RecordFilter"]
-    backoff_time_in_seconds: Optional[str] = ""
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    condition: Optional[str] = Field(
+        "",
+        description="The predicate to filter a record. Records will be removed if evaluated to False",
+    )
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class RemoveFields(BaseModel):
@@ -288,12 +310,12 @@ class SessionTokenAuthenticator(BaseModel):
     username: str
     validate_session_url: str
     password: Optional[str] = ""
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class SingleSlice(BaseModel):
     type: Literal["SingleSlice"]
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class Spec(BaseModel):
@@ -306,7 +328,7 @@ class WaitTimeFromHeader(BaseModel):
     type: Literal["WaitTimeFromHeader"]
     header: str
     regex: Optional[str] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class WaitUntilTimeFromHeader(BaseModel):
@@ -314,7 +336,7 @@ class WaitUntilTimeFromHeader(BaseModel):
     header: str
     min_wait: Optional[Union[float, str]] = None
     regex: Optional[str] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CursorPagination(BaseModel):
@@ -323,7 +345,7 @@ class CursorPagination(BaseModel):
     page_size: Optional[int] = None
     stop_condition: Optional[str] = None
     decoder: Optional[JsonDecoder] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DatetimeStreamSlicer(BaseModel):
@@ -339,7 +361,7 @@ class DatetimeStreamSlicer(BaseModel):
     start_time_option: Optional[RequestOption] = None
     stream_state_field_end: Optional[str] = None
     stream_state_field_start: Optional[str] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DefaultErrorHandler(BaseModel):
@@ -357,7 +379,7 @@ class DefaultErrorHandler(BaseModel):
     ] = None
     max_retries: Optional[int] = 5
     response_filters: Optional[List[HttpResponseFilter]] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DefaultPaginator(BaseModel):
@@ -367,14 +389,14 @@ class DefaultPaginator(BaseModel):
     decoder: Optional[JsonDecoder] = None
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[RequestOption] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DpathExtractor(BaseModel):
     type: Literal["DpathExtractor"]
     field_pointer: List[str]
     decoder: Optional[JsonDecoder] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class ListStreamSlicer(BaseModel):
@@ -382,20 +404,20 @@ class ListStreamSlicer(BaseModel):
     cursor_field: str
     slice_values: Union[str, List[str]]
     request_option: Optional[RequestOption] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class RecordSelector(BaseModel):
     type: Literal["RecordSelector"]
     extractor: Union[CustomRecordExtractor, DpathExtractor]
     record_filter: Optional[RecordFilter] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CompositeErrorHandler(BaseModel):
     type: Literal["CompositeErrorHandler"]
     error_handlers: List[Union[CompositeErrorHandler, DefaultErrorHandler]]
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class HttpRequester(BaseModel):
@@ -416,8 +438,8 @@ class HttpRequester(BaseModel):
     ] = None
     error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = None
     http_method: Optional[Union[str, HttpMethodEnum]] = "GET"
-    request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    request_options_provider: Optional[Union[CustomRequestOptionsProvider, InterpolatedRequestOptionsProvider]] = None
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DeclarativeSource(BaseModel):
@@ -444,7 +466,7 @@ class CartesianProductStreamSlicer(BaseModel):
             SubstreamSlicer,
         ]
     ]
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DeclarativeStream(BaseModel):
@@ -456,10 +478,10 @@ class DeclarativeStream(BaseModel):
     checkpoint_interval: Optional[int] = None
     name: Optional[str] = ""
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = ""
-    schema_loader: Optional[Union[DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader]] = None
+    schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = None
     stream_cursor_field: Optional[Union[str, List[str]]] = None
     transformations: Optional[List[Union[AddFields, CustomTransformation, RemoveFields]]] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class ParentStreamConfig(BaseModel):
@@ -468,7 +490,7 @@ class ParentStreamConfig(BaseModel):
     stream: DeclarativeStream
     stream_slice_field: str
     request_option: Optional[RequestOption] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class SimpleRetriever(BaseModel):
@@ -488,13 +510,13 @@ class SimpleRetriever(BaseModel):
             SubstreamSlicer,
         ]
     ] = None
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class SubstreamSlicer(BaseModel):
     type: Literal["SubstreamSlicer"]
     parent_stream_configs: List[ParentStreamConfig]
-    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 CompositeErrorHandler.update_forward_refs()
