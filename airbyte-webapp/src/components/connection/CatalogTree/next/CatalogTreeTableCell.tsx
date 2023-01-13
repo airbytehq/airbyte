@@ -73,13 +73,7 @@ export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeT
   return (
     <div ref={handleCell} className={classNames(styles.tableCell, className, sizeMap[size])}>
       {withTooltip ? (
-        <Tooltip
-          className={styles.noEllipsis}
-          control={children}
-          theme="light"
-          placement="top-start"
-          disabled={tooltipDisabled}
-        >
+        <Tooltip className={styles.noEllipsis} control={children} placement="top-start" disabled={tooltipDisabled}>
           <TooltipText textNodes={textNodes} />
         </Tooltip>
       ) : (
