@@ -1,14 +1,11 @@
 version: "0.1.0"
 
 definitions:
-  schema_loader:
-    file_path: "./source_posthog/schemas/{{ options['name'] }}.json"
-
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: ["results"]
+      field_pointer: [ "results" ]
 
   requester:
     type: HttpRequester
@@ -40,8 +37,6 @@ definitions:
 
   base_stream:
     primary_key: "id"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
@@ -103,8 +98,6 @@ definitions:
       path: "events"
     primary_key: "id"
     stream_cursor_field: "timestamp"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
     retriever:
       class_name: source_posthog.components.EventsSimpleRetriever
       name: "{{ options['name'] }}"
@@ -164,4 +157,4 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: ["projects"]
+  stream_names: [ "projects" ]
