@@ -40,6 +40,9 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
                     stream_slice = self._get_stream_slice(stream)
                     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
                     next(records)
+                except StopIteration:
+                    # StopIteration is raised if we successfully connect to an empty stream
+                    return True, None
                 except Exception as error:
                     return False, f"Unable to connect to stream {stream_name} - {error}"
             else:
