@@ -4,8 +4,13 @@
 
 package io.airbyte.integrations.destination.staging;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
@@ -25,12 +30,14 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -89,7 +96,7 @@ public class StagingConsumerFactory {
                                                       final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog) {
 
-    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config)).collect(Collectors.toList());
+    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config)).collect(toList());
   }
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final NamingConventionTransformer namingResolver,
@@ -160,15 +167,32 @@ public class StagingConsumerFactory {
    * @param catalog collection of configured streams (e.g. API endpoints or database tables)
    * @return
    */
-  private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
+  @VisibleForTesting
+  CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
                                                                                                                final JdbcDatabase database,
                                                                                                                final StagingOperations stagingOperations,
                                                                                                                final List<WriteConfig> writeConfigs,
                                                                                                                final ConfiguredAirbyteCatalog catalog) {
-    final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
-        writeConfigs.stream()
-            .collect(Collectors.toUnmodifiableMap(
-                StagingConsumerFactory::toNameNamespacePair, Function.identity()));
+    final Set<WriteConfig> conflictingStreams = new HashSet<>();
+    final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
+    for (final WriteConfig config : writeConfigs) {
+      final AirbyteStreamNameNamespacePair streamIdentifier = toNameNamespacePair(config);
+      if (pairToWriteConfig.containsKey(streamIdentifier)) {
+        conflictingStreams.add(config);
+        final WriteConfig existingConfig = pairToWriteConfig.get(streamIdentifier);
+        // The first conflicting stream won't have any problems, so we need to explicitly add it here.
+        conflictingStreams.add(existingConfig);
+      } else {
+        pairToWriteConfig.put(streamIdentifier, config);
+      }
+    }
+    if (!conflictingStreams.isEmpty()) {
+      final String message = String.format(
+          "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using ${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
+          conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", "))
+      );
+      throw new ConfigErrorException(message);
+    }
 
     return (pair, writer) -> {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
