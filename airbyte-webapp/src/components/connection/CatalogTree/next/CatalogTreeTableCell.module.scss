@@ -25,3 +25,11 @@ $large: 200px;
     min-width: $large;
   }
 }
+
+.noEllipsis {
+  max-width: unset;
+
+  > * {
+    overflow: visible;
+  }
+}
