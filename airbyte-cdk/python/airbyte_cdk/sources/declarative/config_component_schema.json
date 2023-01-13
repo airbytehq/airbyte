@@ -276,71 +276,6 @@
               ],
               "default": "HttpMethod.GET"
             },
-            "request_options_provider": {
-              "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
-            },
-            "authenticator": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/NoAuth"
-                },
-                {
-                  "$ref": "#/definitions/DeclarativeOauth2Authenticator"
-                },
-                {
-                  "$ref": "#/definitions/ApiKeyAuthenticator"
-                },
-                {
-                  "$ref": "#/definitions/BearerAuthenticator"
-                },
-                {
-                  "$ref": "#/definitions/BasicHttpAuthenticator"
-                },
-                {
-                  "$ref": "#/definitions/SessionTokenAuthenticator"
-                }
-              ]
-            },
-            "error_handler": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/CompositeErrorHandler"
-                },
-                {
-                  "$ref": "#/definitions/DefaultErrorHandler"
-                }
-              ]
-            }
-          }
-        }
-      ],
-      "description": "\n    Default implementation of a Requester\n\n    Attributes:\n        name (str): Name of the stream. Only used for request/response caching\n        url_base (Union[InterpolatedString, str]): Base url to send requests to\n        path (Union[InterpolatedString, str]): Path to send requests to\n        http_method (Union[str, HttpMethod]): HTTP method to use when sending requests\n        request_options_provider (Optional[InterpolatedRequestOptionsProvider]): request option provider defining the options to set on outgoing requests\n        authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source\n        error_handler (Optional[ErrorHandler]): Error handler defining how to detect and handle errors\n        config (Config): The user-provided configuration as specified by the source's spec\n    "
-    },
-    "InterpolatedString": {
-      "type": "object",
-      "required": ["string"],
-      "properties": {
-        "string": {
-          "type": "string"
-        },
-        "default": {
-          "type": "string"
-        }
-      },
-      "description": "\n    Wrapper around a raw string to be interpolated with the Jinja2 templating engine\n\n    Attributes:\n        string (str): The string to evalute\n        default (Optional[str]): The default value to return if the evaluation returns an empty string\n        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation\n    "
-    },
-    "InterpolatedRequestOptionsProvider": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/RequestOptionsProvider"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "config": {
-              "type": "object",
-              "default": {}
-            },
             "request_parameters": {
               "anyOf": [
                 {
@@ -392,11 +327,56 @@
                   "type": "string"
                 }
               ]
+            },
+            "authenticator": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/NoAuth"
+                },
+                {
+                  "$ref": "#/definitions/DeclarativeOauth2Authenticator"
+                },
+                {
+                  "$ref": "#/definitions/ApiKeyAuthenticator"
+                },
+                {
+                  "$ref": "#/definitions/BearerAuthenticator"
+                },
+                {
+                  "$ref": "#/definitions/BasicHttpAuthenticator"
+                },
+                {
+                  "$ref": "#/definitions/SessionTokenAuthenticator"
+                }
+              ]
+            },
+            "error_handler": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/CompositeErrorHandler"
+                },
+                {
+                  "$ref": "#/definitions/DefaultErrorHandler"
+                }
+              ]
             }
           }
         }
       ],
-      "description": "\n    Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s\n\n    Attributes:\n        config (Config): The user-provided configuration as specified by the source's spec\n        request_parameters (Union[str, Mapping[str, str]]): The request parameters to set on an outgoing HTTP request\n        request_headers (Union[str, Mapping[str, str]]): The request headers to set on an outgoing HTTP request\n        request_body_data (Union[str, Mapping[str, str]]): The body data to set on an outgoing HTTP request\n        request_body_json (Union[str, Mapping[str, str]]): The json content to set on an outgoing HTTP request\n    "
+      "description": "\n    Default implementation of a Requester\n\n    Attributes:\n        name (str): Name of the stream. Only used for request/response caching\n        url_base (Union[InterpolatedString, str]): Base url to send requests to\n        path (Union[InterpolatedString, str]): Path to send requests to\n        http_method (Union[str, HttpMethod]): HTTP method to use when sending requests\n        request_options_provider (Optional[InterpolatedRequestOptionsProvider]): request option provider defining the options to set on outgoing requests\n        authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source\n        error_handler (Optional[ErrorHandler]): Error handler defining how to detect and handle errors\n        config (Config): The user-provided configuration as specified by the source's spec\n    "
+    },
+    "InterpolatedString": {
+      "type": "object",
+      "required": ["string"],
+      "properties": {
+        "string": {
+          "type": "string"
+        },
+        "default": {
+          "type": "string"
+        }
+      },
+      "description": "\n    Wrapper around a raw string to be interpolated with the Jinja2 templating engine\n\n    Attributes:\n        string (str): The string to evalute\n        default (Optional[str]): The default value to return if the evaluation returns an empty string\n        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation\n    "
     },
     "RequestOptionsProvider": {
       "type": "object",
