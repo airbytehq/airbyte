@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
@@ -650,6 +651,69 @@ public abstract class DestinationAcceptanceTest {
         defaultSchema);
   }
 
+  @ArgumentsSource(DataArgumentsProvider.class)
+  @Test
+  public void testIncrementalSyncWithNormalizationDropOneColumn()
+      throws Exception {
+    if (!normalizationFromDefinition()) {
+      return;
+    }
+
+    final AirbyteCatalog catalog = Jsons.deserialize(
+        MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(ProtocolVersion.V0)),
+        AirbyteCatalog.class);
+
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
+        catalog);
+    configuredCatalog.getStreams().forEach(s -> {
+      s.withSyncMode(SyncMode.INCREMENTAL);
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
+      s.withCursorField(Collections.emptyList());
+      // use composite primary key of various types (string, float)
+      s.withPrimaryKey(
+          List.of(List.of("id"), List.of("currency"), List.of("date"), List.of("NZD"), List.of("USD")));
+    });
+
+    List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(ProtocolVersion.V0))
+        .lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
+
+    final String defaultSchema = getDefaultSchema(config);
+    List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog,
+        defaultSchema);
+    assertSameMessages(messages, actualMessages, true);
+
+    // remove one field
+    final JsonNode jsonSchema = configuredCatalog.getStreams().get(0).getStream().getJsonSchema();
+    ((ObjectNode) jsonSchema.findValue("properties")).remove("HKD");
+    // insert more messages
+    // NOTE: we re-read the messages because `assertSameMessages` above pruned the emittedAt timestamps.
+    messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(ProtocolVersion.V0)).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .collect(Collectors.toList());
+    messages.add(Jsons.deserialize(
+        "{\"type\": \"RECORD\", \"record\": {\"stream\": \"exchange_rate\", \"emitted_at\": 1602637989500, \"data\": { \"id\": 2, \"currency\": \"EUR\", \"date\": \"2020-09-02T00:00:00Z\", \"NZD\": 1.14, \"USD\": 10.16}}}\n",
+        AirbyteMessage.class));
+
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
+
+    // assert the removed field is missing on the new messages
+    actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+
+    // We expect all the of messages to be missing the removed column after normalization.
+    final List<AirbyteMessage> expectedMessages = messages.stream().map((message) -> {
+      if (message.getRecord() != null) {
+        ((ObjectNode) message.getRecord().getData()).remove("HKD");
+      }
+      return message;
+    }).collect(Collectors.toList());
+    assertSameMessages(expectedMessages, actualMessages, true);
+  }
+
   /**
    * Verify that the integration successfully writes records successfully both raw and normalized.
    * Tests a wide variety of messages an schemas (aspirationally, anyway).
@@ -1207,14 +1271,14 @@ public abstract class DestinationAcceptanceTest {
   private ConnectorSpecification runSpec() throws WorkerException {
     return convertProtocolObject(
         new DefaultGetSpecWorker(
-            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
+            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()))
                 .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec(),
         ConnectorSpecification.class);
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false),
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .getCheckConnection();
@@ -1224,7 +1288,7 @@ public abstract class DestinationAcceptanceTest {
                                                                               final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
-          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false),
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()),
           mConnectorConfigUpdater)
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
               .getCheckConnection();
@@ -1237,7 +1301,7 @@ public abstract class DestinationAcceptanceTest {
 
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,
