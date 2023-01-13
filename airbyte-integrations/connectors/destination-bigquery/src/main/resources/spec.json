@@ -1,5 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
+  "protocol_version": "1.0.0",
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": true,
