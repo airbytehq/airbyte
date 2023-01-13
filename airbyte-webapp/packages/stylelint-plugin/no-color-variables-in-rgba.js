@@ -3,7 +3,7 @@ const stylelint = require("stylelint");
 const { ruleMessages } = stylelint.utils;
 const ruleName = "airbyte/no-color-variables-in-rgba";
 const messages = ruleMessages(ruleName, {
-  variableFoundInRgba: () => `A color variable should not be used within an rgba() function.`,
+  variableFoundInRgba: () => `A color variable can't be used within an rgba() function.`,
 });
 
 module.exports.ruleName = ruleName;
