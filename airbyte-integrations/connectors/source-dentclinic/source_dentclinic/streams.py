@@ -9,7 +9,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-# Basic full refresh stream
 class DentclinicBookingStream(HttpStream, ABC):
     primary_key = None
     state_checkpoint_interval = 1
@@ -209,7 +208,6 @@ class DentclinicStaticStream(HttpStream, ABC):
         yield from data
 
 
-# Basic full refresh stream
 class DentclinicClinicIdsStream(HttpStream, ABC):
     primary_key = None
     state_checkpoint_interval = 1

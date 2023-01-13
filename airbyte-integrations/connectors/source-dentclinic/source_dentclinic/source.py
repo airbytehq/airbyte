@@ -55,7 +55,6 @@ class Bookings(DentclinicBookingStream):
         """
         return "Time"
 
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
@@ -139,6 +138,7 @@ class SourceDentclinic(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [BookingsFr(config=config, enable_days_back_limit=True), Bookings(config=config)]
+        return [BookingsFr(config=config, enable_days_back_limit=True), Bookings(config=config), Clinics(config=config),
+                Services(config=config), Resources(config=config)]
 
-        # ,Clinics(config=config), Services(config=config), Resources(config=config), BookingsFr(config=config)
+
