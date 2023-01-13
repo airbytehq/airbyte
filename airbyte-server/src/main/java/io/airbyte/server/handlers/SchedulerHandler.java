@@ -436,7 +436,7 @@ public class SchedulerHandler {
     final CheckConnectionRead checkConnectionRead = new CheckConnectionRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
-    if (response.isSuccess()) {
+    if (response.getOutput() != null) {
       checkConnectionRead
           .status(Enums.convertTo(response.getOutput().getStatus(), StatusEnum.class))
           .message(response.getOutput().getMessage());
