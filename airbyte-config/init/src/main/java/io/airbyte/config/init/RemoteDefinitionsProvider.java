@@ -70,7 +70,6 @@ public final class RemoteDefinitionsProvider implements DefinitionsProvider {
   }
 
   @Override
-  @Cacheable
   public StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException {
     final StandardSourceDefinition definition = getSourceDefinitionsMap().get(definitionId);
     if (definition == null) {
@@ -80,13 +79,11 @@ public final class RemoteDefinitionsProvider implements DefinitionsProvider {
   }
 
   @Override
-  @Cacheable
   public List<StandardSourceDefinition> getSourceDefinitions() {
     return new ArrayList<>(getSourceDefinitionsMap().values());
   }
 
   @Override
-  @Cacheable
   public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
     final StandardDestinationDefinition definition = getDestinationDefinitionsMap().get(definitionId);
     if (definition == null) {
@@ -96,12 +93,12 @@ public final class RemoteDefinitionsProvider implements DefinitionsProvider {
   }
 
   @Override
-  @Cacheable
   public List<StandardDestinationDefinition> getDestinationDefinitions() {
     return new ArrayList<>(getDestinationDefinitionsMap().values());
   }
 
-  private CombinedConnectorCatalog getRemoteDefinitionCatalog() {
+  @Cacheable
+  public CombinedConnectorCatalog getRemoteDefinitionCatalog() {
     try {
       final HttpRequest request = HttpRequest.newBuilder(remoteDefinitionCatalogUrl).timeout(timeout).header("accept", "application/json").build();
 
