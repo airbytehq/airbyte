@@ -7,7 +7,7 @@ export class AnalyticsService {
 
   constructor(private version?: string) {}
 
-  private getSegmentAnalytics = (): SegmentAnalytics.AnalyticsJS | undefined => window.analytics;
+  private getSegmentAnalytics = (): typeof window.analytics | undefined => window.analytics;
 
   public setContext(context: Context) {
     this.context = {

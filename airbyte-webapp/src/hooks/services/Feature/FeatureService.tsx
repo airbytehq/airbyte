@@ -41,7 +41,7 @@ export const FeatureService: React.FC<React.PropsWithChildren<FeatureServiceProp
 
   const envOverwrites = useMemo(() => {
     // Allow env feature overwrites only during development
-    if (process.env.NODE_ENV !== "development") {
+    if (import.meta.env.NODE_ENV !== "development") {
       return {};
     }
     const featureSet: FeatureSet = {};
