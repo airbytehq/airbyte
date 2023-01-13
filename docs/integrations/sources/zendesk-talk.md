@@ -8,15 +8,18 @@
 
 ## Setup guide
 
+### Step 1: Set up Zendesk
+
 Generate a API access token as described in [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
 Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) for details.
 
-## Step 2: Set up the Zendesk Talk connector in Airbyte
+<!-- env:cloud -->
+### Step 2: Set up the Zendesk Talk connector in Airbyte
 
-### For Airbyte Cloud:
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
@@ -26,6 +29,7 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
    - *Authentication (API Token / OAuth2.0)*
    - *Start Date*
 5. Click **Set up source**
+<!-- /env:cloud -->
 
 ## Supported sync modes
 

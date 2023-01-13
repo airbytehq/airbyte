@@ -3,11 +3,17 @@ import React, { useCallback } from "react";
 
 import { SyncSchemaStream } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
+import { BulkHeader } from "./BulkHeader";
 import { CatalogSection } from "./CatalogSection";
 import styles from "./CatalogTreeBody.module.scss";
+import { CatalogTreeHeader } from "./CatalogTreeHeader";
+import { CatalogTreeSubheader } from "./CatalogTreeSubheader";
+import { CatalogTreeTableHeader } from "./next/CatalogTreeTableHeader";
+import { StreamConnectionHeader } from "./next/StreamConnectionHeader";
 
 interface CatalogTreeBodyProps {
   streams: SyncSchemaStream[];
@@ -17,6 +23,7 @@ interface CatalogTreeBodyProps {
 
 export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, changedStreams, onStreamChanged }) => {
   const { mode } = useConnectionFormService();
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
 
   const onUpdateStream = useCallback(
     (id: string | undefined, newConfig: Partial<AirbyteStreamConfiguration>) => {
@@ -33,6 +40,18 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, chang
 
   return (
     <div className={styles.container}>
+      {isNewTableDesignEnabled ? (
+        <>
+          <StreamConnectionHeader />
+          <CatalogTreeTableHeader />
+        </>
+      ) : (
+        <>
+          <CatalogTreeHeader />
+          <CatalogTreeSubheader />
+          <BulkHeader />
+        </>
+      )}
       {streams.map((streamNode) => (
         <Field key={`schema.streams[${streamNode.id}].config`} name={`schema.streams[${streamNode.id}].config`}>
           {({ form }: FieldProps<FormikConnectionFormValues>) => (

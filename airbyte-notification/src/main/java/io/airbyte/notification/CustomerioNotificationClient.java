@@ -121,6 +121,11 @@ public class CustomerioNotificationClient extends NotificationClient {
     throw new NotImplementedException();
   }
 
+  @Override
+  public boolean notifySchemaChange(final UUID connectionId, final boolean isBreaking) {
+    throw new NotImplementedException();
+  }
+
   private boolean notifyByEmail(final String requestBody) throws IOException, InterruptedException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(requestBody))

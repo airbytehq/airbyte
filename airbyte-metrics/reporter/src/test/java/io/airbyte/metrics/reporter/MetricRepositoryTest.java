@@ -18,7 +18,6 @@ import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.google.common.collect.Iterators;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
@@ -54,6 +53,8 @@ class MetricRepositoryTest {
   private static final String DEST = "dst";
   private static final String CONN = "conn";
   private static final String SYNC_QUEUE = "SYNC";
+  private static final String AWS_SYNC_QUEUE = "AWS_PARIS_SYNC";
+  private static final String AUTO_REGION = "AUTO";
   private static final String EU_REGION = "EU";
 
   private static final UUID SRC_DEF_ID = UUID.randomUUID();
@@ -114,7 +115,7 @@ class MetricRepositoryTest {
     void shouldReturnReleaseStages() {
       ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.STATUS, ATTEMPTS.PROCESSING_TASK_QUEUE)
           .values(10L, 1L, AttemptStatus.running, SYNC_QUEUE).values(20L, 2L, AttemptStatus.running, SYNC_QUEUE)
-          .values(30L, 3L, AttemptStatus.running, SYNC_QUEUE).values(40L, 4L, AttemptStatus.running, SYNC_QUEUE)
+          .values(30L, 3L, AttemptStatus.running, SYNC_QUEUE).values(40L, 4L, AttemptStatus.running, AWS_SYNC_QUEUE)
           .values(50L, 5L, AttemptStatus.running, SYNC_QUEUE)
           .execute();
       final var srcId = UUID.randomUUID();
@@ -138,7 +139,10 @@ class MetricRepositoryTest {
           .values(5L, inactiveConnectionId.toString(), JobStatus.running)
           .execute();
 
-      assertEquals(2, db.numberOfRunningJobsByTaskQueue().get(SYNC_QUEUE));
+      assertEquals(1, db.numberOfRunningJobsByTaskQueue().get(SYNC_QUEUE));
+      assertEquals(1, db.numberOfRunningJobsByTaskQueue().get(AWS_SYNC_QUEUE));
+      // To test we send 0 for 'null' to overwrite previous bug.
+      assertEquals(0, db.numberOfRunningJobsByTaskQueue().get("null"));
       assertEquals(1, db.numberOfOrphanRunningJobs());
     }
 
@@ -148,8 +152,9 @@ class MetricRepositoryTest {
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute();
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute();
 
-      final var res = db.numberOfRunningJobsByTaskQueue();
-      assertTrue(res.isEmpty());
+      final var result = db.numberOfRunningJobsByTaskQueue();
+      assertEquals(result.get(SYNC_QUEUE), 0);
+      assertEquals(result.get(AWS_SYNC_QUEUE), 0);
     }
 
     @Test
@@ -173,6 +178,7 @@ class MetricRepositoryTest {
 
       final var res = db.numberOfPendingJobsByGeography();
       assertEquals(2, res.get(EU_REGION));
+      assertEquals(0, res.get(AUTO_REGION));
     }
 
     @Test
@@ -192,8 +198,9 @@ class MetricRepositoryTest {
           .values(2L, connectionUuid.toString(), JobStatus.failed)
           .execute();
 
-      final var res = db.numberOfPendingJobsByGeography();
-      assertTrue(res.isEmpty());
+      final var result = db.numberOfPendingJobsByGeography();
+      assertEquals(result.get(AUTO_REGION), 0);
+      assertEquals(result.get(EU_REGION), 0);
     }
 
   }
@@ -248,8 +255,9 @@ class MetricRepositoryTest {
           .values(2L, connectionUuid.toString(), JobStatus.running)
           .values(3L, connectionUuid.toString(), JobStatus.failed).execute();
 
-      final var res = db.oldestPendingJobAgeSecsByGeography();
-      assertTrue(res.isEmpty());
+      final var result = db.oldestPendingJobAgeSecsByGeography();
+      assertEquals(result.get(EU_REGION), 0.0);
+      assertEquals(result.get(AUTO_REGION), 0.0);
     }
 
   }
@@ -277,10 +285,10 @@ class MetricRepositoryTest {
           .values(4L, "", JobStatus.failed)
           .execute();
 
-      final var result = Iterators.getOnlyElement(db.oldestRunningJobAgeSecsByTaskQueue().entrySet().iterator());
-      assertEquals(SYNC_QUEUE, result.getKey());
+      final var result = db.oldestRunningJobAgeSecsByTaskQueue();
       // expected age is 1000 seconds, but allow for +/- 1 second to account for timing/rounding errors
-      assertTrue(9999 < result.getValue() && result.getValue() < 10001L);
+      assertTrue(9999 < result.get(SYNC_QUEUE) && result.get(SYNC_QUEUE) < 10001L);
+      assertEquals(result.get(AWS_SYNC_QUEUE), 0.0);
     }
 
     @Test
@@ -293,8 +301,9 @@ class MetricRepositoryTest {
           .values(3L, "", JobStatus.failed)
           .execute();
 
-      final var res = db.oldestRunningJobAgeSecsByTaskQueue();
-      assertTrue(res.isEmpty());
+      final var result = db.oldestRunningJobAgeSecsByTaskQueue();
+      assertEquals(result.get(SYNC_QUEUE), 0.0);
+      assertEquals(result.get(AWS_SYNC_QUEUE), 0.0);
     }
 
   }

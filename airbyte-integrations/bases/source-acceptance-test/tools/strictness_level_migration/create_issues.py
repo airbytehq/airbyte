@@ -32,7 +32,6 @@ def get_issue_content(source_definition):
     file_definition, issue_body_path = tempfile.mkstemp()
 
     with os.fdopen(file_definition, "w") as tmp:
-        # do stuff with temp file
         tmp.write(issue_body)
 
     return {"title": issue_title, "body_file": issue_body_path, "labels": COMMON_ISSUE_LABELS}

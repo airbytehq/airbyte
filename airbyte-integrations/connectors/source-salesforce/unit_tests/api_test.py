@@ -33,6 +33,33 @@ def test_bulk_sync_creation_failed(stream_config, stream_api):
         assert err.value.response.json()[0]["message"] == "test_error"
 
 
+def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stream_api):
+    """
+    Here we mock BULK API with response returning error, saying BULK is not supported for this kind of entity.
+    On the other hand, we mock REST API for this same entity with a successful response.
+    After having instantiated a BulkStream, sync should succeed in case it falls back to REST API. Otherwise it would throw an error.
+    """
+    stream = generate_stream("CustomEntity", stream_config, stream_api)
+    # mock a BULK API
+    requests_mock.register_uri(
+        "POST",
+        "https://fase-account.salesforce.com/services/data/v52.0/jobs/query",
+        status_code=400,
+        json=[{
+            "errorCode": "INVALIDENTITY",
+            "message": "CustomEntity is not supported by the Bulk API"
+        }]
+    )
+    rest_stream_records = [
+        {"id": 1, "name": "custom entity", "created": "2010-11-11"},
+        {"id": 11, "name": "custom entity", "created": "2020-01-02"}
+    ]
+    # mock REST API
+    mocker.patch("source_salesforce.source.SalesforceStream.read_records", Mock(return_value=rest_stream_records))
+    assert type(stream) is BulkIncrementalSalesforceStream
+    assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == rest_stream_records
+
+
 def test_stream_unsupported_by_bulk(stream_config, stream_api, caplog):
     """
     Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it.

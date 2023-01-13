@@ -10,7 +10,7 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteRecordMessage, AirbyteStream, AirbyteTraceMessage, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteStream, AirbyteTraceMessage, SyncMode
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -22,7 +22,7 @@ from deprecated.classic import deprecated
 # AirbyteRecordMessage: An AirbyteRecordMessage
 # AirbyteLogMessage: A log message
 # AirbyteTraceMessage: A trace message
-StreamData = Union[Mapping[str, Any], AirbyteRecordMessage, AirbyteLogMessage, AirbyteTraceMessage]
+StreamData = Union[Mapping[str, Any], AirbyteLogMessage, AirbyteTraceMessage]
 
 
 def package_name_from_class(cls: object) -> str:

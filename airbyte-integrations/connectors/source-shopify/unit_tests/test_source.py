@@ -133,7 +133,10 @@ def test_read_records(config, mocker):
     [
         (OrderRefunds, {"limit": 250}),
         (Orders, {"limit": 250, "status": "any", "order": "updated_at asc", "updated_at_min": "2020-11-01"}),
-        (AbandonedCheckouts, {"limit": 250, "status": "any", "order": "updated_at asc", "updated_at_min": "2020-11-01"}),
+        (
+            AbandonedCheckouts,
+            {"limit": 250, "status": "any", "order": "updated_at asc", "updated_at_min": "2020-11-01"},
+        ),
     ],
 )
 def test_request_params(config, stream, expected):
@@ -145,4 +148,7 @@ def test_get_updated_state(config):
     latest_record = {"created_at": "2022-10-10T06:21:53-07:00"}
     updated_state = {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}
     stream = OrderRefunds(config)
-    assert stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record) == updated_state
+    assert (
+        stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+        == updated_state
+    )

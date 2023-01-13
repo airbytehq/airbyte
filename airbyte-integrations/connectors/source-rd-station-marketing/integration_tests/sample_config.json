@@ -1,6 +1,5 @@
-{ 
-  "authorization": 
-  {
+{
+  "authorization": {
     "auth_type": "Client",
     "client_id": "<client_id>",
     "client_secret": "<client_secret>",

@@ -5,7 +5,8 @@ import React from "react";
 import selectEvent from "react-select-event";
 import { render, useMockIntersectionObserver } from "test-utils/testutils";
 
-import { AirbyteJSONSchema } from "core/jsonSchema";
+import { ConnectorDefinition } from "core/domain/connector";
+import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
 import { ConnectorForm, ConnectorFormProps } from "views/Connector/ConnectorForm";
 
@@ -37,6 +38,11 @@ jest.mock("../ConnectorDocumentationLayout/DocumentationPanelContext", () => {
 
 jest.setTimeout(10000);
 
+const connectorDefinition = {
+  sourceDefinitionId: "1",
+  documentationUrl: "",
+} as ConnectorDefinition;
+
 const useAddPriceListItem = (container: HTMLElement) => {
   const priceList = getByTestId(container, "connectionConfiguration.priceList");
   let index = 0;
@@ -47,7 +53,7 @@ const useAddPriceListItem = (container: HTMLElement) => {
 
     const arrayOfObjectsEditModal = getByTestId(document.body, "arrayOfObjects-editModal");
     const getPriceListInput = (index: number, key: string) =>
-      arrayOfObjectsEditModal.querySelector(`input[name='__temp__connectionConfiguration_priceList${index}.${key}']`);
+      arrayOfObjectsEditModal.querySelector(`input[name='connectionConfiguration.priceList\\[${index}\\].${key}']`);
 
     // Type items into input
     const nameInput = getPriceListInput(index, "name");
@@ -91,6 +97,11 @@ const schema: AirbyteJSONSchema = {
             api_key: {
               type: "string",
             },
+            type: {
+              type: "string",
+              const: "api",
+              default: "api",
+            },
           },
         },
         {
@@ -99,6 +110,11 @@ const schema: AirbyteJSONSchema = {
             redirect_uri: {
               type: "string",
               examples: ["https://api.hubspot.com/"],
+            },
+            type: {
+              type: "string",
+              const: "oauth",
+              default: "oauth",
             },
           },
         },
@@ -142,6 +158,7 @@ const schema: AirbyteJSONSchema = {
   },
 };
 
+jest.mock("hooks/services/AppMonitoringService");
 jest.mock("hooks/services/Analytics");
 
 jest.mock("hooks/services/useWorkspace", () => ({
@@ -161,6 +178,7 @@ describe("Service Form", () => {
         <ConnectorForm
           formType="source"
           onSubmit={handleSubmit}
+          selectedConnectorDefinition={connectorDefinition}
           selectedConnectorDefinitionSpecification={
             // @ts-expect-error Partial objects for testing
             {
@@ -207,11 +225,9 @@ describe("Service Form", () => {
 
     it("should display oneOf field", () => {
       const credentials = container.querySelector("div[data-testid='connectionConfiguration.credentials']");
-      const credentialsValue = credentials?.querySelector("input[value='api key']");
       const apiKey = container.querySelector("input[name='connectionConfiguration.credentials.api_key']");
       expect(credentials).toBeInTheDocument();
       expect(credentials?.getAttribute("role")).toEqual("combobox");
-      expect(credentialsValue).toBeInTheDocument();
       expect(apiKey).toBeInTheDocument();
     });
 
@@ -241,9 +257,10 @@ describe("Service Form", () => {
         <ConnectorForm
           formType="source"
           formValues={{ name: "test-name" }}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             result = values;
           }}
+          selectedConnectorDefinition={connectorDefinition}
           selectedConnectorDefinitionSpecification={
             // @ts-expect-error Partial objects for testing
             {
@@ -285,7 +302,7 @@ describe("Service Form", () => {
       expect(result).toEqual({
         name: "name",
         connectionConfiguration: {
-          credentials: { api_key: "test-api-key" },
+          credentials: { api_key: "test-api-key", type: "api" },
           emails: ["test@test.com"],
           host: "test-host",
           message: "test-message",
@@ -320,7 +337,8 @@ describe("Service Form", () => {
     });
 
     it("change oneOf field value", async () => {
-      const credentials = screen.getByTestId("connectionConfiguration.credentials");
+      const apiKey = container.querySelector("input[name='connectionConfiguration.credentials.api_key']");
+      expect(apiKey).toBeInTheDocument();
 
       const selectContainer = getByTestId(container, "connectionConfiguration.credentials");
 
@@ -328,10 +346,7 @@ describe("Service Form", () => {
         container: document.body,
       });
 
-      const credentialsValue = credentials.querySelector("input[value='oauth']");
       const uri = container.querySelector("input[name='connectionConfiguration.credentials.redirect_uri']");
-
-      expect(credentialsValue).toBeInTheDocument();
       expect(uri).toBeInTheDocument();
     });
 
@@ -349,7 +364,7 @@ describe("Service Form", () => {
       await waitFor(() => userEvent.click(submit!));
 
       expect(result.connectionConfiguration).toEqual({
-        credentials: { redirect_uri: "test-uri" },
+        credentials: { redirect_uri: "test-uri", type: "oauth" },
       });
     });
 
@@ -380,7 +395,7 @@ describe("Service Form", () => {
     const renderConnectorForm = (props: ConnectorFormProps) =>
       render(<ConnectorForm {...props} formValues={{ name: "test-name" }} />);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    const onSubmitClb = () => {};
+    const onSubmitClb = async () => {};
     const connectorDefSpec = {
       connectionSpecification: schema,
       sourceDefinitionId: "test-service-type",
@@ -389,6 +404,7 @@ describe("Service Form", () => {
 
     it("should render <CreateControls /> if connector is selected", async () => {
       const { getByText } = await renderConnectorForm({
+        selectedConnectorDefinition: connectorDefinition,
         selectedConnectorDefinitionSpecification:
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
@@ -398,20 +414,9 @@ describe("Service Form", () => {
       expect(getByText(/Set up destination/)).toBeInTheDocument();
     });
 
-    it("should not render <CreateControls /> if connector is not selected", async () => {
-      const { container } = await renderConnectorForm({
-        selectedConnectorDefinitionSpecification: undefined,
-        formType: "destination",
-        onSubmit: onSubmitClb,
-      });
-
-      const submitBtn = container.querySelector('button[type="submit"]');
-
-      expect(submitBtn).toBeNull();
-    });
-
     it("should render <EditControls /> if connector is selected", async () => {
       const { getByText } = await renderConnectorForm({
+        selectedConnectorDefinition: connectorDefinition,
         selectedConnectorDefinitionSpecification:
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
@@ -421,19 +426,6 @@ describe("Service Form", () => {
       });
 
       expect(getByText(/Save changes and test/)).toBeInTheDocument();
-    });
-
-    it("should render <EditControls /> if connector is not selected", async () => {
-      const { container } = await renderConnectorForm({
-        selectedConnectorDefinitionSpecification: undefined,
-        formType: "destination",
-        onSubmit: onSubmitClb,
-        isEditMode: true,
-      });
-
-      const submitBtn = container.querySelector('button[type="submit"]');
-
-      expect(submitBtn).toBeInTheDocument();
     });
   });
 });

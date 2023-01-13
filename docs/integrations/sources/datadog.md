@@ -1,4 +1,4 @@
-# Airbyte Source Connector for Datadog
+# Datadog
 
 This is a setup guide for the Datadog source connector which collects data from [its API](https://docs.datadoghq.com/api/latest/).
 

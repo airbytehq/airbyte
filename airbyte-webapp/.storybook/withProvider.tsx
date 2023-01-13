@@ -12,17 +12,14 @@ import { FeatureService } from "../src/hooks/services/Feature";
 import { ConfigServiceProvider, defaultConfig } from "../src/config";
 import { DocumentationPanelProvider } from "../src/views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServicesProvider } from "../src/core/servicesProvider";
-import { analyticsServiceContext, AnalyticsServiceProviderValue } from "../src/hooks/services/Analytics";
+import { analyticsServiceContext } from "../src/hooks/services/Analytics";
+import type { AnalyticsService } from "../src/core/analytics";
 
-const AnalyticsContextMock: AnalyticsServiceProviderValue = {
-  analyticsContext: {},
-  setContext: () => {},
-  addContextProps: () => {},
-  removeContextProps: () => {},
-  service: {
+const analyticsContextMock: AnalyticsService = {
     track: () => {},
-  },
-} as unknown as AnalyticsServiceProviderValue;
+    setContext: () => {},
+    removeFromContext: () => {},
+} as unknown as AnalyticsService;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,7 +32,7 @@ const queryClient = new QueryClient({
 
 export const withProviders = (getStory) => (
   <React.Suspense fallback={null}>
-    <analyticsServiceContext.Provider value={AnalyticsContextMock}>
+    <analyticsServiceContext.Provider value={analyticsContextMock}>
       <QueryClientProvider client={queryClient}>
         <ServicesProvider>
           <MemoryRouter>

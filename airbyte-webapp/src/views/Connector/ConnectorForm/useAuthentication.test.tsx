@@ -9,6 +9,7 @@ import { useAuthentication as useAuthenticationHook } from "./useAuthentication"
 import { noPredicateAdvancedAuth, predicateInsideConditional } from "./useAuthentication.mocks";
 import { makeConnectionConfigurationPath } from "./utils";
 
+jest.mock("hooks/services/AppMonitoringService");
 jest.mock("./connectorFormContext");
 jest.mock("formik", () => ({
   ...jest.requireActual("formik"),
@@ -34,7 +35,8 @@ const mockContext = ({ connector, values, submitCount, fieldMeta = {} }: MockPar
   });
   mockConnectorForm.mockReturnValue({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    selectedConnector: { ...connector, sourceDefinitionId: "12345", jobInfo: {} as any },
+    selectedConnectorDefinitionSpecification: { ...connector, sourceDefinitionId: "12345", jobInfo: {} as any },
+    getValues: (values) => values,
   });
 };
 

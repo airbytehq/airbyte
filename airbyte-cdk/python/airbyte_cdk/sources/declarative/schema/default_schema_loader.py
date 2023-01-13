@@ -38,7 +38,7 @@ class DefaultSchemaLoader(SchemaLoader, JsonSchemaMixin):
 
         try:
             return self.default_loader.get_json_schema()
-        except FileNotFoundError:
+        except OSError:
             # A slight hack since we don't directly have the stream name. However, when building the default filepath we assume the
             # runtime options stores stream name 'name' so we'll do the same here
             stream_name = self._options.get("name", "")

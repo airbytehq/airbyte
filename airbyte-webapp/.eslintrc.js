@@ -7,8 +7,9 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:css-modules/recommended",
     "plugin:jsx-a11y/recommended",
+    "plugin:@airbyte/recommended",
   ],
-  plugins: ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y"],
+  plugins: ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y", "@airbyte"],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: "module",
@@ -88,11 +89,24 @@ module.exports = {
     "react/jsx-fragments": "warn",
     "react/jsx-no-useless-fragment": ["warn", { allowExpressions: true }],
     "react/self-closing-comp": "warn",
+    "react/style-prop-object": ["warn", { allow: ["FormattedNumber"] }],
+    "no-restricted-imports": [
+      "error",
+      {
+        paths: [
+          {
+            name: "lodash",
+            message: 'Please use `import [function] from "lodash/[function]";` instead.',
+          },
+        ],
+        patterns: ["!lodash/*"],
+      },
+    ],
   },
   parser: "@typescript-eslint/parser",
   overrides: [
     {
-      files: ["scripts/**/*"],
+      files: ["scripts/**/*", "packages/**/*"],
       rules: {
         "@typescript-eslint/no-var-requires": "off",
       },

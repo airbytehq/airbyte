@@ -1,5 +1,5 @@
-@use "../../../../../../scss/colors";
-@use "../../../../../../scss/variables" as vars;
+@use "scss/colors";
+@use "scss/variables" as vars;
 
 .connectorListFooter {
   width: 100%;
@@ -37,7 +37,7 @@
   background: colors.$grey-100;
   color: colors.$dark-blue;
   text-transform: uppercase;
-  border-radius: 25px;
+  border-radius: vars.$border-radius-pill;
   font-weight: 500;
   font-size: 8px;
   line-height: 10px;

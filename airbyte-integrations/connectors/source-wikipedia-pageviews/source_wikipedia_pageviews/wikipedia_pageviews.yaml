@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: [ "items" ]
+      field_pointer: ["items"]
   requester:
     url_base: "https://wikimedia.org/api/rest_v1/metrics/pageviews"
     http_method: "GET"
@@ -12,22 +12,24 @@ definitions:
         "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
   top_stream_slicer:
     type: DatetimeStreamSlicer
-    start_datetime: 
+    start_datetime:
       datetime: "{{config.start}}"
       datetime_format: "%Y%m%d"
-    end_datetime: 
+    end_datetime:
       datetime: "{{config.start}}"
       datetime_format: "%Y%m%d"
-    step: "1d"
+    step: "P1D"
     cursor_field: "timestamp"
     datetime_format: "%Y/%m/%d"
+    cursor_granularity: "P1D"
   per_article_stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime: "{{config.start}}"
     end_datetime: "{{config.end}}"
-    step: "1d"
+    step: "P1D"
     cursor_field: "timestamp"
     datetime_format: "%Y%m%d"
+    cursor_granularity: "P1D"
 
   per_article_requester:
     $options:
@@ -73,11 +75,11 @@ definitions:
     $options:
       name: "top"
 
-streams: 
+streams:
   - "*ref(definitions.per_article_stream)"
   - "*ref(definitions.top_stream)"
 
 check:
-  stream_names: 
+  stream_names:
     - "per-article"
     - "top"

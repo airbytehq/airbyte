@@ -14,46 +14,56 @@ import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
 import io.airbyte.api.model.generated.OperatorConfiguration;
 import io.airbyte.server.handlers.OperationsHandler;
-import javax.ws.rs.Path;
-import lombok.AllArgsConstructor;
+import io.micronaut.http.annotation.Body;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
 
-@Path("/v1/operations")
-@AllArgsConstructor
+@Controller("/api/v1/operations")
 public class OperationApiController implements OperationApi {
 
   private final OperationsHandler operationsHandler;
 
-  @Override
-  public CheckOperationRead checkOperation(final OperatorConfiguration operatorConfiguration) {
-    return ConfigurationApi.execute(() -> operationsHandler.checkOperation(operatorConfiguration));
+  public OperationApiController(final OperationsHandler operationsHandler) {
+    this.operationsHandler = operationsHandler;
   }
 
+  @Post("/check")
   @Override
-  public OperationRead createOperation(final OperationCreate operationCreate) {
-    return ConfigurationApi.execute(() -> operationsHandler.createOperation(operationCreate));
+  public CheckOperationRead checkOperation(@Body final OperatorConfiguration operatorConfiguration) {
+    return ApiHelper.execute(() -> operationsHandler.checkOperation(operatorConfiguration));
   }
 
+  @Post("/create")
   @Override
-  public void deleteOperation(final OperationIdRequestBody operationIdRequestBody) {
-    ConfigurationApi.execute(() -> {
+  public OperationRead createOperation(@Body final OperationCreate operationCreate) {
+    return ApiHelper.execute(() -> operationsHandler.createOperation(operationCreate));
+  }
+
+  @Post("/delete")
+  @Override
+  public void deleteOperation(@Body final OperationIdRequestBody operationIdRequestBody) {
+    ApiHelper.execute(() -> {
       operationsHandler.deleteOperation(operationIdRequestBody);
       return null;
     });
   }
 
+  @Post("/get")
   @Override
-  public OperationRead getOperation(final OperationIdRequestBody operationIdRequestBody) {
-    return ConfigurationApi.execute(() -> operationsHandler.getOperation(operationIdRequestBody));
+  public OperationRead getOperation(@Body final OperationIdRequestBody operationIdRequestBody) {
+    return ApiHelper.execute(() -> operationsHandler.getOperation(operationIdRequestBody));
   }
 
+  @Post("/list")
   @Override
-  public OperationReadList listOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return ConfigurationApi.execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
+  public OperationReadList listOperationsForConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
+    return ApiHelper.execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
   }
 
+  @Post("/update")
   @Override
-  public OperationRead updateOperation(final OperationUpdate operationUpdate) {
-    return ConfigurationApi.execute(() -> operationsHandler.updateOperation(operationUpdate));
+  public OperationRead updateOperation(@Body final OperationUpdate operationUpdate) {
+    return ApiHelper.execute(() -> operationsHandler.updateOperation(operationUpdate));
   }
 
 }

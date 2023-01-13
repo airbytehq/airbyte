@@ -11,12 +11,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.JsonSchemaType;
-import io.airbyte.integrations.standardtest.destination.NumberDataTypeTestArgumentProvider;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +35,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
-  protected GcsAvroParquetDestinationAcceptanceTest(final S3Format s3Format) {
+  public GcsAvroParquetDestinationAcceptanceTest(final S3Format s3Format) {
     super(s3Format);
   }
 

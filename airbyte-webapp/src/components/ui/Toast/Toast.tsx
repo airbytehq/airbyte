@@ -1,86 +1,64 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faExclamation, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import React from "react";
-import styled, { keyframes } from "styled-components";
 
-import { H5 } from "components/base/Titles";
+import { CrossIcon } from "components/icons/CrossIcon";
+import { Text } from "components/ui/Text";
 
 import { Button } from "../Button";
-import { ErrorSign } from "./ErrorSign";
 import styles from "./Toast.module.scss";
 
-interface ToastProps {
-  title: string | React.ReactNode;
-  text?: string | React.ReactNode;
-  hasError?: boolean;
+export const enum ToastType {
+  WARNING = "warning",
+  SUCCESS = "success",
+  ERROR = "error",
+  INFO = "info",
+}
+
+export interface ToastProps {
+  text: string | React.ReactNode;
+  type?: ToastType;
+  onAction?: () => void;
+  actionBtnText?: string;
   onClose?: () => void;
 }
 
-export const SlideUpAnimation = keyframes`
-  0% {
-    translate(-50%, -100%);
-    bottom: -49px;
-  }
-  100% {
-    translate(-50%, 0);
-    bottom: 49px;
-  }
-`;
+const ICON_MAPPING = {
+  [ToastType.WARNING]: faExclamation,
+  [ToastType.ERROR]: faTimes,
+  [ToastType.SUCCESS]: faCheck,
+  [ToastType.INFO]: faExclamation,
+};
 
-const Singleton = styled.div<{ hasError?: boolean }>`
-  position: fixed;
-  bottom: 49px;
-  left: 50%;
-  transform: translate(-50%, 0);
-  z-index: 20;
+const STYLES_BY_TYPE: Readonly<Record<ToastType, string>> = {
+  [ToastType.WARNING]: styles.warning,
+  [ToastType.ERROR]: styles.error,
+  [ToastType.SUCCESS]: styles.success,
+  [ToastType.INFO]: styles.info,
+};
 
-  padding: 25px 25px 22px;
-
-  background: ${({ theme, hasError }) => (hasError ? theme.lightDangerColor : theme.lightPrimaryColor)};
-  border: 1px solid ${({ theme }) => theme.greyColor20};
-  box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
-  border-radius: 8px;
-
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-
-  animation: ${SlideUpAnimation} 0.25s linear;
-`;
-
-const Title = styled(H5)<{ hasError?: boolean }>`
-  color: ${({ theme, hasError }) => (hasError ? theme.dangerColor : theme.primaryColor)};
-
-  font-style: normal;
-  font-weight: bold;
-  font-size: 15px;
-  line-height: 18px;
-`;
-
-const Text = styled.div`
-  color: ${({ theme }) => theme.mediumPrimaryColor};
-
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 17px;
-  margin-top: 5px;
-`;
-
-export const Toast: React.FC<ToastProps> = (props) => (
-  <Singleton hasError={props.hasError}>
-    {props.hasError && <ErrorSign />}
-    <div>
-      <Title hasError={props.hasError}>{props.title}</Title>
-      {props.text && <Text>{props.text}</Text>}
+export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, actionBtnText, onClose, text }) => {
+  return (
+    <div className={classNames(styles.toastContainer, STYLES_BY_TYPE[type])}>
+      <div className={classNames(styles.iconContainer)}>
+        <FontAwesomeIcon icon={ICON_MAPPING[type]} className={styles.toastIcon} />
+      </div>
+      <div className={styles.textContainer}>
+        {text && (
+          <Text size="lg" className={styles.text}>
+            {text}
+          </Text>
+        )}
+      </div>
+      {onAction && (
+        <Button variant="dark" className={styles.actionButton} onClick={onAction}>
+          {actionBtnText}
+        </Button>
+      )}
+      {onClose && (
+        <Button variant="clear" className={styles.closeButton} onClick={onClose} size="sm" icon={<CrossIcon />} />
+      )}
     </div>
-    {props.onClose && (
-      <Button
-        className={styles.closeButton}
-        variant="clear"
-        onClick={props.onClose}
-        icon={<FontAwesomeIcon icon={faTimes} />}
-      />
-    )}
-  </Singleton>
-);
+  );
+};

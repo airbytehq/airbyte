@@ -22,7 +22,7 @@ connectionSpecification:
       type: integer
       minimum: 1
       maximum: 100
-      description: >- 
+      description: >-
         A positive integer, no greater than 100. If this is specified then `count` randomly 
         chosen images will be returned in a JSON array. Cannot be used in conjunction with 
         `date` or `start_date` and `end_date`.

@@ -1,0 +1,14 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "length": {
+      "type": ["null", "string"]
+    },
+    "width": {
+      "type": ["null", "string"]
+    },
+    "height": {
+      "type": ["null", "string"]
+    }
+  }
+}

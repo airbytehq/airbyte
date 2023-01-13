@@ -22,6 +22,7 @@ class TplcentralAuthenticator(Oauth2Authenticator):
         client_secret: str,
         user_login_id: int = None,
         user_login: str = None,
+        scopes: List[str] = None,
     ):
         super().__init__(
             token_refresh_endpoint=token_refresh_endpoint,
@@ -30,6 +31,12 @@ class TplcentralAuthenticator(Oauth2Authenticator):
             refresh_token=None,
         )
 
+        self.token_refresh_endpoint = token_refresh_endpoint
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.scopes = scopes
+        self.access_token_name = "access_token"
+        self.expires_in_name = "expires_in"
         self.user_login_id = user_login_id
         self.user_login = user_login
 

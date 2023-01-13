@@ -1,6 +1,7 @@
 import { screen, render } from "@testing-library/react";
 import { TestWrapper } from "test-utils/testutils";
 
+import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useFormikOauthAdapter } from "views/Connector/ConnectorForm/components/Sections/auth/useOauthFlowAdapter";
 import { useConnectorForm } from "views/Connector/ConnectorForm/connectorFormContext";
 import { useAuthentication } from "views/Connector/ConnectorForm/useAuthentication";
@@ -36,10 +37,9 @@ const baseUseFormikOauthAdapterValues = {
 
 jest.mock("views/Connector/ConnectorForm/connectorFormContext");
 const mockUseConnectorForm = useConnectorForm as unknown as jest.Mock<Partial<typeof useConnectorForm>>;
-const baseUseConnectorFormValues = {
-  selectedConnector: "abcde",
-  allowOAuthConnector: true,
-  selectedService: undefined,
+const baseUseConnectorFormValues: Partial<ReturnType<typeof useConnectorForm>> = {
+  selectedConnectorDefinition: { sourceDefinitionId: "abcde", name: "Acme" } as ConnectorDefinition,
+  selectedConnectorDefinitionSpecification: {} as ConnectorDefinitionSpecification,
 };
 
 jest.mock("views/Connector/ConnectorForm/useAuthentication");
@@ -55,9 +55,9 @@ describe("auth button", () => {
   it("initially renders with correct message and no status message", () => {
     // no auth errors
     mockUseConnectorForm.mockImplementationOnce(() => {
-      const { selectedConnector, selectedService } = baseUseConnectorFormValues;
+      const { selectedConnectorDefinition } = baseUseConnectorFormValues;
 
-      return { selectedConnector, selectedService };
+      return { selectedConnectorDefinition };
     });
 
     // not done
@@ -70,12 +70,16 @@ describe("auth button", () => {
 
     render(
       <TestWrapper>
-        <AuthButton />
+        <AuthButton
+          selectedConnectorDefinitionSpecification={
+            baseUseConnectorFormValues.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification
+          }
+        />
       </TestWrapper>
     );
 
     // correct button text
-    const button = screen.getByRole("button", { name: "Authenticate your account" });
+    const button = screen.getByRole("button", { name: "Authenticate your Acme account" });
     expect(button).toBeInTheDocument();
 
     // no error message
@@ -90,9 +94,9 @@ describe("auth button", () => {
   it("after successful authentication, it renders with correct message and success message", () => {
     // no auth errors
     mockUseConnectorForm.mockImplementationOnce(() => {
-      const { selectedConnector, selectedService } = baseUseConnectorFormValues;
+      const { selectedConnectorDefinition } = baseUseConnectorFormValues;
 
-      return { selectedConnector, selectedService };
+      return { selectedConnectorDefinition };
     });
 
     // done
@@ -105,7 +109,11 @@ describe("auth button", () => {
 
     render(
       <TestWrapper>
-        <AuthButton />
+        <AuthButton
+          selectedConnectorDefinitionSpecification={
+            baseUseConnectorFormValues.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification
+          }
+        />
       </TestWrapper>
     );
 
@@ -123,9 +131,9 @@ describe("auth button", () => {
     mockUseAuthentication.mockReturnValue({ hiddenAuthFieldErrors: { field: "form.empty.error" } });
 
     mockUseConnectorForm.mockImplementationOnce(() => {
-      const { selectedConnector, selectedService } = baseUseConnectorFormValues;
+      const { selectedConnectorDefinition } = baseUseConnectorFormValues;
 
-      return { selectedConnector, selectedService };
+      return { selectedConnectorDefinition };
     });
 
     // not done
@@ -138,12 +146,16 @@ describe("auth button", () => {
 
     render(
       <TestWrapper>
-        <AuthButton />
+        <AuthButton
+          selectedConnectorDefinitionSpecification={
+            baseUseConnectorFormValues.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification
+          }
+        />
       </TestWrapper>
     );
 
     // correct button
-    const button = screen.getByRole("button", { name: "Authenticate your account" });
+    const button = screen.getByRole("button", { name: "Authenticate your Acme account" });
     expect(button).toBeInTheDocument();
 
     // error message

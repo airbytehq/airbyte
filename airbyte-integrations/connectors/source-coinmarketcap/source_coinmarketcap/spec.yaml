@@ -29,11 +29,10 @@ connectionSpecification:
     symbols:
       title: Symbol
       type: array
-      items: 
+      items:
         type: string
       description: Cryptocurrency symbols. (only used for quotes stream)
       minItems: 1
       examples:
         - AVAX
         - BTC
-      

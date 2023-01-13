@@ -90,7 +90,7 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
                           >
                             Google Sheets
                           </div>
-                          <div
+                          <span
                             class="<removed-for-snapshot-test>"
                           >
                             <div
@@ -98,7 +98,7 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
                             >
                               Alpha
                             </div>
-                          </div>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -141,7 +141,7 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
                           >
                             BigQuery
                           </div>
-                          <div
+                          <span
                             class="<removed-for-snapshot-test>"
                           >
                             <svg
@@ -161,7 +161,7 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
                                 fill-rule="evenodd"
                               />
                             </svg>
-                          </div>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -288,7 +288,7 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
                           >
                             Postgres
                           </div>
-                          <div
+                          <span
                             class="<removed-for-snapshot-test>"
                           >
                             <div
@@ -296,7 +296,7 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
                             >
                               Alpha
                             </div>
-                          </div>
+                          </span>
                         </div>
                       </div>
                     </div>

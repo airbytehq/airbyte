@@ -1,0 +1,118 @@
+@use "scss/variables";
+@use "scss/colors";
+@use "scss/mixins";
+
+.container {
+  padding: variables.$spacing-sm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.connectorImg {
+  @include mixins.shadow;
+
+  width: 90px;
+  border-radius: 25px;
+  padding: variables.$spacing-xl;
+  margin-top: 55px;
+}
+
+.connectorName {
+  margin-top: variables.$spacing-md;
+  min-height: 28px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.connectorNameText {
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: variables.$spacing-lg;
+}
+
+.streamsHeader {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 variables.$spacing-sm 0 variables.$spacing-md;
+  margin-top: variables.$spacing-2xl;
+}
+
+.streamsHeading {
+  color: colors.$blue;
+  flex-grow: 1;
+}
+
+.downloadButton {
+  width: 100%;
+}
+
+.resetButton {
+  margin-top: variables.$spacing-sm;
+}
+
+.viewButton {
+  border: none;
+  width: 100%;
+  height: 34px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: variables.$border-radius-md;
+  padding: variables.$spacing-md;
+  display: flex;
+  align-items: center;
+  gap: variables.$spacing-sm;
+  overflow: hidden;
+}
+
+.unselectedViewButton {
+  background-color: transparent;
+  color: colors.$dark-blue;
+
+  &:hover {
+    background-color: colors.$grey-50;
+  }
+}
+
+.selectedViewButton {
+  background-color: colors.$dark-blue;
+  color: colors.$white;
+}
+
+.globalConfigButton {
+  margin-top: variables.$spacing-sm;
+}
+
+.streamList {
+  flex-grow: 1;
+  width: 100%;
+  margin: variables.$spacing-md 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.viewLabel {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  gap: variables.$spacing-sm;
+  align-items: center;
+}
+
+.errorIndicator {
+  flex: 0 0 auto;
+  margin-right: variables.$spacing-xs;
+}
+
+.streamViewText {
+  color: inherit;
+}
+
+.emptyStreamViewText {
+  color: colors.$grey-300;
+}

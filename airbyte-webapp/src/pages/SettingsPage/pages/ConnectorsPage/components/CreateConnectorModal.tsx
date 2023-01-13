@@ -8,12 +8,14 @@ import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 import { StatusIcon } from "components/ui/StatusIcon";
+import { Text } from "components/ui/Text";
 
+import { isCloudApp } from "utils/app";
 import { links } from "utils/links";
 
 import styles from "./CreateConnectorModal.module.scss";
 
-export interface IProps {
+export interface CreateConnectorModalProps {
   errorMessage?: string;
   onClose: () => void;
   onSubmit: (sourceDefinition: {
@@ -21,7 +23,7 @@ export interface IProps {
     documentationUrl: string;
     dockerImageTag: string;
     dockerRepository: string;
-  }) => void;
+  }) => Promise<void>;
 }
 
 const Content = styled.div`
@@ -34,12 +36,6 @@ const ButtonContent = styled.div`
   align-items: center;
   justify-content: space-between;
   min-height: 40px;
-`;
-
-const Label = styled.div`
-  font-weight: bold;
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  margin-bottom: 8px;
 `;
 
 const FieldContainer = styled.div`
@@ -84,13 +80,21 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 const validationSchema = yup.object().shape({
-  name: yup.string().required("form.empty.error"),
-  documentationUrl: yup.string().required("form.empty.error"),
-  dockerImageTag: yup.string().required("form.empty.error"),
-  dockerRepository: yup.string().required("form.empty.error"),
+  name: yup.string().trim().required("form.empty.error"),
+  documentationUrl: yup.string().trim().url("form.url.error").notRequired(),
+  dockerImageTag: yup.string().trim().required("form.empty.error"),
+  dockerRepository: yup.string().trim().required("form.empty.error"),
 });
 
-const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessage }) => {
+const Label: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  return (
+    <Text as="span" bold size="lg" className={styles.label}>
+      {children}
+    </Text>
+  );
+};
+
+const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, onSubmit, errorMessage }) => {
   const { formatMessage } = useIntl();
 
   return (
@@ -115,19 +119,17 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
             dockerImageTag: "",
             dockerRepository: "",
           }}
-          validateOnBlur
-          validateOnChange
           validationSchema={validationSchema}
-          onSubmit={(values, { setSubmitting }) => {
-            onSubmit(values);
+          onSubmit={async (values, { setSubmitting }) => {
+            await onSubmit(values);
             setSubmitting(false);
           }}
         >
-          {({ isSubmitting, dirty, isValid }) => (
+          {({ isSubmitting, isValid, dirty }) => (
             <Form>
               <FieldContainer>
                 <Field name="name">
-                  {({ field }: FieldProps<string>) => (
+                  {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       type="text"
@@ -139,13 +141,21 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                           <FormattedMessage id="admin.connectorName" />
                         </Label>
                       }
+                      error={meta.touched && !!meta.error}
+                      message={
+                        meta.touched && meta.error ? (
+                          <FormattedMessage id={meta.error} />
+                        ) : (
+                          <FormattedMessage id="form.empty.error" />
+                        )
+                      }
                     />
                   )}
                 </Field>
               </FieldContainer>
               <FieldContainer>
                 <Field name="dockerRepository">
-                  {({ field }: FieldProps<string>) => (
+                  {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       type="text"
@@ -155,8 +165,18 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                       })}
                       label={
                         <Label>
-                          <FormattedMessage id="admin.dockerRepository" />
+                          <FormattedMessage
+                            id={isCloudApp() ? "admin.dockerFullImageName" : "admin.dockerRepository"}
+                          />
                         </Label>
+                      }
+                      error={meta.touched && !!meta.error}
+                      message={
+                        meta.touched && meta.error ? (
+                          <FormattedMessage id={meta.error} />
+                        ) : (
+                          <FormattedMessage id="form.empty.error" />
+                        )
                       }
                     />
                   )}
@@ -164,7 +184,7 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
               </FieldContainer>
               <FieldContainer>
                 <Field name="dockerImageTag">
-                  {({ field }: FieldProps<string>) => (
+                  {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       type="text"
@@ -177,13 +197,21 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                           <FormattedMessage id="admin.dockerImageTag" />
                         </Label>
                       }
+                      error={!!meta.error && meta.touched}
+                      message={
+                        meta.touched && meta.error ? (
+                          <FormattedMessage id={meta.error} />
+                        ) : (
+                          <FormattedMessage id="form.empty.error" />
+                        )
+                      }
                     />
                   )}
                 </Field>
               </FieldContainer>
               <FieldContainer>
                 <Field name="documentationUrl">
-                  {({ field }: FieldProps<string>) => (
+                  {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
                       type="text"
@@ -196,6 +224,8 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                           <FormattedMessage id="admin.documentationUrl" />
                         </Label>
                       }
+                      error={meta.touched && !!meta.error}
+                      message={meta.error && <FormattedMessage id={meta.error} />}
                     />
                   )}
                 </Field>
@@ -210,10 +240,16 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
                   <div />
                 )}
                 <div>
-                  <Button className={styles.buttonWithMargin} onClick={onClose} type="button" variant="secondary">
+                  <Button
+                    className={styles.buttonWithMargin}
+                    onClick={onClose}
+                    type="button"
+                    variant="secondary"
+                    disabled={isSubmitting}
+                  >
                     <FormattedMessage id="form.cancel" />
                   </Button>
-                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid}>
+                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid} isLoading={isSubmitting}>
                     <FormattedMessage id="form.add" />
                   </Button>
                 </div>

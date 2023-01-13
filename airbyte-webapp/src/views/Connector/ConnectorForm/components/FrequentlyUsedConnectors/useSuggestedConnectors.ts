@@ -4,13 +4,16 @@ import { ConnectorDefinition } from "core/domain/connector";
 import { isDestinationDefinition } from "core/domain/connector/destination";
 import { isSourceDefinition } from "core/domain/connector/source";
 
-import { ConnectorCard } from "../../types";
+import { SuggestedConnector } from "../../types";
 
-interface Props {
+interface useSuggestedConnectorsProps {
   availableServices: ConnectorDefinition[];
   connectorIds: string[];
 }
-export const useSuggestedConnectors = ({ availableServices, connectorIds }: Props): ConnectorCard[] => {
+export const useSuggestedConnectors = ({
+  availableServices,
+  connectorIds,
+}: useSuggestedConnectorsProps): SuggestedConnector[] => {
   return useMemo(
     () =>
       availableServices
@@ -25,8 +28,7 @@ export const useSuggestedConnectors = ({ availableServices, connectorIds }: Prop
           if (isDestinationDefinition(service)) {
             const { destinationDefinitionId, name, icon, releaseStage } = service;
             return {
-              id: destinationDefinitionId,
-              destinationDefinitionId,
+              connectorDefinitionId: destinationDefinitionId,
               name,
               icon,
               releaseStage,
@@ -35,8 +37,7 @@ export const useSuggestedConnectors = ({ availableServices, connectorIds }: Prop
 
           const { sourceDefinitionId, name, icon, releaseStage } = service;
           return {
-            id: sourceDefinitionId,
-            sourceDefinitionId,
+            connectorDefinitionId: sourceDefinitionId,
             name,
             icon,
             releaseStage,

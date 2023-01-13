@@ -1,29 +1,33 @@
 import { Form, useFormikContext } from "formik";
 import React from "react";
 
-import { Spinner } from "components/ui/Spinner";
-
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
-import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import { useConnectorForm } from "./connectorFormContext";
-import styles from "./FormRoot.module.scss";
 import { ConnectorFormValues } from "./types";
 
 interface FormRootProps {
   formFields: FormBlock;
-  hasSuccess?: boolean;
+  connectionTestSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
   errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error | null;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
   onStopTestingConnector?: () => void;
-  selectedConnector: ConnectorDefinitionSpecification | undefined;
+  submitLabel?: string;
+  footerClassName?: string;
+  bodyClassName?: string;
+  /**
+   * Called in case the user cancels the form - if not provided, no cancel button is rendered
+   */
+  onCancel?: () => void;
+  /**
+   * Called in case the user reset the form - if not provided, no reset button is rendered
+   */
+  onReset?: () => void;
 }
 
 export const FormRoot: React.FC<FormRootProps> = ({
@@ -32,55 +36,52 @@ export const FormRoot: React.FC<FormRootProps> = ({
   formFields,
   successMessage,
   errorMessage,
-  fetchingConnectorError,
-  hasSuccess,
+  connectionTestSuccess,
   onStopTestingConnector,
-  selectedConnector,
+  submitLabel,
+  footerClassName,
+  bodyClassName,
+  onCancel,
+  onReset,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
-  const { resetConnectorForm, isLoadingSchema, selectedService, isEditMode, formType } = useConnectorForm();
+  const { resetConnectorForm, isEditMode, formType } = useConnectorForm();
 
   return (
     <Form>
-      <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
-      {isLoadingSchema && (
-        <div className={styles.loaderContainer}>
-          <Spinner />
-          <div className={styles.loadingMessage}>
-            <ShowLoadingMessage connector={selectedService?.name} />
-          </div>
-        </div>
-      )}
-
-      {isEditMode ? (
-        <EditControls
-          isTestConnectionInProgress={isTestConnectionInProgress}
-          onCancelTesting={onStopTestingConnector}
-          isSubmitting={isSubmitting || isTestConnectionInProgress}
-          errorMessage={errorMessage}
-          formType={formType}
-          onRetestClick={onRetest}
-          isValid={isValid}
-          dirty={dirty}
-          onCancelClick={() => {
-            resetConnectorForm();
-          }}
-          successMessage={successMessage}
-        />
-      ) : (
-        selectedConnector && (
+      <div className={bodyClassName}>
+        <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
+      </div>
+      <div className={footerClassName}>
+        {isEditMode ? (
+          <EditControls
+            isTestConnectionInProgress={isTestConnectionInProgress}
+            onCancelTesting={onStopTestingConnector}
+            isSubmitting={isSubmitting || isTestConnectionInProgress}
+            errorMessage={errorMessage}
+            formType={formType}
+            onRetestClick={onRetest}
+            isValid={isValid}
+            dirty={dirty}
+            onCancelClick={() => {
+              resetConnectorForm();
+            }}
+            successMessage={successMessage}
+          />
+        ) : (
           <CreateControls
             isTestConnectionInProgress={isTestConnectionInProgress}
             onCancelTesting={onStopTestingConnector}
             isSubmitting={isSubmitting || isTestConnectionInProgress}
             errorMessage={errorMessage}
             formType={formType}
-            isLoadSchema={isLoadingSchema}
-            fetchingConnectorError={fetchingConnectorError}
-            hasSuccess={hasSuccess}
+            submitLabel={submitLabel}
+            onCancel={onCancel}
+            onReset={onReset}
+            connectionTestSuccess={connectionTestSuccess}
           />
-        )
-      )}
+        )}
+      </div>
     </Form>
   );
 };

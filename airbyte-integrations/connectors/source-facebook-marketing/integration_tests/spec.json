@@ -331,6 +331,13 @@
         "order": 9,
         "exclusiveMinimum": 0,
         "type": "integer"
+      },
+      "action_breakdowns_allow_empty": {
+        "title": "Action Breakdowns Allow Empty",
+        "description": "Allows action_breakdowns to be an empty list",
+        "default": true,
+        "airbyte_hidden": true,
+        "type": "boolean"
       }
     },
     "required": ["account_id", "start_date", "access_token"]

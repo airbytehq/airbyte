@@ -1,0 +1,6 @@
+{
+  "client-id": "aaa-bbb-ccc",
+  "client-secret": "123",
+  "start_date": "999-01-01",
+  "tenant_endpoint": "Bad Location"
+}

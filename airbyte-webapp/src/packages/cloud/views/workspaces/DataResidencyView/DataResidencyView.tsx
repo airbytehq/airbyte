@@ -3,9 +3,10 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels } from "components";
+import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
 import { Button } from "components/ui/Button";
-import { DropDown } from "components/ui/DropDown";
 import { Text } from "components/ui/Text";
+import { ToastType } from "components/ui/Toast";
 
 import { Geography } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
@@ -44,8 +45,8 @@ export const DataResidencyView: React.FC = () => {
     } catch (e) {
       registerNotification({
         id: "workspaceSettings.defaultGeographyError",
-        title: formatMessage({ id: "connection.geographyUpdateError" }),
-        isError: true,
+        text: formatMessage({ id: "settings.defaultDataResidencyUpdateError" }),
+        type: ToastType.ERROR,
       });
     }
   };
@@ -80,7 +81,7 @@ export const DataResidencyView: React.FC = () => {
                       label={<FormattedMessage id="settings.defaultGeography" />}
                       message={
                         <FormattedMessage
-                          id="connection.geographyDescription"
+                          id="settings.geographyDescription"
                           values={{
                             lnk: (node: React.ReactNode) => (
                               <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
@@ -92,16 +93,10 @@ export const DataResidencyView: React.FC = () => {
                       }
                     />
                     <div className={styles.defaultGeographyDropdown}>
-                      <DropDown
-                        options={geographies.map((geography) => ({
-                          label: formatMessage({
-                            id: `connection.geography.${geography}`,
-                            defaultMessage: geography.toUpperCase(),
-                          }),
-                          value: geography,
-                        }))}
+                      <DataGeographyDropdown
+                        geographies={geographies}
                         value={field.value}
-                        onChange={(option) => form.setFieldValue("defaultGeography", option.value)}
+                        onChange={(geography) => form.setFieldValue("defaultGeography", geography)}
                       />
                     </div>
                   </div>

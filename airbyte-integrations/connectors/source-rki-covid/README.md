@@ -15,6 +15,14 @@ Germany:
     6. /germany/history/recovered/:days
     7. /germany/history/frozen-incidence/:days
     8. /germany/history/hospitalization/:days
+    9. /germany/states
+    10. /germany/states/age-groups
+    11. /germany/states/history/cases/:days
+    12. /germany/states/history/incidence/:days
+    13. /germany/states/history/frozen-incidence/:days
+    14. /germany/states/history/deaths/:days
+    15. /germany/states/history/recovered/:days
+    16. /germany/states/history/hospitalization/:days
 ```
 
 ### Prerequisites

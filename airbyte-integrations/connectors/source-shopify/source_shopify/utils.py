@@ -3,9 +3,10 @@
 #
 
 
+import enum
 from functools import wraps
 from time import sleep
-from typing import Dict
+from typing import Dict, List, Optional
 
 import requests
 
@@ -24,6 +25,7 @@ SCOPES_MAPPING = {
     "read_draft_orders": ["DraftOrders", "MetafieldDraftOrders"],
     "read_products": [
         "Products",
+        "ProductsGraphQl",
         "MetafieldProducts",
         "ProductImages",
         "MetafieldProductImages",
@@ -47,6 +49,19 @@ SCOPES_MAPPING = {
 }
 
 
+class UnrecognisedApiType(Exception):
+    pass
+
+
+class ApiTypeEnum(enum.Enum):
+    rest = "rest"
+    graphql = "graphql"
+
+    @classmethod
+    def api_types(cls) -> List:
+        return [api_type.value for api_type in ApiTypeEnum]
+
+
 class ShopifyRateLimiter:
     """
     Define timings for RateLimits. Adjust timings if needed.
@@ -63,9 +78,33 @@ class ShopifyRateLimiter:
     on_high_load: float = 5.0
 
     @staticmethod
-    def get_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
+    def _convert_load_to_time(load: Optional[float], threshold: float) -> float:
         """
-        To avoid reaching Shopify API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
+        Define wait_time based on load conditions.
+
+        :: load - represents how close we are to being throttled
+                - 0.5 is half way through our allowance
+                - 1 indicates that all of the allowance is used and the api will start rejecting calls
+        :: threshold - is the % cutoff for the rate_limits/load
+        :: wait_time - time to wait between each request in seconds
+
+        """
+        mid_load = threshold / 2  # average load based on threshold
+        if not load:
+            # when there is no rate_limits from header, use the `sleep_on_unknown_load`
+            wait_time = ShopifyRateLimiter.on_unknown_load
+        elif load >= threshold:
+            wait_time = ShopifyRateLimiter.on_high_load
+        elif load >= mid_load:
+            wait_time = ShopifyRateLimiter.on_mid_load
+        elif load < mid_load:
+            wait_time = ShopifyRateLimiter.on_low_load
+        return wait_time
+
+    @staticmethod
+    def get_rest_api_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
+        """
+        To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
         to determine the current rate limits and load and handle wait_time based on load %.
         Recomended wait_time between each request is 1 sec, we would handle this dynamicaly.
 
@@ -79,8 +118,6 @@ class ShopifyRateLimiter:
 
         More information: https://shopify.dev/api/usage/rate-limits
         """
-        # average load based on threshold
-        mid_load = threshold / 2
         # find the requests.Response inside args list
         for arg in args:
             response = arg if isinstance(arg, requests.models.Response) else None
@@ -92,34 +129,83 @@ class ShopifyRateLimiter:
             load = int(current_rate) / int(max_rate_limit)
         else:
             load = None
-        # define wait_time based on load conditions
-        if not load:
-            # when there is no rate_limits from header, use the `sleep_on_unknown_load`
-            wait_time = ShopifyRateLimiter.on_unknown_load
-        elif load >= threshold:
-            wait_time = ShopifyRateLimiter.on_high_load
-        elif load >= mid_load:
-            wait_time = ShopifyRateLimiter.on_mid_load
-        elif load < mid_load:
-            wait_time = ShopifyRateLimiter.on_low_load
+        wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold)
+        return wait_time
+
+    @staticmethod
+    def get_graphql_api_wait_time(*args, threshold: float = 0.9):
+        """
+        To avoid reaching Shopify Graphql API Rate Limits, use the extensions dict in the response.
+
+        :: threshold - is the % cutoff for the % load, if this cutoff is crossed,
+                        the connector waits `sleep_on_high_load` amount of time
+
+        Body example:
+        In this example we are 75% through our allowance.
+        This is calculated as: ((2000 - 500)/2000)*100= 75
+        {
+            "data": {...}
+            "extensions": {
+                "cost": {
+                    "requestedQueryCost": 72,
+                    "actualQueryCost": 3,
+                    "throttleStatus": {
+                        "maximumAvailable": 2000.0,
+                        "currentlyAvailable": 500,
+                        "restoreRate": 100.0
+                    }
+                }
+            }
+        }
+
+        More information: https://shopify.dev/api/usage/rate-limits
+        """
+        # find the requests.Response inside args list
+        for arg in args:
+            response = arg if isinstance(arg, requests.models.Response) else None
+
+        # Get the rate limit info from response
+        if response:
+            try:
+                throttle_status = response.json()["extensions"]["cost"]["throttleStatus"]
+                max_available = throttle_status["maximumAvailable"]
+                currently_available = throttle_status["currentlyAvailable"]
+                if max_available and currently_available:
+                    load = (int(max_available) - int(currently_available)) / int(max_available)
+            except KeyError:
+                load = None
+        else:
+            load = None
+
+        wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold)
         return wait_time
 
     @staticmethod
     def wait_time(wait_time: float):
         return sleep(wait_time)
 
-    def balance_rate_limit(threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
+    @staticmethod
+    def balance_rate_limit(
+        threshold: float = 0.9,
+        rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit",
+        api_type: ApiTypeEnum = ApiTypeEnum.rest.value,
+    ):
         """
         The decorator function.
-        Adjust `threshold` and `rate_limit_header` if needed.
+        Adjust `threshold`, `rate_limit_header` and `api_type` if needed.
         """
 
         def decorator(func):
             @wraps(func)
             def wrapper_balance_rate_limit(*args, **kwargs):
-                ShopifyRateLimiter.wait_time(
-                    ShopifyRateLimiter.get_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
-                )
+                if api_type == ApiTypeEnum.rest.value:
+                    ShopifyRateLimiter.wait_time(
+                        ShopifyRateLimiter.get_rest_api_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
+                    )
+                elif api_type == ApiTypeEnum.graphql.value:
+                    ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(*args, threshold=threshold))
+                else:
+                    raise UnrecognisedApiType(f"unrecognised api type: {api_type}. valid values are: {ApiTypeEnum.api_types()}")
                 return func(*args, **kwargs)
 
             return wrapper_balance_rate_limit
