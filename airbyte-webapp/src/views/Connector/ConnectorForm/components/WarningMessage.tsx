@@ -15,7 +15,7 @@ interface WarningMessageProps {
 
 export const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
   return (
-    <Callout variant="yellow" className={styles.calloutContainer}>
+    <Callout className={styles.calloutContainer}>
       <Text size="sm">
         <FormattedMessage id={`connector.releaseStage.${stage}.description`} />{" "}
         <FormattedMessage
