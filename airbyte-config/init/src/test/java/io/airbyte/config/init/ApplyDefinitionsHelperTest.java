@@ -102,7 +102,6 @@ class ApplyDefinitionsHelperTest {
 
     verify(configRepository).writeStandardSourceDefinition(SOURCE_DEF1);
     verify(configRepository).writeStandardDestinationDefinition(DEST_DEF1);
-    verify(definitionsProvider).loadDefinitions();
     verify(definitionsProvider).getDestinationDefinitions();
     verify(definitionsProvider).getSourceDefinitions();
     verifyNoMoreInteractions(configRepository);
@@ -121,7 +120,6 @@ class ApplyDefinitionsHelperTest {
 
     verify(configRepository).writeStandardSourceDefinition(SOURCE_DEF1);
     verify(configRepository).writeStandardDestinationDefinition(DEST_DEF1);
-    verify(definitionsProvider).loadDefinitions();
     verify(definitionsProvider).getDestinationDefinitions();
     verify(definitionsProvider).getSourceDefinitions();
     verifyNoMoreInteractions(configRepository);
@@ -135,7 +133,6 @@ class ApplyDefinitionsHelperTest {
 
     applyDefinitionsHelper.apply(true);
 
-    verify(definitionsProvider).loadDefinitions();
     verify(definitionsProvider).getDestinationDefinitions();
     verify(definitionsProvider).getSourceDefinitions();
     verifyNoMoreInteractions(configRepository);
@@ -150,7 +147,6 @@ class ApplyDefinitionsHelperTest {
     applyDefinitionsHelper.apply();
 
     verify(configRepository).seedActorDefinitions(List.of(SOURCE_DEF1), List.of(DEST_DEF1));
-    verify(definitionsProvider).loadDefinitions();
     verify(definitionsProvider).getDestinationDefinitions();
     verify(definitionsProvider).getSourceDefinitions();
     verifyNoMoreInteractions(configRepository);

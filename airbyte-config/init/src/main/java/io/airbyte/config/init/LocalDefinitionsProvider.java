@@ -48,11 +48,11 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
     this.seedResourceClass = seedResourceClass;
 
     // TODO remove this call once dependency injection framework manages object creation
-    loadDefinitions();
+    initialize();
   }
 
   // TODO will be called automatically by the dependency injection framework on object creation
-  public void loadDefinitions() {
+  public void initialize() {
     try {
       this.sourceDefinitions =
           parseDefinitions(this.seedResourceClass, SeedType.STANDARD_SOURCE_DEFINITION.getResourcePath(), SeedType.SOURCE_SPEC.getResourcePath(),
