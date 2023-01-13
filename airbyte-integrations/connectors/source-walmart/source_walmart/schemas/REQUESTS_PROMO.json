@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Partner ID": {
+      "type": ["null", "string"]
+    },
+    "SKU": {
+      "type": ["null", "string"]
+    },
+    "Item ID": {
+      "type": ["null", "string"]
+    },
+    "Product Name": {
+      "type": ["null", "string"]
+    },
+    "Product Category": {
+      "type": ["null", "string"]
+    },
+    "Promo ID": {
+      "type": ["null", "string"]
+    },
+    "Promo Effective Date": {
+      "type": ["null", "string"]
+    },
+    "Promo Expiration Date": {
+      "type": ["null", "string"]
+    },
+    "Current Price": {
+      "type": ["null", "string"]
+    },
+    "Current Price Currency": {
+      "type": ["null", "string"]
+    },
+    "Comparison Price": {
+      "type": ["null", "string"]
+    },
+    "Comparison Price Currency": {
+      "type": ["null", "string"]
+    },
+    "Promo Type": {
+      "type": ["null", "string"]
+    },
+    "Promo Status": {
+      "type": ["null", "string"]
+    }
+  }
+}
