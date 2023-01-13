@@ -14,10 +14,12 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This destination silently receives records.
  */
+@Slf4j
 public class SilentDestination extends BaseConnector implements Destination {
 
   @Override
@@ -45,6 +47,7 @@ public class SilentDestination extends BaseConnector implements Destination {
 
     @Override
     public void accept(final AirbyteMessage message) {
+
       if (message.getType() == Type.STATE) {
         outputRecordCollector.accept(message);
       }

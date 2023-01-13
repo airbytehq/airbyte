@@ -13,7 +13,7 @@ import java.util.Optional;
 /**
  * Empty Airbyte Destination. Does nothing with messages. Intended for performance testing.
  */
-public class EmptyAirbyteDestination implements AirbyteDestination {
+public class   EmptyAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception {
