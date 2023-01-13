@@ -30,6 +30,7 @@ import io.airbyte.integrations.source.relationaldb.InvalidCursorInfoUtil.Invalid
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
+import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
@@ -87,6 +88,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
+      ApmTraceUtils.addExceptionToTrace(ex);
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(),
           ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
@@ -94,6 +96,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           .withStatus(Status.FAILED)
           .withMessage(message);
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)

@@ -21,6 +21,7 @@ dependencies {
     implementation libs.jackson.annotations
     implementation libs.connectors.testcontainers
     implementation libs.connectors.testcontainers.jdbc
+    implementation libs.bundles.datadog
 
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
 
