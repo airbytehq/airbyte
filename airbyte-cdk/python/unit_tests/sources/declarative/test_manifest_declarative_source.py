@@ -9,7 +9,6 @@ import sys
 
 import pytest
 import yaml
-
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from jsonschema.exceptions import ValidationError
@@ -87,7 +86,11 @@ class TestManifestDeclarativeSource:
                             "page_size": 10,
                             "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
                             "page_token_option": {"inject_into": "path"},
-                            "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": 10},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
                         },
                         "requester": {
                             "path": "/v3/marketing/lists",
@@ -110,7 +113,11 @@ class TestManifestDeclarativeSource:
                             "page_size": 10,
                             "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
                             "page_token_option": {"inject_into": "path"},
-                            "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": 10},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
                         },
                         "requester": {
                             "type": "CustomRequester",
@@ -127,13 +134,12 @@ class TestManifestDeclarativeSource:
         source = ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
 
         check_stream = source.connection_checker
-        check_stream.check_connection(source, logging.getLogger(''), {})
+        check_stream.check_connection(source, logging.getLogger(""), {})
 
         streams = source.streams({})
         assert len(streams) == 2
         assert isinstance(streams[0], DeclarativeStream)
         assert isinstance(streams[1], DeclarativeStream)
-
 
     @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
     def test_manifest_with_spec(self, construct_using_pydantic_models):
