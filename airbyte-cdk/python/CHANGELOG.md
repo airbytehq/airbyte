@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.20.1
+Handle edge cases for CheckStream - checking connection to empty stream, and checking connection to substream with no parent records
+
 ## 0.20.0
 Low-Code: Refactor low-code to use Pydantic model based manifest parsing and component creation
 
