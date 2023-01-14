@@ -31,7 +31,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
   private CSVPrinter csvPrinter;
   private CSVFormat csvFormat;
 
-  protected CsvSerializedBuffer(final BufferStorage bufferStorage,
+  public CsvSerializedBuffer(final BufferStorage bufferStorage,
                                 final CsvSheetGenerator csvSheetGenerator,
                                 final boolean compression)
       throws Exception {

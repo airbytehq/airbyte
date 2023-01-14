@@ -5,13 +5,17 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import static io.airbyte.integrations.destination.snowflake.SnowflakeS3StagingDestination.isPurgeStagingData;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.WriteChannel;
+import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -29,6 +33,9 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
@@ -83,12 +90,19 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
   }
 
   private static void attemptWriteAndDeleteGcsObject(final GcsConfig gcsConfig, final String outputTableName) throws IOException {
-    final var storage = getStorageClient(gcsConfig);
-    final var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
-    final var blobInfo = BlobInfo.newBuilder(blobId).build();
+    final Storage storageClient = getStorageClient(gcsConfig);
+    final BlobId blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
+    final BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
 
-    storage.create(blobInfo, "".getBytes(StandardCharsets.UTF_8));
-    storage.delete(blobId);
+    storageClient.create(blobInfo);
+
+    try (WriteChannel writer = storageClient.writer(blobInfo)) {
+      // Try to write a dummy message to make sure user has all required permissions
+      final byte[] content = "Hello, World!".getBytes(UTF_8);
+      writer.write(ByteBuffer.wrap(content, 0, content.length));
+    } finally {
+      storageClient.delete(blobId);
+    }
   }
 
   public static Storage getStorageClient(final GcsConfig gcsConfig) throws IOException {
