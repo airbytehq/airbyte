@@ -4,13 +4,13 @@
 
 import json
 import logging
+import traceback
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, Optional, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
-from fastapi import Body, HTTPException
-from jsonschema import ValidationError
+from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
@@ -22,11 +22,18 @@ from connector_builder.generated.models.stream_read_slices import StreamReadSlic
 from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
-from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
+from connector_builder.impl.adapter import CdkAdapter
+from fastapi import Body, HTTPException
+from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
     logger = logging.getLogger("airbyte.connector-builder")
+
+    def __init__(self, adapter_cls: Callable[[Dict[str, Any]], CdkAdapter], max_record_limit: int = 1000):
+        self.adapter_cls = adapter_cls
+        self.max_record_limit = max_record_limit
+        super().__init__()
 
     async def get_manifest_template(self) -> str:
         return """version: "0.1.0"
@@ -105,15 +112,24 @@ spec:
         Using the provided manifest and config, invokes a sync for the specified stream and returns groups of Airbyte messages
         that are produced during the read operation
         :param stream_read_request_body: Input parameters to trigger the read operation for a stream
+        :param limit: The maximum number of records requested by the client (must be within the range [1, self.max_record_limit])
         :return: Airbyte record messages produced by the sync grouped by slice and page
         """
         adapter = self._create_low_code_adapter(manifest=stream_read_request_body.manifest)
+        schema_inferrer = SchemaInferrer()
+
+        if stream_read_request_body.record_limit is None:
+            record_limit = self.max_record_limit
+        else:
+            record_limit = min(stream_read_request_body.record_limit, self.max_record_limit)
 
         single_slice = StreamReadSlices(pages=[])
         log_messages = []
         try:
             for message_group in self._get_message_groups(
-                    adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config)
+                    adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config),
+                    schema_inferrer,
+                    record_limit,
             ):
                 if isinstance(message_group, AirbyteLogMessage):
                     log_messages.append({"message": message_group.message})
@@ -121,15 +137,18 @@ spec:
                     single_slice.pages.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {error.args[0]}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Could not perform read with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}",
+            )
 
-        return StreamRead(logs=log_messages, slices=[single_slice])
+        return StreamRead(logs=log_messages, slices=[single_slice], inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream))
 
-    def _get_message_groups(self, messages: Iterable[AirbyteMessage]) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
+    def _get_message_groups(self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
         and record messages belong to the prior request log message and when we encounter another request, append the latest
-        message group.
+        message group, until <limit> records have been read.
 
         Messages received from the CDK read operation will always arrive in the following order:
         {type: LOG, log: {message: "request: ..."}}
@@ -145,7 +164,8 @@ spec:
         current_records = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
-        for message in messages:
+
+        while len(current_records) < limit and (message := next(messages, None)):
             if first_page and message.type == Type.LOG and message.log.message.startswith("request:"):
                 first_page = False
                 request = self._create_request_from_log_message(message.log)
@@ -162,6 +182,7 @@ spec:
                 yield message.log
             elif message.type == Type.RECORD:
                 current_records.append(message.record.data)
+                schema_inferrer.accumulate(message.record)
         else:
             if not current_page_request or not current_page_response:
                 raise ValueError("Every message grouping should have at least one request and response")
@@ -201,10 +222,16 @@ spec:
             self.logger.warning(f"Failed to parse log message into response object with error: {error}")
             return None
 
-    @staticmethod
-    def _create_low_code_adapter(manifest: Dict[str, Any]) -> LowCodeSourceAdapter:
+    def _create_low_code_adapter(self, manifest: Dict[str, Any]) -> CdkAdapter:
         try:
-            return LowCodeSourceAdapter(manifest=manifest)
+            return self.adapter_cls(manifest=manifest)
         except ValidationError as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid connector manifest with error: {error.message} - {DefaultApiImpl._get_stacktrace_as_string(error)}",
+            )
+
+    @staticmethod
+    def _get_stacktrace_as_string(error) -> str:
+        return "".join(traceback.TracebackException.from_exception(error).format())

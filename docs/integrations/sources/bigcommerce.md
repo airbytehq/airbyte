@@ -19,6 +19,9 @@ This Source is capable of syncing the following core Streams:
 - [Products](https://developer.bigcommerce.com/api-reference/store-management/catalog/products/getproducts)
 - [Channels](https://developer.bigcommerce.com/api-reference/d2298071793d6-get-all-channels)
 - [Store](https://developer.bigcommerce.com/api-reference/bb1daaaeccae0-get-store-information)
+- [OrderProducts](https://developer.bigcommerce.com/api-reference/3b4dfef625708-list-order-products)
+- [Brands](https://developer.bigcommerce.com/api-reference/c2610608c20c8-get-all-brands)
+- [Categories](https://developer.bigcommerce.com/api-reference/9cc3a53863922-get-all-categories)
 
 ### Data type mapping
 
@@ -53,7 +56,10 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 0.1.10  | 2022-12-16 | [20518](https://github.com/airbytehq/airbyte/pull/20518) | Add brands and categories streams                           |
+| 0.1.9   | 2022-12-15 | [20540](https://github.com/airbytehq/airbyte/pull/20540) | Rebuild on CDK 0.15.0                                       |
+| 0.1.8   | 2022-12-15 | [20090](https://github.com/airbytehq/airbyte/pull/20090) | Add order_products stream                                   |
 | 0.1.7   | 2022-09-13 | [16647](https://github.com/airbytehq/airbyte/pull/16647) | Add channel and store stream goes beyond                    |
 | 0.1.6   | 2022-07-27 | [14940](https://github.com/airbytehq/airbyte/pull/14940) | Fix infinite loop when the page stream goes beyond one page |
 | 0.1.5   | 2022-01-31 | [9935](https://github.com/airbytehq/airbyte/pull/9935)   | Correct date-time columns for `orders` (v2 stream)          |

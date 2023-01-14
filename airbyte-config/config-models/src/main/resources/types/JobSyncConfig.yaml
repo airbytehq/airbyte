@@ -77,3 +77,7 @@ properties:
   isDestinationCustomConnector:
     description: determine if the destination running image is a custom connector.
     type: boolean
+  workspaceId:
+    description: The id of the workspace associated with the sync
+    type: string
+    format: uuid

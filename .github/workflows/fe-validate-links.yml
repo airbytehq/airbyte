@@ -19,10 +19,6 @@ jobs:
           distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
-
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/

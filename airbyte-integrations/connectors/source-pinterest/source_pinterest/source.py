@@ -15,6 +15,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .utils import analytics_columns, to_datetime_str
 
@@ -29,6 +30,7 @@ class PinterestStream(HttpStream, ABC):
     data_fields = ["items"]
     raise_on_http_errors = True
     max_rate_limit_exceeded = False
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])
@@ -128,10 +130,12 @@ class BoardSectionPins(PinterestSubStream, PinterestStream):
 
 class IncrementalPinterestStream(PinterestStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field, self.start_date.format("YYYY-MM-DD"))
-        current_state = current_stream_state.get(self.cursor_field, self.start_date.format("YYYY-MM-DD"))
+        default_value = self.start_date.format("YYYY-MM-DD")
+        latest_state = latest_record.get(self.cursor_field, default_value)
+        current_state = current_stream_state.get(self.cursor_field, default_value)
+        latest_state_is_numeric = isinstance(latest_state, int) or isinstance(latest_state, float)
 
-        if isinstance(latest_state, int) and isinstance(current_state, str):
+        if latest_state_is_numeric and isinstance(current_state, str):
             current_state = datetime.strptime(current_state, "%Y-%m-%d").timestamp()
 
         return {self.cursor_field: max(latest_state, current_state)}

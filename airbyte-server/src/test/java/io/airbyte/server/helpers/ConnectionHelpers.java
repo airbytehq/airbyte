@@ -20,11 +20,13 @@ import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.DestinationSnippetRead;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SchemaChange;
 import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceSnippetRead;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
 import io.airbyte.commons.enums.Enums;
@@ -54,6 +56,8 @@ public class ConnectionHelpers {
   private static final String STREAM_NAME_BASE = "users-data";
   private static final String STREAM_NAME = STREAM_NAME_BASE + "0";
   public static final String FIELD_NAME = "id";
+
+  public static final String SECOND_FIELD_NAME = "id2";
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
   private static final String BASIC_SCHEDULE_DATA_TIME_UNITS = "days";
@@ -262,10 +266,18 @@ public class ConnectionHelpers {
     final WebBackendConnectionListItem connectionListItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
         .name(standardSync.getName())
-        .sourceId(standardSync.getSourceId())
-        .destinationId(standardSync.getDestinationId())
-        .source(source)
-        .destination(destination)
+        .source(new SourceSnippetRead()
+            .icon(source.getIcon())
+            .name(source.getName())
+            .sourceName(source.getSourceName())
+            .sourceDefinitionId(source.getSourceDefinitionId())
+            .sourceId(source.getSourceId()))
+        .destination(new DestinationSnippetRead()
+            .icon(destination.getIcon())
+            .name(destination.getName())
+            .destinationName(destination.getDestinationName())
+            .destinationDefinitionId(destination.getDestinationDefinitionId())
+            .destinationId(destination.getDestinationId()))
         .status(ApiPojoConverters.toApiStatus(standardSync.getStatus()))
         .isSyncing(isSyncing)
         .latestSyncJobCreatedAt(latestSyncJobCreatedAt)
@@ -284,7 +296,7 @@ public class ConnectionHelpers {
   public static JsonNode generateJsonSchemaWithTwoFields() {
     return CatalogHelpers.fieldsToJsonSchema(
         Field.of(FIELD_NAME, JsonSchemaType.STRING),
-        Field.of(FIELD_NAME + "2", JsonSchemaType.STRING));
+        Field.of(SECOND_FIELD_NAME, JsonSchemaType.STRING));
   }
 
   public static ConfiguredAirbyteCatalog generateBasicConfiguredAirbyteCatalog() {
