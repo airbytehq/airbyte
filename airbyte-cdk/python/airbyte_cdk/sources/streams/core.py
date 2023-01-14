@@ -126,7 +126,7 @@ class Stream(ABC):
         if self.namespace:
             stream.namespace = self.namespace
 
-        if self.suggested != None:
+        if self.suggested is not None:
             stream.suggested = self.suggested
 
         if self.supports_incremental:
@@ -211,7 +211,7 @@ class Stream(ABC):
     @property
     def suggested(self) -> Optional[bool]:
         """
-        When used with a catalog which has suggesting_streams=True, determine if this stream should be default-enabled for new connections
+        When used with a catalog which has suggestingStreams=True, determine if this stream should be default-enabled for new connections
         """
         return True
 

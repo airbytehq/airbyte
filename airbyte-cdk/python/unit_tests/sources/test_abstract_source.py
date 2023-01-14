@@ -195,7 +195,7 @@ def test_discover(mocker):
     mocker.patch.object(stream1, "as_airbyte_stream", return_value=airbyte_stream1)
     mocker.patch.object(stream2, "as_airbyte_stream", return_value=airbyte_stream2)
 
-    expected = AirbyteCatalog(streams=[airbyte_stream1, airbyte_stream2])
+    expected = AirbyteCatalog(streams=[airbyte_stream1, airbyte_stream2], suggestingStreams=True)
     src = MockSource(check_lambda=lambda: (True, None), streams=[stream1, stream2])
 
     assert expected == src.discover(logger, {})

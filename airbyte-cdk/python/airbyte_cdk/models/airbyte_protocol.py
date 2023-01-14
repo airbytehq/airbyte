@@ -283,7 +283,7 @@ class AirbyteStream(BaseModel):
     )
     suggested: Optional[bool] = Field(
         None,
-        description="Should this stream be enabled by default?  This property is considered when the catalog suggesting this stream has suggesting_streams=true",
+        description="Should this stream be enabled by default?  This property is considered when the catalog suggesting this stream has suggestingStreams=true",
     )
 
 
@@ -362,7 +362,7 @@ class AirbyteCatalog(BaseModel):
         extra = Extra.allow
 
     streams: List[AirbyteStream]
-    suggesting_streams: Optional[bool] = Field(
+    suggestingStreams: Optional[bool] = Field(
         None,
         description="Does this catalog suggest a subset of streams to be selected when discovered?  If false or null, the previous behavior of pre-selecting all streams should be used.",
     )
