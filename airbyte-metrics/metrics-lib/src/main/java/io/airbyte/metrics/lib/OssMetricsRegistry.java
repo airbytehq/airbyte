@@ -166,6 +166,8 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   private final String metricName;
   private final String metricDescription;
 
+  // added this field to declare metric attributes, but we never read them.
+  @SuppressWarnings("FieldCanBeLocal")
   private final List<String> metricTags;
 
   OssMetricsRegistry(final MetricEmittingApp application,
