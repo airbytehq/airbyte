@@ -5,12 +5,13 @@
 import json
 import logging
 import traceback
-from json import JSONDecodeError
-from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
-from urllib.parse import parse_qs, urljoin, urlparse
-
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
+from fastapi import Body, HTTPException
+from json import JSONDecodeError
+from jsonschema import ValidationError
+from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
+from urllib.parse import parse_qs, urljoin, urlparse
 
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
@@ -23,8 +24,6 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.adapter import CdkAdapter
-from fastapi import Body, HTTPException
-from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
@@ -104,6 +103,8 @@ spec:
                     )
                 )
         except Exception as error:
+            self.logger.error(
+                f"Could not list streams with with error: {error.args[0]} - {DefaultApiImpl._get_stacktrace_as_string(error)}")
             raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {error.args[0]}")
         return StreamsListRead(streams=stream_list_read)
 
@@ -137,14 +138,17 @@ spec:
                     single_slice.pages.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
+            self.logger.error(f"Could not perform read with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Could not perform read with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}",
+                detail=f"Could not perform read with with error: {error.args[0]}",
             )
 
-        return StreamRead(logs=log_messages, slices=[single_slice], inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream))
+        return StreamRead(logs=log_messages, slices=[single_slice],
+                          inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream))
 
-    def _get_message_groups(self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
+    def _get_message_groups(self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int) -> Iterable[
+        Union[StreamReadPages, AirbyteLogMessage]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
         and record messages belong to the prior request log message and when we encounter another request, append the latest
@@ -227,9 +231,10 @@ spec:
             return self.adapter_cls(manifest=manifest)
         except ValidationError as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
+            self.logger.error(f"Invalid connector manifest with error: {error.message} - {DefaultApiImpl._get_stacktrace_as_string(error)}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid connector manifest with error: {error.message} - {DefaultApiImpl._get_stacktrace_as_string(error)}",
+                detail=f"Invalid connector manifest with error: {error.message}",
             )
 
     @staticmethod
