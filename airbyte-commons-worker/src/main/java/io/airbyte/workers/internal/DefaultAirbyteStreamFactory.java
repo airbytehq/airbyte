@@ -11,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteLogMessage;
@@ -88,7 +89,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
-    final var metricClient = MetricClientFactory.getMetricClient();
+
     return bufferedReader
         .lines()
         .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.getBytes(StandardCharsets.UTF_8).length))
@@ -114,8 +115,27 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .flatMap(this::toAirbyteMessage)
         .filter(this::filterLog);
   }
+  final MetricClient metricClient = MetricClientFactory.getMetricClient();
 
   protected Stream<JsonNode> parseJson(final String line) {
+    final int lineSize = line.getBytes(StandardCharsets.UTF_8).length;
+    metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, lineSize);
+
+    if (exceptionClass.isPresent()) {
+      if (lineSize > maxMemory * MAX_SIZE_RATIO) {
+        try {
+          final String errorMessage = String.format(
+                  "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
+                  DateTime.now(),
+                  humanReadableByteCountSI(maxMemory),
+                  humanReadableByteCountSI(lineSize));
+          throw exceptionClass.get().getConstructor(String.class).newInstance(errorMessage);
+        } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
     final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
     if (jsonLine.isEmpty()) {
       // we log as info all the lines that are not valid json
