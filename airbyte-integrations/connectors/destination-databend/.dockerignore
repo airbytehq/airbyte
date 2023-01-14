@@ -1,0 +1,5 @@
+*
+!Dockerfile
+!main.py
+!destination_databend
+!setup.py
