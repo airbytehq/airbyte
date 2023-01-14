@@ -10,7 +10,11 @@ import { CodeEditor } from "components/ui/CodeEditor";
 
 import { ConnectorManifest } from "core/request/ConnectorManifest";
 // import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import {
+  useConnectorBuilderFormState,
+  useConnectorBuilderTestState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "../DownloadYamlButton";
@@ -24,7 +28,7 @@ interface YamlEditorProps {
 
 export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
   const { setValues } = useFormikContext();
-  // const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
   const {
     yamlManifest,
@@ -35,6 +39,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
     setYamlIsValid,
     setJsonManifest,
   } = useConnectorBuilderFormState();
+  const { streamListErrorMessage } = useConnectorBuilderTestState();
   const [yamlValue, setYamlValue] = useState(yamlManifest);
 
   // debounce the setJsonManifest calls so that it doesnt result in a network call for every keystroke
@@ -86,10 +91,20 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
   const handleToggleYamlEditor = () => {
     if (yamlIsDirty) {
       try {
-        setValues(convertToBuilderFormValues(jsonManifest, builderFormValues));
+        setValues(convertToBuilderFormValues(jsonManifest, builderFormValues, streamListErrorMessage));
         toggleYamlEditor();
       } catch (e) {
-        alert(e.message);
+        openConfirmationModal({
+          text: "connectorBuilder.toggleModal.text",
+          textValues: { error: e.message as string },
+          title: "connectorBuilder.toggleModal.title",
+          submitButtonText: "connectorBuilder.toggleModal.submitButton",
+          onSubmit: () => {
+            setYamlIsValid(true);
+            toggleYamlEditor();
+            closeConfirmationModal();
+          },
+        });
       }
     } else {
       setYamlIsValid(true);

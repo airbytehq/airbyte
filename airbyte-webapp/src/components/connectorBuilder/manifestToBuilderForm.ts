@@ -35,8 +35,30 @@ import { formatJson } from "./utils";
 
 export const convertToBuilderFormValues = (
   manifest: ConnectorManifest,
-  currentBuilderFormValues: BuilderFormValues
+  currentBuilderFormValues: BuilderFormValues,
+  streamListErrorMessage: string | undefined
 ) => {
+  // TODO: replace these checks with a call to the soon-to-be /manifest/resolve endpoint, to resolve refs, options, and validate the manifest against the schema
+  if (streamListErrorMessage) {
+    let errorMessage = streamListErrorMessage;
+    console.log(errorMessage[0]);
+    if (errorMessage[0] === '"') {
+      errorMessage = errorMessage.substring(1, errorMessage.length);
+    }
+    if (errorMessage.slice(-1) === '"') {
+      errorMessage = errorMessage.substring(0, errorMessage.length - 1);
+    }
+    const tracebackIndex = errorMessage.indexOf(" - Traceback");
+    if (tracebackIndex >= 0) {
+      errorMessage = errorMessage.substring(0, tracebackIndex);
+    }
+    throw new ManifestCompatibilityError(undefined, errorMessage.trim());
+  }
+  const manifestString = JSON.stringify(manifest);
+  if (manifestString.includes("*ref") || manifestString.includes("$ref") || manifestString.includes("$options")) {
+    throw new ManifestCompatibilityError(undefined, "Manifest contains refs or $options, which are unsupported");
+  }
+
   const builderFormValues = DEFAULT_BUILDER_FORM_VALUES;
   builderFormValues.global.connectorName = currentBuilderFormValues.global.connectorName;
 
@@ -353,7 +375,7 @@ export class ManifestCompatibilityError extends Error {
   __type = "connectorBuilder.manifestCompatibility";
 
   constructor(public streamName: string | undefined, public message: string) {
-    const errorMessage = `${streamName ? `Stream ${streamName}:` : ""} ${message}`;
+    const errorMessage = `${streamName ? `Stream ${streamName}: ` : ""}${message}`;
     super(errorMessage);
     this.message = errorMessage;
   }
