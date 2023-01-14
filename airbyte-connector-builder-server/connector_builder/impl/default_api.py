@@ -5,14 +5,12 @@
 import json
 import logging
 import traceback
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
-from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
-from fastapi import Body, HTTPException
 from json import JSONDecodeError
-from jsonschema import ValidationError
 from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
+from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
@@ -24,6 +22,8 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.adapter import CdkAdapter
+from fastapi import Body, HTTPException
+from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
