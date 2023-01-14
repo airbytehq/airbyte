@@ -509,6 +509,8 @@
   icon: faker.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts: []
 - name: Fastbill
   sourceDefinitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
   dockerRepository: airbyte/source-fastbill

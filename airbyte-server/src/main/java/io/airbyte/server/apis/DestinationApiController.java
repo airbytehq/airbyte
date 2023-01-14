@@ -16,12 +16,15 @@ import io.airbyte.api.model.generated.DestinationUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import lombok.AllArgsConstructor;
 
 @Controller("/api/v1/destinations")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 @AllArgsConstructor
 public class DestinationApiController implements DestinationApi {
 
