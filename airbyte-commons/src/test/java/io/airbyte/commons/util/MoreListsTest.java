@@ -23,7 +23,7 @@ class MoreListsTest {
 
   @Test
   void testGetOrNull() {
-    assertThrows(NullPointerException.class, MoreLists.getOrNull(null, 0));
+    assertThrows(NullPointerException.class, () -> MoreLists.getOrNull(null, 0));
     assertEquals(1, MoreLists.getOrNull(List.of(1, 2, 3), 0));
     assertEquals(2, MoreLists.getOrNull(List.of(1, 2, 3), 1));
     assertEquals(3, MoreLists.getOrNull(List.of(1, 2, 3), 2));
