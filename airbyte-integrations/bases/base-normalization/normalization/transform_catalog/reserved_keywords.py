@@ -127,7 +127,6 @@ REDSHIFT = {
     "BINARY",
     "BLANKSASNULL",
     "BOTH",
-    "BOOLEAN",
     "BYTEDICT",
     "BZIP2",
     "CASE",

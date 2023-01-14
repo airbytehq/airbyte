@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import Indicator from "components/Indicator";
 
-import { useGetConnectorsOutOfDate } from "hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 
 const Notification = styled(Indicator)`
   position: absolute;
@@ -12,7 +12,7 @@ const Notification = styled(Indicator)`
 `;
 
 export const NotificationIndicator: React.FC = () => {
-  const { hasNewVersions } = useGetConnectorsOutOfDate();
+  const { hasNewVersions } = useConnector();
 
   return hasNewVersions ? <Notification /> : null;
 };

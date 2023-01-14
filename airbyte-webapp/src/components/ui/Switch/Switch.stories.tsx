@@ -13,6 +13,6 @@ const Template: ComponentStory<typeof Switch> = (args) => <Switch {...args} />;
 export const SwitchControl = Template.bind({});
 SwitchControl.args = {
   checked: false,
-  size: "sm",
+  small: false,
   loading: false,
 };

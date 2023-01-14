@@ -1,16 +1,10 @@
 import { FeatureItem } from "./types";
 
-export const defaultOssFeatures = [
+/** The default feature set that OSS releases should use. */
+export const defaultFeatures = [
   FeatureItem.AllowCustomDBT,
   FeatureItem.AllowSync,
   FeatureItem.AllowUpdateConnectors,
   FeatureItem.AllowUploadCustomImage,
   FeatureItem.AllowSyncSubOneHourCronExpressions,
-];
-
-export const defaultCloudFeatures = [
-  FeatureItem.AllowOAuthConnector,
-  FeatureItem.AllowSync,
-  FeatureItem.AllowChangeDataGeographies,
-  FeatureItem.AllowDBTCloudIntegration,
 ];

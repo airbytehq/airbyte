@@ -20,27 +20,19 @@ const STYLES_BY_VARIANT: Readonly<Record<PillButtonVariant, string>> = {
 interface PillButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   active?: boolean;
   variant?: PillButtonVariant;
-  hasError?: boolean;
 }
 
-export const PillButton: React.FC<PillButtonProps> = ({
-  children,
-  active,
-  variant = "grey",
-  hasError = false,
-  ...buttonProps
-}) => {
+export const PillButton: React.FC<PillButtonProps> = ({ children, active, variant = "grey", ...buttonProps }) => {
   const buttonClassName = classNames(
     styles.button,
     {
       [styles.active]: active,
       [styles.disabled]: buttonProps.disabled,
     },
-    STYLES_BY_VARIANT[hasError ? "strong-red" : variant],
+    STYLES_BY_VARIANT[variant],
     buttonProps.className
   );
   const arrayChildren = Children.toArray(children);
-
   return (
     <button type="button" {...buttonProps} className={buttonClassName}>
       {Children.map(arrayChildren, (child, index) => (

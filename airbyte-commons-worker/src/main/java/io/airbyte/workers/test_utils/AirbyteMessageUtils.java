@@ -7,8 +7,6 @@ package io.airbyte.workers.test_utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
-import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteEstimateTraceMessage;
 import io.airbyte.protocol.models.AirbyteGlobalState;
@@ -20,7 +18,6 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
-import io.airbyte.protocol.models.Config;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -160,16 +157,6 @@ public class AirbyteMessageUtils {
     }
 
     return msg;
-  }
-
-  public static AirbyteMessage createConfigControlMessage(final Config config, final Double emittedAt) {
-    return new AirbyteMessage()
-        .withType(Type.CONTROL)
-        .withControl(new AirbyteControlMessage()
-            .withEmittedAt(emittedAt)
-            .withType(AirbyteControlMessage.Type.CONNECTOR_CONFIG)
-            .withConnectorConfig(new AirbyteControlConnectorConfigMessage()
-                .withConfig(config)));
   }
 
 }

@@ -1,35 +1,40 @@
 import {
   ConnectionStatus,
+  DestinationDefinitionRead,
   DestinationRead,
-  DestinationSnippetRead,
   JobStatus,
+  SourceDefinitionRead,
   SourceRead,
-  SourceSnippetRead,
   WebBackendConnectionListItem,
 } from "core/request/AirbyteClient";
 
 import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
-const getConnectorTypeName = (connectorSpec: DestinationSnippetRead | SourceSnippetRead) => {
+const getConnectorTypeName = (connectorSpec: DestinationRead | SourceRead) => {
   return "sourceName" in connectorSpec ? connectorSpec.sourceName : connectorSpec.destinationName;
-};
-
-const getConnectorTypeId = (connectorSpec: DestinationSnippetRead | SourceSnippetRead) => {
-  return "sourceId" in connectorSpec ? connectorSpec.sourceId : connectorSpec.destinationId;
 };
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
   S extends "source" | "destination",
-  SoD extends S extends "source" ? SourceRead : DestinationRead
->(entities: SoD[], connections: WebBackendConnectionListItem[], type: S): EntityTableDataItem[] {
+  SoD extends S extends "source" ? SourceRead : DestinationRead,
+  Def extends S extends "source" ? SourceDefinitionRead : DestinationDefinitionRead
+>(entities: SoD[], connections: WebBackendConnectionListItem[], definitions: Def[], type: S): EntityTableDataItem[] {
   const connectType = type === "source" ? "destination" : "source";
 
   const mappedEntities = entities.map((entityItem) => {
     const entitySoDId = entityItem[`${type}Id` as keyof SoD] as unknown as string;
     const entitySoDName = entityItem[`${type}Name` as keyof SoD] as unknown as string;
     const entityConnections = connections.filter(
-      (connectionItem) => getConnectorTypeId(connectionItem[type]) === entitySoDId
+      (connectionItem) => connectionItem[`${type}Id` as "sourceId" | "destinationId"] === entitySoDId
+    );
+
+    const definitionId = `${type}DefinitionId` as keyof Def;
+    const entityDefinitionId = entityItem[`${type}DefinitionId` as keyof SoD];
+
+    const definition = definitions.find(
+      // @ts-expect-error ignored during react-scripts update
+      (def) => def[definitionId] === entityDefinitionId
     );
 
     if (!entityConnections.length) {
@@ -38,7 +43,7 @@ export function getEntityTableData<
         entityName: entityItem.name,
         enabled: true,
         connectorName: entitySoDName,
-        connectorIcon: entityItem.icon,
+        connectorIcon: definition?.icon,
         lastSync: null,
         connectEntities: [],
       };
@@ -64,7 +69,7 @@ export function getEntityTableData<
       connectorName: entitySoDName,
       lastSync: sortBySync?.[0].latestSyncJobCreatedAt,
       connectEntities,
-      connectorIcon: entityItem.icon,
+      connectorIcon: definition?.icon,
     };
   });
 
@@ -114,10 +119,8 @@ export const getConnectionSyncStatus = (
       return ConnectionSyncStatus.ACTIVE;
 
     case JobStatus.failed:
-      return ConnectionSyncStatus.FAILED;
-
     case JobStatus.cancelled:
-      return ConnectionSyncStatus.CANCELLED;
+      return ConnectionSyncStatus.FAILED;
 
     case JobStatus.pending:
     case JobStatus.running:

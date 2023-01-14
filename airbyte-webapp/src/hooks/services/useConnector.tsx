@@ -6,7 +6,6 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { SourceService } from "core/domain/connector/SourceService";
-import { useGetOutOfDateConnectorsCount } from "services/connector/ConnectorDefinitions";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
@@ -17,11 +16,29 @@ import { useInitService } from "services/useInitService";
 
 import { CheckConnectionRead } from "../../core/request/AirbyteClient";
 
-export const useUpdateSourceDefinitions = () => {
+interface ConnectorService {
+  hasNewVersions: boolean;
+  hasNewSourceVersion: boolean;
+  hasNewDestinationVersion: boolean;
+  countNewSourceVersion: number;
+  countNewDestinationVersion: number;
+  updateAllSourceVersions: () => Promise<void>;
+  updateAllDestinationVersions: () => Promise<void>;
+}
+
+const useConnector = (): ConnectorService => {
   const { sourceDefinitions } = useSourceDefinitionList();
+  const { destinationDefinitions } = useDestinationDefinitionList();
+
   const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
+  const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
 
   const newSourceDefinitions = useMemo(() => sourceDefinitions.filter(Connector.hasNewerVersion), [sourceDefinitions]);
+
+  const newDestinationDefinitions = useMemo(
+    () => destinationDefinitions.filter(Connector.hasNewerVersion),
+    [destinationDefinitions]
+  );
 
   const updateAllSourceVersions = async () => {
     await Promise.all(
@@ -34,18 +51,6 @@ export const useUpdateSourceDefinitions = () => {
     );
   };
 
-  return { updateAllSourceVersions };
-};
-
-export const useUpdateDestinationDefinitions = () => {
-  const { destinationDefinitions } = useDestinationDefinitionList();
-  const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
-
-  const newDestinationDefinitions = useMemo(
-    () => destinationDefinitions.filter(Connector.hasNewerVersion),
-    [destinationDefinitions]
-  );
-
   const updateAllDestinationVersions = async () => {
     await Promise.all(
       newDestinationDefinitions?.map((item) =>
@@ -57,23 +62,18 @@ export const useUpdateDestinationDefinitions = () => {
     );
   };
 
-  return { updateAllDestinationVersions };
-};
-
-export const useGetConnectorsOutOfDate = () => {
-  const outOfDateConnectors = useGetOutOfDateConnectorsCount();
-
-  const hasNewSourceVersion = outOfDateConnectors.sourceDefinitions > 0;
-  const hasNewDestinationVersion = outOfDateConnectors.destinationDefinitions > 0;
+  const hasNewSourceVersion = newSourceDefinitions.length > 0;
+  const hasNewDestinationVersion = newDestinationDefinitions.length > 0;
   const hasNewVersions = hasNewSourceVersion || hasNewDestinationVersion;
 
   return {
     hasNewVersions,
     hasNewSourceVersion,
     hasNewDestinationVersion,
-    countNewSourceVersion: outOfDateConnectors.sourceDefinitions,
-    countNewDestinationVersion: outOfDateConnectors.destinationDefinitions,
-    outOfDateConnectors,
+    updateAllSourceVersions,
+    updateAllDestinationVersions,
+    countNewSourceVersion: newSourceDefinitions.length,
+    countNewDestinationVersion: newDestinationDefinitions.length,
   };
 };
 
@@ -151,3 +151,5 @@ export const useCheckConnector = (formType: "source" | "destination") => {
     });
   });
 };
+
+export default useConnector;

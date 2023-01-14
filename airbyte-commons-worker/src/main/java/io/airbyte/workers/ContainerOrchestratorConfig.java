@@ -16,8 +16,6 @@ public record ContainerOrchestratorConfig(
                                           KubernetesClient kubernetesClient,
                                           String secretName,
                                           String secretMountPath,
-                                          String dataPlaneCredsSecretName,
-                                          String dataPlaneCredsSecretMountPath,
                                           String containerOrchestratorImage,
                                           String containerOrchestratorImagePullPolicy,
                                           String googleApplicationCredentials,

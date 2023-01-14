@@ -4,7 +4,6 @@
 
 package io.airbyte.config.init;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -28,9 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/**
- * Test suite for the {@link ApplyDefinitionsHelper} class.
- */
 class ApplyDefinitionsHelperTest {
 
   private static final UUID SOURCE_DEF_ID1 = UUID.randomUUID();
@@ -84,7 +80,7 @@ class ApplyDefinitionsHelperTest {
     definitionsProvider = mock(DefinitionsProvider.class);
     jobPersistence = mock(JobPersistence.class);
 
-    applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, Optional.of(definitionsProvider), jobPersistence);
+    applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, definitionsProvider, jobPersistence);
 
     // default calls to empty.
     when(configRepository.listStandardDestinationDefinitions(true)).thenReturn(Collections.emptyList());
@@ -171,12 +167,6 @@ class ApplyDefinitionsHelperTest {
     } else {
       verify(configRepository).seedActorDefinitions(List.of(SOURCE_DEF2), List.of(DEST_DEF1));
     }
-  }
-
-  @Test
-  void testMissingDefinitionsProvider() {
-    final ApplyDefinitionsHelper helper = new ApplyDefinitionsHelper(configRepository, Optional.empty(), jobPersistence);
-    assertDoesNotThrow(() -> helper.apply());
   }
 
 }

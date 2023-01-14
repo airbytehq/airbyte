@@ -18,19 +18,12 @@ interface CodeEditorProps {
 
 // Converts 3-character hex values into 6-character ones.
 // Required for custom monaco theme, because it fails when receiving 3-character hex values.
-// Only needed for non-dev mode, as that is when hex values get minified to 3 characters.
 function expandHexValue(input: string) {
   const match = /^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/.exec(input);
   if (match) {
     return `#${match[1].repeat(2)}${match[2].repeat(2)}${match[3].repeat(2)}`;
   }
   return input;
-}
-
-function cssCustomPropToHex(cssCustomProperty: string) {
-  const varName = cssCustomProperty.replace(/var\(|\)/g, "");
-  const bodyStyles = window.getComputedStyle(document.body);
-  return expandHexValue(bodyStyles.getPropertyValue(varName).trim());
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -48,14 +41,14 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       base: "vs-dark",
       inherit: true,
       rules: [
-        { token: "string", foreground: cssCustomPropToHex(styles.darkString) },
-        { token: "string.yaml", foreground: cssCustomPropToHex(styles.darkString) },
-        { token: "string.value.json", foreground: cssCustomPropToHex(styles.darkType) },
-        { token: "string.key.json", foreground: cssCustomPropToHex(styles.darkType) },
-        { token: "type", foreground: cssCustomPropToHex(styles.darkType) },
-        { token: "number", foreground: cssCustomPropToHex(styles.darkNumber) },
-        { token: "delimiter", foreground: cssCustomPropToHex(styles.darkDelimiter) },
-        { token: "keyword", foreground: cssCustomPropToHex(styles.darkKeyword) },
+        { token: "string", foreground: expandHexValue(styles.darkString) },
+        { token: "string.yaml", foreground: expandHexValue(styles.darkString) },
+        { token: "string.value.json", foreground: expandHexValue(styles.darkType) },
+        { token: "string.key.json", foreground: expandHexValue(styles.darkType) },
+        { token: "type", foreground: expandHexValue(styles.darkType) },
+        { token: "number", foreground: expandHexValue(styles.darkNumber) },
+        { token: "delimiter", foreground: expandHexValue(styles.darkDelimiter) },
+        { token: "keyword", foreground: expandHexValue(styles.darkKeyword) },
       ],
       colors: {
         "editor.background": "#00000000", // transparent, so that parent background is shown instead
@@ -66,19 +59,19 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       base: "vs",
       inherit: true,
       rules: [
-        { token: "string", foreground: cssCustomPropToHex(styles.lightString) },
-        { token: "string.yaml", foreground: cssCustomPropToHex(styles.lightString) },
-        { token: "string.value.json", foreground: cssCustomPropToHex(styles.lightString) },
-        { token: "string.key.json", foreground: cssCustomPropToHex(styles.lightType) },
-        { token: "type", foreground: cssCustomPropToHex(styles.lightType) },
-        { token: "number", foreground: cssCustomPropToHex(styles.lightNumber) },
-        { token: "delimiter", foreground: cssCustomPropToHex(styles.lightDelimiter) },
-        { token: "keyword", foreground: cssCustomPropToHex(styles.lightKeyword) },
+        { token: "string", foreground: expandHexValue(styles.lightString) },
+        { token: "string.yaml", foreground: expandHexValue(styles.lightString) },
+        { token: "string.value.json", foreground: expandHexValue(styles.lightString) },
+        { token: "string.key.json", foreground: expandHexValue(styles.lightType) },
+        { token: "type", foreground: expandHexValue(styles.lightType) },
+        { token: "number", foreground: expandHexValue(styles.lightNumber) },
+        { token: "delimiter", foreground: expandHexValue(styles.lightDelimiter) },
+        { token: "keyword", foreground: expandHexValue(styles.lightKeyword) },
       ],
       colors: {
         "editor.background": "#00000000", // transparent, so that parent background is shown instead
-        "editorLineNumber.foreground": cssCustomPropToHex(styles.lightLineNumber),
-        "editorLineNumber.activeForeground": cssCustomPropToHex(styles.lightLineNumberActive),
+        "editorLineNumber.foreground": expandHexValue(styles.lightLineNumber),
+        "editorLineNumber.activeForeground": expandHexValue(styles.lightLineNumberActive),
       },
     });
   };

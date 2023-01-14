@@ -148,16 +148,6 @@ public interface Configs {
    */
   String getVaultToken();
 
-  /**
-   * Defines thw aws_access_key configuration to use AWSSecretManager.
-   */
-  String getAwsAccessKey();
-
-  /**
-   * Defines aws_secret_access_key to use for AWSSecretManager.
-   */
-  String getAwsSecretAccessKey();
-
   // Database
 
   /**
@@ -672,12 +662,6 @@ public interface Configs {
   // Container Orchestrator
 
   /**
-   * Define if Airbyte should use the container orchestrator. Internal-use only. Should always be set
-   * to true - otherwise causes syncs to be run on workers instead.
-   */
-  boolean getContainerOrchestratorEnabled();
-
-  /**
    * Get the name of the container orchestrator secret. Internal-use only.
    */
   String getContainerOrchestratorSecretName();
@@ -740,10 +724,6 @@ public interface Configs {
 
   boolean getAutoDetectSchema();
 
-  boolean getApplyFieldSelection();
-
-  String getFieldSelectionWorkspaces();
-
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
@@ -768,8 +748,7 @@ public interface Configs {
     NONE,
     TESTING_CONFIG_DB_TABLE,
     GOOGLE_SECRET_MANAGER,
-    VAULT,
-    AWS_SECRET_MANAGER
+    VAULT
   }
 
 }

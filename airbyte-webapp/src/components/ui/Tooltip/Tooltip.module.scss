@@ -17,15 +17,15 @@
   border-radius: variables.$border-radius-sm;
   max-width: 300px;
   z-index: z-indices.$tooltip;
-  background: colors.$dark-blue-900;
+  background: rgba(colors.$dark-blue, 0.9);
   color: colors.$white;
 
   a {
-    color: colors.$dark-blue-200;
+    color: rgba(colors.$white, 0.5);
   }
 
   &.light {
-    background: colors.$white;
+    background: rgba(colors.$white, 0.9);
     color: colors.$dark-blue;
 
     a {

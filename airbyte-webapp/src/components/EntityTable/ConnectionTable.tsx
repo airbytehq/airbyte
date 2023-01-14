@@ -7,6 +7,7 @@ import { CellProps } from "react-table";
 import { Table, SortableTableHeader } from "components/ui/Table";
 
 import { ConnectionScheduleType, SchemaChange } from "core/request/AirbyteClient";
+import { useIsAutoDetectSchemaChangesEnabled } from "hooks/connection/useIsAutoDetectSchemaChangesEnabled";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useQuery } from "hooks/useQuery";
 
@@ -28,7 +29,7 @@ interface IProps {
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync }) => {
   const navigate = useNavigate();
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
-  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
+  const isSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
   const allowSync = useFeature(FeatureItem.AllowSync);
 
   const sortBy = query.sortBy || "entityName";
@@ -163,7 +164,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
             isSyncing={row.original.isSyncing}
             isManual={row.original.scheduleType === ConnectionScheduleType.manual}
             onSync={onSync}
-            hasBreakingChange={allowAutoDetectSchema && row.original.schemaChange === SchemaChange.breaking}
+            hasBreakingChange={isSchemaChangesEnabled && row.original.schemaChange === SchemaChange.breaking}
             allowSync={allowSync}
           />
         ),
@@ -175,7 +176,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         Cell: ({ cell }: CellProps<ITableDataItem>) => <ConnectionSettingsCell id={cell.value} />,
       },
     ],
-    [sortBy, sortOrder, entity, onSortClick, onSync, allowSync, allowAutoDetectSchema]
+    [sortBy, sortOrder, entity, onSortClick, onSync, allowSync, isSchemaChangesEnabled]
   );
 
   return <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />;

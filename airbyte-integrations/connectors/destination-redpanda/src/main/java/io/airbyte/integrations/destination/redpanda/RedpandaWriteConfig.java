@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.redpanda;
 
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.DestinationSyncMode;
 
 public record RedpandaWriteConfig(
 

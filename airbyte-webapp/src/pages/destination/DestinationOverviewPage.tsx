@@ -25,7 +25,7 @@ export const DestinationOverviewPage = () => {
   const { sourceDefinitions } = useSourceDefinitionList();
 
   const connectionsWithDestination = connections.filter(
-    ({ destination: { destinationId } }) => destinationId === destination.destinationId
+    (connectionItem) => connectionItem.destinationId === destination.destinationId
   );
 
   const sourceDropdownOptions: DropdownMenuOptionType[] = useMemo(
@@ -75,5 +75,3 @@ export const DestinationOverviewPage = () => {
     </>
   );
 };
-
-export default DestinationOverviewPage;

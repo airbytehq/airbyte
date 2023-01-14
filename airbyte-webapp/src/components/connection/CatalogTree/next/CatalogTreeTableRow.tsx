@@ -1,8 +1,10 @@
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classnames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
-import { Row } from "components/SimpleTableComponents";
+import { Cell, Row } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { Switch } from "components/ui/Switch";
 import { Text } from "components/ui/Text";
@@ -10,7 +12,7 @@ import { Text } from "components/ui/Text";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
 import { StreamHeaderProps } from "../StreamHeader";
-import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
+// eslint-disable-next-line css-modules/no-unused-class
 import styles from "./CatalogTreeTableRow.module.scss";
 import { CatalogTreeTableRowIcon } from "./CatalogTreeTableRowIcon";
 import { StreamPathSelect } from "./StreamPathSelect";
@@ -33,9 +35,9 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   fields,
   onExpand,
   disabled,
-  configErrors,
 }) => {
   const { primaryKey, cursorField, syncMode, destinationSyncMode } = stream.config ?? {};
+
   const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
     () => ({
@@ -53,35 +55,37 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
 
   const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
+  const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
+
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
-      <CatalogTreeTableCell size="small" className={styles.streamRowCheckboxCell}>
-        {!disabled && (
-          <>
-            <CatalogTreeTableRowIcon stream={stream} />
-            <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
-          </>
-        )}
-      </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="small">
-        <Switch size="sm" checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
-      </CatalogTreeTableCell>
+      {!disabled && (
+        <div className={checkboxCellCustomStyle}>
+          <CatalogTreeTableRowIcon stream={stream} />
+          <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
+        </div>
+      )}
+      <Cell flex={0.5} flush>
+        <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
+      </Cell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <CatalogTreeTableCell>
+      <Cell flex={1} title={stream.stream?.namespace || ""}>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
         </Text>
-      </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      </Cell>
+      <Cell flex={1} title={stream.stream?.name || ""}>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.name}
         </Text>
-      </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="large">
+      </Cell>
+      <div className={styles.syncModeCell}>
         {disabled ? (
-          <Text size="md" className={styles.cellText}>
-            {syncSchema.syncMode}
-          </Text>
+          <Cell title={syncSchema.syncMode}>
+            <Text size="md" className={styles.cellText}>
+              {syncSchema.syncMode}
+            </Text>
+          </Cell>
         ) : (
           // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
           <SyncModeSelect
@@ -91,8 +95,8 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             variant={pillButtonVariant}
           />
         )}
-      </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      </div>
+      <Cell flex={1}>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
@@ -100,11 +104,10 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
             onPathChange={onCursorChange}
             variant={pillButtonVariant}
-            hasError={!!configErrors?.cursorField}
           />
         )}
-      </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      </Cell>
+      <Cell flex={1}>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -113,23 +116,20 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             isMulti
             onPathChange={onPrimaryKeyChange}
             variant={pillButtonVariant}
-            hasError={!!configErrors?.primaryKey}
           />
         )}
-      </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="xsmall">
-        <ArrowRightIcon />
-      </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      </Cell>
+      <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
+      <Cell flex={1} title={destNamespace}>
         <Text size="md" className={styles.cellText}>
           {destNamespace}
         </Text>
-      </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      </Cell>
+      <Cell flex={1} title={destName}>
         <Text size="md" className={styles.cellText}>
           {destName}
         </Text>
-      </CatalogTreeTableCell>
+      </Cell>
     </Row>
   );
 };

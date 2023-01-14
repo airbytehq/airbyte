@@ -118,5 +118,3 @@ export const CloudSettingsPage: React.FC = () => {
 
   return <SettingsPage pageConfig={pageConfig} />;
 };
-
-export default CloudSettingsPage;

@@ -9,7 +9,7 @@ import sys
 
 import pytest
 import yaml
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from jsonschema.exceptions import ValidationError
 
@@ -32,7 +32,7 @@ class MockManifestDeclarativeSource(ManifestDeclarativeSource):
     """
 
 
-class TestManifestDeclarativeSource:
+class TestYamlDeclarativeSource:
     @pytest.fixture
     def use_external_yaml_spec(self):
         # Our way of resolving the absolute path to root of the airbyte-cdk unit test directory where spec.yaml files should
@@ -50,8 +50,7 @@ class TestManifestDeclarativeSource:
         yield
         os.remove(yaml_path)
 
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_valid_manifest(self, construct_using_pydantic_models):
+    def test_valid_manifest(self):
         manifest = {
             "version": "version",
             "definitions": {
@@ -86,11 +85,7 @@ class TestManifestDeclarativeSource:
                             "page_size": 10,
                             "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
                             "page_token_option": {"inject_into": "path"},
-                            "pagination_strategy": {
-                                "type": "CursorPagination",
-                                "cursor_value": "{{ response._metadata.next }}",
-                                "page_size": 10,
-                            },
+                            "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
                             "path": "/v3/marketing/lists",
@@ -99,50 +94,13 @@ class TestManifestDeclarativeSource:
                         },
                         "record_selector": {"extractor": {"field_pointer": ["result"]}},
                     },
-                },
-                {
-                    "type": "DeclarativeStream",
-                    "$options": {"name": "stream_with_custom_requester", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
-                    "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
-                    },
-                    "retriever": {
-                        "paginator": {
-                            "type": "DefaultPaginator",
-                            "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
-                            "pagination_strategy": {
-                                "type": "CursorPagination",
-                                "cursor_value": "{{ response._metadata.next }}",
-                                "page_size": 10,
-                            },
-                        },
-                        "requester": {
-                            "type": "CustomRequester",
-                            "class_name": "unit_tests.sources.declarative.external_component.SampleCustomComponent",
-                            "path": "/v3/marketing/lists",
-                            "custom_request_parameters": {"page_size": 10},
-                        },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
-                    },
-                },
+                }
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
-        source = ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+        ManifestDeclarativeSource(source_config=manifest)
 
-        check_stream = source.connection_checker
-        check_stream.check_connection(source, logging.getLogger(""), {})
-
-        streams = source.streams({})
-        assert len(streams) == 2
-        assert isinstance(streams[0], DeclarativeStream)
-        assert isinstance(streams[1], DeclarativeStream)
-
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_manifest_with_spec(self, construct_using_pydantic_models):
+    def test_manifest_with_spec(self):
         manifest = {
             "version": "version",
             "definitions": {
@@ -203,7 +161,7 @@ class TestManifestDeclarativeSource:
                 },
             },
         }
-        source = ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+        source = ManifestDeclarativeSource(source_config=manifest)
         connector_specification = source.spec(logger)
         assert connector_specification is not None
         assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-manifest"
@@ -218,8 +176,7 @@ class TestManifestDeclarativeSource:
             "order": 0,
         }
 
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_manifest_with_external_spec(self, use_external_yaml_spec, construct_using_pydantic_models):
+    def test_manifest_with_external_spec(self, use_external_yaml_spec):
         manifest = {
             "version": "version",
             "definitions": {
@@ -267,15 +224,14 @@ class TestManifestDeclarativeSource:
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
-        source = MockManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+        source = MockManifestDeclarativeSource(source_config=manifest)
 
         connector_specification = source.spec(logger)
 
         assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-external"
         assert connector_specification.connectionSpecification == EXTERNAL_CONNECTION_SPECIFICATION
 
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_source_is_not_created_if_toplevel_fields_are_unknown(self, construct_using_pydantic_models):
+    def test_source_is_not_created_if_toplevel_fields_are_unknown(self):
         manifest = {
             "version": "version",
             "definitions": {
@@ -324,11 +280,10 @@ class TestManifestDeclarativeSource:
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
             "not_a_valid_field": "error",
         }
-        with pytest.raises(ValidationError):
-            ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+        with pytest.raises(InvalidConnectorDefinitionException):
+            ManifestDeclarativeSource(manifest)
 
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_source_missing_checker_fails_validation(self, construct_using_pydantic_models):
+    def test_source_missing_checker_fails_validation(self):
         manifest = {
             "version": "version",
             "definitions": {
@@ -377,16 +332,14 @@ class TestManifestDeclarativeSource:
             "check": {"type": "CheckStream"},
         }
         with pytest.raises(ValidationError):
-            ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+            ManifestDeclarativeSource(source_config=manifest)
 
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_source_with_missing_streams_fails(self, construct_using_pydantic_models):
+    def test_source_with_missing_streams_fails(self):
         manifest = {"version": "version", "definitions": None, "check": {"type": "CheckStream", "stream_names": ["lists"]}}
         with pytest.raises(ValidationError):
-            ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+            ManifestDeclarativeSource(manifest)
 
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_source_with_missing_version_fails(self, construct_using_pydantic_models):
+    def test_source_with_missing_version_fails(self):
         manifest = {
             "definitions": {
                 "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
@@ -434,10 +387,9 @@ class TestManifestDeclarativeSource:
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
         with pytest.raises(ValidationError):
-            ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+            ManifestDeclarativeSource(manifest)
 
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_source_with_invalid_stream_config_fails_validation(self, construct_using_pydantic_models):
+    def test_source_with_invalid_stream_config_fails_validation(self):
         manifest = {
             "version": "version",
             "definitions": {
@@ -456,10 +408,9 @@ class TestManifestDeclarativeSource:
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
         with pytest.raises(ValidationError):
-            ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+            ManifestDeclarativeSource(manifest)
 
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_source_with_no_external_spec_and_no_in_yaml_spec_fails(self, construct_using_pydantic_models):
+    def test_source_with_no_external_spec_and_no_in_yaml_spec_fails(self):
         manifest = {
             "version": "version",
             "definitions": {
@@ -507,39 +458,11 @@ class TestManifestDeclarativeSource:
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
-        source = ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+        source = ManifestDeclarativeSource(source_config=manifest)
 
         # We expect to fail here because we have not created a temporary spec.yaml file
         with pytest.raises(FileNotFoundError):
             source.spec(logger)
-
-    @pytest.mark.parametrize("construct_using_pydantic_models", [True, False])
-    def test_manifest_without_at_least_one_stream(self, construct_using_pydantic_models):
-        manifest = {
-            "version": "version",
-            "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
-                "retriever": {
-                    "paginator": {
-                        "type": "DefaultPaginator",
-                        "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
-                        "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
-                    },
-                    "requester": {
-                        "path": "/v3/marketing/lists",
-                        "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                        "request_parameters": {"page_size": 10},
-                    },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
-                },
-            },
-            "streams": [],
-            "check": {"type": "CheckStream", "stream_names": ["lists"]},
-        }
-        with pytest.raises(ValidationError):
-            ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
 
 
 def test_generate_schema():

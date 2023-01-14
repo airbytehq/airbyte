@@ -45,7 +45,7 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
       try {
         queryContext.getObject(i);
         if (!queryContext.wasNull()) {
-          copyToJsonField(queryContext, i, jsonNode);
+          setJsonField(queryContext, i, jsonNode);
         }
       } catch (final SQLException e) {
         putCockroachSpecialDataType(queryContext, i, jsonNode);

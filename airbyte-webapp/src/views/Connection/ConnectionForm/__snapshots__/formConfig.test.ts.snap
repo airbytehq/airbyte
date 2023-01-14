@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`#useInitialValues should generate initial values w/ 'not create' mode: false 1`] = `
-{
+Object {
   "geography": "auto",
   "name": "Scrafty <> Heroku Postgres",
   "namespaceDefinition": "source",
@@ -11,509 +11,509 @@ exports[`#useInitialValues should generate initial values w/ 'not create' mode: 
   "prefix": "",
   "scheduleData": null,
   "scheduleType": "manual",
-  "syncCatalog": {
-    "streams": [
-      {
-        "config": {
+  "syncCatalog": Object {
+    "streams": Array [
+      Object {
+        "config": Object {
           "aliasName": "pokemon",
-          "cursorField": [],
+          "cursorField": Array [],
           "destinationSyncMode": "overwrite",
-          "primaryKey": [],
+          "primaryKey": Array [],
           "selected": true,
           "syncMode": "full_refresh",
         },
         "id": "0",
-        "stream": {
-          "defaultCursorField": [],
-          "jsonSchema": {
+        "stream": Object {
+          "defaultCursorField": Array [],
+          "jsonSchema": Object {
             "$schema": "http://json-schema.org/draft-07/schema#",
-            "properties": {
-              "abilities": {
-                "items": {
-                  "properties": {
-                    "ability": {
-                      "properties": {
-                        "name": {
-                          "type": [
+            "properties": Object {
+              "abilities": Object {
+                "items": Object {
+                  "properties": Object {
+                    "ability": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
-                    "is_hidden": {
-                      "type": [
+                    "is_hidden": Object {
+                      "type": Array [
                         "null",
                         "boolean",
                       ],
                     },
-                    "slot": {
-                      "type": [
+                    "slot": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "base_experience": {
-                "type": [
+              "base_experience": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "forms": {
-                "items": {
-                  "properties": {
-                    "name": {
-                      "type": [
+              "forms": Object {
+                "items": Object {
+                  "properties": Object {
+                    "name": Object {
+                      "type": Array [
                         "null",
                         "string",
                       ],
                     },
-                    "url": {
-                      "type": [
+                    "url": Object {
+                      "type": Array [
                         "null",
                         "string",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "game_indices": {
-                "items": {
-                  "properties": {
-                    "game_index": {
-                      "type": [
+              "game_indices": Object {
+                "items": Object {
+                  "properties": Object {
+                    "game_index": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "version": {
-                      "properties": {
-                        "name": {
-                          "type": [
+                    "version": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "height": {
-                "type": [
+              "height": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "held_items": {
-                "items": {
-                  "properties": {
-                    "item": {
-                      "properties": {
-                        "name": {
-                          "type": [
+              "held_items": Object {
+                "items": Object {
+                  "properties": Object {
+                    "item": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
-                    "version_details": {
-                      "items": {
-                        "properties": {
-                          "rarity": {
-                            "type": [
+                    "version_details": Object {
+                      "items": Object {
+                        "properties": Object {
+                          "rarity": Object {
+                            "type": Array [
                               "null",
                               "integer",
                             ],
                           },
-                          "version": {
-                            "properties": {
-                              "name": {
-                                "type": [
+                          "version": Object {
+                            "properties": Object {
+                              "name": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
-                              "url": {
-                                "type": [
+                              "url": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
                             },
-                            "type": [
+                            "type": Array [
                               "null",
                               "object",
                             ],
                           },
                         },
-                        "type": [
+                        "type": Array [
                           "null",
                           "object",
                         ],
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "array",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "id": {
-                "type": [
+              "id": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "is_default ": {
-                "type": [
+              "is_default ": Object {
+                "type": Array [
                   "null",
                   "boolean",
                 ],
               },
-              "location_area_encounters": {
-                "type": [
+              "location_area_encounters": Object {
+                "type": Array [
                   "null",
                   "string",
                 ],
               },
-              "moves": {
-                "items": {
-                  "properties": {
-                    "move": {
-                      "properties": {
-                        "name": {
-                          "type": [
+              "moves": Object {
+                "items": Object {
+                  "properties": Object {
+                    "move": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
-                    "version_group_details": {
-                      "items": {
-                        "properties": {
-                          "level_learned_at": {
-                            "type": [
+                    "version_group_details": Object {
+                      "items": Object {
+                        "properties": Object {
+                          "level_learned_at": Object {
+                            "type": Array [
                               "null",
                               "integer",
                             ],
                           },
-                          "move_learn_method": {
-                            "properties": {
-                              "name": {
-                                "type": [
+                          "move_learn_method": Object {
+                            "properties": Object {
+                              "name": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
-                              "url": {
-                                "type": [
+                              "url": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
                             },
-                            "type": [
+                            "type": Array [
                               "null",
                               "object",
                             ],
                           },
-                          "version_group": {
-                            "properties": {
-                              "name": {
-                                "type": [
+                          "version_group": Object {
+                            "properties": Object {
+                              "name": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
-                              "url": {
-                                "type": [
+                              "url": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
                             },
-                            "type": [
+                            "type": Array [
                               "null",
                               "object",
                             ],
                           },
                         },
-                        "type": [
+                        "type": Array [
                           "null",
                           "object",
                         ],
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "array",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "name": {
-                "type": [
+              "name": Object {
+                "type": Array [
                   "null",
                   "string",
                 ],
               },
-              "order": {
-                "type": [
+              "order": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "species": {
-                "properties": {
-                  "name": {
-                    "type": [
+              "species": Object {
+                "properties": Object {
+                  "name": Object {
+                    "type": Array [
                       "null",
                       "string",
                     ],
                   },
-                  "url": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                },
-                "type": [
-                  "null",
-                  "object",
-                ],
-              },
-              "sprites": {
-                "properties": {
-                  "back_default": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "back_female": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "back_shiny": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "back_shiny_female": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_default": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_female": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_shiny": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_shiny_female": {
-                    "type": [
+                  "url": Object {
+                    "type": Array [
                       "null",
                       "string",
                     ],
                   },
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "object",
                 ],
               },
-              "stats": {
-                "items": {
-                  "properties": {
-                    "base_stat": {
-                      "type": [
+              "sprites": Object {
+                "properties": Object {
+                  "back_default": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_default": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                },
+                "type": Array [
+                  "null",
+                  "object",
+                ],
+              },
+              "stats": Object {
+                "items": Object {
+                  "properties": Object {
+                    "base_stat": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "effort": {
-                      "type": [
+                    "effort": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "stat": {
-                      "properties": {
-                        "name": {
-                          "type": [
+                    "stat": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "types": {
-                "items": {
-                  "properties": {
-                    "slot": {
-                      "type": [
+              "types": Object {
+                "items": Object {
+                  "properties": Object {
+                    "slot": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "type": {
-                      "properties": {
-                        "name": {
-                          "type": [
+                    "type": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "weight": {
-                "type": [
+              "weight": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
@@ -522,20 +522,20 @@ exports[`#useInitialValues should generate initial values w/ 'not create' mode: 
             "type": "object",
           },
           "name": "pokemon",
-          "sourceDefinedPrimaryKey": [],
-          "supportedSyncModes": [
+          "sourceDefinedPrimaryKey": Array [],
+          "supportedSyncModes": Array [
             "full_refresh",
           ],
         },
       },
     ],
   },
-  "transformations": [],
+  "transformations": Array [],
 }
 `;
 
 exports[`#useInitialValues should generate initial values w/ 'not create' mode: true 1`] = `
-{
+Object {
   "geography": "auto",
   "namespaceDefinition": "source",
   "namespaceFormat": "\${SOURCE_NAMESPACE}",
@@ -544,509 +544,509 @@ exports[`#useInitialValues should generate initial values w/ 'not create' mode: 
   "prefix": "",
   "scheduleData": null,
   "scheduleType": "manual",
-  "syncCatalog": {
-    "streams": [
-      {
-        "config": {
+  "syncCatalog": Object {
+    "streams": Array [
+      Object {
+        "config": Object {
           "aliasName": "pokemon",
-          "cursorField": [],
+          "cursorField": Array [],
           "destinationSyncMode": "append",
-          "primaryKey": [],
+          "primaryKey": Array [],
           "selected": true,
           "syncMode": "full_refresh",
         },
         "id": "0",
-        "stream": {
-          "defaultCursorField": [],
-          "jsonSchema": {
+        "stream": Object {
+          "defaultCursorField": Array [],
+          "jsonSchema": Object {
             "$schema": "http://json-schema.org/draft-07/schema#",
-            "properties": {
-              "abilities": {
-                "items": {
-                  "properties": {
-                    "ability": {
-                      "properties": {
-                        "name": {
-                          "type": [
+            "properties": Object {
+              "abilities": Object {
+                "items": Object {
+                  "properties": Object {
+                    "ability": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
-                    "is_hidden": {
-                      "type": [
+                    "is_hidden": Object {
+                      "type": Array [
                         "null",
                         "boolean",
                       ],
                     },
-                    "slot": {
-                      "type": [
+                    "slot": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "base_experience": {
-                "type": [
+              "base_experience": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "forms": {
-                "items": {
-                  "properties": {
-                    "name": {
-                      "type": [
+              "forms": Object {
+                "items": Object {
+                  "properties": Object {
+                    "name": Object {
+                      "type": Array [
                         "null",
                         "string",
                       ],
                     },
-                    "url": {
-                      "type": [
+                    "url": Object {
+                      "type": Array [
                         "null",
                         "string",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "game_indices": {
-                "items": {
-                  "properties": {
-                    "game_index": {
-                      "type": [
+              "game_indices": Object {
+                "items": Object {
+                  "properties": Object {
+                    "game_index": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "version": {
-                      "properties": {
-                        "name": {
-                          "type": [
+                    "version": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "height": {
-                "type": [
+              "height": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "held_items": {
-                "items": {
-                  "properties": {
-                    "item": {
-                      "properties": {
-                        "name": {
-                          "type": [
+              "held_items": Object {
+                "items": Object {
+                  "properties": Object {
+                    "item": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
-                    "version_details": {
-                      "items": {
-                        "properties": {
-                          "rarity": {
-                            "type": [
+                    "version_details": Object {
+                      "items": Object {
+                        "properties": Object {
+                          "rarity": Object {
+                            "type": Array [
                               "null",
                               "integer",
                             ],
                           },
-                          "version": {
-                            "properties": {
-                              "name": {
-                                "type": [
+                          "version": Object {
+                            "properties": Object {
+                              "name": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
-                              "url": {
-                                "type": [
+                              "url": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
                             },
-                            "type": [
+                            "type": Array [
                               "null",
                               "object",
                             ],
                           },
                         },
-                        "type": [
+                        "type": Array [
                           "null",
                           "object",
                         ],
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "array",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "id": {
-                "type": [
+              "id": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "is_default ": {
-                "type": [
+              "is_default ": Object {
+                "type": Array [
                   "null",
                   "boolean",
                 ],
               },
-              "location_area_encounters": {
-                "type": [
+              "location_area_encounters": Object {
+                "type": Array [
                   "null",
                   "string",
                 ],
               },
-              "moves": {
-                "items": {
-                  "properties": {
-                    "move": {
-                      "properties": {
-                        "name": {
-                          "type": [
+              "moves": Object {
+                "items": Object {
+                  "properties": Object {
+                    "move": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
-                    "version_group_details": {
-                      "items": {
-                        "properties": {
-                          "level_learned_at": {
-                            "type": [
+                    "version_group_details": Object {
+                      "items": Object {
+                        "properties": Object {
+                          "level_learned_at": Object {
+                            "type": Array [
                               "null",
                               "integer",
                             ],
                           },
-                          "move_learn_method": {
-                            "properties": {
-                              "name": {
-                                "type": [
+                          "move_learn_method": Object {
+                            "properties": Object {
+                              "name": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
-                              "url": {
-                                "type": [
+                              "url": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
                             },
-                            "type": [
+                            "type": Array [
                               "null",
                               "object",
                             ],
                           },
-                          "version_group": {
-                            "properties": {
-                              "name": {
-                                "type": [
+                          "version_group": Object {
+                            "properties": Object {
+                              "name": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
-                              "url": {
-                                "type": [
+                              "url": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
                             },
-                            "type": [
+                            "type": Array [
                               "null",
                               "object",
                             ],
                           },
                         },
-                        "type": [
+                        "type": Array [
                           "null",
                           "object",
                         ],
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "array",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "name": {
-                "type": [
+              "name": Object {
+                "type": Array [
                   "null",
                   "string",
                 ],
               },
-              "order": {
-                "type": [
+              "order": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "species": {
-                "properties": {
-                  "name": {
-                    "type": [
+              "species": Object {
+                "properties": Object {
+                  "name": Object {
+                    "type": Array [
                       "null",
                       "string",
                     ],
                   },
-                  "url": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                },
-                "type": [
-                  "null",
-                  "object",
-                ],
-              },
-              "sprites": {
-                "properties": {
-                  "back_default": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "back_female": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "back_shiny": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "back_shiny_female": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_default": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_female": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_shiny": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_shiny_female": {
-                    "type": [
+                  "url": Object {
+                    "type": Array [
                       "null",
                       "string",
                     ],
                   },
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "object",
                 ],
               },
-              "stats": {
-                "items": {
-                  "properties": {
-                    "base_stat": {
-                      "type": [
+              "sprites": Object {
+                "properties": Object {
+                  "back_default": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_default": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                },
+                "type": Array [
+                  "null",
+                  "object",
+                ],
+              },
+              "stats": Object {
+                "items": Object {
+                  "properties": Object {
+                    "base_stat": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "effort": {
-                      "type": [
+                    "effort": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "stat": {
-                      "properties": {
-                        "name": {
-                          "type": [
+                    "stat": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "types": {
-                "items": {
-                  "properties": {
-                    "slot": {
-                      "type": [
+              "types": Object {
+                "items": Object {
+                  "properties": Object {
+                    "slot": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "type": {
-                      "properties": {
-                        "name": {
-                          "type": [
+                    "type": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "weight": {
-                "type": [
+              "weight": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
@@ -1055,20 +1055,20 @@ exports[`#useInitialValues should generate initial values w/ 'not create' mode: 
             "type": "object",
           },
           "name": "pokemon",
-          "sourceDefinedPrimaryKey": [],
-          "supportedSyncModes": [
+          "sourceDefinedPrimaryKey": Array [],
+          "supportedSyncModes": Array [
             "full_refresh",
           ],
         },
       },
     ],
   },
-  "transformations": [],
+  "transformations": Array [],
 }
 `;
 
 exports[`#useInitialValues should generate initial values w/ no 'not create' mode 1`] = `
-{
+Object {
   "geography": "auto",
   "name": "Scrafty <> Heroku Postgres",
   "namespaceDefinition": "source",
@@ -1078,509 +1078,509 @@ exports[`#useInitialValues should generate initial values w/ no 'not create' mod
   "prefix": "",
   "scheduleData": null,
   "scheduleType": "manual",
-  "syncCatalog": {
-    "streams": [
-      {
-        "config": {
+  "syncCatalog": Object {
+    "streams": Array [
+      Object {
+        "config": Object {
           "aliasName": "pokemon",
-          "cursorField": [],
+          "cursorField": Array [],
           "destinationSyncMode": "overwrite",
-          "primaryKey": [],
+          "primaryKey": Array [],
           "selected": true,
           "syncMode": "full_refresh",
         },
         "id": "0",
-        "stream": {
-          "defaultCursorField": [],
-          "jsonSchema": {
+        "stream": Object {
+          "defaultCursorField": Array [],
+          "jsonSchema": Object {
             "$schema": "http://json-schema.org/draft-07/schema#",
-            "properties": {
-              "abilities": {
-                "items": {
-                  "properties": {
-                    "ability": {
-                      "properties": {
-                        "name": {
-                          "type": [
+            "properties": Object {
+              "abilities": Object {
+                "items": Object {
+                  "properties": Object {
+                    "ability": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
-                    "is_hidden": {
-                      "type": [
+                    "is_hidden": Object {
+                      "type": Array [
                         "null",
                         "boolean",
                       ],
                     },
-                    "slot": {
-                      "type": [
+                    "slot": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "base_experience": {
-                "type": [
+              "base_experience": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "forms": {
-                "items": {
-                  "properties": {
-                    "name": {
-                      "type": [
+              "forms": Object {
+                "items": Object {
+                  "properties": Object {
+                    "name": Object {
+                      "type": Array [
                         "null",
                         "string",
                       ],
                     },
-                    "url": {
-                      "type": [
+                    "url": Object {
+                      "type": Array [
                         "null",
                         "string",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "game_indices": {
-                "items": {
-                  "properties": {
-                    "game_index": {
-                      "type": [
+              "game_indices": Object {
+                "items": Object {
+                  "properties": Object {
+                    "game_index": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "version": {
-                      "properties": {
-                        "name": {
-                          "type": [
+                    "version": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "height": {
-                "type": [
+              "height": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "held_items": {
-                "items": {
-                  "properties": {
-                    "item": {
-                      "properties": {
-                        "name": {
-                          "type": [
+              "held_items": Object {
+                "items": Object {
+                  "properties": Object {
+                    "item": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
-                    "version_details": {
-                      "items": {
-                        "properties": {
-                          "rarity": {
-                            "type": [
+                    "version_details": Object {
+                      "items": Object {
+                        "properties": Object {
+                          "rarity": Object {
+                            "type": Array [
                               "null",
                               "integer",
                             ],
                           },
-                          "version": {
-                            "properties": {
-                              "name": {
-                                "type": [
+                          "version": Object {
+                            "properties": Object {
+                              "name": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
-                              "url": {
-                                "type": [
+                              "url": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
                             },
-                            "type": [
+                            "type": Array [
                               "null",
                               "object",
                             ],
                           },
                         },
-                        "type": [
+                        "type": Array [
                           "null",
                           "object",
                         ],
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "array",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "id": {
-                "type": [
+              "id": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "is_default ": {
-                "type": [
+              "is_default ": Object {
+                "type": Array [
                   "null",
                   "boolean",
                 ],
               },
-              "location_area_encounters": {
-                "type": [
+              "location_area_encounters": Object {
+                "type": Array [
                   "null",
                   "string",
                 ],
               },
-              "moves": {
-                "items": {
-                  "properties": {
-                    "move": {
-                      "properties": {
-                        "name": {
-                          "type": [
+              "moves": Object {
+                "items": Object {
+                  "properties": Object {
+                    "move": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
-                    "version_group_details": {
-                      "items": {
-                        "properties": {
-                          "level_learned_at": {
-                            "type": [
+                    "version_group_details": Object {
+                      "items": Object {
+                        "properties": Object {
+                          "level_learned_at": Object {
+                            "type": Array [
                               "null",
                               "integer",
                             ],
                           },
-                          "move_learn_method": {
-                            "properties": {
-                              "name": {
-                                "type": [
+                          "move_learn_method": Object {
+                            "properties": Object {
+                              "name": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
-                              "url": {
-                                "type": [
+                              "url": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
                             },
-                            "type": [
+                            "type": Array [
                               "null",
                               "object",
                             ],
                           },
-                          "version_group": {
-                            "properties": {
-                              "name": {
-                                "type": [
+                          "version_group": Object {
+                            "properties": Object {
+                              "name": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
-                              "url": {
-                                "type": [
+                              "url": Object {
+                                "type": Array [
                                   "null",
                                   "string",
                                 ],
                               },
                             },
-                            "type": [
+                            "type": Array [
                               "null",
                               "object",
                             ],
                           },
                         },
-                        "type": [
+                        "type": Array [
                           "null",
                           "object",
                         ],
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "array",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "name": {
-                "type": [
+              "name": Object {
+                "type": Array [
                   "null",
                   "string",
                 ],
               },
-              "order": {
-                "type": [
+              "order": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
               },
-              "species": {
-                "properties": {
-                  "name": {
-                    "type": [
+              "species": Object {
+                "properties": Object {
+                  "name": Object {
+                    "type": Array [
                       "null",
                       "string",
                     ],
                   },
-                  "url": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                },
-                "type": [
-                  "null",
-                  "object",
-                ],
-              },
-              "sprites": {
-                "properties": {
-                  "back_default": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "back_female": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "back_shiny": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "back_shiny_female": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_default": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_female": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_shiny": {
-                    "type": [
-                      "null",
-                      "string",
-                    ],
-                  },
-                  "front_shiny_female": {
-                    "type": [
+                  "url": Object {
+                    "type": Array [
                       "null",
                       "string",
                     ],
                   },
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "object",
                 ],
               },
-              "stats": {
-                "items": {
-                  "properties": {
-                    "base_stat": {
-                      "type": [
+              "sprites": Object {
+                "properties": Object {
+                  "back_default": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_default": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny_female": Object {
+                    "type": Array [
+                      "null",
+                      "string",
+                    ],
+                  },
+                },
+                "type": Array [
+                  "null",
+                  "object",
+                ],
+              },
+              "stats": Object {
+                "items": Object {
+                  "properties": Object {
+                    "base_stat": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "effort": {
-                      "type": [
+                    "effort": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "stat": {
-                      "properties": {
-                        "name": {
-                          "type": [
+                    "stat": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "types": {
-                "items": {
-                  "properties": {
-                    "slot": {
-                      "type": [
+              "types": Object {
+                "items": Object {
+                  "properties": Object {
+                    "slot": Object {
+                      "type": Array [
                         "null",
                         "integer",
                       ],
                     },
-                    "type": {
-                      "properties": {
-                        "name": {
-                          "type": [
+                    "type": Object {
+                      "properties": Object {
+                        "name": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
-                        "url": {
-                          "type": [
+                        "url": Object {
+                          "type": Array [
                             "null",
                             "string",
                           ],
                         },
                       },
-                      "type": [
+                      "type": Array [
                         "null",
                         "object",
                       ],
                     },
                   },
-                  "type": [
+                  "type": Array [
                     "null",
                     "object",
                   ],
                 },
-                "type": [
+                "type": Array [
                   "null",
                   "array",
                 ],
               },
-              "weight": {
-                "type": [
+              "weight": Object {
+                "type": Array [
                   "null",
                   "integer",
                 ],
@@ -1589,14 +1589,14 @@ exports[`#useInitialValues should generate initial values w/ no 'not create' mod
             "type": "object",
           },
           "name": "pokemon",
-          "sourceDefinedPrimaryKey": [],
-          "supportedSyncModes": [
+          "sourceDefinedPrimaryKey": Array [],
+          "supportedSyncModes": Array [
             "full_refresh",
           ],
         },
       },
     ],
   },
-  "transformations": [],
+  "transformations": Array [],
 }
 `;

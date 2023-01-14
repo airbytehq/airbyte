@@ -1,4 +1,4 @@
-import { AirbyteJSONSchema } from "core/jsonSchema/types";
+import { AirbyteJSONSchema } from "core/jsonSchema";
 
 type ConnectionConfiguration = unknown;
 

@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class GcsJsonlDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
-  public GcsJsonlDestinationAcceptanceTest() {
+  protected GcsJsonlDestinationAcceptanceTest() {
     super(S3Format.JSONL);
   }
 

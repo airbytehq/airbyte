@@ -33,7 +33,7 @@ import org.apache.parquet.hadoop.ParquetReader;
 
 public class GcsParquetDestinationAcceptanceTest extends GcsAvroParquetDestinationAcceptanceTest {
 
-  public GcsParquetDestinationAcceptanceTest() {
+  protected GcsParquetDestinationAcceptanceTest() {
     super(S3Format.PARQUET);
   }
 

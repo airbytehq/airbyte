@@ -10,7 +10,7 @@ describe("<StatusIcon />", () => {
     const component = render(<StatusIcon title={title} value={value} />);
 
     expect(component.getByTitle(title)).toBeDefined();
-    expect(component.getByRole("img")).toHaveAttribute("data-icon", "cross");
+    expect(component.getByRole("img")).toHaveAttribute("data-icon", "xmark");
     expect(component.getByText(`${value}`)).toBeDefined();
   });
 
@@ -20,8 +20,7 @@ describe("<StatusIcon />", () => {
     { status: "sleep", icon: "moon" },
     { status: "warning", icon: "triangle-exclamation" },
     { status: "loading", icon: "circle-loader" },
-    { status: "error", icon: "cross" },
-    { status: "cancelled", icon: "minus" },
+    { status: "error", icon: "xmark" },
   ];
 
   it.each(statusCases)("renders $status status", ({ status, icon }) => {

@@ -6,7 +6,6 @@
 import json
 import tempfile
 import traceback
-import urllib
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
@@ -27,8 +26,6 @@ from google.oauth2 import service_account
 from yaml import safe_load
 
 from .utils import backoff_handler
-
-SSH_TIMEOUT = 60
 
 
 class ConfigurationError(Exception):
@@ -109,11 +106,8 @@ class URLFile:
             port = self._provider["port"]
             return smart_open.open(f"webhdfs://{host}:{port}/{url}", **self.args)
         elif storage in ("ssh://", "scp://", "sftp://"):
-            # We need to quote parameters to deal with special characters
-            # https://bugs.python.org/issue18140
-            user = urllib.parse.quote(self._provider["user"])
-            host = urllib.parse.quote(self._provider["host"])
-            url = urllib.parse.quote(url)
+            user = self._provider["user"]
+            host = self._provider["host"]
             # TODO: Remove int casting when https://github.com/airbytehq/airbyte/issues/4952 is addressed
             # TODO: The "port" field in spec.json must also be changed
             _port_value = self._provider.get("port", 22)
@@ -122,9 +116,9 @@ class URLFile:
             except ValueError as err:
                 raise ValueError(f"{_port_value} is not a valid integer for the port") from err
             # Explicitly turn off ssh keys stored in ~/.ssh
-            transport_params = {"connect_kwargs": {"look_for_keys": False}, "timeout": SSH_TIMEOUT}
+            transport_params = {"connect_kwargs": {"look_for_keys": False}}
             if "password" in self._provider:
-                password = urllib.parse.quote(self._provider["password"])
+                password = self._provider["password"]
                 uri = f"{storage}{user}:{password}@{host}:{port}/{url}"
             else:
                 uri = f"{storage}{user}@{host}:{port}/{url}"

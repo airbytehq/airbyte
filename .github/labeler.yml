@@ -1,5 +1,7 @@
 # union of frontend, api, server, scheduler, protocol, worker, kubernetes
 area/platform:
+  - airbyte-webapp/*
+  - airbyte-webapp/**/*
   - airbyte-api/*
   - airbyte-api/**/*
   - airbyte-persistence/*
@@ -15,11 +17,9 @@ area/platform:
   - charts/*
   - charts/**/*
 
-area/frontend:
+team/frontend:
   - airbyte-webapp/*
   - airbyte-webapp/**/*
-  - airbyte-webapp-e2e-tests/*
-  - airbyte-webapp-e2e-tests/**/*
 
 area/api:
   - airbyte-api/*

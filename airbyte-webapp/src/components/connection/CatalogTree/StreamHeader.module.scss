@@ -2,14 +2,9 @@
 @use "scss/variables";
 @forward "./CatalogTreeHeader.module.scss";
 
-$icon-size: 20px;
-
 .icon {
-  width: $icon-size;
-  height: $icon-size;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-right: 7px;
+  margin-top: -1px;
 
   &.plus {
     color: colors.$green;
@@ -24,6 +19,7 @@ $icon-size: 20px;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  padding-left: 27px;
 }
 
 .streamHeaderContent {
@@ -45,6 +41,8 @@ $icon-size: 20px;
   font-size: 12px;
   display: flex;
   flex-direction: row;
+  margin-top: 18px;
+  margin-bottom: 9px;
 }
 
 .redBackground {
@@ -60,7 +58,7 @@ $icon-size: 20px;
 }
 
 .purpleBackground {
-  background-color: colors.$blue-40;
+  background-color: colors.$blue-transparent;
 }
 
 .noHeader {

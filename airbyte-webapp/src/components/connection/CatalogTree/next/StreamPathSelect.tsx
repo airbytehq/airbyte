@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { InfoText, INFO_TEXT_VARIANT_BY_PILL_VARIANT } from "components/ui/InfoText";
-import { PillButton, PillButtonVariant, PillSelect } from "components/ui/PillSelect";
+import { PillButtonVariant, PillSelect } from "components/ui/PillSelect";
+import { Text } from "components/ui/Text";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { Path } from "core/domain/catalog";
 
@@ -18,11 +19,6 @@ interface StreamPathSelectBaseProps {
   placeholder?: React.ReactNode;
   variant?: PillButtonVariant;
   disabled?: boolean;
-  // This property is used for cases when the path is defined by source, therefore
-  // in some cases we need this path to render with pill background (BulkEditPanel) and
-  // in some cases it should be only text (StreamsTable)
-  withSourceDefinedPill?: boolean;
-  hasError?: boolean;
 }
 
 interface StreamPathSelectMultiProps {
@@ -39,30 +35,21 @@ interface StreamPathSelectProps {
 
 type PathPopoutProps = StreamPathSelectBaseProps & (StreamPathSelectMultiProps | StreamPathSelectProps);
 
-export const StreamPathSelect: React.FC<PathPopoutProps> = ({
-  withSourceDefinedPill = false,
-  variant = "grey",
-  ...props
-}) => {
-  const SourceDefinedNode = useMemo(() => {
-    if (props.path && props.path.length > 0) {
-      return props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
-    }
-    return <FormattedMessage id="connection.catalogTree.sourceDefined" />;
-  }, [props.isMulti, props.path]);
+export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
   if (props.pathType === "sourceDefined") {
-    if (withSourceDefinedPill) {
+    if (props.path && props.path.length > 0) {
+      const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
+
       return (
-        <PillButton disabled variant={variant} className={styles.streamPathSelect}>
-          {SourceDefinedNode}
-        </PillButton>
+        <Text className={styles.text}>
+          <Tooltip placement="bottom-start" control={text}>
+            {text}
+          </Tooltip>
+        </Text>
       );
     }
-    return (
-      <InfoText variant={INFO_TEXT_VARIANT_BY_PILL_VARIANT[variant]} className={styles.streamPathSelect}>
-        {SourceDefinedNode}
-      </InfoText>
-    );
+
+    return <FormattedMessage id="connection.catalogTree.sourceDefined" />;
   }
 
   const options = props.paths.map((path) => ({
@@ -72,9 +59,8 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = ({
 
   return (
     <PillSelect
-      disabledLabel={<FormattedMessage id="connectionForm.bulkEdit.pillButtonLabel.notAvailable" />}
       disabled={props.disabled}
-      variant={variant}
+      variant={props.variant}
       options={options}
       value={props.path}
       isMulti={props.isMulti}
@@ -83,7 +69,6 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = ({
         props.onPathChange(finalValues);
       }}
       className={styles.streamPathSelect}
-      hasError={props?.hasError}
     />
   );
 };

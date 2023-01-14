@@ -1,1 +1,1 @@
-export { DestinationSettingsPage as default } from "./DestinationSettingsPage";
+export { DestinationSettingsPage } from "./DestinationSettingsPage";

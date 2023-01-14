@@ -19,7 +19,6 @@ import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -32,7 +31,7 @@ import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -79,8 +78,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withResourceRequirements(resetConnection.getResourceRequirements())
             .withState(resetConnection.getState())
             .withIsSourceCustomConnector(resetConnection.getIsSourceCustomConnector())
-            .withIsDestinationCustomConnector(resetConnection.getIsDestinationCustomConnector())
-            .withWorkspaceId(resetConnection.getWorkspaceId());
+            .withIsDestinationCustomConnector(resetConnection.getIsDestinationCustomConnector());
       } else {
         throw new IllegalStateException(
             String.format("Unexpected config type %s for job %d. The only supported config types for this activity are (%s)",
@@ -91,18 +89,15 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
       final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
-      final UUID connectionId = UUID.fromString(job.getScope());
-      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-
-      final StandardDestinationDefinition destinationDefinition =
-          configRepository.getDestinationDefinitionFromDestination(standardSync.getDestinationId());
-      final String destinationNormalizationDockerImage = destinationDefinition.getNormalizationConfig() != null
-          ? DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
-              destinationDefinition.getNormalizationConfig().getNormalizationTag())
-          : null;
-      final String normalizationIntegrationType =
-          destinationDefinition.getNormalizationConfig() != null ? destinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()
-              : null;
+      List<StandardDestinationDefinition> destinationDefinitionList = configRepository.listStandardDestinationDefinitions(true);
+      Optional<StandardDestinationDefinition> optionalDestinationDefinition = destinationDefinitionList.stream()
+          .filter(destinationDefinition -> config.getDestinationDockerImage()
+              .equalsIgnoreCase(
+                  DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag())))
+          .findFirst();
+      final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
+          standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
+      final boolean supportDbt = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
 
       final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
@@ -118,15 +113,12 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withProtocolVersion(config.getDestinationProtocolVersion())
           .withIsCustomConnector(config.getIsDestinationCustomConnector())
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
-          .withSupportsDbt(destinationDefinition.getSupportsDbt())
-          .withNormalizationIntegrationType(normalizationIntegrationType);
+          .withSupportsDbt(supportDbt);
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
           .withNamespaceFormat(config.getNamespaceFormat())
           .withPrefix(config.getPrefix())
-          .withSourceId(standardSync.getSourceId())
-          .withDestinationId(standardSync.getDestinationId())
           .withSourceConfiguration(config.getSourceConfiguration())
           .withDestinationConfiguration(config.getDestinationConfiguration())
           .withOperationSequence(config.getOperationSequence())
@@ -135,8 +127,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withState(config.getState())
           .withResourceRequirements(config.getResourceRequirements())
           .withSourceResourceRequirements(config.getSourceResourceRequirements())
-          .withDestinationResourceRequirements(config.getDestinationResourceRequirements())
-          .withWorkspaceId(config.getWorkspaceId());
+          .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
 
       return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 

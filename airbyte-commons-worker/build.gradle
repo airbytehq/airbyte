@@ -10,7 +10,6 @@ dependencies {
     implementation libs.bundles.micronaut
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
-    implementation 'com.auth0:java-jwt:3.19.2'
     implementation libs.guava
     implementation (libs.temporal.sdk) {
         exclude module: 'guava'
@@ -32,7 +31,6 @@ dependencies {
 
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
-    testAnnotationProcessor libs.jmh.annotations
 
     testImplementation libs.bundles.micronaut.test
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
@@ -40,8 +38,6 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
-    testImplementation libs.jmh.core
-    testImplementation libs.jmh.annotations
 
     testImplementation project(':airbyte-commons-docker')
 }

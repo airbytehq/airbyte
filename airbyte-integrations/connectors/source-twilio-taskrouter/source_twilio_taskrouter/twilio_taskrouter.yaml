@@ -1,5 +1,6 @@
 version: "0.1.0"
 
+
 definitions:
   selector:
     extractor:
@@ -43,7 +44,7 @@ definitions:
       name: "workspaces"
       path: "/v1/Workspaces"
       primary_key: "sid"
-
+  
   workspace_stream_slicer:
     type: SubstreamSlicer
     parent_stream_configs:

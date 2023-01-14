@@ -11,11 +11,10 @@ import { FirebaseActionRoute } from "packages/cloud/views/FirebaseActionRoute";
 
 import styles from "./Auth.module.scss";
 import FormContent from "./components/FormContent";
-
-const PersonQuoteCover = React.lazy(() => import("./components/PersonQuoteCover"));
-const LoginPage = React.lazy(() => import("./LoginPage"));
-const ResetPasswordPage = React.lazy(() => import("./ResetPasswordPage"));
-const SignupPage = React.lazy(() => import("./SignupPage"));
+import { PersonQuoteCover } from "./components/PersonQuoteCover";
+import { LoginPage } from "./LoginPage";
+import { ResetPasswordPage } from "./ResetPasswordPage";
+import { SignupPage } from "./SignupPage";
 
 const hasValidRightSideUrl = (url?: string): boolean => {
   if (url) {
@@ -34,7 +33,7 @@ const hasValidRightSideUrl = (url?: string): boolean => {
   return false;
 };
 
-export const Auth: React.FC = () => {
+const Auth: React.FC = () => {
   const { pathname } = useLocation();
   const { formatMessage } = useIntl();
   const { loggedOut } = useAuthService();
@@ -54,13 +53,7 @@ export const Auth: React.FC = () => {
               <Route path={CloudRoutes.FirebaseAction} element={<FirebaseActionRoute />} />
               <Route
                 path="*"
-                element={
-                  <Navigate
-                    to={`${CloudRoutes.Login}${
-                      loggedOut && pathname.includes("/settings/account") ? "" : `?from=${pathname}`
-                    }`}
-                  />
-                }
+                element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${pathname}`}`} />}
               />
             </Routes>
           </Suspense>
@@ -81,3 +74,5 @@ export const Auth: React.FC = () => {
     </div>
   );
 };
+
+export default Auth;

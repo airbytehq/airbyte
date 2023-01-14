@@ -1,5 +1,3 @@
-import React from "react";
-
 import { Popout, PopoutProps } from "../Popout";
 import { Tooltip } from "../Tooltip";
 import { PillButton, PillButtonVariant } from "./PillButton";
@@ -9,11 +7,9 @@ type PickedPopoutProps = Pick<PopoutProps, "value" | "options" | "isMulti" | "on
 interface PillSelectProps extends PickedPopoutProps {
   variant?: PillButtonVariant;
   disabled?: boolean;
-  disabledLabel?: React.ReactNode;
-  hasError?: boolean;
 }
 
-export const PillSelect: React.FC<PillSelectProps> = ({ className, disabledLabel, ...props }) => {
+export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) => {
   const { isMulti, variant, disabled } = props;
   return (
     <Popout
@@ -37,9 +33,8 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, disabledLabel
                 }}
                 active={isOpen}
                 className={className}
-                hasError={props?.hasError}
               >
-                {(disabled && disabledLabel) || label}
+                {label}
               </PillButton>
             }
             placement="bottom-start"

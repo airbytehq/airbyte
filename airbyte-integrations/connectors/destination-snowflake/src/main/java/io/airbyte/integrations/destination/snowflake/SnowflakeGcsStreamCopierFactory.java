@@ -13,7 +13,7 @@ import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstant
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopierFactory;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.DestinationSyncMode;
 
 public class SnowflakeGcsStreamCopierFactory extends GcsStreamCopierFactory {
 

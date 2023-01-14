@@ -32,7 +32,7 @@
     ]
   },
   "prefix": "",
-  "namespaceDefinition": "destination",
+  "namespaceDefinition": "source",
   "namespaceFormat": "${SOURCE_NAMESPACE}",
   "scheduleType": "basic",
   "scheduleData": {

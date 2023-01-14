@@ -1,3 +1,1 @@
-import { PersonQuoteCover } from "./PersonQuoteCover";
-
-export default PersonQuoteCover;
+export { PersonQuoteCover } from "./PersonQuoteCover";

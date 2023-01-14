@@ -2,7 +2,6 @@ import { Listbox } from "@headlessui/react";
 import classNames from "classnames";
 import React from "react";
 
-import { ReactComponent as CaretDownIcon } from "./CaretDownIcon.svg";
 import styles from "./ListBox.module.scss";
 
 export interface ListBoxControlButtonProps<T> {
@@ -10,24 +9,16 @@ export interface ListBoxControlButtonProps<T> {
 }
 
 const DefaultControlButton = <T,>({ selectedOption }: ListBoxControlButtonProps<T>) => {
-  return (
-    <>
-      {selectedOption.label}
-      <CaretDownIcon className={styles.caret} />
-    </>
-  );
+  return <>{selectedOption.label}</>;
 };
 
 export interface Option<T> {
   label: string;
   value: T;
-  icon?: React.ReactNode;
 }
 
 interface ListBoxProps<T> {
   className?: string;
-  optionClassName?: string;
-  selectedOptionClassName?: string;
   options: Array<Option<T>>;
   selectedValue: T;
   onSelect: (selectedValue: T) => void;
@@ -42,8 +33,6 @@ export const ListBox = <T,>({
   onSelect,
   buttonClassName,
   controlButton: ControlButton = DefaultControlButton,
-  optionClassName,
-  selectedOptionClassName,
 }: ListBoxProps<T>) => {
   const selectedOption = options.find((option) => option.value === selectedValue) ?? {
     label: String(selectedValue),
@@ -59,17 +48,13 @@ export const ListBox = <T,>({
         {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}
         <div className={styles.optionsContainer}>
           <Listbox.Options className={classNames(styles.optionsMenu)}>
-            {options.map(({ label, value, icon }) => (
-              <Listbox.Option key={label} value={value} className={classNames(styles.option, optionClassName)}>
+            {options.map(({ label, value }) => (
+              <Listbox.Option key={label} value={value} className={styles.option}>
                 {({ active, selected }) => (
                   <div
-                    className={classNames(styles.optionValue, selected && selectedOptionClassName, {
-                      [styles.active]: active,
-                      [styles.selected]: selected,
-                    })}
+                    className={classNames(styles.optionValue, { [styles.active]: active, [styles.selected]: selected })}
                   >
-                    {icon && <span className={styles.icon}>{icon}</span>}
-                    <span className={styles.label}>{label}</span>
+                    {label}
                   </div>
                 )}
               </Listbox.Option>

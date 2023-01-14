@@ -33,6 +33,7 @@ import io.temporal.worker.WorkerFactory;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * Micronaut bean factory for Temporal-related singletons.
@@ -42,22 +43,22 @@ public class TemporalBeanFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
-  public TrackingClient trackingClient(final TrackingStrategy trackingStrategy,
+  public TrackingClient trackingClient(final Optional<TrackingStrategy> trackingStrategy,
                                        final DeploymentMode deploymentMode,
-                                       final JobPersistence jobPersistence,
+                                       final Optional<JobPersistence> jobPersistence,
                                        final WorkerEnvironment workerEnvironment,
                                        @Value("${airbyte.role}") final String airbyteRole,
                                        final AirbyteVersion airbyteVersion,
-                                       final ConfigRepository configRepository)
+                                       final Optional<ConfigRepository> configRepository)
       throws IOException {
 
     TrackingClientSingleton.initialize(
-        trackingStrategy,
-        new Deployment(deploymentMode, jobPersistence.getDeployment().orElseThrow(),
+        trackingStrategy.orElseThrow(),
+        new Deployment(deploymentMode, jobPersistence.orElseThrow().getDeployment().orElseThrow(),
             workerEnvironment),
         airbyteRole,
         airbyteVersion,
-        configRepository);
+        configRepository.orElseThrow());
 
     return TrackingClientSingleton.get();
   }

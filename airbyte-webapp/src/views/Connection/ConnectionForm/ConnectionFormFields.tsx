@@ -9,13 +9,12 @@ import { useUnmount } from "react-use";
 import { ControlLabels } from "components";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
-import { FlexContainer } from "components/ui/Flex";
+import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
+import { useIsAutoDetectSchemaChangesEnabled } from "hooks/connection/useIsAutoDetectSchemaChangesEnabled";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 
@@ -35,7 +34,7 @@ interface ConnectionFormFieldsProps {
 }
 
 export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ values, isSubmitting, dirty }) => {
-  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
+  const isSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
 
   const { mode, formId } = useConnectionFormService();
   const { formatMessage } = useIntl();
@@ -51,36 +50,38 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
     clearFormChange(formId);
   });
 
-  const isNewTableDesignEnabled = useNewTableDesignExperiment();
-  const firstSectionTitle = isNewTableDesignEnabled ? undefined : <FormattedMessage id="connection.transfer" />;
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
   return (
     <>
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
       <FormChangeTracker changed={dirty} formId={formId} />
       <div className={styles.formContainer}>
-        <Section title={firstSectionTitle}>
+        <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
-          {allowAutoDetectSchema && (
+          {isSchemaChangesEnabled && (
             <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
           )}
         </Section>
-        {!isNewTableDesignEnabled && (
-          <Section title={<FormattedMessage id="connection.streams" />}>
+        {!isNewStreamsTableEnabled && (
+          <Section>
+            <Heading as="h2" size="sm">
+              <FormattedMessage id="connection.streams" />
+            </Heading>
             <span className={readonlyClass}>
               <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
             </span>
             {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
-                  <FlexContainer alignItems="center">
+                  <div className={styles.flexRow}>
                     <div className={styles.leftFieldCol}>
                       <ControlLabels
                         className={styles.namespaceFormatLabel}
                         nextLine
                         error={!!meta.error}
                         label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
-                        infoTooltipContent={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                        message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
                       />
                     </div>
                     <div className={classNames(styles.rightFieldCol, readonlyClass)}>
@@ -92,21 +93,20 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                         })}
                       />
                     </div>
-                  </FlexContainer>
+                  </div>
                 )}
               </Field>
             )}
             <Field name="prefix">
               {({ field }: FieldProps<string>) => (
-                <FlexContainer alignItems="center">
+                <div className={styles.flexRow}>
                   <div className={styles.leftFieldCol}>
                     <ControlLabels
                       nextLine
-                      optional
                       label={formatMessage({
                         id: "form.prefix",
                       })}
-                      infoTooltipContent={formatMessage({
+                      message={formatMessage({
                         id: "form.prefix.message",
                       })}
                     />
@@ -122,7 +122,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                       style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                     />
                   </div>
-                </FlexContainer>
+                </div>
               )}
             </Field>
           </Section>

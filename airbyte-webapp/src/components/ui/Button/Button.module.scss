@@ -19,6 +19,10 @@
     width: 100%;
   }
 
+  &:disabled {
+    opacity: 0.25;
+  }
+
   &:disabled,
   &.isLoading {
     pointer-events: none;
@@ -32,10 +36,6 @@
 
   &:focus-visible {
     outline: 3px solid colors.$blue-50;
-  }
-
-  &:disabled:not(.isLoading) {
-    opacity: 0.25;
   }
 
   .buttonIcon {

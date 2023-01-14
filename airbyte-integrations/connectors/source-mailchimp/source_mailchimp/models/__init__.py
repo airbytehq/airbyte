@@ -1,0 +1,1 @@
+from .mailchimp import HealthCheckError

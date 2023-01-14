@@ -92,6 +92,7 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
 
     DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
+    config: Config
     options: InitVar[Mapping[str, Any]]
     config: Config
     response_filters: Optional[List[HttpResponseFilter]] = None

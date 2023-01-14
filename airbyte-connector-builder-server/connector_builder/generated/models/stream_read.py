@@ -19,11 +19,9 @@ class StreamRead(BaseModel):
 
         logs: The logs of this StreamRead.
         slices: The slices of this StreamRead.
-        inferred_schema: The inferred_schema of this StreamRead [Optional].
     """
 
     logs: List[object]
     slices: List[StreamReadSlices]
-    inferred_schema: Optional[Dict[str, Any]] = None
 
 StreamRead.update_forward_refs()

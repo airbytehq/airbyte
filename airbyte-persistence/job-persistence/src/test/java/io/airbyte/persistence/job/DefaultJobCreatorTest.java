@@ -75,7 +75,6 @@ class DefaultJobCreatorTest {
   private static final StandardSourceDefinition STANDARD_SOURCE_DEFINITION;
   private static final StandardDestinationDefinition STANDARD_DESTINATION_DEFINITION;
   private static final long JOB_ID = 12L;
-  private static final UUID WORKSPACE_ID = UUID.randomUUID();
 
   private JobPersistence jobPersistence;
   private StatePersistence statePersistence;
@@ -191,8 +190,7 @@ class DefaultJobCreatorTest {
         .withDestinationResourceRequirements(workerResourceRequirements)
         .withWebhookOperationConfigs(PERSISTED_WEBHOOK_CONFIGS)
         .withIsSourceCustomConnector(false)
-        .withIsDestinationCustomConnector(false)
-        .withWorkspaceId(WORKSPACE_ID);
+        .withIsDestinationCustomConnector(false);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -212,7 +210,7 @@ class DefaultJobCreatorTest {
         List.of(STANDARD_SYNC_OPERATION),
         PERSISTED_WEBHOOK_CONFIGS,
         STANDARD_SOURCE_DEFINITION,
-        STANDARD_DESTINATION_DEFINITION, WORKSPACE_ID).orElseThrow();
+        STANDARD_DESTINATION_DEFINITION).orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
 
@@ -249,7 +247,7 @@ class DefaultJobCreatorTest {
         DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
         null,
-        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION, UUID.randomUUID()).isEmpty());
+        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION).isEmpty());
   }
 
   @Test
@@ -264,7 +262,7 @@ class DefaultJobCreatorTest {
         DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
         null,
-        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION, WORKSPACE_ID);
+        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION);
 
     final JobSyncConfig expectedJobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
@@ -282,8 +280,7 @@ class DefaultJobCreatorTest {
         .withSourceResourceRequirements(workerResourceRequirements)
         .withDestinationResourceRequirements(workerResourceRequirements)
         .withIsSourceCustomConnector(false)
-        .withIsDestinationCustomConnector(false)
-        .withWorkspaceId(WORKSPACE_ID);
+        .withIsDestinationCustomConnector(false);
 
     final JobConfig expectedJobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -313,7 +310,7 @@ class DefaultJobCreatorTest {
         DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
         null,
-        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION, WORKSPACE_ID);
+        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION);
 
     final JobSyncConfig expectedJobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
@@ -331,8 +328,7 @@ class DefaultJobCreatorTest {
         .withSourceResourceRequirements(standardSyncResourceRequirements)
         .withDestinationResourceRequirements(standardSyncResourceRequirements)
         .withIsSourceCustomConnector(false)
-        .withIsDestinationCustomConnector(false)
-        .withWorkspaceId(WORKSPACE_ID);
+        .withIsDestinationCustomConnector(false);
 
     final JobConfig expectedJobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -368,8 +364,7 @@ class DefaultJobCreatorTest {
         null,
         new StandardSourceDefinition().withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(sourceResourceRequirements)),
         new StandardDestinationDefinition().withResourceRequirements(new ActorDefinitionResourceRequirements().withJobSpecific(List.of(
-            new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(destResourceRequirements)))),
-        WORKSPACE_ID);
+            new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(destResourceRequirements)))));
 
     final JobSyncConfig expectedJobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
@@ -387,8 +382,7 @@ class DefaultJobCreatorTest {
         .withSourceResourceRequirements(sourceResourceRequirements)
         .withDestinationResourceRequirements(destResourceRequirements)
         .withIsSourceCustomConnector(false)
-        .withIsDestinationCustomConnector(false)
-        .withWorkspaceId(WORKSPACE_ID);
+        .withIsDestinationCustomConnector(false);
 
     final JobConfig expectedJobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)

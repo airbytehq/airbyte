@@ -16,7 +16,6 @@ import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationReadList;
 import io.airbyte.api.model.generated.DestinationSearch;
-import io.airbyte.api.model.generated.DestinationSnippetRead;
 import io.airbyte.api.model.generated.DestinationUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
@@ -27,19 +26,15 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-@Singleton
 public class DestinationHandler {
 
   private final ConnectionsHandler connectionsHandler;
@@ -50,7 +45,6 @@ public class DestinationHandler {
   private final JsonSchemaValidator validator;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
-  private final OAuthConfigSupplier oAuthConfigSupplier;
 
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
@@ -60,8 +54,7 @@ public class DestinationHandler {
                      final ConnectionsHandler connectionsHandler,
                      final Supplier<UUID> uuidGenerator,
                      final JsonSecretsProcessor secretsProcessor,
-                     final ConfigurationUpdate configurationUpdate,
-                     final OAuthConfigSupplier oAuthConfigSupplier) {
+                     final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
@@ -70,16 +63,13 @@ public class DestinationHandler {
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
     this.secretsProcessor = secretsProcessor;
-    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
-  @Inject
   public DestinationHandler(final ConfigRepository configRepository,
                             final SecretsRepositoryReader secretsRepositoryReader,
                             final SecretsRepositoryWriter secretsRepositoryWriter,
                             final JsonSchemaValidator integrationSchemaValidation,
-                            final ConnectionsHandler connectionsHandler,
-                            final OAuthConfigSupplier oAuthConfigSupplier) {
+                            final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
         secretsRepositoryReader,
@@ -90,8 +80,7 @@ public class DestinationHandler {
         JsonSecretsProcessor.builder()
             .copySecrets(true)
             .build(),
-        new ConfigurationUpdate(configRepository, secretsRepositoryReader),
-        oAuthConfigSupplier);
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
@@ -259,14 +248,12 @@ public class DestinationHandler {
                                             final JsonNode configurationJson,
                                             final boolean tombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    final JsonNode oAuthMaskedConfigurationJson =
-        oAuthConfigSupplier.maskDestinationOAuthParameters(destinationDefinitionId, workspaceId, configurationJson);
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withName(name)
         .withDestinationDefinitionId(destinationDefinitionId)
         .withWorkspaceId(workspaceId)
         .withDestinationId(destinationId)
-        .withConfiguration(oAuthMaskedConfigurationJson)
+        .withConfiguration(configurationJson)
         .withTombstone(tombstone);
     secretsRepositoryWriter.writeDestinationConnection(destinationConnection, getSpec(destinationDefinitionId));
   }
@@ -312,16 +299,6 @@ public class DestinationHandler {
         .destinationDefinitionId(destinationConnection.getDestinationDefinitionId())
         .connectionConfiguration(destinationConnection.getConfiguration())
         .name(destinationConnection.getName())
-        .destinationName(standardDestinationDefinition.getName())
-        .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
-  }
-
-  protected static DestinationSnippetRead toDestinationSnippetRead(final DestinationConnection destinationConnection,
-                                                                   final StandardDestinationDefinition standardDestinationDefinition) {
-    return new DestinationSnippetRead()
-        .destinationId(destinationConnection.getDestinationId())
-        .name(destinationConnection.getName())
-        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationName(standardDestinationDefinition.getName())
         .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
   }

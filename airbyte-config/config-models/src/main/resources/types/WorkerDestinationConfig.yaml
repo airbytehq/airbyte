@@ -6,14 +6,10 @@ description: WorkerDestinationConfig
 type: object
 additionalProperties: false
 required:
-  - destinationId
   - destinationConnectionConfiguration
   - catalog
   - connectionId
 properties:
-  destinationId:
-    type: string
-    format: uuid
   destinationConnectionConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
     type: object

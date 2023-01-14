@@ -5,7 +5,6 @@
 
 from abc import ABC
 from datetime import date, datetime, timedelta
-from json import JSONDecodeError
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -15,15 +14,13 @@ from source_netsuite.constraints import (
     CUSTOM_INCREMENTAL_CURSOR,
     INCREMENTAL_CURSOR,
     META_PATH,
-    NETSUITE_INPUT_DATE_FORMATS,
-    NETSUITE_OUTPUT_DATETIME_FORMAT,
+    NETSUITE_ERRORS_MAPPING,
     RECORD_PATH,
     REFERAL_SCHEMA,
     REFERAL_SCHEMA_URL,
     SCHEMA_HEADERS,
     USLESS_SCHEMA_ELEMENTS,
 )
-from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
 
 
 class NetsuiteStream(HttpStream, ABC):
@@ -43,15 +40,9 @@ class NetsuiteStream(HttpStream, ABC):
         super().__init__(authenticator=auth)
 
     primary_key = "id"
-
-    # instance input date format format selector
-    index_datetime_format = 0
-
     raise_on_http_errors = True
-
-    @property
-    def default_datetime_format(self) -> str:
-        return NETSUITE_INPUT_DATE_FORMATS[self.index_datetime_format]
+    output_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
+    input_datetime_format = "%m/%d/%Y"
 
     @property
     def name(self) -> str:
@@ -71,13 +62,6 @@ class NetsuiteStream(HttpStream, ABC):
         return schema
 
     def get_schema(self, ref: str) -> Union[Mapping[str, Any], str]:
-        def get_json_response(response: requests.Response) -> dict:
-            try:
-                return response.json()
-            except JSONDecodeError as e:
-                self.logger.error(f"Cannot get schema for {self.name}, actual response: {e.response.text}")
-                raise
-
         # try to retrieve the schema from the cache
         schema = self.schemas.get(ref)
         if not schema:
@@ -88,11 +72,8 @@ class NetsuiteStream(HttpStream, ABC):
             if resp.status_code == 404:
                 schema = {"title": ref, "type": "string"}
             else:
-                # check for 200 status
                 resp.raise_for_status
-                # handle response
-                schema = get_json_response(resp)
-
+                schema = resp.json()
             self.schemas[ref] = schema
         return schema
 
@@ -131,8 +112,8 @@ class NetsuiteStream(HttpStream, ABC):
 
     def format_date(self, last_modified_date: str) -> str:
         # the date format returned is differnet than what we need to use in the query
-        lmd_datetime = datetime.strptime(last_modified_date, NETSUITE_OUTPUT_DATETIME_FORMAT)
-        return lmd_datetime.strftime(self.default_datetime_format)
+        lmd_datetime = datetime.strptime(last_modified_date, self.output_datetime_format)
+        return lmd_datetime.strftime(self.input_datetime_format)
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {}
@@ -174,34 +155,15 @@ class NetsuiteStream(HttpStream, ABC):
                 error_code = message[0].get("o:errorCode")
                 detail_message = message[0].get("detail")
                 known_error = NETSUITE_ERRORS_MAPPING.get(response.status_code)
-
                 if error_code in known_error.keys():
                     setattr(self, "raise_on_http_errors", False)
-
-                    # handle data-format error
-                    if "INVALID_PARAMETER" in error_code and "failed with date format" in detail_message:
-                        self.logger.warn(f"Stream `{self.name}`: cannot read using date format `{self.default_datetime_format}")
-                        self.index_datetime_format += 1
-                        if self.index_datetime_format < len(NETSUITE_INPUT_DATE_FORMATS):
-                            self.logger.warn(f"Stream `{self.name}`: retry using next date format `{self.default_datetime_format}")
-                            raise DateFormatExeption
-                        else:
-                            self.logger.error(f"DATE FORMAT exception. Cannot read using known formats {NETSUITE_INPUT_DATE_FORMATS}")
-
-                    # handle other known errors
-                    self.logger.error(f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
-                    return False
+                    self.logger.warn(
+                        f"Stream `{self.name}`: {known_error.get(error_code)}, full error message: {detail_message}",
+                    )
+                    pass
                 else:
                     return super().should_retry(response)
         return super().should_retry(response)
-
-    def read_records(
-        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        try:
-            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
-        except DateFormatExeption:
-            """continue trying other formats, until the list is exhausted"""
 
 
 class IncrementalNetsuiteStream(NetsuiteStream):
@@ -217,22 +179,10 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         """Parse the records with respect to `stream_state` for `incremental` sync."""
         if stream_state:
             for record in records:
-                if record.get(self.cursor_field, self.start_datetime) >= stream_state.get(self.cursor_field):
+                if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records
-
-    def get_state_value(self, stream_state: Mapping[str, Any] = None) -> str:
-        """
-        Sometimes the object has no `cursor_field` value assigned, and the ` "" ` emmited as state value,
-        this causes conflicts with datetime lib to parse the `time component`,
-        to avoid the errors we falling back to default start_date from input config.
-        """
-        state = stream_state.get(self.cursor_field) if stream_state else self.start_datetime
-        if not state:
-            self.logger.info(f"Stream state for `{self.name}` was not emmited, falling back to default value: {self.start_datetime}")
-            return self.start_datetime
-        return state
 
     def parse_response(
         self,
@@ -250,8 +200,8 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        latest_cursor = latest_record.get(self.cursor_field, self.start_datetime)
-        current_cursor = current_stream_state.get(self.cursor_field, self.start_datetime)
+        latest_cursor = latest_record.get(self.cursor_field, "")
+        current_cursor = current_stream_state.get(self.cursor_field, "")
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
     def request_params(
@@ -264,23 +214,30 @@ class IncrementalNetsuiteStream(NetsuiteStream):
             )
         return params
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs: Optional[Mapping[str, Any]],
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         # Netsuite cannot order records returned by the API, so we need stream slices
         # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
-
         slices = []
-        state = self.get_state_value(stream_state)
-        start = datetime.strptime(state, NETSUITE_OUTPUT_DATETIME_FORMAT).date()
+        start_str = stream_state.get(self.cursor_field) if stream_state else self.start_datetime
+        start = datetime.strptime(start_str, self.output_datetime_format).date()
         # handle abnormal state values
         if start > date.today():
             return slices
         else:
             while start <= date.today():
                 next_day = start + timedelta(days=self.window_in_days)
-                slice_start = start.strftime(self.default_datetime_format)
-                slice_end = next_day.strftime(self.default_datetime_format)
-                yield {"start": slice_start, "end": slice_end}
+                slices.append(
+                    {
+                        "start": start.strftime(self.input_datetime_format),
+                        "end": next_day.strftime(self.input_datetime_format),
+                    }
+                )
                 start = next_day
+        return slices
 
 
 class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):

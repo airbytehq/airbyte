@@ -9,7 +9,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.FAILURE_ORIGINS_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.FAILURE_TYPES_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.persistence.job.models.AttemptStatus.FAILED;
 
@@ -431,7 +430,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     if (activeJob.getAttempts().size() > minAttemptSize) {
       final Optional<Attempt> optionalAttempt = activeJob.getAttempts().stream()
-          .filter(attempt -> attempt.getAttemptNumber() == (attemptId - 1)).findFirst();
+          .filter(attempt -> attempt.getId() == (attemptId - 1)).findFirst();
       result = optionalAttempt.isPresent() && optionalAttempt.get().getStatus().equals(FAILED);
     }
 
@@ -451,7 +450,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
             continue;
           }
 
-          final int attemptNumber = attempt.getAttemptNumber();
+          // the Attempt object 'id' is actually the value of the attempt_number column in the db
+          final int attemptNumber = (int) attempt.getId();
           log.info("Failing non-terminal attempt {} for non-terminal job {}", attemptNumber, jobId);
           jobPersistence.failAttempt(jobId, attemptNumber);
           jobPersistence.writeAttemptFailureSummary(jobId, attemptNumber,
@@ -504,24 +504,11 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private void traceFailures(final AttemptFailureSummary failureSummary) {
     if (failureSummary != null) {
       if (CollectionUtils.isNotEmpty(failureSummary.getFailures())) {
-        ApmTraceUtils.addTagsToTrace(Map.of(
-            FAILURE_TYPES_KEY,
-            failureSummary.getFailures()
-                .stream()
-                .map(FailureReason::getFailureType)
-                .map(MetricTags::getFailureType)
-                .collect(Collectors.joining(",")),
-            FAILURE_ORIGINS_KEY,
-            failureSummary.getFailures()
-                .stream()
-                .map(FailureReason::getFailureOrigin)
-                .map(FailureOrigin::name)
-                .collect(Collectors.joining(","))));
+        ApmTraceUtils.addTagsToTrace(Map.of(FAILURE_ORIGINS_KEY, failureSummary.getFailures().stream().map(FailureReason::getFailureOrigin).map(
+            FailureOrigin::name).collect(Collectors.joining(","))));
       }
     } else {
-      ApmTraceUtils.addTagsToTrace(Map.of(
-          FAILURE_TYPES_KEY, MetricTags.getFailureType(null),
-          FAILURE_ORIGINS_KEY, FailureOrigin.UNKNOWN.value()));
+      ApmTraceUtils.addTagsToTrace(Map.of(FAILURE_ORIGINS_KEY, FailureOrigin.UNKNOWN.value()));
     }
   }
 
@@ -534,13 +521,11 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     if (failureSummary != null) {
       for (final FailureReason reason : failureSummary.getFailures()) {
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
-            new MetricAttribute(MetricTags.FAILURE_ORIGIN, MetricTags.getFailureOrigin(reason.getFailureOrigin())),
-            new MetricAttribute(MetricTags.FAILURE_TYPE, MetricTags.getFailureType(reason.getFailureType())));
+            new MetricAttribute(MetricTags.FAILURE_ORIGIN, MetricTags.getFailureOrigin(reason.getFailureOrigin())));
       }
     } else {
       MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
-          new MetricAttribute(MetricTags.FAILURE_ORIGIN, FailureOrigin.UNKNOWN.value()),
-          new MetricAttribute(MetricTags.FAILURE_TYPE, MetricTags.getFailureType(null)));
+          new MetricAttribute(MetricTags.FAILURE_ORIGIN, FailureOrigin.UNKNOWN.value()));
     }
   }
 

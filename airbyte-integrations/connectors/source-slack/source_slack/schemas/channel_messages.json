@@ -38,7 +38,7 @@
           "type": ["null", "string"]
         },
         "updated": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]
@@ -100,7 +100,8 @@
       "type": ["null", "boolean"]
     },
     "last_read": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "latest_reply": {
       "type": ["null", "string"]

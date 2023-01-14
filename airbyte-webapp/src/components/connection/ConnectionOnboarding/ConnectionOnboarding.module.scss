@@ -71,7 +71,7 @@
 
   &:hover,
   &:focus-visible {
-    box-shadow: variables.$box-shadow-raised;
+    box-shadow: 0 10px 19px rgba(colors.$dark-blue-900, 0.16);
   }
 }
 

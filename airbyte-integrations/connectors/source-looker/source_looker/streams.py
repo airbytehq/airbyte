@@ -251,40 +251,10 @@ class LookerStream(BaseLookerStream, ABC):
     def name(self) -> str:
         return self._name
 
-    @classmethod
-    def format_null_in_schema(cls, schema: Mapping[str, Any]):
-        """Add 'null' to schema type field
-
-        Output:
-            {
-            ...
-            'type': ['null', 'object']
-            'properties':   {
-                'field':{
-                    'type': ['null', 'number']
-                        }
-                }
-            ...
-            }
-
-        """
-
-        for key, value_schema in schema.items():
-            if isinstance(value_schema, dict):
-                schema_type = value_schema.get("type")
-
-                if isinstance(schema_type, str):
-                    value_schema["type"] = ["null", schema_type]
-
-                schema[key] = cls.format_null_in_schema(value_schema)
-
-        return schema
-
     def get_json_schema(self) -> Mapping[str, Any]:
         # Overrides default logic. All schema should be generated dynamically.
         schema = self.endpoint.schema.get("items") or self.endpoint.schema
-        schema = self.format_null_in_schema(schema["properties"])
-        return {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": schema}
+        return {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": schema["properties"]}
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs: Any) -> str:
         stream_slice = stream_slice or {}
@@ -503,7 +473,7 @@ class RunLooks(LookerStream):
                 "title": look_info["title"],
                 "properties": look_properties,
                 "type": ["null", "object"],
-                "additionalProperties": True,
+                "additionalProperties": False,
             }
         # raise LookerException(properties)
         return {

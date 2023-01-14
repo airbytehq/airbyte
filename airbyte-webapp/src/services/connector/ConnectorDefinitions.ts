@@ -2,7 +2,6 @@ import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/Ai
 import { SCOPE_WORKSPACE } from "services/Scope";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
-import { useConnectorService } from "./ConnectorService";
 import { useGetDestinationDefinitionService } from "./DestinationDefinitionService";
 import { useGetSourceDefinitionService } from "./SourceDefinitionService";
 import { useSuspenseQuery } from "./useSuspenseQuery";
@@ -15,7 +14,6 @@ interface ConnectorSpecifications {
 export const connectorDefinitionKeys = {
   all: [SCOPE_WORKSPACE, "connectorDefinition"] as const,
   lists: () => [...connectorDefinitionKeys.all, "list"] as const,
-  count: () => [...connectorDefinitionKeys.all, "count"] as const,
 };
 
 /**
@@ -37,9 +35,4 @@ export const useConnectorSpecifications = (): ConnectorSpecifications => {
 
     return { sourceDefinitions, destinationDefinitions };
   });
-};
-
-export const useGetOutOfDateConnectorsCount = () => {
-  const service = useConnectorService();
-  return useSuspenseQuery(connectorDefinitionKeys.count(), () => service.checkUpdates());
 };

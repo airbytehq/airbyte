@@ -44,9 +44,8 @@ definitions:
         end_datetime:
           datetime: "{{ now_utc() }}"
           datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-        step: "P1Y"
+        step: "1y"
         datetime_format: "%Y-%m-%d %H:%M:%S"
-        cursor_granularity: "PT1S"
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:

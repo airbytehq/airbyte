@@ -11,7 +11,6 @@ from typing import Any, Mapping, Union
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from dataclasses_jsonschema import JsonSchemaMixin
 
 
@@ -31,7 +30,7 @@ def _default_file_path() -> str:
 
 
 @dataclass
-class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, JsonSchemaMixin):
+class JsonFileSchemaLoader(SchemaLoader, JsonSchemaMixin):
     """
     Loads the schema from a json file
 
@@ -64,8 +63,7 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, JsonSchemaMixin):
             raw_schema = json.loads(raw_json_file)
         except ValueError as err:
             raise RuntimeError(f"Invalid JSON file format for file {json_schema_path}") from err
-        self.package_name = resource
-        return self._resolve_schema_references(raw_schema)
+        return raw_schema
 
     def _get_json_filepath(self):
         return self.file_path.eval(self.config)

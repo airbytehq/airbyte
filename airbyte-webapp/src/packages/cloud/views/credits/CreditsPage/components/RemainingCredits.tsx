@@ -19,8 +19,6 @@ import {
 } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { links } from "utils/links";
 
-import { LowCreditBalanceHint } from "./LowCreditBalanceHint";
-
 interface Props {
   selfServiceCheckoutEnabled: boolean;
 }
@@ -118,44 +116,29 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   };
 
   return (
-    <>
-      <LowCreditBalanceHint>
+    <Block>
+      <CreditView>
+        <FormattedMessage id="credits.remainingCredits" />
+        <Count>
+          <FormattedNumber value={cloudWorkspace.remainingCredits} />
+        </Count>
+      </CreditView>
+      <Actions>
         <Button
           disabled={!selfServiceCheckoutEnabled}
           type="button"
           size="xs"
-          variant="dark"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
           icon={<FontAwesomeIcon icon={faPlus} />}
         >
           <FormattedMessage id="credits.buyCredits" />
         </Button>
-      </LowCreditBalanceHint>
-      <Block>
-        <CreditView>
-          <FormattedMessage id="credits.remainingCredits" />
-          <Count>
-            <FormattedNumber value={cloudWorkspace.remainingCredits} />
-          </Count>
-        </CreditView>
-        <Actions>
-          <Button
-            disabled={!selfServiceCheckoutEnabled}
-            type="button"
-            size="xs"
-            onClick={startStripeCheckout}
-            isLoading={isLoading || isWaitingForCredits}
-            icon={<FontAwesomeIcon icon={faPlus} />}
-          >
-            <FormattedMessage id="credits.buyCredits" />
-          </Button>
-          <Button size="xs" onClick={() => window.open(links.contactSales, "_blank")}>
-            <FormattedMessage id="credits.talkToSales" />
-          </Button>
-        </Actions>
-      </Block>
-    </>
+        <Button size="xs" onClick={() => window.open(links.contactSales, "_blank")}>
+          <FormattedMessage id="credits.talkToSales" />
+        </Button>
+      </Actions>
+    </Block>
   );
 };
 

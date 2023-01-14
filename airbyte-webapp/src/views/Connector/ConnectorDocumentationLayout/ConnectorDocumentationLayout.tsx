@@ -14,10 +14,9 @@ const LazyDocumentationPanel = lazy(() =>
 
 export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { formatMessage } = useIntl();
-  const { documentationPanelOpen, documentationUrl } = useDocumentationPanelContext();
+  const { documentationPanelOpen } = useDocumentationPanelContext();
   const screenWidth = useWindowSize().width;
-  const isOfficialDocumentation = documentationUrl.includes("docs.airbyte.com");
-  const showDocumentationPanel = screenWidth > 500 && documentationPanelOpen && isOfficialDocumentation;
+  const showDocumentationPanel = screenWidth > 500 && documentationPanelOpen;
 
   const documentationPanel = (
     <Suspense fallback={<LoadingPage />}>
@@ -35,7 +34,6 @@ export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unkn
       }}
       secondPanel={{
         children: documentationPanel,
-        className: styles.rightPanel,
         minWidth: 60,
         overlay: {
           displayThreshold: 350,

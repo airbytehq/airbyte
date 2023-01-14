@@ -20,5 +20,6 @@
 
 :export {
   // Export colors to be used in SVG gradients
-  gradientColor: colors.$blue;
+  gradientStart: colors.$blue;
+  gradientStop: colors.$blue-transparent;
 }

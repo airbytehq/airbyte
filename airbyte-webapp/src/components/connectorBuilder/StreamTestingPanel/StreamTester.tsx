@@ -1,27 +1,41 @@
+import { faWarning } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
+import { RotateIcon } from "components/icons/RotateIcon";
+import { Button } from "components/ui/Button";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
+import { Tooltip } from "components/ui/Tooltip";
 
-import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
+import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
-import { StreamTestButton } from "./StreamTestButton";
 import styles from "./StreamTester.module.scss";
 
-export const StreamTester: React.FC<{
-  hasTestInputJsonErrors: boolean;
-  setTestInputOpen: (open: boolean) => void;
-}> = ({ hasTestInputJsonErrors, setTestInputOpen }) => {
+interface StreamTesterProps {
+  selectedStream: StreamsListReadStreamsItem;
+}
+
+export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) => {
   const { formatMessage } = useIntl();
+  const { jsonManifest, configJson, yamlIsValid } = useConnectorBuilderState();
   const {
-    streams,
-    testStreamIndex,
-    streamRead: { data: streamReadData, refetch: readStream, isError, error, isFetching },
-  } = useConnectorBuilderTestState();
+    data: streamReadData,
+    refetch: readStream,
+    isError,
+    error,
+    isFetching,
+  } = useReadStream({
+    manifest: jsonManifest,
+    stream: selectedStream.name,
+    config: configJson,
+  });
 
   const [logsFlex, setLogsFlex] = useState(0);
   const handleLogsTitleClick = () => {
@@ -44,18 +58,42 @@ export const StreamTester: React.FC<{
     }
   }, [isError]);
 
+  const testButton = (
+    <Button
+      className={styles.testButton}
+      size="sm"
+      onClick={() => {
+        readStream();
+      }}
+      disabled={!yamlIsValid}
+      icon={
+        yamlIsValid ? (
+          <div>
+            <RotateIcon width={styles.testIconHeight} height={styles.testIconHeight} />
+          </div>
+        ) : (
+          <FontAwesomeIcon icon={faWarning} />
+        )
+      }
+    >
+      <Text className={styles.testButtonText} size="sm" bold>
+        <FormattedMessage id="connectorBuilder.testButton" />
+      </Text>
+    </Button>
+  );
+
   return (
     <div className={styles.container}>
       <Text className={styles.url} size="lg">
-        {streams[testStreamIndex]?.url}
+        {selectedStream.url}
       </Text>
-
-      <StreamTestButton
-        readStream={readStream}
-        hasTestInputJsonErrors={hasTestInputJsonErrors}
-        setTestInputOpen={setTestInputOpen}
-      />
-
+      {yamlIsValid ? (
+        testButton
+      ) : (
+        <Tooltip control={testButton} containerClassName={styles.testButtonTooltipContainer}>
+          <FormattedMessage id="connectorBuilder.invalidYamlTest" />
+        </Tooltip>
+      )}
       {isFetching && (
         <div className={styles.fetchingSpinner}>
           <Spinner />
@@ -67,11 +105,7 @@ export const StreamTester: React.FC<{
           orientation="horizontal"
           firstPanel={{
             children: (
-              <>
-                {streamReadData !== undefined && !isError && (
-                  <ResultDisplay slices={streamReadData.slices} inferredSchema={streamReadData.inferred_schema} />
-                )}
-              </>
+              <>{streamReadData !== undefined && !isError && <ResultDisplay slices={streamReadData.slices} />}</>
             ),
             minWidth: 80,
           }}

@@ -55,9 +55,9 @@ describe("auth button", () => {
   it("initially renders with correct message and no status message", () => {
     // no auth errors
     mockUseConnectorForm.mockImplementationOnce(() => {
-      const { selectedConnectorDefinition } = baseUseConnectorFormValues;
+      const { selectedConnectorDefinitionSpecification, selectedConnectorDefinition } = baseUseConnectorFormValues;
 
-      return { selectedConnectorDefinition };
+      return { selectedConnectorDefinitionSpecification, selectedConnectorDefinition };
     });
 
     // not done
@@ -70,11 +70,7 @@ describe("auth button", () => {
 
     render(
       <TestWrapper>
-        <AuthButton
-          selectedConnectorDefinitionSpecification={
-            baseUseConnectorFormValues.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification
-          }
-        />
+        <AuthButton />
       </TestWrapper>
     );
 
@@ -94,9 +90,9 @@ describe("auth button", () => {
   it("after successful authentication, it renders with correct message and success message", () => {
     // no auth errors
     mockUseConnectorForm.mockImplementationOnce(() => {
-      const { selectedConnectorDefinition } = baseUseConnectorFormValues;
+      const { selectedConnectorDefinitionSpecification, selectedConnectorDefinition } = baseUseConnectorFormValues;
 
-      return { selectedConnectorDefinition };
+      return { selectedConnectorDefinitionSpecification, selectedConnectorDefinition };
     });
 
     // done
@@ -109,11 +105,7 @@ describe("auth button", () => {
 
     render(
       <TestWrapper>
-        <AuthButton
-          selectedConnectorDefinitionSpecification={
-            baseUseConnectorFormValues.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification
-          }
-        />
+        <AuthButton />
       </TestWrapper>
     );
 
@@ -131,9 +123,9 @@ describe("auth button", () => {
     mockUseAuthentication.mockReturnValue({ hiddenAuthFieldErrors: { field: "form.empty.error" } });
 
     mockUseConnectorForm.mockImplementationOnce(() => {
-      const { selectedConnectorDefinition } = baseUseConnectorFormValues;
+      const { selectedConnectorDefinitionSpecification, selectedConnectorDefinition } = baseUseConnectorFormValues;
 
-      return { selectedConnectorDefinition };
+      return { selectedConnectorDefinitionSpecification, selectedConnectorDefinition };
     });
 
     // not done
@@ -146,11 +138,7 @@ describe("auth button", () => {
 
     render(
       <TestWrapper>
-        <AuthButton
-          selectedConnectorDefinitionSpecification={
-            baseUseConnectorFormValues.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification
-          }
-        />
+        <AuthButton />
       </TestWrapper>
     );
 

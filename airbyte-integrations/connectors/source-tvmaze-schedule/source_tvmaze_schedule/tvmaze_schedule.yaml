@@ -25,9 +25,8 @@ definitions:
     end_datetime:
       datetime: "{{ config['end_date'] or today_utc() }}"
       format: "%Y-%m-%d"
-    step: "P1D"
+    step: 1d
     datetime_format: "%Y-%m-%d"
-    cursor_granularity: "P1D"
     cursor_field: "airdate"
     start_time_option:
       field_name: "date"

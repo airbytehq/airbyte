@@ -139,9 +139,10 @@ class SourceAmazonSellerPartner(AbstractSource):
 
             return True, None
         except Exception as e:
-            # Validate Orders stream without data
             if isinstance(e, StopIteration):
-                return True, None
+                logger.error(
+                    "Could not check connection without data for Orders stream. Please change value for replication start date field."
+                )
 
             # Additional check, since Vendor-ony accounts within Amazon Seller API will not pass the test without this exception
             if "403 Client Error" in str(e):

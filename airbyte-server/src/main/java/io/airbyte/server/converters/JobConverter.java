@@ -44,14 +44,14 @@ import io.airbyte.persistence.job.models.Job;
 import io.airbyte.server.scheduler.SynchronousJobMetadata;
 import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.workers.helper.ProtocolConverters;
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
-@Singleton
+@Slf4j
 public class JobConverter {
 
   private final WorkerEnvironment workerEnvironment;
@@ -137,7 +137,7 @@ public class JobConverter {
 
   public static AttemptRead getAttemptRead(final Attempt attempt) {
     return new AttemptRead()
-        .id((long) attempt.getAttemptNumber())
+        .id(attempt.getId())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
         .bytesSynced(attempt.getOutput() // TODO (parker) remove after frontend switches to totalStats
             .map(JobOutput::getSync)
@@ -243,7 +243,7 @@ public class JobConverter {
   }
 
   public static AttemptNormalizationStatusRead convertAttemptNormalizationStatus(
-                                                                                 final AttemptNormalizationStatus databaseStatus) {
+                                                                                 AttemptNormalizationStatus databaseStatus) {
     return new AttemptNormalizationStatusRead()
         .attemptNumber(databaseStatus.attemptNumber())
         .hasRecordsCommitted(!databaseStatus.recordsCommitted().isEmpty())

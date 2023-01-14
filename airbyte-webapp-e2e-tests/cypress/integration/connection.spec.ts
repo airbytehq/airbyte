@@ -22,8 +22,6 @@ import {
   isPrimaryKeyNonExist,
   selectPrimaryKeyField,
   checkPreFilledPrimaryKeyField,
-  checkStreamFields,
-  expandStreamDetails,
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
@@ -38,7 +36,7 @@ import {
 } from "../pages/modals/catalogDiffModal";
 import { updateSchemaModalConfirmBtnClick } from "../pages/modals/updateSchemaModal";
 
-describe("Connection - main actions", () => {
+describe("Connection main actions", () => {
   beforeEach(() => {
     initialSetupCompleted();
   });
@@ -83,6 +81,140 @@ describe("Connection - main actions", () => {
 
     deleteSource(sourceName);
     deleteDestination(destName);
+  });
+
+  it("Connection sync mode Incremental Append", () => {
+    const sourceName = appendRandomString("Test connection Postgres source cypress");
+    const destName = appendRandomString("Test connection Postgres destination cypress");
+
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    populateDBSource();
+
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    searchStream("users");
+    selectSyncMode("Incremental", "Append");
+    selectCursorField("col1");
+
+    submitButtonClick();
+    confirmStreamConfigurationChangedPopup();
+
+    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+    });
+
+    checkSuccessResult();
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    searchStream("users");
+    checkCursorField("col1");
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+    cleanDBSource();
+  });
+
+  it("Connection sync mode Incremental Deduped History - PK is defined", () => {
+    const sourceName = appendRandomString("Test connection Postgres source cypress");
+    const destName = appendRandomString("Test connection Postgres destination cypress");
+
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    populateDBSource();
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    searchStream("users");
+    selectSyncMode("Incremental", "Deduped + history");
+    selectCursorField("col1");
+    checkPreFilledPrimaryKeyField("id");
+
+    submitButtonClick();
+    confirmStreamConfigurationChangedPopup();
+
+    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+    });
+
+    checkSuccessResult();
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    searchStream("users");
+
+    checkCursorField("col1");
+    checkPreFilledPrimaryKeyField("id");
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+    cleanDBSource();
+  });
+
+  it("Connection sync mode Incremental Deduped History - PK is not defined", () => {
+    const sourceName = appendRandomString("Test connection Postgres source cypress");
+    const destName = appendRandomString("Test connection Postgres destination cypress");
+
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    populateDBSource();
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    searchStream("cities");
+    selectSyncMode("Incremental", "Deduped + history");
+    selectCursorField("city");
+    isPrimaryKeyNonExist();
+    selectPrimaryKeyField("city_code");
+
+    submitButtonClick();
+    confirmStreamConfigurationChangedPopup();
+
+    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+    });
+
+    checkSuccessResult();
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    searchStream("cities");
+
+    checkCursorField("city");
+    checkPrimaryKey("city_code");
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+    cleanDBSource();
   });
 
   it("Update connection (pokeAPI)", () => {
@@ -155,6 +287,11 @@ describe("Connection - main actions", () => {
 
     createTestConnection(sourceName, destName);
 
+    cy.get("div").contains(sourceName).should("exist");
+    cy.get("div").contains(destName).should("exist");
+
+    openSourceDestinationFromGrid(sourceName);
+
     goToReplicationTab();
 
     selectSchedule("Cron");
@@ -220,6 +357,54 @@ describe("Connection - main actions", () => {
 
     deleteSource(sourceName);
     deleteDestination(destName);
+  });
+
+  it("Create a connection, update data in source, show diff modal, reset streams", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    populateDBSource();
+    const sourceName = appendRandomString(
+      "Test refresh source schema with changed data - connection Postgres source cypress"
+    );
+    const destName = appendRandomString(
+      "Test refresh source schema with changed data - connection Local JSON destination cypress"
+    );
+
+    createTestConnection(sourceName, destName);
+    cy.get("div").contains(sourceName).should("exist");
+    cy.get("div").contains(destName).should("exist");
+
+    makeChangesInDBSource();
+    openSourceDestinationFromGrid(sourceName);
+    goToReplicationTab();
+    refreshSourceSchemaBtnClick();
+
+    cy.get(catalogDiffModal).should("exist");
+
+    cy.get(removedStreamsTable).should("contain", "users");
+
+    cy.get(newStreamsTable).should("contain", "cars");
+
+    toggleStreamWithChangesAccordion("cities");
+    cy.get(removedFieldsTable).should("contain", "city_code");
+    cy.get(newFieldsTable).children().should("contain", "country").and("contain", "state");
+
+    updateSchemaModalConfirmBtnClick();
+
+    toggleStreamEnabledState("cars");
+
+    submitButtonClick();
+    resetModalSaveBtnClick();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+    });
+
+    checkSuccessResult();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+    cleanDBSource();
   });
 
   it("Delete connection", () => {
@@ -349,234 +534,6 @@ describe("Connection - main actions", () => {
         name: "pokemon",
       });
     });
-    checkSuccessResult();
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-});
-
-describe("Connection - stream view", () => {
-  beforeEach(() => {
-    initialSetupCompleted();
-    populateDBSource();
-  });
-
-  afterEach(() => {
-    cleanDBSource();
-  });
-
-  it("Stream view", () => {
-    const sourceName = appendRandomString("Test connection Postgres source cypress");
-    const destName = appendRandomString("Test connection Postgres destination cypress");
-
-    const collectionNames = ["Field name", "col1", "id"];
-    const collectionTypes = ["Data type", "String", "Integer"];
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
-
-    goToReplicationTab();
-
-    searchStream("users");
-    expandStreamDetails();
-    checkStreamFields(collectionNames, collectionTypes);
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-});
-
-describe("Connection sync modes", () => {
-  beforeEach(() => {
-    initialSetupCompleted();
-    populateDBSource();
-  });
-
-  afterEach(() => {
-    cleanDBSource();
-  });
-
-  it("Connection sync mode Incremental Append", () => {
-    const sourceName = appendRandomString("Test connection Postgres source cypress");
-    const destName = appendRandomString("Test connection Postgres destination cypress");
-
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
-
-    goToReplicationTab();
-
-    searchStream("users");
-    selectSyncMode("Incremental", "Append");
-    selectCursorField("col1");
-
-    submitButtonClick();
-    confirmStreamConfigurationChangedPopup();
-
-    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
-    });
-
-    checkSuccessResult();
-
-    goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
-
-    goToReplicationTab();
-
-    searchStream("users");
-    checkCursorField("col1");
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
-  it("Connection sync mode Incremental Deduped History - PK is defined", () => {
-    const sourceName = appendRandomString("Test connection Postgres source cypress");
-    const destName = appendRandomString("Test connection Postgres destination cypress");
-
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
-
-    goToReplicationTab();
-
-    searchStream("users");
-    selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField("col1");
-    checkPreFilledPrimaryKeyField("id");
-
-    submitButtonClick();
-    confirmStreamConfigurationChangedPopup();
-
-    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
-    });
-
-    checkSuccessResult();
-
-    goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
-
-    goToReplicationTab();
-
-    searchStream("users");
-
-    checkCursorField("col1");
-    checkPreFilledPrimaryKeyField("id");
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
-  it("Connection sync mode Incremental Deduped History - PK is not defined", () => {
-    const sourceName = appendRandomString("Test connection Postgres source cypress");
-    const destName = appendRandomString("Test connection Postgres destination cypress");
-
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
-
-    goToReplicationTab();
-
-    searchStream("cities");
-    selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField("city");
-    isPrimaryKeyNonExist();
-    selectPrimaryKeyField("city_code");
-
-    submitButtonClick();
-    confirmStreamConfigurationChangedPopup();
-
-    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
-    });
-
-    checkSuccessResult();
-
-    goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
-
-    goToReplicationTab();
-
-    searchStream("cities");
-
-    checkCursorField("city");
-    checkPrimaryKey("city_code");
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-});
-
-describe("Connection - detect changes in source", () => {
-  beforeEach(() => {
-    initialSetupCompleted();
-    populateDBSource();
-  });
-
-  afterEach(() => {
-    cleanDBSource();
-  });
-
-  it("Create a connection, update data in source, show diff modal, reset streams", () => {
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
-    const sourceName = appendRandomString(
-      "Test refresh source schema with changed data - connection Postgres source cypress"
-    );
-    const destName = appendRandomString(
-      "Test refresh source schema with changed data - connection Local JSON destination cypress"
-    );
-
-    createTestConnection(sourceName, destName);
-    cy.get("div").contains(sourceName).should("exist");
-    cy.get("div").contains(destName).should("exist");
-
-    makeChangesInDBSource();
-    goToReplicationTab();
-    refreshSourceSchemaBtnClick();
-
-    cy.get(catalogDiffModal).should("exist");
-
-    cy.get(removedStreamsTable).should("contain", "users");
-
-    cy.get(newStreamsTable).should("contain", "cars");
-
-    toggleStreamWithChangesAccordion("cities");
-    cy.get(removedFieldsTable).should("contain", "city_code");
-    cy.get(newFieldsTable).children().should("contain", "country").and("contain", "state");
-
-    updateSchemaModalConfirmBtnClick();
-
-    toggleStreamEnabledState("cars");
-
-    submitButtonClick();
-    resetModalSaveBtnClick();
-
-    cy.wait("@updateConnection").then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
-    });
-
     checkSuccessResult();
 
     deleteSource(sourceName);

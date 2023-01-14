@@ -36,6 +36,7 @@ const SchemaHeader = styled(Header)<SchemaHeaderProps>`
   background: ${({ theme }) => theme.primaryColor};
   border-radius: 8px 8px 0 0;
   padding: 10px;
+  transition: 0.3s ease-in;
 `;
 
 export function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
@@ -74,7 +75,7 @@ export const getAvailableSyncModesOptions = (
 
 export const BulkEditPanel: React.FC = () => {
   const {
-    destDefinitionSpecification: { supportedDestinationSyncModes },
+    destDefinition: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEditService();
   const availableSyncModesOptions = useMemo(
@@ -111,12 +112,7 @@ export const BulkEditPanel: React.FC = () => {
           <FormattedMessage id="sources.sync" />
         </p>
         <div className={styles.syncCellContent}>
-          <Switch
-            variant="strong-blue"
-            size="sm"
-            checked={options.selected}
-            onChange={() => onChangeOption({ selected: !options.selected })}
-          />
+          <Switch small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
         </div>
       </HeaderCell>
       <HeaderCell flex={1} className={styles.headerCell}>
@@ -142,7 +138,6 @@ export const BulkEditPanel: React.FC = () => {
         </p>
         <div className={styles.syncCellContent}>
           <StreamPathSelect
-            withSourceDefinedPill
             disabled={!cursorType}
             variant="strong-blue"
             isMulti={false}
@@ -159,7 +154,6 @@ export const BulkEditPanel: React.FC = () => {
         </p>
         <div className={styles.syncCellContent}>
           <StreamPathSelect
-            withSourceDefinedPill
             disabled={!pkType}
             variant="strong-blue"
             isMulti

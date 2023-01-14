@@ -3,21 +3,18 @@ import { useIntl } from "react-intl";
 
 import {
   ConnectionScheduleType,
-  DestinationDefinitionRead,
   DestinationDefinitionSpecificationRead,
   OperationRead,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
-import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 import {
   ConnectionFormValues,
+  createConnectionValidationSchema,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
   useInitialValues,
-  ConnectionValidationSchema,
 } from "views/Connection/ConnectionForm/formConfig";
 
 import { useUniqueFormId } from "../FormChangeTracker";
@@ -40,11 +37,17 @@ interface ConnectionServiceProps {
 export const tidyConnectionFormValues = (
   values: FormikConnectionFormValues,
   workspaceId: string,
-  validationSchema: ConnectionValidationSchema,
+  mode: ConnectionFormMode,
+  allowSubOneHourCronExpressions: boolean,
+  isAutoDetectSchemaChangesEnabled: boolean,
   operations?: OperationRead[]
 ): ValuesProps => {
   // TODO (https://github.com/airbytehq/airbyte/issues/17279): We should try to fix the types so we don't need the casting.
-  const formValues: ConnectionFormValues = validationSchema.cast(values, {
+  const formValues: ConnectionFormValues = createConnectionValidationSchema({
+    mode,
+    allowSubOneHourCronExpressions,
+    isAutoDetectSchemaChangesEnabled,
+  }).cast(values, {
     context: { isRequest: true },
   }) as unknown as ConnectionFormValues;
 
@@ -60,8 +63,7 @@ export const tidyConnectionFormValues = (
 interface ConnectionFormHook {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
-  destDefinition: DestinationDefinitionRead;
-  destDefinitionSpecification: DestinationDefinitionSpecificationRead;
+  destDefinition: DestinationDefinitionSpecificationRead;
   initialValues: FormikConnectionFormValues;
   schemaError?: SchemaError;
   formId: string;
@@ -76,40 +78,26 @@ const useConnectionForm = ({
   schemaError,
   refreshSchema,
 }: ConnectionServiceProps): ConnectionFormHook => {
-  const destDefinition = useDestinationDefinition(connection.destination.destinationDefinitionId);
-  const destDefinitionSpecification = useGetDestinationDefinitionSpecification(
-    connection.destination.destinationDefinitionId
-  );
-  const initialValues = useInitialValues(connection, destDefinition, destDefinitionSpecification, mode !== "create");
+  const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
+  const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
   const formId = useUniqueFormId();
-  const isNewTableDesignEnabled = useNewTableDesignExperiment();
 
   const getErrorMessage = useCallback(
-    (formValid: boolean, connectionDirty: boolean) => {
-      if (isNewTableDesignEnabled) {
-        // There is a case when some fields could be dropped in the database. We need to validate the form without property dirty
-        return submitError
-          ? generateMessageFromError(submitError)
-          : !formValid
-          ? formatMessage({ id: "connectionForm.validation.error" })
-          : null;
-      }
-      return submitError
+    (formValid: boolean, connectionDirty: boolean) =>
+      submitError
         ? generateMessageFromError(submitError)
         : connectionDirty && !formValid
         ? formatMessage({ id: "connectionForm.validation.error" })
-        : null;
-    },
-    [formatMessage, isNewTableDesignEnabled, submitError]
+        : null,
+    [formatMessage, submitError]
   );
 
   return {
     connection,
     mode,
     destDefinition,
-    destDefinitionSpecification,
     initialValues,
     schemaError,
     formId,

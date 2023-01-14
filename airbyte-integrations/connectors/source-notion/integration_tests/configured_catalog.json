@@ -4,24 +4,17 @@
       "stream": {
         "name": "users",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "default_primary_key": [["id"]]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
         "name": "databases",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_primary_key": [["id"]],
-        "default_cursor_field": ["last_edited_time"]
+        "supported_sync_modes": ["incremental"]
       },
-      "primary_key": [["id"]],
-      "cursor_field": ["last_edited_time"],
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
@@ -29,13 +22,8 @@
       "stream": {
         "name": "pages",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_primary_key": [["id"]],
-        "default_cursor_field": ["last_edited_time"]
+        "supported_sync_modes": ["incremental"]
       },
-      "primary_key": [["id"]],
-      "cursor_field": ["last_edited_time"],
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
@@ -43,13 +31,8 @@
       "stream": {
         "name": "blocks",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_primary_key": [["id"]],
-        "default_cursor_field": ["last_edited_time"]
+        "supported_sync_modes": ["incremental"]
       },
-      "primary_key": [["id"]],
-      "cursor_field": ["last_edited_time"],
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
     }

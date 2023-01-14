@@ -37,10 +37,10 @@
       "type": ["null", "string"]
     },
     "billing": {
-      "$ref": "order_billing.json"
+      "$ref": "billing.json"
     },
     "shipping": {
-      "$ref": "order_shipping.json"
+      "$ref": "shipping.json"
     },
     "is_paying_customer": {
       "type": ["null", "boolean"]

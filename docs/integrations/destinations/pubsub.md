@@ -4,7 +4,7 @@ description: >-
   Provider.
 ---
 
-# PubSub
+# Google PubSub
 
 ## Overview
 

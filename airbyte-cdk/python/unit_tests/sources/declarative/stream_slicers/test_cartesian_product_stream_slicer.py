@@ -42,10 +42,9 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
                 DatetimeStreamSlicer(
                     start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", options={}),
                     end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", options={}),
-                    step="P1D",
+                    step="1d",
                     cursor_field=InterpolatedString.create("", options={}),
                     datetime_format="%Y-%m-%d",
-                    cursor_granularity="P1D",
                     config={},
                     options={},
                 ),
@@ -88,10 +87,9 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         DatetimeStreamSlicer(
             start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", options={}),
             end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", options={}),
-            step="P1D",
+            step="1d",
             cursor_field=InterpolatedString(string="date", options={}),
             datetime_format="%Y-%m-%d",
-            cursor_granularity="P1D",
             config={},
             options={},
         ),

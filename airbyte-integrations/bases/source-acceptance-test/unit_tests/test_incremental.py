@@ -695,38 +695,31 @@ def test_state_with_abnormally_large_values(mocker, read_output, expectation):
     [
         pytest.param(
             Config.TestStrictnessLevel.high,
-            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"], bypass_reason=None)),
+            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"])),
             False,
             False,
             id="high test strictness level, future_state_path and missing streams are defined: run the test.",
         ),
         pytest.param(
             Config.TestStrictnessLevel.low,
-            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"], bypass_reason=None)),
+            MagicMock(future_state=MagicMock(future_state_path="my_future_state_path", missing_streams=["foo", "bar"])),
             False,
             False,
             id="low test strictness level, future_state_path and missing_streams are defined: run the test.",
         ),
         pytest.param(
             Config.TestStrictnessLevel.high,
-            MagicMock(future_state=MagicMock(future_state_path=None, bypass_reason=None)),
+            MagicMock(future_state=MagicMock(future_state_path=None)),
             True,
             False,
             id="high test strictness level, future_state_path and missing streams are defined: fail the test.",
         ),
         pytest.param(
             Config.TestStrictnessLevel.low,
-            MagicMock(future_state=MagicMock(future_state_path=None, bypass_reason=None)),
+            MagicMock(future_state=MagicMock(future_state_path=None)),
             False,
             True,
             id="low test strictness level, future_state_path not defined: skip the test.",
-        ),
-        pytest.param(
-            Config.TestStrictnessLevel.high,
-            MagicMock(future_state=MagicMock(bypass_reason="valid bypass reason")),
-            False,
-            True,
-            id="high test strictness level, bypass_reason: skip test.",
         ),
     ],
 )
@@ -744,18 +737,18 @@ def test_future_state_configuration_fixture(mocker, test_strictness_level, input
         test_incremental.pytest.fail.assert_not_called()
 
 
-TEST_AIRBYTE_STREAM_A = AirbyteStream(name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
-TEST_AIRBYTE_STREAM_B = AirbyteStream(name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
+TEST_AIRBYTE_STREAM_A = AirbyteStream(name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])
+TEST_AIRBYTE_STREAM_B = AirbyteStream(name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])
 
 TEST_CONFIGURED_AIRBYTE_STREAM_A = ConfiguredAirbyteStream(
     stream=TEST_AIRBYTE_STREAM_A,
-    sync_mode=SyncMode.incremental,
+    sync_mode=SyncMode.full_refresh,
     destination_sync_mode=DestinationSyncMode.overwrite,
 )
 
 TEST_CONFIGURED_AIRBYTE_STREAM_B = ConfiguredAirbyteStream(
     stream=TEST_AIRBYTE_STREAM_B,
-    sync_mode=SyncMode.incremental,
+    sync_mode=SyncMode.full_refresh,
     destination_sync_mode=DestinationSyncMode.overwrite,
 )
 

@@ -10,7 +10,6 @@ import { ModalBody, ModalFooter } from "components/ui/Modal";
 import { Text } from "components/ui/Text";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { links } from "utils/links";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./DestinationNamespaceModal.module.scss";
@@ -19,7 +18,7 @@ import { ExampleSettingsTable } from "./ExampleSettingsTable";
 const destinationNamespaceValidationSchema = yup.object().shape({
   namespaceDefinition: yup
     .string()
-    .oneOf([NamespaceDefinitionType.destination, NamespaceDefinitionType.source, NamespaceDefinitionType.customformat])
+    .oneOf([NamespaceDefinitionType.source, NamespaceDefinitionType.destination, NamespaceDefinitionType.customformat])
     .required("form.empty.error"),
   namespaceFormat: yup.string().when("namespaceDefinition", {
     is: NamespaceDefinitionType.customformat,
@@ -48,7 +47,7 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
   return (
     <Formik
       initialValues={{
-        namespaceDefinition: initialValues?.namespaceDefinition ?? NamespaceDefinitionType.destination,
+        namespaceDefinition: initialValues?.namespaceDefinition ?? NamespaceDefinitionType.source,
         namespaceFormat: initialValues.namespaceFormat,
       }}
       enableReinitialize
@@ -69,22 +68,6 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
                   <LabeledRadioButton
                     {...field}
                     className={styles.radioButton}
-                    id="destinationNamespace.destination"
-                    label={
-                      <Text as="span">
-                        <FormattedMessage id="connectionForm.modal.destinationNamespace.option.destination" />
-                      </Text>
-                    }
-                    value={NamespaceDefinitionType.destination}
-                    checked={field.value === NamespaceDefinitionType.destination}
-                  />
-                )}
-              </Field>
-              <Field name="namespaceDefinition">
-                {({ field }: FieldProps<string>) => (
-                  <LabeledRadioButton
-                    {...field}
-                    className={styles.radioButton}
                     id="destinationNamespace.source"
                     label={
                       <Text as="span">
@@ -93,6 +76,22 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
                     }
                     value={NamespaceDefinitionType.source}
                     checked={field.value === NamespaceDefinitionType.source}
+                  />
+                )}
+              </Field>
+              <Field name="namespaceDefinition">
+                {({ field }: FieldProps<string>) => (
+                  <LabeledRadioButton
+                    {...field}
+                    className={styles.radioButton}
+                    id="destinationNamespace.destination"
+                    label={
+                      <Text as="span">
+                        <FormattedMessage id="connectionForm.modal.destinationNamespace.option.destination" />
+                      </Text>
+                    }
+                    value={NamespaceDefinitionType.destination}
+                    checked={field.value === NamespaceDefinitionType.destination}
                   />
                 )}
               </Field>
@@ -144,11 +143,6 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
                 <FormattedMessage id="connectionForm.modal.destinationNamespace.description" />
               </Text>
               <ExampleSettingsTable namespaceDefinitionType={values.namespaceDefinition} />
-              <a className={styles.namespaceLink} href={links.namespaceLink} target="_blank" rel="noreferrer">
-                <Text className={styles.text} size="xs">
-                  <FormattedMessage id="connectionForm.modal.destinationNamespace.learnMore.link" />
-                </Text>
-              </a>
             </div>
           </ModalBody>
           <ModalFooter>

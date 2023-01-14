@@ -8,20 +8,11 @@ import styles from "./ErrorOccurredView.module.scss";
 
 interface ErrorOccurredViewProps {
   message: React.ReactNode;
-  /**
-   * URL to relevant documentation for the error if available
-   */
-  docLink?: string;
   ctaButtonText?: React.ReactNode;
   onCtaButtonClick?: React.MouseEventHandler;
 }
 
-export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({
-  message,
-  onCtaButtonClick,
-  ctaButtonText,
-  docLink,
-}) => {
+export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, onCtaButtonClick, ctaButtonText }) => {
   return (
     <div className={styles.errorOccurredView} data-testid="errorView">
       <div className={styles.content}>
@@ -30,13 +21,6 @@ export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({
           <FormattedMessage id="errorView.title" />
         </Heading>
         <p className={styles.message}>{message}</p>
-        {docLink && (
-          <p>
-            <a href={docLink} target="_blank" rel="noreferrer">
-              <FormattedMessage id="errorView.docLink" />
-            </a>
-          </p>
-        )}
         {onCtaButtonClick && ctaButtonText && (
           <Button size="lg" onClick={onCtaButtonClick}>
             {ctaButtonText}

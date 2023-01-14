@@ -31,7 +31,7 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DbtTransformationRunner;
 import io.airbyte.workers.general.DbtTransformationWorker;
-import io.airbyte.workers.normalization.DefaultNormalizationRunner;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.DbtLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
@@ -142,10 +142,11 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
         Math.toIntExact(jobRunConfig.getAttemptId()),
         resourceRequirements,
         new DbtTransformationRunner(
-            processFactory, new DefaultNormalizationRunner(
+            processFactory, NormalizationRunnerFactory.create(
+                destinationLauncherConfig.getDockerImage(),
                 processFactory,
-                destinationLauncherConfig.getNormalizationDockerImage(),
-                destinationLauncherConfig.getNormalizationIntegrationType())));
+                NormalizationRunnerFactory.NORMALIZATION_VERSION,
+                destinationLauncherConfig.getNormalizationDockerImage())));
   }
 
   private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getContainerLauncherWorkerFactory(

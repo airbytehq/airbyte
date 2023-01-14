@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.bigquery;
 
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -81,7 +81,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
     checkList.add(database -> {
       if (isDatasetConfigured(database)) {
         database.query(String.format("select 1 from %s where 1=0",
-            getFullyQualifiedTableNameWithQuoting(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES", getQuoteString())));
+            getFullTableName(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES", getQuoteString())));
         LOGGER.info("The source passed the Dataset query test!");
       } else {
         LOGGER.info("The Dataset query test is skipped due to not configured datasetId!");
@@ -92,8 +92,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   @Override
-  protected JsonSchemaType getAirbyteType(final StandardSQLTypeName columnType) {
-    return sourceOperations.getAirbyteType(columnType);
+  protected JsonSchemaType getType(final StandardSQLTypeName columnType) {
+    return sourceOperations.getJsonType(columnType);
   }
 
   @Override
@@ -146,7 +146,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final StandardSQLTypeName cursorFieldType) {
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
         RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
+        getFullTableName(schemaName, tableName, getQuoteString()),
         cursorInfo.getCursorField()),
         sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));
   }
@@ -159,7 +159,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+        getFullTableName(schemaName, tableName, getQuoteString())));
   }
 
   @Override

@@ -19,7 +19,11 @@ The server is now reachable on localhost:8080
 
 ### OpenAPI generation
 
-Run it via Gradle by running this from the Airbyte project root: 
+```bash
+openapi-generator generate -i ../connector-builder-server/src/main/openapi/openapi.yaml -g python-fastapi -c openapi/generator_config.yaml  -o build/server -t openapi/templates 
+```
+
+Or you can run it via Gradle by running this from the Airbyte project root: 
 ```bash
 ./gradlew :airbyte-connector-builder-server:generateOpenApiPythonServer
 ```

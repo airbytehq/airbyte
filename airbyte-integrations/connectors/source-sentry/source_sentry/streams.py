@@ -6,9 +6,7 @@
 from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-import pendulum
 import requests
-from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -64,39 +62,10 @@ class SentryStreamPagination(SentryStream):
         yield from response.json()
 
 
-class SentryIncremental(SentryStreamPagination, IncrementalMixin):
-    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
-        """
-        Endpoint does not provide query filtering params, but they provide us
-        cursor field in most cases, so we used that as incremental filtering
-        during the parsing.
-        """
-        start_date = "1900-01-01T00:00:00.0Z"
-        if pendulum.parse(record[self.cursor_field]) >= pendulum.parse((stream_state or {}).get(self.cursor_field, start_date)):
-            yield record
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[MutableMapping]:
-        json_response = response.json() or []
-
-        for record in json_response:
-            yield from self.filter_by_state(stream_state=stream_state, record=record)
-
-    @property
-    def state(self) -> Mapping[str, Any]:
-        return {self.cursor_field: str(self._cursor_value)}
-
-    @state.setter
-    def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.cursor_field]
-
-
-class Events(SentryIncremental):
+class Events(SentryStreamPagination):
     """
     Docs: https://docs.sentry.io/api/events/list-a-projects-events/
     """
-
-    primary_key = "id"
-    cursor_field = "dateCreated"
 
     def __init__(self, organization: str, project: str, **kwargs):
         super().__init__(**kwargs)
@@ -123,13 +92,10 @@ class Events(SentryIncremental):
         return params
 
 
-class Issues(SentryIncremental):
+class Issues(SentryStreamPagination):
     """
     Docs: https://docs.sentry.io/api/events/list-a-projects-issues/
     """
-
-    primary_key = "id"
-    cursor_field = "lastSeen"
 
     def __init__(self, organization: str, project: str, **kwargs):
         super().__init__(**kwargs)
@@ -156,13 +122,10 @@ class Issues(SentryIncremental):
         return params
 
 
-class Projects(SentryIncremental):
+class Projects(SentryStreamPagination):
     """
     Docs: https://docs.sentry.io/api/projects/list-your-projects/
     """
-
-    primary_key = "id"
-    cursor_field = "dateCreated"
 
     def path(
         self,

@@ -185,8 +185,7 @@ class OAuthHandlerTest {
     final Map<String, String> pathsToGet = Map.ofEntries(
         Map.entry("field1", "$.field1"),
         Map.entry("field3_1", "$.field3.field3_1"),
-        Map.entry("field3_2", "$.field3.field3_2"),
-        Map.entry("field4", "$.someNonexistentField"));
+        Map.entry("field3_2", "$.field3.field3_2"));
 
     final JsonNode expected = Jsons.deserialize(
         """
@@ -206,8 +205,7 @@ class OAuthHandlerTest {
         """
         {
           "testMask": "**********",
-          "testNotMask": "this",
-          "testOtherType": true
+          "testNotMask": "this"
         }
         """);
 
@@ -215,8 +213,7 @@ class OAuthHandlerTest {
         """
         {
           "testMask": "mask",
-          "testNotMask": "notThis",
-          "testOtherType": true
+          "testNotMask": "notThis"
         }
         """);
 
@@ -224,8 +221,7 @@ class OAuthHandlerTest {
         """
         {
           "testMask": "mask",
-          "testNotMask": "this",
-          "testOtherType": true
+          "testNotMask": "this"
         }
         """);
 

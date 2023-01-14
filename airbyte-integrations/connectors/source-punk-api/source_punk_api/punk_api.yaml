@@ -27,9 +27,8 @@ definitions:
     # end_datetime:
     #   datetime: "{{ now_local() }}"
     #   format: "%Y-%m-%d %H:%M:%S.%f"
-    step: "P1M"
+    step: "1m"
     datetime_format: "mm-YYYY"
-    cursor_granularity: "P1M"
     cursor_field: airdate
     # start_time_option:
     #   field_name: "date"

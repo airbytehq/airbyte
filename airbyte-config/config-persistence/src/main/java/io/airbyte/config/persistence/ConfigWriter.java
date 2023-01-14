@@ -19,8 +19,11 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.SourceType;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.DSLContext;
@@ -68,8 +71,7 @@ public class ConfigWriter {
     return ctx.select(ACTOR_DEFINITION.ID, ACTOR_DEFINITION.DOCKER_REPOSITORY, ACTOR_DEFINITION.ACTOR_TYPE, ACTOR_DEFINITION.PROTOCOL_VERSION)
         .from(ACTOR_DEFINITION)
         .join(ACTOR).on(ACTOR.ACTOR_DEFINITION_ID.equal(ACTOR_DEFINITION.ID))
-        .fetch()
-        .stream();
+        .fetchStream();
   }
 
   static void writeStandardSourceDefinition(final List<StandardSourceDefinition> configs, final DSLContext ctx) {
@@ -173,19 +175,9 @@ public class ConfigWriter {
                 standardDestinationDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY,
-                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
-                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository()
-                    : null)
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG,
-                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
-                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationTag()
-                    : null)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
             .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE,
-                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
-                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()
-                    : null)
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
             .execute();
 
@@ -215,19 +207,9 @@ public class ConfigWriter {
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY,
-                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
-                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository()
-                    : null)
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG,
-                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
-                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationTag()
-                    : null)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
             .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE,
-                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
-                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()
-                    : null)
             .execute();
       }
     });

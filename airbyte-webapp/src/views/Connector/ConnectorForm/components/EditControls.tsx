@@ -1,12 +1,21 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
 
+import { useConnectorForm } from "../connectorFormContext";
 import styles from "./EditControls.module.scss";
 import { TestingConnectionError } from "./TestingConnectionError";
 import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
+
+const Controls = styled.div`
+  margin-top: 34px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
 
 interface IProps {
   formType: "source" | "destination";
@@ -33,6 +42,8 @@ const EditControls: React.FC<IProps> = ({
   errorMessage,
   onCancelTesting,
 }) => {
+  const { unfinishedFlows } = useConnectorForm();
+
   if (isSubmitting) {
     return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
   }
@@ -49,9 +60,10 @@ const EditControls: React.FC<IProps> = ({
 
   return (
     <>
-      <div className={styles.controlsContainer}>
+      {renderStatusMessage()}
+      <Controls>
         <div className={styles.buttonsContainer}>
-          <Button type="submit" disabled={isSubmitting || !dirty}>
+          <Button type="submit" disabled={isSubmitting || !dirty || Object.keys(unfinishedFlows).length > 0}>
             <FormattedMessage id="form.saveChangesAndTest" />
           </Button>
           <Button
@@ -69,8 +81,7 @@ const EditControls: React.FC<IProps> = ({
             <FormattedMessage id={`form.${formType}Retest`} />
           </Button>
         )}
-      </div>
-      {renderStatusMessage()}
+      </Controls>
     </>
   );
 };

@@ -1,3 +1,3 @@
 export * from "./models";
 export * from "./api";
-export * from "./traverseSchemaToField";
+export * from "./fieldUtil";

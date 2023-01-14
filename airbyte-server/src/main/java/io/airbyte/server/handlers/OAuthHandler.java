@@ -9,7 +9,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DEFINITION_ID
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.WORKSPACE_ID_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
@@ -39,19 +38,16 @@ import io.airbyte.persistence.job.tracker.TrackingMetadata;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.handlers.helpers.OAuthPathExtractor;
 import io.airbyte.validation.json.JsonValidationException;
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Singleton
 public class OAuthHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OAuthHandler.class);
@@ -74,10 +70,8 @@ public class OAuthHandler {
 
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, sourceOauthConsentRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
-        sourceOauthConsentRequest.getSourceDefinitionId());
-    ApmTraceUtils.addTagsToTrace(traceTags);
-    ApmTraceUtils.addTagsToRootSpan(traceTags);
+    ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, sourceOauthConsentRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
+        sourceOauthConsentRequest.getSourceDefinitionId()));
     final StandardSourceDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(sourceOauthConsentRequest.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
@@ -120,10 +114,8 @@ public class OAuthHandler {
 
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, destinationOauthConsentRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
-        destinationOauthConsentRequest.getDestinationDefinitionId());
-    ApmTraceUtils.addTagsToTrace(traceTags);
-    ApmTraceUtils.addTagsToRootSpan(traceTags);
+    ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, destinationOauthConsentRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
+        destinationOauthConsentRequest.getDestinationDefinitionId()));
 
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(destinationOauthConsentRequest.getDestinationDefinitionId());
@@ -168,10 +160,8 @@ public class OAuthHandler {
 
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeSourceOauthRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
-        completeSourceOauthRequest.getSourceDefinitionId());
-    ApmTraceUtils.addTagsToTrace(traceTags);
-    ApmTraceUtils.addTagsToRootSpan(traceTags);
+    ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, completeSourceOauthRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
+        completeSourceOauthRequest.getSourceDefinitionId()));
 
     final StandardSourceDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(completeSourceOauthRequest.getSourceDefinitionId());
@@ -218,10 +208,8 @@ public class OAuthHandler {
 
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest completeDestinationOAuthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeDestinationOAuthRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
-        completeDestinationOAuthRequest.getDestinationDefinitionId());
-    ApmTraceUtils.addTagsToTrace(traceTags);
-    ApmTraceUtils.addTagsToRootSpan(traceTags);
+    ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, completeDestinationOAuthRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
+        completeDestinationOAuthRequest.getDestinationDefinitionId()));
 
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(completeDestinationOAuthRequest.getDestinationDefinitionId());
@@ -325,40 +313,31 @@ public class OAuthHandler {
 
   @VisibleForTesting
   JsonNode getOauthFromDBIfNeeded(final JsonNode oAuthInputConfigurationFromDB, final JsonNode oAuthInputConfigurationFromInput) {
-    final ObjectNode result = (ObjectNode) Jsons.emptyObject();
+    final Map<String, String> result = new HashMap<>();
 
-    oAuthInputConfigurationFromInput.fields().forEachRemaining(entry -> {
-      final String k = entry.getKey();
-      final JsonNode v = entry.getValue();
+    Jsons.deserializeToStringMap(oAuthInputConfigurationFromInput)
+        .forEach((k, v) -> {
+          if (AirbyteSecretConstants.SECRETS_MASK.equals(v)) {
+            if (oAuthInputConfigurationFromDB.has(k)) {
+              result.put(k, oAuthInputConfigurationFromDB.get(k).textValue());
+            } else {
+              LOGGER.warn("Missing the key {} in the config store in DB", k);
+            }
 
-      // Note: This does not currently handle replacing masked secrets within nested objects.
-      if (AirbyteSecretConstants.SECRETS_MASK.equals(v.textValue())) {
-        if (oAuthInputConfigurationFromDB.has(k)) {
-          result.set(k, oAuthInputConfigurationFromDB.get(k));
-        } else {
-          LOGGER.warn("Missing the key {} in the config store in DB", k);
-        }
-      } else {
-        result.set(k, v);
-      }
-    });
+          } else {
+            result.put(k, v);
+          }
+        });
 
-    return result;
+    return Jsons.jsonNode(result);
   }
 
   @VisibleForTesting
   JsonNode getOAuthInputConfiguration(final JsonNode hydratedSourceConnectionConfiguration, final Map<String, String> pathsToGet) {
-    final Map<String, JsonNode> result = new HashMap<>();
-    pathsToGet.forEach((k, v) -> {
-      final Optional<JsonNode> configValue = JsonPaths.getSingleValue(hydratedSourceConnectionConfiguration, v);
-      if (configValue.isPresent()) {
-        result.put(k, configValue.get());
-      } else {
-        LOGGER.warn("Missing the key {} from the config stored in DB", k);
-      }
-    });
-
-    return Jsons.jsonNode(result);
+    return Jsons.jsonNode(pathsToGet.entrySet().stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            entry -> JsonPaths.getSingleValue(hydratedSourceConnectionConfiguration, entry.getValue()).get())));
   }
 
 }

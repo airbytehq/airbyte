@@ -17,8 +17,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
@@ -82,8 +80,6 @@ class DefaultAirbyteSourceTest {
 
   private static Path logJobRoot;
 
-  private static final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-
   static {
     try {
       logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
@@ -141,7 +137,7 @@ class DefaultAirbyteSourceTest {
 
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, featureFlags);
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
     source.start(SOURCE_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -177,7 +173,7 @@ class DefaultAirbyteSourceTest {
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
     final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory,
-        heartbeatMonitor, featureFlags);
+        heartbeatMonitor);
     source.start(SOURCE_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -202,7 +198,7 @@ class DefaultAirbyteSourceTest {
 
   @Test
   void testNonzeroExitCodeThrows() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, featureFlags);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
     tap.start(SOURCE_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
@@ -211,20 +207,8 @@ class DefaultAirbyteSourceTest {
   }
 
   @Test
-  void testIgnoredExitCodes() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, featureFlags);
-    tap.start(SOURCE_CONFIG, jobRoot);
-    when(process.isAlive()).thenReturn(false);
-
-    DefaultAirbyteSource.IGNORED_EXIT_CODES.forEach(exitCode -> {
-      when(process.exitValue()).thenReturn(exitCode);
-      Assertions.assertDoesNotThrow(tap::close);
-    });
-  }
-
-  @Test
   void testGetExitValue() throws Exception {
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, featureFlags);
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
     source.start(SOURCE_CONFIG, jobRoot);
 
     when(process.isAlive()).thenReturn(false);

@@ -235,4 +235,6 @@ spec:
                 type: "string"
                 airbyte_secret: true
                 order: 4
+  supportsNormalization: false
+  supportsDBT: false
   supported_destination_sync_modes: []

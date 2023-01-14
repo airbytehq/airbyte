@@ -44,7 +44,6 @@ class DefaultSyncJobFactoryTest {
     final UUID destinationId = UUID.randomUUID();
     final UUID operationId = UUID.randomUUID();
     final UUID workspaceWebhookConfigId = UUID.randomUUID();
-    final UUID workspaceId = UUID.randomUUID();
     final String workspaceWebhookName = "test-webhook-name";
     final JsonNode persistedWebhookConfigs = Jsons.deserialize(
         String.format("{\"webhookConfigs\": [{\"id\": \"%s\", \"name\": \"%s\", \"authToken\": {\"_secret\": \"a-secret_v1\"}}]}",
@@ -88,7 +87,7 @@ class DefaultSyncJobFactoryTest {
     when(
         jobCreator.createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, srcProtocolVersion, dstDockerImage,
             dstProtocolVersion, operations,
-            persistedWebhookConfigs, standardSourceDefinition, standardDestinationDefinition, workspaceId))
+            persistedWebhookConfigs, standardSourceDefinition, standardDestinationDefinition))
                 .thenReturn(Optional.of(jobId));
     when(configRepository.getStandardSourceDefinition(sourceDefinitionId))
         .thenReturn(standardSourceDefinition);
@@ -97,7 +96,7 @@ class DefaultSyncJobFactoryTest {
         .thenReturn(standardDestinationDefinition);
 
     when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(true))).thenReturn(
-        new StandardWorkspace().withWorkspaceId(workspaceId).withWebhookOperationConfigs(persistedWebhookConfigs));
+        new StandardWorkspace().withWebhookOperationConfigs(persistedWebhookConfigs));
 
     final SyncJobFactory factory = new DefaultSyncJobFactory(true, jobCreator, configRepository, mock(OAuthConfigSupplier.class), workspaceHelper);
     final long actualJobId = factory.create(connectionId);
@@ -106,7 +105,7 @@ class DefaultSyncJobFactoryTest {
     verify(jobCreator)
         .createSyncJob(sourceConnection, destinationConnection, standardSync, srcDockerImage, srcProtocolVersion, dstDockerImage, dstProtocolVersion,
             operations, persistedWebhookConfigs,
-            standardSourceDefinition, standardDestinationDefinition, workspaceId);
+            standardSourceDefinition, standardDestinationDefinition);
   }
 
 }

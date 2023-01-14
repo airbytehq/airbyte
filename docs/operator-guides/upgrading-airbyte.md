@@ -31,16 +31,10 @@ If you use custom connectors, this upgrade requires all of your connector specs 
 
 ## Upgrading on Docker
 
-:::note
-
-Airbyte version 0.40.28 or later requires [Docker Compose V2](https://docs.docker.com/compose/compose-v2/) to be [installed](https://docs.docker.com/compose/install/) before upgrading.
-
-:::
-
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
    ```bash
-   docker compose down
+   docker-compose down
    ```
 
 2. Upgrade the docker instance to new version.
@@ -52,7 +46,7 @@ Airbyte version 0.40.28 or later requires [Docker Compose V2](https://docs.docke
 3. Bring Airbyte back online.
 
    ```bash
-   docker compose up
+   docker-compose up
    ```
 
 ### Resetting your Configuration
@@ -109,7 +103,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.40.28 --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.40.25 --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```

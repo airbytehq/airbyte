@@ -9,7 +9,7 @@ import LoadingPage from "components/LoadingPage";
 import { I18nProvider } from "core/i18n";
 import { AppMonitoringServiceProvider } from "hooks/services/AppMonitoringService";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { defaultCloudFeatures, FeatureService } from "hooks/services/Feature";
+import { FeatureItem, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationServiceProvider from "hooks/services/Notification";
@@ -39,7 +39,14 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
           <ConfirmationModalService>
             <ModalServiceProvider>
               <FormChangeTrackerService>
-                <FeatureService features={defaultCloudFeatures}>
+                <FeatureService
+                  features={[
+                    FeatureItem.AllowOAuthConnector,
+                    FeatureItem.AllowSync,
+                    FeatureItem.AllowChangeDataGeographies,
+                    FeatureItem.AllowDBTCloudIntegration,
+                  ]}
+                >
                   <AppServicesProvider>
                     <AuthenticationProvider>
                       <HelmetProvider>

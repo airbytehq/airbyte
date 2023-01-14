@@ -2,7 +2,7 @@ version: "0.1.0"
 
 definitions:
   page_size: 100
-  step: "P100D"
+  step: "100d"
 
   schema_loader:
     type: JsonSchema
@@ -31,7 +31,6 @@ definitions:
       field_name: "start_date"
       inject_into: "request_parameter"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    cursor_granularity: "PT0.000001S"
 
   retriever:
     type: SimpleRetriever

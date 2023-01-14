@@ -4,23 +4,16 @@ import userEvent from "@testing-library/user-event";
 import React from "react";
 import selectEvent from "react-select-event";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
-import {
-  mockDestinationDefinition,
-  mockDestinationDefinitionSpecification,
-} from "test-utils/mock-data/mockDestination";
+import { mockDestination } from "test-utils/mock-data/mockDestination";
 import { TestWrapper } from "test-utils/testutils";
 
-import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
+import { defaultFeatures, FeatureItem } from "hooks/services/Feature";
 import * as sourceHook from "hooks/services/useSourceHook";
 
 import { CreateConnectionForm } from "./CreateConnectionForm";
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
-  useGetDestinationDefinitionSpecification: () => mockDestinationDefinitionSpecification,
-}));
-
-jest.mock("services/connector/DestinationDefinitionService", () => ({
-  useDestinationDefinition: () => mockDestinationDefinition,
+  useGetDestinationDefinitionSpecification: () => mockDestination,
 }));
 
 jest.mock("services/workspaces/WorkspacesService", () => ({
@@ -125,7 +118,7 @@ describe("CreateConnectionForm", () => {
     it("should not allow cron expressions under one hour when feature not enabled", async () => {
       jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
 
-      const featuresToInject = defaultOssFeatures.filter((f) => f !== FeatureItem.AllowSyncSubOneHourCronExpressions);
+      const featuresToInject = defaultFeatures.filter((f) => f !== FeatureItem.AllowSyncSubOneHourCronExpressions);
 
       const container = tlr(
         <TestWrapper features={featuresToInject}>

@@ -38,6 +38,7 @@ jobs:
             publish-connector
             publish
             publish-external
+            publish-cdk
             gke-kube-test
             run-specific-test
           static-args: |

@@ -8,19 +8,15 @@ import io.airbyte.api.generated.DestinationDefinitionSpecificationApi;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
 import io.airbyte.server.handlers.SchedulerHandler;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Post;
+import javax.ws.rs.Path;
+import lombok.AllArgsConstructor;
 
-@Controller("/api/v1/destination_definition_specifications")
+@Path("/v1/destination_definition_specifications/get")
+@AllArgsConstructor
 public class DestinationDefinitionSpecificationApiController implements DestinationDefinitionSpecificationApi {
 
   private final SchedulerHandler schedulerHandler;
 
-  public DestinationDefinitionSpecificationApiController(final SchedulerHandler schedulerHandler) {
-    this.schedulerHandler = schedulerHandler;
-  }
-
-  @Post("/get")
   @Override
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
     return ApiHelper.execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdWithWorkspaceId));

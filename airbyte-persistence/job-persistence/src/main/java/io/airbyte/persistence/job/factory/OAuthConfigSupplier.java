@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,36 +45,6 @@ public class OAuthConfigSupplier {
 
   public static boolean hasOAuthConfigSpecification(final ConnectorSpecification spec) {
     return spec != null && spec.getAdvancedAuth() != null && spec.getAdvancedAuth().getOauthConfigSpecification() != null;
-  }
-
-  public JsonNode maskSourceOAuthParameters(final UUID sourceDefinitionId, final UUID workspaceId, final JsonNode sourceConnectorConfig)
-      throws IOException {
-    try {
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
-      MoreOAuthParameters.getSourceOAuthParameter(configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId)
-          .ifPresent(sourceOAuthParameter -> {
-            maskOauthParameters(sourceDefinition.getName(), sourceDefinition.getSpec(), sourceConnectorConfig);
-          });
-      return sourceConnectorConfig;
-    } catch (final JsonValidationException | ConfigNotFoundException e) {
-      throw new IOException(e);
-    }
-  }
-
-  public JsonNode maskDestinationOAuthParameters(final UUID destinationDefinitionId,
-                                                 final UUID workspaceId,
-                                                 final JsonNode destinationConnectorConfig)
-      throws IOException {
-    try {
-      final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
-      MoreOAuthParameters.getDestinationOAuthParameter(configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId)
-          .ifPresent(destinationOAuthParameter -> {
-            maskOauthParameters(destinationDefinition.getName(), destinationDefinition.getSpec(), destinationConnectorConfig);
-          });
-      return destinationConnectorConfig;
-    } catch (final JsonValidationException | ConfigNotFoundException e) {
-      throw new IOException(e);
-    }
   }
 
   public JsonNode injectSourceOAuthParameters(final UUID sourceDefinitionId, final UUID workspaceId, final JsonNode sourceConnectorConfig)
@@ -117,21 +85,31 @@ public class OAuthConfigSupplier {
     }
   }
 
-  /**
-   * Gets the OAuth parameter paths as specified in the connector spec and traverses through them
-   */
-  private static void traverseOAuthOutputPaths(final ConnectorSpecification spec,
-                                               final String connectorName,
-                                               final BiConsumer<String, List<String>> consumer) {
+  private static boolean injectOAuthParameters(final String connectorName,
+                                               final ConnectorSpecification spec,
+                                               final JsonNode oAuthParameters,
+                                               final JsonNode connectorConfig) {
+    if (!hasOAuthConfigSpecification(spec)) {
+      // keep backward compatible behavior if connector does not declare an OAuth config spec
+      MoreOAuthParameters.mergeJsons((ObjectNode) connectorConfig, (ObjectNode) oAuthParameters);
+      return true;
+    }
+    if (!checkOAuthPredicate(spec.getAdvancedAuth().getPredicateKey(), spec.getAdvancedAuth().getPredicateValue(), connectorConfig)) {
+      // OAuth is not applicable in this connectorConfig due to the predicate not being verified
+      return false;
+    }
+    // TODO: if we write a migration to flatten persisted configs in db, we don't need to flatten
+    // here see https://github.com/airbytehq/airbyte/issues/7624
+    boolean result = false;
+    final JsonNode flatOAuthParameters = MoreOAuthParameters.flattenOAuthConfig(oAuthParameters);
     final JsonNode outputSpecTop = spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerOutputSpecification();
     final JsonNode outputSpec;
     if (outputSpecTop.has(PROPERTIES)) {
       outputSpec = outputSpecTop.get(PROPERTIES);
     } else {
       LOGGER.error(String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification does not declare properties.", connectorName));
-      return;
+      return false;
     }
-
     for (final String key : Jsons.keys(outputSpec)) {
       final JsonNode node = outputSpec.get(key);
       if (node.getNodeType() == OBJECT) {
@@ -143,7 +121,8 @@ public class OAuthConfigSupplier {
             propertyPath.add(arrayNode.get(i).asText());
           }
           if (!propertyPath.isEmpty()) {
-            consumer.accept(key, propertyPath);
+            Jsons.replaceNestedValue(connectorConfig, propertyPath, flatOAuthParameters.get(key));
+            result = true;
           } else {
             LOGGER.error(String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification includes an invalid empty %s for %s",
                 connectorName, PATH_IN_CONNECTOR_CONFIG, key));
@@ -158,48 +137,7 @@ public class OAuthConfigSupplier {
             connectorName, key));
       }
     }
-  }
-
-  private static void maskOauthParameters(final String connectorName, final ConnectorSpecification spec, final JsonNode connectorConfig) {
-    if (!hasOAuthConfigSpecification(spec)) {
-      return;
-    }
-    if (!checkOAuthPredicate(spec.getAdvancedAuth().getPredicateKey(), spec.getAdvancedAuth().getPredicateValue(), connectorConfig)) {
-      // OAuth is not applicable in this connectorConfig due to the predicate not being verified
-      return;
-    }
-
-    traverseOAuthOutputPaths(spec, connectorName, (_key, propertyPath) -> {
-      Jsons.replaceNestedValue(connectorConfig, propertyPath, Jsons.jsonNode(MoreOAuthParameters.SECRET_MASK));
-    });
-
-  }
-
-  private static boolean injectOAuthParameters(final String connectorName,
-                                               final ConnectorSpecification spec,
-                                               final JsonNode oAuthParameters,
-                                               final JsonNode connectorConfig) {
-    if (!hasOAuthConfigSpecification(spec)) {
-      // keep backward compatible behavior if connector does not declare an OAuth config spec
-      MoreOAuthParameters.mergeJsons((ObjectNode) connectorConfig, (ObjectNode) oAuthParameters);
-      return true;
-    }
-    if (!checkOAuthPredicate(spec.getAdvancedAuth().getPredicateKey(), spec.getAdvancedAuth().getPredicateValue(), connectorConfig)) {
-      // OAuth is not applicable in this connectorConfig due to the predicate not being verified
-      return false;
-    }
-
-    // TODO: if we write a migration to flatten persisted configs in db, we don't need to flatten
-    // here see https://github.com/airbytehq/airbyte/issues/7624
-    final JsonNode flatOAuthParameters = MoreOAuthParameters.flattenOAuthConfig(oAuthParameters);
-
-    final AtomicBoolean result = new AtomicBoolean(false);
-    traverseOAuthOutputPaths(spec, connectorName, (key, propertyPath) -> {
-      Jsons.replaceNestedValue(connectorConfig, propertyPath, flatOAuthParameters.get(key));
-      result.set(true);
-    });
-
-    return result.get();
+    return result;
   }
 
   private static boolean checkOAuthPredicate(final List<String> predicateKey, final String predicateValue, final JsonNode connectorConfig) {

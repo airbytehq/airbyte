@@ -37,7 +37,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final JDBCType columnType = safeGetJdbcType(columnTypeInt);
@@ -63,10 +63,10 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void setCursorField(final PreparedStatement preparedStatement,
-                             final int parameterIndex,
-                             final JDBCType cursorFieldType,
-                             final String value)
+  public void setStatementField(final PreparedStatement preparedStatement,
+                                final int parameterIndex,
+                                final JDBCType cursorFieldType,
+                                final String value)
       throws SQLException {
     switch (cursorFieldType) {
 
@@ -90,7 +90,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JDBCType getDatabaseFieldType(final JsonNode field) {
+  public JDBCType getFieldType(final JsonNode field) {
     try {
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
@@ -109,7 +109,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaType.INTEGER;

@@ -1,3 +1,9 @@
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .streamPathSelect {
   width: 100%;
   min-width: 0;

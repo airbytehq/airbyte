@@ -42,36 +42,33 @@ ConditionLabel.args = {
     _type: "formCondition",
     fieldKey: "field_key",
     path: "section.Fieldname",
-    selectionKey: "type",
-    selectionPath: "section.Fieldname.type",
-    selectionConstValues: ["one", "two", "three"],
-    conditions: [
-      {
+    conditions: {
+      one: {
         isRequired: true,
-        _type: "formGroup",
-        properties: [],
+        type: "string",
+        _type: "formItem",
         fieldKey: "field_key",
         path: "section.Fieldname",
         title: "Title of first option",
         description: "Description of the item",
       },
-      {
+      two: {
         isRequired: true,
-        _type: "formGroup",
-        properties: [],
+        type: "string",
+        _type: "formItem",
         fieldKey: "field_key",
         path: "section.Fieldname",
       },
-      {
+      three: {
         isRequired: true,
-        _type: "formGroup",
-        properties: [],
+        type: "string",
+        _type: "formItem",
         fieldKey: "field_key",
         path: "section.Fieldname",
         description:
           "Sometimes the description can be a bit longer - in this case there is a lot of text in here and so on.",
       },
-    ],
+    },
   },
   label: "Property name",
   description: "The description of the property, placed in the info tooltip",

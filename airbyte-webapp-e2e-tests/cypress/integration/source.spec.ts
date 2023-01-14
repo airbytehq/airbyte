@@ -76,7 +76,8 @@ describe("Unsaved changes modal", () => {
     );
   });
 
-  it("Check leaving Source page after failing testing", () => {
+  // BUG - https://github.com/airbytehq/airbyte/issues/18246
+  it.skip("Check leaving Source page after failing testing", () => {
     cy.intercept("/api/v1/scheduler/sources/check_connection").as("checkSourceUpdateConnection");
 
     goToSourcePage();

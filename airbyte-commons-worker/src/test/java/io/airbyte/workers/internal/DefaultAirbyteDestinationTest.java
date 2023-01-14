@@ -210,18 +210,6 @@ class DefaultAirbyteDestinationTest {
   }
 
   @Test
-  void testIgnoredExitCodes() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
-    destination.start(DESTINATION_CONFIG, jobRoot);
-    when(process.isAlive()).thenReturn(false);
-
-    DefaultAirbyteDestination.IGNORED_EXIT_CODES.forEach(exitCode -> {
-      when(process.exitValue()).thenReturn(exitCode);
-      Assertions.assertDoesNotThrow(destination::close);
-    });
-  }
-
-  @Test
   void testGetExitValue() throws Exception {
     final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);

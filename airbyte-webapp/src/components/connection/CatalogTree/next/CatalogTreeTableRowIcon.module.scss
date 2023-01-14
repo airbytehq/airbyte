@@ -1,20 +1,7 @@
 @use "scss/colors";
-@use "scss/variables";
-
-$icon-size: 20px;
 
 .icon {
-  width: $icon-size;
-  height: $icon-size;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: opacity variables.$transition-out;
-  opacity: 0;
-
-  &.visible {
-    opacity: 1;
-  }
+  margin-right: 7px;
 
   &.plus {
     color: colors.$green;
@@ -26,5 +13,12 @@ $icon-size: 20px;
 
   &.changed {
     color: colors.$blue;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
   }
+}
+
+:export {
+  modificationIconColor: colors.$blue;
 }

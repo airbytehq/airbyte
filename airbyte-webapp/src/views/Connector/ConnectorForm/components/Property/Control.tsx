@@ -1,9 +1,11 @@
 import { Field, useField } from "formik";
-import React, { useCallback } from "react";
+import React from "react";
 
+import { DatePicker } from "components/ui/DatePicker";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
+import { SecretTextArea } from "components/ui/SecretTextArea";
 import { TagInput } from "components/ui/TagInput/TagInput";
 import { TextArea } from "components/ui/TextArea";
 
@@ -11,33 +13,29 @@ import { FormBaseItem } from "core/form/types";
 import { useExperiment } from "hooks/services/Experiment";
 import { isDefined } from "utils/common";
 
-import SecretConfirmationControl from "./SecretConfirmationControl";
-
-const DatePicker = React.lazy(() => import("components/ui/DatePicker"));
+import ConfirmationControl from "./ConfirmationControl";
 
 interface ControlProps {
   property: FormBaseItem;
   name: string;
+  unfinishedFlows: Record<string, { startValue: string }>;
+  addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
+  removeUnfinishedFlow: (key: string) => void;
   disabled?: boolean;
   error?: boolean;
 }
 
-export const Control: React.FC<ControlProps> = ({ property, name, disabled, error }) => {
+export const Control: React.FC<ControlProps> = ({
+  property,
+  name,
+  addUnfinishedFlow,
+  removeUnfinishedFlow,
+  unfinishedFlows,
+  disabled,
+  error,
+}) => {
   const [field, meta, helpers] = useField(name);
   const useDatepickerExperiment = useExperiment("connector.form.useDatepicker", true);
-
-  const onChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      field.onChange(e);
-      if (!property.default && e.target.value === "") {
-        // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
-        // an empty string which might fail connector validation.
-        // Do not do this if there's a default value, formik will fill it in when casting.
-        helpers.setValue(undefined);
-      }
-    },
-    [field, helpers, property.default]
-  );
 
   if (property.type === "array" && !property.enum) {
     return (
@@ -82,14 +80,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         withTime={property.format === "date-time"}
         onChange={(value) => {
           helpers.setTouched(true);
-          if (!property.default && value === "") {
-            // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
-            // an empty string which might fail connector validation.
-            // Do not do this if there's a default value, formik will fill it in when casting.
-            helpers.setValue(undefined);
-          } else {
-            helpers.setValue(value);
-          }
+          helpers.setValue(value);
         }}
         value={field.value}
         disabled={disabled}
@@ -114,36 +105,56 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
       />
     );
   } else if (property.multiline && !property.isSecret) {
-    return (
-      <TextArea
-        {...field}
-        onChange={onChange}
-        autoComplete="off"
-        value={value ?? ""}
-        rows={3}
-        disabled={disabled}
-        error={error}
-      />
-    );
+    return <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} error={error} />;
   } else if (property.isSecret) {
+    const unfinishedSecret = unfinishedFlows[name];
+    const isEditInProgress = !!unfinishedSecret;
     const isFormInEditMode = isDefined(meta.initialValue);
     return (
-      <SecretConfirmationControl
-        name={name}
-        multiline={Boolean(property.multiline)}
+      <ConfirmationControl
+        component={
+          property.multiline && (isEditInProgress || !isFormInEditMode) ? (
+            <SecretTextArea
+              {...field}
+              autoComplete="off"
+              value={value ?? ""}
+              rows={3}
+              disabled={disabled}
+              error={error}
+            />
+          ) : (
+            <Input
+              {...field}
+              autoComplete="off"
+              value={value ?? ""}
+              type="password"
+              disabled={disabled}
+              error={error}
+            />
+          )
+        }
         showButtons={isFormInEditMode}
+        isEditInProgress={isEditInProgress}
+        onDone={() => removeUnfinishedFlow(name)}
+        onStart={() => {
+          addUnfinishedFlow(name, { startValue: field.value });
+          helpers.setValue("");
+        }}
+        onCancel={() => {
+          removeUnfinishedFlow(name);
+          if (unfinishedSecret && unfinishedSecret.hasOwnProperty("startValue")) {
+            helpers.setValue(unfinishedSecret.startValue);
+          }
+        }}
         disabled={disabled}
-        error={error}
-        onChange={onChange}
       />
     );
   }
-  const inputType = property.type === "integer" || property.type === "number" ? "number" : "text";
+  const inputType = property.type === "integer" ? "number" : "text";
 
   return (
     <Input
       {...field}
-      onChange={onChange}
       placeholder={inputType === "number" ? property.default?.toString() : undefined}
       autoComplete="off"
       type={inputType}

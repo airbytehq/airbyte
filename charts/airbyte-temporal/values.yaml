@@ -1,18 +1,16 @@
+
 global:
   serviceAccountName: placeholderServiceAccount
   deploymentMode: oss
   configMapName: ""
   secretName: ""
   extraContainers: []
-  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
-  extraSelectorLabels: {}
-  ## extraLabels [object] - use to specify own additional labels for deployment
-  extraLabels: {}
   database:
     secretName: ""
     secretValue: ""
     host: "example.com"
     port: "5432"
+
 
 enabled: true
 ##  temporal.replicaCount The number of temporal replicas to deploy
@@ -22,9 +20,9 @@ replicaCount: 1
 ##  temporal.image.pullPolicy The pull policy for the temporal image
 ##  temporal.image.tag The temporal image tag to use
 image:
-  repository: airbyte/temporal-auto-setup
+  repository: temporalio/auto-setup
   pullPolicy: IfNotPresent
-  tag: "1.13.0"
+  tag: "1.7.0"
 
 ##  temporal.service.type The Kubernetes Service Type
 ##  temporal.service.port The temporal port and exposed kubernetes port
@@ -35,10 +33,6 @@ service:
 ##  temporal.podAnnotations [object] Add extra annotations to the temporal pod
 ##
 podAnnotations: {}
-
-##  temporal.podLabels [object] Add extra labels to the temporal pod
-##
-podLabels: {}
 
 ##  temporal.containerSecurityContext Security context for the container
 ## Examples:
@@ -52,7 +46,7 @@ containerSecurityContext: {}
 ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
 ## extraInitContainers:
 ##   - name: config-loader
-##     image: airbyte/temporal-auto-setup:1.13.0
+##     image: temporalio/auto-setup:1.7.0
 ##     command:
 ##       - /bin/sh
 ##       - -c
@@ -160,6 +154,7 @@ resources:
 
 extraContainers: []
 
+
 ##  secrets [object] Supply additional secrets to container
 ## Example:
 ## secrets:
@@ -179,8 +174,3 @@ secrets: {}
 #   POSTGRES_PWD: 12345
 
 env_vars: {}
-
-## extraSelectorLables [object] - use to specify own additional selector labels for deployment
-extraSelectorLabels: {}
-## extraLabels [object] - use to specify own additional labels for deployment
-extraLabels: {}

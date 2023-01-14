@@ -9,9 +9,6 @@ const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source'
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
 const cursorFieldDropdown = "button[class^='PathPopoutButton_button']";
-const streamFieldNames = "[class^='TreeRowWrapper_rowWrapper'] span";
-const streamDataTypes = "[class^='TreeRowWrapper_rowWrapper'] div:nth-child(2)";
-const ExpandStreamDetailsTableBtn = "[class^='Arrow_container__']";
 const cursorFieldText = "[class^='PathPopoutButton_button__']";
 const primaryKeyText = "[class^='PathPopoutButton_button__']";
 const preFilledPrimaryKeyText = "div[class^='PathPopout_text']";
@@ -29,10 +26,6 @@ export const goToReplicationTab = () => {
 
 export const enterConnectionName = (name: string) => {
   cy.get(connectionNameInput).type(name);
-};
-
-export const expandStreamDetails = () => {
-  cy.get(ExpandStreamDetailsTableBtn).click();
 };
 
 export const selectSchedule = (value: string) => {
@@ -78,16 +71,6 @@ export const selectCursorField = (value: string) => {
   cy.get(cursorFieldDropdown).first().click({ force: true });
 
   cy.get(`.react-select__option`).contains(value).click();
-};
-
-export const checkStreamFields = (listNames: string[], listTypes: string[]) => {
-  cy.get(streamFieldNames).each(($span, i) => {
-    expect($span.text()).to.equal(listNames[i]);
-  });
-
-  cy.get(streamDataTypes).each(($span, i) => {
-    expect($span.text()).to.equal(listTypes[i]);
-  });
 };
 
 export const checkCursorField = (expectedValue: string) => {

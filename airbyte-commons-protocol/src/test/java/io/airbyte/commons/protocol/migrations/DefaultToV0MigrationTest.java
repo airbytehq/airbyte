@@ -7,7 +7,7 @@ package io.airbyte.commons.protocol.migrations;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,7 @@ class DefaultToV0MigrationTest {
   }
 
   @Test
-  void testDowngrade() throws URISyntaxException {
+  void testDowngrade() {
     final io.airbyte.protocol.models.v0.AirbyteMessage v0Message = getV0Message();
 
     final io.airbyte.protocol.models.AirbyteMessage downgradedMessage = v0migration.downgrade(v0Message);
@@ -36,7 +36,7 @@ class DefaultToV0MigrationTest {
   }
 
   @Test
-  void testUpgrade() throws URISyntaxException {
+  void testUpgrade() {
     final io.airbyte.protocol.models.AirbyteMessage unversionedMessage = getUnversionedMessage();
 
     final io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = v0migration.upgrade(unversionedMessage);
@@ -44,7 +44,8 @@ class DefaultToV0MigrationTest {
     assertEquals(expectedMessage, upgradedMessage);
   }
 
-  private io.airbyte.protocol.models.v0.AirbyteMessage getV0Message() throws URISyntaxException {
+  @SneakyThrows
+  private io.airbyte.protocol.models.v0.AirbyteMessage getV0Message() {
     return new io.airbyte.protocol.models.v0.AirbyteMessage()
         .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.SPEC)
         .withSpec(
@@ -53,7 +54,8 @@ class DefaultToV0MigrationTest {
                 .withDocumentationUrl(new URI("file:///tmp/doc")));
   }
 
-  private io.airbyte.protocol.models.AirbyteMessage getUnversionedMessage() throws URISyntaxException {
+  @SneakyThrows
+  private io.airbyte.protocol.models.AirbyteMessage getUnversionedMessage() {
     return new io.airbyte.protocol.models.AirbyteMessage()
         .withType(io.airbyte.protocol.models.AirbyteMessage.Type.SPEC)
         .withSpec(

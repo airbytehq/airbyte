@@ -1,3 +1,3 @@
 import WorkspacesPage from "./WorkspacesPage";
 
-export default WorkspacesPage;
+export { WorkspacesPage };

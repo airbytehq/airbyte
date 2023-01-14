@@ -64,7 +64,6 @@ data:
   WORKFLOW_FAILURE_RESTART_DELAY_SECONDS: ""
   USE_STREAM_CAPABLE_STATE: "true"
   AUTO_DETECT_SCHEMA: "false"
-  CONTAINER_ORCHESTRATOR_ENABLED: {{ .Values.worker.containerOrchestrator.enabled | quote }}
   CONTAINER_ORCHESTRATOR_IMAGE: {{ .Values.worker.containerOrchestrator.image | quote }}
   WORKERS_MICRONAUT_ENVIRONMENTS: "control-plane"
   CRON_MICRONAUT_ENVIRONMENTS: "control-plane"

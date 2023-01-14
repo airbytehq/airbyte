@@ -6,7 +6,7 @@ import selectEvent from "react-select-event";
 import { render, useMockIntersectionObserver } from "test-utils/testutils";
 
 import { ConnectorDefinition } from "core/domain/connector";
-import { AirbyteJSONSchema } from "core/jsonSchema/types";
+import { AirbyteJSONSchema } from "core/jsonSchema";
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
 import { ConnectorForm, ConnectorFormProps } from "views/Connector/ConnectorForm";
 
@@ -53,7 +53,7 @@ const useAddPriceListItem = (container: HTMLElement) => {
 
     const arrayOfObjectsEditModal = getByTestId(document.body, "arrayOfObjects-editModal");
     const getPriceListInput = (index: number, key: string) =>
-      arrayOfObjectsEditModal.querySelector(`input[name='connectionConfiguration.priceList\\[${index}\\].${key}']`);
+      arrayOfObjectsEditModal.querySelector(`input[name='__temp__connectionConfiguration_priceList${index}.${key}']`);
 
     // Type items into input
     const nameInput = getPriceListInput(index, "name");
@@ -97,11 +97,6 @@ const schema: AirbyteJSONSchema = {
             api_key: {
               type: "string",
             },
-            type: {
-              type: "string",
-              const: "api",
-              default: "api",
-            },
           },
         },
         {
@@ -110,11 +105,6 @@ const schema: AirbyteJSONSchema = {
             redirect_uri: {
               type: "string",
               examples: ["https://api.hubspot.com/"],
-            },
-            type: {
-              type: "string",
-              const: "oauth",
-              default: "oauth",
             },
           },
         },
@@ -225,9 +215,11 @@ describe("Service Form", () => {
 
     it("should display oneOf field", () => {
       const credentials = container.querySelector("div[data-testid='connectionConfiguration.credentials']");
+      const credentialsValue = credentials?.querySelector("input[value='api key']");
       const apiKey = container.querySelector("input[name='connectionConfiguration.credentials.api_key']");
       expect(credentials).toBeInTheDocument();
       expect(credentials?.getAttribute("role")).toEqual("combobox");
+      expect(credentialsValue).toBeInTheDocument();
       expect(apiKey).toBeInTheDocument();
     });
 
@@ -302,7 +294,7 @@ describe("Service Form", () => {
       expect(result).toEqual({
         name: "name",
         connectionConfiguration: {
-          credentials: { api_key: "test-api-key", type: "api" },
+          credentials: { api_key: "test-api-key" },
           emails: ["test@test.com"],
           host: "test-host",
           message: "test-message",
@@ -337,8 +329,7 @@ describe("Service Form", () => {
     });
 
     it("change oneOf field value", async () => {
-      const apiKey = container.querySelector("input[name='connectionConfiguration.credentials.api_key']");
-      expect(apiKey).toBeInTheDocument();
+      const credentials = screen.getByTestId("connectionConfiguration.credentials");
 
       const selectContainer = getByTestId(container, "connectionConfiguration.credentials");
 
@@ -346,7 +337,10 @@ describe("Service Form", () => {
         container: document.body,
       });
 
+      const credentialsValue = credentials.querySelector("input[value='oauth']");
       const uri = container.querySelector("input[name='connectionConfiguration.credentials.redirect_uri']");
+
+      expect(credentialsValue).toBeInTheDocument();
       expect(uri).toBeInTheDocument();
     });
 
@@ -364,7 +358,7 @@ describe("Service Form", () => {
       await waitFor(() => userEvent.click(submit!));
 
       expect(result.connectionConfiguration).toEqual({
-        credentials: { redirect_uri: "test-uri", type: "oauth" },
+        credentials: { redirect_uri: "test-uri" },
       });
     });
 

@@ -2,7 +2,7 @@ import { Field, FieldProps } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels } from "components/LabeledControl";
-import { FlexContainer } from "components/ui/Flex";
+import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 
 import { Section } from "views/Connection/ConnectionForm/components/Section";
@@ -13,16 +13,21 @@ export const CreateConnectionNameField = () => {
   const { formatMessage } = useIntl();
 
   return (
-    <Section title={<FormattedMessage id="connection.title" />}>
+    <Section>
       <Field name="name">
         {({ field, meta }: FieldProps<string>) => (
-          <FlexContainer alignItems="center">
+          <div className={styles.flexRow}>
             <div className={styles.leftFieldCol}>
               <ControlLabels
+                className={styles.connectionLabel}
                 nextLine
                 error={!!meta.error && meta.touched}
-                label={<FormattedMessage id="form.connectionName" />}
-                infoTooltipContent={formatMessage({
+                label={
+                  <Heading as="h5" className={styles.labelHeading}>
+                    <FormattedMessage id="form.connectionName" />
+                  </Heading>
+                }
+                message={formatMessage({
                   id: "form.connectionName.message",
                 })}
               />
@@ -37,7 +42,7 @@ export const CreateConnectionNameField = () => {
                 })}
               />
             </div>
-          </FlexContainer>
+          </div>
         )}
       </Field>
     </Section>

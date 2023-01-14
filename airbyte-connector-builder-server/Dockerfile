@@ -29,6 +29,3 @@ RUN pip3.9 install .
 
 # wait for upstream dependencies to become available before starting server
 ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-${VERSION}/bin/${APPLICATION}"]
-
-LABEL io.airbyte.version=0.40.28
-LABEL io.airbyte.name=airbyte/connector-builder-server

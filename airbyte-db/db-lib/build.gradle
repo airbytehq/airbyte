@@ -1,3 +1,5 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 plugins {
     id 'java-library'
 }
@@ -49,9 +51,6 @@ dependencies {
 
     // MongoDB
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
-    
-    // Teradata
-    implementation 'com.teradata.jdbc:terajdbc4:17.20.00.12'
 
     // MySQL
     implementation 'mysql:mysql-connector-java:8.0.30'

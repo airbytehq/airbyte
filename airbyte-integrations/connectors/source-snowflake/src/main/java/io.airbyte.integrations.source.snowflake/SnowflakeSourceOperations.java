@@ -42,7 +42,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JDBCType getDatabaseFieldType(final JsonNode field) {
+  public JDBCType getFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       return "TIMESTAMPLTZ".equalsIgnoreCase(typeName)
@@ -74,7 +74,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
@@ -94,7 +94,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
@@ -103,7 +103,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
       putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       return;
     }
-    super.copyToJsonField(resultSet, colIndex, json);
+    super.setJsonField(resultSet, colIndex, json);
   }
 
   @Override
@@ -113,8 +113,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
-      throws SQLException {
+  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamp));
   }

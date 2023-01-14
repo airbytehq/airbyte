@@ -10,13 +10,12 @@ import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
 
 import { FormContent } from "./PageComponents";
 
-interface VersionCellProps {
+interface IProps {
   version: string;
   currentVersion: string;
   id: string;
   onChange: ({ version, id }: { version: string; id: string }) => void;
   feedback?: "success" | string;
-  updating: boolean;
 }
 
 const VersionInput = styled(Input)`
@@ -65,7 +64,7 @@ const ErrorMessage = styled(SuccessMessage)`
   line-height: 14px;
 `;
 
-const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, feedback, currentVersion, updating }) => {
+const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, currentVersion }) => {
   const { formatMessage } = useIntl();
 
   const renderFeedback = (dirty: boolean, feedback?: string) => {
@@ -110,7 +109,7 @@ const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, feedba
             </Field>
             <Button
               size="xs"
-              isLoading={isSubmitting || updating}
+              isLoading={isSubmitting}
               type="submit"
               disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
             >

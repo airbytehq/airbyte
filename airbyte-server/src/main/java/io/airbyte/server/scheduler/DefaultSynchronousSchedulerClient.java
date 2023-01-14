@@ -14,7 +14,6 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.commons.version.Version;
-import io.airbyte.config.ActorType;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -71,8 +70,6 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         source.getWorkspaceId(),
         source.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withActorType(ActorType.SOURCE)
-        .withActorId(source.getSourceId())
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage)
         .withProtocolVersion(protocolVersion)
@@ -101,8 +98,6 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         destination.getWorkspaceId(),
         destination.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withActorType(ActorType.DESTINATION)
-        .withActorId(destination.getDestinationId())
         .withConnectionConfiguration(destinationConfiguration)
         .withDockerImage(dockerImage)
         .withProtocolVersion(protocolVersion)

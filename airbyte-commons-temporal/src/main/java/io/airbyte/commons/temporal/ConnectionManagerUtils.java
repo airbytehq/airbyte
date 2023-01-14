@@ -205,6 +205,11 @@ public class ConnectionManagerUtils {
           String.format("ConnectionManagerWorkflow for connection %s is unreachable due to having COMPLETED status.", connectionId));
     }
 
+    if (workflowState.isQuarantined()) {
+      throw new UnreachableWorkflowException(
+          String.format("ConnectionManagerWorkflow for connection %s is unreachable due to being in a quarantined state.", connectionId));
+    }
+
     return connectionManagerWorkflow;
   }
 

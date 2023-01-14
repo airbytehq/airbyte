@@ -6,7 +6,6 @@ import { ControlLabels } from "components/LabeledControl";
 import { Card } from "components/ui/Card";
 import { Spinner } from "components/ui/Spinner";
 import { ToastType } from "components/ui/Toast";
-import { TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { Geography } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
@@ -44,11 +43,11 @@ export const UpdateConnectionDataResidency: React.FC = () => {
   return (
     <Card withPadding>
       <div className={styles.wrapper}>
-        <div className={styles.label}>
+        <div>
           <ControlLabels
             nextLine
             label={<FormattedMessage id="connection.geographyTitle" />}
-            infoTooltipContent={
+            message={
               <FormattedMessage
                 id="connection.geographyDescription"
                 values={{
@@ -57,7 +56,11 @@ export const UpdateConnectionDataResidency: React.FC = () => {
                       {node}
                     </a>
                   ),
-                  docLink: () => <TooltipLearnMoreLink url={links.connectionDataResidency} />,
+                  docLink: (node: React.ReactNode) => (
+                    <a href={links.connectionDataResidency} target="_blank" rel="noreferrer">
+                      {node}
+                    </a>
+                  ),
                 }}
               />
             }

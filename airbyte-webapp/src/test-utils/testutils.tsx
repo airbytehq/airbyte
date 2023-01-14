@@ -15,7 +15,7 @@ import {
 } from "core/request/AirbyteClient";
 import { ServicesProvider } from "core/servicesProvider";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { defaultOssFeatures, FeatureItem, FeatureService } from "hooks/services/Feature";
+import { defaultFeatures, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { ModalServiceProvider } from "hooks/services/Modal";
 import en from "locales/en.json";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
@@ -50,7 +50,7 @@ interface TestWrapperOptions {
 }
 export const TestWrapper: React.FC<React.PropsWithChildren<TestWrapperOptions>> = ({
   children,
-  features = defaultOssFeatures,
+  features = defaultFeatures,
 }) => (
   <ThemeProvider theme={{}}>
     <IntlProvider locale="en" messages={en} onError={() => null}>

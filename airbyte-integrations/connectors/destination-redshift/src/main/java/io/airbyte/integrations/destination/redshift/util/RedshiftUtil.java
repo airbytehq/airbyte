@@ -15,12 +15,7 @@ public class RedshiftUtil {
 
   private RedshiftUtil() {}
 
-  /**
-   * We check whether config located in root of node. (This check is done for Backward compatibility)
-   *
-   * @param config Configuration parameters
-   * @return JSON representation of the configuration
-   */
+  // We check whether config located in root of node. (This check is done for Backward compatibility)
   public static JsonNode findS3Options(final JsonNode config) {
     return config.has(UPLOADING_METHOD) ? config.get(UPLOADING_METHOD) : config;
   }

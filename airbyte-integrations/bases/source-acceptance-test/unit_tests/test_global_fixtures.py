@@ -3,7 +3,6 @@
 #
 
 import json
-import time
 
 import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
@@ -98,7 +97,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             TEST_CONFIGURED_CATALOG,
             {EmptyStreamConfiguration(name="test_stream_b"), EmptyStreamConfiguration(name="test_stream_c")},
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
-            ExpectedRecordsConfig(path="expected_records.jsonl"),
+            ExpectedRecordsConfig(path="expected_records.json"),
             False,
             id="High strictness level: test_stream_b and test_stream_c are declared as empty streams, expected records only contains test_stream_a record -> Not failing",
         ),
@@ -107,7 +106,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             TEST_CONFIGURED_CATALOG,
             set(),
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
-            ExpectedRecordsConfig(path="expected_records.jsonl"),
+            ExpectedRecordsConfig(path="expected_records.json"),
             True,
             id="High strictness level: test_stream_b and test_stream_c are not declared as empty streams, expected records only contains test_stream_a record -> Failing",
         ),
@@ -116,7 +115,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             TEST_CONFIGURED_CATALOG,
             {EmptyStreamConfiguration(name="test_stream_b")},
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
-            ExpectedRecordsConfig(path="expected_records.jsonl"),
+            ExpectedRecordsConfig(path="expected_records.json"),
             True,
             id="High strictness level: test_stream_b is declared as an empty stream, test_stream_c is not declared as empty streams, expected records only contains test_stream_a record -> Failing",
         ),
@@ -143,7 +142,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
             TEST_CONFIGURED_CATALOG,
             set(),
             [{"stream": "test_stream_a", "data": {"k": "foo"}, "emitted_at": 1634387507000}],
-            ExpectedRecordsConfig(path="expected_records.jsonl"),
+            ExpectedRecordsConfig(path="expected_records.json"),
             False,
             id="Low strictness level, no empty stream, incomplete expected records ->  Not failing",
         ),
@@ -155,7 +154,7 @@ def test_expected_records_by_stream_fixture(
     mocker.patch.object(conftest.pytest, "fail")
 
     base_path = tmp_path
-    with open(f"{base_path}/expected_records.jsonl", "w") as expected_records_file:
+    with open(f"{base_path}/expected_records.json", "w") as expected_records_file:
         for record in expected_records:
             expected_records_file.write(json.dumps(record) + "\n")
 
@@ -194,8 +193,6 @@ def test_connector_config_path_fixture(mocker, tmp_path, updated_configurations)
         for configuration_file_name in updated_configurations:
             updated_configuration_path = updated_configurations_dir / configuration_file_name
             updated_configuration_path.touch()
-            # to avoid the equivalent 'ctime' for created files
-            time.sleep(0.01)
 
     connector_config_path = conftest.connector_config_path_fixture.__wrapped__(inputs, base_path)
     if not updated_configurations:

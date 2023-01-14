@@ -4,7 +4,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { ControlLabels, Link } from "components";
 import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
-import { FlexContainer } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
@@ -135,7 +134,7 @@ export const ScheduleField: React.FC = () => {
     <Field name="scheduleData">
       {({ field, meta, form }: FieldProps<ConnectionScheduleData>) => (
         <>
-          <FlexContainer alignItems="center">
+          <div className={styles.flexRow}>
             <div className={styles.leftFieldCol}>
               <ControlLabels
                 className={styles.connectorLabel}
@@ -143,7 +142,7 @@ export const ScheduleField: React.FC = () => {
                 label={formatMessage({
                   id: "form.frequency",
                 })}
-                infoTooltipContent={formatMessage({
+                message={formatMessage({
                   id: "form.frequency.message",
                 })}
               />
@@ -159,9 +158,9 @@ export const ScheduleField: React.FC = () => {
                 value={getBasicScheduleValue(field.value, form)}
               />
             </div>
-          </FlexContainer>
+          </div>
           {isCron(form) && (
-            <FlexContainer alignItems="center">
+            <div className={styles.flexRow}>
               <div className={styles.leftFieldCol}>
                 <ControlLabels
                   className={styles.connectorLabel}
@@ -170,7 +169,7 @@ export const ScheduleField: React.FC = () => {
                   label={formatMessage({
                     id: "form.cronExpression",
                   })}
-                  infoTooltipContent={formatMessage(
+                  message={formatMessage(
                     {
                       id: "form.cronExpression.message",
                     },
@@ -186,7 +185,7 @@ export const ScheduleField: React.FC = () => {
               </div>
 
               <div className={styles.rightFieldCol} style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
-                <FlexContainer alignItems="center">
+                <div className={styles.flexRow}>
                   <Input
                     disabled={mode === "readonly"}
                     error={!!meta.error}
@@ -205,14 +204,14 @@ export const ScheduleField: React.FC = () => {
                     value={getZoneValue(field.value?.cron?.cronTimeZone)}
                     onChange={(item: DropDownOptionDataItem) => onCronChange(item, field, form, "cronTimeZone")}
                   />
-                </FlexContainer>
+                </div>
                 {cronValidationError && (
                   <Text className={styles.errorMessage} data-testid="cronExpressionError">
                     <FormattedMessage id={cronValidationError} />
                   </Text>
                 )}
               </div>
-            </FlexContainer>
+            </div>
           )}
         </>
       )}

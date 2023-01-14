@@ -1,9 +1,8 @@
-@use "scss/variables";
 @use "scss/colors";
 
 .deleteBlock {
-  margin-top: variables.$spacing-md;
-  padding: variables.$spacing-xl;
+  margin-top: 12px;
+  padding: 19px 20px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -17,10 +17,6 @@ global:
   secrets: {}
   env_vars: {}
   extraContainers: []
-  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
-  extraSelectorLabels: {}
-  ## extraLabels [object] - use to specify own additional labels for deployment
-  extraLabels: {}
 
 
 enabled: true
@@ -34,10 +30,6 @@ image:
 ##  podAnnotations [object] Add extra annotations to the bootloader pod
 ##
 podAnnotations: {}
-
-##  podLabels [object] Add extra labels to the bootloader pod
-##
-podLabels: {}
 
 ##  containerSecurityContext Security context for the container
 ## Examples:
@@ -178,8 +170,3 @@ extraVolumes: []
 #   DATABASE_PASSWORD: 12345
 #   DATABASE_USER: airbyte
 env_vars: {}
-
-## extraSelectorLables [object] - use to specify own additional selector labels for deployment
-extraSelectorLabels: {}
-## extraLabels [object] - use to specify own additional labels for deployment
-extraLabels: {}

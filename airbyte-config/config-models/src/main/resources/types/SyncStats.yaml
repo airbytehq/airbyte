@@ -9,23 +9,18 @@ required:
   - bytesEmitted
 additionalProperties: true
 properties:
+  recordsEmitted:
+    type: integer
   bytesEmitted:
+    type: integer
+  sourceStateMessagesEmitted:
+    description: Number of State messages emitted by the Source Connector
     type: integer
   destinationStateMessagesEmitted:
     description: Number of State messages emitted by the Destination Connector
     type: integer
-  destinationWriteEndTime:
-    type: integer
-    description: The exit time of the destination container/pod
-  destinationWriteStartTime:
-    type: integer
-    description: The boot time of the destination container/pod
-  estimatedBytes:
-    type: integer
-    description: The total estimated number of bytes for the sync
-  estimatedRecords:
-    type: integer
-    description: The total estimated number of records for the sync
+  recordsCommitted:
+    type: integer # if unset, committed records could not be computed
   meanSecondsBeforeSourceStateMessageEmitted:
     type: integer
   maxSecondsBeforeSourceStateMessageEmitted:
@@ -34,22 +29,21 @@ properties:
     type: integer
   meanSecondsBetweenStateMessageEmittedandCommitted:
     type: integer
-  recordsEmitted:
-    type: integer
-  recordsCommitted:
-    type: integer # if unset, committed records could not be computed
-  replicationEndTime:
-    type: integer
-    description: The end of the replication activity
   replicationStartTime:
     type: integer
     description: The start of the replication activity
-  sourceReadEndTime:
+  replicationEndTime:
     type: integer
-    description: The exit time of the source container/pod
+    description: The end of the replication activity
   sourceReadStartTime:
     type: integer
     description: The boot time of the source container/pod
-  sourceStateMessagesEmitted:
-    description: Number of State messages emitted by the Source Connector
+  sourceReadEndTime:
     type: integer
+    description: The exit time of the source container/pod
+  destinationWriteStartTime:
+    type: integer
+    description: The boot time of the destination container/pod
+  destinationWriteEndTime:
+    type: integer
+    description: The exit time of the destination container/pod

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import LoadingSchema from "components/LoadingSchema";
 
 import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
+import { useIsAutoDetectSchemaChangesEnabled } from "hooks/connection/useIsAutoDetectSchemaChangesEnabled";
 import {
   ConnectionFormServiceProvider,
   tidyConnectionFormValues,
@@ -18,7 +19,10 @@ import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import CreateControls from "views/Connection/ConnectionForm/components/CreateControls";
 import { OperationsSection } from "views/Connection/ConnectionForm/components/OperationsSection";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
-import { useConnectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+import {
+  createConnectionValidationSchema,
+  FormikConnectionFormValues,
+} from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./CreateConnectionForm.module.scss";
 import { CreateConnectionNameField } from "./CreateConnectionNameField";
@@ -39,17 +43,24 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
   const navigate = useNavigate();
   const canEditDataGeographies = useFeature(FeatureItem.AllowChangeDataGeographies);
   const { mutateAsync: createConnection } = useCreateConnection();
+  const isAutoDetectSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
   const { clearFormChange } = useFormChangeTrackerService();
 
   const workspaceId = useCurrentWorkspaceId();
 
   const { connection, initialValues, mode, formId, getErrorMessage, setSubmitError } = useConnectionFormService();
   const [editingTransformation, setEditingTransformation] = useState(false);
-  const validationSchema = useConnectionValidationSchema({ mode });
+  const allowSubOneHourCronExpressions = useFeature(FeatureItem.AllowSyncSubOneHourCronExpressions);
 
   const onFormSubmit = useCallback(
     async (formValues: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      const values = tidyConnectionFormValues(formValues, workspaceId, validationSchema);
+      const values = tidyConnectionFormValues(
+        formValues,
+        workspaceId,
+        mode,
+        allowSubOneHourCronExpressions,
+        isAutoDetectSchemaChangesEnabled
+      );
 
       try {
         const createdConnection = await createConnection({
@@ -81,7 +92,9 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
     },
     [
       workspaceId,
-      validationSchema,
+      mode,
+      allowSubOneHourCronExpressions,
+      isAutoDetectSchemaChangesEnabled,
       createConnection,
       connection.source,
       connection.destination,
@@ -101,7 +114,15 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
   return (
     <Suspense fallback={<LoadingSchema />}>
       <div className={styles.connectionFormContainer}>
-        <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onFormSubmit}>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={createConnectionValidationSchema({
+            mode,
+            allowSubOneHourCronExpressions,
+            isAutoDetectSchemaChangesEnabled,
+          })}
+          onSubmit={onFormSubmit}
+        >
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>
               <CreateConnectionNameField />
