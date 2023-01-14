@@ -157,6 +157,7 @@ public class DefaultJobPersistence implements JobPersistence {
         + "attempts.log_path AS log_path,\n"
         + "attempts.output AS attempt_output,\n"
         + "attempts.status AS attempt_status,\n"
+        + "attempts.processing_task_queue AS processing_task_queue,\n"
         + "attempts.failure_summary AS attempt_failure_summary,\n"
         + "attempts.created_at AS attempt_created_at,\n"
         + "attempts.updated_at AS attempt_updated_at,\n"
@@ -931,6 +932,7 @@ public class DefaultJobPersistence implements JobPersistence {
         Path.of(record.get("log_path", String.class)),
         record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+        record.get("processing_task_queue", String.class),
         record.get("attempt_failure_summary", String.class) == null ? null
             : Jsons.deserialize(record.get("attempt_failure_summary", String.class), AttemptFailureSummary.class),
         getEpoch(record, "attempt_created_at"),

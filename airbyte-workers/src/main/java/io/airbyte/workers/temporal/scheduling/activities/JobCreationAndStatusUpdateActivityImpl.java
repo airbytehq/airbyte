@@ -549,7 +549,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     final List<MetricAttribute> additionalAttributes = List.of(
         new MetricAttribute(MetricTags.ATTEMPT_OUTCOME, attempt.getStatus().toString()),
         new MetricAttribute(MetricTags.FAILURE_ORIGIN, failureOrigin.orElse(null)),
-        new MetricAttribute(MetricTags.FAILURE_TYPE, failureType.orElse(null)));
+        new MetricAttribute(MetricTags.FAILURE_TYPE, failureType.orElse(null)),
+        new MetricAttribute(MetricTags.ATTEMPT_QUEUE, attempt.getProcessingTaskQueue()));
 
     emitAttemptEvent(OssMetricsRegistry.ATTEMPTS_COMPLETED, job, attempt.getAttemptNumber(), additionalAttributes);
   }
