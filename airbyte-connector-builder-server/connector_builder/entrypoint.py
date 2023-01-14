@@ -36,3 +36,14 @@ elif op == "list":
         print({"streams": []})
 else:
     print(f"op: {op}")
+=======
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(initialize_router(DefaultApiImpl(LowCodeSourceAdapter)))
+>>>>>>> master

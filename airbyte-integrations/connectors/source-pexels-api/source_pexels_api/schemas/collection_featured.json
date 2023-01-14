@@ -32,7 +32,7 @@
           "description": {
             "$id": "#root/collections/items/description",
             "title": "Description",
-            "type": ["string","null"],
+            "type": ["string", "null"],
             "default": null
           },
           "private": {

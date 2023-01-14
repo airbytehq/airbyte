@@ -6,10 +6,10 @@ description: Common issues and their workarounds when trying to deploy Airbyte
 
 ## Stuck in onboarding, can’t skip or do anything
 
-To fully reset Airbyte, you also need to delete the docker volumes associated with Airbyte. This is where data is stored. Assuming that you are running Airbyte by running `docker-compose up`, then what you need to do is:
+To fully reset Airbyte, you also need to delete the docker volumes associated with Airbyte. This is where data is stored. Assuming that you are running Airbyte by running `docker compose up`, then what you need to do is:
 
-* Turn off Airbyte completely: `docker-compose down -v`
-* Turn Airbyte back on: `docker-compose up`
+* Turn off Airbyte completely: `docker compose down -v`
+* Turn Airbyte back on: `docker compose up`
 
 that should handle you getting reset to the beginning. I would be curious if we can see the logs associated with the failure you are seeing. I would say if after you reset you run into it again we can debug that.
 
@@ -25,11 +25,11 @@ git reset --hard HEAD
 
 However it's worth pointing out that the `core.longpaths` option is defaulted to false for a reason, so use with caution. This git configuration is only changed within the cloned Airbyte repo, so you won't need to worry about changing this setting for other repositories. Find more details about this issue in [this stack overflow question](https://stackoverflow.com/questions/22575662/filename-too-long-in-git-for-windows).
 
-Instead of cloning the repo, you can alternatively download the latest Airbyte release [here](https://github.com/airbytehq/airbyte/releases). Unzip the downloaded file, access the unzipped file using PowerShell terminal, and run `docker-compose up`. After this, you should see the Airbyte containers in the Docker application as in the image below.
+Instead of cloning the repo, you can alternatively download the latest Airbyte release [here](https://github.com/airbytehq/airbyte/releases). Unzip the downloaded file, access the unzipped file using PowerShell terminal, and run `docker compose up`. After this, you should see the Airbyte containers in the Docker application as in the image below.
 
 ![](../.gitbook/assets/airbyte_deploy_windows_docker.png)
 
-## I have run `docker-compose up` and can not access the interface
+## I have run `docker compose up` and can not access the interface
 
 * If you see a blank screen and not a loading icon:
 
@@ -44,13 +44,13 @@ CONTAINER ID   IMAGE                            COMMAND                  CREATED
 f02fc709b130   airbyte/server:1.11.1-alpha      "/bin/bash -c './wai…"   2 hours ago    Up 2 hours   8000/tcp, [...] :::8001->8001/tcp  airbyte-server
 153b2b322870   airbyte/webapp:1.11.1-alpha      "/docker-entrypoint.…"   2 hours ago    Up 2 hours   :::8000->80/tcp                    airbyte-webapp
 b88d94652268   airbyte/db:1.11.1-alpha          "docker-entrypoint.s…"   2 hours ago    Up 2 hours   5432/tcp                           airbyte-db
-0573681a10e0   temporalio/auto-setup:1.7.0      "/entrypoint.sh /bin…"   2 hours ago    Up 2 hours   6933-6935/tcp, [...]               airbyte-temporal
+0573681a10e0   airbyte/temporal-auto-setup:1.13.0  "/entrypoint.sh /bin…"  2 hours ago  Up 2 hours   6933-6935/tcp, [...]               airbyte-temporal
 ```
 
 You must see 4 containers running. If you are not seeing execute the following steps:
 
-* `docker-compose down -v`
-* `docker-compose up`
+* `docker compose down -v`
+* `docker compose up`
 
   Keep in mind the commands above will delete ALL containers, volumes and data created by Airbyte.
 
@@ -83,9 +83,9 @@ This happens \(sometimes\) on Windows system when you first install `docker`. Yo
 
 ## Getting a weird error related to setting up the Airbyte server when running Docker Compose -- wondering if this is because I played around with Airbyte in a past version?
 
-If you are okay with losing your previous Airbyte configurations, you can run `docker-compose down -v` and that should fix things then `docker-compose up`.
+If you are okay with losing your previous Airbyte configurations, you can run `docker compose down -v` and that should fix things then `docker compose up`.
 
-## `unauthorized: incorrect username or password` when running `docker-compose up`
+## `unauthorized: incorrect username or password` when running `docker compose up`
 
 If you see the following error:
 
@@ -94,7 +94,7 @@ ERROR: Head "https://registry-1.docker.io/v2/airbyte/init/manifests/{XXX}": unau
 ```
 
 You are most likely logged into Docker with your email address instead of your Docker ID.
-Log out of Docker by running `docker logout` and try running `docker-compose up` again.
+Log out of Docker by running `docker logout` and try running `docker compose up` again.
 
 ## Protocol Version errors from the bootloader when trying to upgrade
 

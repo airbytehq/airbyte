@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.kafka.format;
 
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.List;
 
 public interface KafkaFormat {

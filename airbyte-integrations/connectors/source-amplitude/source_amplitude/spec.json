@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Amplitude Spec",
     "type": "object",
-    "required": ["data_region", "api_key", "secret_key", "start_date"],
+    "required": ["api_key", "secret_key", "start_date"],
     "additionalProperties": true,
     "properties": {
       "data_region": {

@@ -49,6 +49,8 @@ class SourceAmplitude(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         config["start_date"] = self._validate_start_date(config.get("start_date"))
+        if not config.get("data_region"):
+            config["data_region"] = "Standard Server"
 
         auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["secret_key"]), auth_method="Basic")
         return [

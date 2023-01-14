@@ -1,0 +1,79 @@
+version: "0.3.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  data_field_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: ["data"]
+  requester:
+    url_base: "{{ config['instance_api_url'] }}"
+    http_method: "GET"
+    authenticator:
+      type: "SessionTokenAuthenticator"
+      username: "{{ config['username'] }}"
+      password: "{{ config['password'] }}"
+      api_url: "{{ config['instance_api_url'] }}"
+      header: "X-Metabase-Session"
+      session_token: "{{ config['session_token'] }}"
+      session_token_response_key: "id"
+      login_url: "session"
+      validate_session_url: "user/current"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  data_field_retriever:
+    record_selector:
+      $ref: "*ref(definitions.data_field_selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  activity_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "activity"
+      path: "activity"
+  cards_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "cards"
+      path: "card"
+  collections_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "collections"
+      path: "collection"
+  dashboards_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "dashboards"
+      path: "dashboard"
+  users_stream:
+    primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.data_field_retriever)"
+    $options:
+      name: "users"
+      path: "user"
+streams:
+  - "*ref(definitions.activity_stream)"
+  - "*ref(definitions.cards_stream)"
+  - "*ref(definitions.collections_stream)"
+  - "*ref(definitions.dashboards_stream)"
+  - "*ref(definitions.users_stream)"
+
+check:
+  stream_names:
+    - "activity"
