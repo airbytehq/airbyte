@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.bigquery.uploader;
 
 import static io.airbyte.integrations.destination.s3.avro.AvroConstants.JSON_CONVERTER;
+import static software.amazon.awssdk.http.HttpStatusCode.FORBIDDEN;
+import static software.amazon.awssdk.http.HttpStatusCode.NOT_FOUND;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -162,7 +164,11 @@ public class BigQueryUploaderFactory {
     try {
       writer = bigQuery.writer(job, writeChannelConfiguration);
     } catch (final BigQueryException e) {
-      throw new ConfigErrorException(CONFIG_ERROR_MSG + e);
+      if (e.getCode() == FORBIDDEN || e.getCode() == NOT_FOUND){
+        throw new ConfigErrorException(CONFIG_ERROR_MSG + e);
+      } else {
+        throw new BigQueryException(e.getCode(), e.getMessage());
+      }
     }
 
     // this this optional value. If not set - use default client's value (15MiG)
