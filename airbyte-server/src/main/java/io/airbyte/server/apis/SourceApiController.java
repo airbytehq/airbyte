@@ -19,10 +19,13 @@ import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 
 @Controller("/api/v1/sources")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 public class SourceApiController implements SourceApi {
 
   private final SchedulerHandler schedulerHandler;

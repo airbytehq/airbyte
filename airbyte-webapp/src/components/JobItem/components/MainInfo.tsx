@@ -9,9 +9,9 @@ import { Cell, Row } from "components/SimpleTableComponents";
 import { StatusIcon } from "components/ui/StatusIcon";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
-import { getJobStatus } from "../JobItem";
+import { JobsWithJobs } from "../types";
+import { getJobStatus } from "../utils";
 import { AttemptDetails } from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
 import { ResetStreamsDetails } from "./ResetStreamDetails";
