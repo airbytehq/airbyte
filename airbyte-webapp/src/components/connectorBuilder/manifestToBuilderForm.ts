@@ -41,7 +41,6 @@ export const convertToBuilderFormValues = (
   // TODO: replace these checks with a call to the soon-to-be /manifest/resolve endpoint, to resolve refs, options, and validate the manifest against the schema
   if (streamListErrorMessage) {
     let errorMessage = streamListErrorMessage;
-    console.log(errorMessage[0]);
     if (errorMessage[0] === '"') {
       errorMessage = errorMessage.substring(1, errorMessage.length);
     }
@@ -256,7 +255,6 @@ function manifestPaginatorToBuilder(
     throw new ManifestCompatibilityError(streamName, "paginator.url_base does not match the first stream's url_base");
   }
 
-  console.log(streamName);
   if (manifestPaginator.pagination_strategy.type === "CustomPaginationStrategy") {
     throw new ManifestCompatibilityError(streamName, "paginator.pagination_strategy uses a CustomPaginationStrategy");
   }
