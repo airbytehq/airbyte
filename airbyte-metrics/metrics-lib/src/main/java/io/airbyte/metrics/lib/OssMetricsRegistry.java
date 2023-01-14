@@ -141,33 +141,26 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "reset_request",
       "number of requested resets"),
 
-  ATTEMPT_CREATED(
+  ATTEMPTS_CREATED(
       MetricEmittingApps.WORKER,
       "attempt_created",
       "increments when a new attempt is created. one is emitted per attempt",
-      MetricTags.DATA_PLANE_ID,
-      MetricTags.MIN_CONNECTOR_RELEASE_STATE, // max
-      MetricTags.MAX_CONNECTOR_RELEASE_STATE // min
-  ),
-  // ATTEMPT_PENDING (doesn't actually mean anything)
-  ATTEMPTS_RUNNING(
-      MetricEmittingApps.METRICS_REPORTER,
-      "attempts_running",
-      "number attempts in status running at a moment in time.",
-      MetricTags.DATA_PLANE_ID, // really should be data-plane id
-      MetricTags.MIN_CONNECTOR_RELEASE_STATE, // max
-      MetricTags.MAX_CONNECTOR_RELEASE_STATE // min
-  ),
-  ATTEMPT_COMPLETED(
+      MetricTags.GEOGRAPHY,
+      MetricTags.ATTEMPT_NUMBER,
+      MetricTags.MIN_CONNECTOR_RELEASE_STATE,
+      MetricTags.MAX_CONNECTOR_RELEASE_STATE),
+  ATTEMPTS_COMPLETED(
       MetricEmittingApps.WORKER,
       "attempt_completed",
       "increments when a new attempt is completed. one is emitted per attempt",
-      MetricTags.DATA_PLANE_ID,
-      MetricTags.MIN_CONNECTOR_RELEASE_STATE, // max
-      MetricTags.MAX_CONNECTOR_RELEASE_STATE, // min
+      MetricTags.GEOGRAPHY,
+      MetricTags.ATTEMPT_NUMBER,
+      MetricTags.MIN_CONNECTOR_RELEASE_STATE,
+      MetricTags.MAX_CONNECTOR_RELEASE_STATE,
+      MetricTags.ATTEMPT_QUEUE,
       MetricTags.ATTEMPT_OUTCOME,
-      MetricTags.FAILURE_ORIGIN,
-      MetricTags.FAILURE_TYPE);
+      MetricTags.FAILURE_ORIGIN, // only includes the first failure origin
+      MetricTags.FAILURE_TYPE); // only includes the first failure type
 
   private final MetricEmittingApp application;
   private final String metricName;

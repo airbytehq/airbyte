@@ -26,17 +26,12 @@ public class MetricTags {
   public static final String GEOGRAPHY = "geography";
   public static final String UNKNOWN = "unknown";
 
-  /*
-   * for airbyte data planes: <cloud provider (gcp|aws)>-<geography>-<data plane number for tuple>
-   * e.g. gcp-us-west-1 for hybrid data planes: <human-readable identifier>-<user uuid> e.g.
-   * dataline-7ca63f9d-c0bb-4c52-a52f-599a3ff3b6c8 alternatively it can just be 3 separate fields
-   */
-  public static final String DATA_PLANE_ID = "data_plane_id";
   // the release stage of the highest release connector in the sync (GA > Beta > Alpha)
   public static final String MAX_CONNECTOR_RELEASE_STATE = "max_connector_release_stage";
   // the release stage of the lowest release stage connector in the sync (GA > Beta > Alpha)
   public static final String MIN_CONNECTOR_RELEASE_STATE = "min_connector_release_stage";
-  public static final String ATTEMPT_OUTCOME = "attempt_outcome"; // succeeded || failed
+  public static final String ATTEMPT_OUTCOME = "attempt_outcome"; // succeeded|failed
+  public static final String ATTEMPT_NUMBER = "attempt_number"; // 0|1|2|3
 
   public static String getReleaseStage(final ReleaseStage stage) {
     return stage != null ? stage.getLiteral() : UNKNOWN;
