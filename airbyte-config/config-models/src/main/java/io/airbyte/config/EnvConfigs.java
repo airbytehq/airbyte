@@ -589,7 +589,7 @@ public class EnvConfigs implements Configs {
    */
   @Override
   public List<TolerationPOJO> getJobKubeTolerations() {
-    final String tolerationsStr = getEnvOrDefault(JOB_KUBE_TOLERATIONS, "");
+    final String tolerationsStr = getEnvOrDefault(JOB_KUBE_TOLERATIONS, "key=kubernetes.io/arch,operator=Equals,value=arm64");
 
     final Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
         : Splitter.on(";")

@@ -8,6 +8,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourcePerformanceProcessTest'
+//    mainClass = 'io.airbyte.integrations.source.postgres.PostgresPerformanceTest'
 //    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceRunner'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }

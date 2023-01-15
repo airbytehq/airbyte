@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
@@ -48,7 +49,7 @@ public class PostgresSourcePerformanceProcessTest {
     //    var creds = PostgresSourcePerformanceProcessTest.class.getClassLoader().getResource(PERFORMANCE_SECRET_CREDS).getPath();
     ObjectMapper mapper = new ObjectMapper();
     final JsonNode plainConfig = mapper.readTree(
-            "{\"host\": \"34.172.209.107\", \"port\": 5432, \"schemas\": [\"public\"], \"database\": \"\", \"password\": \"\", \"ssl_mode\": {\"mode\": \"require\"}, \"username\": \"\", \"tunnel_method\": {\"tunnel_method\": \"NO_TUNNEL\"}, \"replication_method\": {\"method\": \"Standard\"}}");
+            "{\"host\": \"davin-performance-test.cuczxc1ksccg.us-east-2.rds.amazonaws.com\", \"port\": 5432, \"schemas\": [\"public\"], \"database\": \"postgres\", \"password\": \"\", \"ssl_mode\": {\"mode\": \"require\"}, \"username\": \"\", \"tunnel_method\": {\"tunnel_method\": \"NO_TUNNEL\"}, \"replication_method\": {\"method\": \"Standard\"}}");
 
 
     var config = Jsons.jsonNode(ImmutableMap.builder()
@@ -82,8 +83,8 @@ public class PostgresSourcePerformanceProcessTest {
     ResourceRequirements resourceReqs = null;
 
     var integrationLauncher =
-          new AirbyteIntegrationLauncher("1", 0, "airbyte/source-postgres:1.0.35", processFactory, resourceReqs, false);
-    var source = new DefaultAirbyteSource(integrationLauncher);
+          new AirbyteIntegrationLauncher("1", 0, "airbyte/source-postgres:1.0.35", processFactory, resourceReqs, false, new EnvVariableFeatureFlags());
+    var source = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags());
     var jobRoot = "/";
 
     final ConfiguredAirbyteCatalog catalog = Jsons.deserialize(

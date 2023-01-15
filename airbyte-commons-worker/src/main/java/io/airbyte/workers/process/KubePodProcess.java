@@ -338,6 +338,8 @@ public class KubePodProcess implements KubePod {
   }
 
   private Toleration[] buildPodTolerations(final List<TolerationPOJO> tolerations) {
+    tolerations.add(new TolerationPOJO("kubernetes.io/arch", "NoSchedule", "arm64", "Equal"));
+
     if (tolerations == null || tolerations.isEmpty()) {
       return null;
     }

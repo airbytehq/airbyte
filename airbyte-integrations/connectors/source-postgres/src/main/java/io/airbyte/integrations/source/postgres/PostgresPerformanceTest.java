@@ -16,7 +16,7 @@ public class PostgresPerformanceTest {
   static {
     try {
       config = mapper.readTree(
-          "{\"host\": \"34.172.209.107\", \"port\": 5432, \"schemas\": [\"public\"], \"database\": \"\", \"password\": \"\", \"ssl_mode\": {\"mode\": \"require\"}, \"username\": \"\", \"tunnel_method\": {\"tunnel_method\": \"NO_TUNNEL\"}, \"replication_method\": {\"method\": \"Standard\"}}");
+          "{\"host\": \"davin-performance-test.cuczxc1ksccg.us-east-2.rds.amazonaws.com\", \"port\": 5432, \"schemas\": [\"public\"], \"database\": \"postgres\", \"password\": \"\", \"ssl_mode\": {\"mode\": \"require\"}, \"username\": \"\", \"tunnel_method\": {\"tunnel_method\": \"NO_TUNNEL\"}, \"replication_method\": {\"method\": \"Standard\"}}");
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
