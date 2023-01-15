@@ -475,6 +475,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     }
   }
 
+  private static final int MAX_ATTEMPTS = 3;
   private static final Map<ReleaseStage, Integer> RELEASE_STAGE_ORDER = Map.of(
       ReleaseStage.custom, 1,
       ReleaseStage.alpha, 2,
@@ -496,7 +497,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
    * @return extract attempt number or null
    */
   private static String parseAttemptNumberOrNull(final int attemptNumber) {
-    if (attemptNumber > 3) {
+    if (attemptNumber > MAX_ATTEMPTS) {
       return null;
     } else {
       return Integer.toString(attemptNumber);
