@@ -148,11 +148,11 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
   stateRef.current = state;
 
   useEffectOnce(() => {
-    return auth.onAuthStateChanged((currentUser) => {
+    return auth.onAuthStateChanged(async (currentUser) => {
       // We want to run this effect only once on initial page opening
       if (!stateRef.current.inited) {
         if (stateRef.current.currentUser === null && currentUser) {
-          onAfterAuth(currentUser);
+          await onAfterAuth(currentUser);
         } else {
           authInited();
         }
