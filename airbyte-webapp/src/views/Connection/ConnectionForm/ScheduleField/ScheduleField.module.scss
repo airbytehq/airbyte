@@ -1,14 +1,6 @@
 @use "scss/colors";
 @use "scss/variables";
 
-.flexRow {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: 10px;
-}
-
 .connectorLabel {
   max-width: 328px;
   margin-right: 20px;

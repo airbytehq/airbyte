@@ -24,9 +24,10 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
   const { formatMessage } = useIntl();
 
   const {
-    destDefinition: { supportsNormalization, supportsDbt },
+    destDefinition: { normalizationConfig, supportsDbt },
   } = useConnectionFormService();
 
+  const supportsNormalization = normalizationConfig.supported;
   const supportsTransformations = useFeature(FeatureItem.AllowCustomDBT) && supportsDbt;
 
   if (!supportsNormalization && !supportsTransformations) {
@@ -37,7 +38,7 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
     <Card>
       <Section>
         {supportsNormalization || supportsTransformations ? (
-          <Heading as="h5">
+          <Heading as="h2" size="sm">
             {[
               supportsNormalization && formatMessage({ id: "connectionForm.normalization.title" }),
               supportsTransformations && formatMessage({ id: "connectionForm.transformation.title" }),

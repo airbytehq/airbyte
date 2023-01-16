@@ -36,3 +36,5 @@ export const DefaultView: React.FC = () => {
     />
   );
 };
+
+export default DefaultView;

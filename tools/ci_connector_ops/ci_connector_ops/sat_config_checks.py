@@ -51,17 +51,16 @@ def find_changed_ga_connectors() -> List[str]:
     return [connector_name for connector_name in changed_connector_names if utils.get_connector_release_stage(connector_name) == "generally_available"]
 
 def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
-    teams = []
     ga_connector_changes = find_changed_ga_connectors()
     backward_compatibility_changes = utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")
     test_strictness_level_changes = utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")
-    if ga_connector_changes:
-        teams += GA_CONNECTOR_REVIEWERS
     if backward_compatibility_changes:
-        teams += [{"any-of": list(BACKWARD_COMPATIBILITY_REVIEWERS)}]
+        return [{"any-of": list(BACKWARD_COMPATIBILITY_REVIEWERS)}]
     if test_strictness_level_changes:
-        teams += [{"any-of": list(TEST_STRICTNESS_LEVEL_REVIEWERS)}]
-    return teams
+        return [{"any-of": list(TEST_STRICTNESS_LEVEL_REVIEWERS)}]
+    if ga_connector_changes:
+        return list(GA_CONNECTOR_REVIEWERS)
+    return []
 
 def check_test_strictness_level():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
