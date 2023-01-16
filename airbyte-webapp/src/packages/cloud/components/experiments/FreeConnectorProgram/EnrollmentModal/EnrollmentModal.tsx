@@ -107,12 +107,12 @@ export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
       <ModalFooter>
         <FlexContainer justifyContent="flex-end" gap="lg">
           <FlexItem>
-            <Button variant="secondary" onClick={() => closeModal()}>
+            <Button variant="secondary" onClick={closeModal}>
               <FormattedMessage id="freeConnectorProgram.enrollmentModal.cancelButtonText" />
             </Button>
           </FlexItem>
           <FlexItem>
-            <Button isLoading={isLoading} onClick={() => startStripeCheckout()}>
+            <Button isLoading={isLoading} onClick={startStripeCheckout}>
               <FormattedMessage id="freeConnectorProgram.enrollmentModal.enrollButtonText" />
             </Button>
           </FlexItem>
