@@ -38,12 +38,12 @@ import {
 } from "../pages/modals/catalogDiffModal";
 import { updateSchemaModalConfirmBtnClick } from "../pages/modals/updateSchemaModal";
 
-describe("Connection - main actions", () => {
+describe("Connection - creation, updating connection replication settings, deletion", () => {
   beforeEach(() => {
     initialSetupCompleted();
   });
 
-  it("Create Postgres <> LocalJSON connection: check it's creation", () => {
+  it("Create Postgres <> LocalJSON connection, check it's creation", () => {
     const sourceName = appendRandomString("Test connection source cypress");
     const destName = appendRandomString("Test connection destination cypress");
 
