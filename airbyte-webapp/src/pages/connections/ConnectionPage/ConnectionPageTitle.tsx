@@ -1,11 +1,12 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ConnectionInfoCard } from "components/connection/ConnectionInfoCard";
 import { ConnectionName } from "components/connection/ConnectionName";
-import { InfoBox } from "components/ui/InfoBox";
+import { Callout } from "components/ui/Callout";
 import { StepsMenu } from "components/ui/StepsMenu";
 import { Text } from "components/ui/Text";
 
@@ -61,9 +62,10 @@ export const ConnectionPageTitle: React.FC = () => {
   return (
     <div className={styles.container}>
       {connection.status === ConnectionStatus.deprecated && (
-        <InfoBox className={styles.connectionDeleted} icon={faTrash}>
+        <Callout className={styles.connectionDeleted}>
+          <FontAwesomeIcon icon={faTrash} size="lg" />
           <FormattedMessage id="connection.connectionDeletedView" />
-        </InfoBox>
+        </Callout>
       )}
       <Text as="div" centered bold className={styles.connectionTitle}>
         <FormattedMessage id="connection.title" />
