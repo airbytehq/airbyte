@@ -1,5 +1,5 @@
 import { User as FirebaseUser } from "firebase/auth";
-import React, { useCallback, useContext, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
 import { useEffectOnce } from "react-use";
 import { Observable, Subject } from "rxjs";
@@ -147,8 +147,9 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  const onAuthStateChange = useCallback(
-    (currentUser: FirebaseUser | null) => {
+  useEffectOnce(() => {
+    return auth.onAuthStateChanged((currentUser) => {
+      // We want to run this effect only once on initial page opening
       if (!stateRef.current.inited) {
         if (stateRef.current.currentUser === null && currentUser) {
           onAfterAuth(currentUser);
@@ -156,34 +157,8 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
           authInited();
         }
       }
-    },
-    [onAfterAuth, authInited]
-  );
-
-  useEffectOnce(() => {
-    return auth.onAuthStateChanged((currentUser) => {
-      // We want to run this effect only once on initial page opening
-      onAuthStateChange(currentUser);
     });
   });
-
-  // Check auth state on window focus, in case the user logged out in a different tab
-  useEffect(() => {
-    const onFocus = () => {
-      return auth.onAuthStateChanged((currentUser) => {
-        if (!currentUser) {
-          loggedOut();
-        } else {
-          onAuthStateChange(currentUser);
-        }
-      });
-    };
-
-    window.addEventListener("focus", onFocus);
-    return () => {
-      window.removeEventListener("focus", onFocus);
-    };
-  }, [auth, loggedOut, onAfterAuth, onAuthStateChange]);
 
   const queryClient = useQueryClient();
 
