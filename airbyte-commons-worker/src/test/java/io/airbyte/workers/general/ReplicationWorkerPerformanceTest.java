@@ -20,8 +20,10 @@ import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
+import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
+import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -65,6 +67,7 @@ public class ReplicationWorkerPerformanceTest {
   @Measurement(iterations = 2)
   public void executeOneSync() throws InterruptedException {
     final var perSource = new LimitedAirbyteSource();
+
     final var perDestination = new EmptyAirbyteDestination();
     final var messageTracker = new AirbyteMessageTracker(new EnvVariableFeatureFlags());
     final var connectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
@@ -74,8 +77,11 @@ public class ReplicationWorkerPerformanceTest {
         new AirbyteStreamNameNamespacePair("s1", null),
         CatalogHelpers.fieldsToJsonSchema(io.airbyte.protocol.models.Field.of("data", JsonSchemaType.STRING))));
 
+    final IntegrationLauncher integrationLauncher = new LimitedIntegrationLauncher();
+    final var defaultAbSource = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags());
+
     final var worker = new DefaultReplicationWorker("1", 0,
-        perSource,
+        defaultAbSource,
         dstNamespaceMapper,
         perDestination,
         messageTracker,
