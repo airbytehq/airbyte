@@ -17,6 +17,10 @@ import {
   DefaultPaginatorPaginationStrategy,
   SimpleRetrieverStreamSlicer,
   HttpRequesterAuthenticator,
+  SubstreamSlicer,
+  SubstreamSlicerType,
+  CartesianProductStreamSlicer,
+  DeclarativeStreamSchemaLoader,
 } from "core/request/ConnectorManifest";
 
 export interface BuilderFormInput {
@@ -53,7 +57,23 @@ export interface BuilderPaginator {
   pageSizeOption?: RequestOption;
 }
 
+export interface BuilderSubstreamSlicer {
+  type: SubstreamSlicerType;
+  parent_key: string;
+  stream_slice_field: string;
+  parentStreamReference: string;
+  request_option?: RequestOption;
+}
+
+export interface BuilderCartesianProductSlicer {
+  type: "CartesianProductStreamSlicer";
+  stream_slicers: Array<
+    Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer> | BuilderSubstreamSlicer
+  >;
+}
+
 export interface BuilderStream {
+  id: string;
   name: string;
   urlPath: string;
   fieldPointer: string[];
@@ -65,7 +85,11 @@ export interface BuilderStream {
     requestBody: Array<[string, string]>;
   };
   paginator?: BuilderPaginator;
-  streamSlicer?: SimpleRetrieverStreamSlicer;
+  streamSlicer?:
+    | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
+    | BuilderSubstreamSlicer
+    | BuilderCartesianProductSlicer;
+  schema?: string;
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -79,7 +103,7 @@ export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   streams: [],
 };
 
-export const DEFAULT_BUILDER_STREAM_VALUES: BuilderStream = {
+export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
   name: "",
   urlPath: "",
   fieldPointer: [],
@@ -92,8 +116,8 @@ export const DEFAULT_BUILDER_STREAM_VALUES: BuilderStream = {
   },
 };
 
-function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
-  if (values.global.authenticator.type === "ApiKeyAuthenticator") {
+function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormInput[] {
+  if (global.authenticator.type === "ApiKeyAuthenticator") {
     return [
       {
         key: "api_key",
@@ -106,7 +130,7 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
       },
     ];
   }
-  if (values.global.authenticator.type === "BearerAuthenticator") {
+  if (global.authenticator.type === "BearerAuthenticator") {
     return [
       {
         key: "api_key",
@@ -119,7 +143,7 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
       },
     ];
   }
-  if (values.global.authenticator.type === "BasicHttpAuthenticator") {
+  if (global.authenticator.type === "BasicHttpAuthenticator") {
     return [
       {
         key: "username",
@@ -140,7 +164,7 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
       },
     ];
   }
-  if (values.global.authenticator.type === "OAuthAuthenticator") {
+  if (global.authenticator.type === "OAuthAuthenticator") {
     return [
       {
         key: "client_id",
@@ -171,7 +195,7 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
       },
     ];
   }
-  if (values.global.authenticator.type === "SessionTokenAuthenticator") {
+  if (global.authenticator.type === "SessionTokenAuthenticator") {
     return [
       {
         key: "username",
@@ -205,13 +229,16 @@ function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
   return [];
 }
 
-export function getInferredInputs(values: BuilderFormValues): BuilderFormInput[] {
-  const inferredInputs = getInferredInputList(values);
+export function getInferredInputs(
+  global: BuilderFormValues["global"],
+  inferredInputOverrides: BuilderFormValues["inferredInputOverrides"]
+): BuilderFormInput[] {
+  const inferredInputs = getInferredInputList(global);
   return inferredInputs.map((input) =>
-    values.inferredInputOverrides[input.key]
+    inferredInputOverrides[input.key]
       ? {
           ...input,
-          definition: { ...input.definition, ...values.inferredInputOverrides[input.key] },
+          definition: { ...input.definition, ...inferredInputOverrides[input.key] },
         }
       : input
   );
@@ -227,8 +254,79 @@ const nonPathRequestOptionSchema = yup
   .notRequired()
   .default(undefined);
 
-// eslint-disable-next-line no-useless-escape
-export const timeDeltaRegex = /^(([\.\d]+?)y)?(([\.\d]+?)m)?(([\.\d]+?)w)?(([\.\d]+?)d)?$/;
+const regularSlicerShape = {
+  cursor_field: yup.mixed().when("type", {
+    is: (val: string) => val !== "SubstreamSlicer" && val !== "CartesianProductStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  slice_values: yup.mixed().when("type", {
+    is: "ListStreamSlicer",
+    then: yup.array().of(yup.string()),
+    otherwise: (schema) => schema.strip(),
+  }),
+  request_option: nonPathRequestOptionSchema,
+  start_datetime: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  end_datetime: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  step: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  datetime_format: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  start_time_option: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: nonPathRequestOptionSchema,
+    otherwise: (schema) => schema.strip(),
+  }),
+  end_time_option: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: nonPathRequestOptionSchema,
+    otherwise: (schema) => schema.strip(),
+  }),
+  stream_state_field_start: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string(),
+    otherwise: (schema) => schema.strip(),
+  }),
+  stream_state_field_end: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string(),
+    otherwise: (schema) => schema.strip(),
+  }),
+  lookback_window: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string(),
+    otherwise: (schema) => schema.strip(),
+  }),
+  parent_key: yup.mixed().when("type", {
+    is: "SubstreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  parentStreamReference: yup.mixed().when("type", {
+    is: "SubstreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  stream_slice_field: yup.mixed().when("type", {
+    is: "SubstreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+};
 
 export const builderFormValidationSchema = yup.object().shape({
   global: yup.object().shape({
@@ -274,6 +372,20 @@ export const builderFormValidationSchema = yup.object().shape({
         requestHeaders: yup.array().of(yup.array().of(yup.string())),
         requestBody: yup.array().of(yup.array().of(yup.string())),
       }),
+      schema: yup.string().test({
+        test: (val: string | undefined) => {
+          if (!val) {
+            return true;
+          }
+          try {
+            JSON.parse(val);
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        message: "connectorBuilder.invalidSchema",
+      }),
       paginator: yup
         .object()
         .shape({
@@ -317,56 +429,10 @@ export const builderFormValidationSchema = yup.object().shape({
       streamSlicer: yup
         .object()
         .shape({
-          cursor_field: yup.string().required("form.empty.error"),
-          slice_values: yup.mixed().when("type", {
-            is: "ListStreamSlicer",
-            then: yup.array().of(yup.string()),
-            otherwise: (schema) => schema.strip(),
-          }),
-          request_option: nonPathRequestOptionSchema,
-          start_datetime: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          end_datetime: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          step: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().matches(timeDeltaRegex, "form.pattern.error").required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          datetime_format: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          start_time_option: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: nonPathRequestOptionSchema,
-            otherwise: (schema) => schema.strip(),
-          }),
-          end_time_option: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: nonPathRequestOptionSchema,
-            otherwise: (schema) => schema.strip(),
-          }),
-          stream_state_field_start: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string(),
-            otherwise: (schema) => schema.strip(),
-          }),
-          stream_state_field_end: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string(),
-            otherwise: (schema) => schema.strip(),
-          }),
-          lookback_window: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string(),
+          ...regularSlicerShape,
+          stream_slicers: yup.mixed().when("type", {
+            is: "CartesianProductStreamSlicer",
+            then: yup.array().of(yup.object().shape(regularSlicerShape)),
             otherwise: (schema) => schema.strip(),
           }),
         })
@@ -394,61 +460,127 @@ function builderFormAuthenticatorToAuthenticator(
   return globalSettings.authenticator as HttpRequesterAuthenticator;
 }
 
-export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
-  const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
+function builderFormStreamSlicerToStreamSlicer(
+  values: BuilderFormValues,
+  slicer: BuilderStream["streamSlicer"],
+  visitedStreams: string[]
+): SimpleRetrieverStreamSlicer | undefined {
+  if (!slicer) {
+    return undefined;
+  }
+  if (slicer.type !== "SubstreamSlicer" && slicer.type !== "CartesianProductStreamSlicer") {
+    return slicer;
+  }
+  if (slicer.type === "CartesianProductStreamSlicer") {
     return {
-      type: "DeclarativeStream",
+      type: "CartesianProductStreamSlicer",
+      stream_slicers: slicer.stream_slicers.map((subSlicer) => {
+        return builderFormStreamSlicerToStreamSlicer(values, subSlicer, visitedStreams);
+      }),
+    } as unknown as CartesianProductStreamSlicer;
+  }
+  const parentStream = values.streams.find(({ id }) => id === slicer.parentStreamReference);
+  if (!parentStream) {
+    return {
+      type: "SubstreamSlicer",
+      parent_stream_configs: [],
+    };
+  }
+  if (visitedStreams.includes(parentStream.id)) {
+    // circular dependency
+    return {
+      type: "SubstreamSlicer",
+      parent_stream_configs: [],
+    };
+  }
+  return {
+    type: "SubstreamSlicer",
+    parent_stream_configs: [
+      {
+        type: "ParentStreamConfig",
+        parent_key: slicer.parent_key,
+        request_option: slicer.request_option,
+        stream_slice_field: slicer.stream_slice_field,
+        stream: builderStreamToDeclarativeSteam(values, parentStream, visitedStreams),
+      },
+    ],
+  };
+}
+
+const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} };
+
+function parseSchemaString(schema?: string): DeclarativeStreamSchemaLoader {
+  if (!schema) {
+    return EMPTY_SCHEMA;
+  }
+  try {
+    return { type: "InlineSchemaLoader", schema: JSON.parse(schema) };
+  } catch {
+    return EMPTY_SCHEMA;
+  }
+}
+
+function builderStreamToDeclarativeSteam(
+  values: BuilderFormValues,
+  stream: BuilderStream,
+  visitedStreams: string[]
+): DeclarativeStream {
+  return {
+    type: "DeclarativeStream",
+    name: stream.name,
+    primary_key: stream.primaryKey,
+    schema_loader: parseSchemaString(stream.schema),
+    retriever: {
+      type: "SimpleRetriever",
       name: stream.name,
       primary_key: stream.primaryKey,
-      retriever: {
-        type: "SimpleRetriever",
+      requester: {
+        type: "HttpRequester",
         name: stream.name,
-        primary_key: stream.primaryKey,
-        requester: {
-          type: "HttpRequester",
-          name: stream.name,
-          url_base: values.global?.urlBase,
-          path: stream.urlPath,
-          request_options_provider: {
-            // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
-            // type: "InterpolatedRequestOptionsProvider",
-            request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
-            request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
-            request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
-          } as InterpolatedRequestOptionsProvider,
-          authenticator: builderFormAuthenticatorToAuthenticator(values.global),
-          // TODO: remove these empty "config" values once they are no longer required in the connector manifest JSON schema
-          config: {},
-        },
-        record_selector: {
-          type: "RecordSelector",
-          extractor: {
-            type: "DpathExtractor",
-            field_pointer: stream.fieldPointer,
-          },
-        },
-        paginator: stream.paginator
-          ? {
-              type: "DefaultPaginator",
-              page_token_option: {
-                ...stream.paginator.pageTokenOption,
-                // ensures that empty field_name is not set, as connector builder server cannot accept a field_name if inject_into is set to 'path'
-                field_name: stream.paginator.pageTokenOption?.field_name
-                  ? stream.paginator.pageTokenOption?.field_name
-                  : undefined,
-              },
-              page_size_option: stream.paginator.pageSizeOption,
-              pagination_strategy: stream.paginator.strategy,
-              url_base: values.global?.urlBase,
-            }
-          : { type: "NoPagination" },
-        stream_slicer: stream.streamSlicer,
-        config: {},
+        url_base: values.global?.urlBase,
+        path: stream.urlPath,
+        request_options_provider: {
+          // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
+          // type: "InterpolatedRequestOptionsProvider",
+          request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
+          request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
+          request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
+        } as InterpolatedRequestOptionsProvider,
+        authenticator: builderFormAuthenticatorToAuthenticator(values.global),
       },
-    };
-  });
+      record_selector: {
+        type: "RecordSelector",
+        extractor: {
+          type: "DpathExtractor",
+          field_pointer: stream.fieldPointer,
+        },
+      },
+      paginator: stream.paginator
+        ? {
+            type: "DefaultPaginator",
+            page_token_option: {
+              ...stream.paginator.pageTokenOption,
+              // ensures that empty field_name is not set, as connector builder server cannot accept a field_name if inject_into is set to 'path'
+              field_name: stream.paginator.pageTokenOption?.field_name
+                ? stream.paginator.pageTokenOption?.field_name
+                : undefined,
+            },
+            page_size_option: stream.paginator.pageSizeOption,
+            pagination_strategy: stream.paginator.strategy,
+            url_base: values.global?.urlBase,
+          }
+        : { type: "NoPagination" },
+      stream_slicer: builderFormStreamSlicerToStreamSlicer(values, stream.streamSlicer, [...visitedStreams, stream.id]),
+    },
+  };
+}
 
-  const allInputs = [...values.inputs, ...getInferredInputs(values)];
+export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
+  const manifestStreams: DeclarativeStream[] = values.streams.map((stream) =>
+    builderStreamToDeclarativeSteam(values, stream, [])
+  );
+
+  const allInputs = [...values.inputs, ...getInferredInputs(values.global, values.inferredInputOverrides)];
 
   const specSchema: JSONSchema7 = {
     $schema: "http://json-schema.org/draft-07/schema#",

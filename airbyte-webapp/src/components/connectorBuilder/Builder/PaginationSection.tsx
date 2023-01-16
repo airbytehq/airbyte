@@ -1,4 +1,6 @@
 import { useField } from "formik";
+import capitalize from "lodash/capitalize";
+import { useIntl } from "react-intl";
 
 import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
@@ -8,15 +10,18 @@ import { RequestOption } from "core/request/ConnectorManifest";
 import { BuilderPaginator } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
+import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { InjectRequestOptionFields } from "./InjectRequestOptionFields";
 import { ToggleGroupField } from "./ToggleGroupField";
 
 interface PaginationSectionProps {
   streamFieldPath: (fieldPath: string) => string;
+  currentStreamIndex: number;
 }
 
-export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFieldPath }) => {
+export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFieldPath, currentStreamIndex }) => {
+  const { formatMessage } = useIntl();
   const [field, , helpers] = useField<BuilderPaginator | undefined>(streamFieldPath("paginator"));
   const [pageSizeField] = useField(streamFieldPath("paginator.strategy.page_size"));
   const [, , pageSizeOptionHelpers] = useField(streamFieldPath("paginator.pageSizeOption"));
@@ -39,38 +44,6 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
   };
   const toggledOn = field.value !== undefined;
 
-  const pageTokenOption = (
-    <GroupControls
-      label={
-        <ControlLabels
-          label="Page token option"
-          infoTooltipContent="Configures how the page token will be sent in requests to the source API"
-        />
-      }
-    >
-      <InjectRequestOptionFields path={streamFieldPath("paginator.pageTokenOption")} descriptor="page token" />
-    </GroupControls>
-  );
-
-  const pageSizeOption = (
-    <ToggleGroupField<RequestOption>
-      label="Page size option"
-      tooltip="Configures how the page size will be sent in requests to the source API"
-      fieldPath={streamFieldPath("paginator.pageSizeOption")}
-      initialValues={{
-        inject_into: "request_parameter",
-        type: "RequestOption",
-        field_name: "",
-      }}
-    >
-      <InjectRequestOptionFields
-        path={streamFieldPath("paginator.pageSizeOption")}
-        descriptor="page size"
-        excludeInjectIntoValues={["path"]}
-      />
-    </ToggleGroupField>
-  );
-
   return (
     <BuilderCard
       toggleConfig={{
@@ -82,6 +55,12 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
         ),
         toggledOn,
         onToggle: handleToggle,
+      }}
+      copyConfig={{
+        path: "paginator",
+        currentStreamIndex,
+        copyFromLabel: formatMessage({ id: "connectorBuilder.copyFromPaginationTitle" }),
+        copyToLabel: formatMessage({ id: "connectorBuilder.copyToPaginationTitle" }),
       }}
     >
       <BuilderOneOf
@@ -97,11 +76,11 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                 <BuilderField
                   type="number"
                   path={streamFieldPath("paginator.strategy.page_size")}
-                  label="Page size"
-                  tooltip="Set the size of each page"
+                  label="Limit"
+                  tooltip="Set the limit of each page"
                 />
-                {pageSizeOption}
-                {pageTokenOption}
+                <PageSizeOption label="limit" streamFieldPath={streamFieldPath} />
+                <PageTokenOption label="offset" streamFieldPath={streamFieldPath} />
               </>
             ),
           },
@@ -123,8 +102,8 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   tooltip="Page number to start requesting pages from"
                   optional
                 />
-                {pageSizeOption}
-                {pageTokenOption}
+                <PageSizeOption label="page size" streamFieldPath={streamFieldPath} />
+                <PageTokenOption label="page number" streamFieldPath={streamFieldPath} />
               </>
             ),
           },
@@ -133,13 +112,13 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
             typeValue: "CursorPagination",
             children: (
               <>
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path={streamFieldPath("paginator.strategy.cursor_value")}
                   label="Cursor value"
                   tooltip="Value of the cursor to send in requests to the API"
                 />
-                <BuilderField
+                <BuilderFieldWithInputs
                   type="string"
                   path={streamFieldPath("paginator.strategy.stop_condition")}
                   label="Stop condition"
@@ -158,13 +137,63 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   tooltip="Set the size of each page"
                   optional
                 />
-                {pageSizeField.value && pageSizeField.value !== "" && pageSizeOption}
-                {pageTokenOption}
+                {pageSizeField.value && pageSizeField.value !== "" && (
+                  <PageSizeOption label="page size" streamFieldPath={streamFieldPath} />
+                )}
+                <PageTokenOption label="cursor value" streamFieldPath={streamFieldPath} />
               </>
             ),
           },
         ]}
       />
     </BuilderCard>
+  );
+};
+
+const PageTokenOption = ({
+  label,
+  streamFieldPath,
+}: {
+  label: string;
+  streamFieldPath: (fieldPath: string) => string;
+}): JSX.Element => {
+  return (
+    <GroupControls
+      label={
+        <ControlLabels
+          label={`${capitalize(label)} request option`}
+          infoTooltipContent={`Configures how the ${label} will be sent in requests to the source API`}
+        />
+      }
+    >
+      <InjectRequestOptionFields path={streamFieldPath("paginator.pageTokenOption")} descriptor={label} />
+    </GroupControls>
+  );
+};
+
+const PageSizeOption = ({
+  label,
+  streamFieldPath,
+}: {
+  label: string;
+  streamFieldPath: (fieldPath: string) => string;
+}): JSX.Element => {
+  return (
+    <ToggleGroupField<RequestOption>
+      label={`${capitalize(label)} request option`}
+      tooltip={`Configures how the ${label} will be sent in requests to the source API`}
+      fieldPath={streamFieldPath("paginator.pageSizeOption")}
+      initialValues={{
+        inject_into: "request_parameter",
+        type: "RequestOption",
+        field_name: "",
+      }}
+    >
+      <InjectRequestOptionFields
+        path={streamFieldPath("paginator.pageSizeOption")}
+        descriptor={label}
+        excludeInjectIntoValues={["path"]}
+      />
+    </ToggleGroupField>
   );
 };
