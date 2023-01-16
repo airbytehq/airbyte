@@ -1,9 +1,9 @@
+import { CellContext, ColumnDef, ColumnSort } from "@tanstack/react-table";
 import { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import { CellProps } from "react-table";
 
 import { HeadTitle } from "components/common/HeadTitle";
-import { Table } from "components/ui/Table";
+import { NextTable } from "components/ui/NextTable";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
@@ -32,7 +32,7 @@ interface ConnectorsViewProps {
   feedbackList: Record<string, string>;
 }
 
-const defaultSorting = [{ id: "name" }];
+const defaultSorting: ColumnSort[] = [{ id: "name", desc: false }];
 
 const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   type,
@@ -67,51 +67,61 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   );
 
   const renderColumns = useCallback(
-    (showVersionUpdateColumn: boolean) => [
+    (
+      showVersionUpdateColumn: boolean
+    ): Array<ColumnDef<ConnectorDefinition, string> | ColumnDef<ConnectorDefinition>> => [
       {
-        Header: <FormattedMessage id="admin.connectors" />,
-        accessor: "name",
-        customWidth: 25,
-        Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
+        header: () => <FormattedMessage id="admin.connectors" />,
+        accessorKey: "name",
+        meta: {
+          thClassName: styles.thName,
+        },
+        cell: (props: CellContext<ConnectorDefinition, string>) => (
           <ConnectorCell
-            connectorName={cell.value}
-            img={row.original.icon}
-            hasUpdate={allowUpdateConnectors && Connector.hasNewerVersion(row.original)}
-            releaseStage={row.original.releaseStage}
+            connectorName={props.cell.getValue()}
+            img={props.row.original.icon}
+            hasUpdate={allowUpdateConnectors && Connector.hasNewerVersion(props.row.original)}
+            releaseStage={props.row.original.releaseStage}
           />
         ),
       },
       {
-        Header: <FormattedMessage id="admin.image" />,
-        accessor: "dockerRepository",
-        customWidth: 36,
-        Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
-          <ImageCell imageName={cell.value} link={row.original.documentationUrl} />
+        header: () => <FormattedMessage id="admin.image" />,
+        accessorKey: "dockerRepository",
+        meta: {
+          thClassName: styles.thDockerRepository,
+        },
+        cell: (props: CellContext<ConnectorDefinition, string>) => (
+          <ImageCell imageName={props.cell.getValue()} link={props.row.original.documentationUrl} />
         ),
       },
       {
-        Header: <FormattedMessage id="admin.currentVersion" />,
-        accessor: "dockerImageTag",
-        customWidth: 10,
+        header: () => <FormattedMessage id="admin.currentVersion" />,
+        accessorKey: "dockerImageTag",
+        meta: {
+          thClassName: styles.thDockerImageTag,
+        },
       },
       ...(showVersionUpdateColumn
         ? [
             {
-              Header: (
+              header: () => (
                 <FormContentTitle>
                   <FormattedMessage id="admin.changeTo" />
                 </FormContentTitle>
               ),
-              accessor: "latestDockerImageTag",
-              collapse: true,
-              Cell: ({ cell, row }: CellProps<ConnectorDefinition>) =>
-                allowUpdateConnectors || (allowUploadCustomImage && row.original.releaseStage === "custom") ? (
+              accessorKey: "latestDockerImageTag",
+              meta: {
+                collapse: true,
+              },
+              cell: (props: CellContext<ConnectorDefinition, string>) =>
+                allowUpdateConnectors || (allowUploadCustomImage && props.row.original.releaseStage === "custom") ? (
                   <VersionCell
-                    version={cell.value || row.original.dockerImageTag}
-                    id={Connector.id(row.original)}
+                    version={props.cell.getValue() || props.row.original.dockerImageTag}
+                    id={Connector.id(props.row.original)}
                     onChange={onUpdateVersion}
-                    feedback={feedbackList[Connector.id(row.original)]}
-                    currentVersion={row.original.dockerImageTag}
+                    feedback={feedbackList[Connector.id(props.row.original)]}
+                    currentVersion={props.row.original.dockerImageTag}
                     updating={loading}
                   />
                 ) : null,
@@ -149,10 +159,10 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
             <FormattedMessage id={type === "sources" ? "admin.manageSource" : "admin.manageDestination"} />
             {renderHeaderControls("used")}
           </Title>
-          <Table
+          <NextTable
             columns={renderColumns(showVersionUpdateColumn(usedConnectorsDefinitions))}
             data={usedConnectorsDefinitions}
-            sortBy={defaultSorting}
+            columnSort={defaultSorting}
           />
         </Block>
       )}
@@ -162,10 +172,10 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           <FormattedMessage id={type === "sources" ? "admin.availableSource" : "admin.availableDestinations"} />
           {renderHeaderControls("available")}
         </Title>
-        <Table
+        <NextTable
           columns={renderColumns(showVersionUpdateColumn(availableConnectorDefinitions))}
           data={availableConnectorDefinitions}
-          sortBy={defaultSorting}
+          columnSort={defaultSorting}
         />
       </Block>
     </>

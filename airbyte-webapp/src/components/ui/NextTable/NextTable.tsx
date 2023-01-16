@@ -1,8 +1,6 @@
-import { ColumnDef, flexRender, useReactTable, getCoreRowModel } from "@tanstack/react-table";
+import { ColumnDef, flexRender, useReactTable, getCoreRowModel, ColumnSort } from "@tanstack/react-table";
 import classNames from "classnames";
 import { PropsWithChildren } from "react";
-
-import { ConnectionScheduleData } from "core/request/AirbyteClient";
 
 import styles from "./NextTable.module.scss";
 
@@ -12,25 +10,22 @@ type TData<T> = T & {
 
 export interface TableProps<T> {
   className?: string;
-  columns: Array<
-    | ColumnDef<TData<T>, string>
-    | ColumnDef<TData<T>, number>
-    | ColumnDef<TData<T>, boolean>
-    | ColumnDef<TData<T>, ConnectionScheduleData>
-  >;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  columns: Array<ColumnDef<TData<T>, any>>;
   data: Array<TData<T>>;
   erroredRows?: boolean;
   light?: boolean;
   onClickRow?: (data: TData<T>) => void;
+  columnSort?: ColumnSort[];
 }
 
 export const NextTable = <T,>({
+  className,
   columns,
   data,
-  onClickRow,
-  className,
   erroredRows,
   light,
+  onClickRow,
 }: PropsWithChildren<TableProps<TData<T>>>) => {
   const table = useReactTable({
     columns,
