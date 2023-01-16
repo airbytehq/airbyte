@@ -6,6 +6,7 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { SyncMode, DestinationSyncMode } from "core/request/AirbyteClient";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 interface SyncFieldCellProps {
   field: SyncSchemaField;
@@ -26,13 +27,16 @@ export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
   syncMode,
   destinationSyncMode,
 }) => {
+  const { mode } = useConnectionFormService();
   const isNestedField = SyncSchemaFieldObject.isNestedField(field);
   const isCursor = checkIsCursor(field.path);
   const isPrimaryKey = checkIsPrimaryKey(field.path);
   const isDisabled =
+    mode === "readonly" ||
     (syncMode === SyncMode.incremental && isCursor) ||
     (destinationSyncMode === DestinationSyncMode.append_dedup && isPrimaryKey) ||
     isNestedField;
+  const showTooltip = isDisabled && mode !== "readonly";
 
   const renderDisabledReasonMessage = useCallback(() => {
     if (isNestedField) {
@@ -49,14 +53,14 @@ export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
 
   return (
     <>
-      {!isDisabled && (
+      {!showTooltip && (
         <CheckBox
           checkboxSize="sm"
           checked={isFieldSelected}
           onChange={() => handleFieldToggle(field.path, !isFieldSelected)}
         />
       )}
-      {isDisabled && (
+      {showTooltip && (
         <Tooltip control={<CheckBox checkboxSize="sm" disabled checked={isFieldSelected} readOnly />}>
           {renderDisabledReasonMessage()}
         </Tooltip>
