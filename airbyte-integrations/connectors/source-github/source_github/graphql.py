@@ -126,8 +126,7 @@ def get_query_issue_reactions(owner, name, first, after, number=None):
         content=True,
         created_at="created_at",
     )
-    user = reactions.nodes.user()
-    select_user_fields(user)
+    select_user_fields(reactions.nodes.user())
     return str(op)
 
 

@@ -1075,7 +1075,7 @@ class IssueReactions(SemiIncrementalMixin, GithubStream):
         organization, name = stream_slice["repository"].split("/")
         if not next_page_token:
             next_page_token = {"after": None}
-        query = get_query_issue_reactions(owner=organization, name=name, first=1, **next_page_token)
+        query = get_query_issue_reactions(owner=organization, name=name, first=self.page_size, **next_page_token)
         return {"query": query}
 
 
