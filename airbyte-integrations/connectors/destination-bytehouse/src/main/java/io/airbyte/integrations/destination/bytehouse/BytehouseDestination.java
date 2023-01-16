@@ -5,6 +5,9 @@
 package io.airbyte.integrations.destination.bytehouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -14,6 +17,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -28,6 +32,11 @@ import javax.sql.DataSource;
 public class BytehouseDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BytehouseDestination.class);
+  public static final String HTTPS_PROTOCOL = "https";
+  public static final String HTTP_PROTOCOL = "http";
+
+  static final List<String> SSL_PARAMETERS = ImmutableList.of("socket_timeout=3000000", "sslmode=NONE");
+  static final List<String> DEFAULT_PARAMETERS = ImmutableList.of("socket_timeout=3000000");
 
   public static final String DRIVER_CLASS = DatabaseDriver.BYTEHOUSE.getDriverClassName();
 
@@ -72,7 +81,33 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
-    return null;
+    final boolean isSsl = JdbcUtils.useSsl(config);
+    final StringBuilder jdbcUrl = new StringBuilder(
+            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+                    isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
+                    config.get(JdbcUtils.HOST_KEY).asText(),
+                    config.get(JdbcUtils.PORT_KEY).asInt(),
+                    config.get(JdbcUtils.DATABASE_KEY).asText()));
+
+    if (isSsl) {
+      jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
+    } else {
+      jdbcUrl.append("?").append(String.join("&", DEFAULT_PARAMETERS));
+    }
+
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+            .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+            .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
+
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    }
+
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    }
+
+    return Jsons.jsonNode(configBuilder.build());
   }
 
   @Override
