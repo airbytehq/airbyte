@@ -50,6 +50,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,6 +81,10 @@ class DefaultDiscoverCatalogWorkerTest {
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
   private Process process;
+  private AirbyteStreamFactory validCatalogStreamFactory;
+  private AirbyteStreamFactory emptyStreamFactory;
+  private AirbyteStreamFactory traceStreamFactory;
+  private AirbyteStreamFactory validCatalogWithTraceMessageStreamFactory;
   private AirbyteStreamFactory streamFactory;
   private ConnectorConfigUpdater connectorConfigUpdater;
 
@@ -102,15 +107,22 @@ class DefaultDiscoverCatalogWorkerTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
+    final AirbyteMessage traceMessage = AirbyteMessageUtils.createErrorMessage("some error from the connector", 123.0);
 
-    streamFactory = noop -> Lists.newArrayList(new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
+    validCatalogStreamFactory = noop -> Lists.newArrayList(new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
+    traceStreamFactory = noop -> Lists.newArrayList(traceMessage).stream();
+    emptyStreamFactory = noop -> Stream.empty();
+
+    validCatalogWithTraceMessageStreamFactory =
+        noop -> Lists.newArrayList(new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG), traceMessage).stream();
+
   }
 
   @SuppressWarnings("BusyWait")
   @Test
   void testDiscoverSchema() throws Exception {
     final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, validCatalogStreamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
 
     assertNull(output.getFailureReason());
@@ -159,11 +171,9 @@ class DefaultDiscoverCatalogWorkerTest {
 
   @SuppressWarnings("BusyWait")
   @Test
-  void testDiscoverSchemaProcessFail() throws Exception {
-    when(process.exitValue()).thenReturn(1);
-
+  void testDiscoverSchemaProcessFailWithNoCatalogNoTraceMessage() {
     final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, emptyStreamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
@@ -177,19 +187,33 @@ class DefaultDiscoverCatalogWorkerTest {
 
   @SuppressWarnings("BusyWait")
   @Test
-  void testDiscoverSchemaProcessFailWithTraceMessage() throws Exception {
-    final AirbyteStreamFactory traceStreamFactory = noop -> Lists.newArrayList(
-        AirbyteMessageUtils.createErrorMessage("some error from the connector", 123.0)).stream();
-
-    when(process.exitValue()).thenReturn(1);
+  void testDiscoverSchemaHasFailureReasonWithTraceMessage() throws Exception {
 
     final DefaultDiscoverCatalogWorker worker =
         new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, traceStreamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
-    // assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
-    // assertNull(output.getDiscoverCatalog());
-    assertNotNull(output.getFailureReason());
+    assertEquals(output.getOutputType(), OutputType.DISCOVER_CATALOG_ID);
+    assertNull(output.getDiscoverCatalogId());
+    final FailureReason failureReason = output.getFailureReason();
+    assertEquals("some error from the connector", failureReason.getExternalMessage());
 
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+
+    verify(process).exitValue();
+  }
+
+  @Test
+  void testDiscoverSchemaHasFailureReasonAndCatalogWithCatalogAndTraceMessage() throws Exception {
+
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, validCatalogWithTraceMessageStreamFactory);
+    final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
+    assertEquals(output.getOutputType(), OutputType.DISCOVER_CATALOG_ID);
+    assertNotNull(output.getDiscoverCatalogId());
     final FailureReason failureReason = output.getFailureReason();
     assertEquals("some error from the connector", failureReason.getExternalMessage());
 
@@ -208,14 +232,14 @@ class DefaultDiscoverCatalogWorkerTest {
         .thenThrow(new RuntimeException());
 
     final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, validCatalogStreamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
   }
 
   @Test
   void testCancel() throws WorkerException {
     final DefaultDiscoverCatalogWorker worker =
-        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, validCatalogStreamFactory);
     worker.run(INPUT, jobRoot);
 
     worker.cancel();
