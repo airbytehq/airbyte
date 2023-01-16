@@ -169,8 +169,8 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
 
   // Check auth state on window focus, in case the user logged out in a different tab
   useEffect(() => {
-    const onFocus = async () => {
-      return auth.onAuthStateChanged(async (currentUser) => {
+    const onFocus = () => {
+      return auth.onAuthStateChanged((currentUser) => {
         if (!currentUser) {
           loggedOut();
         } else {
