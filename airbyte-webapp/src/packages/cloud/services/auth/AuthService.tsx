@@ -148,10 +148,10 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
   stateRef.current = state;
 
   const onAuthStateChange = useCallback(
-    async (currentUser: FirebaseUser | null) => {
+    (currentUser: FirebaseUser | null) => {
       if (!stateRef.current.inited) {
         if (stateRef.current.currentUser === null && currentUser) {
-          await onAfterAuth(currentUser);
+          onAfterAuth(currentUser);
         } else {
           authInited();
         }
@@ -161,7 +161,7 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
   );
 
   useEffectOnce(() => {
-    return auth.onAuthStateChanged(async (currentUser) => {
+    return auth.onAuthStateChanged((currentUser) => {
       // We want to run this effect only once on initial page opening
       onAuthStateChange(currentUser);
     });
