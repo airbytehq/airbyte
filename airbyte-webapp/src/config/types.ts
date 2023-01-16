@@ -23,18 +23,18 @@ export interface Config {
   segment: { token: string; enabled: boolean };
   apiUrl: string;
   connectorBuilderApiUrl: string;
-  oauthRedirectUrl: string;
+  oauthRedirectUrl?: string;
   healthCheckInterval: number;
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;
   cloudApiUrl?: string;
-  firebase: {
+  firebase?: {
     apiKey?: string;
     authDomain?: string;
     authEmulatorHost?: string;
   };
-  intercom: {
+  intercom?: {
     appId?: string;
   };
 }
