@@ -32,6 +32,11 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, chang
       if (streamNode) {
         const newStreamNode = setIn(streamNode, "config", { ...streamNode.config, ...newConfig });
 
+        // config.selectedFields must be removed if fieldSelection is disabled
+        if (!newStreamNode.config.fieldSelectionEnabled) {
+          delete newStreamNode.config.selectedFields;
+        }
+
         onStreamChanged(newStreamNode);
       }
     },
