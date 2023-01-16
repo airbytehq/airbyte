@@ -191,7 +191,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
     // note: resources are closed in the opposite order in which they are declared. thus source will be
     // closed first (which is what we want).
-    LOGGER.info("==== Running with destination write disabled.");
     try (destination; source) {
       destination.start(destinationConfig, jobRoot);
       timeTracker.trackSourceReadStartTime();
