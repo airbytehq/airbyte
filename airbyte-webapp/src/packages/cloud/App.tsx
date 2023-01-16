@@ -45,8 +45,6 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
                       <HelmetProvider>
                         <IntercomProvider>{children}</IntercomProvider>
                       </HelmetProvider>
-
-                      
                     </AuthenticationProvider>
                   </AppServicesProvider>
                 </FeatureService>
