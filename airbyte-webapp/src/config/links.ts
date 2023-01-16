@@ -23,7 +23,7 @@ export const links = {
   tutorialLink: "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
   statusLink: "https://status.airbyte.io/",
   recipesLink: "https://daspire.com/recipes",
-  syncModeLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections`,
+  syncModeLink: `${BASE_DOCS_LINK}/key-concepts#connection-sync-modes`,
   demoLink: "https://demo.airbyte.io",
   contactSales: "https://daspire.com/talk-to-sales",
   webpageLink: "https://daspire.com",
