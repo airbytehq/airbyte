@@ -1,5 +1,8 @@
 cd $1
 
+# Fail script on failing command
+set -e
+
 # Install dependencies
 pip install -e .
 pip install -e '.[main]'

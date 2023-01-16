@@ -19,7 +19,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
   incremental:
     tests:
       - config_path: "secrets/config.json"

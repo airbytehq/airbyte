@@ -9,7 +9,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Un
 
 import pendulum
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, SyncMode, Type
 from source_acceptance_test import BaseTest
 from source_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
 from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, filter_output, incremental_only_catalog
@@ -18,10 +18,14 @@ from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, Secr
 @pytest.fixture(name="future_state_configuration")
 def future_state_configuration_fixture(inputs, base_path, test_strictness_level) -> Tuple[Path, List[EmptyStreamConfiguration]]:
     """Fixture with connector's future state path (relative to base_path)"""
-    if inputs.future_state and inputs.future_state.future_state_path:
+    if inputs.future_state and inputs.future_state.bypass_reason is not None:
+        pytest.skip("`future_state` has a bypass reason, skipping.")
+    elif inputs.future_state and inputs.future_state.future_state_path:
         return Path(base_path) / inputs.future_state.future_state_path, inputs.future_state.missing_streams
     elif test_strictness_level is Config.TestStrictnessLevel.high:
-        pytest.fail("High test strictness level error: a future state configuration must be provided in high test strictness level.")
+        pytest.fail(
+            "High test strictness level error: a future state configuration must be provided in high test strictness level or a bypass reason should be filled."
+        )
     else:
         pytest.skip("`future_state` not specified, skipping.")
 
@@ -36,7 +40,9 @@ def future_state_fixture(future_state_configuration, test_strictness_level, conf
     if test_strictness_level is Config.TestStrictnessLevel.high:
         if not all([missing_stream.bypass_reason is not None for missing_stream in missing_streams]):
             pytest.fail("High test strictness level error: all missing_streams must have a bypass reason specified.")
-        all_stream_names = set([stream.stream.name for stream in configured_catalog.streams])
+        all_stream_names = {
+            stream.stream.name for stream in configured_catalog.streams if SyncMode.incremental in stream.stream.supported_sync_modes
+        }
         streams_in_states = set([state["stream"]["stream_descriptor"]["name"] for state in states])
         declared_missing_streams_names = set([missing_stream.name for missing_stream in missing_streams])
         undeclared_missing_streams_names = all_stream_names - declared_missing_streams_names - streams_in_states
@@ -114,7 +120,7 @@ def compare_cursor_with_threshold(record_value, state_value, threshold_days: int
                 return value
             if isinstance(value, (int, float)):
                 return pendulum.from_timestamp(value / 1000)
-            return pendulum.parse(value)
+            return pendulum.parse(value, strict=False)
 
         record_date_value = _parse_date_value(record_value)
         state_date_value = _parse_date_value(state_value)

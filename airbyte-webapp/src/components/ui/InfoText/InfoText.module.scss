@@ -1,0 +1,50 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  height: 19px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  border: none;
+  border-radius: variables.$border-radius-pill;
+  cursor: pointer;
+
+  &.grey {
+    .text {
+      color: colors.$grey-600;
+    }
+  }
+
+  &.blue {
+    .text {
+      color: colors.$blue-600;
+    }
+  }
+
+  &.green {
+    .text {
+      color: colors.$green-600;
+    }
+  }
+
+  &.red {
+    .text {
+      color: colors.$red-600;
+    }
+  }
+
+  &.lightGrey {
+    .text {
+      color: colors.$grey;
+    }
+  }
+
+  &.lightBlue {
+    .text {
+      color: colors.$blue-50;
+    }
+  }
+}
