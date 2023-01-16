@@ -204,6 +204,8 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
+  private static final String AWS_ACCESS_KEY = "AWS_ACCESS_KEY";
+  private static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
   private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.3-r0";
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
@@ -215,6 +217,8 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
   private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
+  private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
+  private static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -418,6 +422,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getVaultToken() {
     return getEnv(VAULT_AUTH_TOKEN);
+  }
+
+  @Override
+  public String getAwsAccessKey() {
+    return getEnv(AWS_ACCESS_KEY);
+  }
+
+  @Override
+  public String getAwsSecretAccessKey() {
+    return getEnv(AWS_SECRET_ACCESS_KEY);
   }
 
   // Database
@@ -739,12 +753,15 @@ public class EnvConfigs implements Configs {
 
   /**
    * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
-   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
-   * no-op value.
+   * injected in the KubePodProcess class and used in the job pod templates.
+   *
+   * Can provide multiple strings seperated by comma(,) to indicate pulling from different
+   * repositories. The empty string is a no-op value.
    */
   @Override
-  public String getJobKubeMainContainerImagePullSecret() {
-    return getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+  public List<String> getJobKubeMainContainerImagePullSecrets() {
+    String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+    return Arrays.stream(secrets.split(",")).collect(Collectors.toList());
   }
 
   @Override
@@ -1106,6 +1123,16 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean getAutoDetectSchema() {
     return getEnvOrDefault(AUTO_DETECT_SCHEMA, false);
+  }
+
+  @Override
+  public boolean getApplyFieldSelection() {
+    return getEnvOrDefault(APPLY_FIELD_SELECTION, false);
+  }
+
+  @Override
+  public String getFieldSelectionWorkspaces() {
+    return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "");
   }
 
   @Override

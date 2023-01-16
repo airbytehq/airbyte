@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_constant_backoff_strategy_exponential_backoff_strategy_wait_time_from_header_backoff_strategy_wait_until_time_from_header_backoff_strategy import AnyOfConstantBackoffStrategyExponentialBackoffStrategyWaitTimeFromHeaderBackoffStrategyWaitUntilTimeFromHeaderBackoffStrategy
 from connector_builder.generated.models.default_error_handler_all_of import DefaultErrorHandlerAllOf
 from connector_builder.generated.models.http_response_filter import HttpResponseFilter
@@ -26,10 +26,10 @@ class DefaultErrorHandler(BaseModel):
         backoff_strategies: The backoff_strategies of this DefaultErrorHandler [Optional].
     """
 
-    config: Dict[str, Any]
-    response_filters: Optional[List[HttpResponseFilter]] = None
-    max_retries: Optional[int] = None
-    max_retries: Optional[int] = None
-    backoff_strategies: Optional[List[AnyOfConstantBackoffStrategyExponentialBackoffStrategyWaitTimeFromHeaderBackoffStrategyWaitUntilTimeFromHeaderBackoffStrategy]] = None
+    config: Dict[str, Any] = Field(alias="config")
+    response_filters: Optional[List[HttpResponseFilter]] = Field(alias="response_filters", default=None)
+    max_retries: Optional[int] = Field(alias="max_retries", default=None)
+    max_retries: Optional[int] = Field(alias="_max_retries", default=None)
+    backoff_strategies: Optional[List[AnyOfConstantBackoffStrategyExponentialBackoffStrategyWaitTimeFromHeaderBackoffStrategyWaitUntilTimeFromHeaderBackoffStrategy]] = Field(alias="backoff_strategies", default=None)
 
 DefaultErrorHandler.update_forward_refs()

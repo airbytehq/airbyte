@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class CheckStream(BaseModel):
@@ -19,6 +19,6 @@ class CheckStream(BaseModel):
         stream_names: The stream_names of this CheckStream.
     """
 
-    stream_names: List[str]
+    stream_names: List[str] = Field(alias="stream_names")
 
 CheckStream.update_forward_refs()

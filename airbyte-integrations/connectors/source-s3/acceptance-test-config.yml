@@ -4,6 +4,8 @@ connector_image: airbyte/source-s3:dev
 tests:
   spec:
     - spec_path: "integration_tests/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.26"
   connection:
     # for CSV format
     - config_path: "secrets/config.json"
@@ -43,30 +45,30 @@ tests:
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalogs/csv.json"
       expect_records:
-        path: "integration_tests/expected_records/csv.txt"
+        path: "integration_tests/expected_records/csv.jsonl"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalogs/parquet.json"
       expect_records:
-        path: "integration_tests/expected_records/parquet.txt"
+        path: "integration_tests/expected_records/parquet.jsonl"
       # for Avro format
     - config_path: "secrets/avro_config.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalogs/avro.json"
       expect_records:
-        path: "integration_tests/expected_records/avro.txt"
+        path: "integration_tests/expected_records/avro.jsonl"
     # for JSONL format
     - config_path: "secrets/jsonl_config.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalogs/jsonl.json"
       expect_records:
-        path: "integration_tests/expected_records/jsonl.txt"
+        path: "integration_tests/expected_records/jsonl.jsonl"
     - config_path: "secrets/jsonl_newlines_config.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalogs/jsonl.json"
       expect_records:
-        path: "integration_tests/expected_records/jsonl_newlines.txt"
+        path: "integration_tests/expected_records/jsonl_newlines.jsonl"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -76,7 +78,7 @@ tests:
       # file creating date and it always new. Uncomment this line when SAT
       # would have ability to ignore specific fields from expected records.
       # expect_records:
-      #  path: "integration_tests/expected_records/custom_server.txt"
+      #  path: "integration_tests/expected_records/custom_server.jsonl"
   incremental:
     # for CSV format
     - config_path: "secrets/config.json"

@@ -42,19 +42,19 @@ import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteGlobalState;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -68,6 +68,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -97,7 +98,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         SELECT
           (EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
         AND
-          (EXISTS (SELECT from %s.\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+          (EXISTS (SELECT from \"%s\".\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
       """;
   public static final String NULL_CURSOR_VALUE_NO_SCHEMA =
       """
@@ -254,7 +255,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
   }
 
-  private List<JsonNode> getReplicationSlot(final JdbcDatabase database, final JsonNode config) {
+  @VisibleForTesting
+  List<JsonNode> getReplicationSlot(final JdbcDatabase database, final JsonNode config) {
     try {
       return database.queryJsons(connection -> {
         final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
@@ -345,19 +347,29 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final JsonNode state =
           (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null) ? null
               : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
-      final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
+
+      final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(
           Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(database)),
           catalog,
           state,
+          sourceConfig);
+
+      final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
           // We can assume that there will be only 1 replication slot cause before the sync starts for
           // Postgres CDC,
           // we run all the check operations and one of the check validates that the replication slot exists
           // and has only 1 entry
           getReplicationSlot(database, sourceConfig).get(0),
-          sourceConfig);
+          savedOffset);
 
       if (!savedOffsetAfterReplicationSlotLSN) {
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
+      } else if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+        postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDatabaseConfig(),
+            savedOffset,
+            sourceConfig.get("replication_method").get("replication_slot").asText(),
+            sourceConfig.get("replication_method").get("publication").asText(),
+            PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
       }
 
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
@@ -517,7 +529,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName) throws SQLException {
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
     final String query;
     final String resultColName = "nullValue";
     // Query: Only if cursor column allows null values, query whether it contains one
@@ -536,4 +549,5 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     LOGGER.debug("null value exist: {}", nullValExist);
     return !nullValExist;
   }
+
 }

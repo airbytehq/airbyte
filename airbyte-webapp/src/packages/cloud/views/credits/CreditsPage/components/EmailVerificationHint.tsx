@@ -1,10 +1,12 @@
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AuthErrorCodes } from "firebase/auth";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { InfoBox } from "components/ui/InfoBox";
+import { Callout } from "components/ui/Callout";
+import { ToastType } from "components/ui/Toast";
 
 import { useNotificationService } from "hooks/services/Notification";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -16,7 +18,6 @@ interface Props {
 const ResendEmailLink = styled.button`
   appearance: none;
   background: none;
-  padding: none;
   border: none;
   font-size: inherit;
   text-decoration: underline;
@@ -48,35 +49,36 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
         case AuthErrorCodes.NETWORK_REQUEST_FAILED:
           registerNotification({
             id: error.code,
-            title: formatMessage({
+            text: formatMessage({
               id: FirebaseAuthMessageId.NetworkFailure,
             }),
-            isError: true,
+            type: ToastType.ERROR,
           });
           break;
         case AuthErrorCodes.TOO_MANY_ATTEMPTS_TRY_LATER:
           registerNotification({
             id: error.code,
-            title: formatMessage({
+            text: formatMessage({
               id: FirebaseAuthMessageId.TooManyRequests,
             }),
-            isError: true,
+            type: ToastType.WARNING,
           });
           break;
         default:
           registerNotification({
             id: error.code,
-            title: formatMessage({
+            text: formatMessage({
               id: FirebaseAuthMessageId.DefaultError,
             }),
-            isError: true,
+            type: ToastType.ERROR,
           });
       }
     }
   };
 
   return (
-    <InfoBox icon={faEnvelope} className={className}>
+    <Callout className={className}>
+      <FontAwesomeIcon icon={faEnvelope} size="lg" />
       <FormattedMessage id="credits.emailVerificationRequired" />{" "}
       {isEmailResend ? (
         <FormattedMessage id="credits.emailVerification.resendConfirmation" />
@@ -85,6 +87,6 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
           <FormattedMessage id="credits.emailVerification.resend" />
         </ResendEmailLink>
       )}
-    </InfoBox>
+    </Callout>
   );
 };

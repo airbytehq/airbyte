@@ -1,0 +1,29 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.content {
+  display: flex;
+  flex-direction: column;
+  margin: variables.$spacing-xl;
+}
+
+.description {
+  color: colors.$grey;
+  margin-bottom: variables.$spacing-xl;
+}
+
+.radioButton + .radioButton {
+  margin-top: variables.$spacing-xl;
+}
+
+.input {
+  position: relative;
+  margin: variables.$spacing-xl 0 variables.$spacing-xl variables.$spacing-xl;
+
+  .errorMessage {
+    position: absolute;
+    bottom: -16px;
+    left: 0;
+    color: colors.$red-600;
+  }
+}

@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_interpolated_stringstring import AnyOfInterpolatedStringstring
 
 
@@ -21,7 +21,7 @@ class JsonFileSchemaLoaderAllOf(BaseModel):
         file_path: The file_path of this JsonFileSchemaLoaderAllOf [Optional].
     """
 
-    config: Dict[str, Any]
-    file_path: Optional[AnyOfInterpolatedStringstring] = None
+    config: Dict[str, Any] = Field(alias="config")
+    file_path: Optional[AnyOfInterpolatedStringstring] = Field(alias="file_path", default=None)
 
 JsonFileSchemaLoaderAllOf.update_forward_refs()

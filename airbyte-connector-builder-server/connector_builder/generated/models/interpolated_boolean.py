@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class InterpolatedBoolean(BaseModel):
@@ -19,6 +19,6 @@ class InterpolatedBoolean(BaseModel):
         condition: The condition of this InterpolatedBoolean.
     """
 
-    condition: str
+    condition: str = Field(alias="condition")
 
 InterpolatedBoolean.update_forward_refs()

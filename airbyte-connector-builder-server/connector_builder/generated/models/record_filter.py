@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class RecordFilter(BaseModel):
@@ -20,7 +20,7 @@ class RecordFilter(BaseModel):
         condition: The condition of this RecordFilter [Optional].
     """
 
-    config: Dict[str, Any]
-    condition: Optional[str] = None
+    config: Dict[str, Any] = Field(alias="config")
+    condition: Optional[str] = Field(alias="condition", default=None)
 
 RecordFilter.update_forward_refs()

@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.remove_fields_all_of import RemoveFieldsAllOf
 
 
@@ -20,6 +20,6 @@ class RemoveFields(BaseModel):
         field_pointers: The field_pointers of this RemoveFields.
     """
 
-    field_pointers: List[List[str]]
+    field_pointers: List[List[str]] = Field(alias="field_pointers")
 
 RemoveFields.update_forward_refs()

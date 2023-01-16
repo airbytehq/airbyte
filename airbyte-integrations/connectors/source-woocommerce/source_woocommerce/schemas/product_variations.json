@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "date_created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_created_gmt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_modified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_modified_gmt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "permalink": {
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "price": {
+      "type": ["null", "string"]
+    },
+    "regular_price": {
+      "type": ["null", "string"]
+    },
+    "sale_price": {
+      "type": ["null", "string"]
+    },
+    "date_on_sale_from": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_on_sale_from_gmt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_on_sale_to": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_on_sale_to_gmt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "on_sale": {
+      "type": ["null", "boolean"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "purchasable": {
+      "type": ["null", "boolean"]
+    },
+    "virtual": {
+      "type": ["null", "boolean"]
+    },
+    "downloadable": {
+      "type": ["null", "boolean"]
+    },
+    "downloads": {
+      "$ref": "product_downloads_properties.json"
+    },
+    "download_limit": {
+      "type": ["null", "integer"]
+    },
+    "download_expiry": {
+      "type": ["null", "integer"]
+    },
+    "tax_status": {
+      "type": ["null", "string"]
+    },
+    "tax_class": {
+      "type": ["null", "string"]
+    },
+    "manage_stock": {
+      "type": ["null", "string"]
+    },
+    "stock_quantity": {
+      "type": ["null", "integer"]
+    },
+    "stock_status": {
+      "type": ["null", "string"]
+    },
+    "backorders": {
+      "type": ["null", "string"]
+    },
+    "backorders_allowed": {
+      "type": ["null", "boolean"]
+    },
+    "backordered": {
+      "type": ["null", "boolean"]
+    },
+    "weight": {
+      "type": ["null", "string"]
+    },
+    "dimensions": {
+      "$ref": "product_dimensions.json"
+    },
+    "shipping_class": {
+      "type": ["null", "string"]
+    },
+    "shipping_class_id": {
+      "type": ["null", "integer"]
+    },
+    "image": {
+      "$ref": "product_images.json"
+    },
+    "attributes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "option": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "menu_order": {
+      "type": ["null", "integer"]
+    },
+    "meta_data": {
+      "$ref": "meta_data.json"
+    }
+  }
+}

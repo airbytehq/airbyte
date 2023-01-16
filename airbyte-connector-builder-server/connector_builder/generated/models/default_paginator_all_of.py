@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_cursor_pagination_strategy_offset_increment_page_increment import AnyOfCursorPaginationStrategyOffsetIncrementPageIncrement
 from connector_builder.generated.models.any_of_interpolated_stringstring import AnyOfInterpolatedStringstring
 from connector_builder.generated.models.json_decoder import JsonDecoder
@@ -29,12 +29,12 @@ class DefaultPaginatorAllOf(BaseModel):
         page_token_option: The page_token_option of this DefaultPaginatorAllOf [Optional].
     """
 
-    pagination_strategy: AnyOfCursorPaginationStrategyOffsetIncrementPageIncrement
-    config: Dict[str, Any]
-    url_base: AnyOfInterpolatedStringstring
-    decoder: Optional[JsonDecoder] = None
-    token: Optional[object] = None
-    page_size_option: Optional[RequestOption] = None
-    page_token_option: Optional[RequestOption] = None
+    pagination_strategy: AnyOfCursorPaginationStrategyOffsetIncrementPageIncrement = Field(alias="pagination_strategy")
+    config: Dict[str, Any] = Field(alias="config")
+    url_base: AnyOfInterpolatedStringstring = Field(alias="url_base")
+    decoder: Optional[JsonDecoder] = Field(alias="decoder", default=None)
+    token: Optional[object] = Field(alias="_token", default=None)
+    page_size_option: Optional[RequestOption] = Field(alias="page_size_option", default=None)
+    page_token_option: Optional[RequestOption] = Field(alias="page_token_option", default=None)
 
 DefaultPaginatorAllOf.update_forward_refs()

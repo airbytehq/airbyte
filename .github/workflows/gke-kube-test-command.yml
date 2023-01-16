@@ -72,7 +72,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: "lts/gallium"
+          node-version: "lts/*"
 
       - name: Fix EC-2 Runner
         run: |

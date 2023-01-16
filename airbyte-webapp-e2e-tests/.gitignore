@@ -23,7 +23,6 @@ yarn-error.log*
 *.iml
 /.idea
 
-.npmrc
 .env
 .env.development
 .env.production

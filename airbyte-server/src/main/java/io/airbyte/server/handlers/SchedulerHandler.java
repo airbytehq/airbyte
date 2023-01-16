@@ -16,6 +16,7 @@ import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
@@ -42,7 +43,7 @@ import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
@@ -75,14 +76,14 @@ import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Singleton
 public class SchedulerHandler {
 
   private static final HashFunction HASH_FUNCTION = Hashing.md5();
@@ -99,8 +100,9 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
-  private final EnvVariableFeatureFlags envVariableFeatureFlags;
+  private final FeatureFlags envVariableFeatureFlags;
 
+  // TODO: Convert to be fully using micronaut
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
@@ -110,7 +112,7 @@ public class SchedulerHandler {
                           final LogConfigs logConfigs,
                           final EventRunner eventRunner,
                           final ConnectionsHandler connectionsHandler,
-                          final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                          final FeatureFlags envVariableFeatureFlags) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -134,7 +136,7 @@ public class SchedulerHandler {
                    final EventRunner eventRunner,
                    final JobConverter jobConverter,
                    final ConnectionsHandler connectionsHandler,
-                   final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                   final FeatureFlags envVariableFeatureFlags) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -168,6 +170,7 @@ public class SchedulerHandler {
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
+        .withSourceId(sourceConfig.getSourceId())
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
         .withConfiguration(partialConfig)
         .withWorkspaceId(sourceConfig.getWorkspaceId());
@@ -188,6 +191,7 @@ public class SchedulerHandler {
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedSource.getConfiguration());
 
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
+        .sourceId(updatedSource.getSourceId())
         .connectionConfiguration(updatedSource.getConfiguration())
         .sourceDefinitionId(updatedSource.getSourceDefinitionId());
 
@@ -216,6 +220,7 @@ public class SchedulerHandler {
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
+        .withDestinationId(destinationConfig.getDestinationId())
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
         .withConfiguration(partialConfig)
         .withWorkspaceId(destinationConfig.getWorkspaceId());
@@ -234,6 +239,7 @@ public class SchedulerHandler {
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedDestination.getConfiguration());
 
     final DestinationCoreConfig destinationCoreConfig = new DestinationCoreConfig()
+        .destinationId(updatedDestination.getDestinationId())
         .connectionConfiguration(updatedDestination.getConfiguration())
         .destinationDefinitionId(updatedDestination.getDestinationDefinitionId());
 
@@ -264,7 +270,8 @@ public class SchedulerHandler {
       final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId);
 
       if (discoverSchemaRequestBody.getConnectionId() != null) {
-        discoveredSchemaWithCatalogDiff(discoveredSchema, discoverSchemaRequestBody);
+        // modify discoveredSchema object to add CatalogDiff, containsBreakingChange, and connectionStatus
+        generateCatalogDiffsAndDisableConnectionsIfNeeded(discoveredSchema, discoverSchemaRequestBody);
       }
 
       return discoveredSchema;
@@ -356,8 +363,6 @@ public class SchedulerHandler {
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
-        .supportsNormalization(spec.getSupportsNormalization())
-        .supportsDbt(spec.getSupportsDBT())
         .destinationDefinitionId(destinationDefinitionId);
 
     final Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
@@ -383,30 +388,38 @@ public class SchedulerHandler {
     return submitCancellationToWorker(jobIdRequestBody.getId());
   }
 
-  private void discoveredSchemaWithCatalogDiff(final SourceDiscoverSchemaRead discoveredSchema,
-                                               final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
+  // Find all connections that use the source from the SourceDiscoverSchemaRequestBody. For each one,
+  // determine whether 1. the source schema change resulted in a broken connection or 2. the user
+  // wants the connection disabled when non-breaking changes are detected. If so, disable that
+  // connection. Modify the current discoveredSchema object to add a CatalogDiff,
+  // containsBreakingChange paramter, and connectionStatus parameter.
+  private void generateCatalogDiffsAndDisableConnectionsIfNeeded(final SourceDiscoverSchemaRead discoveredSchema,
+                                                                 final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
-        .getConnectionAirbyteCatalog(discoverSchemaRequestBody.getConnectionId());
-    final ConnectionRead connectionRead = connectionsHandler.getConnection(discoverSchemaRequestBody.getConnectionId());
-    final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
-        connectionRead.getSyncCatalog();
-    final CatalogDiff diff =
-        connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-            CatalogConverter.toProtocol(currentAirbyteCatalog));
-    final boolean containsBreakingChange = containsBreakingChange(diff);
-    final ConnectionUpdate updateObject =
-        new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(discoverSchemaRequestBody.getConnectionId());
-    final ConnectionStatus connectionStatus;
-    if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
-      connectionStatus = ConnectionStatus.INACTIVE;
-    } else {
-      connectionStatus = ConnectionStatus.ACTIVE;
+    final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
+    for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
+      final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
+          .getConnectionAirbyteCatalog(connectionRead.getConnectionId());
+      final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
+          connectionRead.getSyncCatalog();
+      final CatalogDiff diff =
+          connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
+              CatalogConverter.toProtocol(currentAirbyteCatalog));
+      final boolean containsBreakingChange = containsBreakingChange(diff);
+      final ConnectionUpdate updateObject =
+          new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(connectionRead.getConnectionId());
+      final ConnectionStatus connectionStatus;
+      if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
+        connectionStatus = ConnectionStatus.INACTIVE;
+      } else {
+        connectionStatus = connectionRead.getStatus();
+      }
+      updateObject.status(connectionStatus);
+      connectionsHandler.updateConnection(updateObject);
+      if (connectionRead.getConnectionId().equals(discoverSchemaRequestBody.getConnectionId())) {
+        discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
+      }
     }
-    updateObject.status(connectionStatus);
-    connectionsHandler.updateConnection(updateObject);
-    discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
-
   }
 
   private boolean shouldDisableConnection(final boolean containsBreakingChange,
@@ -423,7 +436,7 @@ public class SchedulerHandler {
     final CheckConnectionRead checkConnectionRead = new CheckConnectionRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
-    if (response.isSuccess()) {
+    if (response.getOutput() != null) {
       checkConnectionRead
           .status(Enums.convertTo(response.getOutput().getStatus(), StatusEnum.class))
           .message(response.getOutput().getMessage());

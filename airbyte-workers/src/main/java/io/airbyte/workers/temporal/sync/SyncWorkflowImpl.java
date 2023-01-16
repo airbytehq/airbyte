@@ -17,21 +17,16 @@ import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.OperatorWebhookInput;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.SyncStats;
 import io.airbyte.config.WebhookOperationSummary;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
-import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.temporal.workflow.Workflow;
 import java.util.Map;
 import java.util.Optional;
@@ -62,10 +57,11 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-  private RefreshSchemaActivity refreshSchemaActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-  private ConfigFetchActivity configFetchActivity;
+  // Temporarily disabled to address OC issue #1210
+  // @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  // private RefreshSchemaActivity refreshSchemaActivity;
+  // @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  // private ConfigFetchActivity configFetchActivity;
 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
@@ -84,26 +80,30 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     final String taskQueue = Workflow.getInfo().getTaskQueue();
 
+    // Temporarily suppressed to address OC issue #1210
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     final int autoDetectSchemaVersion =
         Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
 
-    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
-      final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
-
-      if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
-        LOGGER.info("Refreshing source schema...");
-        refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
-      }
-
-      final Optional<Status> status = configFetchActivity.getStatus(connectionId);
-      if (!status.isEmpty() && Status.INACTIVE == status.get()) {
-        LOGGER.info("Connection is disabled. Cancelling run.");
-        final StandardSyncOutput output =
-            new StandardSyncOutput()
-                .withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
-        return output;
-      }
-    }
+    // Temporarily disabled to address OC issue #1210
+    // if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
+    // final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
+    //
+    // if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
+    // LOGGER.info("Refreshing source schema...");
+    // refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+    // }
+    //
+    // final Optional<Status> status = configFetchActivity.getStatus(connectionId);
+    // if (!status.isEmpty() && Status.INACTIVE == status.get()) {
+    // LOGGER.info("Connection is disabled. Cancelling run.");
+    // final StandardSyncOutput output =
+    // new StandardSyncOutput()
+    // .withStandardSyncSummary(new
+    // StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
+    // return output;
+    // }
+    // }
 
     StandardSyncOutput syncOutput =
         replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);

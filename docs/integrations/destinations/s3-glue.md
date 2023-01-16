@@ -245,4 +245,5 @@ Output files can be compressed. The default option is GZIP compression. If compr
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.1.1   | 2022-12-13 | [19907](https://github.com/airbytehq/airbyte/pull/19907) | Fix parsing empty object in schema |
 | 0.1.0   | 2022-11-17 | [18695](https://github.com/airbytehq/airbyte/pull/18695) | Initial Commit |

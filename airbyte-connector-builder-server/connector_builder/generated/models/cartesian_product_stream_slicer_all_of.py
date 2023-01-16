@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_cartesian_product_stream_slicer_datetime_stream_slicer_list_stream_slicer_single_slice_substream_slicer import AnyOfCartesianProductStreamSlicerDatetimeStreamSlicerListStreamSlicerSingleSliceSubstreamSlicer
 
 
@@ -20,6 +20,6 @@ class CartesianProductStreamSlicerAllOf(BaseModel):
         stream_slicers: The stream_slicers of this CartesianProductStreamSlicerAllOf.
     """
 
-    stream_slicers: List[AnyOfCartesianProductStreamSlicerDatetimeStreamSlicerListStreamSlicerSingleSliceSubstreamSlicer]
+    stream_slicers: List[AnyOfCartesianProductStreamSlicerDatetimeStreamSlicerListStreamSlicerSingleSliceSubstreamSlicer] = Field(alias="stream_slicers")
 
 CartesianProductStreamSlicerAllOf.update_forward_refs()

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
 
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.Queue;
 
 /**

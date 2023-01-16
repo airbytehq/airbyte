@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.parent_stream_config import ParentStreamConfig
 
 
@@ -20,6 +20,6 @@ class SubstreamSlicerAllOf(BaseModel):
         parent_stream_configs: The parent_stream_configs of this SubstreamSlicerAllOf.
     """
 
-    parent_stream_configs: List[ParentStreamConfig]
+    parent_stream_configs: List[ParentStreamConfig] = Field(alias="parent_stream_configs")
 
 SubstreamSlicerAllOf.update_forward_refs()

@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_interpolated_stringstring import AnyOfInterpolatedStringstring
 from connector_builder.generated.models.any_ofarraystring import AnyOfarraystring
 from connector_builder.generated.models.request_option import RequestOption
@@ -25,9 +25,9 @@ class ListStreamSlicerAllOf(BaseModel):
         request_option: The request_option of this ListStreamSlicerAllOf [Optional].
     """
 
-    slice_values: AnyOfarraystring
-    cursor_field: AnyOfInterpolatedStringstring
-    config: Dict[str, Any]
-    request_option: Optional[RequestOption] = None
+    slice_values: AnyOfarraystring = Field(alias="slice_values")
+    cursor_field: AnyOfInterpolatedStringstring = Field(alias="cursor_field")
+    config: Dict[str, Any] = Field(alias="config")
+    request_option: Optional[RequestOption] = Field(alias="request_option", default=None)
 
 ListStreamSlicerAllOf.update_forward_refs()

@@ -1,0 +1,52 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.exampleSettingsTable {
+  border-spacing: 0;
+  border-collapse: separate;
+
+  tr {
+    th,
+    td {
+      padding: variables.$spacing-md;
+      border-style: solid;
+      border-color: colors.$dark-blue-50;
+      border-width: 0 variables.$border-thin variables.$border-thin 0;
+    }
+
+    th {
+      border-top-width: variables.$border-thin;
+      background-color: colors.$dark-blue-50;
+      text-align: left;
+
+      .text {
+        color: colors.$grey-600;
+      }
+    }
+
+    td {
+      background-color: colors.$white;
+
+      &:first-child,
+      th:first-child {
+        border-left-width: variables.$border-thin;
+      }
+    }
+
+    &:first-child th:first-child {
+      border-top-left-radius: variables.$border-radius-xs;
+    }
+
+    &:first-child th:last-child {
+      border-top-right-radius: variables.$border-radius-xs;
+    }
+
+    &:last-child td:first-child {
+      border-bottom-left-radius: variables.$border-radius-xs;
+    }
+
+    &:last-child td:last-child {
+      border-bottom-right-radius: variables.$border-radius-xs;
+    }
+  }
+}
