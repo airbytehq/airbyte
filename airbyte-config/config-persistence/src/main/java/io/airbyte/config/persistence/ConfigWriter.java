@@ -11,6 +11,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.Version;
+import io.airbyte.config.BuilderVersion;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.db.instance.configs.jooq.generated.Tables;
@@ -145,6 +146,20 @@ public class ConfigWriter {
             .execute();
       }
     });
+  }
+
+  static void writeBuilderVersion(final BuilderVersion builderVersion, final DSLContext ctx) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    ctx.insertInto(Tables.BUILDER_VERSION)
+        .set(Tables.BUILDER_VERSION.BUILDER_VERSION_ID, builderVersion.getBuilderVersionId())
+        .set(Tables.BUILDER_VERSION.VERSION, builderVersion.getVersion().intValue())
+        .set(Tables.BUILDER_VERSION.ACTOR_DEFINITION_ID, builderVersion.getActorDefinitionId())
+        .set(Tables.BUILDER_VERSION.SPEC, JSONB.valueOf(Jsons.serialize(builderVersion.getSpec())))
+        .set(Tables.BUILDER_VERSION.MANIFEST, JSONB.valueOf(Jsons.serialize(builderVersion.getManifest())))
+        .set(Tables.BUILDER_VERSION.CREATED_AT, timestamp)
+        .set(Tables.BUILDER_VERSION.UPDATED_AT, timestamp)
+        .execute();
+
   }
 
   static void writeStandardDestinationDefinition(final List<StandardDestinationDefinition> configs, final DSLContext ctx) {

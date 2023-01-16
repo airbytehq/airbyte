@@ -9,6 +9,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.BUILDER_VERSION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SERVICE_ACCOUNT;
@@ -19,6 +20,7 @@ import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorCatalogWithUpdatedAt;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.BuilderVersion;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.FieldSelectionData;
@@ -161,6 +163,16 @@ public class DbConverter {
         .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
             ? null
             : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
+  }
+
+  public static BuilderVersion buildBuilderVersion(final Record record) {
+    return new BuilderVersion()
+        .withVersion((long)record.get(BUILDER_VERSION.VERSION))
+        .withBuilderVersionId(record.get(BUILDER_VERSION.BUILDER_VERSION_ID))
+        .withDescription(record.get(BUILDER_VERSION.DESCRIPTION))
+        .withActorDefinitionId(record.get(BUILDER_VERSION.ACTOR_DEFINITION_ID))
+        .withSpec(Jsons.deserialize(record.get(BUILDER_VERSION.SPEC).data()))
+        .withManifest(Jsons.deserialize(record.get(BUILDER_VERSION.MANIFEST).data()));
   }
 
   public static StandardDestinationDefinition buildStandardDestinationDefinition(final Record record) {

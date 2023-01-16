@@ -91,6 +91,18 @@ create table "public"."airbyte_configs_migrations"(
   constraint "airbyte_configs_migrations_pk"
     primary key ("installed_rank")
 );
+create table "public"."builder_version"(
+  "builder_version_id" uuid not null,
+  "actor_definition_id" uuid not null,
+  "description" text not null,
+  "manifest" jsonb not null,
+  "spec" jsonb not null,
+  "version" int4 not null,
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
+  constraint "builder_version_pkey"
+    primary key ("builder_version_id")
+);
 create table "public"."connection"(
   "id" uuid not null,
   "namespace_definition" namespace_definition_type not null,
@@ -228,6 +240,10 @@ alter table "public"."actor_definition_workspace_grant"
   add constraint "actor_definition_workspace_grant_workspace_id_fkey"
     foreign key ("workspace_id")
     references "public"."workspace" ("id");
+alter table "public"."builder_version"
+  add constraint "builder_version_actor_definition_id_fkey"
+    foreign key ("actor_definition_id")
+    references "public"."actor_definition" ("id");
 alter table "public"."connection"
   add constraint "connection_actor_catalog_id_fk"
     foreign key ("source_catalog_id")
@@ -280,6 +296,7 @@ create index "actor_oauth_parameter_workspace_definition_idx" on "public"."actor
 );
 create unique index "airbyte_configs_migrations_pk" on "public"."airbyte_configs_migrations"("installed_rank" asc);
 create index "airbyte_configs_migrations_s_idx" on "public"."airbyte_configs_migrations"("success" asc);
+create unique index "builder_version_pkey" on "public"."builder_version"("builder_version_id" asc);
 create index "connection_destination_id_idx" on "public"."connection"("destination_id" asc);
 create unique index "connection_pkey" on "public"."connection"("id" asc);
 create index "connection_source_id_idx" on "public"."connection"("source_id" asc);

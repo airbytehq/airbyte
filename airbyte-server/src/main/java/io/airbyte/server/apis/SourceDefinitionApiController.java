@@ -4,7 +4,13 @@
 
 package io.airbyte.server.apis;
 
+import io.airbyte.api.client.model.generated.BuilderVersionCreateResponse;
 import io.airbyte.api.generated.SourceDefinitionApi;
+import io.airbyte.api.model.generated.BuilderSourceDefinitionCreate;
+import io.airbyte.api.model.generated.BuilderVersion;
+import io.airbyte.api.model.generated.BuilderVersionCreate;
+import io.airbyte.api.model.generated.BuilderVersionGet;
+import io.airbyte.api.model.generated.BuilderVersionRead;
 import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
@@ -32,6 +38,20 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
     this.sourceDefinitionsHandler = sourceDefinitionsHandler;
   }
 
+  @Override
+  public SourceDefinitionRead createBuilderSourceDefinition(final BuilderSourceDefinitionCreate builderSourceDefinitionCreate) {
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.createBuilderSourceDefinition(builderSourceDefinitionCreate));
+  }
+
+  @Override
+  public void createBuilderVersion(final BuilderVersionCreate builderVersionCreate) {
+    ApiHelper.execute(() -> {
+      sourceDefinitionsHandler.createBuilderVersion(builderVersionCreate);
+      return null;
+    });
+  }
+
+
   @Post("/create_custom")
   @Override
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
@@ -45,6 +65,11 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
       sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
       return null;
     });
+  }
+
+  @Override
+  public BuilderVersion getBuilderVersion(final BuilderVersionGet builderVersionGet) {
+    return ApiHelper.execute(() -> sourceDefinitionsHandler.getBuilderVersion(builderVersionGet));
   }
 
   @Post("/get")

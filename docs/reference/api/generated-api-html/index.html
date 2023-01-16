@@ -327,8 +327,11 @@ font-style: italic;
   </ul>
   <h4><a href="#SourceDefinition">SourceDefinition</a></h4>
   <ul>
+  <li><a href="#createBuilderSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create_builder_connector</code></a></li>
+  <li><a href="#createBuilderVersion"><code><span class="http-method">post</span> /v1/source_definitions/create_builder_version</code></a></li>
   <li><a href="#createCustomSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/create_custom</code></a></li>
   <li><a href="#deleteSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete</code></a></li>
+  <li><a href="#getBuilderVersion"><code><span class="http-method">get</span> /v1/source_definitions/builder_version</code></a></li>
   <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
   <li><a href="#getSourceDefinitionForWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/get_for_workspace</code></a></li>
   <li><a href="#grantSourceDefinitionToWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/grant_definition</code></a></li>
@@ -6940,6 +6943,125 @@ containing the updated stream needs to be sent.</div>
   </div> <!-- method -->
   <hr/>
   <h1><a name="SourceDefinition">SourceDefinition</a></h1>
+  <div class="method"><a name="createBuilderSourceDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/create_builder_connector</code></pre></div>
+    <div class="method-summary">Creates a custom builder sourceDefinition for the given workspace (<span class="nickname">createBuilderSourceDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">BuilderSourceDefinitionCreate <a href="#BuilderSourceDefinitionCreate">BuilderSourceDefinitionCreate</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "sourceType" : "api",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "protocolVersion" : "protocolVersion",
+  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="createBuilderVersion"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/create_builder_version</code></pre></div>
+    <div class="method-summary">Creates a version of a builder sourceDefinition for the given workspace (<span class="nickname">createBuilderVersion</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">BuilderVersionCreate <a href="#BuilderVersionCreate">BuilderVersionCreate</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="createCustomSourceDefinition"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -7072,6 +7194,61 @@ containing the updated stream needs to be sent.</div>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getBuilderVersion"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /v1/source_definitions/builder_version</code></pre></div>
+    <div class="method-summary">Fetches a certain builder version (<span class="nickname">getBuilderVersion</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">BuilderVersionGet <a href="#BuilderVersionGet">BuilderVersionGet</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#BuilderVersion">BuilderVersion</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "manifest" : "manifest",
+  "description" : "description",
+  "version" : 0,
+  "spec" : "spec"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#BuilderVersion">BuilderVersion</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getSourceDefinition"/>
@@ -10191,6 +10368,12 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
     <li><a href="#AttemptStreamStats"><code>AttemptStreamStats</code> - </a></li>
     <li><a href="#AuthSpecification"><code>AuthSpecification</code> - </a></li>
+    <li><a href="#BuilderDefinitionCreate"><code>BuilderDefinitionCreate</code> - </a></li>
+    <li><a href="#BuilderSourceDefinitionCreate"><code>BuilderSourceDefinitionCreate</code> - </a></li>
+    <li><a href="#BuilderVersion"><code>BuilderVersion</code> - </a></li>
+    <li><a href="#BuilderVersionCreate"><code>BuilderVersionCreate</code> - </a></li>
+    <li><a href="#BuilderVersionCreateResponse"><code>BuilderVersionCreateResponse</code> - </a></li>
+    <li><a href="#BuilderVersionGet"><code>BuilderVersionGet</code> - </a></li>
     <li><a href="#CatalogDiff"><code>CatalogDiff</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
     <li><a href="#CheckOperationRead"><code>CheckOperationRead</code> - </a></li>
@@ -10533,6 +10716,56 @@ containing the updated stream needs to be sent.</div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">oauth2.0</div>
 <div class="param">oauth2Specification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuth2Specification">OAuth2Specification</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="BuilderDefinitionCreate"><code>BuilderDefinitionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="BuilderSourceDefinitionCreate"><code>BuilderSourceDefinitionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#BuilderDefinitionCreate">BuilderDefinitionCreate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="BuilderVersion"><code>BuilderVersion</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">version </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">description </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">manifest </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">spec </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="BuilderVersionCreate"><code>BuilderVersionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#BuilderVersion">BuilderVersion</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="BuilderVersionCreateResponse"><code>BuilderVersionCreateResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">version (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="BuilderVersionGet"><code>BuilderVersionGet</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">version </div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

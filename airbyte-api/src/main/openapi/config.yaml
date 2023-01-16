@@ -420,6 +420,56 @@ paths:
                 $ref: "#/components/schemas/SourceDefinitionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/create_builder_connector:
+    post:
+      tags:
+        - source_definition
+      summary: Creates a custom builder sourceDefinition for the given workspace
+      operationId: createBuilderSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuilderSourceDefinitionCreate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+  /v1/source_definitions/create_builder_version:
+    post:
+      tags:
+        - source_definition
+      summary: Creates a version of a builder sourceDefinition for the given workspace
+      operationId: createBuilderVersion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuilderVersionCreate"
+      responses:
+        "200":
+          description: Successful operation
+  /v1/source_definitions/builder_version:
+    get:
+      tags:
+        - source_definition
+      summary: Fetches a certain builder version
+      operationId: getBuilderVersion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuilderVersionGet"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuilderVersion"
   /v1/source_definitions/get_for_workspace:
     post:
       tags:
@@ -2471,6 +2521,34 @@ components:
           type: string
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
+    BuilderDefinitionCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    BuilderVersion:
+      type: object
+      required:
+        - version
+        - description
+        - manifest
+        - spec
+      properties:
+        version:
+          type: integer
+        description:
+          type: string
+        manifest:
+          type: string
+        spec:
+          type: string
+    BuilderVersionCreateResponse:
+      type: object
+      properties:
+        version:
+          type: integer
     SourceDefinitionUpdate:
       type: object
       description: Update the SourceDefinition. Currently, the only allowed attribute to update is the default docker image version.
@@ -2542,6 +2620,42 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         sourceDefinition:
           $ref: "#/components/schemas/SourceDefinitionCreate"
+    BuilderSourceDefinitionCreate:
+      type: object
+      required:
+        - workspaceId
+        - sourceDefinition
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceDefinition:
+          $ref: "#/components/schemas/BuilderDefinitionCreate"
+    BuilderVersionCreate:
+      type: object
+      required:
+        - workspaceId
+        - sourceDefinitionId
+        - sourceDefinition
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        sourceDefinition:
+          $ref: "#/components/schemas/BuilderVersion"
+    BuilderVersionGet:
+      type: object
+      required:
+        - workspaceId
+        - sourceDefinitionId
+        - version
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        version:
+          type: integer
     SourceDefinitionIdWithWorkspaceId:
       type: object
       required:

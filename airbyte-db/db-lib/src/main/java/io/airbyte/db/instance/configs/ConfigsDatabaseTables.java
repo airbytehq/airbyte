@@ -17,7 +17,8 @@ public enum ConfigsDatabaseTables {
   CONNECTION_OPERATION,
   OPERATION,
   STATE,
-  WORKSPACE;
+  WORKSPACE,
+  BUILDER_VERSION;
 
   public String getTableName() {
     return name().toLowerCase();

@@ -33,6 +33,7 @@ properties:
       - file
       - database
       - custom
+      - builder
   spec:
     type: object
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification

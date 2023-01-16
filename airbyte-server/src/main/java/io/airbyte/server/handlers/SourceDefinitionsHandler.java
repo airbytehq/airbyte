@@ -6,7 +6,15 @@ package io.airbyte.server.handlers;
 
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.client.model.generated.BuilderVersionCreateResponse;
+import io.airbyte.api.model.generated.BuilderDefinitionCreate;
+import io.airbyte.api.model.generated.BuilderSourceDefinitionCreate;
+import io.airbyte.api.model.generated.BuilderVersionCreate;
+import io.airbyte.api.model.generated.BuilderVersionGet;
+import io.airbyte.api.model.generated.BuilderVersionRead;
 import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
@@ -27,6 +35,7 @@ import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.*;
+import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -112,6 +121,14 @@ public class SourceDefinitionsHandler {
     }
   }
 
+  static io.airbyte.api.model.generated.BuilderVersion buildAPIBuilderVersion(final BuilderVersion builderVersion) throws JsonProcessingException {
+      return new io.airbyte.api.model.generated.BuilderVersion()
+          .description(builderVersion.getDescription())
+          .version(builderVersion.getVersion().intValue())
+          .manifest(new ObjectMapper().writeValueAsString(builderVersion.getManifest()))
+          .spec(new ObjectMapper().writeValueAsString(builderVersion.getManifest()));
+  }
+
   private static SourceTypeEnum getSourceType(final StandardSourceDefinition standardSourceDefinition) {
     if (standardSourceDefinition.getSourceType() == null) {
       return null;
@@ -185,6 +202,12 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
+  public  io.airbyte.api.model.generated.BuilderVersion getBuilderVersion(final BuilderVersionGet builderVersionGet)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final BuilderVersion configBuilderVersion = configRepository.getBuilderVersion(builderVersionGet.getSourceDefinitionId(), builderVersionGet.getVersion());
+    return buildAPIBuilderVersion(configBuilderVersion);
+  }
+
   public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID definitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
@@ -204,6 +227,19 @@ public class SourceDefinitionsHandler {
       throw new UnsupportedProtocolVersionException(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
     }
     configRepository.writeCustomSourceDefinition(sourceDefinition, customSourceDefinitionCreate.getWorkspaceId());
+
+    return buildSourceDefinitionRead(sourceDefinition);
+  }
+
+  public SourceDefinitionRead createBuilderSourceDefinition(final BuilderSourceDefinitionCreate builderSourceDefinitionCreate)
+      throws IOException {
+    final StandardSourceDefinition sourceDefinition = sourceDefinitionFromBuilderCreate(builderSourceDefinitionCreate.getSourceDefinition())
+        .withPublic(false)
+        .withCustom(true);
+    if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
+      throw new UnsupportedProtocolVersionException(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
+    }
+    configRepository.writeCustomSourceDefinition(sourceDefinition, builderSourceDefinitionCreate.getWorkspaceId());
 
     return buildSourceDefinitionRead(sourceDefinition);
   }
@@ -232,6 +268,46 @@ public class SourceDefinitionsHandler {
         .withTombstone(false)
         .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
+  }
+
+  public void createBuilderVersion(final BuilderVersionCreate builderVersionCreate)
+      throws IOException {
+    final BuilderVersion builderVersion = builderVersionFromCreate(builderVersionCreate);
+
+    configRepository.writeBuilderVersion(builderVersion);
+  }
+
+  private BuilderVersion builderVersionFromCreate(final BuilderVersionCreate builderVersionCreate)
+      throws IOException {
+    final UUID id = uuidSupplier.get();
+    return new BuilderVersion()
+        .withActorDefinitionId(builderVersionCreate.getSourceDefinitionId())
+        .withBuilderVersionId(id)
+        .withDescription(builderVersionCreate.getSourceDefinition().getDescription())
+        .withVersion((long)builderVersionCreate.getSourceDefinition().getVersion())
+        .withManifest(new ObjectMapper().readTree(builderVersionCreate.getSourceDefinition().getManifest()))
+        .withSpec(new ObjectMapper().readTree(builderVersionCreate.getSourceDefinition().getSpec()));
+  }
+
+  private StandardSourceDefinition sourceDefinitionFromBuilderCreate(final BuilderDefinitionCreate builderDefinitionCreate)
+      throws IOException {
+
+    final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(null);
+
+    final UUID id = uuidSupplier.get();
+    return new StandardSourceDefinition()
+        .withSourceDefinitionId(id)
+        .withDockerRepository("airbyte/low-code-connector")
+        .withDockerImageTag("1.0")
+        .withDocumentationUrl("https://docs.airbyte.com/low-code-stuff")
+        .withName(builderDefinitionCreate.getName())
+        .withIcon("")
+        .withSpec(new ConnectorSpecification())
+        .withProtocolVersion(airbyteProtocolVersion.serialize())
+        .withTombstone(false)
+        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+        .withSourceType(SourceType.BUILDER)
+        .withResourceRequirements(null);
   }
 
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate)

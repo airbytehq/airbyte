@@ -1,0 +1,32 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/BuilderVersion.yaml
+title: BuilderVersion
+description: describes a version of a builder connector
+type: object
+required:
+  - builderVersionId
+  - actorDefinitionId
+  - description
+  - manifest
+  - version
+additionalProperties: true
+properties:
+  builderVersionId:
+    type: string
+    format: uuid
+  actorDefinitionId:
+    type: string
+    format: uuid
+  description:
+    type: string
+  manifest:
+    description: The low code manifest
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  spec:
+    description: The spec for the manifest
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  version:
+    type: integer

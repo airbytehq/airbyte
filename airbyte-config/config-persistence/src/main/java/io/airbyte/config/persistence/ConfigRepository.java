@@ -10,6 +10,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.BUILDER_VERSION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
@@ -33,6 +34,7 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorCatalogWithUpdatedAt;
+import io.airbyte.config.BuilderVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -256,6 +258,20 @@ public class ConfigRepository {
         .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId));
   }
 
+  public BuilderVersion getBuilderVersion(final UUID sourceDefinitionId, final int version)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return database.query(ctx -> ctx.select(BUILDER_VERSION.asterisk())
+            .from(BUILDER_VERSION)
+            .where(BUILDER_VERSION.ACTOR_DEFINITION_ID.eq(sourceDefinitionId))
+            .and(BUILDER_VERSION.VERSION.eq(version))
+            .fetch())
+        .stream()
+        .map(DbConverter::buildBuilderVersion)
+        // Ensure version is set. Needed for connectors not upgraded since we added versioning.
+        .findFirst()
+        .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId));
+  }
+
   public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
     try {
       final SourceConnection source = getSourceConnection(sourceId);
@@ -347,6 +363,14 @@ public class ConfigRepository {
     database.transaction(ctx -> {
       ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(sourceDefinition), ctx);
       writeActorDefinitionWorkspaceGrant(sourceDefinition.getSourceDefinitionId(), workspaceId, ctx);
+      return null;
+    });
+  }
+
+  public void writeBuilderVersion(final BuilderVersion builderVersion)
+      throws IOException {
+    database.transaction(ctx -> {
+      ConfigWriter.writeBuilderVersion(builderVersion, ctx);
       return null;
     });
   }
