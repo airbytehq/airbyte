@@ -11,16 +11,17 @@ on:
       debug_mode:
         description: "Enable or disable tmate session for debug during helm ac tests"
         type: choice
-        default: 'false'
-        options: 
-          - 'true'
-          - 'false'
+        default: "false"
+        options:
+          - "true"
+          - "false"
         required: false
   schedule:
     - cron: "0 */1 * * *"
   push:
-    branches-ignore:
-      - "gitbook/v1"
+    branches:
+      - master
+  pull_request:
 
 permissions: write-all
 
@@ -466,6 +467,16 @@ jobs:
         with:
           python-version: "3.9"
 
+      - name: Delete default old docker and replace it with a new one
+        shell: bash
+        run: |
+          sudo rm /var/lib/dpkg/lock
+          sudo rm /var/lib/dpkg/lock-frontend
+          sudo apt-get remove docker.io || sudo apt-get remove docker
+          curl -fsSL https://get.docker.com | bash -
+          sudo rm -f /var/lib/dpkg/lock
+          sudo rm -f /var/lib/dpkg/lock-frontend
+
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
@@ -591,6 +602,16 @@ jobs:
         with:
           node-version: "lts/*"
 
+      - name: Delete default old docker and replace it with a new one
+        shell: bash
+        run: |
+          sudo rm /var/lib/dpkg/lock
+          sudo rm /var/lib/dpkg/lock-frontend
+          sudo apt-get remove docker.io || sudo apt-get remove docker
+          curl -fsSL https://get.docker.com | bash -
+          sudo rm -f /var/lib/dpkg/lock
+          sudo rm -f /var/lib/dpkg/lock-frontend
+
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
@@ -621,6 +642,45 @@ jobs:
           command: SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
+
+      - name: Add coverage to PR
+        if: github.event_name == 'pull_request'
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          # todo(mfsiega-airbyte): when v1.4 is released, use wildcards per https://github.com/Madrapps/jacoco-report/issues/20.
+          paths: |
+            ${{ github.workspace }}/airbyte-analytics/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-api/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-bootloader/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-cli/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-docker/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-protocol/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-temporal/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-worker/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/init/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/specs/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/config-persistence/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/config-models/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-container-orchestrator/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-db/db-lib/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-json-validation/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-metrics/reporter/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-metrics/metrics-lib/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-notification/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-oauth/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-persistence/job-persistence/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-protocol/protocol-models/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-server/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-test-utils/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-workers/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 25
+          min-coverage-changed-files: 60
+          title: Airbyte Code Coverage
+          update-comment: true
+          debug-mode: false
 
       - name: Integration test
         uses: Wandalen/wretry.action@master
@@ -756,7 +816,7 @@ jobs:
           github-token: ${{ env.PAT }}
           label: ${{ needs.start-platform-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
-  
+
   ## Kube Acceptance Tests
   # Docker acceptance tests run as part of the build job.
   # In case of self-hosted EC2 errors, remove this block.
@@ -822,7 +882,7 @@ jobs:
 
       - uses: azure/setup-helm@v3
         with:
-          version: 'latest'
+          version: "latest"
           token: ${{ secrets.GITHUB_TOKEN }}
         id: install
 
@@ -1036,7 +1096,7 @@ jobs:
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /actions-runner/_work/airbyte/airbyte && mkdir -p /actions-runner/_work/airbyte/airbyte/.kube
-        
+
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
@@ -1059,7 +1119,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.9' 
+          python-version: "3.9"
 
       - uses: actions/setup-java@v1
         with:
@@ -1071,13 +1131,13 @@ jobs:
 
       - uses: azure/setup-helm@v3
         with:
-          version: 'latest'
+          version: "latest"
           token: ${{ secrets.GITHUB_TOKEN }}
         id: install
 
       - uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.21.2' # default is latest stable
+          version: "v1.21.2" # default is latest stable
 
       - name: Install tmate and it's dependencies
         if: inputs.debug_mode == 'true'
@@ -1087,11 +1147,11 @@ jobs:
             sudo apt-get -y install tmate
           attempt_limit: 3
           attempt_delay: 2000 # in ms
-      
+
       - name: Start tmate session in background
         if: inputs.debug_mode == 'true'
         shell: bash
-        run: |  
+        run: |
           tmate -S /tmp/tmate.sock new-session -d               # Launch tmate in a headless mode
           tmate -S /tmp/tmate.sock wait tmate-ready             # Blocks until the SSH connection is established
           tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'    # Prints the SSH connection string
@@ -1152,10 +1212,10 @@ jobs:
 
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
-        if: always()    # run this step even if previous step failed
+        if: always() # run this step even if previous step failed
         with:
           name: Platform Helm E2E Test Report
-          path: './*/build/test-results/*/*.xml'
+          path: "./*/build/test-results/*/*.xml"
           reporter: java-junit
 
       - uses: actions/upload-artifact@v2
@@ -1163,7 +1223,7 @@ jobs:
         with:
           name: Kubernetes Logs
           path: /tmp/kubernetes_logs/*
-      
+
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
         uses: Workshop64/buildpulse-action@main
@@ -1173,13 +1233,12 @@ jobs:
           path: "/actions-runner/_work/airbyte/airbyte/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
-      
+
       - name: "Display logs of k3s"
         if: failure()
         shell: bash
         run: |
           journalctl -xeu k3s.service
-    
 
   # # In case of self-hosted EC2 errors, remove this block.
   stop-helm-acceptance-test-runner:
@@ -1216,8 +1275,6 @@ jobs:
           label: ${{ needs.start-helm-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-helm-acceptance-test-runner.outputs.ec2-instance-id }}
 
-
-
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
@@ -1231,6 +1288,14 @@ jobs:
       # - helm-acceptance-test
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Match GitHub User to Slack User
+        id: match-github-to-slack-user
+        uses: ./.github/actions/match-github-to-slack-user
+        env:
+          AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to OSS Build Failure Slack Channel
         uses: abinoda/slack-action@master
         env:
@@ -1241,6 +1306,7 @@ jobs:
             {\"type\":\"divider\"},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Merge to OSS Master failed! :bangbang: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
             {\"type\":\"divider\"}]}
 

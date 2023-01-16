@@ -2,17 +2,25 @@ import { faTrashCan, faCopy } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useField } from "formik";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import Indicator from "components/Indicator";
+import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  BuilderView,
+  useConnectorBuilderFormState,
+  useConnectorBuilderTestState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
 import { BuilderStream } from "../types";
+import { formatJson } from "../utils";
 import { AddStreamButton } from "./AddStreamButton";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderConfigView } from "./BuilderConfigView";
@@ -29,34 +37,12 @@ interface StreamConfigViewProps {
   hasMultipleStreams: boolean;
 }
 
-export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, hasMultipleStreams }) => {
+export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ streamNum, hasMultipleStreams }) => {
   const { formatMessage } = useIntl();
-  const [field, , helpers] = useField<BuilderStream[]>("streams");
-  const [selectedTab, setSelectedTab] = useState<"configuration" | "schema">("configuration");
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { setSelectedView } = useConnectorBuilderFormState();
 
+  const [selectedTab, setSelectedTab] = useState<"configuration" | "schema">("configuration");
   const streamPath = `streams[${streamNum}]`;
   const streamFieldPath = (fieldPath: string) => `${streamPath}.${fieldPath}`;
-
-  const handleDelete = () => {
-    openConfirmationModal({
-      text: "connectorBuilder.deleteStreamModal.text",
-      title: "connectorBuilder.deleteStreamModal.title",
-      submitButtonText: "connectorBuilder.deleteStreamModal.submitButton",
-      onSubmit: () => {
-        const updatedStreams = field.value.filter((_, index) => index !== streamNum);
-        const streamToSelect = streamNum >= updatedStreams.length ? updatedStreams.length - 1 : streamNum;
-        const viewToSelect: BuilderView = updatedStreams.length === 0 ? "global" : streamToSelect;
-        helpers.setValue(updatedStreams);
-        setSelectedView(viewToSelect);
-        closeConfirmationModal();
-      },
-    });
-  };
-
-  const [, meta] = useField<string | undefined>(streamFieldPath("schema"));
-  const hasSchemaErrors = Boolean(meta.error);
 
   return (
     <BuilderConfigView
@@ -65,33 +51,12 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, h
     >
       {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderTitle path={streamFieldPath("name")} label="Stream Name" size="md" />
-      <div className={styles.controls}>
-        <StreamTab
-          label={formatMessage({ id: "connectorBuilder.streamConfiguration" })}
-          selected={selectedTab === "configuration"}
-          onSelect={() => setSelectedTab("configuration")}
-        />
-        <StreamTab
-          label={formatMessage({ id: "connectorBuilder.streamSchema" })}
-          selected={selectedTab === "schema"}
-          onSelect={() => setSelectedTab("schema")}
-          showErrorIndicator={hasSchemaErrors}
-        />
-        <AddStreamButton
-          onAddStream={(addedStreamNum) => {
-            setSelectedView(addedStreamNum);
-          }}
-          initialValues={field.value[streamNum]}
-          button={
-            <button className={styles.controlButton} type="button">
-              <FontAwesomeIcon icon={faCopy} />
-            </button>
-          }
-        />
-        <button className={classNames(styles.deleteButton, styles.controlButton)} type="button" onClick={handleDelete}>
-          <FontAwesomeIcon icon={faTrashCan} />
-        </button>
-      </div>
+      <StreamControls
+        streamNum={streamNum}
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
+        streamFieldPath={streamFieldPath}
+      />
       {selectedTab === "configuration" ? (
         <>
           <BuilderCard>
@@ -149,6 +114,76 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum, h
       )}
     </BuilderConfigView>
   );
+});
+
+const StreamControls = ({
+  streamNum,
+  selectedTab,
+  setSelectedTab,
+  streamFieldPath,
+}: {
+  streamNum: number;
+  streamFieldPath: (path: string) => string;
+  setSelectedTab: (tab: "configuration" | "schema") => void;
+  selectedTab: "configuration" | "schema";
+}) => {
+  const { formatMessage } = useIntl();
+  const [field, , helpers] = useField<BuilderStream[]>("streams");
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const { setSelectedView } = useConnectorBuilderFormState();
+  const { streamRead: readStream } = useConnectorBuilderTestState();
+  const [schema, meta] = useField<string | undefined>(streamFieldPath("schema"));
+  const formattedDetectedSchema = useMemo(
+    () => readStream.data?.inferred_schema && formatJson(readStream.data?.inferred_schema, true),
+    [readStream.data?.inferred_schema]
+  );
+  const hasSchemaErrors = Boolean(meta.error);
+
+  const handleDelete = () => {
+    openConfirmationModal({
+      text: "connectorBuilder.deleteStreamModal.text",
+      title: "connectorBuilder.deleteStreamModal.title",
+      submitButtonText: "connectorBuilder.deleteStreamModal.submitButton",
+      onSubmit: () => {
+        const updatedStreams = field.value.filter((_, index) => index !== streamNum);
+        const streamToSelect = streamNum >= updatedStreams.length ? updatedStreams.length - 1 : streamNum;
+        const viewToSelect: BuilderView = updatedStreams.length === 0 ? "global" : streamToSelect;
+        helpers.setValue(updatedStreams);
+        setSelectedView(viewToSelect);
+        closeConfirmationModal();
+      },
+    });
+  };
+  return (
+    <div className={styles.controls}>
+      <StreamTab
+        label={formatMessage({ id: "connectorBuilder.streamConfiguration" })}
+        selected={selectedTab === "configuration"}
+        onSelect={() => setSelectedTab("configuration")}
+      />
+      <StreamTab
+        label={formatMessage({ id: "connectorBuilder.streamSchema" })}
+        selected={selectedTab === "schema"}
+        onSelect={() => setSelectedTab("schema")}
+        showErrorIndicator={hasSchemaErrors}
+        showSchemaConflictIndicator={Boolean(formattedDetectedSchema && schema.value !== formattedDetectedSchema)}
+      />
+      <AddStreamButton
+        onAddStream={(addedStreamNum) => {
+          setSelectedView(addedStreamNum);
+        }}
+        initialValues={field.value[streamNum]}
+        button={
+          <button className={styles.controlButton} type="button">
+            <FontAwesomeIcon icon={faCopy} />
+          </button>
+        }
+      />
+      <button className={classNames(styles.deleteButton, styles.controlButton)} type="button" onClick={handleDelete}>
+        <FontAwesomeIcon icon={faTrashCan} />
+      </button>
+    </div>
+  );
 };
 
 const StreamTab = ({
@@ -156,32 +191,55 @@ const StreamTab = ({
   label,
   onSelect,
   showErrorIndicator,
+  showSchemaConflictIndicator,
 }: {
   selected: boolean;
   label: string;
   onSelect: () => void;
   showErrorIndicator?: boolean;
+  showSchemaConflictIndicator?: boolean;
 }) => (
   <button type="button" className={classNames(styles.tab, { [styles.selectedTab]: selected })} onClick={onSelect}>
     {label}
     {showErrorIndicator && <Indicator />}
+    {showSchemaConflictIndicator && <SchemaConflictIndicator />}
   </button>
 );
 
 const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string) => string }) => {
   const [field, meta, helpers] = useField<string | undefined>(streamFieldPath("schema"));
+  const { streamRead } = useConnectorBuilderTestState();
+
+  const showImportButton = !field.value && streamRead.data?.inferred_schema;
 
   return (
     <>
-      <CodeEditor
-        value={field.value || ""}
-        language="json"
-        theme="airbyte-light"
-        onChange={(val: string | undefined) => {
-          helpers.setValue(val);
-        }}
-      />
-      <Text className={styles.errorMessage}>{meta.error && <FormattedMessage id={meta.error} />}</Text>
+      {showImportButton && (
+        <Button
+          full
+          variant="secondary"
+          onClick={() => {
+            helpers.setValue(formatJson(streamRead.data?.inferred_schema, true));
+          }}
+        >
+          <FormattedMessage id="connectorBuilder.useSchemaButton" />
+        </Button>
+      )}
+      <div className={styles.editorContainer}>
+        <CodeEditor
+          value={field.value || ""}
+          language="json"
+          theme="airbyte-light"
+          onChange={(val: string | undefined) => {
+            helpers.setValue(val);
+          }}
+        />
+      </div>
+      {meta.error && (
+        <Text className={styles.errorMessage}>
+          <FormattedMessage id={meta.error} />
+        </Text>
+      )}
     </>
   );
 };

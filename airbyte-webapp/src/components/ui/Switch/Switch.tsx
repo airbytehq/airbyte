@@ -44,7 +44,7 @@ export const Switch: React.FC<SwitchProps> = ({
     <label className={labelStyle}>
       <input
         {...props}
-        aria-checked={indeterminate ? "mixed" : checked}
+        aria-checked={(indeterminate ? "mixed" : checked) ?? !!value}
         className={styles.switchInput}
         type="checkbox"
         value={value}

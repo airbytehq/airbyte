@@ -6,7 +6,7 @@ import { useEffectOnce } from "react-use";
 import * as yup from "yup";
 
 import { Button } from "components/ui/Button";
-import { InfoBox } from "components/ui/InfoBox";
+import { Callout } from "components/ui/Callout";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { FormikPatch } from "core/form/FormikPatch";
@@ -70,7 +70,10 @@ export const InputForm = ({
 }) => {
   const { values, setFieldValue } = useFormikContext<BuilderFormValues>();
   const [inputs, , helpers] = useField<BuilderFormInput[]>("inputs");
-  const inferredInputs = useMemo(() => getInferredInputs(values), [values]);
+  const inferredInputs = useMemo(
+    () => getInferredInputs(values.global, values.inferredInputOverrides),
+    [values.global, values.inferredInputOverrides]
+  );
   const usedKeys = useMemo(
     () => [...inputs.value, ...inferredInputs].map((input) => input.key),
     [inputs.value, inferredInputs]
@@ -248,13 +251,13 @@ const InputModal = ({
               />
             </>
           ) : (
-            <InfoBox>
+            <Callout className={styles.calloutContainer}>
               {isInferredInputOverride ? (
                 <FormattedMessage id="connectorBuilder.inputModal.inferredInputMessage" />
               ) : (
                 <FormattedMessage id="connectorBuilder.inputModal.unsupportedInput" />
               )}
-            </InfoBox>
+            </Callout>
           )}
         </ModalBody>
         <ModalFooter>
