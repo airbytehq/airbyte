@@ -81,7 +81,7 @@ public class EnvConfigs implements Configs {
   private static final String SIDECAR_KUBE_MEMORY_LIMIT = "SIDECAR_KUBE_MEMORY_LIMIT";
   private static final String DEFAULT_SIDECAR_KUBE_CPU_REQUEST = "0.1";
   private static final String SIDECAR_KUBE_CPU_REQUEST = "SIDECAR_KUBE_CPU_REQUEST";
-  private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "0.2";
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "1.5";
   private static final String SIDECAR_KUBE_CPU_LIMIT = "SIDECAR_KUBE_CPU_LIMIT";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
   private static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
