@@ -1657,7 +1657,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigcommerce:0.1.9"
+- dockerImage: "airbyte/source-bigcommerce:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bigcommerce"
     connectionSpecification:
@@ -3106,6 +3106,30 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-dremio:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/dremio"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Dremio Spec"
+      type: "object"
+      additionalProperties: true
+      required:
+      - "api_key"
+      - "base_url"
+      properties:
+        api_key:
+          type: "string"
+          description: "API Key that is generated when you authenticate to Dremio\
+            \ API"
+          airbyte_secret: true
+        base_url:
+          type: "string"
+          description: "URL of your Dremio instance"
+          default: "https://app.dremio.cloud"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-drift:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/drift"
@@ -3500,7 +3524,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.82"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.83"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -6572,6 +6596,24 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
+- dockerImage: "airbyte/source-instatus:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/instatus"
+    connectionSpecification:
+      title: "Instatus Spec"
+      type: "object"
+      additionalProperties: true
+      required:
+      - "api_key"
+      properties:
+        api_key:
+          type: "string"
+          title: "Rest API Key"
+          airbyte_secret: true
+          description: "Instatus REST API key"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-intercom:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
@@ -6707,7 +6749,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.3.2"
+- dockerImage: "airbyte/source-jira:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -13376,7 +13418,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.20"
+- dockerImage: "airbyte/source-slack:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:
@@ -13667,7 +13709,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.27"
+- dockerImage: "airbyte/source-snowflake:0.1.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -13679,7 +13721,6 @@
       - "role"
       - "warehouse"
       - "database"
-      - "schema"
       properties:
         credentials:
           title: "Authorization Method"
@@ -13778,7 +13819,8 @@
           title: "Database"
           order: 4
         schema:
-          description: "The source Snowflake schema tables."
+          description: "The source Snowflake schema tables. Leave empty to access\
+            \ tables from multiple schemas."
           examples:
           - "AIRBYTE_SCHEMA"
           type: "string"
@@ -15310,7 +15352,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-typeform:0.1.9"
+- dockerImage: "airbyte/source-typeform:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/typeform"
     connectionSpecification:
@@ -15322,6 +15364,12 @@
       - "start_date"
       additionalProperties: true
       properties:
+        token:
+          type: "string"
+          description: "The API Token for a Typeform account."
+          title: "API Token"
+          airbyte_secret: true
+          order: 0
         start_date:
           type: "string"
           description: "UTC date and time in the format: YYYY-MM-DDTHH:mm:ss[Z]. Any\
@@ -15330,11 +15378,7 @@
           examples:
           - "2020-01-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-        token:
-          type: "string"
-          description: "The API Token for a Typeform account."
-          title: "API Token"
-          airbyte_secret: true
+          order: 1
         form_ids:
           title: "Form IDs to replicate"
           description: "When this parameter is set, the connector will replicate data\
@@ -15346,6 +15390,7 @@
           items:
             type: "string"
           uniqueItems: true
+          order: 2
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

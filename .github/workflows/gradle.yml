@@ -19,8 +19,9 @@ on:
   schedule:
     - cron: "0 */1 * * *"
   push:
-    branches-ignore:
-      - "gitbook/v1"
+    branches:
+      - master
+  pull_request:
 
 permissions: write-all
 
@@ -466,6 +467,16 @@ jobs:
         with:
           python-version: "3.9"
 
+      - name: Delete default old docker and replace it with a new one
+        shell: bash
+        run: |
+          sudo rm /var/lib/dpkg/lock
+          sudo rm /var/lib/dpkg/lock-frontend
+          sudo apt-get remove docker.io || sudo apt-get remove docker
+          curl -fsSL https://get.docker.com | bash -
+          sudo rm -f /var/lib/dpkg/lock
+          sudo rm -f /var/lib/dpkg/lock-frontend
+
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
@@ -591,6 +602,16 @@ jobs:
         with:
           node-version: "lts/*"
 
+      - name: Delete default old docker and replace it with a new one
+        shell: bash
+        run: |
+          sudo rm /var/lib/dpkg/lock
+          sudo rm /var/lib/dpkg/lock-frontend
+          sudo apt-get remove docker.io || sudo apt-get remove docker
+          curl -fsSL https://get.docker.com | bash -
+          sudo rm -f /var/lib/dpkg/lock
+          sudo rm -f /var/lib/dpkg/lock-frontend
+
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
@@ -621,6 +642,45 @@ jobs:
           command: SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
+
+      - name: Add coverage to PR
+        if: github.event_name == 'pull_request'
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          # todo(mfsiega-airbyte): when v1.4 is released, use wildcards per https://github.com/Madrapps/jacoco-report/issues/20.
+          paths: |
+            ${{ github.workspace }}/airbyte-analytics/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-api/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-bootloader/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-cli/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-docker/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-protocol/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-temporal/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-worker/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/init/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/specs/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/config-persistence/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/config-models/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-container-orchestrator/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-db/db-lib/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-json-validation/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-metrics/reporter/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-metrics/metrics-lib/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-notification/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-oauth/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-persistence/job-persistence/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-protocol/protocol-models/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-server/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-test-utils/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-workers/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 25
+          min-coverage-changed-files: 60
+          title: Airbyte Code Coverage
+          update-comment: true
+          debug-mode: false
 
       - name: Integration test
         uses: Wandalen/wretry.action@master
