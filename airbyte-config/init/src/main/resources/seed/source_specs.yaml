@@ -10135,7 +10135,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-oracle:0.3.21"
+- dockerImage: "airbyte/source-oracle:0.3.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/oracle"
     connectionSpecification:
@@ -10177,7 +10177,6 @@
               connection_type:
                 type: "string"
                 const: "service_name"
-                default: "service_name"
                 order: 0
               service_name:
                 title: "Service name"
@@ -10191,7 +10190,6 @@
               connection_type:
                 type: "string"
                 const: "sid"
-                default: "sid"
                 order: 0
               sid:
                 title: "System ID (SID)"
@@ -10239,9 +10237,6 @@
               encryption_method:
                 type: "string"
                 const: "unencrypted"
-                enum:
-                - "unencrypted"
-                default: "unencrypted"
           - title: "Native Network Encryption (NNE)"
             description: "The native network encryption gives you the ability to encrypt\
               \ database connections, without the configuration overhead of TCP/IP\
@@ -10252,9 +10247,6 @@
               encryption_method:
                 type: "string"
                 const: "client_nne"
-                enum:
-                - "client_nne"
-                default: "client_nne"
               encryption_algorithm:
                 type: "string"
                 description: "This parameter defines what encryption algorithm is\
@@ -10274,9 +10266,6 @@
               encryption_method:
                 type: "string"
                 const: "encrypted_verify_certificate"
-                enum:
-                - "encrypted_verify_certificate"
-                default: "encrypted_verify_certificate"
               ssl_certificate:
                 title: "SSL PEM File"
                 description: "Privacy Enhanced Mail (PEM) files are concatenated certificate\
