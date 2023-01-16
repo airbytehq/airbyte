@@ -1,7 +1,6 @@
 import { ColumnDef, flexRender, useReactTable, getCoreRowModel } from "@tanstack/react-table";
-import { ColumnMeta } from "@tanstack/table-core";
 import classNames from "classnames";
-import { CSSProperties, PropsWithChildren } from "react";
+import { PropsWithChildren } from "react";
 
 import { ConnectionScheduleData } from "core/request/AirbyteClient";
 
@@ -25,20 +24,6 @@ export interface TableProps<T> {
   onClickRow?: (data: TData<T>) => void;
 }
 
-const getStyleFromColumnMeta = <T,>(meta: ColumnMeta<T, unknown>): CSSProperties => {
-  const style: CSSProperties = {};
-  if (meta?.customWidth) {
-    style.width = `${meta.customWidth}%`;
-  }
-  if (meta?.customPadding?.left) {
-    style.paddingLeft = `${meta.customPadding.left}px`;
-  }
-  if (meta?.customPadding?.right) {
-    style.paddingRight = `${meta.customPadding.right}px`;
-  }
-  return style;
-};
-
 export const NextTable = <T,>({
   columns,
   data,
@@ -60,7 +45,6 @@ export const NextTable = <T,>({
           <tr key={`table-header-${headerGroup.id}}`}>
             {headerGroup.headers.map((header) => {
               const { meta } = header.column.columnDef;
-              const style = getStyleFromColumnMeta<TData<T>>(meta as ColumnMeta<T, unknown>);
               return (
                 <th
                   colSpan={header.colSpan}
@@ -70,7 +54,6 @@ export const NextTable = <T,>({
                     [styles.collapse]: meta?.collapse,
                   })}
                   key={`table-column-${headerGroup.id}-${header.id}`}
-                  style={style}
                 >
                   {flexRender(header.column.columnDef.header, header.getContext())}
                 </th>

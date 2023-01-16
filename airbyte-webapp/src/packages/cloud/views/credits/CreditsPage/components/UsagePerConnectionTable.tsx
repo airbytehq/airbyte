@@ -16,6 +16,7 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 
 import ConnectionCell from "./ConnectionCell";
 import UsageCell from "./UsageCell";
+import styles from "./UsagePerConnectionTable.module.scss";
 
 const Content = styled.div`
   padding: 0 60px 0 15px;
@@ -128,7 +129,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
           </SortableTableHeader>
         ),
         meta: {
-          customWidth: 30,
+          thClassName: styles.thConnection,
         },
         accessorKey: "sourceDefinitionName",
         cell: (props) => (
@@ -153,9 +154,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         accessorKey: "creditsConsumed",
         meta: {
           collapse: true,
-          customPadding: {
-            right: 0,
-          },
+          thClassName: styles.thCreditsConsumed,
         },
         cell: (props) => <UsageValue>{props.cell.getValue()}</UsageValue>,
       },
@@ -163,9 +162,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         header: "",
         accessorKey: "creditsConsumedPercent",
         meta: {
-          customPadding: {
-            left: 0,
-          },
+          thClassName: styles.thCreditsConsumedPercent,
         },
         cell: (props) => <UsageCell percent={props.cell.getValue()} />,
       },
@@ -175,7 +172,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         accessorKey: "connectionId",
         cell: () => <div />,
         meta: {
-          customWidth: 20,
+          thClassName: styles.thConnectionId,
         },
       },
     ],

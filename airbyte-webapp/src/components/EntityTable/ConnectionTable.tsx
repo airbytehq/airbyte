@@ -17,6 +17,7 @@ import FrequencyCell from "./components/FrequencyCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
 import { StatusCell } from "./components/StatusCell";
+import styles from "./ConnectionTable.module.scss";
 import { ITableDataItem, SortOrderEnum } from "./types";
 
 interface IProps {
@@ -95,8 +96,8 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
           </SortableTableHeader>
         ),
         meta: {
+          thClassName: styles.thName,
           headerHighlighted: true,
-          customWidth: 30,
         },
         accessorKey: "name",
         cell: (props: CellContext<ITableDataItem, string>) => (
@@ -181,7 +182,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         header: () => <FormattedMessage id="tables.enabled" />,
         accessorKey: "enabled",
         meta: {
-          customWidth: 1,
+          thClassName: styles.thEnabled,
         },
         cell: (props: CellContext<ITableDataItem, boolean>) => (
           <StatusCell
@@ -200,7 +201,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         header: "",
         accessorKey: "connectionId",
         meta: {
-          customWidth: 1,
+          thClassName: styles.thConnectionId,
         },
         cell: (props: CellContext<ITableDataItem, string>) => <ConnectionSettingsCell id={props.cell.getValue()} />,
       },
