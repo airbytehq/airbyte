@@ -66,7 +66,7 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error while publishing Airbyte CDK!"
+                "text": "Error during `bump-version` while publishing Airbyte CDK!"
                 "blocks": [
                     {
                         "type": "section",
@@ -113,7 +113,7 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error while publishing Airbyte CDK!"
+                "text": "Error during `build-cdk` while publishing Airbyte CDK!"
                 "blocks": [
                     {
                         "type": "section",
@@ -201,7 +201,7 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error while publishing Airbyte CDK!"
+                "text": "Error during `publish-cdk` while publishing Airbyte CDK!"
                 "blocks": [
                     {
                         "type": "section",
