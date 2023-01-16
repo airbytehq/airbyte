@@ -204,11 +204,13 @@
     },
     "discount_applications": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "discount_applications": {
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "type": {
                 "type": ["null", "string"]
