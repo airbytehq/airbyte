@@ -32,7 +32,7 @@ exports[`CreateConnectionForm should render 1`] = `
                   <label
                     class="<removed-for-snapshot-test>"
                   >
-                    Connection name*
+                    Connection name
                     <span
                       class="<removed-for-snapshot-test>"
                     >
@@ -104,7 +104,7 @@ exports[`CreateConnectionForm should render 1`] = `
                     <label
                       class="<removed-for-snapshot-test>"
                     >
-                      Replication frequency*
+                      Replication frequency
                       <span
                         class="<removed-for-snapshot-test>"
                       >
@@ -243,7 +243,7 @@ exports[`CreateConnectionForm should render 1`] = `
                       <label
                         class="<removed-for-snapshot-test>"
                       >
-                        Destination Namespace*
+                        Destination Namespace
                         <span
                           class="<removed-for-snapshot-test>"
                         >
@@ -366,7 +366,7 @@ exports[`CreateConnectionForm should render 1`] = `
                     <label
                       class="<removed-for-snapshot-test>"
                     >
-                      Destination Stream Prefix (Optional)
+                      Destination Stream Prefix
                       <span
                         class="<removed-for-snapshot-test>"
                       >
@@ -390,6 +390,11 @@ exports[`CreateConnectionForm should render 1`] = `
                           </span>
                         </span>
                       </span>
+                      <p
+                        class="<removed-for-snapshot-test>"
+                      >
+                        Optional
+                      </p>
                     </label>
                   </div>
                 </div>
@@ -887,11 +892,11 @@ exports[`CreateConnectionForm should render 1`] = `
             <div
               class="<removed-for-snapshot-test>"
             >
-              <h5
+              <h2
                 class="<removed-for-snapshot-test>"
               >
                 Normalization & Transformation
-              </h5>
+              </h2>
               <div
                 class="<removed-for-snapshot-test>"
               >

@@ -5,7 +5,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { LoadingPage } from "components";
 
 import { useExperiment } from "hooks/services/Experiment";
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FirebaseActionRoute } from "packages/cloud/views/FirebaseActionRoute";
 
@@ -54,7 +54,13 @@ export const Auth: React.FC = () => {
               <Route path={CloudRoutes.FirebaseAction} element={<FirebaseActionRoute />} />
               <Route
                 path="*"
-                element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${pathname}`}`} />}
+                element={
+                  <Navigate
+                    to={`${CloudRoutes.Login}${
+                      loggedOut && pathname.includes("/settings/account") ? "" : `?from=${pathname}`
+                    }`}
+                  />
+                }
               />
             </Routes>
           </Suspense>
