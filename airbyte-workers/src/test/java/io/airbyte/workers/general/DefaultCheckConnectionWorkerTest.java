@@ -54,9 +54,10 @@ import org.junit.jupiter.api.Test;
 class DefaultCheckConnectionWorkerTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
-  private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
-  private static final Config CONNECTOR_CONFIG = new Config().withAdditionalProperty("apiKey", "321");
-  private static final Config UNCHANGED_CONNECTOR_CONFIG = new Config().withAdditionalProperty("apiKey", "123");
+  private static final String CONFIG_PROPERTY_KEY = "apiKey";
+  private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put(CONFIG_PROPERTY_KEY, "123").build());
+  private static final Config CONNECTOR_CONFIG = new Config().withAdditionalProperty(CONFIG_PROPERTY_KEY, "321");
+  private static final Config UNCHANGED_CONNECTOR_CONFIG = new Config().withAdditionalProperty(CONFIG_PROPERTY_KEY, "123");
 
   private static final ActorType ACTOR_TYPE = ActorType.SOURCE;
   private static final UUID ACTOR_ID = UUID.randomUUID();
@@ -103,7 +104,7 @@ class DefaultCheckConnectionWorkerTest {
     traceMessageSuccessStreamFactory = noop -> Lists.newArrayList(successMessage, traceMessage).stream();
     emptyStreamFactory = noop -> Stream.empty();
 
-    final AirbyteMessage configMessage1 = AirbyteMessageUtils.createConfigControlMessage(new Config().withAdditionalProperty("apiKey", "123"), 1D);
+    final AirbyteMessage configMessage1 = AirbyteMessageUtils.createConfigControlMessage(new Config().withAdditionalProperty(CONFIG_PROPERTY_KEY, "123"), 1D);
     final AirbyteMessage configMessage2 = AirbyteMessageUtils.createConfigControlMessage(CONNECTOR_CONFIG, 2D);
     configMessageStreamFactory = noop -> Lists.newArrayList(configMessage1, configMessage2, successMessage).stream();
 
