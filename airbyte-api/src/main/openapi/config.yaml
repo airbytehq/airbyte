@@ -4183,6 +4183,7 @@ components:
         - createdAt
         - endedAt
         - succeeded
+        - didUpdateConfiguration
       properties:
         id:
           type: string
@@ -4200,6 +4201,9 @@ components:
           format: int64
         succeeded:
           type: boolean
+        didUpdateConfiguration:
+          type: boolean
+          default: false
         logs:
           $ref: "#/components/schemas/LogRead"
     Pagination:
