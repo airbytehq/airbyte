@@ -10,7 +10,7 @@ import time
 from abc import ABC
 from collections import deque
 from concurrent.futures import Future, ProcessPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 from math import ceil
 from pickle import PickleError, dumps
@@ -35,6 +35,17 @@ END_OF_STREAM_KEY: str = "end_of_stream"
 
 logger = logging.getLogger("airbyte")
 
+# For some streams, multiple http requests are running at the same time for performance reasons.
+# However, it may result in hitting the rate limit, therefore subsequent requests have to be made after a pause.
+# The idea is to sustain a pause once and continue making multiple requests at a time.
+# A single `retry_at` variable is introduced here, which prevents us from duplicate sleeping in the main thread
+# before each request is made as it used to be in prior versions.
+# It acts like a global counter - increased each time a 429 status is met
+# only if it is greater than the current value. On the other hand, no request may be made before this moment.
+# Because the requests are made in parallel, time.sleep will be called in parallel as well.
+# This is possible because it is a point in time, not timedelta.
+retry_at: Optional[datetime] = None
+
 
 def sleep_before_executing(sleep_time: float):
     def wrapper(function):
@@ -42,7 +53,8 @@ def sleep_before_executing(sleep_time: float):
         def inner(*args, **kwargs):
             logger.info(f"Sleeping {sleep_time} seconds before next request")
             time.sleep(int(sleep_time))
-            return function(*args, **kwargs)
+            result = function(*args, **kwargs)
+            return result, datetime.utcnow()
 
         return inner
 
@@ -68,7 +80,7 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
     Used to async execute a set of requests.
     """
 
-    def send_future(self, request: requests.PreparedRequest, sleep_time: float, **kwargs) -> Future:
+    def send_future(self, request: requests.PreparedRequest, **kwargs) -> Future:
         """
         Use instead of default `Session.send()` method.
         `Session.send()` should not be overridden as it used by `requests-futures` lib.
@@ -77,6 +89,10 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
         if self.session:
             func = self.session.send
         else:
+            sleep_time = 0
+            now = datetime.utcnow()
+            if retry_at and retry_at > now:
+                sleep_time = (retry_at - datetime.utcnow()).seconds
             # avoid calling super to not break pickled method
             func = partial(requests.Session.send, self)
             func = sleep_before_executing(sleep_time)(func)
@@ -93,11 +109,12 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
 
 
 class BaseSourceZendeskSupportStream(HttpStream, ABC):
-    def __init__(self, subdomain: str, start_date: str, **kwargs):
+    def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(**kwargs)
 
         self._start_date = start_date
         self._subdomain = subdomain
+        self._ignore_pagination = ignore_pagination
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -247,7 +264,7 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice)
             self.future_requests.append(
                 {
-                    "future": self._send_request(request, 0, request_kwargs),
+                    "future": self._send_request(request, request_kwargs),
                     "request": request,
                     "request_kwargs": request_kwargs,
                     "retries": 0,
@@ -255,12 +272,12 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             )
         self.logger.info(f"Generated {len(self.future_requests)} future requests")
 
-    def _send(self, request: requests.PreparedRequest, sleep_time: float, request_kwargs: Mapping[str, Any]) -> Future:
-        response: Future = self._session.send_future(request, sleep_time, **request_kwargs)
+    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> Future:
+        response: Future = self._session.send_future(request, **request_kwargs)
         return response
 
-    def _send_request(self, request: requests.PreparedRequest, sleep_time: float, request_kwargs: Mapping[str, Any]) -> Future:
-        return self._send(request, sleep_time, request_kwargs)
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> Future:
+        return self._send(request, request_kwargs)
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
@@ -288,20 +305,23 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
         retries: int,
         original_exception: Exception = None,
         response: requests.Response = None,
+        finished_at: Optional[datetime] = None,
         **request_kwargs,
     ):
         if retries == self.max_retries:
             if original_exception:
                 raise original_exception
             raise DefaultBackoffException(request=request, response=response)
-        sleep_time = 0
-        if response is not None:
-            backoff_time = self.backoff_time(response)
-            sleep_time = max(0, int(backoff_time - response.elapsed.total_seconds()))
-        self.logger.info(f"Adding a request to be retried in {sleep_time} seconds")
+        sleep_time = self.backoff_time(response)
+        if response is not None and finished_at and sleep_time:
+            current_retry_at = finished_at + timedelta(seconds=sleep_time)
+            global retry_at
+            if not retry_at or (retry_at < current_retry_at):
+                retry_at = current_retry_at
+            self.logger.info(f"Adding a request to be retried in {sleep_time} seconds")
         self.future_requests.append(
             {
-                "future": self._send_request(request, sleep_time, request_kwargs),
+                "future": self._send_request(request, request_kwargs),
                 "request": request,
                 "request_kwargs": request_kwargs,
                 "retries": retries + 1,
@@ -323,14 +343,14 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             request, retries, future, kwargs = item["request"], item["retries"], item["future"], item["request_kwargs"]
 
             try:
-                response = future.result()
+                response, finished_at = future.result()
             except TRANSIENT_EXCEPTIONS as exc:
                 self.logger.info("Will retry the request because of a transient exception")
                 self._retry(request=request, retries=retries, original_exception=exc, **kwargs)
                 continue
             if self.should_retry(response):
                 self.logger.info("Will retry the request for other reason")
-                self._retry(request=request, retries=retries, response=response, **kwargs)
+                self._retry(request=request, retries=retries, response=response, finished_at=finished_at, **kwargs)
                 continue
             self.logger.info("Request successful, will parse the response now")
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
@@ -354,6 +374,8 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
         return self.name
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
         next_page = self._parse_next_page_number(response)
         if not next_page:
             self._finished = True
@@ -387,6 +409,8 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         return {self.cursor_field: max(new_value, old_value)}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
         start_time = dict(parse_qsl(urlparse(response.json().get(self.next_page_field), "").query)).get("start_time")
         if start_time != self.prev_start_time:
             self.prev_start_time = start_time
@@ -532,6 +556,8 @@ class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
         next_page = self._parse_next_page_number(response)
         return next_page if next_page else None
 
@@ -552,6 +578,8 @@ class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
     """
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
         next_page = self._parse_next_page_number(response)
         return next_page if next_page else None
 
@@ -578,6 +606,8 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
         next_page = self._parse_next_page_number(response)
         return next_page if next_page else None
 
@@ -631,6 +661,8 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
         return response.json().get("before_cursor")
 
 
