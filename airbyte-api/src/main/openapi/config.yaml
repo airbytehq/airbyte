@@ -4183,7 +4183,7 @@ components:
         - createdAt
         - endedAt
         - succeeded
-        - didUpdateConfiguration
+        - connectorConfigurationUpdated
       properties:
         id:
           type: string
@@ -4201,7 +4201,7 @@ components:
           format: int64
         succeeded:
           type: boolean
-        didUpdateConfiguration:
+        connectorConfigurationUpdated:
           type: boolean
           default: false
         logs:

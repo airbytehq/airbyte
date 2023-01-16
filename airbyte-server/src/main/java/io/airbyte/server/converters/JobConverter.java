@@ -239,7 +239,7 @@ public class JobConverter {
         .createdAt(metadata.getCreatedAt())
         .endedAt(metadata.getEndedAt())
         .succeeded(metadata.isSucceeded())
-        .didUpdateConfiguration(metadata.getDidUpdateConfiguration())
+        .connectorConfigurationUpdated(metadata.isConnectorConfigurationUpdated())
         .logs(getLogRead(metadata.getLogPath()));
   }
 
