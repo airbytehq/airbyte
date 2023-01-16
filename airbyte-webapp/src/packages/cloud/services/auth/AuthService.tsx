@@ -148,7 +148,7 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
   stateRef.current = state;
 
   const onAuthStateChange = useCallback(
-    async (currentUser) => {
+    async (currentUser: FirebaseUser | null) => {
       if (!stateRef.current.inited) {
         if (stateRef.current.currentUser === null && currentUser) {
           await onAfterAuth(currentUser);
