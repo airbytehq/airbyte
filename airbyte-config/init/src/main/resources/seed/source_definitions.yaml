@@ -429,6 +429,14 @@
   icon: dockerhub.svg
   sourceType: api
   releaseStage: alpha
+- name: Dremio
+  sourceDefinitionId: d99e9ace-8621-46c2-9144-76ae4751d64b
+  dockerRepository: airbyte/source-dremio
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dremio
+  icon: dremio.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Drift
   sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   dockerRepository: airbyte/source-drift
@@ -480,7 +488,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.82
+  dockerImageTag: 0.2.83
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -501,6 +509,8 @@
   icon: faker.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts: []
 - name: Fastbill
   sourceDefinitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
   dockerRepository: airbyte/source-fastbill
@@ -791,6 +801,14 @@
   icon: instagram.svg
   sourceType: api
   releaseStage: generally_available
+- name: Instatus
+  sourceDefinitionId: 1901024c-0249-45d0-bcac-31a954652927
+  dockerRepository: airbyte/source-instatus
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/instatus
+  icon: instatus.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
@@ -826,7 +844,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -1574,7 +1592,7 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   icon: slack.svg
   sourceType: api
@@ -1614,7 +1632,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.27
+  dockerImageTag: 0.1.28
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -1813,11 +1831,11 @@
 - name: Typeform
   sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
   dockerRepository: airbyte/source-typeform
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   icon: typeform.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: US Census
   sourceDefinitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
   dockerRepository: airbyte/source-us-census
