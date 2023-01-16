@@ -4183,7 +4183,6 @@ components:
         - createdAt
         - endedAt
         - succeeded
-        - connectorConfigurationUpdated
       properties:
         id:
           type: string
