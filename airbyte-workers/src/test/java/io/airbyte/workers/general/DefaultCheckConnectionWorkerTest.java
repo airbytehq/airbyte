@@ -104,7 +104,8 @@ class DefaultCheckConnectionWorkerTest {
     traceMessageSuccessStreamFactory = noop -> Lists.newArrayList(successMessage, traceMessage).stream();
     emptyStreamFactory = noop -> Stream.empty();
 
-    final AirbyteMessage configMessage1 = AirbyteMessageUtils.createConfigControlMessage(new Config().withAdditionalProperty(CONFIG_PROPERTY_KEY, "123"), 1D);
+    final AirbyteMessage configMessage1 =
+        AirbyteMessageUtils.createConfigControlMessage(new Config().withAdditionalProperty(CONFIG_PROPERTY_KEY, "123"), 1D);
     final AirbyteMessage configMessage2 = AirbyteMessageUtils.createConfigControlMessage(CONNECTOR_CONFIG, 2D);
     configMessageStreamFactory = noop -> Lists.newArrayList(configMessage1, configMessage2, successMessage).stream();
 

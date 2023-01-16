@@ -23,7 +23,7 @@ properties:
   spec:
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
   didUpdateConfiguration:
-    description: Indicates whether the job updated the configuration for the actor, generally through an AirbyteControlMessage
+    description: A boolean indicating whether the configuration was updated during the job, e.g. if an AirbyteConfigControlMessage was received.
     type: boolean
     default: false
   failureReason:
