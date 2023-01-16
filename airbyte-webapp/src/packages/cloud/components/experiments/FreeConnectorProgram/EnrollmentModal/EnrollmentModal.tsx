@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
@@ -28,6 +28,7 @@ export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
   createCheckout,
   workspaceId,
 }) => {
+  const isMountedRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const startStripeCheckout = async () => {
@@ -43,8 +44,18 @@ export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
     });
 
     // Forward to stripe as soon as we created a checkout session successfully
-    window.location.assign(stripeUrl);
+    if (isMountedRef.current) {
+      window.location.assign(stripeUrl);
+    }
   };
+
+  // If the user closes the modal while the request is processing, we don't want to redirect them
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   return (
     <>
