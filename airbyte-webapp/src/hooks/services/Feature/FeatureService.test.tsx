@@ -165,25 +165,25 @@ describe("Feature Service", () => {
 
     describe("env variable overwrites", () => {
       beforeEach(() => {
-        import.meta.env.REACT_APP_FEATURE_ALLOW_SYNC = "false";
-        import.meta.env.REACT_APP_FEATURE_ALLOW_CHANGE_DATA_GEOGRAPHIES = "true";
+        process.env.REACT_APP_FEATURE_ALLOW_SYNC = "false";
+        process.env.REACT_APP_FEATURE_ALLOW_CHANGE_DATA_GEOGRAPHIES = "true";
       });
 
       afterEach(() => {
-        (import.meta.env.NODE_ENV as string) = "test";
-        import.meta.env.REACT_APP_FEATURE_ALLOW_SYNC = undefined;
-        import.meta.env.REACT_APP_FEATURE_ALLOW_CHANGE_DATA_GEOGRAPHIES = undefined;
+        (process.env.NODE_ENV as string) = "test";
+        process.env.REACT_APP_FEATURE_ALLOW_SYNC = undefined;
+        process.env.REACT_APP_FEATURE_ALLOW_CHANGE_DATA_GEOGRAPHIES = undefined;
       });
 
       it("should allow overwriting it in dev", () => {
-        (import.meta.env.NODE_ENV as string) = "development";
+        (process.env.NODE_ENV as string) = "development";
         const getFeature = (feature: FeatureItem) => renderHook(() => useFeature(feature), { wrapper }).result.current;
         expect(getFeature(FeatureItem.AllowSync)).toBe(false);
         expect(getFeature(FeatureItem.AllowChangeDataGeographies)).toBe(true);
       });
 
       it("should not overwrite in a non dev environment", () => {
-        (import.meta.env.NODE_ENV as string) = "production";
+        (process.env.NODE_ENV as string) = "production";
         const getFeature = (feature: FeatureItem) => renderHook(() => useFeature(feature), { wrapper }).result.current;
         expect(getFeature(FeatureItem.AllowSync)).toBe(true);
         expect(getFeature(FeatureItem.AllowChangeDataGeographies)).toBe(false);

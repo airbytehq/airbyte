@@ -40,6 +40,16 @@ export default defineConfig(({ mode }) => {
     ...loadEnv(mode, __dirname, ""),
   };
 
+  // Environment variables that should be available in the frontend
+  const frontendEnvVariables = loadEnv(mode, __dirname, ["REACT_APP_"]);
+  // Create an object of defines that will shim all required process.env variables.
+  const processEnv = {
+    "process.env.NODE_ENV": JSON.stringify(mode),
+    ...Object.fromEntries(
+      Object.entries(frontendEnvVariables).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)])
+    ),
+  };
+
   const config: UserConfig = {
     plugins: [
       basicSsl(),
@@ -53,7 +63,7 @@ export default defineConfig(({ mode }) => {
           initialIsOpen: false,
           position: "br",
           // Align error popover button with the react-query dev tool button
-          badgeStyle: "transform: translate(-60px,-11px)",
+          badgeStyle: "transform: translate(-135px,-11px)",
         },
         eslint: { lintCommand: `eslint --ext js,ts,tsx src` },
         stylelint: {
@@ -77,6 +87,9 @@ export default defineConfig(({ mode }) => {
       headers: {
         "Content-Security-Policy": "script-src * 'unsafe-inline'; worker-src self blob:;",
       },
+    },
+    define: {
+      ...processEnv,
     },
     resolve: {
       alias: {

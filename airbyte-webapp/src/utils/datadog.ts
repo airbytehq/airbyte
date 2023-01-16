@@ -1,14 +1,14 @@
 import { datadogRum } from "@datadog/browser-rum";
 export const loadDatadog = (): void => {
-  const applicationId = window.REACT_APP_DATADOG_APPLICATION_ID ?? import.meta.env.REACT_APP_DATADOG_APPLICATION_ID;
+  const applicationId = window.REACT_APP_DATADOG_APPLICATION_ID ?? process.env.REACT_APP_DATADOG_APPLICATION_ID;
   if (!applicationId) {
     return;
   }
 
-  const clientToken = window.REACT_APP_DATADOG_CLIENT_TOKEN ?? import.meta.env.REACT_APP_DATADOG_CLIENT_TOKEN;
-  const site = window.REACT_APP_DATADOG_SITE ?? import.meta.env.REACT_APP_DATADOG_SITE;
-  const service = window.REACT_APP_DATADOG_SERVICE ?? import.meta.env.REACT_APP_DATADOG_SERVICE;
-  const version = window.REACT_APP_WEBAPP_TAG ?? import.meta.env.REACT_APP_WEBAPP_TAG ?? "dev";
+  const clientToken = window.REACT_APP_DATADOG_CLIENT_TOKEN ?? process.env.REACT_APP_DATADOG_CLIENT_TOKEN;
+  const site = window.REACT_APP_DATADOG_SITE ?? process.env.REACT_APP_DATADOG_SITE;
+  const service = window.REACT_APP_DATADOG_SERVICE ?? process.env.REACT_APP_DATADOG_SERVICE;
+  const version = window.REACT_APP_WEBAPP_TAG ?? process.env.REACT_APP_WEBAPP_TAG ?? "dev";
 
   datadogRum.init({
     applicationId,

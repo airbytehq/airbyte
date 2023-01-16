@@ -105,7 +105,7 @@ export function useConnectorAuth(): {
       } catch (e) {
         // If this API returns a 404 the OAuth credentials have not been added to the database.
         if (isCommonRequestError(e) && e.status === 404) {
-          if (import.meta.env.DEV) {
+          if (process.env.NODE_ENV === "development") {
             notificationService.registerNotification({
               id: "oauthConnector.credentialsMissing",
               // Since it's dev only we don't need i18n on this string

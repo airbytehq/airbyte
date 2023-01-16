@@ -22,10 +22,10 @@ const windowConfigProvider: ConfigProvider = async () => {
 
 const envConfigProvider: ConfigProvider = async () => {
   return {
-    apiUrl: import.meta.env.REACT_APP_API_URL,
-    integrationUrl: import.meta.env.REACT_APP_INTEGRATION_DOCS_URLS,
+    apiUrl: process.env.REACT_APP_API_URL,
+    integrationUrl: process.env.REACT_APP_INTEGRATION_DOCS_URLS,
     segment: {
-      token: import.meta.env.REACT_APP_SEGMENT_TOKEN,
+      token: process.env.REACT_APP_SEGMENT_TOKEN,
     },
   };
 };
