@@ -86,13 +86,13 @@ export const CatalogTreeTableHeader: React.FC = () => {
       <HeaderCell>
         <FormattedMessage id="form.namespace" />
         <InfoTooltip>
-          <FormattedMessage id="connectionForm.destinationName.info" />
+          <FormattedMessage id="connectionForm.sourceNamespace.info" />
         </InfoTooltip>
       </HeaderCell>
       <HeaderCell>
         <FormattedMessage id="form.streamName" />
         <InfoTooltip>
-          <FormattedMessage id="connectionForm.destinationStream.info" />
+          <FormattedMessage id="connectionForm.sourceStreamName.info" />
         </InfoTooltip>
       </HeaderCell>
       <HeaderCell size="large">
