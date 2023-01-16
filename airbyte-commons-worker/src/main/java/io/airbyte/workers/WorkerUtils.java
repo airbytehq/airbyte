@@ -7,7 +7,6 @@ package io.airbyte.workers;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncInput;
@@ -19,6 +18,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.protocol.models.Config;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
@@ -141,9 +141,11 @@ public class WorkerUtils {
         .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
         .findFirst();
   }
-  
-  public static Boolean getDidControlMessageUpdateConfig(final JsonNode initialConfig, final AirbyteControlConnectorConfigMessage configMessage) {
-    return initialConfig != Jsons.jsonNode(configMessage.getConfig().getAdditionalProperties());
+
+  public static Boolean getDidControlMessageChangeConfig(final JsonNode initialConfigJson, final AirbyteControlConnectorConfigMessage configMessage) {
+    final Config newConfig = configMessage.getConfig();
+    final JsonNode newConfigJson = Jsons.jsonNode(newConfig);
+    return !initialConfigJson.equals(newConfigJson);
   }
 
   public static Map<Type, List<AirbyteMessage>> getMessagesByType(final Process process, final AirbyteStreamFactory streamFactory, final int timeOut)
