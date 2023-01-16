@@ -9,6 +9,8 @@ import {
   SourceDefinitionUpdate,
   CustomSourceDefinitionCreate,
   createCustomSourceDefinition,
+  BuilderSourceDefinitionCreate,
+  createBuilderSourceDefinition,
 } from "../../request/AirbyteClient";
 
 export class SourceDefinitionService extends AirbyteRequestService {
@@ -30,5 +32,9 @@ export class SourceDefinitionService extends AirbyteRequestService {
 
   public createCustom(body: CustomSourceDefinitionCreate) {
     return createCustomSourceDefinition(body, this.requestOptions);
+  }
+
+  public createBuilder(body: BuilderSourceDefinitionCreate) {
+    return createBuilderSourceDefinition(body, this.requestOptions);
   }
 }

@@ -41,6 +41,7 @@ public interface ProcessFactory {
    */
   Process create(String jobType,
                  String jobId,
+                 String builderManifest,
                  int attempt,
                  final Path jobPath,
                  final String imageName,

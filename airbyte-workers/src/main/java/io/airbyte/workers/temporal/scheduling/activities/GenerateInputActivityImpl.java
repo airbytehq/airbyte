@@ -79,6 +79,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withResourceRequirements(resetConnection.getResourceRequirements())
             .withState(resetConnection.getState())
             .withIsSourceCustomConnector(resetConnection.getIsSourceCustomConnector())
+            .withIsSourceBuilderConnector(resetConnection.getIsSourceBuilderConnector())
             .withIsDestinationCustomConnector(resetConnection.getIsDestinationCustomConnector())
             .withWorkspaceId(resetConnection.getWorkspaceId());
       } else {
@@ -109,7 +110,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withAttemptId((long) attempt)
           .withDockerImage(config.getSourceDockerImage())
           .withProtocolVersion(config.getSourceProtocolVersion())
-          .withIsCustomConnector(config.getIsSourceCustomConnector());
+          .withIsCustomConnector(config.getIsSourceCustomConnector()).withIsBuilderConnector(config.getIsSourceBuilderConnector());
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))

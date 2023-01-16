@@ -17,6 +17,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.State;
@@ -98,7 +99,7 @@ public class DefaultJobCreator implements JobCreator {
         .withDestinationResourceRequirements(mergedDstResourceReq)
         .withIsSourceCustomConnector(sourceDefinition.getCustom())
         .withIsDestinationCustomConnector(destinationDefinition.getCustom())
-        .withWorkspaceId(workspaceId);
+        .withWorkspaceId(workspaceId).withIsSourceBuilderConnector(sourceDefinition.getSourceType() == SourceType.BUILDER);
 
     getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 

@@ -126,6 +126,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       process = processFactory.create(
           NORMALIZE_STEP,
           jobId,
+          null,
           attempt,
           jobRoot,
           normalizationImageName,

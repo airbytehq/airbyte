@@ -77,6 +77,8 @@ public class KubeProcessFactory implements ProcessFactory {
   public Process create(
                         final String jobType,
                         final String jobId,
+                        // TODO make it work
+                        final String builderManifest,
                         final int attempt,
                         final Path jobRoot,
                         final String imageName,

@@ -109,6 +109,7 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.ALLOWED_HOSTS, standardSourceDefinition.getAllowedHosts() == null ? null
                 : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getAllowedHosts())))
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
+            .set(ACTOR_DEFINITION.BUILDER_VERSION, standardSourceDefinition.getBuilderVersion() == null ? null : standardSourceDefinition.getBuilderVersion().intValue())
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardSourceDefinition.getSourceDefinitionId()))
             .execute();
 
@@ -141,6 +142,7 @@ public class ConfigWriter {
                     : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
             .set(ACTOR_DEFINITION.ALLOWED_HOSTS, standardSourceDefinition.getAllowedHosts() == null ? null
                 : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getAllowedHosts())))
+            .set(ACTOR_DEFINITION.BUILDER_VERSION, standardSourceDefinition.getBuilderVersion() == null ? null : standardSourceDefinition.getBuilderVersion().intValue())
             .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .execute();

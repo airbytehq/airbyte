@@ -31,12 +31,20 @@ public class V0_41_0_001__CreateBuilderVersionTable extends BaseJavaMigration {
     final DSLContext ctx = DSL.using(context.getConnection());
     extendSourceType(ctx);
     createAndPopulateWorkspace(ctx);
+    addBuilderVersionColumn(ctx);
   }
 
   private static void extendSourceType(final DSLContext ctx) {
     ctx.alterType("source_type").addValue("builder");
   }
 
+  private void addBuilderVersionColumn(final DSLContext ctx) {
+    ctx.alterTable("actor_definition")
+        .addColumnIfNotExists(DSL.field(
+            "builder_version",
+            SQLDataType.INTEGER.nullable(true)))
+        .execute();
+  }
   private static void createAndPopulateWorkspace(final DSLContext ctx) {
     final Field<UUID> builderVersionId = DSL.field("builder_version_id", SQLDataType.UUID.nullable(false));
     final Field<UUID> actorDefinitionId = DSL.field("actor_definition_id", SQLDataType.UUID.nullable(false));

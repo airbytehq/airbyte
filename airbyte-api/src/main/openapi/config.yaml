@@ -453,7 +453,7 @@ paths:
         "200":
           description: Successful operation
   /v1/source_definitions/builder_version:
-    get:
+    post:
       tags:
         - source_definition
       summary: Fetches a certain builder version
@@ -2592,6 +2592,8 @@ components:
           description: The date when this connector was first released, in yyyy-mm-dd format.
           type: string
           format: date
+        builderVersion:
+          type: integer
         sourceType:
           type: string
           enum:
@@ -2599,6 +2601,7 @@ components:
             - file
             - database
             - custom
+            - builder
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionReadList:
@@ -2625,11 +2628,14 @@ components:
       required:
         - workspaceId
         - sourceDefinition
+        - initialVersion
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
         sourceDefinition:
           $ref: "#/components/schemas/BuilderDefinitionCreate"
+        initialVersion:
+          $ref: "#/components/schemas/BuilderVersion"
     BuilderVersionCreate:
       type: object
       required:

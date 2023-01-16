@@ -7,7 +7,11 @@ import { useInitService } from "services/useInitService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
-import { SourceDefinitionCreate, SourceDefinitionRead } from "../../core/request/AirbyteClient";
+import {
+  BuilderSourceDefinitionCreate,
+  SourceDefinitionCreate,
+  SourceDefinitionRead,
+} from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
 import { connectorDefinitionKeys } from "./ConnectorDefinitions";
 import { useSuspenseQuery } from "./useSuspenseQuery";
@@ -79,6 +83,26 @@ const useCreateSourceDefinition = () => {
 
   return useMutation<SourceDefinitionRead, Error, SourceDefinitionCreate>(
     (sourceDefinition) => service.createCustom({ workspaceId, sourceDefinition }),
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(
+          sourceDefinitionKeys.lists(),
+          (oldData: { sourceDefinitions: SourceDefinitionRead[] } | undefined) => ({
+            sourceDefinitions: [data, ...(oldData?.sourceDefinitions ?? [])],
+          })
+        );
+      },
+    }
+  );
+};
+
+export const useCreateBuilderDefinition = () => {
+  const service = useGetSourceDefinitionService();
+  const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
+
+  return useMutation<SourceDefinitionRead, Error, Omit<BuilderSourceDefinitionCreate, "workspaceId">>(
+    (builderDefinition) => service.createBuilder({ workspaceId, ...builderDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(

@@ -21,7 +21,7 @@ public interface SynchronousSchedulerClient {
   SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source,
                                                                                     String dockerImage,
                                                                                     Version protocolVersion,
-                                                                                    boolean isCustomConnector)
+                                                                                    boolean isCustomConnector, boolean isBuilderConnector)
       throws IOException;
 
   SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination,
@@ -34,7 +34,7 @@ public interface SynchronousSchedulerClient {
                                                     String dockerImage,
                                                     String connectorVersion,
                                                     Version protocolVersion,
-                                                    boolean isCustomConnector)
+                                                    boolean isCustomConnector, boolean isBuilderConnector)
       throws IOException;
 
   SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage, boolean isCustomConnector) throws IOException;

@@ -56,6 +56,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -157,7 +158,7 @@ public class SchedulerHandler {
     final boolean isCustomConnector = sourceDef.getCustom();
     final Version protocolVersion = new Version(sourceDef.getProtocolVersion());
 
-    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion, isCustomConnector));
+    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion, isCustomConnector, sourceDef.getSourceType() == SourceType.BUILDER));
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
@@ -179,7 +180,7 @@ public class SchedulerHandler {
 
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     final boolean isCustomConnector = sourceDef.getCustom();
-    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion, isCustomConnector));
+    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion, isCustomConnector, sourceDef.getSourceType() == SourceType.BUILDER));
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(final SourceUpdate sourceUpdate)
@@ -266,7 +267,7 @@ public class SchedulerHandler {
               imageName,
               connectorVersion,
               new Version(sourceDef.getProtocolVersion()),
-              isCustomConnector);
+              isCustomConnector, sourceDef.getSourceType() == SourceType.BUILDER);
       final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId);
 
       if (discoverSchemaRequestBody.getConnectionId() != null) {
@@ -312,7 +313,7 @@ public class SchedulerHandler {
         sourceDef.getDockerImageTag(),
         new Version(
             sourceDef.getProtocolVersion()),
-        isCustomConnector);
+        isCustomConnector, sourceDef.getSourceType() == SourceType.BUILDER);
     return retrieveDiscoveredSchema(response);
   }
 

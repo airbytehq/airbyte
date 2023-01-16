@@ -74,6 +74,9 @@ properties:
   isSourceCustomConnector:
     description: determine if the source running image is a custom connector.
     type: boolean
+  isSourceBuilderConnector:
+    description: determine if the running image of the source is a builder connector.
+    type: boolean
   isDestinationCustomConnector:
     description: determine if the destination running image is a custom connector.
     type: boolean

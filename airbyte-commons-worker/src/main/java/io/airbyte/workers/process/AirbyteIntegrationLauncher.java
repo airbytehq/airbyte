@@ -44,6 +44,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final ResourceRequirements resourceRequirement;
   private final FeatureFlags featureFlags;
 
+  private final String builderManifest;
+
   /**
    * If true, launcher will use a separated isolated pool to run the job.
    * <p>
@@ -52,12 +54,22 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final boolean useIsolatedPool;
 
   public AirbyteIntegrationLauncher(final String jobId,
+      final int attempt,
+      final String imageName,
+      final ProcessFactory processFactory,
+      final ResourceRequirements resourceRequirement,
+      final boolean useIsolatedPool,
+      final FeatureFlags featureFlags) {
+    this(jobId, attempt, imageName, processFactory, resourceRequirement, useIsolatedPool, featureFlags, "");
+  }
+
+  public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
                                     final String imageName,
                                     final ProcessFactory processFactory,
                                     final ResourceRequirements resourceRequirement,
                                     final boolean useIsolatedPool,
-                                    final FeatureFlags featureFlags) {
+                                    final FeatureFlags featureFlags, final String builderManifest) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
@@ -65,6 +77,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.resourceRequirement = resourceRequirement;
     this.featureFlags = featureFlags;
     this.useIsolatedPool = useIsolatedPool;
+    this.builderManifest = builderManifest;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -74,6 +87,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     return processFactory.create(
         SPEC_JOB,
         jobId,
+        this.builderManifest,
         attempt,
         jobRoot,
         imageName,
@@ -95,6 +109,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     return processFactory.create(
         CHECK_JOB,
         jobId,
+        this.builderManifest,
         attempt,
         jobRoot,
         imageName,
@@ -117,6 +132,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     return processFactory.create(
         DISCOVER_JOB,
         jobId,
+        this.builderManifest,
         attempt,
         jobRoot,
         imageName,
@@ -163,6 +179,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     return processFactory.create(
         READ_STEP,
         jobId,
+        this.builderManifest,
         attempt,
         jobRoot,
         imageName,
@@ -193,6 +210,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     return processFactory.create(
         WRITE_STEP,
         jobId,
+        this.builderManifest,
         attempt,
         jobRoot,
         imageName,

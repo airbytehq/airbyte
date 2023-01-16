@@ -28,3 +28,5 @@ properties:
     existingJavaType: io.airbyte.commons.version.Version
   isCustomConnector:
     type: boolean
+  isBuilderConnector:
+    type: boolean

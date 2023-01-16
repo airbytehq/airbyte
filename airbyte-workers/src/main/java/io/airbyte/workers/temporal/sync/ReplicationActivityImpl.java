@@ -17,7 +17,11 @@ import datadog.trace.api.Trace;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.BuilderVersion;
+import io.airbyte.api.client.model.generated.BuilderVersionGet;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.generated.SourceDefinitionRead;
 import io.airbyte.commons.features.FeatureFlagHelper;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
@@ -156,7 +160,22 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     if (isResetJob(sourceLauncherConfig.getDockerImage())) {
       MetricClientFactory.getMetricClient().count(OssMetricsRegistry.RESET_REQUEST, 1);
     }
+
+    String builderManifest = "";
+    final IntegrationLauncherConfig launcherConfig = sourceLauncherConfig;
+
+    if (launcherConfig.getIsBuilderConnector()) {
+      try {
+        final SourceDefinitionRead sourceDefinitionRead = this.airbyteApiClient.getSourceDefinitionApi().getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(
+            syncInput.getSourceId()));
+        final BuilderVersion builderVersion = this.airbyteApiClient.getSourceDefinitionApi().getBuilderVersion(new BuilderVersionGet().version(sourceDefinitionRead.getBuilderVersion()).sourceDefinitionId(sourceDefinitionRead.getSourceDefinitionId()));
+        builderManifest = builderVersion.getManifest();
+      } catch (final ApiException e) {
+        throw new RuntimeException(e);
+      }
+    }
     final ActivityExecutionContext context = Activity.getExecutionContext();
+    final String finalBuilderManifest = builderManifest;
     return temporalUtils.withBackgroundHeartbeat(
         () -> {
 
@@ -185,7 +204,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                 workerConfigs);
           } else {
             workerFactory =
-                getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
+                getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput, finalBuilderManifest);
           }
 
           final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt =
@@ -271,7 +290,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                           final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                           final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                           final JobRunConfig jobRunConfig,
-                                                                                                          final StandardSyncInput syncInput) {
+                                                                                                          final StandardSyncInput syncInput, final String builderManifest) {
     return () -> {
       final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
           sourceLauncherConfig.getJobId(),
@@ -280,7 +299,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           processFactory,
           syncInput.getSourceResourceRequirements(),
           sourceLauncherConfig.getIsCustomConnector(),
-          featureFlags);
+          featureFlags, builderManifest);
       final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
           destinationLauncherConfig.getJobId(),
           Math.toIntExact(destinationLauncherConfig.getAttemptId()),
@@ -325,6 +344,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                                      final JobRunConfig jobRunConfig,
                                                                                                                      final ResourceRequirements resourceRequirements,
                                                                                                                      final Supplier<ActivityExecutionContext> activityContext,
+                                                                                                                     // TODO pass manifest through orchestrator
                                                                                                                      final WorkerConfigs workerConfigs)
       throws ApiException {
     final JobIdRequestBody id = new JobIdRequestBody();

@@ -12,6 +12,11 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.BuilderVersion;
+import io.airbyte.api.client.model.generated.BuilderVersionGet;
+import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.generated.SourceDefinitionRead;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
@@ -46,6 +51,7 @@ import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
@@ -107,6 +113,18 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
         .withConnectorVersion(config.getConnectorVersion())
         .withConfigHash(config.getConfigHash());
 
+    String builderManifest = "";
+
+    if (launcherConfig.getIsBuilderConnector()) {
+      try {
+        final SourceDefinitionRead sourceDefinitionRead = this.airbyteApiClient.getSourceDefinitionApi().getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(UUID.fromString(config.getSourceId())));
+        final BuilderVersion builderVersion = this.airbyteApiClient.getSourceDefinitionApi().getBuilderVersion(new BuilderVersionGet().version(sourceDefinitionRead.getBuilderVersion()).sourceDefinitionId(sourceDefinitionRead.getSourceDefinitionId()));
+        builderManifest = builderVersion.getManifest();
+      } catch (final ApiException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
     final TemporalAttemptExecution<StandardDiscoverCatalogInput, ConnectorJobOutput> temporalAttemptExecution =
@@ -115,7 +133,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
             workerEnvironment,
             logConfigs,
             jobRunConfig,
-            getWorkerFactory(launcherConfig),
+            getWorkerFactory(launcherConfig, builderManifest),
             () -> input,
             new CancellationHandler.TemporalCancellationHandler(context),
             airbyteApiClient,
@@ -126,11 +144,11 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   }
 
   private CheckedSupplier<Worker<StandardDiscoverCatalogInput, ConnectorJobOutput>, Exception> getWorkerFactory(
-                                                                                                                final IntegrationLauncherConfig launcherConfig) {
+                                                                                                                final IntegrationLauncherConfig launcherConfig, final String builderManifest) {
     return () -> {
       final IntegrationLauncher integrationLauncher =
           new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
-              processFactory, workerConfigs.getResourceRequirements(), launcherConfig.getIsCustomConnector(), featureFlags);
+              processFactory, workerConfigs.getResourceRequirements(), launcherConfig.getIsCustomConnector(), featureFlags, builderManifest);
       final AirbyteStreamFactory streamFactory =
           new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion(), Optional.empty());
       final ConnectorConfigUpdater connectorConfigUpdater =

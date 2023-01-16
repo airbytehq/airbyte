@@ -64,7 +64,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source,
                                                                                            final String dockerImage,
                                                                                            final Version protocolVersion,
-                                                                                           final boolean isCustomConnector)
+                                                                                           final boolean isCustomConnector, final boolean isBuilderConnector)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
@@ -125,7 +125,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
                                                            final String dockerImage,
                                                            final String connectorVersion,
                                                            final Version protocolVersion,
-                                                           final boolean isCustomConnector)
+                                                           final boolean isCustomConnector, final boolean isBuilderConnector)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),

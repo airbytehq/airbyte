@@ -99,6 +99,7 @@ public class DbtTransformationRunner implements AutoCloseable {
           processFactory.create(
               CUSTOM_STEP,
               jobId,
+              null,
               attempt,
               jobRoot,
               dbtConfig.getDockerImage(),

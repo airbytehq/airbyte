@@ -32,6 +32,8 @@ public class DockerProcessFactory implements ProcessFactory {
   private static final int DOCKER_NAME_LEN_LIMIT = 128;
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
+
+  private static final Path BUILDER_MANIFEST_MOUNT_DESTINATION = Path.of("/airbyte/integration/code/source_lowcode/manifest.yaml");
   private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
   private static final String IMAGE_EXISTS_SCRIPT = "image_exists.sh";
 
@@ -80,6 +82,7 @@ public class DockerProcessFactory implements ProcessFactory {
   @Override
   public Process create(final String jobType,
                         final String jobId,
+                        final String manifest,
                         final int attempt,
                         final Path jobRoot,
                         final String imageName,
@@ -105,6 +108,9 @@ public class DockerProcessFactory implements ProcessFactory {
       for (final Map.Entry<String, String> file : files.entrySet()) {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
+      if (manifest != "" && manifest != null) {
+        IOs.writeFile(jobRoot, "manifest.yaml", manifest);
+      }
 
       final List<String> cmd = Lists.newArrayList(
           "docker",
@@ -129,6 +135,11 @@ public class DockerProcessFactory implements ProcessFactory {
       if (workspaceMountSource != null) {
         cmd.add("-v");
         cmd.add(String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION));
+      }
+
+      if (manifest != null && manifest != "") {
+        cmd.add("-v");
+        cmd.add(String.format("%s:%s", rebasePath(jobRoot).resolve("manifest.yaml"), BUILDER_MANIFEST_MOUNT_DESTINATION));
       }
 
       if (localMountSource != null) {

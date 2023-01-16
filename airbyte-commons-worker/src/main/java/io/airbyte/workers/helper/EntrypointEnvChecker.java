@@ -37,6 +37,7 @@ public class EntrypointEnvChecker {
     final Process process = processFactory.create(
         "entrypoint-checker",
         jobId,
+        null,
         jobAttempt,
         jobRoot,
         imageName,

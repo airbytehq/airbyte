@@ -12,6 +12,11 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.BuilderVersion;
+import io.airbyte.api.client.model.generated.BuilderVersionGet;
+import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.generated.SourceDefinitionRead;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
@@ -47,6 +52,7 @@ import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -102,13 +108,27 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
         .withActorType(rawInput.getActorType())
         .withConnectionConfiguration(fullConfig);
 
+    String builderManifest = "";
+    final IntegrationLauncherConfig launcherConfig = args.getLauncherConfig();
+
+    if (launcherConfig.getIsBuilderConnector()) {
+      try {
+        final SourceDefinitionRead sourceDefinitionRead = this.airbyteApiClient.getSourceDefinitionApi().getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(
+            rawInput.getActorId()));
+        final BuilderVersion builderVersion = this.airbyteApiClient.getSourceDefinitionApi().getBuilderVersion(new BuilderVersionGet().version(sourceDefinitionRead.getBuilderVersion()).sourceDefinitionId(sourceDefinitionRead.getSourceDefinitionId()));
+        builderManifest = builderVersion.getManifest();
+      } catch (final ApiException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
     final TemporalAttemptExecution<StandardCheckConnectionInput, ConnectorJobOutput> temporalAttemptExecution =
         new TemporalAttemptExecution<>(
             workspaceRoot, workerEnvironment, logConfigs,
             args.getJobRunConfig(),
-            getWorkerFactory(args.getLauncherConfig()),
+            getWorkerFactory(args.getLauncherConfig(), builderManifest),
             () -> input,
             new CancellationHandler.TemporalCancellationHandler(context),
             airbyteApiClient,
@@ -132,7 +152,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   }
 
   private CheckedSupplier<Worker<StandardCheckConnectionInput, ConnectorJobOutput>, Exception> getWorkerFactory(
-                                                                                                                final IntegrationLauncherConfig launcherConfig) {
+                                                                                                                final IntegrationLauncherConfig launcherConfig, final String builderManifest) {
     return () -> {
       final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
           launcherConfig.getJobId(),
@@ -141,7 +161,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           processFactory,
           workerConfigs.getResourceRequirements(),
           launcherConfig.getIsCustomConnector(),
-          featureFlags);
+          featureFlags, builderManifest);
 
       final ConnectorConfigUpdater connectorConfigUpdater = new ConnectorConfigUpdater(
           airbyteApiClient.getSourceApi(),

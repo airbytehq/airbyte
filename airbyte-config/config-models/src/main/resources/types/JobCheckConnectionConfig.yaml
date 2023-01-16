@@ -27,3 +27,6 @@ properties:
   isCustomConnector:
     description: determine if the running image is a custom connector.
     type: boolean
+  isBuilderConnector:
+    description: determine if the running image is a builder connector.
+    type: boolean

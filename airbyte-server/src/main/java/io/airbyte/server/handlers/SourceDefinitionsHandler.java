@@ -107,6 +107,7 @@ public class SourceDefinitionsHandler {
           .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
           .name(standardSourceDefinition.getName())
           .sourceType(getSourceType(standardSourceDefinition))
+          .builderVersion(standardSourceDefinition.getBuilderVersion() == null ? null : standardSourceDefinition.getBuilderVersion().intValue())
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
@@ -233,13 +234,15 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionRead createBuilderSourceDefinition(final BuilderSourceDefinitionCreate builderSourceDefinitionCreate)
       throws IOException {
-    final StandardSourceDefinition sourceDefinition = sourceDefinitionFromBuilderCreate(builderSourceDefinitionCreate.getSourceDefinition())
+    final StandardSourceDefinition sourceDefinition = sourceDefinitionFromBuilderCreate(builderSourceDefinitionCreate)
         .withPublic(false)
         .withCustom(true);
     if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
       throw new UnsupportedProtocolVersionException(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
     }
     configRepository.writeCustomSourceDefinition(sourceDefinition, builderSourceDefinitionCreate.getWorkspaceId());
+    final BuilderVersion builderVersion = builderVersionFromBuilderDefinitionCreate(sourceDefinition, builderSourceDefinitionCreate);
+    configRepository.writeBuilderVersion(builderVersion);
 
     return buildSourceDefinitionRead(sourceDefinition);
   }
@@ -289,7 +292,19 @@ public class SourceDefinitionsHandler {
         .withSpec(new ObjectMapper().readTree(builderVersionCreate.getSourceDefinition().getSpec()));
   }
 
-  private StandardSourceDefinition sourceDefinitionFromBuilderCreate(final BuilderDefinitionCreate builderDefinitionCreate)
+  private BuilderVersion builderVersionFromBuilderDefinitionCreate(final StandardSourceDefinition sourceDefinition, final BuilderSourceDefinitionCreate builderDefinitionCreate)
+      throws IOException {
+    final UUID id = uuidSupplier.get();
+    return new BuilderVersion()
+        .withActorDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .withBuilderVersionId(id)
+        .withDescription(builderDefinitionCreate.getInitialVersion().getDescription())
+        .withVersion((long)builderDefinitionCreate.getInitialVersion().getVersion())
+        .withManifest(new ObjectMapper().readTree(builderDefinitionCreate.getInitialVersion().getManifest()))
+        .withSpec(new ObjectMapper().readTree(builderDefinitionCreate.getInitialVersion().getSpec()));
+  }
+
+  private StandardSourceDefinition sourceDefinitionFromBuilderCreate(final BuilderSourceDefinitionCreate builderDefinitionCreate)
       throws IOException {
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(null);
@@ -297,12 +312,13 @@ public class SourceDefinitionsHandler {
     final UUID id = uuidSupplier.get();
     return new StandardSourceDefinition()
         .withSourceDefinitionId(id)
-        .withDockerRepository("airbyte/low-code-connector")
-        .withDockerImageTag("1.0")
+        .withDockerRepository("airbyte/source-lowcode")
+        .withDockerImageTag("dev")
         .withDocumentationUrl("https://docs.airbyte.com/low-code-stuff")
-        .withName(builderDefinitionCreate.getName())
-        .withIcon("")
-        .withSpec(new ConnectorSpecification())
+        .withName(builderDefinitionCreate.getSourceDefinition().getName())
+        .withBuilderVersion(builderDefinitionCreate.getInitialVersion().getVersion().longValue())
+        .withIcon(null)
+        .withSpec(new ObjectMapper().readValue(builderDefinitionCreate.getInitialVersion().getSpec(), ConnectorSpecification.class))
         .withProtocolVersion(airbyteProtocolVersion.serialize())
         .withTombstone(false)
         .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)

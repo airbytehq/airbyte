@@ -345,7 +345,7 @@ public class TemporalClient {
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
         .withProtocolVersion(config.getProtocolVersion())
-        .withIsCustomConnector(config.getIsCustomConnector());
+        .withIsCustomConnector(config.getIsCustomConnector()).withIsBuilderConnector(config.getIsBuilderConnector());
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
         .withActorType(config.getActorType())
         .withActorId(config.getActorId())
@@ -380,7 +380,7 @@ public class TemporalClient {
         .withAttemptId((long) attempt)
         .withDockerImage(config.getSourceDockerImage())
         .withProtocolVersion(config.getSourceProtocolVersion())
-        .withIsCustomConnector(config.getIsSourceCustomConnector());
+        .withIsCustomConnector(config.getIsSourceCustomConnector()).withIsBuilderConnector(config.getIsSourceBuilderConnector());
 
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))

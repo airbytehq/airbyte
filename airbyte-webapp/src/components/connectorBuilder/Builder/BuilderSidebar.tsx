@@ -14,6 +14,7 @@ import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "../DownloadYamlButton";
+import { SaveButton } from "../SaveButton";
 import { BuilderFormValues, DEFAULT_BUILDER_FORM_VALUES, getInferredInputs } from "../types";
 import { useBuilderErrors } from "../useBuilderErrors";
 import { AddStreamButton } from "./AddStreamButton";
@@ -151,6 +152,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
       </div>
 
       <DownloadYamlButton className={styles.downloadButton} yamlIsValid yaml={yamlManifest} />
+      <SaveButton />
       <Button className={styles.resetButton} full variant="clear" onClick={() => handleResetForm()}>
         <FormattedMessage id="connectorBuilder.resetAll" />
       </Button>
