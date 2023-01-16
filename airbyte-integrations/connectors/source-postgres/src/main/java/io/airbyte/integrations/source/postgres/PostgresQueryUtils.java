@@ -14,7 +14,7 @@ public class PostgresQueryUtils {
         SELECT
           (EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
         AND
-          (EXISTS (SELECT from %s.\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+          (EXISTS (SELECT from \"%s\".\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
       """;
   public static final String NULL_CURSOR_VALUE_NO_SCHEMA_QUERY =
       """
