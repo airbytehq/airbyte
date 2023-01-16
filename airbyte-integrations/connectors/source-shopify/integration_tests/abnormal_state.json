@@ -306,10 +306,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "created_at": "2025-03-03T03:47:46-08:00",
-        "orders": {
-          "updated_at": "2025-03-03T03:47:46-08:00"
-        }
+        "updated_at": "2025-07-08T05:40:38-07:00"
       },
       "stream_descriptor": {
         "name": "metafield_locations"
