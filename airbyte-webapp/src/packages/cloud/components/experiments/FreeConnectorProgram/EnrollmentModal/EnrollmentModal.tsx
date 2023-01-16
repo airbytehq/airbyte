@@ -9,11 +9,11 @@ import { Text } from "components/ui/Text";
 
 import { StripeCheckoutSessionCreate, StripeCheckoutSessionRead } from "packages/cloud/lib/domain/stripe";
 
-import { CardSVG } from "./CardsSvg";
-import { ConnectorGridSvg } from "./ConnectorGridSvg";
+import { ReactComponent as CardSVG } from "./cards.svg";
+import { ReactComponent as ConnectorGridSvg } from "./connectorGrid.svg";
 import styles from "./EnrollmentModal.module.scss";
-import { FreeSVG } from "./FreeSvg";
-import { MailSVG } from "./MailSvg";
+import { ReactComponent as FreeSVG } from "./free.svg";
+import { ReactComponent as MailSVG } from "./mail.svg";
 
 const STRIPE_SUCCESS_QUERY = "stripeCheckoutSuccess";
 
