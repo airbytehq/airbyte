@@ -1026,18 +1026,23 @@ class IssueReactions(SemiIncrementalMixin, GithubStream):
     def _get_name(self, repository):
         return repository["owner"]["login"] + "/" + repository["name"]
 
+    def _get_reactions_from_issue(self, issue, repository_name):
+        for reaction in issue["reactions"]["nodes"]:
+            reaction["repository"] = repository_name
+            reaction["issue_number"] = issue["number"]
+            reaction["user"]["type"] = "User"
+            yield reaction
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         self.raise_error_from_response(response_json=response.json())
         repository = response.json()["data"]["repository"]
         if repository:
-            # repository_name = self._get_name(repository)
+            repository_name = self._get_name(repository)
             if "issues" in repository:
                 for issue in repository["issues"]["nodes"]:
-                    for reaction in issue["reactions"]["nodes"]:
-                        yield reaction
+                    yield from self._get_reactions_from_issue(issue, repository_name)
             elif "issue" in repository:
-                for reaction in repository["issue"]["reactions"]["nodes"]:
-                    yield reaction
+                yield from self._get_reactions_from_issue(repository["issue"], repository_name)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
