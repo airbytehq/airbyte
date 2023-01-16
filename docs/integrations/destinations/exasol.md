@@ -6,7 +6,7 @@ Exasol is the in-memory database built for analytics.
 
 ### Output schema
 
-Exasol tables become Airbyte Streams and Exasol columns become Airbyte Fields. Each Exasol table created by Airbyte will contain 3 columns:
+Each Airbyte Stream becomes an Exasol table and each Airbyte Field becomes an Exasol column. Each Exasol table created by Airbyte will contain 3 columns:
 
 * `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Exasol is `VARCHAR(64)`.
 * `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Exasol is `VARCHAR(2000000)`.
@@ -38,7 +38,7 @@ Make sure your Exasol database can be accessed by Airbyte. If your database is w
 
 #### **Permissions**
 
-As Airbyte namespaces allow to store data into different schemas, we have different scenarios each with specific required permissions:
+As Airbyte namespaces allow to store data into different schemas, there are different scenarios requiring different permissions assigned to the user account. The following table describes 4 scenarios regarding the login user and the destination user.
 
 | Login user | Destination user | Required permissions | Comment |
 | :--- | :--- | :--- | :--- |

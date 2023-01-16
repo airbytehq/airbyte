@@ -67,7 +67,7 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
              IMPORT INTO %s.%s
              FROM LOCAL CSV FILE '%s'
              ROW SEPARATOR = 'CRLF'
-             COLUMN SEPARATOR = ','\s""", schemaName, tableName, tmpFile.toAbsolutePath());
+             COLUMN SEPARATOR = ','""", schemaName, tableName, tmpFile.toAbsolutePath());
       LOGGER.info("IMPORT statement: {}", importStatement);
       database.execute(connection -> connection.createStatement().execute(importStatement));
     } finally {

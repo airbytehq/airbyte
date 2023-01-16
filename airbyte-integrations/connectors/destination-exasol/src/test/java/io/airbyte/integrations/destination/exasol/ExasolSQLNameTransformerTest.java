@@ -50,16 +50,16 @@ class ExasolSQLNameTransformerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"stream, \"stream\"",
-            "Stream, \"Stream\"",
-            "STREAM, \"STREAM\"",
-            "stream*, \"stream_\"",
-            "_stream_, \"_stream_\"",
-            "äöü, \"aou\"",
-            "\"stream, \"stream\"",
-            "stream\", \"stream\"",
-            "\"stream\", \"stream\"",})
+    @CsvSource({"stream, stream",
+            "Stream,     Stream",
+            "STREAM,     STREAM",
+            "stream*,    stream_",
+            "_stream_,   _stream_",
+            "äöü,        aou",
+            "\"stream,   stream",
+            "stream\",   stream",
+            "\"stream\", stream",})
     void convertStreamName(String streamName, String expectedTableName) {
-        assertEquals(expectedTableName, transformer.convertStreamName(streamName));
+        assertThat(transformer.convertStreamName(streamName), equalTo("\"" + expectedTableName + "\""));
     }
 }
