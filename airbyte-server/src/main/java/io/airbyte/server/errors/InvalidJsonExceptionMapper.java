@@ -5,26 +5,19 @@
 package io.airbyte.server.errors;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import io.micronaut.context.annotation.Requires;
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.HttpResponse;
-import io.micronaut.http.HttpStatus;
-import io.micronaut.http.MediaType;
-import io.micronaut.http.annotation.Produces;
-import io.micronaut.http.server.exceptions.ExceptionHandler;
-import jakarta.inject.Singleton;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-@Produces
-@Singleton
-@Requires(classes = JsonParseException.class)
-public class InvalidJsonExceptionMapper implements ExceptionHandler<JsonParseException, HttpResponse> {
+@Provider
+public class InvalidJsonExceptionMapper implements ExceptionMapper<JsonParseException> {
 
   @Override
-  public HttpResponse handle(final HttpRequest request, final JsonParseException exception) {
-    return HttpResponse.status(HttpStatus.UNPROCESSABLE_ENTITY)
-        .body(
-            KnownException.infoFromThrowableWithMessage(exception, "Invalid json. " + exception.getMessage() + " " + exception.getOriginalMessage()))
-        .contentType(MediaType.APPLICATION_JSON_TYPE);
+  public Response toResponse(final JsonParseException e) {
+    return Response.status(422)
+        .entity(KnownException.infoFromThrowableWithMessage(e, "Invalid json. " + e.getMessage() + " " + e.getOriginalMessage()))
+        .type("application/json")
+        .build();
   }
 
 }
