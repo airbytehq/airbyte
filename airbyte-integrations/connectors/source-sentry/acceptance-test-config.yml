@@ -2,11 +2,6 @@ acceptance_tests:
   basic_read:
     tests:
     - config_path: secrets/config.json
-      empty_streams:
-      - bypass_reason: unable to populate
-        name: issues
-      - bypass_reason: unable to populate
-        name: events
       timeout_seconds: 1200
       expect_records:
         path: "integration_tests/expected_records.jsonl"
