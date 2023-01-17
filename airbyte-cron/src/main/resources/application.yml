@@ -1,6 +1,9 @@
 micronaut:
   application:
     name: airbyte-cron
+  caches:
+    remote-definitions-provider:
+      expire-after-write: 15s
   server:
     port: 9001
 
