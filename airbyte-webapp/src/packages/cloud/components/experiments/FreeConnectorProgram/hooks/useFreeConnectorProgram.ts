@@ -1,10 +1,10 @@
 import { useQuery } from "react-query";
 
+import { useConfig } from "packages/cloud/services/config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
-import { webBackendGetFreeConnectorProgramInfoForWorkspace } from "../lib/domain/freeConnectorProgram/api";
-import { useConfig } from "./config";
+import { webBackendGetFreeConnectorProgramInfoForWorkspace } from "../lib/api";
 
 export const useFreeConnectorProgramInfo = () => {
   const workspaceId = useCurrentWorkspaceId();
