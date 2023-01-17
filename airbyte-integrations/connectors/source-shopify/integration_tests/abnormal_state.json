@@ -102,7 +102,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_at": "2025-07-08T05:40:38-07:00"
+        "updatedAt": "2025-07-08T05:40:38-07:00"
       },
       "stream_descriptor": {
         "name": "products_graph_ql"
@@ -292,7 +292,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "id": 6446736474301,
+        "id": 99999999999999,
         "orders": {
           "updated_at": "2025-02-22T00:37:28-08:00"
         }
@@ -415,7 +415,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "id": 5424260808893,
+        "id": 99999999999999,
         "orders": {
           "updated_at": "2025-03-03T03:47:46-08:00"
         }
@@ -443,7 +443,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "id": 5424260808893
+        "id": 99999999999999
       },
       "stream_descriptor": {
         "name": "balance_transactions"
