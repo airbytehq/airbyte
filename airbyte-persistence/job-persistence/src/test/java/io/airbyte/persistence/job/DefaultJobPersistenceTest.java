@@ -520,6 +520,18 @@ class DefaultJobPersistenceTest {
 
     }
 
+    @Test
+    @DisplayName("Retrieving stats for an empty list should not cause an exception.")
+    void testGetStatsForEmptyJobList() throws IOException {
+      assertNotNull(jobPersistence.getAttemptStats(List.of()));
+    }
+
+    @Test
+    @DisplayName("Retrieving stats for a bad job attempt input should not cause an exception.")
+    void testGetStatsForBadJobAttemptInput() throws IOException {
+      assertNotNull(jobPersistence.getAttemptStats(-1, -1));
+    }
+
   }
 
   @Test

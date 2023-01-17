@@ -19,8 +19,11 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc().strftime('%d/%m/%Y %H:%M') }}"
       datetime_format: "%d/%m/%Y %H:%M"
-    step: "1d"
+    step: "P1D"
     datetime_format: "%d/%m/%Y %H:%M"
+    # There is a discrepancy between the format of the cursor `created_at` and the granularity of the API hence "P1D"
+    # here instead of "PT1M" if we were to check the datetime_format
+    cursor_granularity: "P1D"
     cursor_field: "{{ options['stream_cursor_field'] }}"
     start_time_option:
       field_name: "start"

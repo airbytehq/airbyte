@@ -28,14 +28,14 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
   const { mode } = useConnectionFormService();
 
   return (
-    <FlexContainer alignItems="flex-start">
+    <FlexContainer alignItems="center">
       <div className={styles.leftFieldCol}>
         <ControlLabels
           nextLine
           label={formatMessage({
             id: "connectionForm.nonBreakingChangesPreference.label",
           })}
-          message={formatMessage({
+          infoTooltipContent={formatMessage({
             id: "connectionForm.nonBreakingChangesPreference.message",
           })}
         />
