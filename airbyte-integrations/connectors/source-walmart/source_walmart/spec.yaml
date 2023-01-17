@@ -42,14 +42,14 @@ connectionSpecification:
             start_time:
               title: Start Time
               type: string
-              description: date and time in the format 2022-05-25
+              description: Date and time in the format YYYY-MM-DD (e.g. 2022-05-25)
               pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$|^$
               examples: ["2022-05-25"]
               order: 1
             end_time:
               title: End Time
               type: string
-              description: date and time in the format 2022-06-25
+              description: Date and time in the format YYYY-MM-DD (e.g. 2022-05-25)
               pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$|^$
               examples: ["2022-06-25"]
               order: 2
@@ -64,7 +64,7 @@ connectionSpecification:
               const: "PERIODIC"
               order: 1
             days:
-              description: "Days range 1,90 "
+              description: "Number of days * - range 1-90 (e.g. 7)"
               type: "integer"
               examples:
                 - 7
