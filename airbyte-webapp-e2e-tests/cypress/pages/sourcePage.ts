@@ -1,4 +1,4 @@
-import { clickOnCellInTable } from "pages/helpers/table";
+import { clickOnCellInTable } from "commands/common";
 
 const newSource = "button[data-id='new-source']";
 const sourcesTable = "table[data-testid='sourcesTable']";

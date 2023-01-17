@@ -1,4 +1,4 @@
-import { clickOnCellInTable } from "pages/helpers/table";
+import { clickOnCellInTable } from "commands/common";
 
 const settingsTab = "div[data-id='settings-step']";
 const sourceColumnName = "Source name";
