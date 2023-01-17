@@ -538,12 +538,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     final Optional<String> failureOrigin = attempt.getFailureSummary().flatMap(summary -> summary.getFailures()
         .stream()
         .map(FailureReason::getFailureOrigin)
+        .filter(Objects::nonNull)
         .map(FailureOrigin::name)
         .findFirst());
 
     final Optional<String> failureType = attempt.getFailureSummary().flatMap(summary -> summary.getFailures()
         .stream()
         .map(FailureReason::getFailureType)
+        .filter(Objects::nonNull)
         .map(MetricTags::getFailureType)
         .findFirst());
 
