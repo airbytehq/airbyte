@@ -894,11 +894,11 @@ exports[`CreateConnectionForm should render 1`] = `
             <div
               class="<removed-for-snapshot-test>"
             >
-              <h5
+              <h2
                 class="<removed-for-snapshot-test>"
               >
                 Normalization & Transformation
-              </h5>
+              </h2>
               <div
                 class="<removed-for-snapshot-test>"
               >

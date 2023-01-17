@@ -1,4 +1,5 @@
 import { faWarning } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { diffJson, Change } from "diff";
 import { useField } from "formik";
@@ -8,8 +9,8 @@ import { FormattedMessage } from "react-intl";
 import { useDebounce } from "react-use";
 
 import { Button } from "components/ui/Button";
+import { Callout } from "components/ui/Callout";
 import { FlexContainer, FlexItem } from "components/ui/Flex";
-import { InfoBox } from "components/ui/InfoBox";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { StreamReadInferredSchema } from "core/request/ConnectorBuilderClient";
@@ -83,7 +84,8 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
   return (
     <FlexContainer direction="column">
       {editorView === "ui" && field.value && field.value !== formattedSchema && (
-        <InfoBox icon={faWarning} className={styles.infoBox}>
+        <Callout className={styles.infoBox}>
+          <FontAwesomeIcon icon={faWarning} size="lg" />
           <FlexItem grow>
             <FlexContainer direction="column">
               <FormattedMessage id="connectorBuilder.differentSchemaDescription" />
@@ -128,7 +130,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
               </FlexContainer>
             </FlexContainer>
           </FlexItem>
-        </InfoBox>
+        </Callout>
       )}
       {editorView === "ui" && !field.value && (
         <Button
