@@ -4,11 +4,14 @@ import { FormattedMessage } from "react-intl";
 import { Callout } from "components/ui/Callout";
 import { Text } from "components/ui/Text";
 
+import { useShowEnrollmentModal } from "./EnrollmentModal";
 import styles from "./InlineEnrollmentCallout.module.scss";
 
 export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
+  const { showEnrollmentModal } = useShowEnrollmentModal();
+
   const onEnrollClick = () => {
-    return null;
+    showEnrollmentModal();
   };
 
   return (
