@@ -16,27 +16,34 @@ declare global {
     SEGMENT_TOKEN: string;
     LAUNCHDARKLY_KEY?: string;
     analytics: SegmentAnalytics.AnalyticsJS;
+    // Cloud specific properties
+    FIREBASE_API_KEY?: string;
+    FIREBASE_AUTH_DOMAIN?: string;
+    FIREBASE_AUTH_EMULATOR_HOST?: string;
+    CLOUD_API_URL?: string;
+    CLOUD_PUBLIC_API_URL?: string;
   }
 }
 
 export interface AirbyteWebappConfig {
-  segment: { token: string; enabled: boolean };
+  segment: { token?: string; enabled: boolean };
   apiUrl: string;
   connectorBuilderApiUrl: string;
-  oauthRedirectUrl?: string;
   healthCheckInterval: number;
-  version?: string;
+  version: string;
   integrationUrl: string;
-  launchDarkly?: string;
+  oauthRedirectUrl: string;
   cloudApiUrl?: string;
-  firebase?: {
+  cloudPublicApiUrl?: string;
+  firebase: {
     apiKey?: string;
     authDomain?: string;
     authEmulatorHost?: string;
   };
-  intercom?: {
+  intercom: {
     appId?: string;
   };
+  launchDarkly?: string;
 }
 
 export type DeepPartial<T> = {
