@@ -39,6 +39,11 @@ class MockHttpStream(HttpStream):
     def retry_factor(self) -> float:
         return 0.01
 
+    # TODO (Ella): Remove explicit definition when turning on default
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return HttpAvailabilityStrategy()
+
 
 def test_default_http_availability_strategy(mocker):
     http_stream = MockHttpStream()

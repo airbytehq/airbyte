@@ -119,6 +119,11 @@ def test_check_http_stream_via_availability_strategy(mocker, test_name, response
             yield stub_resp
         pass
 
+        # TODO (Ella): Remove explicit definition when turning on default
+        @property
+        def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+            return HttpAvailabilityStrategy()
+
     http_stream = MockHttpStream()
     assert isinstance(http_stream, HttpStream)
     assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
