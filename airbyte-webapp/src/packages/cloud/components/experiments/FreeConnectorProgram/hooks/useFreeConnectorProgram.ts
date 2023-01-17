@@ -14,6 +14,14 @@ export const useFreeConnectorProgramInfo = () => {
   const requestOptions = { config, middlewares };
 
   return useQuery(["freeConnectorProgramInfo", workspaceId], () =>
-    webBackendGetFreeConnectorProgramInfoForWorkspace({ workspaceId }, requestOptions)
+    webBackendGetFreeConnectorProgramInfoForWorkspace({ workspaceId }, requestOptions).then(
+      ({ hasEligibleConnector, hasPaymentAccountSaved }) => {
+        const showEnrollmentUi = !hasPaymentAccountSaved && hasEligibleConnector;
+        // TODO hardcoding this value to allow testing while data source gets sorted out
+        const needsEmailVerification = false;
+
+        return { showEnrollmentUi, needsEmailVerification };
+      }
+    )
   );
 };
