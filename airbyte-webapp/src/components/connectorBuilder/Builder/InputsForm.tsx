@@ -6,7 +6,7 @@ import { useEffectOnce } from "react-use";
 import * as yup from "yup";
 
 import { Button } from "components/ui/Button";
-import { InfoBox } from "components/ui/InfoBox";
+import { Callout } from "components/ui/Callout";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { FormikPatch } from "core/form/FormikPatch";
@@ -251,13 +251,13 @@ const InputModal = ({
               />
             </>
           ) : (
-            <InfoBox>
+            <Callout className={styles.calloutContainer}>
               {isInferredInputOverride ? (
                 <FormattedMessage id="connectorBuilder.inputModal.inferredInputMessage" />
               ) : (
                 <FormattedMessage id="connectorBuilder.inputModal.unsupportedInput" />
               )}
-            </InfoBox>
+            </Callout>
           )}
         </ModalBody>
         <ModalFooter>
