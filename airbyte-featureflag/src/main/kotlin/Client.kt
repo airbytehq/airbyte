@@ -175,9 +175,20 @@ private fun Path.onChange(block: () -> Unit) {
  * Once v6 is GA, this method would be removed and replaced with toLDContext.
  */
 private fun Context.toLDUser(): LDUser = when (this) {
-    is Multi -> throw IllegalArgumentException("LDv5 does not support multiple contexts")
-    else -> {
+    is Multi -> {
         val builder = LDUser.Builder(key)
+        with(contexts) {
+            forEach { builder.custom(it.kind, it.key) }
+            if (all { it.key == ANONYMOUS.toString() }) {
+                builder.anonymous(true)
+            }
+        }
+        builder.build()
+    }
+
+    else -> {
+        // for LDv5 Users, add the context type and valid as a custom attribute
+        val builder = LDUser.Builder(key).apply { custom(kind, key) }
         if (this.key == ANONYMOUS.toString()) {
             builder.anonymous(true)
         }
