@@ -2,13 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import os
 from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional, Type, Union
 
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
@@ -33,10 +32,9 @@ class GraphQLRequestOptionsProvider(InterpolatedRequestOptionsProvider):
             raise TypeError(f"{type(o)} {o} is not of type {t}")
 
     def _get_schema_root_properties(self):
-        schema_path = os.path.join(os.path.abspath(os.curdir), "source_monday", f"schemas/{self.name}.json")
-        with open(schema_path) as f:
-            schema_dict = json.load(f)
-            return schema_dict["properties"]
+        schema_loader = JsonFileSchemaLoader(config=self.config, options={"name": self.name})
+        schema = schema_loader.get_json_schema()
+        return schema["properties"]
 
     def _get_object_arguments(self, **object_arguments) -> str:
         return ",".join([f"{argument}:{value}" for argument, value in object_arguments.items() if value is not None])

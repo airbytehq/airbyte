@@ -2,7 +2,11 @@ import { useFormikContext } from "formik";
 import React, { useContext, useMemo } from "react";
 import { AnySchema } from "yup";
 
-import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import {
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+  SourceDefinitionSpecificationDraft,
+} from "core/domain/connector";
 
 import { ConnectorFormValues } from "./types";
 
@@ -10,8 +14,8 @@ interface ConnectorFormContext {
   formType: "source" | "destination";
   getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
   resetConnectorForm: () => void;
-  selectedConnectorDefinition: ConnectorDefinition;
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
+  selectedConnectorDefinition?: ConnectorDefinition;
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft;
   isEditMode?: boolean;
   validationSchema: AnySchema;
   connectorId?: string;
@@ -28,11 +32,11 @@ export const useConnectorForm = (): ConnectorFormContext => {
 };
 
 interface ConnectorFormContextProviderProps {
-  selectedConnectorDefinition: ConnectorDefinition;
+  selectedConnectorDefinition?: ConnectorDefinition;
   formType: "source" | "destination";
   isEditMode?: boolean;
   getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft;
   validationSchema: AnySchema;
   connectorId?: string;
 }

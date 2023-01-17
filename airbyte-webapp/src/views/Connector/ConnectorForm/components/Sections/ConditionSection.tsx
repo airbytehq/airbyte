@@ -1,14 +1,16 @@
 import { useFormikContext, setIn, useField } from "formik";
+import clone from "lodash/clone";
 import get from "lodash/get";
 import React, { useCallback, useMemo } from "react";
 
 import GroupControls from "components/GroupControls";
 import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 
-import { FormBlock, FormConditionItem } from "core/form/types";
-import { isDefined } from "utils/common";
+import { FormConditionItem } from "core/form/types";
 
 import { ConnectorFormValues } from "../../types";
+import { setDefaultValues } from "../../useBuildForm";
+import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 import { GroupLabel } from "./GroupLabel";
 import { SectionContainer } from "./SectionContainer";
@@ -38,22 +40,15 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
 
   const onOptionChange = useCallback(
     (selectedItem: DropDownOptionDataItem) => {
-      const newSelectedPath = formField.conditions[selectedItem.value];
+      const newSelectedFormBlock = formField.conditions[selectedItem.value];
 
-      const newValues =
-        newSelectedPath._type === "formGroup"
-          ? newSelectedPath.properties?.reduce(
-              (acc: ConnectorFormValues, property: FormBlock) =>
-                property._type === "formItem" && isDefined(property.const)
-                  ? setIn(acc, property.path, property.const)
-                  : acc,
-              values
-            )
-          : values;
+      const conditionValues = clone(get(values, path) || {});
+      conditionValues[formField.selectionKey] = formField.selectionConstValues[selectedItem.value];
+      setDefaultValues(newSelectedFormBlock, conditionValues, { respectExistingValues: true });
 
-      setValues(newValues);
+      setValues(setIn(values, path, conditionValues));
     },
-    [values, formField.conditions, setValues]
+    [formField.conditions, formField.selectionKey, formField.selectionConstValues, values, path, setValues]
   );
 
   const options = useMemo(
@@ -70,7 +65,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       <GroupControls
         key={`form-field-group-${formField.fieldKey}`}
         label={<GroupLabel formField={formField} />}
-        dropdown={
+        control={
           <DropDown
             options={options}
             onChange={onOptionChange}
@@ -80,6 +75,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
             error={typeof meta.error === "string" && !!meta.error}
           />
         }
+        controlClassName={styles.dropdown}
       >
         {/* currentlySelectedCondition is only falsy if a malformed config is loaded which doesn't have a valid value for the const selection key. In this case, render the selection group as empty. */}
         {typeof currentlySelectedCondition !== "undefined" && (

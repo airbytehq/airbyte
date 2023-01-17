@@ -9,9 +9,11 @@ import { useUnmount } from "react-use";
 import { ControlLabels } from "components";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
+import { FlexContainer } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
@@ -49,8 +51,8 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
     clearFormChange(formId);
   });
 
-  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
-  const firstSectionTitle = isNewStreamsTableEnabled ? undefined : <FormattedMessage id="connection.transfer" />;
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
+  const firstSectionTitle = isNewTableDesignEnabled ? undefined : <FormattedMessage id="connection.transfer" />;
 
   return (
     <>
@@ -63,7 +65,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
           )}
         </Section>
-        {!isNewStreamsTableEnabled && (
+        {!isNewTableDesignEnabled && (
           <Section title={<FormattedMessage id="connection.streams" />}>
             <span className={readonlyClass}>
               <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
@@ -71,14 +73,14 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
-                  <div className={styles.flexRow}>
+                  <FlexContainer alignItems="center">
                     <div className={styles.leftFieldCol}>
                       <ControlLabels
                         className={styles.namespaceFormatLabel}
                         nextLine
                         error={!!meta.error}
                         label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
-                        message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                        infoTooltipContent={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
                       />
                     </div>
                     <div className={classNames(styles.rightFieldCol, readonlyClass)}>
@@ -90,20 +92,21 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                         })}
                       />
                     </div>
-                  </div>
+                  </FlexContainer>
                 )}
               </Field>
             )}
             <Field name="prefix">
               {({ field }: FieldProps<string>) => (
-                <div className={styles.flexRow}>
+                <FlexContainer alignItems="center">
                   <div className={styles.leftFieldCol}>
                     <ControlLabels
                       nextLine
+                      optional
                       label={formatMessage({
                         id: "form.prefix",
                       })}
-                      message={formatMessage({
+                      infoTooltipContent={formatMessage({
                         id: "form.prefix.message",
                       })}
                     />
@@ -119,7 +122,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                       style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                     />
                   </div>
-                </div>
+                </FlexContainer>
               )}
             </Field>
           </Section>
