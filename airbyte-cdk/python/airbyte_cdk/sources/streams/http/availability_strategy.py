@@ -38,7 +38,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             # If stream_slices has no `next()` item (Note - this is different from stream_slices returning [None]!)
             # This can happen when a substream's `stream_slices` method does a `for record in parent_records: yield <something>`
             # without accounting for the case in which the parent stream is empty.
-            reason = f"Cannot attempt to connect to stream {stream_name} - no stream slices were found, likely because the parent stream is empty."
+            reason = f"Cannot attempt to connect to stream {stream.name} - no stream slices were found, likely because the parent stream is empty."
             return False, reason
 
         try:
@@ -49,7 +49,6 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             return True, None
         except HTTPError as error:
             return self.handle_http_error(stream, logger, source, error)
-
 
     def handle_http_error(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
