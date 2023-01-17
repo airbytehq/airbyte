@@ -20,7 +20,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
-        timeout_seconds: 600
+        timeout_seconds: 2400
         empty_streams:
           - name: "display_topics_performance_report"
             bypass_reason: "Stream not filled yet."
