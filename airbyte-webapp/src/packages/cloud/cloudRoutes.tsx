@@ -16,38 +16,19 @@ import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
+import { CloudRoutes } from "./cloudRoutePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
-
-export const CloudRoutes = {
-  Root: "/",
-  AuthFlow: "/auth_flow",
-
-  Metrics: "metrics",
-  SelectWorkspace: "workspaces",
-  Credits: "credits",
-
-  // Auth routes
-  Signup: "/signup",
-  Login: "/login",
-  ResetPassword: "/reset-password",
-
-  // Firebase action routes
-  // These URLs come from Firebase emails, and all have the same
-  // action URL ("/verify-email") with different "mode" parameter
-  // TODO: use a better action URL in Firebase email template
-  FirebaseAction: "/verify-email",
-} as const;
 
 const MainView = React.lazy(() => import("packages/cloud/views/layout/MainView"));
 const WorkspacesPage = React.lazy(() => import("packages/cloud/views/workspaces"));
 const Auth = React.lazy(() => import("packages/cloud/views/auth"));
 const CreditsPage = React.lazy(() => import("packages/cloud/views/credits"));
 
-const ConnectionPage = React.lazy(() => import("pages/ConnectionPage"));
-const CreationFormPage = React.lazy(() => import("pages/ConnectionPage/pages/CreationFormPage"));
+const ConnectionsRoutes = React.lazy(() => import("pages/connections/ConnectionsRoutes"));
+const CreateConnectionPage = React.lazy(() => import("pages/connections/CreateConnectionPage"));
 const AllDestinationsPage = React.lazy(() => import("pages/destination/AllDestinationsPage"));
 const CreateDestinationPage = React.lazy(() => import("pages/destination/CreateDestinationPage"));
 const DestinationItemPage = React.lazy(() => import("pages/destination/DestinationItemPage"));
@@ -91,14 +72,14 @@ const MainRoutes: React.FC = () => {
         <Route path={RoutePaths.Destination}>
           <Route index element={<AllDestinationsPage />} />
           <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
-          <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+          <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
           <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
             <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
             <Route index element={<DestinationOverviewPage />} />
           </Route>
         </Route>
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
         <Route path="*" element={<Navigate to={RoutePaths.Connections} replace />} />

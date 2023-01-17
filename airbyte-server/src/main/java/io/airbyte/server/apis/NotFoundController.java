@@ -4,6 +4,7 @@
 
 package io.airbyte.server.apis;
 
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -15,6 +16,8 @@ import io.micronaut.http.annotation.Error;
  * Custom controller that handles global 404 responses for unknown/unmapped paths.
  */
 @Controller("/api/notfound")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 public class NotFoundController {
 
   @Error(status = HttpStatus.NOT_FOUND,
