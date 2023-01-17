@@ -27,8 +27,13 @@ export const ConnectionPageTitle: React.FC = () => {
 
   const { connection } = useConnectionEditService();
 
+<<<<<<< HEAD
   const { data: freeConnectorProgramInfo } = useFreeConnectorProgramInfo();
   const freeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
+=======
+  const freeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
+  const { data: freeConnectorProgramInfo } = useFreeConnectorProgramInfo();
+>>>>>>> f8ebe5e419 (implement api data)
 
   const displayEnrollmentCallout = freeConnectorProgramEnabled && freeConnectorProgramInfo?.showEnrollmentUi;
 
