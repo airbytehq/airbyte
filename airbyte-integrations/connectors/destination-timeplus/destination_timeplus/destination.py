@@ -71,14 +71,20 @@ class DestinationTimeplus(Destination):
         # singlel-column stream
         # Stream(env=env).name(stream.name).column('raw','string').create()
         
-        tp_stream=Stream(env=env).name(stream.name)
+        tp_stream=Stream(env=env).name(stream.name.strip())
         for name,v in stream.json_schema['properties'].items():
-            tp_stream.column(name,DestinationTimeplus.type_mapping(v))
+            tp_stream.column(name.strip(),DestinationTimeplus.type_mapping(v))
         tp_stream.create()
 
     @staticmethod
     def type_mapping(v) -> str:
         airbyte_type=v['type']
+        if type(airbyte_type) is list:
+            for t in list(airbyte_type):
+                if t!='null': 
+                    type_def={'type':t}
+                    if t=='array': type_def['items']=v['items']
+                    return DestinationTimeplus.type_mapping(type_def)
         if airbyte_type=='number':return 'float'
         elif airbyte_type=='integer':return 'integer'
         elif airbyte_type=='boolean':return 'bool'
