@@ -30,3 +30,9 @@ properties:
   isBuilderConnector:
     description: determine if the running image is a builder connector.
     type: boolean
+  builderVersion:
+    type: integer
+    description: only required if it's a builder connector
+  actorDefinitionId:
+    type: string
+    description: only required if it's a builder connector

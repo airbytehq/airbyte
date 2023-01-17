@@ -40,6 +40,7 @@ import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
+import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
@@ -53,11 +54,14 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
 public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(CheckConnectionActivityImpl.class);
   private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
@@ -111,12 +115,17 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     String builderManifest = "";
     final IntegrationLauncherConfig launcherConfig = args.getLauncherConfig();
 
-    if (launcherConfig.getIsBuilderConnector()) {
+    if (launcherConfig.getIsBuilderConnector() != null && launcherConfig.getIsBuilderConnector()) {
+      LOGGER.info("is builder connector");
+      LOGGER.info(launcherConfig.getActorDefinitionId());
       try {
         final SourceDefinitionRead sourceDefinitionRead = this.airbyteApiClient.getSourceDefinitionApi().getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(
-            rawInput.getActorId()));
+            UUID.fromString(launcherConfig.getActorDefinitionId())));
+        LOGGER.info(sourceDefinitionRead.getSourceDefinitionId().toString());
+        LOGGER.info(sourceDefinitionRead.getBuilderVersion().toString());
         final BuilderVersion builderVersion = this.airbyteApiClient.getSourceDefinitionApi().getBuilderVersion(new BuilderVersionGet().version(sourceDefinitionRead.getBuilderVersion()).sourceDefinitionId(sourceDefinitionRead.getSourceDefinitionId()));
         builderManifest = builderVersion.getManifest();
+        LOGGER.info(builderManifest);
       } catch (final ApiException e) {
         throw new RuntimeException(e);
       }

@@ -110,7 +110,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withAttemptId((long) attempt)
           .withDockerImage(config.getSourceDockerImage())
           .withProtocolVersion(config.getSourceProtocolVersion())
-          .withIsCustomConnector(config.getIsSourceCustomConnector()).withIsBuilderConnector(config.getIsSourceBuilderConnector());
+          .withIsCustomConnector(config.getIsSourceCustomConnector()).withIsBuilderConnector(config.getIsSourceBuilderConnector()).withActorDefinitionId(config.getSourceDefinitionId());
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))

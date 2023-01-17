@@ -38,24 +38,19 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
     this.sourceDefinitionsHandler = sourceDefinitionsHandler;
   }
 
+  @Post("/create_builder_connector")
   @Override
   public SourceDefinitionRead createBuilderSourceDefinition(final BuilderSourceDefinitionCreate builderSourceDefinitionCreate) {
     return ApiHelper.execute(() -> sourceDefinitionsHandler.createBuilderSourceDefinition(builderSourceDefinitionCreate));
   }
 
+  @Post("/create_builder_version")
   @Override
   public void createBuilderVersion(final BuilderVersionCreate builderVersionCreate) {
     ApiHelper.execute(() -> {
       sourceDefinitionsHandler.createBuilderVersion(builderVersionCreate);
       return null;
     });
-  }
-
-
-  @Post("/create_custom")
-  @Override
-  public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
-    return ApiHelper.execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(customSourceDefinitionCreate));
   }
 
   @Post("/create_custom")
@@ -73,6 +68,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
     });
   }
 
+  @Post("/builder_version")
   @Override
   public BuilderVersion getBuilderVersion(final BuilderVersionGet builderVersionGet) {
     return ApiHelper.execute(() -> sourceDefinitionsHandler.getBuilderVersion(builderVersionGet));

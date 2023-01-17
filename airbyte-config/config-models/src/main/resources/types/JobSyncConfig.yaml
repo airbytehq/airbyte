@@ -84,3 +84,6 @@ properties:
     description: The id of the workspace associated with the sync
     type: string
     format: uuid
+  sourceDefinitionId:
+    type: string
+    description: only required if it's a builder connector

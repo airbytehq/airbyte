@@ -99,7 +99,7 @@ const useCreateSourceDefinition = () => {
 export const useCreateBuilderDefinition = () => {
   const service = useGetSourceDefinitionService();
   const queryClient = useQueryClient();
-  const workspaceId = useCurrentWorkspaceId();
+  const workspaceId = "a15a2027-bf1a-45e1-ad48-7d618a7f59e6"; // TODO - use useCurrentWorkspaceId() here which will be available once the connector builder route is part of the workspace
 
   return useMutation<SourceDefinitionRead, Error, Omit<BuilderSourceDefinitionCreate, "workspaceId">>(
     (builderDefinition) => service.createBuilder({ workspaceId, ...builderDefinition }),

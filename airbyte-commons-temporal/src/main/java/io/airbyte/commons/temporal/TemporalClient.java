@@ -345,7 +345,8 @@ public class TemporalClient {
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
         .withProtocolVersion(config.getProtocolVersion())
-        .withIsCustomConnector(config.getIsCustomConnector()).withIsBuilderConnector(config.getIsBuilderConnector());
+        .withIsCustomConnector(config.getIsCustomConnector()).withIsBuilderConnector(config.getIsBuilderConnector() != null && config.getIsBuilderConnector()).withActorDefinitionId(config.getActorDefinitionId());
+
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
         .withActorType(config.getActorType())
         .withActorId(config.getActorId())
@@ -364,7 +365,7 @@ public class TemporalClient {
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
         .withProtocolVersion(config.getProtocolVersion())
-        .withIsCustomConnector(config.getIsCustomConnector());
+        .withIsCustomConnector(config.getIsCustomConnector()).withIsBuilderConnector(config.getIsBuilderConnector() != null && config.getIsBuilderConnector()).withActorDefinitionId(config.getActorDefinitionId());
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration())
         .withSourceId(config.getSourceId()).withConnectorVersion(config.getConnectorVersion()).withConfigHash(config.getConfigHash());
 
@@ -380,7 +381,7 @@ public class TemporalClient {
         .withAttemptId((long) attempt)
         .withDockerImage(config.getSourceDockerImage())
         .withProtocolVersion(config.getSourceProtocolVersion())
-        .withIsCustomConnector(config.getIsSourceCustomConnector()).withIsBuilderConnector(config.getIsSourceBuilderConnector());
+        .withIsCustomConnector(config.getIsSourceCustomConnector()).withIsBuilderConnector(config.getIsSourceBuilderConnector() != null && config.getIsSourceBuilderConnector()).withActorDefinitionId(config.getSourceDefinitionId());
 
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))

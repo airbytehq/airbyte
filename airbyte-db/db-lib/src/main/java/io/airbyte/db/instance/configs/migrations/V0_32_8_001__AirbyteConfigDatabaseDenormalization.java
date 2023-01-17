@@ -755,6 +755,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     api("api"),
     file("file"),
     database(JdbcUtils.DATABASE_KEY),
+    builder("builder"),
     custom("custom");
 
     private final String literal;

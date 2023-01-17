@@ -76,7 +76,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage)
         .withProtocolVersion(protocolVersion)
-        .withIsCustomConnector(isCustomConnector);
+        .withIsCustomConnector(isCustomConnector)
+        .withIsBuilderConnector(isBuilderConnector)
+        .withActorDefinitionId(source.getSourceDefinitionId().toString());
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
@@ -139,7 +141,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         .withConfigHash(HASH_FUNCTION.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
             Charsets.UTF_8)).toString())
         .withConnectorVersion(connectorVersion)
-        .withIsCustomConnector(isCustomConnector);
+        .withIsCustomConnector(isCustomConnector)
+        .withIsBuilderConnector(isBuilderConnector)
+        .withActorDefinitionId(source.getSourceDefinitionId().toString());
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);

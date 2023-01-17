@@ -155,6 +155,7 @@ public class ConfigWriter {
     ctx.insertInto(Tables.BUILDER_VERSION)
         .set(Tables.BUILDER_VERSION.BUILDER_VERSION_ID, builderVersion.getBuilderVersionId())
         .set(Tables.BUILDER_VERSION.VERSION, builderVersion.getVersion().intValue())
+        .set(Tables.BUILDER_VERSION.DESCRIPTION, builderVersion.getDescription())
         .set(Tables.BUILDER_VERSION.ACTOR_DEFINITION_ID, builderVersion.getActorDefinitionId())
         .set(Tables.BUILDER_VERSION.SPEC, JSONB.valueOf(Jsons.serialize(builderVersion.getSpec())))
         .set(Tables.BUILDER_VERSION.MANIFEST, JSONB.valueOf(Jsons.serialize(builderVersion.getManifest())))

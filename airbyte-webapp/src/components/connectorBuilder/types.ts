@@ -601,7 +601,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     type: "DeclarativeSource",
     check: {
       type: "CheckStream",
-      stream_names: [],
+      stream_names: values.streams.map((stream) => stream.name),
     },
     streams: manifestStreams,
     spec,

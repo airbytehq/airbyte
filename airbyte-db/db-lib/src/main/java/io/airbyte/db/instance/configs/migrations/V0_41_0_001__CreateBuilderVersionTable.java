@@ -5,6 +5,7 @@ import static org.jooq.impl.DSL.currentOffsetDateTime;
 import static org.jooq.impl.DSL.foreignKey;
 import static org.jooq.impl.DSL.primaryKey;
 
+import io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.SourceType;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
@@ -35,7 +36,7 @@ public class V0_41_0_001__CreateBuilderVersionTable extends BaseJavaMigration {
   }
 
   private static void extendSourceType(final DSLContext ctx) {
-    ctx.alterType("source_type").addValue("builder");
+    ctx.alterType("source_type").addValue("builder").execute();
   }
 
   private void addBuilderVersionColumn(final DSLContext ctx) {
@@ -44,6 +45,10 @@ public class V0_41_0_001__CreateBuilderVersionTable extends BaseJavaMigration {
             "builder_version",
             SQLDataType.INTEGER.nullable(true)))
         .execute();
+
+    ctx.alterTable("actor_definition")
+        .alterColumn(DSL.field(
+            "source_type")).set(SQLDataType.VARCHAR.asEnumDataType(SourceType.class).nullable(true)).execute();
   }
   private static void createAndPopulateWorkspace(final DSLContext ctx) {
     final Field<UUID> builderVersionId = DSL.field("builder_version_id", SQLDataType.UUID.nullable(false));

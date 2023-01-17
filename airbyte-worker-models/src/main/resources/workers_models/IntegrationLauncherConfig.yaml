@@ -30,3 +30,5 @@ properties:
     type: boolean
   isBuilderConnector:
     type: boolean
+  actorDefinitionId:
+    type: string

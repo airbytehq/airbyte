@@ -164,10 +164,10 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     String builderManifest = "";
     final IntegrationLauncherConfig launcherConfig = sourceLauncherConfig;
 
-    if (launcherConfig.getIsBuilderConnector()) {
+    if (launcherConfig.getIsBuilderConnector() != null && launcherConfig.getIsBuilderConnector()) {
       try {
         final SourceDefinitionRead sourceDefinitionRead = this.airbyteApiClient.getSourceDefinitionApi().getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(
-            syncInput.getSourceId()));
+            UUID.fromString(launcherConfig.getActorDefinitionId())));
         final BuilderVersion builderVersion = this.airbyteApiClient.getSourceDefinitionApi().getBuilderVersion(new BuilderVersionGet().version(sourceDefinitionRead.getBuilderVersion()).sourceDefinitionId(sourceDefinitionRead.getSourceDefinitionId()));
         builderManifest = builderVersion.getManifest();
       } catch (final ApiException e) {

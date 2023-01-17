@@ -99,7 +99,7 @@ public class DefaultJobCreator implements JobCreator {
         .withDestinationResourceRequirements(mergedDstResourceReq)
         .withIsSourceCustomConnector(sourceDefinition.getCustom())
         .withIsDestinationCustomConnector(destinationDefinition.getCustom())
-        .withWorkspaceId(workspaceId).withIsSourceBuilderConnector(sourceDefinition.getSourceType() == SourceType.BUILDER);
+        .withWorkspaceId(workspaceId).withIsSourceBuilderConnector(sourceDefinition.getSourceType() == SourceType.BUILDER).withSourceDefinitionId((sourceDefinition.getSourceDefinitionId().toString()));
 
     getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 

@@ -115,9 +115,9 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
     String builderManifest = "";
 
-    if (launcherConfig.getIsBuilderConnector()) {
+    if (launcherConfig.getIsBuilderConnector() != null && launcherConfig.getIsBuilderConnector()) {
       try {
-        final SourceDefinitionRead sourceDefinitionRead = this.airbyteApiClient.getSourceDefinitionApi().getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(UUID.fromString(config.getSourceId())));
+        final SourceDefinitionRead sourceDefinitionRead = this.airbyteApiClient.getSourceDefinitionApi().getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(UUID.fromString(launcherConfig.getActorDefinitionId())));
         final BuilderVersion builderVersion = this.airbyteApiClient.getSourceDefinitionApi().getBuilderVersion(new BuilderVersionGet().version(sourceDefinitionRead.getBuilderVersion()).sourceDefinitionId(sourceDefinitionRead.getSourceDefinitionId()));
         builderManifest = builderVersion.getManifest();
       } catch (final ApiException e) {
