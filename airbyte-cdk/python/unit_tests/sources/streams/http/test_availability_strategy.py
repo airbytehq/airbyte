@@ -139,3 +139,30 @@ def test_send_handles_retries_when_checking_availability(mocker, caplog):
     assert mock_send.call_count == 3
     for message in ["Caught retryable error", "Response Code: 429", "Response Code: 503"]:
         assert message in caplog.text
+
+
+def test_http_availability_strategy_on_empty_stream(mocker):
+    mocker.patch.multiple(HttpStream, __abstractmethods__=set())
+    mocker.patch.multiple(Stream, __abstractmethods__=set())
+
+    class MockEmptyStream(mocker.MagicMock, HttpStream):
+        page_size = None
+        get_json_schema = mocker.MagicMock()
+
+        def __init__(self, *args, **kvargs):
+            mocker.MagicMock.__init__(self)
+            self.read_records = mocker.MagicMock()
+
+    empty_stream = MockEmptyStream()
+    assert isinstance(empty_stream, HttpStream)
+
+    assert isinstance(empty_stream.availability_strategy, HttpAvailabilityStrategy)
+
+    # Generator should have no values to generate
+    empty_stream.read_records.return_value = iter([])
+
+    logger = logging.getLogger("airbyte.test-source")
+    stream_is_available, _ = empty_stream.check_availability(logger)
+
+    assert stream_is_available
+    assert empty_stream.read_records.called
