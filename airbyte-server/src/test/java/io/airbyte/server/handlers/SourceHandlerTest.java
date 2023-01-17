@@ -20,6 +20,7 @@ import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
 import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaWriteRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
@@ -35,8 +36,13 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.server.converters.ConfigurationUpdate;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.ConnectorSpecificationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
@@ -64,6 +70,11 @@ class SourceHandlerTest {
   private Supplier<UUID> uuidGenerator;
   private JsonSecretsProcessor secretsProcessor;
   private ConnectorSpecification connectorSpecification;
+
+  private static final String SHOES = "shoes";
+  private static final String SKU = "sku";
+  private static final AirbyteCatalog airbyteCatalog = CatalogHelpers.createAirbyteCatalog(SHOES,
+      Field.of(SKU, JsonSchemaType.STRING));
 
   // needs to match name of file in src/test/resources/icons
   private static final String ICON = "test-source.svg";
@@ -353,6 +364,19 @@ class SourceHandlerTest {
     verify(secretsRepositoryWriter).writeSourceConnection(expectedSourceConnection, connectorSpecification);
     verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
     verify(connectionsHandler).deleteConnection(connectionRead.getConnectionId());
+  }
+
+  @Test
+  void testWriteDiscoverFetchEvent() throws JsonValidationException, IOException {
+    UUID actorId = UUID.randomUUID();
+    String connectorVersion = "0.0.1";
+    String hashValue = "0123456789abcd";
+    SourceDiscoverSchemaWriteRequestBody request = new SourceDiscoverSchemaWriteRequestBody().catalog(
+        CatalogConverter.toApi(airbyteCatalog)).sourceId(actorId).connectorVersion(connectorVersion).configurationHash(hashValue);
+
+    sourceHandler.writeDiscoverFetchEvent(request);
+
+    verify(configRepository).writeActorCatalogFetchEvent(airbyteCatalog, actorId, connectorVersion, hashValue);
   }
 
 }

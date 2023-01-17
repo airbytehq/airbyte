@@ -754,6 +754,26 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+
+  /v1/sources/write_discover_fetch_event:
+    post:
+      tags:
+        - source
+      summary: Should only called from worker, to write result from discover activity back to DB.
+      operationId: writeDiscoverFetchEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDiscoverSchemaWriteRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalOperationResult"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -2788,6 +2808,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceRead"
+    SourceDiscoverSchemaWriteRequestBody:
+      description: to write this requested object to database.
+      type: object
+      required:
+        - catalog
+      properties:
+        catalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        connectorVersion:
+          type: string
+        configurationHash:
+          type: string
+
     SourceDiscoverSchemaRead:
       description: Returns the results of a discover catalog job. If the job was not successful, the catalog field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object

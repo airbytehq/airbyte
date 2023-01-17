@@ -179,6 +179,29 @@ public class CatalogConverter {
     return toProtocol(clone);
   }
 
+  public static io.airbyte.protocol.models.AirbyteCatalog toAirbyteCatalogProtocol(
+                                                                                   final io.airbyte.api.model.generated.AirbyteCatalog catalog)
+      throws JsonValidationException {
+    final ArrayList<JsonValidationException> errors = new ArrayList<>();
+
+    io.airbyte.protocol.models.AirbyteCatalog protoCatalog = new io.airbyte.protocol.models.AirbyteCatalog();
+    var airbyteStream = catalog.getStreams().stream().map(stream -> {
+      try {
+        return toProtocol(stream.getStream(), stream.getConfig());
+      } catch (JsonValidationException e) {
+        LOGGER.error("Error parsing catalog: {}", e);
+        errors.add(e);
+        return null;
+      }
+    }).collect(Collectors.toList());
+
+    if (!errors.isEmpty()) {
+      throw errors.get(0);
+    }
+    protoCatalog.withStreams(airbyteStream);
+    return protoCatalog;
+  }
+
   /**
    * Converts the API catalog model into a protocol catalog. Note: only streams marked as selected
    * will be returned. This is included in this converter as the API model always carries all the
