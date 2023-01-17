@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 
 public class LimitedSourceProcess extends Process {
 
-  private static final int TOTAL_RECORDS = 1_000_000;
+  private static final int TOTAL_RECORDS = 2_000_000;
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private int currRecs = 0;

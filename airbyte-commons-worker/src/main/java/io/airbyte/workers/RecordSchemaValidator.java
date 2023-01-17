@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
@@ -24,6 +26,8 @@ import java.util.Set;
 public class RecordSchemaValidator {
 
   private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
+  private static final Executor threadExecutor = Executors.newFixedThreadPool(1);
+  private static final JsonSchemaValidator validator = new JsonSchemaValidator();
 
   public RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas) {
     // streams is Map of a stream source namespace + name mapped to the stream schema
@@ -40,39 +44,42 @@ public class RecordSchemaValidator {
    */
   public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream)
       throws RecordSchemaValidationException {
+    threadExecutor.execute(() -> {
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
 
-    final JsonSchemaValidator validator = new JsonSchemaValidator();
 
-    // We must choose a JSON validator version for validating the schema
-    // Rather than allowing connectors to use any version, we enforce validation using V7
-    ((ObjectNode) matchingSchema).put("$schema", "http://json-schema.org/draft-07/schema#");
+      // We must choose a JSON validator version for validating the schema
+      // Rather than allowing connectors to use any version, we enforce validation using V7
+      ((ObjectNode) matchingSchema).put("$schema", "http://json-schema.org/draft-07/schema#");
 
-    try {
-      validator.ensure(matchingSchema, messageData);
-    } catch (final JsonValidationException e) {
-      final List<String[]> invalidRecordDataAndType = validator.getValidationMessageArgs(matchingSchema, messageData);
-      final List<String> invalidFields = validator.getValidationMessagePaths(matchingSchema, messageData);
+//    final JsonSchemaValidator validator = new JsonSchemaValidator();
 
-      final Set<String> validationMessagesToDisplay = new HashSet<>();
-      for (int i = 0; i < invalidFields.size(); i++) {
-        final StringBuilder expectedType = new StringBuilder();
-        if (invalidRecordDataAndType.size() > i && invalidRecordDataAndType.get(i).length > 1) {
-          expectedType.append(invalidRecordDataAndType.get(i)[1]);
+      try {
+        validator.ensure(matchingSchema, messageData);
+      } catch (final JsonValidationException e) {
+        final List<String[]> invalidRecordDataAndType = validator.getValidationMessageArgs(matchingSchema, messageData);
+        final List<String> invalidFields = validator.getValidationMessagePaths(matchingSchema, messageData);
+
+        final Set<String> validationMessagesToDisplay = new HashSet<>();
+        for (int i = 0; i < invalidFields.size(); i++) {
+          final StringBuilder expectedType = new StringBuilder();
+          if (invalidRecordDataAndType.size() > i && invalidRecordDataAndType.get(i).length > 1) {
+            expectedType.append(invalidRecordDataAndType.get(i)[1]);
+          }
+          final StringBuilder newMessage = new StringBuilder();
+          newMessage.append(invalidFields.get(i));
+          newMessage.append(" is of an incorrect type.");
+          if (expectedType.length() > 0) {
+            newMessage.append(" Expected it to be " + expectedType);
+          }
+          validationMessagesToDisplay.add(newMessage.toString());
         }
-        final StringBuilder newMessage = new StringBuilder();
-        newMessage.append(invalidFields.get(i));
-        newMessage.append(" is of an incorrect type.");
-        if (expectedType.length() > 0) {
-          newMessage.append(" Expected it to be " + expectedType);
-        }
-        validationMessagesToDisplay.add(newMessage.toString());
+
+//        throw new RecordSchemaValidationException(validationMessagesToDisplay,
+//            String.format("Record schema validation failed for %s", messageStream), e);
       }
-
-      throw new RecordSchemaValidationException(validationMessagesToDisplay,
-          String.format("Record schema validation failed for %s", messageStream), e);
-    }
+    });
   }
 
 }

@@ -108,9 +108,10 @@ public class ReplicationWorkerPerformanceTest {
     log.info("MBs read: {}, Time taken sec: {}, MB/s: {}", mbRead, timeTakenSec, mbRead / timeTakenSec);
   }
 
-  public static void main(final String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException, InterruptedException {
     // Run this main class to start benchmarking.
-    org.openjdk.jmh.Main.main(args);
+//    org.openjdk.jmh.Main.main(args);
+    new ReplicationWorkerPerformanceTest().executeOneSync();
   }
 
 }

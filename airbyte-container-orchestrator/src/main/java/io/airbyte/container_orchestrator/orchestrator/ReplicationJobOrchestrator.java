@@ -99,6 +99,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   public Optional<String> runJob() throws Exception {
     final var syncInput = readInput();
 
+    log.info("Running with default stream factory only..");
     final var sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(
         Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
@@ -155,9 +156,9 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Math.toIntExact(jobRunConfig.getAttemptId()),
         airbyteSource,
         new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-        new DefaultAirbyteDestination(destinationLauncher, getStreamFactory(destinationLauncherConfig.getProtocolVersion(),
-            DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
-            new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
+        new DefaultAirbyteDestination(destinationLauncher),
+//            getStreamFactory(destinationLauncherConfig.getProtocolVersion(), DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
+//            new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(featureFlags),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
@@ -174,9 +175,10 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   }
 
   private AirbyteStreamFactory getStreamFactory(final Version protocolVersion, final MdcScope.Builder mdcScope) {
-    return protocolVersion != null
-        ? new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, protocolVersion, mdcScope, Optional.of(RuntimeException.class))
-        : new DefaultAirbyteStreamFactory(mdcScope);
+    return new DefaultAirbyteStreamFactory(mdcScope);
+//    return protocolVersion != null
+//        ? new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, protocolVersion, mdcScope, Optional.of(RuntimeException.class))
+//        : new DefaultAirbyteStreamFactory(mdcScope);
   }
 
 }

@@ -81,6 +81,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
+    logger.info("======== I SHOULD NOT RUN");
     if (shouldDetectVersion) {
       final Optional<Version> versionMaybe;
       try {

@@ -15,6 +15,8 @@ import java.util.Optional;
  */
 public class   EmptyAirbyteDestination implements AirbyteDestination {
 
+  private int currRec = 0;
+
   @Override
   public void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception {
 
@@ -22,7 +24,7 @@ public class   EmptyAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void accept(AirbyteMessage message) throws Exception {
-
+    currRec++;
   }
 
   @Override

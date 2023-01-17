@@ -162,6 +162,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final AtomicReference<FailureReason> destinationRunnableFailureRef = new AtomicReference<>();
 
     try {
+      LOGGER.info("running optimised validator version with write..");
       LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
           .stream()
           .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
@@ -368,7 +369,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             try {
               if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
-//                destination.accept(message);
+                destination.accept(message);
               }
             } catch (final Exception e) {
               throw new DestinationException("Destination process message delivery failed", e);
