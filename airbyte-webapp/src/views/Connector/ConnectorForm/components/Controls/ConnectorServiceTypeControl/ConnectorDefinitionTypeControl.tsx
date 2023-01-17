@@ -24,7 +24,6 @@ import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvai
 import { useExperiment } from "hooks/services/Experiment";
 import { useModalService } from "hooks/services/Modal";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
@@ -128,6 +127,7 @@ export const ConnectorDefinitionTypeControl: React.FC<ConnectorDefinitionTypeCon
 
   const workspace = useCurrentWorkspace();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
+
   const connectorDefinitions = useAvailableConnectorDefinitions(availableConnectorDefinitions, workspace);
 
   const sortedDropDownData = useMemo(
@@ -204,10 +204,7 @@ export const ConnectorDefinitionTypeControl: React.FC<ConnectorDefinitionTypeCon
       {selectedConnectorDefinition &&
         (selectedConnectorDefinition.releaseStage === ReleaseStage.alpha ||
           selectedConnectorDefinition.releaseStage === ReleaseStage.beta) && (
-          <>
-            <InlineEnrollmentCallout />
-            <WarningMessage stage={selectedConnectorDefinition.releaseStage} />
-          </>
+          <WarningMessage stage={selectedConnectorDefinition.releaseStage} />
         )}
     </>
   );
