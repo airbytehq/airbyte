@@ -1,0 +1,183 @@
+version: 0.1.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names: []
+streams:
+  - type: DeclarativeStream
+    name: Conversations
+    primary_key: &ref_0
+      - id
+    retriever:
+      type: SimpleRetriever
+      name: Conversations
+      primary_key: *ref_0
+      requester:
+        type: HttpRequester
+        name: Conversations
+        url_base: https://api.helpscout.net/v2
+        path: conversations
+        request_options_provider:
+          request_parameters:
+            mailbox: '{{ config[''mailbox''] }}'
+            embed: '{{ config[''embed''] }}'
+            folder: '{{ config[''folder''] }}'
+            status: '{{ config[''status''] }}'
+            tag: '{{ config[''tag''] }}'
+            assigned_to: '{{ config[''assigned_to''] }}'
+            modifiedSince: '{{ config[''modifiedsince''] }}'
+            number: '{{ config[''number''] }}'
+            sortField: '{{ config[''sortfield''] }}'
+            sortOrder: '{{ config[''sortorder''] }}'
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - _embedded
+            - conversations
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: request_parameter
+          field_name: page
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 25
+          start_from_page: 1
+        url_base: https://api.helpscout.net/v2
+  - type: DeclarativeStream
+    name: Mailboxes
+    primary_key: &ref_1 []
+    retriever:
+      type: SimpleRetriever
+      name: Mailboxes
+      primary_key: *ref_1
+      requester:
+        type: HttpRequester
+        name: Mailboxes
+        url_base: https://api.helpscout.net/v2
+        path: mailboxes
+        request_options_provider:
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: request_parameter
+          field_name: page
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 50
+          start_from_page: 1
+        url_base: https://api.helpscout.net/v2
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+    properties:
+      mailbox:
+        title: Mailbox
+        type: number
+        description: >-
+          Filters conversations from a specific mailbox id. Use comma separated
+          values for more mailboxes
+      embed:
+        title: Embed
+        description: ' Allows embedding/loading of sub-entities, allowed values are: threads'
+        type: string
+        enum:
+          - threads
+      folder:
+        title: Folder
+        description: Filters conversations from a specific folder id
+        type: number
+      status:
+        title: Status
+        description: Filter conversation by status
+        placeholder: all
+        type: string
+      tag:
+        title: Tag
+        description: Filter conversation by tags. Use comma separated values for more tags.
+        type: string
+      assigned_to:
+        title: assigned_to
+        description: Filters conversations by assignee id
+        type: number
+      modifiedsince:
+        description: Filters conversations modified after this timestamp
+        title: modifiedSince
+        type: string
+      number:
+        title: Number
+        description: Looks up conversation by conversation number
+        type: number
+      sortfield:
+        title: sortField
+        description: Sorts the result by specified field
+        enum:
+          - createdAt
+          - customerEmail
+          - customerName
+          - mailboxid
+          - modifiedAt
+          - number
+          - score
+          - status
+          - subject
+          - waitingSince
+        type: string
+      sortorder:
+        title: sortOrder
+        enum:
+          - asc
+          - desc
+        default: desc
+        description: Sort order
+        type: string
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        title: Refresh token
+        airbyte_secret: true
+    additionalProperties: true
+  documentation_url: ''
+  type: Spec
