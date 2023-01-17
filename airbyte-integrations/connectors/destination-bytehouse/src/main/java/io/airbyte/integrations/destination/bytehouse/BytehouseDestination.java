@@ -12,14 +12,12 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -110,9 +108,9 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog catalog, Consumer<io.airbyte.protocol.models.v0.AirbyteMessage> outputRecordCollector) {
-    //TODO
-    return null;
-  }
+//  @Override
+//  public AirbyteMessageConsumer getConsumer(JsonNode config, io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog catalog, Consumer<io.airbyte.protocol.models.v0.AirbyteMessage> outputRecordCollector) {
+//    //TODO
+//    return null;
+//  }
 }
