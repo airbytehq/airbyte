@@ -186,17 +186,18 @@ In a successful sync, the number of emitted records and committed records should
 
 ## Edit stream configuration
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click a connection in the list you want to change.   
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection you want to change.   
 
 2. Click the **Replication** tab.
 
-The **Transfer** and **Streams** settings include the following parameters:
+The first section includes the following parameters:
 
-| Parameter                 | Description                                                                                                                               |
-|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| Replication Frequency     | How often the data syncs                                                                                                                  |
-| [Destination Namespace](https://docs.airbyte.com/understanding-airbyte/namespaces/)     | Where the replicated data is written                                                                                                      |
-| Destination Stream Prefix | Helps you identify streams from different connectors |
+| Parameter                            | Description                                                                         |
+|--------------------------------------|-------------------------------------------------------------------------------------|
+| Replication frequency                | How often the data syncs                                                            |
+| Non-breaking schema updates detected | How Airbyte handles syncs when it detects non-breaking schema changes in the source |
+| Destination Namespace                | Where the replicated data is written                                                |
+| Destination Stream Prefix            | Helps you identify streams from different connectors                                |
 
 :::note 
     
@@ -275,6 +276,38 @@ To refresh the source schema:
 1. Click **Refresh source schema** to fetch the schema of your data source.
 
 2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
+
+## Enable schema update notifications
+Get schema update notifications when your source schema changes.
+
+To get notified when your schema changes: 
+1.  Make sure you have [webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud#manage-airbyte-cloud-notifications) set up.
+
+2. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and click the connection you want to change.
+
+3. Click the **Settings** tab on the Connection page.
+
+4. Toggle **Schema update notifications**.
+
+## Review schema changes
+Airbyte detects changes in your source schema and allows you to review the changes. 
+
+| Breaking changes                                                                                                                                                      | Non-breaking changes                                                                                                                                                                                                                  |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| If your connection’s source schema has breaking changes, the syncs will be stopped and you must review the changes before continuing syncs or editing the connection. | If you choose to ignore non-breaking changes in your connection's source schema, the syncs will continue.  You can change how Airbyte handles syncs when it detects non-breaking changes in the source schema by [editing the stream configuration](#edit-stream-configuration). |
+
+To review schema changes: 
+1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and select the connection you want to review.
+
+2. Click the **Replication** tab.
+
+3. Click **Review changes**. 
+
+4. The **Refreshed source schema** dialog displays. Click the dropdowns to review the changes. 
+
+5. Click **Confirm** to close the dialog.
+
+6. Scroll to the bottom of the page and click **Save changes**.
 
 ## Display Connection State
 **Connection State** provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
