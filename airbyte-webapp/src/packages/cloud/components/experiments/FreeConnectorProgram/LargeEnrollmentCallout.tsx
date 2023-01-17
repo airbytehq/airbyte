@@ -8,9 +8,11 @@ import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import { ReactComponent as ConnectorsBadges } from "./connectors-badges.svg";
+import { useShowEnrollmentModal } from "./EnrollmentModal";
 import styles from "./LargeEnrollmentCallout.module.scss";
 
 export const LargeEnrollmentCallout: React.FC = () => {
+  const { showEnrollmentModal } = useShowEnrollmentModal();
   return (
     <Callout variant="boldInfo" className={styles.container}>
       <FlexContainer direction="row" alignItems="center" className={styles.flexRow}>
@@ -25,7 +27,7 @@ export const LargeEnrollmentCallout: React.FC = () => {
             <FormattedMessage id="freeConnectorProgram.enroll.description" />
           </Text>
         </FlexContainer>
-        <Button variant="dark" className={styles.enrollButton}>
+        <Button variant="dark" className={styles.enrollButton} onClick={showEnrollmentModal}>
           <FormattedMessage id="freeConnectorProgram.enrollNow" />
         </Button>
       </FlexContainer>
