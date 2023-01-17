@@ -8,9 +8,9 @@
   "scripts": {
     "prepare": "cd .. && husky install airbyte-webapp/.husky",
     "prestart": "npm run generate-client",
-    "start": "vite",
+    "start": "node -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
     "prestart:cloud": "npm run generate-client",
-    "start:cloud": "AB_ENV=${AB_ENV-frontend-dev} node -r ./scripts/environment.js ./node_modules/.bin/vite",
+    "start:cloud": "AB_ENV=${AB_ENV-frontend-dev} node -r ./scripts/environment.js -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
     "prebuild": "npm run generate-client",
     "build": "vite build",
     "pretest": "npm run generate-client",
