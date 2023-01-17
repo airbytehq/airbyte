@@ -9,10 +9,13 @@ import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.server.handlers.StateHandler;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 
 @Controller("/api/v1/state")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 public class StateApiController implements StateApi {
 
   private final StateHandler stateHandler;
