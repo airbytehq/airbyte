@@ -28,18 +28,22 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+@Singleton
 public class SourceHandler {
 
   private final Supplier<UUID> uuidGenerator;
@@ -50,7 +54,9 @@ public class SourceHandler {
   private final ConnectionsHandler connectionsHandler;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
+  @Inject
   SourceHandler(final ConfigRepository configRepository,
                 final SecretsRepositoryReader secretsRepositoryReader,
                 final SecretsRepositoryWriter secretsRepositoryWriter,
@@ -58,7 +64,8 @@ public class SourceHandler {
                 final ConnectionsHandler connectionsHandler,
                 final Supplier<UUID> uuidGenerator,
                 final JsonSecretsProcessor secretsProcessor,
-                final ConfigurationUpdate configurationUpdate) {
+                final ConfigurationUpdate configurationUpdate,
+                final OAuthConfigSupplier oAuthConfigSupplier) {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
@@ -67,13 +74,15 @@ public class SourceHandler {
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
     this.secretsProcessor = secretsProcessor;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
   public SourceHandler(final ConfigRepository configRepository,
                        final SecretsRepositoryReader secretsRepositoryReader,
                        final SecretsRepositoryWriter secretsRepositoryWriter,
                        final JsonSchemaValidator integrationSchemaValidation,
-                       final ConnectionsHandler connectionsHandler) {
+                       final ConnectionsHandler connectionsHandler,
+                       final OAuthConfigSupplier oAuthConfigSupplier) {
     this(
         configRepository,
         secretsRepositoryReader,
@@ -84,7 +93,8 @@ public class SourceHandler {
         JsonSecretsProcessor.builder()
             .copySecrets(true)
             .build(),
-        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader),
+        oAuthConfigSupplier);
   }
 
   public SourceRead createSource(final SourceCreate sourceCreate)
@@ -321,14 +331,14 @@ public class SourceHandler {
                                        final JsonNode configurationJson,
                                        final ConnectorSpecification spec)
       throws JsonValidationException, IOException {
+    final JsonNode oAuthMaskedConfigurationJson = oAuthConfigSupplier.maskSourceOAuthParameters(sourceDefinitionId, workspaceId, configurationJson);
     final SourceConnection sourceConnection = new SourceConnection()
         .withName(name)
         .withSourceDefinitionId(sourceDefinitionId)
         .withWorkspaceId(workspaceId)
         .withSourceId(sourceId)
         .withTombstone(tombstone)
-        .withConfiguration(configurationJson);
-
+        .withConfiguration(oAuthMaskedConfigurationJson);
     secretsRepositoryWriter.writeSourceConnection(sourceConnection, spec);
   }
 

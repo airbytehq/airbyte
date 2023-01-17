@@ -2710,6 +2710,8 @@ components:
         - connectionConfiguration
         - workspaceId
       properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
@@ -2911,6 +2913,8 @@ components:
         - dockerRepository
         - dockerImageTag
         - documentationUrl
+        - supportsDbt
+        - normalizationConfig
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
@@ -2936,6 +2940,12 @@ components:
           format: date
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
+        supportsDbt:
+          type: boolean
+          description: an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used.
+        normalizationConfig:
+          $ref: "#/components/schemas/NormalizationDestinationDefinitionConfig"
+
     DestinationDefinitionReadList:
       type: object
       required:
@@ -3010,10 +3020,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationSyncMode"
-        supportsDbt:
-          type: boolean
-        supportsNormalization:
-          type: boolean
     # DESTINATION
     DestinationId:
       type: string
@@ -3035,6 +3041,8 @@ components:
         - destinationDefinitionId
         - connectionConfiguration
       properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
@@ -4401,6 +4409,27 @@ components:
           type: array
           items:
             "$ref": "#/components/schemas/JobTypeResourceLimit"
+    NormalizationDestinationDefinitionConfig:
+      description: describes a normalization config for destination definition
+      type: object
+      required:
+        - supported
+      additionalProperties: false
+      properties:
+        supported:
+          type: boolean
+          description: whether the destination definition supports normalization.
+          default: false
+        normalizationRepository:
+          type: string
+          description: a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.
+        normalizationTag:
+          type: string
+          description: a field indicating the tag of the docker repository to be used for normalization.
+        normalizationIntegrationType:
+          type: string
+          description: a field indicating the type of integration dialect to use for normalization.
+
     JobTypeResourceLimit:
       description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
       type: object
@@ -4736,9 +4765,13 @@ components:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
         sourceId:
-          $ref: "#/components/schemas/SourceId"
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceId"
         destinationId:
-          $ref: "#/components/schemas/DestinationId"
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationId"
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.

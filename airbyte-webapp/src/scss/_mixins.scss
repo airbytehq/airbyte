@@ -1,13 +1,13 @@
-@use "./colors";
+@use "./variables";
 
 @mixin shadow {
-  box-shadow: 0 2px 4px rgba(colors.$dark-blue-900, 12%);
+  box-shadow: variables.$box-shadow;
 }
 
 @mixin left-shadow {
-  box-shadow: -2px 0 10px rgba(colors.$dark-blue-900, 12%);
+  box-shadow: variables.$box-shadow-left;
 }
 
 @mixin right-shadow {
-  box-shadow: 2px 0 10px rgba(colors.$dark-blue-900, 12%);
+  box-shadow: variables.$box-shadow-right;
 }

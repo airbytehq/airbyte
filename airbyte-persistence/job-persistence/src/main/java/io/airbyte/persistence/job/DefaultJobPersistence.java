@@ -515,6 +515,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public Map<JobAttemptPair, AttemptStats> getAttemptStats(final List<Long> jobIds) throws IOException {
+    if (jobIds == null || jobIds.isEmpty()) {
+      return Map.of();
+    }
+
     final var jobIdsStr = StringUtils.join(jobIds, ',');
     return jobDatabase.query(ctx -> {
       // Instead of one massive join query, separate this query into two queries for better readability
@@ -530,7 +534,7 @@ public class DefaultJobPersistence implements JobPersistence {
     final var attemptStats = new HashMap<JobAttemptPair, AttemptStats>();
     final var syncResults = ctx.fetch(
         "SELECT atmpt.attempt_number, atmpt.job_id,"
-            + "stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted "
+            + "stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted, stats.records_committed "
             + "FROM sync_stats stats "
             + "INNER JOIN attempts atmpt ON stats.attempt_id = atmpt.id "
             + "WHERE job_id IN ( " + jobIdsStr + ");");
@@ -539,6 +543,7 @@ public class DefaultJobPersistence implements JobPersistence {
       final var syncStats = new SyncStats()
           .withBytesEmitted(r.get(SYNC_STATS.BYTES_EMITTED))
           .withRecordsEmitted(r.get(SYNC_STATS.RECORDS_EMITTED))
+          .withRecordsCommitted(r.get(SYNC_STATS.RECORDS_COMMITTED))
           .withEstimatedRecords(r.get(SYNC_STATS.ESTIMATED_RECORDS))
           .withEstimatedBytes(r.get(SYNC_STATS.ESTIMATED_BYTES));
       attemptStats.put(key, new AttemptStats(syncStats, Lists.newArrayList()));
@@ -596,6 +601,10 @@ public class DefaultJobPersistence implements JobPersistence {
     final Optional<Record> record =
         ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
             attemptNumber).stream().findFirst();
+    if (record.isEmpty()) {
+      return -1L;
+    }
+
     return record.get().get("id", Long.class);
   }
 
