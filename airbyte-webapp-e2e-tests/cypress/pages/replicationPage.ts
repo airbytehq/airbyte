@@ -8,8 +8,6 @@ const destinationNamespaceDefault = "div[data-testid='namespaceDefinition-destin
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
-
-// Table dropdown (pathPopout)
 const getFieldDropdownContainer = (streamName: string, type: string) => `div[id='${streamName}_${type}_pathPopout']`;
 const getFieldDropdownButton = (streamName: string, type: string) =>
   `button[data-testid='${streamName}_${type}_pathPopout']`;
@@ -19,7 +17,6 @@ const streamNameCell = "[data-testid='nameCell']";
 const streamDataTypeCell = "[data-testid='dataTypeCell']";
 const getExpandStreamArrowBtn = (streamName: string) => `[data-testid='${streamName}_expandStreamDetails']`;
 const preFilledPrimaryKeyText = "div[class^='PathPopout_text']";
-
 const successResult = "div[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
