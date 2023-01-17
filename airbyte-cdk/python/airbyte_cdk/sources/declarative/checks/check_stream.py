@@ -10,7 +10,6 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice, get_first_stream_slice
 from dataclasses_jsonschema import JsonSchemaMixin
 
 
