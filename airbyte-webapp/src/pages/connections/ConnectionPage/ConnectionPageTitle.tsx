@@ -13,7 +13,8 @@ import { Text } from "components/ui/Text";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import { useFreeConnectorProgram } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
+import { useExperiment } from "hooks/services/Experiment";
+import { useFreeConnectorProgramInfo } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
 import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
 
 import { ConnectionRoutePaths } from "../types";
@@ -26,9 +27,10 @@ export const ConnectionPageTitle: React.FC = () => {
 
   const { connection } = useConnectionEditService();
 
-  const { showEnrollmentContent, connectionHasAlphaOrBetaConnector } = useFreeConnectorProgram();
+  const freeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
+  const { data: freeConnectorProgramInfo } = useFreeConnectorProgramInfo();
 
-  const showFreeConnectorEnrollment = showEnrollmentContent && connectionHasAlphaOrBetaConnector(connection);
+  const displayEnrollmentCallout = freeConnectorProgramEnabled && freeConnectorProgramInfo?.showEnrollmentUi;
 
   const steps = useMemo(() => {
     const steps = [
@@ -81,7 +83,7 @@ export const ConnectionPageTitle: React.FC = () => {
       <div className={styles.statusContainer}>
         <FlexContainer direction="column" gap="none">
           <ConnectionInfoCard />
-          {showFreeConnectorEnrollment && <InlineEnrollmentCallout />}
+          {displayEnrollmentCallout && <InlineEnrollmentCallout />}
         </FlexContainer>
       </div>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
