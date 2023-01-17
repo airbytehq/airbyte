@@ -638,24 +638,28 @@ definitions:
               - POST
         default: GET
       request_body_data:
+        description: Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.
         anyOf:
           - type: string
           - type: object
             additionalProperties:
               type: string
       request_body_json:
+        description: Specifies how to populate the body of the request with a JSON payload.
         anyOf:
           - type: string
           - type: object
             additionalProperties:
               type: string
       request_headers:
+        description: Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
         anyOf:
           - type: string
           - type: object
             additionalProperties:
               type: string
       request_parameters:
+        description: Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
         anyOf:
           - type: string
           - type: object
