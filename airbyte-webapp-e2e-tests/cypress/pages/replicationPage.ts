@@ -8,8 +8,8 @@ const destinationNamespaceDefault = "div[data-testid='namespaceDefinition-destin
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
-const getFieldDropdownContainer = (streamName: string, type: string) => `div[id='${streamName}_${type}_pathPopout']`;
-const getFieldDropdownButton = (streamName: string, type: string) =>
+const getFieldDropdownContainer = (streamName: string, type: Dropdown) => `div[id='${streamName}_${type}_pathPopout']`;
+const getFieldDropdownButton = (streamName: string, type: Dropdown) =>
   `button[data-testid='${streamName}_${type}_pathPopout']`;
 const getFieldDropdownOption = (value: string) => `div[data-testid='${value}']`;
 const dropDownOverlayContainer = "div[data-testid='overlayContainer']";
