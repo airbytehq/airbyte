@@ -58,17 +58,9 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
 
   @Override
   protected void startTracked() throws Exception {
-    // Init the client itself here
-    final StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
-        azureBlobStorageDestinationConfig.getAccountName(),
-        azureBlobStorageDestinationConfig.getAccountKey());
-
-    final SpecializedBlobClientBuilder specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
-        .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
-        .credential(credential)
-        .containerName(
-            azureBlobStorageDestinationConfig
-                .getContainerName());// Like schema (or even oracle user) in DB
+    // Init the client builder itself here
+    final SpecializedBlobClientBuilder specializedBlobClientBuilder =
+        AzureBlobStorageDestinationConfig.createSpecializedBlobClientBuilder(azureBlobStorageDestinationConfig);
 
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
 
@@ -141,7 +133,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
       streamNameAndNamespaceToWriters.get(pair).write(UUID.randomUUID(), recordMessage);
 
     } catch (final Exception e) {
-      LOGGER.error(String.format("Failed to write messagefor stream %s, details: %s",
+      LOGGER.error(String.format("Failed to write message for stream %s, details: %s",
           streamNameAndNamespaceToWriters.get(pair), e.getMessage()));
       throw new RuntimeException(e);
     }

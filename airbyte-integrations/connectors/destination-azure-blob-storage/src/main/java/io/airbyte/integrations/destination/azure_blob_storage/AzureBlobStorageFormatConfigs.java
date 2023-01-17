@@ -13,6 +13,10 @@ import org.slf4j.LoggerFactory;
 
 public class AzureBlobStorageFormatConfigs {
 
+  private AzureBlobStorageFormatConfigs() {
+
+  }
+
   protected static final Logger LOGGER = LoggerFactory
       .getLogger(AzureBlobStorageFormatConfigs.class);
 
@@ -29,9 +33,8 @@ public class AzureBlobStorageFormatConfigs {
       case JSONL -> {
         return new AzureBlobStorageJsonlFormatConfig();
       }
-      default -> {
-        throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
-      }
+      default -> throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
+
     }
   }
 
