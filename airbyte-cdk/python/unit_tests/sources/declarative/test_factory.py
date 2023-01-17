@@ -265,6 +265,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
+    assert stream_slicer.cursor_granularity == "PT0.000001S"
     assert stream_slicer.lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer.start_time_option.field_name == "created[gte]"
