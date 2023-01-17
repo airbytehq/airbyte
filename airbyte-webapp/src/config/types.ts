@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-export interface Config {
+export interface AirbyteWebappConfig {
   segment: { token: string; enabled: boolean };
   apiUrl: string;
   connectorBuilderApiUrl: string;
@@ -48,4 +48,4 @@ export type Provider<T> = () => T;
 
 export type ValueProvider<T> = Array<ProviderAsync<DeepPartial<T>>>;
 
-export type ConfigProvider<T extends Config = Config> = ProviderAsync<DeepPartial<T>>;
+export type ConfigProvider<T extends AirbyteWebappConfig = AirbyteWebappConfig> = ProviderAsync<DeepPartial<T>>;

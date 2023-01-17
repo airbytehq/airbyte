@@ -1,10 +1,16 @@
 import React from "react";
 
-import { Config, ConfigServiceProvider, ValueProvider, envConfigProvider, windowConfigProvider } from "config";
+import {
+  AirbyteWebappConfig,
+  ConfigServiceProvider,
+  ValueProvider,
+  envConfigProvider,
+  windowConfigProvider,
+} from "config";
 
 import { cloudEnvConfigProvider, defaultConfig, cloudWindowConfigProvider } from "./config";
 
-const configProviders: ValueProvider<Config> = [
+const configProviders: ValueProvider<AirbyteWebappConfig> = [
   cloudEnvConfigProvider,
   cloudWindowConfigProvider,
   envConfigProvider,

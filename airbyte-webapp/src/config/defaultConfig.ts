@@ -1,6 +1,6 @@
-import { Config } from "./types";
+import { AirbyteWebappConfig } from "./types";
 
-const defaultConfig: Config = {
+const defaultConfig: AirbyteWebappConfig = {
   segment: { enabled: true, token: "" },
   healthCheckInterval: 20000,
   version: "dev",

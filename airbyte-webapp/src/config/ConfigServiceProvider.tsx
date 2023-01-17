@@ -4,15 +4,15 @@ import { useAsync } from "react-use";
 import { LoadingPage } from "components";
 
 import { applyProviders } from "./configProviders";
-import { Config, ValueProvider } from "./types";
+import { AirbyteWebappConfig, ValueProvider } from "./types";
 
-export interface ConfigContextData<T extends Config = Config> {
+export interface ConfigContextData<T extends AirbyteWebappConfig = AirbyteWebappConfig> {
   config: T;
 }
 
 export const ConfigContext = React.createContext<ConfigContextData | null>(null);
 
-export function useConfig<T extends Config>(): T {
+export function useConfig<T extends AirbyteWebappConfig>(): T {
   const configService = useContext(ConfigContext);
 
   if (configService === null) {
@@ -24,8 +24,8 @@ export function useConfig<T extends Config>(): T {
 
 const ConfigServiceInner: React.FC<
   React.PropsWithChildren<{
-    defaultConfig: Config;
-    providers?: ValueProvider<Config>;
+    defaultConfig: AirbyteWebappConfig;
+    providers?: ValueProvider<AirbyteWebappConfig>;
   }>
 > = ({ children, defaultConfig, providers }) => {
   const { loading, value } = useAsync(

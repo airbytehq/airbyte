@@ -1,6 +1,6 @@
-import { Config } from "./types";
+import { AirbyteWebappConfig } from "./types";
 
-export const newStaticConfig: Config = {
+export const newStaticConfig: AirbyteWebappConfig = {
   segment: {
     token: window.SEGMENT_TOKEN ?? process.env.REACT_APP_SEGMENT_TOKEN ?? "",
     enabled: window.TRACKING_STRATEGY === "segment",

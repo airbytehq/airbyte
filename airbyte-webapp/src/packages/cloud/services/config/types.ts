@@ -1,4 +1,4 @@
-import { Config } from "config";
+import { AirbyteWebappConfig } from "config";
 
 declare global {
   interface Window {
@@ -24,4 +24,4 @@ export interface CloudConfigExtension {
   };
 }
 
-export type CloudConfig = Config & CloudConfigExtension;
+export type CloudConfig = AirbyteWebappConfig & CloudConfigExtension;
