@@ -9,10 +9,16 @@
 .enrollLink {
   text-decoration: underline;
   cursor: pointer;
+  padding: 0;
+  color: colors.$dark-blue;
+  font-weight: 400;
+  border: none;
+  background-color: transparent;
+  font-size: inherit;
 
   &:hover,
   &:active {
-    color: colors.$blue;
+    color: colors.$blue !important;
   }
 }
 

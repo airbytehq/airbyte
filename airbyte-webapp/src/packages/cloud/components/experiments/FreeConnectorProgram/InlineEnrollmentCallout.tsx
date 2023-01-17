@@ -12,15 +12,9 @@ export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) =
   };
 
   return (
-    <span
-      role="button"
-      onClick={() => onEnrollClick()}
-      onKeyDown={(e) => e.keyCode === 13 && onEnrollClick()}
-      tabIndex={0}
-      className={styles.enrollLink}
-    >
+    <button onClick={onEnrollClick} className={styles.enrollLink}>
       {children}
-    </span>
+    </button>
   );
 };
 export const InlineEnrollmentCallout: React.FC = () => {
