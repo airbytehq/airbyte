@@ -30,7 +30,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "accounts"
-      primary_key: "id"
+      primary_key: "sid"
       path: "/Accounts.json"
 
 streams:
