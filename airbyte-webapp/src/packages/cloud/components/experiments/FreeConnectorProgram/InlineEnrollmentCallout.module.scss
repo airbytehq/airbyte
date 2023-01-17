@@ -26,7 +26,7 @@
 
   &:hover,
   &:active {
-    color: colors.$blue;
+    color: colors.$blue !important;
   }
 }
 
