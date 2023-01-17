@@ -76,14 +76,16 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
           {tabs.map((tab) => (
             <Tab className={styles.tab} key={tab.key}>
               {({ selected }) => (
-                <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })}>{tab.title}</Text>
+                <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} size="xs">
+                  {tab.title}
+                </Text>
               )}
             </Tab>
           ))}
           {inferredSchema && (
             <Tab className={styles.tab}>
               {({ selected }) => (
-                <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} as="div">
+                <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} as="div" size="xs">
                   <FlexContainer direction="row" justifyContent="center">
                     {formatMessage({ id: "connectorBuilder.schemaTab" })}
                     {editorView === "ui" && field.value !== formattedSchema && <SchemaConflictIndicator />}
