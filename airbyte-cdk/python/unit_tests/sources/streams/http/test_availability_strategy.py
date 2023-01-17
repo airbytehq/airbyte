@@ -142,18 +142,13 @@ def test_send_handles_retries_when_checking_availability(mocker, caplog):
 
 
 def test_http_availability_strategy_on_empty_stream(mocker):
-    mocker.patch.multiple(HttpStream, __abstractmethods__=set())
-    mocker.patch.multiple(Stream, __abstractmethods__=set())
 
-    class MockEmptyStream(mocker.MagicMock, HttpStream):
-        page_size = None
-        get_json_schema = mocker.MagicMock()
-
+    class MockEmptyHttpStream(mocker.MagicMock, MockHttpStream):
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
             self.read_records = mocker.MagicMock()
 
-    empty_stream = MockEmptyStream()
+    empty_stream = MockEmptyHttpStream()
     assert isinstance(empty_stream, HttpStream)
 
     assert isinstance(empty_stream.availability_strategy, HttpAvailabilityStrategy)
