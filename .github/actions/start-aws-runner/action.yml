@@ -46,7 +46,7 @@ runs:
       shell: bash
       run: |-
         echo "latest_ami_id=$(aws ec2 describe-images --owners "self" \
-                                                      --region ${{ inputs.aws-region }} \
+                                                      --region "us-east-2" \
                                                       --filters "Name=name,Values=github-runner*" \
                                                       --filters "Name=state,Values=available" \
                                                       --query "sort_by(Images, &CreationDate)[-1].ImageId" \
