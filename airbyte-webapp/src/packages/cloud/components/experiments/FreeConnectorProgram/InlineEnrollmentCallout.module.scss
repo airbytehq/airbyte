@@ -21,15 +21,6 @@
   }
 }
 
-.enrollLink {
-  text-decoration: underline;
-
-  &:hover,
-  &:active {
-    color: colors.$blue !important;
-  }
-}
-
 .freeText {
   color: colors.$blue;
 }
