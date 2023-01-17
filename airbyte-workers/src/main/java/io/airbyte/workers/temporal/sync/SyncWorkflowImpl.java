@@ -48,7 +48,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final String NORMALIZATION_SUMMARY_CHECK_TAG = "normalization_summary_check";
   private static final int NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION = 1;
   private static final String AUTO_DETECT_SCHEMA_TAG = "auto_detect_schema";
-  private static final int AUTO_DETECT_SCHEMA_VERSION = 1;
+  private static final int AUTO_DETECT_SCHEMA_VERSION = 2;
 
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
