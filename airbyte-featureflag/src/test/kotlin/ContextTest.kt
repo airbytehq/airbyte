@@ -77,7 +77,6 @@ class MultiTest {
             Multi(listOf())
         }
     }
-
 }
 
 class WorkspaceTest {
