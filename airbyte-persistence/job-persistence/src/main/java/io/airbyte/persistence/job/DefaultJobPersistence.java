@@ -157,6 +157,7 @@ public class DefaultJobPersistence implements JobPersistence {
         + "attempts.log_path AS log_path,\n"
         + "attempts.output AS attempt_output,\n"
         + "attempts.status AS attempt_status,\n"
+        + "attempts.processing_task_queue AS processing_task_queue,\n"
         + "attempts.failure_summary AS attempt_failure_summary,\n"
         + "attempts.created_at AS attempt_created_at,\n"
         + "attempts.updated_at AS attempt_updated_at,\n"
@@ -534,7 +535,7 @@ public class DefaultJobPersistence implements JobPersistence {
     final var attemptStats = new HashMap<JobAttemptPair, AttemptStats>();
     final var syncResults = ctx.fetch(
         "SELECT atmpt.attempt_number, atmpt.job_id,"
-            + "stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted "
+            + "stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted, stats.records_committed "
             + "FROM sync_stats stats "
             + "INNER JOIN attempts atmpt ON stats.attempt_id = atmpt.id "
             + "WHERE job_id IN ( " + jobIdsStr + ");");
@@ -543,6 +544,7 @@ public class DefaultJobPersistence implements JobPersistence {
       final var syncStats = new SyncStats()
           .withBytesEmitted(r.get(SYNC_STATS.BYTES_EMITTED))
           .withRecordsEmitted(r.get(SYNC_STATS.RECORDS_EMITTED))
+          .withRecordsCommitted(r.get(SYNC_STATS.RECORDS_COMMITTED))
           .withEstimatedRecords(r.get(SYNC_STATS.ESTIMATED_RECORDS))
           .withEstimatedBytes(r.get(SYNC_STATS.ESTIMATED_BYTES));
       attemptStats.put(key, new AttemptStats(syncStats, Lists.newArrayList()));
@@ -930,6 +932,7 @@ public class DefaultJobPersistence implements JobPersistence {
         Path.of(record.get("log_path", String.class)),
         record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+        record.get("processing_task_queue", String.class),
         record.get("attempt_failure_summary", String.class) == null ? null
             : Jsons.deserialize(record.get("attempt_failure_summary", String.class), AttemptFailureSummary.class),
         getEpoch(record, "attempt_created_at"),

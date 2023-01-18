@@ -175,6 +175,26 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: S3_MINIO_ENDPOINT
+        - name: STATE_STORAGE_MINIO_BUCKET_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: STATE_STORAGE_MINIO_BUCKET_NAME
+        - name: STATE_STORAGE_MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-airbyte-secrets
+              key: STATE_STORAGE_MINIO_ACCESS_KEY
+        - name: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-airbyte-secrets
+              key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+        - name: STATE_STORAGE_MINIO_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: STATE_STORAGE_MINIO_ENDPOINT
         - name: S3_PATH_STYLE_ACCESS
           valueFrom:
             configMapKeyRef:
@@ -200,6 +220,16 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+        - name: WORKER_LOGS_STORAGE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: WORKER_LOGS_STORAGE_TYPE
+        - name: WORKER_STATE_STORAGE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: WORKER_STATE_STORAGE_TYPE
         {{- end }}
         # Values from secret
         {{- if .Values.secrets }}

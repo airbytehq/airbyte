@@ -43,6 +43,7 @@ import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.WorkflowStateConverter;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +54,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
+@Singleton
 @Slf4j
 public class JobHistoryHandler {
 
@@ -166,7 +168,8 @@ public class JobHistoryHandler {
         .estimatedBytes(combinedStats.getEstimatedBytes())
         .estimatedRecords(combinedStats.getEstimatedRecords())
         .bytesEmitted(combinedStats.getBytesEmitted())
-        .recordsEmitted(combinedStats.getRecordsEmitted());
+        .recordsEmitted(combinedStats.getRecordsEmitted())
+        .recordsCommitted(combinedStats.getRecordsCommitted());
 
     final var streamStats = attemptStats.perStreamStats().stream().map(s -> new AttemptStreamStats()
         .streamName(s.getStreamName())
@@ -174,6 +177,7 @@ public class JobHistoryHandler {
         .stats(new AttemptStats()
             .bytesEmitted(s.getStats().getBytesEmitted())
             .recordsEmitted(s.getStats().getRecordsEmitted())
+            .recordsCommitted(s.getStats().getRecordsCommitted())
             .estimatedBytes(s.getStats().getEstimatedBytes())
             .estimatedRecords(s.getStats().getEstimatedRecords())))
         .collect(Collectors.toList());
