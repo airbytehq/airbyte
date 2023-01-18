@@ -36,6 +36,8 @@ acceptance_tests:
             bypass_reason: "This stream is auto-generated while users bounce from checkout page, stream holds data up to 1 month"
           - name: "balance_transactions"
             bypass_reason: "There is no way to populate the stream with data manually."
+          - name: "order_risks"
+            bypass_reason: "The stream is auto-generated and data is changing frequently. Skipped."
   incremental:
     tests:
       - config_path: "secrets/config.json"
