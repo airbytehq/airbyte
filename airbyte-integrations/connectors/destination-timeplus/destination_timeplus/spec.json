@@ -26,6 +26,7 @@
         "title": "API key",
         "description": "Personal API key",
         "type": "string",
+        "airbyte_secret": true,
         "order": 1
       }
     }
