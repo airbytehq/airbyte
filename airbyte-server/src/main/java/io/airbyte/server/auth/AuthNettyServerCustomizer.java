@@ -51,7 +51,7 @@ public class AuthNettyServerCustomizer implements BeanCreatedEventListener<Netty
     @Override
     public void onStreamPipelineBuilt() {
       channel.pipeline().addFirst(
-          "workspace",
+          "authorizationHelper",
           authorizationServerHandler);
     }
 
