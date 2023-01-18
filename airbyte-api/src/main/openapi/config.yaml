@@ -4234,8 +4234,6 @@ components:
             - failed
         message:
           type: string
-        didUpdateConfiguration:
-          type: boolean
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
     ConnectionState:
