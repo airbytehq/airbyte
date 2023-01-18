@@ -4805,7 +4805,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-gnews:0.1.2"
+- dockerImage: "airbyte/source-gnews:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gnews"
     connectionSpecification:
@@ -16227,7 +16227,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.19"
+- dockerImage: "airbyte/source-zendesk-support:0.2.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -16299,6 +16299,12 @@
                   https://docs.airbyte.com/integrations/sources/zendesk-support#setup-guide\"\
                   >docs</a> for more information."
                 airbyte_secret: true
+        ignore_pagination:
+          type: "boolean"
+          default: false
+          description: "Makes each stream read a single page of data."
+          title: "Should the connector read the second and further pages of data."
+          airbyte_hidden: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
