@@ -774,7 +774,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InternalOperationResult"
+                $ref: "#/components/schemas/DiscoverCatalogResult"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -3166,7 +3166,7 @@ components:
     ReleaseStage:
       type: string
       enum:
-        - alpha
+        - alphf
         - beta
         - generally_available
         - custom
@@ -4996,6 +4996,14 @@ components:
       properties:
         succeeded:
           type: boolean
+    DiscoverCatalogResult:
+      type: object
+      required:
+        - catalogId
+      properties:
+        catalogId:
+          type: string
+          format: uuid
     AttemptNormalizationStatusReadList:
       type: object
       properties:

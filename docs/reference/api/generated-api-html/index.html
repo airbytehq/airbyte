@@ -4175,7 +4175,7 @@ containing the updated stream needs to be sent.</div>
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#InternalOperationResult">InternalOperationResult</a>
+      <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
       
     </div>
 
@@ -4184,7 +4184,7 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "succeeded" : true
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -4197,7 +4197,7 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful Operation
-        <a href="#InternalOperationResult">InternalOperationResult</a>
+        <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Jobs">Jobs</a></h1>
@@ -7020,7 +7020,7 @@ containing the updated stream needs to be sent.</div>
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#InternalOperationResult">InternalOperationResult</a>
+      <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
       
     </div>
 
@@ -7029,7 +7029,7 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "succeeded" : true
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -7042,7 +7042,7 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful Operation
-        <a href="#InternalOperationResult">InternalOperationResult</a>
+        <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="SourceDefinition">SourceDefinition</a></h1>
@@ -10344,6 +10344,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#DestinationSnippetRead"><code>DestinationSnippetRead</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
+    <li><a href="#DiscoverCatalogResult"><code>DiscoverCatalogResult</code> - </a></li>
     <li><a href="#FieldAdd"><code>FieldAdd</code> - </a></li>
     <li><a href="#FieldRemove"><code>FieldRemove</code> - </a></li>
     <li><a href="#FieldSchemaUpdate"><code>FieldSchemaUpdate</code> - </a></li>
@@ -11119,6 +11120,13 @@ containing the updated stream needs to be sent.</div>
       <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DiscoverCatalogResult"><code>DiscoverCatalogResult</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">catalogId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

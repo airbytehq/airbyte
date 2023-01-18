@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
+import io.airbyte.api.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.model.generated.SourceCloneConfiguration;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
@@ -383,14 +384,17 @@ class SourceHandlerTest {
   @Test
   void testWriteDiscoverFetchEvent() throws JsonValidationException, IOException {
     UUID actorId = UUID.randomUUID();
+    UUID catalogId = UUID.randomUUID();
     String connectorVersion = "0.0.1";
     String hashValue = "0123456789abcd";
     SourceDiscoverSchemaWriteRequestBody request = new SourceDiscoverSchemaWriteRequestBody().catalog(
         CatalogConverter.toApi(airbyteCatalog)).sourceId(actorId).connectorVersion(connectorVersion).configurationHash(hashValue);
 
-    sourceHandler.writeDiscoverFetchEvent(request);
+    when(configRepository.writeActorCatalogFetchEvent(airbyteCatalog, actorId, connectorVersion, hashValue)).thenReturn(catalogId);
+    DiscoverCatalogResult result = sourceHandler.writeDiscoverFetchEvent(request);
 
     verify(configRepository).writeActorCatalogFetchEvent(airbyteCatalog, actorId, connectorVersion, hashValue);
+    assert (result.getCatalogId()).equals(catalogId);
   }
 
 }

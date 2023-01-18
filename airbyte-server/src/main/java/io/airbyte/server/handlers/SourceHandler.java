@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.InternalOperationResult;
+import io.airbyte.api.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.model.generated.SourceCloneConfiguration;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
@@ -265,15 +265,15 @@ public class SourceHandler {
         spec);
   }
 
-  public InternalOperationResult writeDiscoverFetchEvent(final SourceDiscoverSchemaWriteRequestBody request)
+  public DiscoverCatalogResult writeDiscoverFetchEvent(final SourceDiscoverSchemaWriteRequestBody request)
       throws JsonValidationException, IOException {
     final AirbyteCatalog persistenceCatalog = CatalogConverter.toAirbyteCatalogProtocol(request.getCatalog());
-    configRepository.writeActorCatalogFetchEvent(
+    UUID catalogId = configRepository.writeActorCatalogFetchEvent(
         persistenceCatalog,
         request.getSourceId(),
         request.getConnectorVersion(),
         request.getConfigurationHash());
-    return new InternalOperationResult().succeeded(true);
+    return new DiscoverCatalogResult().catalogId(catalogId);
   }
 
   private SourceRead buildSourceRead(final UUID sourceId)
