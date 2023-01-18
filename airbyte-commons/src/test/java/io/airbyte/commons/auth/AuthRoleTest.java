@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.auth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,4 +43,5 @@ class AuthRoleTest {
     final Set<AuthRole> nullResult = AuthRole.buildAuthRolesSet(null);
     assertEquals(0, nullResult.size());
   }
+
 }
