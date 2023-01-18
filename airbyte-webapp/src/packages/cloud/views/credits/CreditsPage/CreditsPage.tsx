@@ -8,7 +8,6 @@ import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
-import { useExperiment } from "hooks/services/Experiment";
 import { useFreeConnectorProgramInfo } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
 import { LargeEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/LargeEnrollmentCallout";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -22,8 +21,7 @@ const CreditsPage: React.FC = () => {
   const { emailVerified } = useAuthService();
   useTrackPage(PageTrackingCodes.CREDITS);
   const { data } = useFreeConnectorProgramInfo();
-  const isFreeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
-  const showEnrollmentUi = isFreeConnectorProgramEnabled && data?.showEnrollmentUi;
+  const showEnrollmentUi = data?.showEnrollmentUi;
 
   return (
     <MainPageWithScroll
