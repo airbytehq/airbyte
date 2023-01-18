@@ -31,7 +31,7 @@ export const StatusCell: React.FC<StatusCellProps> = ({
   const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
 
   return (
-    <div className={styles.container} data-testId={`statusCell-${id}`}>
+    <div className={styles.container} data-testid={`statusCell-${id}`}>
       <StatusCellControl
         enabled={enabled}
         id={id}
