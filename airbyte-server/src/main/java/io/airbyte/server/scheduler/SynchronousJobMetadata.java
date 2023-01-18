@@ -130,7 +130,7 @@ public class SynchronousJobMetadata {
     final long now = Instant.now().toEpochMilli();
     final UUID configId = null;
     final boolean succeeded = true;
-    final boolean didUpdateConfiguration = false;
+    final boolean connectorConfigurationUpdated = false;
     final Path logPath = null;
 
     return new SynchronousJobMetadata(
@@ -140,7 +140,7 @@ public class SynchronousJobMetadata {
         now,
         now,
         succeeded,
-        didUpdateConfiguration,
+        connectorConfigurationUpdated,
         logPath);
   }
 
