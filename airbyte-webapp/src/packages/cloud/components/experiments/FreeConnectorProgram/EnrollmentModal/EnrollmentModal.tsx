@@ -15,6 +15,7 @@ import { StripeCheckoutSessionCreate, StripeCheckoutSessionRead } from "packages
 import { ReactComponent as CardSVG } from "./cards.svg";
 import { ReactComponent as ConnectorGridSvg } from "./connectorGrid.svg";
 import styles from "./EnrollmentModal.module.scss";
+import { ReactComponent as FreeAlphaBetaPillsSVG } from "./free-alpha-beta-pills.svg";
 import { ReactComponent as FreeSVG } from "./free.svg";
 import { ReactComponent as MailSVG } from "./mail.svg";
 
@@ -95,8 +96,7 @@ export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
         <div className={styles.headerBackgroundImageContainer}>
           <ConnectorGridSvg />
         </div>
-        <div className={styles.pill}>Pill #1</div>
-        <div className={styles.pill}>Pill #2</div>
+        <FreeAlphaBetaPillsSVG className={styles.pill} />
       </FlexContainer>
       <div className={styles.contentWrapper}>
         <Heading size="lg" as="h2" className={styles.contentHeader}>
