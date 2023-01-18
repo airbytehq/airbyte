@@ -20,11 +20,11 @@ export const LargeEnrollmentCallout: React.FC = () => {
         <FlexItem grow={false} alignSelf="center">
           <ConnectorsBadges />
         </FlexItem>
-        <FlexContainer direction="column" gap="xs" className={styles.textContainer}>
-          <Heading size="sm" className={styles.title} as="h3">
+        <FlexContainer direction="column" gap="xs">
+          <Heading size="sm" className={styles.title} as="h3" inverseColor>
             <FormattedMessage id="freeConnectorProgram.title" />
           </Heading>
-          <Text size="sm">
+          <Text size="sm" inverseColor>
             <FormattedMessage id="freeConnectorProgram.enroll.description" />
           </Text>
         </FlexContainer>
