@@ -187,7 +187,9 @@
   "freeConnectorProgram.enrollmentModal.free": "<p1>Alpha and Beta Connectors are free while you're in the program.</p1><p2>The whole Connection is free until both Connectors have move into General Availability (GA)</p2>",
   "freeConnectorProgram.enrollmentModal.emailNotification": "We will let you know through email before a Connector you use moves to GA",
   "freeConnectorProgram.enrollmentModal.cardOnFile": "When both Connectors are in GA, the Connection will no longer be free. You'll need to have a credit card on file to enroll so Airbyte can handle a Connection's transition to paid service.",
+  "freeConnectorProgram.enrollmentModal.unvalidatedEmailWarning": "You must verify your email address to enroll in the Free connector program. Please check your inbox for a verification link, and try again after you've verified your address.",
   "freeConnectorProgram.enrollmentModal.cancelButtonText": "Cancel",
   "freeConnectorProgram.enrollmentModal.enrollButtonText": "Enroll now!",
+  "freeConnectorProgram.enrollmentModal.unvalidatedEmailButtonText": "Resend email validation",
   "freeConnectorProgram.youCanEnroll": "You can <enrollLink>enroll</enrollLink> in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <freeText>free</freeText>."
 }

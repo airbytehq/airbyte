@@ -21,12 +21,19 @@ interface EnrollmentModalContentProps {
   closeModal: () => void;
   createCheckout: (p: StripeCheckoutSessionCreate) => Promise<StripeCheckoutSessionRead>;
   workspaceId: string;
+  emailVerified: boolean;
+  sendEmailVerification: () => void;
 }
 
+// we have to pass the email verification data and functions in as props, rather than
+// directly using useAuthService(), because the modal renders outside of the
+// AuthenticationProvider context.
 export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
   closeModal,
   createCheckout,
   workspaceId,
+  emailVerified,
+  sendEmailVerification,
 }) => {
   const isMountedRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +63,32 @@ export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
       isMountedRef.current = false;
     };
   }, []);
+
+  const EnrollmentCta = () =>
+    emailVerified ? (
+      <Button isLoading={isLoading} onClick={startStripeCheckout}>
+        <FormattedMessage id="freeConnectorProgram.enrollmentModal.enrollButtonText" />
+      </Button>
+    ) : (
+      <Button isLoading={isLoading} onClick={sendEmailVerification}>
+        <FormattedMessage id="freeConnectorProgram.enrollmentModal.unvalidatedEmailButtonText" />
+      </Button>
+    );
+
+  const EnrollmentEmailVerificationWarning = () => {
+    const WarningContent = () => (
+      <FlexContainer>
+        <FlexContainer justifyContent="center" className={styles.iconContainer}>
+          <MailSVG />
+        </FlexContainer>
+        <Text size="lg" className={styles.warning}>
+          <FormattedMessage id="freeConnectorProgram.enrollmentModal.unvalidatedEmailWarning" />
+        </Text>
+      </FlexContainer>
+    );
+
+    return <>{!emailVerified && <WarningContent />}</>;
+  };
 
   return (
     <>
@@ -101,6 +134,7 @@ export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
               <FormattedMessage id="freeConnectorProgram.enrollmentModal.cardOnFile" />
             </Text>
           </FlexContainer>
+          <EnrollmentEmailVerificationWarning />
         </FlexContainer>
       </div>
 
@@ -112,9 +146,7 @@ export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
             </Button>
           </FlexItem>
           <FlexItem>
-            <Button isLoading={isLoading} onClick={startStripeCheckout}>
-              <FormattedMessage id="freeConnectorProgram.enrollmentModal.enrollButtonText" />
-            </Button>
+            <EnrollmentCta />
           </FlexItem>
         </FlexContainer>
       </ModalFooter>
