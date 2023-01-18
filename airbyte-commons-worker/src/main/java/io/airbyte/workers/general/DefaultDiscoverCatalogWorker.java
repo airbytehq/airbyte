@@ -11,6 +11,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBody;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -18,7 +19,6 @@ import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
@@ -102,14 +103,17 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       }
 
       if (catalog.isPresent()) {
-        final UUID catalogId =
-            airbyteApiClient.getSourceApi().writeDiscoverFetchEvent(new SourceDiscoverSchemaWriteRequestBody().catalog(CatalogConverter.toApi(catalog.get())).sourceId(
-                // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
-                // it, so we check again here.
-                discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId())).connectorVersion(
-                discoverSchemaInput.getConnectorVersion()).configurationHash(
-                discoverSchemaInput.getConfigHash()));
-        jobOutput.setDiscoverCatalogId(catalogId);
+        final DiscoverCatalogResult result =
+            airbyteApiClient.getSourceApi().writeDiscoverFetchEvent(new SourceDiscoverSchemaWriteRequestBody().catalog(
+                CatalogConverter.toClientApi(catalog.get())).sourceId(
+                    // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
+                    // it, so we check again here.
+                    discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()))
+                .connectorVersion(
+                    discoverSchemaInput.getConnectorVersion())
+                .configurationHash(
+                    discoverSchemaInput.getConfigHash()));
+        jobOutput.setDiscoverCatalogId(result.getCatalogId());
       } else if (failureReason.isEmpty()) {
         WorkerUtils.throwWorkerException("Integration failed to output a catalog struct and did not output a failure reason", process);
       }

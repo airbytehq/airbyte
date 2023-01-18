@@ -21,7 +21,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
-import io.airbyte.server.handlers.helpers.CatalogConverter;
+import io.airbyte.workers.helper.CatalogConverter;
 import java.util.stream.Collectors;
 
 public class ApiPojoConverters {

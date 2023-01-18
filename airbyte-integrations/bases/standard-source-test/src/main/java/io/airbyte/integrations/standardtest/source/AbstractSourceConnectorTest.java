@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.standardtest.source;
 
+import static io.airbyte.workers.helper.CatalogConverter.toClientApi;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -112,16 +114,16 @@ public abstract class AbstractSourceConnectorTest {
 
   private WorkerConfigs workerConfigs;
 
-  private ConfigRepository mConfigRepository;
+  private AirbyteApiClient mAirbyteApiClient;
+
+  private SourceApi mSourceApi;
+
   private ConnectorConfigUpdater mConnectorConfigUpdater;
 
   // This has to be using the protocol version of the platform in order to capture the arg
-  private final ArgumentCaptor<io.airbyte.protocol.models.AirbyteCatalog> lastPersistedCatalog =
-      ArgumentCaptor.forClass(io.airbyte.protocol.models.AirbyteCatalog.class);
+  private final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> discoverWriteRequest =
+      ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
 
-  protected AirbyteCatalog getLastPersistedCatalog() {
-    return convertProtocolObject(lastPersistedCatalog.getValue(), AirbyteCatalog.class);
-  }
 
   @BeforeEach
   public void setUpInternal() throws Exception {
@@ -133,7 +135,8 @@ public abstract class AbstractSourceConnectorTest {
     environment = new TestDestinationEnv(localRoot);
     setupEnvironment(environment);
     workerConfigs = new WorkerConfigs(new EnvConfigs());
-    mConfigRepository = mock(ConfigRepository.class);
+    mAirbyteApiClient = mock(AirbyteApiClient.class);
+    mSourceApi = mock(SourceApi.class);
     mConnectorConfigUpdater = mock(ConnectorConfigUpdater.class);
     processFactory = new DockerProcessFactory(
         workerConfigs,
@@ -182,13 +185,13 @@ public abstract class AbstractSourceConnectorTest {
 
   protected UUID runDiscover() throws Exception {
     final UUID toReturn = new DefaultDiscoverCatalogWorker(
-        mConfigRepository,
+        mAirbyteApiClient,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
             new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
             .getDiscoverCatalogId();
-    verify(mConfigRepository).writeActorCatalogFetchEvent(lastPersistedCatalog.capture(), any(), any(), any());
+    verify(mSourceApi).writeActorCatalogFetchEvent(discoverWriteRequest.capture());
     return toReturn;
   }
 

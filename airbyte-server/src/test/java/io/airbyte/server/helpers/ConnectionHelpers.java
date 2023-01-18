@@ -4,7 +4,7 @@
 
 package io.airbyte.server.helpers;
 
-import static io.airbyte.server.handlers.helpers.CatalogConverter.toApi;
+import static io.airbyte.workers.helper.CatalogConverter.toApi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;

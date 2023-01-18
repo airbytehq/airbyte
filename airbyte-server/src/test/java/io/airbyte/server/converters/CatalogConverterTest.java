@@ -18,9 +18,9 @@ import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
 import io.airbyte.config.FieldSelectionData;
-import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.CatalogConverter;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
