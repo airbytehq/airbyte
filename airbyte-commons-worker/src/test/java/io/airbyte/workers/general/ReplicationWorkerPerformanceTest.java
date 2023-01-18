@@ -5,6 +5,13 @@
 package io.airbyte.workers.general;
 
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.protocol.AirbyteMessageMigrator;
+import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
+import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV0;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
@@ -22,12 +29,14 @@ import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.NamespacingMapper;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.mockito.Mockito;
@@ -80,8 +89,17 @@ public class ReplicationWorkerPerformanceTest {
     final IntegrationLauncher integrationLauncher = new LimitedIntegrationLauncher();
     final var defaultAbSource = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags());
 
+    final var serDeProvider = new AirbyteMessageSerDeProvider(
+        List.of(new AirbyteMessageV0Deserializer()),
+        List.of(new AirbyteMessageV0Serializer()));
+    serDeProvider.initialize();
+    final var migratorFactory =new AirbyteMessageVersionedMigratorFactory(new AirbyteMessageMigrator(List.of(new AirbyteMessageMigrationV0())));
+
+    final var versionFac = new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, new Version("0.2.0") , Optional.of(RuntimeException.class));
+    final var versionedAbSource = new DefaultAirbyteSource(integrationLauncher, versionFac, new EnvVariableFeatureFlags());
+
     final var worker = new DefaultReplicationWorker("1", 0,
-        defaultAbSource,
+        versionedAbSource,
         dstNamespaceMapper,
         perDestination,
         messageTracker,

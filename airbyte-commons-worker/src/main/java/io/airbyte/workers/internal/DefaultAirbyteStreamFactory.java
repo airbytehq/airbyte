@@ -92,24 +92,24 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     return bufferedReader
         .lines()
         // can we move all this validation into the main method? After all we already validate for schema
-//        .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.getBytes(StandardCharsets.UTF_8).length))
-//        .peek(str -> {
-//          if (exceptionClass.isPresent()) {
-//            final long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
-//            if (messageSize > maxMemory * MAX_SIZE_RATIO) {
-//              try {
-//                final String errorMessage = String.format(
-//                    "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
-//                    DateTime.now(),
-//                    humanReadableByteCountSI(maxMemory),
-//                    humanReadableByteCountSI(messageSize));
-//                throw exceptionClass.get().getConstructor(String.class).newInstance(errorMessage);
-//              } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-//                throw new RuntimeException(e);
-//              }
-//            }
-//          }
-//        })
+        .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.getBytes(StandardCharsets.UTF_8).length))
+        .peek(str -> {
+          if (exceptionClass.isPresent()) {
+            final long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
+            if (messageSize > maxMemory * MAX_SIZE_RATIO) {
+              try {
+                final String errorMessage = String.format(
+                    "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
+                    DateTime.now(),
+                    humanReadableByteCountSI(maxMemory),
+                    humanReadableByteCountSI(messageSize));
+                throw exceptionClass.get().getConstructor(String.class).newInstance(errorMessage);
+              } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+              }
+            }
+          }
+        })
         .flatMap(this::parseJson)
 //        .filter(this::validate)
 //        .flatMap(this::toAirbyteMessage)
