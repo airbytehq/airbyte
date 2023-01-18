@@ -3166,7 +3166,7 @@ components:
     ReleaseStage:
       type: string
       enum:
-        - alphf
+        - alpha
         - beta
         - generally_available
         - custom
