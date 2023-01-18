@@ -64,7 +64,7 @@ const App: React.FC = () => {
         <I18nProvider locale="en" messages={messages}>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ConfigServiceProvider defaultConfig={newStaticConfig}>
+              <ConfigServiceProvider config={newStaticConfig}>
                 <Router>
                   <Services>
                     <Routing />

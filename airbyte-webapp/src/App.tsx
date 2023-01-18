@@ -61,7 +61,7 @@ const App: React.FC = () => {
           <StoreProvider>
             <ServicesProvider>
               <Suspense fallback={<LoadingPage />}>
-                <ConfigServiceProvider defaultConfig={newStaticConfig}>
+                <ConfigServiceProvider config={newStaticConfig}>
                   <Router>
                     <Services>
                       <Routing />
