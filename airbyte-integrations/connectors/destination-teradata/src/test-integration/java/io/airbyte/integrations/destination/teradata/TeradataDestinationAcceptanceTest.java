@@ -123,16 +123,6 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {}
 
-  @Override
-  protected boolean supportsNormalization() {
-    return false;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
-  }
-
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);
     return DataSourceFactory.create(jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
