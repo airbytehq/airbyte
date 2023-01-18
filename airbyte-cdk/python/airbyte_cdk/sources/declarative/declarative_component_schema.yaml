@@ -1029,10 +1029,12 @@ definitions:
         type: string
       token_key:
         type: string
+        default: "access_token"
       lifetime:
         anyOf:
           - type: integer
           - type: string
+        default: 3600
       $options:
         type: object
         additionalProperties: true

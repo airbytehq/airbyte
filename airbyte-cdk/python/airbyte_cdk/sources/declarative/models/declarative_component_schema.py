@@ -318,8 +318,8 @@ class AccessTokenAuthenticator(BaseModel):
     client_id: str
     secret_key: str
     url: str
-    token_key: Optional[str] = None
-    lifetime: Optional[Union[int, str]] = None
+    token_key: Optional[str] = "access_token"
+    lifetime: Optional[Union[int, str]] = 3600
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
