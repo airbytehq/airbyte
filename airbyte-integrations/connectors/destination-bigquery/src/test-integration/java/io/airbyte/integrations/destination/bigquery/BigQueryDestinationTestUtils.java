@@ -87,20 +87,20 @@ public class BigQueryDestinationTestUtils {
    */
   public static void tearDownBigQuery(BigQuery bigquery, Dataset dataset, Logger LOGGER) {
     // allows deletion of a dataset that has contents
-    // final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
-    // if(bigquery == null || dataset == null) {
-    // return;
-    // }
-    // try {
-    // final boolean success = bigquery.delete(dataset.getDatasetId(), option);
-    // if (success) {
-    // LOGGER.info("BQ Dataset " + dataset + " deleted...");
-    // } else {
-    // LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
-    // }
-    // } catch (Exception ex) {
-    // LOGGER.error("Failed to remove BigQuery resources after the test", ex);
-    // }
+    final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
+    if (bigquery == null || dataset == null) {
+      return;
+    }
+    try {
+      final boolean success = bigquery.delete(dataset.getDatasetId(), option);
+      if (success) {
+        LOGGER.info("BQ Dataset " + dataset + " deleted...");
+      } else {
+        LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Failed to remove BigQuery resources after the test", ex);
+    }
   }
 
   /**

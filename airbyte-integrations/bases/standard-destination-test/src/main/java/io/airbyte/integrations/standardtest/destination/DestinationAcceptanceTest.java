@@ -89,6 +89,7 @@ import lombok.Getter;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1531,13 +1532,13 @@ public abstract class DestinationAcceptanceTest {
    * your_containers_id" (ex. docker container attach 18cc929f44c8) to see the container's output
    */
   @Test
-  // @Disabled
+  @Disabled
   public void testStressPerformance() throws Exception {
-    final int streamsSize = 3; // number of generated streams
-    final int messagesNumber = 5000000; // number of msg to be written to each generated stream
+    final int streamsSize = 5; // number of generated streams
+    final int messagesNumber = 300; // number of msg to be written to each generated stream
 
     // Each stream will have an id and name fields
-    final String USERS_STREAM_NAME = "userssss"; // stream's name prefix. Will get "user0", "user1", etc.
+    final String USERS_STREAM_NAME = "users"; // stream's name prefix. Will get "user0", "user1", etc.
     final String ID = "id";
     final String NAME = "name";
 
