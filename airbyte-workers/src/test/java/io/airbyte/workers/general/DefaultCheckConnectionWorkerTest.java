@@ -126,7 +126,7 @@ class DefaultCheckConnectionWorkerTest {
     verifyNoInteractions(connectorConfigUpdater);
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
-    assertFalse(output.getDidUpdateConfiguration());
+    assertFalse(output.getConnectorConfigurationUpdated());
     assertNull(output.getFailureReason());
 
     final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
@@ -144,7 +144,7 @@ class DefaultCheckConnectionWorkerTest {
     verifyNoMoreInteractions(connectorConfigUpdater);
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
-    assertTrue(output.getDidUpdateConfiguration());
+    assertTrue(output.getConnectorConfigurationUpdated());
     assertNull(output.getFailureReason());
 
     final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
@@ -164,7 +164,7 @@ class DefaultCheckConnectionWorkerTest {
     verifyNoMoreInteractions(connectorConfigUpdater);
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
-    assertTrue(output.getDidUpdateConfiguration());
+    assertTrue(output.getConnectorConfigurationUpdated());
     assertNull(output.getFailureReason());
 
     final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
@@ -183,7 +183,7 @@ class DefaultCheckConnectionWorkerTest {
     verifyNoInteractions(connectorConfigUpdater);
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
-    assertFalse(output.getDidUpdateConfiguration());
+    assertFalse(output.getConnectorConfigurationUpdated());
     assertNull(output.getFailureReason());
 
     final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
@@ -200,7 +200,7 @@ class DefaultCheckConnectionWorkerTest {
     verifyNoInteractions(connectorConfigUpdater);
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
-    assertFalse(output.getDidUpdateConfiguration());
+    assertFalse(output.getConnectorConfigurationUpdated());
     assertNull(output.getFailureReason());
 
     final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();

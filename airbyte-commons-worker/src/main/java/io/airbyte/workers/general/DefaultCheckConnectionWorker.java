@@ -95,7 +95,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
                 input.getActorId(),
                 optionalConfigMsg.get().getConfig());
           }
-          jobOutput.setDidUpdateConfiguration(true);
+          jobOutput.setConnectorConfigurationUpdated(true);
         }
       }
 

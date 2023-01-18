@@ -96,7 +96,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         connectorConfigUpdater.updateSource(
             UUID.fromString(discoverSchemaInput.getSourceId()),
             optionalConfigMsg.get().getConfig());
-        jobOutput.setDidUpdateConfiguration(true);
+        jobOutput.setConnectorConfigurationUpdated(true);
       }
 
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.DISCOVER_CATALOG_ID, messagesByType);

@@ -38,7 +38,7 @@ public class SynchronousResponse<T> {
         id,
         configType,
         configId,
-        jobOutput != null ? jobOutput.getDidUpdateConfiguration() : false,
+        jobOutput != null ? jobOutput.getConnectorConfigurationUpdated() : false,
         createdAt,
         endedAt);
     return new SynchronousResponse<>(responseOutput, metadata);

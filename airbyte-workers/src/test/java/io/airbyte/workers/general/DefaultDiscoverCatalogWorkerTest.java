@@ -130,7 +130,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertNull(output.getFailureReason());
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
-    assertFalse(output.getDidUpdateConfiguration());
+    assertFalse(output.getConnectorConfigurationUpdated());
     verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
     verifyNoInteractions(connectorConfigUpdater);
 
@@ -160,7 +160,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertNull(output.getFailureReason());
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
-    assertTrue(output.getDidUpdateConfiguration());
+    assertTrue(output.getConnectorConfigurationUpdated());
     verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
     verify(connectorConfigUpdater).updateSource(SOURCE_ID, connectorConfig2);
 
@@ -187,7 +187,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertNull(output.getFailureReason());
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
-    assertFalse(output.getDidUpdateConfiguration());
+    assertFalse(output.getConnectorConfigurationUpdated());
     verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
     verifyNoInteractions(connectorConfigUpdater);
 
