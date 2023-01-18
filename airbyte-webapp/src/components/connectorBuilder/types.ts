@@ -1,4 +1,5 @@
 import { JSONSchema7 } from "json-schema";
+import merge from "lodash/merge";
 import * as yup from "yup";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
@@ -91,6 +92,7 @@ export interface BuilderStream {
     | BuilderSubstreamSlicer
     | BuilderCartesianProductSlicer;
   schema?: string;
+  unsupportedFields?: Record<string, unknown>;
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -561,7 +563,7 @@ function builderStreamToDeclarativeSteam(
   stream: BuilderStream,
   visitedStreams: string[]
 ): DeclarativeStream {
-  return {
+  const declarativeStream: DeclarativeStream = {
     type: "DeclarativeStream",
     name: stream.name,
     primary_key: stream.primaryKey,
@@ -609,6 +611,8 @@ function builderStreamToDeclarativeSteam(
       stream_slicer: builderStreamSlicerToManifest(values, stream.streamSlicer, [...visitedStreams, stream.id]),
     },
   };
+
+  return merge({}, declarativeStream, stream.unsupportedFields);
 }
 
 export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {

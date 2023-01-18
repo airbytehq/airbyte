@@ -148,6 +148,15 @@ const manifestStreamToBuilder = (
     paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, builderFormGlobal.urlBase),
     streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, serializedStreamToIndex, stream.name),
     schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
+    unsupportedFields: {
+      transformations: stream.transformations,
+      checkpoint_interval: stream.checkpoint_interval,
+      retriever: {
+        requester: {
+          error_handler: stream.retriever.requester.error_handler,
+        },
+      },
+    },
   };
 };
 
