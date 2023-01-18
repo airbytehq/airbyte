@@ -71,6 +71,13 @@ class MultiTest {
         }
     }
 
+    @Test
+    fun `no contexts is an exception`() {
+        assertFailsWith<IllegalArgumentException> {
+            Multi(listOf())
+        }
+    }
+
 }
 
 class WorkspaceTest {
