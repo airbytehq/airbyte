@@ -5,6 +5,7 @@
 package io.airbyte.workers.general;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -43,6 +44,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -65,6 +67,8 @@ class DefaultCheckConnectionWorkerTest {
   private AirbyteStreamFactory failureStreamFactory;
   private AirbyteStreamFactory traceMessageStreamFactory;
   private AirbyteStreamFactory configMessageStreamFactory;
+  private AirbyteStreamFactory traceMessageSuccessStreamFactory;
+  private AirbyteStreamFactory emptyStreamFactory;
 
   @BeforeEach
   void setup() throws IOException, WorkerException {
@@ -92,6 +96,8 @@ class DefaultCheckConnectionWorkerTest {
 
     final AirbyteMessage traceMessage = AirbyteMessageUtils.createErrorMessage("some error from the connector", 123.0);
     traceMessageStreamFactory = noop -> Lists.newArrayList(traceMessage).stream();
+    traceMessageSuccessStreamFactory = noop -> Lists.newArrayList(successMessage, traceMessage).stream();
+    emptyStreamFactory = noop -> Stream.empty();
 
     final AirbyteMessage configMessage1 = AirbyteMessageUtils.createConfigControlMessage(new Config().withAdditionalProperty("apiKey", "123"), 1D);
     final AirbyteMessage configMessage2 = AirbyteMessageUtils.createConfigControlMessage(CONNECTOR_CONFIG, 2D);
@@ -186,16 +192,14 @@ class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  void testProcessFail() {
-    when(process.exitValue()).thenReturn(1);
+  void testProcessFailWithNoFailureMessageNorStatus() {
 
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, failureStreamFactory);
+    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, emptyStreamFactory);
     assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
 
   @Test
-  void testProcessFailWithTraceMessage() throws WorkerException {
-    when(process.exitValue()).thenReturn(1);
+  void testOutputHasFailureReasonWhenTraceMessage() throws WorkerException {
 
     final DefaultCheckConnectionWorker worker =
         new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, traceMessageStreamFactory);
@@ -203,6 +207,20 @@ class DefaultCheckConnectionWorkerTest {
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
     assertNull(output.getCheckConnection());
+
+    final FailureReason failureReason = output.getFailureReason();
+    assertEquals("some error from the connector", failureReason.getExternalMessage());
+  }
+
+  @Test
+  void testOutputHasStatusAndFailureReasonWhenSuccessAndTraceMessage() throws WorkerException {
+
+    final DefaultCheckConnectionWorker worker =
+        new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, traceMessageSuccessStreamFactory);
+    final ConnectorJobOutput output = worker.run(input, jobRoot);
+
+    assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
+    assertNotNull(output.getCheckConnection());
 
     final FailureReason failureReason = output.getFailureReason();
     assertEquals("some error from the connector", failureReason.getExternalMessage());
