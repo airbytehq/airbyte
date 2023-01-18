@@ -280,7 +280,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.34"
+- dockerImage: "airbyte/source-alloydb:1.0.35"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -2185,7 +2185,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickhouse:0.1.14"
+- dockerImage: "airbyte/source-clickhouse:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -2476,7 +2476,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.18"
+- dockerImage: "airbyte/source-cockroachdb:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -6428,7 +6428,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-db2:0.1.16"
+- dockerImage: "airbyte/source-db2:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/db2"
     connectionSpecification:
@@ -6492,9 +6492,6 @@
               encryption_method:
                 type: "string"
                 const: "unencrypted"
-                enum:
-                - "unencrypted"
-                default: "unencrypted"
           - title: "TLS Encrypted (verify certificate)"
             description: "Verify and use the cert provided by the server."
             required:
@@ -6504,9 +6501,6 @@
               encryption_method:
                 type: "string"
                 const: "encrypted_verify_certificate"
-                enum:
-                - "encrypted_verify_certificate"
-                default: "encrypted_verify_certificate"
               ssl_certificate:
                 title: "SSL PEM file"
                 description: "Privacy Enhanced Mail (PEM) files are concatenated certificate\
@@ -8021,7 +8015,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.26"
+- dockerImage: "airbyte/source-mssql:0.4.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -8884,7 +8878,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.18"
+- dockerImage: "airbyte/source-mysql:1.0.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -10135,7 +10129,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-oracle:0.3.21"
+- dockerImage: "airbyte/source-oracle:0.3.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/oracle"
     connectionSpecification:
@@ -10177,7 +10171,6 @@
               connection_type:
                 type: "string"
                 const: "service_name"
-                default: "service_name"
                 order: 0
               service_name:
                 title: "Service name"
@@ -10191,7 +10184,6 @@
               connection_type:
                 type: "string"
                 const: "sid"
-                default: "sid"
                 order: 0
               sid:
                 title: "System ID (SID)"
@@ -10239,9 +10231,6 @@
               encryption_method:
                 type: "string"
                 const: "unencrypted"
-                enum:
-                - "unencrypted"
-                default: "unencrypted"
           - title: "Native Network Encryption (NNE)"
             description: "The native network encryption gives you the ability to encrypt\
               \ database connections, without the configuration overhead of TCP/IP\
@@ -10252,9 +10241,6 @@
               encryption_method:
                 type: "string"
                 const: "client_nne"
-                enum:
-                - "client_nne"
-                default: "client_nne"
               encryption_algorithm:
                 type: "string"
                 description: "This parameter defines what encryption algorithm is\
@@ -10274,9 +10260,6 @@
               encryption_method:
                 type: "string"
                 const: "encrypted_verify_certificate"
-                enum:
-                - "encrypted_verify_certificate"
-                default: "encrypted_verify_certificate"
               ssl_certificate:
                 title: "SSL PEM File"
                 description: "Privacy Enhanced Mail (PEM) files are concatenated certificate\
@@ -11395,7 +11378,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.37"
+- dockerImage: "airbyte/source-postgres:1.0.38"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12233,7 +12216,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.15"
+- dockerImage: "airbyte/source-redshift:0.3.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
@@ -13709,7 +13692,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.28"
+- dockerImage: "airbyte/source-snowflake:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -14557,7 +14540,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tidb:0.2.1"
+- dockerImage: "airbyte/source-tidb:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tidb"
     connectionSpecification:
