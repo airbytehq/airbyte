@@ -288,6 +288,8 @@ class SponsoredProductsReportStream(ReportStream):
     def report_init_endpoint(self, record_type: str) -> str:
         return f"/v2/sp/{record_type}/report"
 
+    metrics_map = METRICS_MAP
+
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         metrics_list = self.metrics_map[record_type]
         body = {
