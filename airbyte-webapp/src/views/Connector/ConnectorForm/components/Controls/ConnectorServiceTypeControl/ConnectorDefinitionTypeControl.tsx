@@ -127,9 +127,7 @@ export const ConnectorDefinitionTypeControl: React.FC<ConnectorDefinitionTypeCon
 
   const workspace = useCurrentWorkspace();
   const orderOverwrite = useExperiment("connector.orderOverwrite", {});
-
   const connectorDefinitions = useAvailableConnectorDefinitions(availableConnectorDefinitions, workspace);
-
   const sortedDropDownData = useMemo(
     () => getSortedDropdownDataUsingExperiment(connectorDefinitions, orderOverwrite),
     [connectorDefinitions, orderOverwrite]
