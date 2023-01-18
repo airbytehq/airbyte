@@ -60,6 +60,7 @@ You can also enter your own password for the keystore, but if you don't, the pas
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.17 | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                          |
 |        | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.1.16 | 2022-09-06 | [16354](https://github.com/airbytehq/airbyte/pull/16354) | Add custom JDBC params |
 | 0.1.15 | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
