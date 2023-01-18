@@ -7,7 +7,7 @@ package io.airbyte.server.apis;
 import io.airbyte.api.generated.SourceApi;
 import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.CheckConnectionRead;
-import io.airbyte.api.model.generated.InternalOperationResult;
+import io.airbyte.api.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
@@ -109,7 +109,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/write_discover_fetch_event")
   @Override
-  public InternalOperationResult writeDiscoverFetchEvent(final SourceDiscoverSchemaWriteRequestBody request) {
+  public DiscoverCatalogResult writeDiscoverFetchEvent(final SourceDiscoverSchemaWriteRequestBody request) {
     return ApiHelper.execute(() -> sourceHandler.writeDiscoverFetchEvent(request));
   }
 
