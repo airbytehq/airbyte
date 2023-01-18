@@ -556,8 +556,7 @@ class IssueRemoteLinks(StartDateJiraStream):
         return f"issue/{stream_slice['key']}/remotelink"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        meias = read_full_refresh(self.issues_stream)
-        for issue in meias:
+        for issue in read_full_refresh(self.issues_stream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
