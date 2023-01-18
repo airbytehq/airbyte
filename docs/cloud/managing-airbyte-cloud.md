@@ -281,7 +281,7 @@ To refresh the source schema:
 Get schema update notifications when your source schema changes.
 
 To get notified when your schema changes: 
-1.  Make sure you have [webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud#manage-airbyte-cloud-notifications) set up.
+1. Make sure you have [webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud#manage-airbyte-cloud-notifications) set up.
 
 2. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and click the connection you want to change.
 
@@ -294,7 +294,7 @@ Airbyte detects changes in your source schema and allows you to review the chang
 
 | Breaking changes                                                                                                                                                      | Non-breaking changes                                                                                                                                                                                                                  |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| If your connection’s source schema has breaking changes, the syncs will be stopped and you must review the changes before continuing syncs or editing the connection. | If you choose to ignore non-breaking changes in your connection's source schema, the syncs will continue.  You can change how Airbyte handles syncs when it detects non-breaking changes in the source schema by [editing the stream configuration](#edit-stream-configuration). |
+| If your connection’s source schema has breaking changes, the syncs will be stopped and you must review and fix the changes before continuing syncs or editing the connection. | If you choose to ignore non-breaking changes in your connection's source schema, the syncs will continue. You can change how Airbyte handles syncs when it detects non-breaking changes in the source schema by [editing the stream configuration](#edit-stream-configuration). |
 
 To review schema changes: 
 1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and select the connection you want to review.
