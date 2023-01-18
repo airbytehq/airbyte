@@ -33,9 +33,7 @@ const CreditsPage: React.FC = () => {
       <div className={styles.content}>
         {!emailVerified && <EmailVerificationHint className={styles.emailVerificationHint} />}
         <RemainingCredits selfServiceCheckoutEnabled={emailVerified} />
-        {/* {showEnrollmentUi &&  */}
         {showEnrollmentUi && <LargeEnrollmentCallout />}
-        {/* // } */}
         <React.Suspense
           fallback={
             <div className={styles.creditUsageLoading}>
