@@ -16,7 +16,7 @@ const dropDownOverlayContainer = "div[data-testid='overlayContainer']";
 const streamNameCell = "[data-testid='nameCell']";
 const streamDataTypeCell = "[data-testid='dataTypeCell']";
 const getExpandStreamArrowBtn = (streamName: string) => `[data-testid='${streamName}_expandStreamDetails']`;
-const getPreFilledPrimaryKeyText = (streamName: string) => `[data-testid='${streamName}_primaryKey_PathPopout_text']`;
+const getPreFilledPrimaryKeyText = (streamName: string) => `[data-testid='${streamName}_primaryKey_pathPopout_text']`;
 const successResult = "div[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
