@@ -1,31 +1,23 @@
+import classNames from "classnames";
 import React from "react";
-import styled from "styled-components";
 
 import { Row } from "components/SimpleTableComponents";
 
-const RowWrapper = styled.div<{ depth?: number; noBorder?: boolean }>`
-  height: 40px;
-  border-bottom: ${({ theme, noBorder }) => (noBorder ? "none" : `1px solid ${theme.greyColor0}`)};
-
-  &:last-child {
-    border: ${({ depth = 0 }) => depth > 0 && "none"};
-  }
-`;
-
-const RowContent = styled(Row)`
-  height: 100%;
-  white-space: nowrap;
-  font-size: 12px;
-`;
+import styles from "./TreeRowWrapper.module.scss";
 
 const TreeRowWrapper: React.FC<React.PropsWithChildren<{ depth?: number; noBorder?: boolean }>> = ({
   depth,
   children,
   noBorder,
 }) => (
-  <RowWrapper depth={depth} noBorder={noBorder}>
-    <RowContent>{children}</RowContent>
-  </RowWrapper>
+  <div
+    className={classNames(styles.rowWrapper, {
+      [styles["rowWrapper--hasDepth"]]: depth && depth > 0,
+      [styles["rowWrapper--noBorder"]]: noBorder,
+    })}
+  >
+    <Row className={styles.rowContent}>{children}</Row>
+  </div>
 );
 
 export { TreeRowWrapper };

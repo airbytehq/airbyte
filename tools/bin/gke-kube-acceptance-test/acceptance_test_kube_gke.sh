@@ -15,7 +15,7 @@ echo "Tag" $TAG
 
 docker login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD"
 VERSION=$TAG ./gradlew build
-VERSION=$TAG docker-compose -f docker-compose.build.yaml push
+VERSION=$TAG docker compose -f docker-compose.build.yaml push
 
 # For running on Mac
 #sed -i .bak 's/default/'$NAMESPACE'/g' kube/overlays/dev/kustomization.yaml
@@ -64,7 +64,7 @@ kubectl port-forward svc/airbyte-server-svc 8001:8001 --namespace=$NAMESPACE &
 
 kubectl port-forward svc/postgres-source-svc 2000:5432 --namespace=$NAMESPACE &
 
-kubectl port-forward svc/postgres-destination-svc 3000:5432 --namespace=$NAMESPACE &
+kubectl port-forward svc/postgres-destination-svc 4000:5432 --namespace=$NAMESPACE &
 
 sleep 10s
 

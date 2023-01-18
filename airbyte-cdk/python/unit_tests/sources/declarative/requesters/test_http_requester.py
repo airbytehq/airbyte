@@ -29,10 +29,11 @@ def test_http_requester():
 
     error_handler = MagicMock()
     max_retries = 10
-    should_retry = True
     backoff_time = 1000
+    response_status = MagicMock()
+    response_status.retry_in.return_value = 10
     error_handler.max_retries = max_retries
-    error_handler.should_retry.return_value = should_retry
+    error_handler.interpret_response.return_value = response_status
     error_handler.backoff_time.return_value = backoff_time
 
     config = {"url": "https://airbyte.io"}
@@ -59,7 +60,7 @@ def test_http_requester():
     assert requester.get_request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
     assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
     assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
-    assert requester.should_retry(requests.Response()) == should_retry
+    assert requester.interpret_response_status(requests.Response()) == response_status
     assert {} == requester.request_kwargs(stream_state={}, stream_slice=None, next_page_token=None)
 
 

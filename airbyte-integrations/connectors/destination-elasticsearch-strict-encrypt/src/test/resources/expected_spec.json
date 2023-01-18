@@ -23,6 +23,13 @@
         "description": "If a primary key identifier is defined in the source, an upsert will be performed using the primary key value as the elasticsearch doc id. Does not support composite primary keys.",
         "default": true
       },
+      "ca_certificate": {
+        "type": "string",
+        "title": "CA certificate",
+        "description": "CA certificate",
+        "airbyte_secret": true,
+        "multiline": true
+      },
       "authenticationMethod": {
         "title": "Authentication Method",
         "type": "object",

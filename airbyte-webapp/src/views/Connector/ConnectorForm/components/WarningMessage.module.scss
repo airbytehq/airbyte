@@ -1,0 +1,15 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.calloutContainer {
+  margin-top: variables.$spacing-lg;
+
+  .link {
+    color: colors.$dark-blue;
+
+    &:hover,
+    &:focus {
+      color: colors.$blue-400;
+    }
+  }
+}

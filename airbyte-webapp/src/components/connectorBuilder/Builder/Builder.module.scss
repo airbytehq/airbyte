@@ -1,0 +1,22 @@
+@use "scss/variables";
+@use "scss/colors";
+@use "scss/mixins";
+
+.container {
+  height: 100%;
+  display: flex;
+}
+
+.sidebar {
+  @include mixins.right-shadow;
+
+  width: 200px;
+  flex: 0 0 auto;
+  background-color: colors.$white;
+}
+
+.form {
+  flex: 1;
+  padding: variables.$spacing-xl;
+  overflow: auto;
+}

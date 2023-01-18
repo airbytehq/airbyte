@@ -20,7 +20,7 @@ const StepView = styled.div<{
   min-width: ${({ lightMode }) => (lightMode ? "100px" : "auto")};
   min-height: 28px;
   padding: 6px 14px;
-  border-radius: 4px;
+  border-radius: 28px;
   pointer-events: ${({ isActive, nonClickable }) => (isActive || nonClickable ? "none" : "all")};
   cursor: ${({ nonClickable }) => (nonClickable ? "default" : "pointer")};
   text-align: center;

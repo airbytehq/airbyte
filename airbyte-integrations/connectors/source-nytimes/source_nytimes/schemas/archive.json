@@ -1,0 +1,193 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "web_url": {
+      "type": ["null", "string"],
+      "description": "Article URL."
+    },
+    "snippet": {
+      "type": ["null", "string"]
+    },
+    "print_page": {
+      "type": ["null", "string"],
+      "description": "Page in print (e.g. 1)."
+    },
+    "print_section": {
+      "type": ["null", "string"],
+      "description": "Section in print (e.g. A)."
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "multimedia": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": ["null", "integer"]
+          },
+          "subtype": {
+            "type": ["null", "string"]
+          },
+          "caption": {
+            "type": ["null", "string"]
+          },
+          "credit": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "height": {
+            "type": ["null", "integer"]
+          },
+          "width": {
+            "type": ["null", "integer"]
+          },
+          "legacy": {
+            "type": "object",
+            "properties": {
+              "xlarge": {
+                "type": ["null", "string"]
+              },
+              "xlargewidth": {
+                "type": ["null", "integer"]
+              },
+              "xlargeheight": {
+                "type": ["null", "integer"]
+              }
+            }
+          },
+          "crop_name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "headline": {
+      "type": "object",
+      "properties": {
+        "main": {
+          "type": ["null", "string"]
+        },
+        "kicker": {
+          "type": ["null", "string"]
+        },
+        "content_kicker": {
+          "type": ["null", "string"]
+        },
+        "print_headline": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "seo": {
+          "type": ["null", "string"]
+        },
+        "sub": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "rank": {
+            "type": ["null", "integer"]
+          },
+          "major": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "pub_date": {
+      "type": ["null", "string"],
+      "description": "Publication date."
+    },
+    "document_type": {
+      "type": ["null", "string"],
+      "description": "Document type (article, multimedia)."
+    },
+    "news_desk": {
+      "type": ["null", "string"],
+      "description": "Desk in the newsroom that worked on the story (Foreign, Metro, Sports, ...)."
+    },
+    "section_name": {
+      "type": ["null", "string"],
+      "description": "Section that the article appeared in (New York, Sports, World, ...)."
+    },
+    "byline": {
+      "type": "object",
+      "properties": {
+        "original": {
+          "type": ["null", "string"]
+        },
+        "person": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "firstname": {
+                "type": ["null", "string"]
+              },
+              "middlename": {
+                "type": ["null", "string"]
+              },
+              "lastname": {
+                "type": ["null", "string"]
+              },
+              "qualifier": {
+                "type": ["null", "string"]
+              },
+              "title": {
+                "type": ["null", "string"]
+              },
+              "role": {
+                "type": ["null", "string"]
+              },
+              "organization": {
+                "type": ["null", "string"]
+              },
+              "rank": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        "organization": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "type_of_material": {
+      "type": ["null", "string"],
+      "description": "Type of asset (Correction, News, Op-Ed, Review, Video, ...)."
+    },
+    "_id": {
+      "type": ["null", "string"]
+    },
+    "word_count": {
+      "type": ["null", "integer"],
+      "description": "Number of words in the article."
+    },
+    "uri": {
+      "type": ["null", "string"],
+      "description": "Uniquely identifies an asset."
+    }
+  }
+}

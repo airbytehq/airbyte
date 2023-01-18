@@ -48,6 +48,11 @@ will result in the following configuration on the UI:
 ![Screen Shot 2021-11-18 at 7 14 04 PM](https://user-images.githubusercontent.com/6246757/142558797-135f6c73-f05d-479f-9d88-e20cae85870c.png)
 
 
+:::info
+
+Within an object definition, if some fields have the `order` property defined, and others don't, then the fields without the `order` property defined should be rendered last in the UI. Among those elements (which don't have `order` defined), no ordering is guaranteed. 
+
+:::
 
 
 ### Multi-line String inputs
@@ -96,12 +101,14 @@ In this case, use the `"airbyte_hidden": true` keyword to hide that field from t
 }
 ```
 
+Results in the following form:
+
 ![hidden fields](../.gitbook/assets/spec_reference_hidden_field_screenshot.png)
 
-Results in the following form: 
 
+## Airbyte Modifications to `jsonschema`
 
-### Using `oneOf`s
+### Using `oneOf`
 
 In some cases, a connector needs to accept one out of many options. For example, a connector might need to know the compression codec of the file it will read, which will render in the Airbyte UI as a list of the available codecs. In JSONSchema, this can be expressed using the [oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) keyword.
 
@@ -178,3 +185,28 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
 }
 ```
 
+### Using `enum`
+
+In regular `jsonschema`, some drafts enforce that `enum` lists must contain distinct values, while others do not. For consistency, Airbyte enforces this restriction.
+
+For example, this spec is invalid, since `a_format` is listed twice under the enumerated property `format`:
+
+```javascript
+{
+  "connection_specification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "File Source Spec",
+    "type": "object",
+    "required": ["format"],
+    "properties": {
+      "dataset_name": {
+        ...
+      },
+      "format": {
+        type: "string",
+        enum: ["a_format", "another_format", "a_format"]
+      },
+    }
+  }
+}
+```

@@ -12,7 +12,12 @@ from airbyte_cdk import AirbyteLogger
 from source_amplitude import SourceAmplitude
 from source_amplitude.api import ActiveUsers, Annotations, AverageSessionLength, Cohorts, Events
 
-TEST_CONFIG: dict = {"api_key": "test_api_key", "secret_key": "test_secret_key", "start_date": "2022-05-01T00:00:00Z"}
+TEST_CONFIG: dict = {
+    "data_region": "test_data_region",
+    "api_key": "test_api_key",
+    "secret_key": "test_secret_key",
+    "start_date": "2022-05-01T00:00:00Z"
+}
 TEST_INSTANCE: SourceAmplitude = SourceAmplitude()
 
 

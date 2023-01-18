@@ -1,0 +1,32 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.yugabytedb.YugabytedbDestination'
+}
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation project(':airbyte-db:db-lib')
+
+    implementation 'com.yugabyte:jdbc-yugabytedb:42.3.5-yb-1'
+
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
+
+    testImplementation "org.assertj:assertj-core:3.21.0"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.8.1"
+    testImplementation "org.testcontainers:junit-jupiter:1.17.5"
+    testImplementation "org.testcontainers:jdbc:1.17.5"
+
+
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-yugabytedb')
+}

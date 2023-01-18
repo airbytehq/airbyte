@@ -23,7 +23,7 @@
     },
     "metadata": {
       "type": ["null", "object"],
-      "properties":{
+      "properties": {
         "contract": {
           "type": ["null", "string"]
         }
@@ -32,13 +32,13 @@
     "links": {
       "type": ["null", "object"],
       "properties": {
-        "customer_bank_account":  {
+        "customer_bank_account": {
           "type": ["null", "string"]
         },
-        "creditor":  {
+        "creditor": {
           "type": ["null", "string"]
         },
-        "customer":  {
+        "customer": {
           "type": ["null", "string"]
         }
       }

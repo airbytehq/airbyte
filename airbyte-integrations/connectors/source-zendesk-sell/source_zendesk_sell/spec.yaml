@@ -1,0 +1,15 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sell
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Source Zendesk Sell Spec
+  type: object
+  required:
+    - api_token
+  properties:
+    api_token:
+      title: API token
+      type: string
+      description: "The API token for authenticating to Zendesk Sell"
+      examples:
+        - "f23yhd630otl94y85a8bf384958473pto95847fd006da49382716or937ruw059"
+      airbyte_secret: true

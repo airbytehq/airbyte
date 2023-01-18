@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestination'
+    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationRunner'
 // enable when profiling
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError',
@@ -47,7 +47,7 @@ dependencies {
 //    this is a configuration to make mockito work with final classes
     testImplementation 'org.mockito:mockito-inline:2.13.0'
 
-
+    integrationTestJavaImplementation project(':airbyte-commons-worker')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-snowflake')
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'

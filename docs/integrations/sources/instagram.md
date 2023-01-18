@@ -7,7 +7,7 @@ This page contains the setup guide and reference information for the Instagram s
 * [Meta for Developers account](https://developers.facebook.com)
 * [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
 * [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-* Facebook API [access token](https://developers.facebook.com/docs/facebook-login/access-tokens/#usertokens) 
+* Facebook API [access token](https://developers.facebook.com/docs/facebook-login/access-tokens/#usertokens)
 * [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte)
 
 ## Setup Guide
@@ -22,27 +22,32 @@ Generate access tokens with the following permissions:
 
 ### Step 2: Set up the Instagram connector in Airbyte
 
-#### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account. 
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. Click **Set up source**.
+<!-- /env:cloud -->
 
-#### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
 1. Log in to your Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. Paste the access tokens from [Step 1](#step-1-set-up-instagram​).
 9. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 The Instagram source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):

@@ -1,0 +1,67 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer:
+        - "{{ options['name'] }}"
+  requester:
+    url_base: "https://sonarcloud.io/api"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        organization: "{{ config['organization'] }}"
+        createdAfter: "{{ config['start_date'] }}"
+        createdBefore: "{{ config['end_date'] }}"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['user_token'] }}"
+  increment_paginator:
+    type: "DefaultPaginator"
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "ps"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 100
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "p"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      $ref: "*ref(definitions.increment_paginator)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  components_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "components"
+      primary_key: "key"
+      path: "/components/search"
+  issues_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "issues"
+      primary_key: "key"
+      path: "/issues/search?componentKeys={{ ','.join(config.get('component_keys', [])) }}"
+  metrics_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "metrics"
+      primary_key: "id"
+      path: "/metrics/search"
+
+streams:
+  - "*ref(definitions.components_stream)"
+  - "*ref(definitions.issues_stream)"
+  - "*ref(definitions.metrics_stream)"
+
+check:
+  stream_names:
+    - "components"

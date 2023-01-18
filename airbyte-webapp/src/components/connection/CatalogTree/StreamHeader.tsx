@@ -1,11 +1,10 @@
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { Cell, Row } from "components";
+import { MinusIcon } from "components/icons/MinusIcon";
+import { PlusIcon } from "components/icons/PlusIcon";
 import { CheckBox } from "components/ui/CheckBox";
 import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { Switch } from "components/ui/Switch";
@@ -19,10 +18,6 @@ import { IndexerType, PathPopout } from "./PathPopout";
 import styles from "./StreamHeader.module.scss";
 import { ArrowCell, HeaderCell } from "./styles";
 import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
-
-const EmptyField = styled.span`
-  color: ${({ theme }) => theme.greyColor40};
-`;
 
 interface SyncSchema {
   syncMode: SyncMode;
@@ -48,6 +43,7 @@ export interface StreamHeaderProps {
   onExpand: () => void;
   changedSelected: boolean;
   hasError: boolean;
+  configErrors?: Record<string, string>;
   disabled?: boolean;
 }
 
@@ -105,15 +101,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     <Row className={styles.catalogSectionRow}>
       {!disabled && (
         <div className={checkboxCellCustomStyle}>
-          {changedSelected && (
-            <div>
-              {isStreamEnabled ? (
-                <FontAwesomeIcon icon={faPlus} size="2x" className={iconStyle} />
-              ) : (
-                <FontAwesomeIcon icon={faMinus} size="2x" className={iconStyle} />
-              )}
-            </div>
-          )}
+          <div className={iconStyle}>{changedSelected && (isStreamEnabled ? <PlusIcon /> : <MinusIcon />)}</div>
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
@@ -122,13 +110,19 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       </ArrowCell>
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
-          <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
+          <Switch
+            size="sm"
+            checked={stream.config?.selected}
+            onChange={onSelectStream}
+            disabled={disabled}
+            data-testid={`${stream.stream?.name}-stream-sync-switch`}
+          />
         </HeaderCell>
         <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
           {stream.stream?.namespace || (
-            <EmptyField>
+            <span className={styles.noHeader}>
               <FormattedMessage id="form.noNamespace" />
-            </EmptyField>
+            </span>
           )}
         </HeaderCell>
         <HeaderCell ellipsis title={stream.stream?.name || ""}>

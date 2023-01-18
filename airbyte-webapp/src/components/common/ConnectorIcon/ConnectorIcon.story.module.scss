@@ -1,0 +1,25 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.container {
+  border: 1px solid tomato;
+}
+
+.small {
+  width: 17px;
+  height: 17px;
+}
+
+.large {
+  width: 40px;
+  height: 40px;
+}
+
+.huge {
+  width: 100px;
+  height: 100px;
+  background-color: hotpink;
+}

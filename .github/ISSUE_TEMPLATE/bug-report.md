@@ -9,16 +9,12 @@ assignees: ''
 <!-- 
 Welcome to Airbyte!
 
-We're really appreciate your report and know that this will help us build an 
+We appreciate your report and know that this will help us build an 
 amazing tool. If you want to contribute yourself, you can find a good place 
 to start by searching for the good-first-issues label or maybe... by trying 
 to solve this one? (we can help debug this with you!)
 
-Right now we are in alpha, so we're releasing versions a lot more frequently than 
-normal. You can help us get to the root of the problem faster by filling out the
-questionnaire below!
-
-It's really important having all information and context. 
+It's really important to have all the information and context. 
 You can remove the examples bellow and fill out with your information.
 
 --> 

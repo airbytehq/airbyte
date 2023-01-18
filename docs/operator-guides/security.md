@@ -86,10 +86,43 @@ Only certain Airbyte staff can access Airbyte infrastructure and technical logs 
 
 ### Network security
 
-- You may need to allowlist one of our IP addresses to enable access to Airbyte:
-  - 34.106.109.131
-  - 34.106.196.165
-  - 34.106.60.246
+Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
+
+#### United States and Airbyte Default
+
+GCP region: us-west3
+* 34.106.109.131
+* 34.106.196.165
+* 34.106.60.246
+* 34.106.229.69
+* 34.106.127.139
+* 34.106.218.58
+* 34.106.115.240
+* 34.106.225.141
+
+#### European Union
+
+:::note 
+
+Some workflows still run in the US, even when the data residency is in the EU. If you use the EU as a data residency, you must allowlist the following IP addresses from both GCP us-west3 and AWS eu-west-3.
+
+:::
+
+GCP region: us-west3
+* 34.106.109.131
+* 34.106.196.165
+* 34.106.60.246
+* 34.106.229.69
+* 34.106.127.139
+* 34.106.218.58
+* 34.106.115.240
+* 34.106.225.141
+
+AWS region: eu-west-3
+* 13.37.4.46
+* 13.37.142.60
+* 35.181.124.238
+
 
 ### Credential management
 
@@ -114,7 +147,7 @@ Airbyte Cloud supports [user management](https://docs.airbyte.com/cloud/managing
 Our compliance efforts for Airbyte Cloud include:
 
 - SOC 2 Type II assessment: An independent third-party completed a SOC2 Type II assessment and found effective operational controls in place. Independent third-party audits will continue at a regular cadence, and the most recent report is available upon request.
-- ISO 27001 certification: We are currently pursuing ISO 27001 certification and will continue to align the evolution of our security program with its standards as we grow.
+- ISO 27001 certification: We received our ISO 27001 certification in November 2022. A copy of the certificate is available upon request. 
 - Assessments and penetration tests: We use tools provided by the Cloud platforms as well as third-party assessments and penetration tests.
 
 ## Reporting Vulnerabilities​

@@ -13,23 +13,28 @@ import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
+
+  private static final String IMAGE_NAME = "docker.elastic.co/elasticsearch/elasticsearch:8.3.3";
+  private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestinationAcceptanceTest.class);
 
   private ObjectMapper mapper = new ObjectMapper();
   private static ElasticsearchContainer container;
 
   @BeforeAll
   public static void beforeAll() {
-    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.15.1")
-        .withEnv("ES_JAVA_OPTS", "-Xms512m -Xms512m")
+    container = new ElasticsearchContainer(IMAGE_NAME)
         .withEnv("discovery.type", "single-node")
         .withEnv("network.host", "0.0.0.0")
         .withEnv("logger.org.elasticsearch", "INFO")
         .withEnv("ingest.geoip.downloader.enabled", "false")
-        .withEnv("xpack.security.enabled", "false")
+        .withPassword("s3cret")
         .withExposedPorts(9200)
+        .withEnv("xpack.security.enabled", "false")
         .withStartupTimeout(Duration.ofSeconds(60));
     container.start();
   }

@@ -4,9 +4,12 @@
 
 package io.airbyte.workers.internal;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import datadog.trace.api.Trace;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -24,7 +27,9 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +40,12 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
   private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
+  static final Set<Integer> IGNORED_EXIT_CODES = Set.of(
+      0, // Normal exit
+      143 // SIGTERM
+  );
 
-  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
+  public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("source")
       .setPrefixColor(Color.BLUE_BACKGROUND);
 
@@ -47,22 +56,30 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
-  private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
+  private final boolean featureFlagLogConnectorMsgs;
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
-        new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), featureFlags);
+  }
+
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
+                              final AirbyteStreamFactory streamFactory,
+                              final FeatureFlags featureFlags) {
+    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION), featureFlags);
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
                        final AirbyteStreamFactory streamFactory,
-                       final HeartbeatMonitor heartbeatMonitor) {
+                       final HeartbeatMonitor heartbeatMonitor,
+                       final FeatureFlags featureFlags) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;
+    this.featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
@@ -79,12 +96,14 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
     logInitialStateAsJSON(sourceConfig);
 
+    final List<Type> acceptedMessageTypes = List.of(Type.RECORD, Type.STATE, Type.TRACE, Type.CONTROL);
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
-        .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE)
+        .filter(message -> acceptedMessageTypes.contains(message.getType()))
         .iterator();
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public boolean isFinished() {
     Preconditions.checkState(sourceProcess != null);
@@ -96,6 +115,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     return !messageIterator.hasNext() && !sourceProcess.isAlive();
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public int getExitValue() throws IllegalStateException {
     Preconditions.checkState(sourceProcess != null, "Source process is null, cannot retrieve exit value.");
@@ -108,6 +128,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     return exitValue;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
@@ -115,6 +136,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void close() throws Exception {
     if (sourceProcess == null) {
@@ -128,12 +150,13 @@ public class DefaultAirbyteSource implements AirbyteSource {
         GRACEFUL_SHUTDOWN_DURATION.toMillis(),
         TimeUnit.MILLISECONDS);
 
-    if (sourceProcess.isAlive() || getExitValue() != 0) {
+    if (sourceProcess.isAlive() || !IGNORED_EXIT_CODES.contains(getExitValue())) {
       final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + getExitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() throws Exception {
     LOGGER.info("Attempting to cancel source process...");
@@ -148,7 +171,12 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   private void logInitialStateAsJSON(final WorkerSourceConfig sourceConfig) {
-    if (!logConnectorMessages) {
+    if (!featureFlagLogConnectorMsgs) {
+      return;
+    }
+
+    if (sourceConfig.getState() == null) {
+      LOGGER.info("source starting state | empty");
       return;
     }
 

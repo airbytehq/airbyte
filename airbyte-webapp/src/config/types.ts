@@ -3,6 +3,7 @@ declare global {
     TRACKING_STRATEGY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
+    CONNECTOR_BUILDER_API_URL?: string;
     CLOUD?: string;
     REACT_APP_DATADOG_APPLICATION_ID: string;
     REACT_APP_DATADOG_CLIENT_TOKEN: string;
@@ -21,6 +22,7 @@ declare global {
 export interface Config {
   segment: { token: string; enabled: boolean };
   apiUrl: string;
+  connectorBuilderApiUrl: string;
   oauthRedirectUrl: string;
   healthCheckInterval: number;
   version?: string;

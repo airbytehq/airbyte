@@ -17,7 +17,7 @@ import java.util.List;
 public class AzureBlobStorageJsonlDestinationAcceptanceTest extends
     AzureBlobStorageDestinationAcceptanceTest {
 
-  protected AzureBlobStorageJsonlDestinationAcceptanceTest() {
+  public AzureBlobStorageJsonlDestinationAcceptanceTest() {
     super(AzureBlobStorageFormat.JSONL);
   }
 

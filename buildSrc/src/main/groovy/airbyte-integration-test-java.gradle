@@ -31,9 +31,10 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             }
 
             testLogging() {
-                events "passed", "failed"
+                events "passed", "failed", "started"
                 exceptionFormat "full"
-                showStandardStreams = true
+                // uncomment to get the full log output
+                // showStandardStreams = true
             }
 
             outputs.upToDateWhen { false }

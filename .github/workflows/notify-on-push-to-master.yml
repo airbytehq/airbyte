@@ -4,14 +4,14 @@ on:
     branches:
       - master
   workflow_dispatch:
-      
+
 jobs:
   repo-sync:
     name: "Fire a Repo Dispatch event to airbyte-cloud"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte Repo for PAT command
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Check PAT rate limits
         # Cannot share PAT outside of JOB context
         run: |

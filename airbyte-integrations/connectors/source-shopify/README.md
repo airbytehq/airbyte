@@ -5,6 +5,8 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ## Local development
 
+#### Minimum Python version required `= 3.9.0`
+
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
@@ -52,10 +54,10 @@ and place them into `secrets/config.json`.
 ### Locally running the connector
 Use your .venv inside your connector in order to proceed:
 ```
-python3 main.py spec
-python3 main.py check --config secrets/config.json
-python3 main.py discover --config secrets/config.json
-python3 main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image

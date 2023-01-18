@@ -5,6 +5,8 @@
 package io.airbyte.metrics.lib;
 
 import com.google.api.client.util.Preconditions;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Enum source of truth of all Airbyte metrics. Each enum value represent a metric and is linked to
@@ -42,7 +44,7 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   ATTEMPT_FAILED_BY_FAILURE_ORIGIN(
       MetricEmittingApps.WORKER,
       "attempt_failed_by_failure_origin",
-      "increments for every failure origin a failed attempt has. since a failure can have multiple origins, a single failure can be counted more than once. tagged by failure origin."),
+      "increments for every failure origin a failed attempt has. since a failure can have multiple origins, a single failure can be counted more than once. tagged by failure origin and failure type."),
   ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
       "attempt_succeeded_by_release_stage",
@@ -71,10 +73,6 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.WORKER,
       "json_string_length",
       "string length of a raw json string"),
-  JSON_SIZE(
-      MetricEmittingApps.WORKER,
-      "json_size",
-      "size of the json object"),
   KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
@@ -132,21 +130,57 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "count of the number of successful workflow syncs."),
   TEMPORAL_WORKFLOW_FAILURE(MetricEmittingApps.WORKER,
       "temporal_workflow_failure",
-      "count of the number of workflow failures");
+      "count of the number of workflow failures"),
+  REPLICATION_BYTES_SYNCED(MetricEmittingApps.WORKER,
+      "replication_bytes_synced",
+      "number of bytes synced during replication"),
+  REPLICATION_RECORDS_SYNCED(MetricEmittingApps.WORKER,
+      "replication_records_synced",
+      "number of records synced during replication"),
+  RESET_REQUEST(MetricEmittingApps.WORKER,
+      "reset_request",
+      "number of requested resets"),
+
+  ATTEMPTS_CREATED(
+      MetricEmittingApps.WORKER,
+      "attempt_created",
+      "increments when a new attempt is created. one is emitted per attempt",
+      MetricTags.GEOGRAPHY,
+      MetricTags.ATTEMPT_NUMBER,
+      MetricTags.MIN_CONNECTOR_RELEASE_STATE,
+      MetricTags.MAX_CONNECTOR_RELEASE_STATE),
+  ATTEMPTS_COMPLETED(
+      MetricEmittingApps.WORKER,
+      "attempt_completed",
+      "increments when a new attempt is completed. one is emitted per attempt",
+      MetricTags.GEOGRAPHY,
+      MetricTags.ATTEMPT_NUMBER,
+      MetricTags.MIN_CONNECTOR_RELEASE_STATE,
+      MetricTags.MAX_CONNECTOR_RELEASE_STATE,
+      MetricTags.ATTEMPT_QUEUE,
+      MetricTags.ATTEMPT_OUTCOME,
+      MetricTags.FAILURE_ORIGIN, // only includes the first failure origin
+      MetricTags.FAILURE_TYPE); // only includes the first failure type
 
   private final MetricEmittingApp application;
   private final String metricName;
   private final String metricDescription;
 
+  // added this field to declare metric attributes, but we never read them.
+  @SuppressWarnings("FieldCanBeLocal")
+  private final List<String> metricTags;
+
   OssMetricsRegistry(final MetricEmittingApp application,
                      final String metricName,
-                     final String metricDescription) {
+                     final String metricDescription,
+                     final String... metricTags) {
     Preconditions.checkNotNull(metricDescription);
     Preconditions.checkNotNull(application);
 
     this.application = application;
     this.metricName = metricName;
     this.metricDescription = metricDescription;
+    this.metricTags = Arrays.asList(metricTags);
   }
 
   @Override

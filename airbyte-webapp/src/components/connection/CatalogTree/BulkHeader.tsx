@@ -1,7 +1,6 @@
 import intersection from "lodash/intersection";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { Cell, Header } from "components";
 import { Button } from "components/ui/Button";
@@ -18,17 +17,6 @@ import { pathDisplayName, PathPopout } from "./PathPopout";
 import { ArrowCell, CheckboxCell, HeaderCell } from "./styles";
 import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
 import { flatten, getPathType } from "./utils";
-
-const ActionCell = styled.div`
-  display: flex;
-`;
-
-const SchemaHeader = styled(Header)`
-  min-height: 41px;
-  height: 41px;
-  background: ${({ theme }) => theme.primaryColor};
-  border-radius: 8px 8px 0 0;
-`;
 
 function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   const primitiveFieldsByStream = selectedBatchNodes.map(({ stream }) => {
@@ -55,7 +43,7 @@ function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
 
 export const BulkHeader: React.FC = () => {
   const {
-    destDefinition: { supportedDestinationSyncModes },
+    destDefinitionSpecification: { supportedDestinationSyncModes },
   } = useConnectionFormService();
   const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEditService();
 
@@ -90,11 +78,11 @@ export const BulkHeader: React.FC = () => {
   const paths = primitiveFields.map((f) => f.path);
 
   return (
-    <SchemaHeader>
+    <Header className={styles.schemaHeader}>
       <CheckboxCell />
       <ArrowCell />
       <HeaderCell flex={0.4}>
-        <Switch small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
+        <Switch size="sm" checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
       </HeaderCell>
       <HeaderCell />
       <HeaderCell />
@@ -132,15 +120,15 @@ export const BulkHeader: React.FC = () => {
       </HeaderCell>
       <HeaderCell />
       <HeaderCell>
-        <ActionCell>
+        <div className={styles.actionCell}>
           <Button className={styles.actionButton} onClick={onCancel}>
             <FormattedMessage id="connectionForm.bulkEdit.cancel" />
           </Button>
           <Button className={styles.actionButton} onClick={onApply}>
             <FormattedMessage id="connectionForm.bulkEdit.apply" />
           </Button>
-        </ActionCell>
+        </div>
       </HeaderCell>
-    </SchemaHeader>
+    </Header>
   );
 };

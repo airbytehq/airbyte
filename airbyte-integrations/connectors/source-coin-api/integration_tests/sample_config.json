@@ -1,0 +1,8 @@
+{
+  "api_key": "YOUR_API_KEY",
+  "environment": "production",
+  "symbol_id": "KRAKENFTS_PERP_BTC_USD",
+  "period": "1DAY",
+  "start_date": "2021-01-01T00:00:00",
+  "limit": 1000
+}
