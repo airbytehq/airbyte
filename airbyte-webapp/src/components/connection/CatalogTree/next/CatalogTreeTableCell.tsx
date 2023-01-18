@@ -60,7 +60,7 @@ export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeT
         },
         [0, 0]
       );
-      console.log(scrollWidths, clientWidths);
+
       if (scrollWidths > clientWidths) {
         setTooltipDisabled(false);
       } else {
