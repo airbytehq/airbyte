@@ -1,0 +1,23 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Bling Spec
+  type: object
+  required:
+    - api_key
+    - merchant
+  properties:
+    api_key:
+      title: API Key
+      type: string
+      description: API Access Key (https://ajuda.bling.com.br/hc/pt-br/articles/360035558634-Usu%C3%A1rio-e-Usu%C3%A1rio-API)
+      airbyte_secret: true
+      order: 0
+    merchant:
+      title: Merchant Code
+      type: string
+      description: "Merchant code with 5 characters length"
+      order: 1
+      examples:
+        - "BRXYZ"
+        - "MXABC"
