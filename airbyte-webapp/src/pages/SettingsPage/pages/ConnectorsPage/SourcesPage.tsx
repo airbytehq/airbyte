@@ -21,6 +21,7 @@ const SourcesPage: React.FC = () => {
   const { sourceDefinitions } = useSourceDefinitionList();
 
   const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
+  const [updatingDefinitionId, setUpdatingDefinitionId] = useState<string>();
 
   const { hasNewSourceVersion } = useGetConnectorsOutOfDate();
   const { updateAllSourceVersions } = useUpdateSourceDefinitions();
@@ -28,6 +29,7 @@ const SourcesPage: React.FC = () => {
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
+        setUpdatingDefinitionId(id);
         await updateSourceDefinition({
           sourceDefinitionId: id,
           dockerImageTag: version,
@@ -39,6 +41,8 @@ const SourcesPage: React.FC = () => {
           ...feedbackList,
           [id]: formatMessage({ id: messageId }),
         });
+      } finally {
+        setUpdatingDefinitionId(undefined);
       }
     },
     [feedbackList, formatMessage, updateSourceDefinition]
@@ -72,6 +76,7 @@ const SourcesPage: React.FC = () => {
     <ConnectorsView
       type="sources"
       loading={loading}
+      updatingDefinitionId={updatingDefinitionId}
       error={error}
       isUpdateSuccess={isUpdateSuccess}
       hasNewConnectorVersion={hasNewSourceVersion}

@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
 import { HeadTitle } from "components/common/HeadTitle";
-import Indicator from "components/Indicator";
 import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 import { Table } from "components/ui/Table";
@@ -28,6 +27,7 @@ interface ConnectorsViewProps {
   usedConnectorsDefinitions: SourceDefinitionRead[] | DestinationDefinitionRead[];
   connectorsDefinitions: SourceDefinitionRead[] | DestinationDefinitionRead[];
   loading: boolean;
+  updatingDefinitionId?: string;
   error?: Error;
   onUpdate: () => void;
   onUpdateVersion: ({ id, version }: { id: string; version: string }) => void;
@@ -44,6 +44,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   hasNewConnectorVersion,
   usedConnectorsDefinitions,
   loading,
+  updatingDefinitionId,
   error,
   onUpdate,
   connectorsDefinitions,
@@ -71,12 +72,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   const renderColumns = useCallback(
     (showVersionUpdateColumn: boolean) => [
       {
-        Header: (
-          <FlexContainer>
-            <Indicator hidden />
-            <FormattedMessage id="admin.connectors" />
-          </FlexContainer>
-        ),
+        Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
         customWidth: 25,
         Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
@@ -104,7 +100,11 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
       ...(showVersionUpdateColumn
         ? [
             {
-              Header: <FormattedMessage id="admin.changeTo" />,
+              Header: (
+                <div className={styles.changeToHeader}>
+                  <FormattedMessage id="admin.changeTo" />
+                </div>
+              ),
               accessor: "latestDockerImageTag",
               collapse: true,
               Cell: ({ cell, row }: CellProps<ConnectorDefinition>) =>
@@ -115,14 +115,14 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
                     onChange={onUpdateVersion}
                     feedback={feedbackList[Connector.id(row.original)]}
                     currentVersion={row.original.dockerImageTag}
-                    updating={loading}
+                    updating={loading || Connector.id(row.original) === updatingDefinitionId}
                   />
                 ) : null,
             },
           ]
         : []),
     ],
-    [allowUpdateConnectors, allowUploadCustomImage, onUpdateVersion, feedbackList, loading]
+    [allowUpdateConnectors, allowUploadCustomImage, onUpdateVersion, feedbackList, loading, updatingDefinitionId]
   );
 
   const renderHeaderControls = (section: "used" | "available") =>
@@ -130,14 +130,13 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
       <div className={styles.buttonsContainer}>
         {allowUploadCustomImage && <CreateConnector type={type} />}
-        {(hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors && (
-          <UpgradeAllButton
-            isLoading={loading}
-            hasError={!!error && !loading}
-            hasSuccess={isUpdateSuccess}
-            onUpdate={onUpdate}
-          />
-        )}
+        <UpgradeAllButton
+          disabled={!((hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors)}
+          isLoading={loading}
+          hasError={!!error && !loading}
+          hasSuccess={isUpdateSuccess}
+          onUpdate={onUpdate}
+        />
       </div>
     );
 

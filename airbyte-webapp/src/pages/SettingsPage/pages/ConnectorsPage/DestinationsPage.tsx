@@ -24,12 +24,14 @@ const DestinationsPage: React.FC = () => {
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
   const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
+  const [updatingDefinitionId, setUpdatingDefinitionId] = useState<string>();
 
   const { hasNewDestinationVersion } = useGetConnectorsOutOfDate();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
+        setUpdatingDefinitionId(id);
         await updateDestinationDefinition({
           destinationDefinitionId: id,
           dockerImageTag: version,
@@ -41,6 +43,8 @@ const DestinationsPage: React.FC = () => {
           ...feedbackList,
           [id]: formatMessage({ id: messageId }),
         });
+      } finally {
+        setUpdatingDefinitionId(undefined);
       }
     },
     [feedbackList, formatMessage, updateDestinationDefinition]
@@ -80,6 +84,7 @@ const DestinationsPage: React.FC = () => {
       onUpdateVersion={onUpdateVersion}
       usedConnectorsDefinitions={usedDestinationDefinitions}
       connectorsDefinitions={destinationDefinitions}
+      updatingDefinitionId={updatingDefinitionId}
       loading={loading}
       error={error}
       onUpdate={onUpdate}
