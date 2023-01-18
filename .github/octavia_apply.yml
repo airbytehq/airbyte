@@ -1,0 +1,34 @@
+name: ssh-into-aws-ec2
+
+on:
+  push:
+    branches: "master"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v3
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$AIRBYTE_SSH_PEM_KEY" > ~/.ssh/airbyte.pem
+          chmod 600 ~/.ssh/airbyte.pem
+          cat >>~/.ssh/config <<END
+          Host ec2
+            HostName $EC2_HOST
+            User ec2-user
+            IdentityFile ~/.ssh/airbyte.pem
+            StrictHostKeyChecking no
+          END
+        env:
+          AIRBYTE_SSH_PEM_KEY: ${{ secrets.AIRBYTE_SSH_PEM_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+      - name: Forward port to localhost:8000
+        run: ssh ec2 -L 8000:localhost:8000
+      - name: Install Octavia
+        run: curl -s -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
+      - name: Apply changes
+        run: cd octavia-configs && octavia --airbyte-url http://host.docker.internal:8000 apply
