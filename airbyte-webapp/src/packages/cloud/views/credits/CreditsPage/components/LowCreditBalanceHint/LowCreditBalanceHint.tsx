@@ -1,7 +1,8 @@
 import { faCreditCard, faWarning } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FormattedMessage } from "react-intl";
 
-import { InfoBox } from "components/ui/InfoBox";
+import { Callout } from "components/ui/Callout";
 
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
@@ -24,16 +25,17 @@ export const LowCreditBalanceHint: React.FC<React.PropsWithChildren<unknown>> = 
   const status = cloudWorkspace.remainingCredits <= 0 ? "zeroBalance" : "lowBalance";
   const variant = status === "zeroBalance" ? "error" : "default";
 
-  const ICONS = {
+  const Icons = {
     lowBalance: faCreditCard,
     zeroBalance: faWarning,
   };
   return (
-    <InfoBox className={styles.container} icon={ICONS[status]} variant={variant}>
+    <Callout className={styles.container} variant={variant}>
+      <FontAwesomeIcon icon={Icons[status]} size="lg" />
       <div className={styles.wrapper}>
         <FormattedMessage id={`credits.${status}`} />
         {children}
       </div>
-    </InfoBox>
+    </Callout>
   );
 };
