@@ -13,7 +13,6 @@ import { Text } from "components/ui/Text";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import { useExperiment } from "hooks/services/Experiment";
 import { useFreeConnectorProgramInfo } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
 import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
 
@@ -27,10 +26,9 @@ export const ConnectionPageTitle: React.FC = () => {
 
   const { connection } = useConnectionEditService();
 
-  const freeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
   const { data: freeConnectorProgramInfo } = useFreeConnectorProgramInfo();
 
-  const displayEnrollmentCallout = freeConnectorProgramEnabled && freeConnectorProgramInfo?.showEnrollmentUi;
+  const displayEnrollmentCallout = freeConnectorProgramInfo?.showEnrollmentUi;
 
   const steps = useMemo(() => {
     const steps = [

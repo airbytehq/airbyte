@@ -10,12 +10,8 @@ import styles from "./InlineEnrollmentCallout.module.scss";
 export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
   const { showEnrollmentModal } = useShowEnrollmentModal();
 
-  const onEnrollClick = () => {
-    showEnrollmentModal();
-  };
-
   return (
-    <button onClick={onEnrollClick} className={styles.enrollLink}>
+    <button onClick={showEnrollmentModal} className={styles.enrollLink}>
       {children}
     </button>
   );

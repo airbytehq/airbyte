@@ -180,5 +180,8 @@
 
   "sidebar.credits": "Credits",
 
-  "freeConnectorProgram.youCanEnroll": "You can <enrollLink>enroll</enrollLink> in the Free Connector Program to use Alpha and Beta connectors for <freeText>free</freeText>."
+  "freeConnectorProgram.youCanEnroll": "You can <enrollLink>enroll</enrollLink> in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <freeText>free</freeText>.",
+  "freeConnectorProgram.title": "Free Connector Program",
+  "freeConnectorProgram.enrollNow": "Enroll now!",
+  "freeConnectorProgram.enroll.description": "Enroll in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <b>free</b>."
 }
