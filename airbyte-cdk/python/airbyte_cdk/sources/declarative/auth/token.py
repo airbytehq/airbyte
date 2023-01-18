@@ -4,6 +4,7 @@
 
 import base64
 import logging
+import time
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Union
 
@@ -240,3 +241,64 @@ class SessionTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenti
             return True
         else:
             raise ConnectionError(f"Failed to retrieve new session token, response code {response.status_code} because {response.reason}")
+
+
+@dataclass
+class AccessTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
+    """
+    https://docs.railz.ai/reference/authentication
+    """
+
+    client_id: Union[InterpolatedString, str]
+    secret_key: Union[InterpolatedString, str]
+    url: Union[InterpolatedString, str]
+    config: Config
+    options: InitVar[Mapping[str, Any]]
+    token_key: Union[InterpolatedString, str] = "access_token"
+    lifetime: Union[str, int] = 3600
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        self._client_id = InterpolatedString.create(self.client_id, options=options)
+        self._secret_key = InterpolatedString.create(self.secret_key, options=options)
+        self._url = InterpolatedString.create(self.url, options=options)
+        self._token_key = InterpolatedString.create(self.token_key, options=options)
+        self._lifetime = InterpolatedString(str(self.lifetime), options=options)
+        self._basic_auth = BasicHttpAuthenticator(
+            username=self._client_id,
+            password=self._secret_key,
+            config=self.config,
+            options=options,
+        )
+        self._session = requests.Session()
+        self._token = None
+        self._timestamp = None
+
+    def _get_lifetime(self) -> int:
+        lifetime = self._lifetime.eval(self.config)
+        try:
+            return int(lifetime)
+        except ValueError:
+            raise Exception(f"lifetime: '{lifetime}' is not integer")
+
+    def check_token(self):
+        now = time.time()
+        url = self._url.eval(self.config)
+        token_key = self._token_key.eval(self.config)
+        lifetime = self._get_lifetime()
+        if not self._token or now - self._timestamp > lifetime:
+            response = self._session.get(url, headers=self._basic_auth.get_auth_header())
+            response.raise_for_status()
+            response_json = response.json()
+            if token_key not in response_json:
+                raise Exception(f"token_key: '{token_key}' not found in response {url}")
+            self._token = response_json[token_key]
+            self._timestamp = now
+
+    @property
+    def auth_header(self) -> str:
+        return "Authorization"
+
+    @property
+    def token(self) -> str:
+        self.check_token()
+        return f"Bearer {self._token}"
