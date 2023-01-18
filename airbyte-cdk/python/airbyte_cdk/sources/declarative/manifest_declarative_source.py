@@ -81,6 +81,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
         if unknown_fields:
             raise InvalidConnectorDefinitionException(f"Found unknown top-level fields: {unknown_fields}")
 
+    def resolved_manifest(self) -> Mapping[str, Any]:
+        return self._new_source_config
+
     @property
     def resolved_manifest(self) -> Mapping[str, Any]:
         return self._new_source_config
