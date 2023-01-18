@@ -5,27 +5,19 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.SourceApi;
-import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
-import io.airbyte.api.model.generated.CheckConnectionRead;
-import io.airbyte.api.model.generated.SourceCloneRequestBody;
-import io.airbyte.api.model.generated.SourceCreate;
-import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.generated.SourceIdRequestBody;
-import io.airbyte.api.model.generated.SourceRead;
-import io.airbyte.api.model.generated.SourceReadList;
-import io.airbyte.api.model.generated.SourceSearch;
-import io.airbyte.api.model.generated.SourceUpdate;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/sources")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class SourceApiController implements SourceApi {
 
   private final SchedulerHandler schedulerHandler;

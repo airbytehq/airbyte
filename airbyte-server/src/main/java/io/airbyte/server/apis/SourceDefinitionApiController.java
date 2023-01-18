@@ -5,25 +5,20 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.SourceDefinitionApi;
-import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
-import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
-import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
-import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.generated.SourceDefinitionRead;
-import io.airbyte.api.model.generated.SourceDefinitionReadList;
-import io.airbyte.api.model.generated.SourceDefinitionUpdate;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/source_definitions")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
 @Context
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   private final SourceDefinitionsHandler sourceDefinitionsHandler;

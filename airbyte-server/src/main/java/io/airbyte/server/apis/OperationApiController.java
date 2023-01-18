@@ -5,23 +5,19 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.OperationApi;
-import io.airbyte.api.model.generated.CheckOperationRead;
-import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.OperationCreate;
-import io.airbyte.api.model.generated.OperationIdRequestBody;
-import io.airbyte.api.model.generated.OperationRead;
-import io.airbyte.api.model.generated.OperationReadList;
-import io.airbyte.api.model.generated.OperationUpdate;
-import io.airbyte.api.model.generated.OperatorConfiguration;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/operations")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class OperationApiController implements OperationApi {
 
   private final OperationsHandler operationsHandler;

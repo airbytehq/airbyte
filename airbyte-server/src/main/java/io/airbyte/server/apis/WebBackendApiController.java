@@ -5,28 +5,20 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.WebBackendApi;
-import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.ConnectionStateType;
-import io.airbyte.api.model.generated.WebBackendCheckUpdatesRead;
-import io.airbyte.api.model.generated.WebBackendConnectionCreate;
-import io.airbyte.api.model.generated.WebBackendConnectionListRequestBody;
-import io.airbyte.api.model.generated.WebBackendConnectionRead;
-import io.airbyte.api.model.generated.WebBackendConnectionReadList;
-import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
-import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
-import io.airbyte.api.model.generated.WebBackendGeographiesListResult;
-import io.airbyte.api.model.generated.WebBackendWorkspaceState;
-import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/web_backend")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class WebBackendApiController implements WebBackendApi {
 
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;

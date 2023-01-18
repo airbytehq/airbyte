@@ -13,10 +13,13 @@ import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/scheduler")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class SchedulerApiController implements SchedulerApi {
 
   private final SchedulerHandler schedulerHandler;

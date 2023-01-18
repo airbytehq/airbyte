@@ -5,14 +5,7 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.ConnectionApi;
-import io.airbyte.api.model.generated.ConnectionCreate;
-import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.ConnectionReadList;
-import io.airbyte.api.model.generated.ConnectionSearch;
-import io.airbyte.api.model.generated.ConnectionUpdate;
-import io.airbyte.api.model.generated.JobInfoRead;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
@@ -21,11 +14,14 @@ import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/connections")
 @Context()
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class ConnectionApiController implements ConnectionApi {
 
   private final ConnectionsHandler connectionsHandler;

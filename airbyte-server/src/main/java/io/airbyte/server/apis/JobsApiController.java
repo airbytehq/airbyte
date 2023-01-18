@@ -5,24 +5,21 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.JobsApi;
-import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
-import io.airbyte.api.model.generated.JobDebugInfoRead;
-import io.airbyte.api.model.generated.JobIdRequestBody;
-import io.airbyte.api.model.generated.JobInfoLightRead;
-import io.airbyte.api.model.generated.JobInfoRead;
-import io.airbyte.api.model.generated.JobListRequestBody;
-import io.airbyte.api.model.generated.JobReadList;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/jobs")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
 @Context
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class JobsApiController implements JobsApi {
 
   private final JobHistoryHandler jobHistoryHandler;

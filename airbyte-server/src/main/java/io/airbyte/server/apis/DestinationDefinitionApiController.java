@@ -5,25 +5,20 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.DestinationDefinitionApi;
-import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
-import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.generated.DestinationDefinitionRead;
-import io.airbyte.api.model.generated.DestinationDefinitionReadList;
-import io.airbyte.api.model.generated.DestinationDefinitionUpdate;
-import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
-import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/destination_definitions")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
 @Context
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class DestinationDefinitionApiController implements DestinationDefinitionApi {
 
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;

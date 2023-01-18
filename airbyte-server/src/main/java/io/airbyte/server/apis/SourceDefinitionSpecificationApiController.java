@@ -11,10 +11,13 @@ import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/source_definition_specifications")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class SourceDefinitionSpecificationApiController implements SourceDefinitionSpecificationApi {
 
   private final SchedulerHandler schedulerHandler;

@@ -5,27 +5,22 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.DestinationApi;
-import io.airbyte.api.model.generated.CheckConnectionRead;
-import io.airbyte.api.model.generated.DestinationCloneRequestBody;
-import io.airbyte.api.model.generated.DestinationCreate;
-import io.airbyte.api.model.generated.DestinationIdRequestBody;
-import io.airbyte.api.model.generated.DestinationRead;
-import io.airbyte.api.model.generated.DestinationReadList;
-import io.airbyte.api.model.generated.DestinationSearch;
-import io.airbyte.api.model.generated.DestinationUpdate;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import lombok.AllArgsConstructor;
 
 @Controller("/api/v1/destinations")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
 @AllArgsConstructor
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class DestinationApiController implements DestinationApi {
 
   private final DestinationHandler destinationHandler;

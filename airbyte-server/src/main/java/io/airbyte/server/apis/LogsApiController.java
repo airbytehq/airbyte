@@ -11,12 +11,16 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
+
 import java.io.File;
 
 @Controller("/api/v1/logs")
 @Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+        value = "OSS")
 @Context
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class LogsApiController implements LogsApi {
 
   private final LogsHandler logsHandler;
