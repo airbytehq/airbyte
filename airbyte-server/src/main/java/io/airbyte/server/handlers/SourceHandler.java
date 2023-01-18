@@ -268,7 +268,10 @@ public class SourceHandler {
   public InternalOperationResult writeDiscoverFetchEvent(final SourceDiscoverSchemaWriteRequestBody request)
       throws JsonValidationException, IOException {
     final AirbyteCatalog persistenceCatalog = CatalogConverter.toAirbyteCatalogProtocol(request.getCatalog());
-    configRepository.writeActorCatalogFetchEvent(persistenceCatalog, request.getSourceId(), request.getConnectorVersion(),
+    configRepository.writeActorCatalogFetchEvent(
+        persistenceCatalog,
+        request.getSourceId(),
+        request.getConnectorVersion(),
         request.getConfigurationHash());
     return new InternalOperationResult().succeeded(true);
   }

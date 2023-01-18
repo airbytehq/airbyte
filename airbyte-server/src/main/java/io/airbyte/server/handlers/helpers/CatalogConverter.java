@@ -186,7 +186,8 @@ public class CatalogConverter {
       throws JsonValidationException {
     final ArrayList<JsonValidationException> errors = new ArrayList<>();
 
-    io.airbyte.protocol.models.AirbyteCatalog protoCatalog = new io.airbyte.protocol.models.AirbyteCatalog();
+    io.airbyte.protocol.models.AirbyteCatalog protoCatalog =
+        new io.airbyte.protocol.models.AirbyteCatalog();
     var airbyteStream = catalog.getStreams().stream().map(stream -> {
       try {
         return toProtocol(stream.getStream(), stream.getConfig());
