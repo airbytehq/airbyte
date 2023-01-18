@@ -652,103 +652,309 @@ def test_additional_properties_is_true(connector_spec, expectation):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail, is_warning_logged",
+    "connector_spec, should_fail",
     (
         (
             {
-                "connectionSpecification": {"type": "object", "properties": {"api_token": {"type": "string", "airbyte_secret": True}}}
+                "type": "object", "properties": {"api_token": {"type": "string", "airbyte_secret": True}}
             },
             False,
+        ),
+        (
+            {
+                "type": "object", "properties": {"api_token": {"type": "null"}}
+            },
             False
         ),
         (
             {
-                "connectionSpecification": {"type": "object", "properties": {"api_token": {"type": "null"}}}
+                "type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}
             },
-            False,
-            False
-        ),
-        (
-            {
-                "connectionSpecification": {"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}
-            },
-            False,
             True
         ),
         (
             {
-                "connectionSpecification": {"type": "object", "properties": {"jwt": {"type": "object"}}}
+                "type": "object", "properties": {"refresh_token": {"type": ["null", "string"]}}
             },
-            True,
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"credentials": {"type": "array", "items": {"type": "string"}}}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"auth": {"oneOf": [{"api_token": {"type": "string"}}]}}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"credentials": {"oneOf": [{"type": "object", "properties": {"api_key": {"type": "string"}}}]}}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"start_date": {"type": ["null", "string"]}}
+            },
             False
         ),
         (
             {
-                "connectionSpecification": {"type": "object", "properties": {"refresh_token": {"type": ["null", "string"]}}}
+                "type": "object", "properties": {"credentials": {"oneOf": [{"type": "string", "const": "OAuth2.0"}]}}
             },
-            True,
-            False
-        ),
-        (
-            {
-                "connectionSpecification": {"type": "object", "properties": {"credentials": {"type": "array"}}}
-            },
-            True,
-            False
-        ),
-        (
-            {
-                "connectionSpecification": {"type": "object", "properties": {"credentials": {"type": "array", "items": {"type": "string"}}}}
-            },
-            True,
-            False
-        ),
-        (
-            {
-                "connectionSpecification": {"type": "object", "properties": {"auth": {"oneOf": [{"api_token": {"type": "string"}}]}}}
-            },
-            True,
-            False
-        ),
-        (
-            {
-                "connectionSpecification": {"type": "object", "properties": {"credentials": {"oneOf": [{"type": "object", "properties": {"api_key": {"type": "string"}}}]}}}
-            },
-            True,
-            False
-        ),
-        (
-            {
-                "connectionSpecification": {"type": "object", "properties": {"start_date": {"type": ["null", "string"]}}}
-            },
-            False,
-            False
-        ),
-        (
-            {
-                 "connectionSpecification": {"type": "object", "properties": {"credentials": {"oneOf": [{"type": "string", "const": "OAuth2.0"}]}}}
-            },
-            False,
             False
         )
     ),
 )
-def test_airbyte_secret(mocker, connector_spec, should_fail, is_warning_logged):
+def test_airbyte_secret(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
     logger = mocker.Mock()
-    t.test_secret_is_properly_marked(connector_spec, logger, ("api_key", "api_token", "refresh_token", "jwt", "credentials"))
+    t.test_secret_is_properly_marked({ "connectionSpecification": connector_spec }, logger, ("api_key", "api_token", "refresh_token", "jwt", "credentials"))
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:
         conftest.pytest.fail.assert_not_called()
-    if is_warning_logged:
-        _, args, _ = logger.warning.mock_calls[0]
-        msg, *_ = args
-        assert "Some properties are marked with `airbyte_secret` although they probably should not be" in msg
-    else:
-        logger.warning.assert_not_called()
 
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    (
+        (
+            {
+                "type": "object", "properties": {"refresh_token": {"type": ["boolean", "string"] }}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"refresh_token": {"type": "string" }}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"refresh_token": {"type": ["boolean", "null"] }}
+            },
+            False
+        ),
+    ),
+)
+def test_property_type_is_not_array(mocker, connector_spec, should_fail):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    t.test_property_type_is_not_array({ "connectionSpecification": connector_spec })
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    (
+        (
+            {
+                "type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"jwt": {"type": "object"}}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"jwt": {"type": "object", "properties": {}}}
+            },
+            True
+        ),
+    ),
+)
+def test_object_not_empty(mocker, connector_spec, should_fail):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    t.test_object_not_empty({ "connectionSpecification": connector_spec })
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    (
+        (
+            {
+                "type": "object", "properties": {"list": {"type": "array"}}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"list": {"type": "array", "items": [{ "type": "string" }, { "type": "boolean" }] }}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"list": {"type": "array", "items": { "type": "string" } }}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"list": {"type": "array", "items": { "type": "number" } }}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"list": {"type": "array", "items": { "type": "number", "enum": [1,2,3] } }}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"list": {"type": "array", "items": { "type": "object", "properties": { "a": { "type": "string" } } } }}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"list": {"type": "array", "items": { "type": "boolean" } }}
+            },
+            True
+        ),
+    ),
+)
+def test_array_type(mocker, connector_spec, should_fail):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    t.test_array_type({ "connectionSpecification": connector_spec })
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    (
+        (
+            {
+                "type": "object", "properties": {"a": {"type": "string"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"a": {"type": "string", "allOf": [
+                    { "type": "string" },
+                    { "maxLength": 5 }
+                ]
+                }}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"allOf": {"type": "string"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"allOf": {"type": "object", "patternProperties": { 
+                    "^S_": { "type": "string" },
+                    "^I_": { "type": "integer" }
+                 }}}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {
+                    "list": {
+                        "type": "array",
+                        "prefixItems": [
+                            { "enum": ["Street", "Avenue", "Boulevard"] },
+                            { "enum": ["NW", "NE", "SW", "SE"] }
+                        ]
+                    }
+                }
+            },
+            True
+        ),
+    ),
+)
+def test_forbidden_complex_types(mocker, connector_spec, should_fail):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    t.test_forbidden_complex_types({ "connectionSpecification": connector_spec })
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    (
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "format": "date"}}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "format": "date-time"}}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "format": "date", "pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"}}
+            },
+            False
+        ),
+    ),
+)
+def test_date_pattern(mocker, connector_spec, should_fail):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    t.test_date_pattern({ "connectionSpecification": connector_spec })
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
 
 @pytest.mark.parametrize(
     "path, expected_name, expected_result",
@@ -775,11 +981,9 @@ def test_is_spec_property_name_secret(path, expected_name, expected_result):
         ({"type": "number"}, True),
         ({"type": ["null", "string"]}, True),
         ({"type": ["null", "boolean"]}, False),
-        ({"type": "object"}, True),
-        # the object itself cannot hold a secret but the inner items can and will be processed separately
+        ({"type": "object"}, False),
         ({"type": "object", "properties": {"api_key": {}}}, False),
-        ({"type": "array"}, True),
-        # same as object
+        ({"type": "array"}, False),
         ({"type": "array", "items": {"type": "string"}}, False),
         ({"type": "string", "const": "OAuth2.0"}, False)
     )

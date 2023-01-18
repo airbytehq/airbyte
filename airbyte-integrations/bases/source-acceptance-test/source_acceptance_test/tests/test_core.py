@@ -278,46 +278,81 @@ class TestSpec(BaseTest):
         Each field has one or multiple types, but the UI only supports a single type and optionally "null" as a second type.
         """
         specification = connector_spec_dict["connectionSpecification"]
+        errors = []
         for type_path, value in dpath.util.search(specification, "**/properties/*/type", yielded=True):
             if isinstance(value, List):
                 if len(value) != 2:
-                    pytest.fail(f"{type_path} is not either a simple type of an array of a simple type plus null: {value}")
+                    errors.append(f"{type_path} is not either a simple type or an array of a simple type plus null: {value}")
                 if value[1] != "null":
-                    pytest.fail(f"Second type of {type_path} is not null: {value}")
+                    errors.append(f"Second type of {type_path} is not null: {value}. Type can either be a simple type or an array of a simple type plus null")
+        if len(errors) > 0:
+            pytest.fail("\n".join(errors))
+
+    @staticmethod
+    def _get_parent(obj: dict, path: str) -> Any:
+        """
+        Returns the parent dict of a given path within the `obj` dict
+        """
+        absolute_path = f"/{path}"
+        parent_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
+        if parent_path == "":
+            return obj
+        return dpath.util.get(obj, parent_path)
+
+    def test_object_not_empty(self, connector_spec_dict: dict):
+        """
+        Each object field needs to have at least one property as the UI won't be able to show them otherwise
+        """
+        specification = connector_spec_dict["connectionSpecification"]
+        errors = []
+        for type_path, value in dpath.util.search(specification, "**/type", yielded=True):
+            if value == "object":
+                property = self._get_parent(specification, type_path)
+                if "properties" not in property or len(property["properties"]) == 0:
+                    errors.append(f"{type_path} is an empty object which will not be represented correctly in the UI. Either remove or add specific properties")
+        if len(errors) > 0:
+            pytest.fail("\n".join(errors))
 
     def test_array_type(self, connector_spec_dict: dict):
         """
         Each array has one or multiple types for its items, but the UI only supports a single type which can either be object, string or an enum
         """
         specification = connector_spec_dict["connectionSpecification"]
-        for items_path, value in dpath.util.search(specification, "**/items", yielded=True):
-            absolute_path = f"/{items_path}"
-            property_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
-            property_definition = dpath.util.get(specification, property_path)
-            if property_definition["type"] != "array":
-                # unrelated "items", not an actual array definition
+        errors = []
+        for type_path, type in dpath.util.search(specification, "**/type", yielded=True):
+            property_definition = self._get_parent(specification, type_path)
+            if type != "array":
+                # unrelated "items", not an array definition
                 continue
-            if isinstance(value, List):
-                pytest.fail(f"{items_path} is not just a single item type: {value}")
-            if value["type"] not in ["object", "string"] and not value["enum"]:
-                pytest.fail(f"{items_path}/type has to be either object or string or define an enum")
+            items_value = property_definition.get("items", None)
+            if items_value is None:
+                errors.append(f"{type_path} is is an array definition without specifying items type")
+            elif isinstance(items_value, List):
+                errors.append(f"{type_path} is not just a single item type: {items_value}")
+            elif items_value["type"] not in ["object", "string"] and not "enum" in items_value:
+                errors.append(f"Items of {type_path} has to be either object or string or define an enum")
+        if len(errors) > 0:
+            pytest.fail("\n".join(errors))
 
     def test_forbidden_complex_types(self, connector_spec_dict: dict):
         """
-        not, anyOf, patternProperties, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed
+        not, anyOf, patternProperties, prefixItems, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed
         """
-        forbidden_keys = ["not", "anyOf", "patternProperties", "allOf", "if", "then", "else", "dependentSchemas", "dependentRequired"]
+        forbidden_keys = ["not", "anyOf", "patternProperties", "prefixItems", "allOf", "if", "then", "else", "dependentSchemas", "dependentRequired"]
         specification = connector_spec_dict["connectionSpecification"]
-        found_keys = {}
+        found_keys = set()
         for forbidden_key in forbidden_keys:
-            found_keys = found_keys | dpath.util.search(specification, f"**/{forbidden_key}")
+            for path, value in dpath.util.search(specification, f"**/{forbidden_key}", yielded=True):
+                found_keys.add(path)
 
         for forbidden_key in forbidden_keys:
-            as_property_name = dpath.util.search(specification, f"**/properties/{forbidden_key}")
-            found_keys = { key: found_keys[key] for key in found_keys if key not in as_property_name}
+            # remove forbidden keys if they are used as properties directly
+            for path, _value in dpath.util.search(specification, f"**/properties/{forbidden_key}", yielded=True):
+                found_keys.remove(path)
         
         if len(found_keys) > 0:
-            pytest.fail(f"Found the following disallowed JSON schema features: {found_keys}")
+            key_list = ", ".join(found_keys)
+            pytest.fail(f"Found the following disallowed JSON schema features: {key_list}")
 
     def test_date_pattern(self, connector_spec_dict: dict):
         """
@@ -325,38 +360,20 @@ class TestSpec(BaseTest):
         that corresponds with the format the datepicker component is creating.
         """
         specification = connector_spec_dict["connectionSpecification"]
+        errors = []
         for format_path, format in dpath.util.search(specification, "**/format", yielded=True):
             if not isinstance(format, str):
                 # format is not a format definition here but a property named format
                 continue
             if format == "date" or format == "date-time":
-                absolute_path = f"/{format_path}"
-                property_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
-                property_definition = dpath.util.get(specification, property_path)
+                property_definition = self._get_parent(specification, format_path)
                 pattern = property_definition.get("pattern")
                 if format == "date" and not pattern == "^[0-9]{2}-[0-9]{2}-[0-9]{4}$":
-                    pytest.fail(f"{format_path} is defining a date format without the corresponding pattern")
+                    errors.append(f"{format_path} is defining a date format without the corresponding pattern")
                 if format == "date-time" and not pattern == "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$":
-                    pytest.fail(f"{format_path} is defining a date-time format without the corresponding pattern")
-
-    def test_pattern_without_format(self, connector_spec_dict: dict):
-        """
-        Properties with a pattern corresponding to date/date-time formats should always have the corresponding format defined.
-        """
-        specification = connector_spec_dict["connectionSpecification"]
-        for pattern_path, pattern in dpath.util.search(specification, "**/pattern", yielded=True):
-            if not isinstance(pattern, str):
-                # format is not a format definition here but a property named format
-                continue
-            if pattern == "^[0-9]{2}-[0-9]{2}-[0-9]{4}$" or pattern == "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$":
-                absolute_path = f"/{pattern_path}"
-                property_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
-                property_definition = dpath.util.get(specification, property_path)
-                format = property_definition.get("format")
-                if not format == "date" and pattern == "^[0-9]{2}-[0-9]{2}-[0-9]{4}$":
-                    pytest.fail(f"{pattern_path} is defining a date pattern without the corresponding format")
-                if format == "date-time" and pattern == "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$":
-                    pytest.fail(f"{pattern_path} is defining a date-time pattern without the corresponding format")
+                    errors.append(f"{format_path} is defining a date-time format without the corresponding pattern")
+        if len(errors) > 0:
+            pytest.fail("\n".join(errors))
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
