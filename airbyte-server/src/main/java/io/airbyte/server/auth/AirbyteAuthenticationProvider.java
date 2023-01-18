@@ -35,7 +35,7 @@ public class AirbyteAuthenticationProvider implements AuthenticationProvider {
 
   private Set<String> getDefaultRoles() {
     return AuthRole.buildAuthRolesSet(AuthRole.OWNER).stream()
-        .map(r -> r.name())
+        .map(r -> r.getLabel())
         .collect(Collectors.toSet());
   }
 
