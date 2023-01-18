@@ -52,7 +52,6 @@ jobs:
           new_version="$(grep -i 'current_version = ' .bumpversion.cfg | sed -e 's/.* = //')"
           awk -v NEW_VERSION="$new_version" -v CHANGELOG_MESSAGE="${{ github.event.inputs.changelog-message }}" 'NR==3{print "## " NEW_VERSION "\n" CHANGELOG_MESSAGE "\n"}1' CHANGELOG.md > tmp && mv tmp CHANGELOG.md
       - name: Commit and Push Changes
-        if: success()
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md
@@ -60,7 +59,7 @@ jobs:
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
       - name: Post failure to Slack channel dev-connectors-extensibility
-        if: !success()
+        if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
@@ -107,7 +106,7 @@ jobs:
       - name: Build CDK Package
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
       - name: Post failure to Slack channel dev-connectors-extensibility
-        if: !success()
+        if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
@@ -167,7 +166,6 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
       - name: Post success to Slack channel dev-connectors-extensibility
-        if: success()
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
@@ -195,7 +193,7 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
       - name: Post failure to Slack channel dev-connectors-extensibility
-        if: !success()
+        if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
