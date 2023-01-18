@@ -27,7 +27,8 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
-      "allowLoadLocalInfile", "true");
+      "allowLoadLocalInfile", "true",
+      "connectionAttributes", "program_name:airbyte");
 
   static final Map<String, String> DEFAULT_SSL_JDBC_PARAMETERS = MoreMaps.merge(ImmutableMap.of(
       "useSSL", "true",

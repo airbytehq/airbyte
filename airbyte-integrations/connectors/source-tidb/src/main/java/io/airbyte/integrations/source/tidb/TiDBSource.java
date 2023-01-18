@@ -16,6 +16,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,8 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
+  static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
+      "connectionAttributes", "program_name:airbyte");
   public static final List<String> SSL_PARAMETERS = List.of(
       "useSSL=true",
       "requireSSL=true",
@@ -79,6 +82,11 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
   @Override
   protected int getStateEmissionFrequency() {
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(JsonNode config) {
+    return DEFAULT_JDBC_PARAMETERS;
   }
 
   public static void main(final String[] args) throws Exception {
