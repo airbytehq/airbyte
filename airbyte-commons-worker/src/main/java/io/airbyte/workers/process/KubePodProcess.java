@@ -127,6 +127,7 @@ public class KubePodProcess implements KubePod {
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
   public static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
+  public static final List<String> CONNECTOR_IMAGE_NAMES_WITH_DD_SUPPORT = List.of("postgres-source");
 
   private static final int STDIN_REMOTE_PORT = 9001;
 
@@ -217,6 +218,7 @@ public class KubePodProcess implements KubePod {
     final List<ContainerPort> containerPorts = createContainerPortList(internalToExternalPorts);
 
     final List<EnvVar> envVars = envMap.entrySet().stream()
+        .filter(entry -> isConnectorNeedDatadogSupport(image, entry))
         .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
         .collect(Collectors.toList());
 
@@ -235,6 +237,13 @@ public class KubePodProcess implements KubePod {
       containerBuilder.withResources(resourceRequirementsBuilder.build());
     }
     return containerBuilder.build();
+  }
+
+  private static boolean isConnectorNeedDatadogSupport(String image, Map.Entry<String, String> entry) {
+    if (entry.getKey().equals("DD_CONNECTOR_JAVA_OPTS_ENV_VAR")) {
+      return CONNECTOR_IMAGE_NAMES_WITH_DD_SUPPORT.contains(image);
+    }
+    return true;
   }
 
   public static List<ContainerPort> createContainerPortList(final Map<Integer, Integer> internalToExternalPorts) {

@@ -37,6 +37,8 @@ public class ContainerOrchestratorConfigBeanFactory {
   private static final String DD_SERVICE_ENV_VAR = "DD_SERVICE";
   private static final String DD_VERSION_ENV_VAR = "DD_VERSION";
   private static final String JAVA_OPTS_ENV_VAR = "JAVA_OPTS";
+  private static final String DD_CONNECTOR_JAVA_OPTS_ENV_VAR = "DD_CONNECTOR_JAVA_OPTS";
+  private static final String DD_CONNECTOR_ENABLE_ENV_VAR = "DD_CONNECTOR_ENABLE_ENV_VAR";
   private static final String PUBLISH_METRICS_ENV_VAR = "PUBLISH_METRICS";
   private static final String CONTROL_PLANE_AUTH_ENDPOINT_ENV_VAR = "CONTROL_PLANE_AUTH_ENDPOINT";
   private static final String DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH_ENV_VAR = "DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH";
@@ -68,6 +70,7 @@ public class ContainerOrchestratorConfigBeanFactory {
                                                                            @Value("${airbyte.metric.should-publish}") final String shouldPublishMetrics,
                                                                            final FeatureFlags featureFlags,
                                                                            @Value("${airbyte.container.orchestrator.java-opts}") final String containerOrchestratorJavaOpts,
+                                                                           @Value("${airbyte.connector.java-opts}") final String containerConnectorJavaOpts,
                                                                            final WorkerEnvironment workerEnvironment,
                                                                            @Value("${airbyte.internal.api.host}") final String containerOrchestratorApiHost,
                                                                            @Value("${airbyte.internal.api.auth-header.name}") final String containerOrchestratorApiAuthHeaderName,
@@ -105,6 +108,10 @@ public class ContainerOrchestratorConfigBeanFactory {
 
     if (System.getenv(DD_VERSION_ENV_VAR) != null) {
       environmentVariables.put(DD_VERSION_ENV_VAR, System.getenv(DD_VERSION_ENV_VAR));
+    }
+
+    if (System.getenv(DD_CONNECTOR_ENABLE_ENV_VAR) != null) {
+      environmentVariables.put(DD_CONNECTOR_JAVA_OPTS_ENV_VAR, System.getenv(containerConnectorJavaOpts));
     }
 
     // Environment variables for ApiClientBeanFactory
