@@ -22,7 +22,7 @@ services:
     image: datadog/agent:7-rc
     container_name: airbyte-datadog
     environment:
-      - DD_API_KEY
+      - DD_API_KEY=${DD_API_KEY:-}
       - DD_ENV=${DD_ENV:-local}
       - DD_SITE=datadoghq.com
       - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true

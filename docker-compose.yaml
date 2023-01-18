@@ -154,12 +154,18 @@ services:
       - GITHUB_STORE_BRANCH=${GITHUB_STORE_BRANCH}
       - MICRONAUT_ENVIRONMENTS=${WORKERS_MICRONAUT_ENVIRONMENTS}
       - AUTO_DETECT_SCHEMA=${AUTO_DETECT_SCHEMA}
+      - DD_AGENT_HOST=airbyte-datadog
+      - DD_TRACE_AGENT_URL=http://airbyte-datadog:8126
+      - JAVA_OPTS=-javaagent:/dd-java-agent.jar
     ports:
       - 8001
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
+      - type: bind
+        source: ./dd-java-agent.jar
+        target: /dd-java-agent.jar
     networks:
       - airbyte_internal
     depends_on:
@@ -233,6 +239,20 @@ services:
     image: airbyte/connector-builder-server:${VERSION}
     logging: *default-logging
     container_name: airbyte-connector-builder-server
+    restart: unless-stopped
+    ports:
+      - 80
+    environment:
+      - AIRBYTE_VERSION=${VERSION}
+    networks:
+      - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
+  airbyte-connector-builder-server-micronaut:
+    image: airbyte/connector-builder-server-micronaut:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-connector-builder-server-micronaut
     restart: unless-stopped
     ports:
       - 80

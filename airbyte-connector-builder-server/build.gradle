@@ -2,80 +2,25 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
     id "org.openapi.generator" version "5.3.1"
-    id 'application'
+    id 'airbyte-python-docker'
+    id 'airbyte-docker'
 }
 
-dependencies {
-    implementation 'com.auth0:java-jwt:3.19.2'
-    implementation 'io.fabric8:kubernetes-client:5.12.2'
-    implementation 'io.sentry:sentry:6.3.1'
-    implementation libs.bundles.temporal
-    implementation libs.bundles.datadog
-
-    implementation project(':airbyte-api')
-    implementation project(':airbyte-analytics')
-    implementation project(':airbyte-commons-temporal')
-    implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-config:config-persistence')
-    implementation project(':airbyte-config:init')
-    implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-metrics:metrics-lib')
-    implementation project(':airbyte-persistence:job-persistence')
-
-    annotationProcessor platform(libs.micronaut.bom)
-    annotationProcessor libs.bundles.micronaut.annotation.processor
-
-    implementation platform(libs.micronaut.bom)
-    implementation libs.bundles.micronaut
+airbytePythonDocker {
+    moduleDirectory 'connector_builder'
 }
 
-mainClassName = 'io.airbyte.connectorbuilder.MicronautConnectorBuilderServerRunner'
-
-application {
-    mainClass = mainClassName
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
-}
-
-Properties env = new Properties()
-rootProject.file('.env.dev').withInputStream { env.load(it) }
-
-run {
-    // default for running on local machine.
-    env.each { entry ->
-        environment entry.getKey(), entry.getValue()
-    }
-
-    environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
-    environment 'AIRBYTE_VERSION', env.VERSION
-}
-
-task generateOpenApiJavaServer(type: GenerateTask) {
+task generateOpenApiPythonServer(type: GenerateTask) {
     outputs.upToDateWhen { false }
 
     def generatedCodeDir = "$buildDir/airbyte_connector_builder_server"
     inputSpec = "$rootDir.absolutePath/airbyte-connector-builder-server/src/main/openapi/openapi.yaml"
     outputDir = generatedCodeDir
 
-    generatorName = "jaxrs-spec"
-    apiPackage = "io.airbyte.connectorbuilder.api.generated"
-    invokerPackage = "io.airbyte.connectorbuilder.api.invoker.generated"
-    modelPackage = "io.airbyte.connectorbuilder.api.model.generated"
-    generateApiDocumentation = false
-
-    configOptions = [
-            dateLibrary                   : "java8",
-            generatePom                   : "false",
-            interfaceOnly                 : "true",
-            /*
-            JAX-RS generator does not respect nullable properties defined in the OpenApi Spec.
-            It means that if a field is not nullable but not set it is still returning a null value for this field in the serialized json.
-            The below Jackson annotation is made to only keep non null values in serialized json.
-            We are not yet using nullable=true properties in our OpenApi so this is a valid workaround at the moment to circumvent the default JAX-RS behavior described above.
-            Feel free to read the conversation on https://github.com/airbytehq/airbyte/pull/13370 for more details.
-            */
-            additionalModelTypeAnnotations: "\n@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)",
-    ]
+    generatorName = "python-fastapi"
+    configFile = "$projectDir/openapi/generator_config.yaml"
+    templateDir = "$projectDir/openapi/templates"
+    packageName = "connector_builder.generated"
 
     // After we generate, we're only interested in the API declaration and the generated pydantic models.
     // So we copy those from the build/ directory
@@ -96,11 +41,12 @@ task generateOpenApiJavaServer(type: GenerateTask) {
     }
 }
 
+project.build.dependsOn(generateOpenApiPythonServer)
+
 // java modules such as airbyte-server can use copyGeneratedTar to copy the files to the docker image
 // We cannot do this here because we don't generate a tar file
 // Instead, we copy the files into the build directory so they can be copied to the docker container
 task prepareBuild(type: Copy) {
-    dependsOn generateOpenApiJavaServer
     from layout.projectDirectory.file(".")
     exclude '.*'
     exclude 'build'
@@ -111,5 +57,5 @@ task prepareBuild(type: Copy) {
 
 tasks.named("buildDockerImage") {
     dependsOn prepareBuild
-    dependsOn copyGeneratedTar
+    dependsOn copyDocker
 }
