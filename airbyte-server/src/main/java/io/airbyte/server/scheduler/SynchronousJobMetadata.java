@@ -21,6 +21,7 @@ public class SynchronousJobMetadata {
   private final long createdAt;
   private final long endedAt;
   private final boolean succeeded;
+  private final boolean connectorConfigurationUpdated;
 
   private final Path logPath;
 
@@ -28,6 +29,7 @@ public class SynchronousJobMetadata {
                                                        final UUID id,
                                                        final ConfigType configType,
                                                        final UUID configId,
+                                                       final boolean connectorConfigurationUpdated,
                                                        final long createdAt,
                                                        final long endedAt) {
     return new SynchronousJobMetadata(
@@ -37,6 +39,7 @@ public class SynchronousJobMetadata {
         createdAt,
         endedAt,
         jobMetadata.isSucceeded(),
+        connectorConfigurationUpdated,
         jobMetadata.getLogPath());
   }
 
@@ -46,6 +49,7 @@ public class SynchronousJobMetadata {
                                 final long createdAt,
                                 final long endedAt,
                                 final boolean succeeded,
+                                final boolean connectorConfigurationUpdated,
                                 final Path logPath) {
     this.id = id;
     this.configType = configType;
@@ -53,6 +57,7 @@ public class SynchronousJobMetadata {
     this.createdAt = createdAt;
     this.endedAt = endedAt;
     this.succeeded = succeeded;
+    this.connectorConfigurationUpdated = connectorConfigurationUpdated;
     this.logPath = logPath;
   }
 
@@ -80,6 +85,10 @@ public class SynchronousJobMetadata {
     return succeeded;
   }
 
+  public boolean isConnectorConfigurationUpdated() {
+    return connectorConfigurationUpdated;
+  }
+
   public Path getLogPath() {
     return logPath;
   }
@@ -93,13 +102,14 @@ public class SynchronousJobMetadata {
       return false;
     }
     final SynchronousJobMetadata that = (SynchronousJobMetadata) o;
-    return createdAt == that.createdAt && endedAt == that.endedAt && succeeded == that.succeeded && Objects.equals(id, that.id)
+    return createdAt == that.createdAt && endedAt == that.endedAt && succeeded == that.succeeded
+        && connectorConfigurationUpdated == that.connectorConfigurationUpdated && Objects.equals(id, that.id)
         && configType == that.configType && Objects.equals(configId, that.configId) && Objects.equals(logPath, that.logPath);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, configType, configId, createdAt, endedAt, succeeded, logPath);
+    return Objects.hash(id, configType, configId, createdAt, endedAt, succeeded, connectorConfigurationUpdated, logPath);
   }
 
   @Override
@@ -111,6 +121,7 @@ public class SynchronousJobMetadata {
         ", createdAt=" + createdAt +
         ", endedAt=" + endedAt +
         ", succeeded=" + succeeded +
+        ", connectorConfigurationUpdated=" + connectorConfigurationUpdated +
         ", logPath=" + logPath +
         '}';
   }
@@ -119,6 +130,7 @@ public class SynchronousJobMetadata {
     final long now = Instant.now().toEpochMilli();
     final UUID configId = null;
     final boolean succeeded = true;
+    final boolean connectorConfigurationUpdated = false;
     final Path logPath = null;
 
     return new SynchronousJobMetadata(
@@ -128,6 +140,7 @@ public class SynchronousJobMetadata {
         now,
         now,
         succeeded,
+        connectorConfigurationUpdated,
         logPath);
   }
 
