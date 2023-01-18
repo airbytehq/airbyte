@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterator, List
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.declarative.yaml_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.streams.http import HttpStream
 from connector_builder.impl.adapter import CdkAdapter
@@ -15,7 +16,7 @@ from connector_builder.impl.adapter import CdkAdapter
 class LowCodeSourceAdapter(CdkAdapter):
     def __init__(self, manifest: Dict[str, Any]):
         # Request and response messages are only emitted for a sources that have debug turned on
-        self._source = ManifestDeclarativeSource(manifest, debug=True)
+        self._source = ManifestDeclarativeSource(manifest, debug=True, component_factory=ModelToComponentFactory(is_test_read=True))
 
     def get_http_streams(self, config: Dict[str, Any]) -> List[HttpStream]:
         http_streams = []

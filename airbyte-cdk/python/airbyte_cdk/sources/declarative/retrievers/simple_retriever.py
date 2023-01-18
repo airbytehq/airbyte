@@ -5,6 +5,7 @@
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
+from itertools import islice
 from json import JSONDecodeError
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -414,6 +415,20 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # Not great to need to call _read_pages which is a private method
         # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
+
+
+class SimpleRetrieverTestReadDecorator(SimpleRetriever):
+    """
+    In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
+    slices that are queried throughout a read command.
+    """
+
+    _MAXIMUM_NUMBER_OF_SLICES = 5
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self._MAXIMUM_NUMBER_OF_SLICES)
 
 
 def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:

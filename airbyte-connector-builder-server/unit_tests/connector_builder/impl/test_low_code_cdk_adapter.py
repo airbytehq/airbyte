@@ -10,6 +10,8 @@ import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.requesters.paginators import PaginatorTestReadDecorator
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.parsers.custom_exceptions import UndefinedReferenceException
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -176,6 +178,33 @@ MANIFEST_WITH_REFERENCES = {
     }
 }
 
+MANIFEST_WITH_PAGINATOR = {
+    "version": "0.1.0",
+    "type" : "DeclarativeSource",
+    "definitions": {
+    },
+    "streams": [
+        {
+            "type" : "DeclarativeStream",
+            "retriever": {
+                "type" : "SimpleRetriever",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "pagination_strategy": {
+                        "type": "OffsetIncrement",
+                        "page_size": 10
+                    },
+                    "url_base": "https://demonslayers.com/api/v1/"
+                },
+                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
+            },
+            "$options": {"name": "hashiras", "path": "/hashiras"},
+        },
+    ],
+    "check": {"stream_names": ["hashiras"], "type": "CheckStream"},
+}
+
 def test_get_http_streams():
     expected_urls = {"https://demonslayers.com/api/v1/breathing_techniques", "https://demonslayers.com/api/v1/hashiras"}
 
@@ -310,3 +339,13 @@ def test_read_streams_invalid_reference():
 
     with pytest.raises(UndefinedReferenceException):
         LowCodeSourceAdapter(invalid_reference_manifest)
+
+
+def test_stream_use_read_test_retriever_and_paginator():
+    adapter = LowCodeSourceAdapter(MANIFEST_WITH_PAGINATOR)
+    streams = adapter.get_http_streams(config={})
+
+    assert streams
+    for stream in streams:
+        assert isinstance(stream, SimpleRetrieverTestReadDecorator)
+        assert isinstance(stream.paginator, PaginatorTestReadDecorator)
