@@ -248,6 +248,30 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     return true;
   }
 
+  /**
+   * Estimates the total volume (rows and bytes) to sync and emits a
+   * {@link AirbyteEstimateTraceMessage} associated with the full refresh stream.
+   *
+   * @param database database
+   */
+  protected void estimateFullRefreshSyncSize(final Database database,
+                                             final ConfiguredAirbyteStream configuredAirbyteStream) {
+    /* no-op */
+  }
+
+  /**
+   * Estimates the total volume (rows and bytes) to sync and emits a
+   * {@link AirbyteEstimateTraceMessage} associated with an incremental stream.
+   *
+   * @param database database
+   */
+  protected void estimateIncrementalSyncSize(final Database database,
+                                             final ConfiguredAirbyteStream configuredAirbyteStream,
+                                             final CursorInfo cursorInfo,
+                                             final DataType dataType) {
+    /* no-op */
+  }
+
   private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
                                                                              final Database database)
       throws Exception {
@@ -378,6 +402,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
             emittedAt);
       } else {
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
+        estimateFullRefreshSyncSize(database, airbyteStream);
         airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace,
             selectedDatabaseFields, table, emittedAt);
       }
@@ -396,6 +421,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
               getStateEmissionFrequency()),
           airbyteMessageIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
+      estimateFullRefreshSyncSize(database, airbyteStream);
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
           table, emittedAt);
     } else if (airbyteStream.getSyncMode() == null) {
@@ -445,6 +471,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         table.getFields().stream().anyMatch(f -> f.getName().equals(cursorField)),
         String.format("Could not find cursor field %s in table %s", cursorField, table.getName()));
 
+    estimateIncrementalSyncSize(database, airbyteStream, cursorInfo, cursorType);
     final AutoCloseableIterator<JsonNode> queryIterator = queryTableIncremental(
         database,
         selectedDatabaseFields,
