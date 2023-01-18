@@ -134,9 +134,11 @@ export const checkStreamFields = (listNames: Array<String>, listTypes: Array<Str
  */
 const checkDropdownField = (streamName: string, dropdownType: Dropdown, expectedValue: string | string[]) => {
   const button = getFieldDropdownButton(streamName, dropdownType);
+  const isButtonContainsExactValue = (value: string) => cy.get(button).contains(new RegExp(`^${value}$`));
+
   return Array.isArray(expectedValue)
-    ? expectedValue.forEach((v) => cy.get(button).contains(v))
-    : cy.get(button).contains(expectedValue);
+    ? expectedValue.every((value) => isButtonContainsExactValue(value))
+    : isButtonContainsExactValue(expectedValue);
 };
 
 /**

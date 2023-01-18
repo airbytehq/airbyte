@@ -512,7 +512,7 @@ describe("Connection sync modes", () => {
     searchStream(streamName);
 
     checkCursorField(streamName, "city");
-    checkPrimaryKey(streamName, ["city", "city_code"]);
+    checkPrimaryKey(streamName, ["city_code"]);
 
     deleteSource(sourceName);
     deleteDestination(destName);
