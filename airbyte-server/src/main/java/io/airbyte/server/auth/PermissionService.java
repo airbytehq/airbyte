@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 public class PermissionService {
 
   public Collection<String> getUserPermissions(final String username) {
-    return AuthRole.buildAuthRolesSet(AuthRole.EDITOR).stream().map(r -> r.name()).collect(Collectors.toSet());
+    return AuthRole.buildAuthRolesSet(AuthRole.EDITOR).stream().map(r -> r.getLabel()).collect(Collectors.toSet());
   }
 
   public Collection<String> getWorkspacePermissions(final UUID workspaceId) {
-    return Set.of(AuthRole.OWNER.name());
+    return Set.of(AuthRole.OWNER.getLabel());
   }
 
 }

@@ -39,21 +39,27 @@ import java.util.stream.Stream;
  */
 public enum AuthRole {
 
-  OWNER(500),
-  ADMIN(400),
-  EDITOR(300),
-  READER(200),
-  AUTHENTICATED_USER(100), // ONLY USE WITH INSTANCE RESOURCE!
-  NONE(0);
+  OWNER(500, AuthRoleConstants.OWNER),
+  ADMIN(400, AuthRoleConstants.ADMIN),
+  EDITOR(300, AuthRoleConstants.EDITOR),
+  READER(200, AuthRoleConstants.READER),
+  AUTHENTICATED_USER(100, AuthRoleConstants.AUTHENTICATED_USER), // ONLY USE WITH INSTANCE RESOURCE!
+  NONE(0, AuthRoleConstants.NONE);
 
   private final int authority;
+  private final String label;
 
-  AuthRole(final int authority) {
+  AuthRole(final int authority, final String label) {
     this.authority = authority;
+    this.label = label;
   }
 
   public int getAuthority() {
     return authority;
+  }
+
+  public String getLabel() {
+    return label;
   }
 
   /**
