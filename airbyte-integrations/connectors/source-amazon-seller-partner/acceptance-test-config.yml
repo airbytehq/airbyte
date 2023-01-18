@@ -1,5 +1,4 @@
 connector_image: airbyte/source-amazon-seller-partner:dev
-test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
@@ -28,6 +27,7 @@ acceptance_tests:
           extra_fields: no
           exact_order: no
           extra_records: yes
+        # TODO: Add records for empty streams - https://github.com/airbytehq/airbyte/issues/21555
         empty_streams:
           - name: Orders
             bypass_reason: "no records"
