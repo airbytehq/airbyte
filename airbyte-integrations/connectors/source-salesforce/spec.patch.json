@@ -1,6 +1,9 @@
 {
     "required": ["credentials"],
     "properties": {
+        "start_date": {
+          "description": "Enter the date in the YYYY-MM-DD format. We will replicate the data added on and after this date. If this field is blank, we will replicate all data."
+        },
         "credentials": {
             "required": [
                 "client_id",
@@ -17,21 +20,21 @@
                 },
                 "client_id": {
                     "title": "Client ID",
-                    "description": "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client ID</a>",
+                    "description": "Enter your Salesforce developer application's Client ID",
                     "type": "string",
                     "order": 2,
                     "airbyte_secret": true
                 },
                 "client_secret": {
                     "title": "Client Secret",
-                    "description": "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client secret</a>",
+                    "description": "Enter your Salesforce developer application's Client secret",
                     "type": "string",
                     "airbyte_secret": true,
                     "order": 3
                 },
                 "refresh_token": {
                     "title": "Refresh Token",
-                    "description": "Enter your application's <a href=\"https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm\">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.",
+                    "description": "Enter your application's Salesforce Refresh Token used to access your Salesforce account.",
                     "type": "string",
                     "airbyte_secret": true,
                     "order": 4
