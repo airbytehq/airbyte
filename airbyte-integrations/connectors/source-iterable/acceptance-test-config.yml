@@ -4,13 +4,73 @@ acceptance_tests:
   basic_read:
     tests:
     - config_path: secrets/config.json
-      timeout_seconds: 3600
-	  expect_records:
+      expect_records:
         path: integration_tests/expected_records.txt
+      timeout_seconds: 3600
       empty_streams:
+      - name: campaigns
+        bypass_reason: "Contains sensitive record"
+      - name: email_bounce
+        bypass_reason: "Contains sensitive record"
+      - name: email_open
+        bypass_reason: "Contains sensitive record"
+      - name: email_send
+        bypass_reason: "Contains sensitive record"
       - name: email_send_skip
         bypass_reason: "Unable to fulfill data"
       - name: email_complaint
+        bypass_reason: "Unable to fulfill data"
+      - name: sms_send
+        bypass_reason: "Unable to fulfill data"
+      - name: in_app_send
+        bypass_reason: "Unable to fulfill data"
+      - name: web_push_click
+        bypass_reason: "Unable to fulfill data"
+      - name: in_app_delivery
+        bypass_reason: "Unable to fulfill data"
+      - name: push_uninstall
+        bypass_reason: "Unable to fulfill data"
+      - name: in_app_send_skip
+        bypass_reason: "Unable to fulfill data"
+      - name: inbox_session
+        bypass_reason: "Unable to fulfill data"
+      - name: inbox_message_impression
+        bypass_reason: "Unable to fulfill data"
+      - name: sms_received
+        bypass_reason: "Unable to fulfill data"
+      - name: custom_event
+        bypass_reason: "Unable to fulfill data"
+      - name: web_push_send
+        bypass_reason: "Unable to fulfill data"
+      - name: push_send_skip
+        bypass_reason: "Unable to fulfill data"
+      - name: in_app_open
+        bypass_reason: "Unable to fulfill data"
+      - name: in_app_click
+        bypass_reason: "Unable to fulfill data"
+      - name: sms_send_skip
+        bypass_reason: "Unable to fulfill data"
+      - name: push_send
+        bypass_reason: "Unable to fulfill data"
+      - name: purchase
+        bypass_reason: "Unable to fulfill data"
+      - name: push_bounce
+        bypass_reason: "Unable to fulfill data"
+      - name: hosted_unsubscribe_click
+        bypass_reason: "Unable to fulfill data"
+      - name: web_push_send_skip
+        bypass_reason: "Unable to fulfill data"
+      - name: sms_click
+        bypass_reason: "Unable to fulfill data"
+      - name: push_open
+        bypass_reason: "Unable to fulfill data"
+      - name: in_app_delete
+        bypass_reason: "Unable to fulfill data"
+      - name: sms_bounce
+        bypass_reason: "Unable to fulfill data"
+      - name: in_app_close
+        bypass_reason: "Unable to fulfill data"
+      - name: sms_usage_info
         bypass_reason: "Unable to fulfill data"
   connection:
     tests:
