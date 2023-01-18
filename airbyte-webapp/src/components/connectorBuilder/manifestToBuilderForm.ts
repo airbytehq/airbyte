@@ -47,10 +47,6 @@ export const convertToBuilderFormValues = (
     if (errorMessage.slice(-1) === '"') {
       errorMessage = errorMessage.substring(0, errorMessage.length - 1);
     }
-    const tracebackIndex = errorMessage.indexOf(" - Traceback");
-    if (tracebackIndex >= 0) {
-      errorMessage = errorMessage.substring(0, tracebackIndex);
-    }
     throw new ManifestCompatibilityError(undefined, errorMessage.trim());
   }
   const manifestString = JSON.stringify(manifest);
