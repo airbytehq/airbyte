@@ -63,8 +63,8 @@ create table "public"."normalization_summaries"(
 );
 create table "public"."stream_stats"(
   "id" uuid not null,
-  "attempt_id" int4 not null,
-  "stream_namespace" varchar(2147483647) not null,
+  "attempt_id" int8 not null,
+  "stream_namespace" varchar(2147483647) null,
   "stream_name" varchar(2147483647) not null,
   "records_emitted" int8 null,
   "bytes_emitted" int8 null,
@@ -122,10 +122,11 @@ create index "jobs_status_idx" on "public"."jobs"("status" asc);
 create unique index "normalization_summaries_pkey" on "public"."normalization_summaries"("id" asc);
 create index "normalization_summary_attempt_id_idx" on "public"."normalization_summaries"("attempt_id" asc);
 create index "index" on "public"."stream_stats"("attempt_id" asc);
-create unique index "stream_stats_attempt_id_stream_name_key" on "public"."stream_stats"(
-  "attempt_id" asc, 
-  "stream_name" asc
-);
 create unique index "stream_stats_pkey" on "public"."stream_stats"("id" asc);
+create unique index "uniq_stream_attempt" on "public"."stream_stats"(
+  "attempt_id" asc, 
+  "stream_name" asc, 
+  "stream_namespace" asc
+);
 create index "attempt_id_idx" on "public"."sync_stats"("attempt_id" asc);
 create unique index "sync_stats_pkey" on "public"."sync_stats"("id" asc);

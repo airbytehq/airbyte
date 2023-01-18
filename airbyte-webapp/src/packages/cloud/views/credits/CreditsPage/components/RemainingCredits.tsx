@@ -19,6 +19,8 @@ import {
 } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { links } from "utils/links";
 
+import { LowCreditBalanceHint } from "./LowCreditBalanceHint";
+
 interface Props {
   selfServiceCheckoutEnabled: boolean;
 }
@@ -107,6 +109,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       workspaceId: currentWorkspace.workspaceId,
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
+      stripeMode: "payment",
     });
     analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
       actionDescription: "Checkout Start",
@@ -116,29 +119,44 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   };
 
   return (
-    <Block>
-      <CreditView>
-        <FormattedMessage id="credits.remainingCredits" />
-        <Count>
-          <FormattedNumber value={cloudWorkspace.remainingCredits} />
-        </Count>
-      </CreditView>
-      <Actions>
+    <>
+      <LowCreditBalanceHint>
         <Button
           disabled={!selfServiceCheckoutEnabled}
           type="button"
           size="xs"
+          variant="dark"
           onClick={startStripeCheckout}
           isLoading={isLoading || isWaitingForCredits}
           icon={<FontAwesomeIcon icon={faPlus} />}
         >
           <FormattedMessage id="credits.buyCredits" />
         </Button>
-        <Button size="xs" onClick={() => window.open(links.contactSales, "_blank")}>
-          <FormattedMessage id="credits.talkToSales" />
-        </Button>
-      </Actions>
-    </Block>
+      </LowCreditBalanceHint>
+      <Block>
+        <CreditView>
+          <FormattedMessage id="credits.remainingCredits" />
+          <Count>
+            <FormattedNumber value={cloudWorkspace.remainingCredits} />
+          </Count>
+        </CreditView>
+        <Actions>
+          <Button
+            disabled={!selfServiceCheckoutEnabled}
+            type="button"
+            size="xs"
+            onClick={startStripeCheckout}
+            isLoading={isLoading || isWaitingForCredits}
+            icon={<FontAwesomeIcon icon={faPlus} />}
+          >
+            <FormattedMessage id="credits.buyCredits" />
+          </Button>
+          <Button size="xs" onClick={() => window.open(links.contactSales, "_blank")}>
+            <FormattedMessage id="credits.talkToSales" />
+          </Button>
+        </Actions>
+      </Block>
+    </>
   );
 };
 

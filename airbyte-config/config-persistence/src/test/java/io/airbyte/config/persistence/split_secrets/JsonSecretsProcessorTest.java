@@ -495,6 +495,68 @@ class JsonSecretsProcessorTest {
     assertEquals(expected, copied);
   }
 
+  @Test
+  void testCopySecretsWithTopLevelOneOf() {
+    final JsonNode schema = Jsons.deserialize("""
+                                              {
+                                                  "$schema": "http://json-schema.org/draft-07/schema#",
+                                                  "title": "E2E Test Destination Spec",
+                                                  "type": "object",
+                                                  "oneOf": [
+                                                    {
+                                                      "title": "Silent",
+                                                      "required": ["type"],
+                                                      "properties": {
+                                                        "a_secret": {
+                                                          "type": "string",
+                                                          "airbyte_secret": true
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "title": "Throttled",
+                                                      "required": ["type", "millis_per_record"],
+                                                      "properties": {
+                                                        "type": {
+                                                          "type": "string",
+                                                          "const": "THROTTLED",
+                                                          "default": "THROTTLED"
+                                                        },
+                                                        "millis_per_record": {
+                                                          "description": "Number of milli-second to pause in between records.",
+                                                          "type": "integer"
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              """);
+
+    final JsonNode source = Jsons.deserialize("""
+                                              {
+                                                "type": "THROTTLED",
+                                                "a_secret": "woot"
+                                              }
+                                              """);
+
+    final JsonNode destination = Jsons.deserialize("""
+                                                   {
+                                                     "type": "THROTTLED",
+                                                     "a_secret": "**********"
+                                                   }
+                                                   """);
+
+    final JsonNode result = processor.copySecrets(source, destination, schema);
+    final JsonNode expected = Jsons.deserialize("""
+                                                {
+                                                  "type": "THROTTLED",
+                                                  "a_secret": "woot"
+                                                }
+                                                """);
+
+    assertEquals(expected, result);
+  }
+
   @Nested
   class NoOpTest {
 

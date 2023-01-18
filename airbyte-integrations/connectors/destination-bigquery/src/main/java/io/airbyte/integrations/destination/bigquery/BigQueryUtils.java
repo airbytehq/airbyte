@@ -70,7 +70,7 @@ public class BigQueryUtils {
       DateTimeFormatter.ofPattern("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
           "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
   private static final String USER_AGENT_FORMAT = "%s (GPN: Airbyte)";
-  private static final String CHECK_TEST_DATASET_SUFFIX = "_airbyte_check_stage_tmp_" + System.currentTimeMillis();
+  private static final String CHECK_TEST_DATASET_SUFFIX = "_airbyte_check_stage_tmp_";
   private static final String CHECK_TEST_TMP_TABLE_NAME = "test_connection_table_name";
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
@@ -125,7 +125,7 @@ public class BigQueryUtils {
   }
 
   public static void checkHasCreateAndDeleteDatasetRole(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
-    final String tmpTestDatasetId = datasetId + CHECK_TEST_DATASET_SUFFIX;
+    final String tmpTestDatasetId = datasetId + CHECK_TEST_DATASET_SUFFIX  + System.currentTimeMillis();
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(tmpTestDatasetId).setLocation(datasetLocation).build();
 
     bigquery.create(datasetInfo);

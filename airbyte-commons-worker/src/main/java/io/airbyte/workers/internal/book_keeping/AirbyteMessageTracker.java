@@ -14,7 +14,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import datadog.trace.api.Trace;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
@@ -66,7 +66,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
   private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
   private final StateAggregator stateAggregator;
-  private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
+  private final FeatureFlags featureFlags;
+  private final boolean featureFlagLogConnectorMsgs;
 
   // These variables support SYNC level estimates and are meant for sources where stream level
   // estimates are not possible e.g. CDC sources.
@@ -91,16 +92,18 @@ public class AirbyteMessageTracker implements MessageTracker {
     DESTINATION
   }
 
-  public AirbyteMessageTracker() {
+  public AirbyteMessageTracker(final FeatureFlags featureFlags) {
     this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES),
-        new DefaultStateAggregator(new EnvVariableFeatureFlags().useStreamCapableState()),
-        new StateMetricsTracker(STATE_METRICS_TRACKER_MESSAGE_LIMIT));
+        new DefaultStateAggregator(featureFlags.useStreamCapableState()),
+        new StateMetricsTracker(STATE_METRICS_TRACKER_MESSAGE_LIMIT),
+        featureFlags);
   }
 
   @VisibleForTesting
   protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker,
                                   final StateAggregator stateAggregator,
-                                  final StateMetricsTracker stateMetricsTracker) {
+                                  final StateMetricsTracker stateMetricsTracker,
+                                  final FeatureFlags featureFlags) {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
     this.streamToRunningCount = new HashMap<>();
@@ -115,6 +118,8 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.destinationErrorTraceMessages = new ArrayList<>();
     this.sourceErrorTraceMessages = new ArrayList<>();
     this.stateAggregator = stateAggregator;
+    this.featureFlags = featureFlags;
+    this.featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -252,12 +257,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   @SuppressWarnings("PMD") // until method is implemented
   private void handleEmittedOrchestratorConnectorConfig(final AirbyteControlConnectorConfigMessage configMessage,
                                                         final ConnectorType connectorType) {
-    // TODO: Update config here
-    /**
-     * Pseudocode: for (key in configMessage.getConfig()) { validateIsReallyConfig(key);
-     * persistConfigChange(connectorType, key, configMessage.getConfig().get(key)); // nuance here for
-     * secret storage or not. May need to be async over API for replication orchestrator }
-     */
+    // Config updates are being persisted as part of the DefaultReplicationWorker.
+    // In the future, we could add tracking of these kinds of messages here. Nothing to do for now.
   }
 
   /**
@@ -546,7 +547,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   private void logMessageAsJSON(final String caller, final AirbyteMessage message) {
-    if (!logConnectorMessages) {
+    if (!featureFlagLogConnectorMsgs) {
       return;
     }
 
