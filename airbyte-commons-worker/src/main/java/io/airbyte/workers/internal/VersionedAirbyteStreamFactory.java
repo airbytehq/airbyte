@@ -57,17 +57,19 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   public VersionedAirbyteStreamFactory(final AirbyteMessageSerDeProvider serDeProvider,
                                        final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                        final Version protocolVersion,
-                                       final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
-    this(serDeProvider, migratorFactory, protocolVersion, configuredAirbyteCatalog, MdcScope.DEFAULT_BUILDER);
+                                       final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog,
+                                       final Optional<Class<? extends RuntimeException>> exceptionClass) {
+    this(serDeProvider, migratorFactory, protocolVersion, configuredAirbyteCatalog, MdcScope.DEFAULT_BUILDER, exceptionClass);
   }
 
   public VersionedAirbyteStreamFactory(final AirbyteMessageSerDeProvider serDeProvider,
                                        final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                        final Version protocolVersion,
                                        final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog,
-                                       final MdcScope.Builder containerLogMdcBuilder) {
+                                       final MdcScope.Builder containerLogMdcBuilder,
+                                       final Optional<Class<? extends RuntimeException>> exceptionClass) {
     // TODO AirbyteProtocolPredicate needs to be updated to be protocol version aware
-    super(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder);
+    super(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder, exceptionClass);
     Preconditions.checkNotNull(protocolVersion);
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;

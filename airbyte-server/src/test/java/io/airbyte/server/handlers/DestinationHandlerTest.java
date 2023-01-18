@@ -92,9 +92,7 @@ class DestinationHandlerTest {
     destinationDefinitionSpecificationRead = new DestinationDefinitionSpecificationRead()
         .connectionSpecification(connectorSpecification.getConnectionSpecification())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
-        .documentationUrl(connectorSpecification.getDocumentationUrl().toString())
-        .supportsDbt(connectorSpecification.getSupportsDBT())
-        .supportsNormalization(connectorSpecification.getSupportsNormalization());
+        .documentationUrl(connectorSpecification.getDocumentationUrl().toString());
 
     destinationConnection = DestinationHelpers.generateDestination(standardDestinationDefinition.getDestinationDefinitionId());
 

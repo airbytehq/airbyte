@@ -57,7 +57,7 @@ class VersionedAirbyteStreamFactoryTest {
   void testCreate() {
     final Version initialVersion = new Version("0.1.2");
     final VersionedAirbyteStreamFactory<?> streamFactory =
-        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty());
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty(), Optional.empty());
 
     final BufferedReader bufferedReader = new BufferedReader(new StringReader(""));
     streamFactory.create(bufferedReader);
@@ -70,7 +70,7 @@ class VersionedAirbyteStreamFactoryTest {
   void testCreateWithVersionDetection() {
     final Version initialVersion = new Version("0.0.0");
     final VersionedAirbyteStreamFactory<?> streamFactory =
-        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty())
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty(), Optional.empty())
             .withDetectVersion(true);
 
     final BufferedReader bufferedReader =
@@ -87,7 +87,7 @@ class VersionedAirbyteStreamFactoryTest {
   void testCreateWithVersionDetectionFallback() {
     final Version initialVersion = new Version("0.0.6");
     final VersionedAirbyteStreamFactory<?> streamFactory =
-        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty())
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty(), Optional.empty())
             .withDetectVersion(true);
 
     final BufferedReader bufferedReader =
@@ -104,7 +104,7 @@ class VersionedAirbyteStreamFactoryTest {
   void testCreateWithVersionDetectionWithoutSpecMessage() {
     final Version initialVersion = new Version("0.0.1");
     final VersionedAirbyteStreamFactory<?> streamFactory =
-        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty())
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty(), Optional.empty())
             .withDetectVersion(true);
 
     final BufferedReader bufferedReader =

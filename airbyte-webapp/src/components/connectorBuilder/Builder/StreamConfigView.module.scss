@@ -52,13 +52,24 @@ $controlButtonWidth: 24px;
 }
 
 .errorMessage {
-  // hardcode height to prevent resizing when error message is hidden
-  height: 16px;
   color: colors.$red;
 }
 
 .schemaEditor {
-  height: 100%;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+
+  // Needs to be set so the element is not overflowing its container due to the fixed Monaco height but respecting the flex flow.
+  // Monaco will remeasure its container to relayout itself correctly according to the changed height.
+  min-height: 0;
+}
+
+.editorContainer {
+  // Needs to be set so the element is not overflowing its container due to the fixed Monaco height but respecting the flex flow.
+  // Monaco will remeasure its container to relayout itself correctly according to the changed height.
+  min-height: 0;
+  flex: 1 1 0;
 }
 
 .multiStreams {

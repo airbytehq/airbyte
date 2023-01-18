@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -48,6 +49,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.persistence.job.JobPersistence.AttemptStats;
+import io.airbyte.persistence.job.JobPersistence.JobAttemptPair;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptStatus;
 import io.airbyte.persistence.job.models.AttemptWithJobInfo;
@@ -142,26 +144,28 @@ class DefaultJobPersistenceTest {
     container.close();
   }
 
-  private static Attempt createAttempt(final long id, final long jobId, final AttemptStatus status, final Path logPath) {
+  private static Attempt createAttempt(final int id, final long jobId, final AttemptStatus status, final Path logPath) {
     return new Attempt(
         id,
         jobId,
         logPath,
         null,
         status,
+        null,
         null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
         NOW.getEpochSecond());
   }
 
-  private static Attempt createUnfinishedAttempt(final long id, final long jobId, final AttemptStatus status, final Path logPath) {
+  private static Attempt createUnfinishedAttempt(final int id, final long jobId, final AttemptStatus status, final Path logPath) {
     return new Attempt(
         id,
         jobId,
         logPath,
         null,
         status,
+        null,
         null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
@@ -238,7 +242,7 @@ class DefaultJobPersistenceTest {
         jobId,
         SPEC_JOB_CONFIG,
         JobStatus.INCOMPLETE,
-        Lists.newArrayList(createAttempt(0L, jobId, AttemptStatus.FAILED, LOG_PATH)),
+        Lists.newArrayList(createAttempt(0, jobId, AttemptStatus.FAILED, LOG_PATH)),
         NOW.getEpochSecond());
     assertEquals(expected, actual);
   }
@@ -256,7 +260,7 @@ class DefaultJobPersistenceTest {
         jobId,
         SPEC_JOB_CONFIG,
         JobStatus.SUCCEEDED,
-        Lists.newArrayList(createAttempt(0L, jobId, AttemptStatus.SUCCEEDED, LOG_PATH)),
+        Lists.newArrayList(createAttempt(0, jobId, AttemptStatus.SUCCEEDED, LOG_PATH)),
         NOW.getEpochSecond());
     assertEquals(expected, actual);
   }
@@ -326,8 +330,8 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
-  @DisplayName("Test writing in progress stats")
-  class WriteStats {
+  @DisplayName("Stats Related Tests")
+  class Stats {
 
     @Test
     @DisplayName("Writing stats the first time should only write record and bytes information correctly")
@@ -455,6 +459,81 @@ class DefaultJobPersistenceTest {
       assertEquals(streamStats, actStreamStats);
     }
 
+    @Test
+    @DisplayName("Writing multiple stats a stream with null namespace should write correctly without exceptions")
+    void testGetStatsNoResult() throws IOException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      final AttemptStats stats = jobPersistence.getAttemptStats(jobId, attemptNumber);
+      assertNull(stats.combinedStats());
+      assertEquals(0, stats.perStreamStats().size());
+
+    }
+
+    @Test
+    @DisplayName("Retrieving all attempts stats for a job should return the right information")
+    void testGetMultipleStats() throws IOException {
+      final long jobOneId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int jobOneAttemptNumberOne = jobPersistence.createAttempt(jobOneId, LOG_PATH);
+
+      // First write for first attempt.
+      var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobOneId, jobOneAttemptNumberOne, 1000, 1000, 1000, 1000, streamStats);
+
+      // Second write for first attempt. This is the record that should be returned.
+      when(timeSupplier.get()).thenReturn(Instant.now());
+      streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1")
+              .withStats(new SyncStats().withBytesEmitted(1000L).withRecordsEmitted(1000L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobOneId, jobOneAttemptNumberOne, 2000, 2000, 2000, 2000, streamStats);
+      jobPersistence.failAttempt(jobOneId, jobOneAttemptNumberOne);
+
+      // Second attempt for first job.
+      final int jobOneAttemptNumberTwo = jobPersistence.createAttempt(jobOneId, LOG_PATH);
+      jobPersistence.writeStats(jobOneId, jobOneAttemptNumberTwo, 1000, 1000, 1000, 1000, streamStats);
+
+      // First attempt for second job.
+      final long jobTwoId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int jobTwoAttemptNumberOne = jobPersistence.createAttempt(jobTwoId, LOG_PATH);
+      jobPersistence.writeStats(jobTwoId, jobTwoAttemptNumberOne, 1000, 1000, 1000, 1000, streamStats);
+
+      final var stats = jobPersistence.getAttemptStats(List.of(jobOneId, jobTwoId));
+      final var exp = Map.of(
+          new JobAttemptPair(jobOneId, jobOneAttemptNumberOne),
+          new AttemptStats(
+              new SyncStats().withRecordsEmitted(2000L).withBytesEmitted(2000L).withEstimatedBytes(2000L).withEstimatedRecords(2000L),
+              List.of(new StreamSyncStats().withStreamName("name1").withStats(
+                  new SyncStats().withEstimatedBytes(10000L).withEstimatedRecords(2000L).withBytesEmitted(1000L).withRecordsEmitted(1000L)))),
+          new JobAttemptPair(jobOneId, jobOneAttemptNumberTwo),
+          new AttemptStats(
+              new SyncStats().withRecordsEmitted(1000L).withBytesEmitted(1000L).withEstimatedBytes(1000L).withEstimatedRecords(1000L),
+              List.of(new StreamSyncStats().withStreamName("name1").withStats(
+                  new SyncStats().withEstimatedBytes(10000L).withEstimatedRecords(2000L).withBytesEmitted(1000L).withRecordsEmitted(1000L)))),
+          new JobAttemptPair(jobTwoId, jobTwoAttemptNumberOne),
+          new AttemptStats(
+              new SyncStats().withRecordsEmitted(1000L).withBytesEmitted(1000L).withEstimatedBytes(1000L).withEstimatedRecords(1000L),
+              List.of(new StreamSyncStats().withStreamName("name1").withStats(
+                  new SyncStats().withEstimatedBytes(10000L).withEstimatedRecords(2000L).withBytesEmitted(1000L).withRecordsEmitted(1000L)))));
+
+      assertEquals(exp, stats);
+
+    }
+
+    @Test
+    @DisplayName("Retrieving stats for an empty list should not cause an exception.")
+    void testGetStatsForEmptyJobList() throws IOException {
+      assertNotNull(jobPersistence.getAttemptStats(List.of()));
+    }
+
+    @Test
+    @DisplayName("Retrieving stats for a bad job attempt input should not cause an exception.")
+    void testGetStatsForBadJobAttemptInput() throws IOException {
+      assertNotNull(jobPersistence.getAttemptStats(-1, -1));
+    }
+
   }
 
   @Test
@@ -471,8 +550,8 @@ class DefaultJobPersistenceTest {
         SYNC_JOB_CONFIG,
         JobStatus.INCOMPLETE,
         Lists.newArrayList(
-            createAttempt(0L, jobId, AttemptStatus.FAILED, LOG_PATH),
-            createAttempt(1L, jobId, AttemptStatus.FAILED, LOG_PATH)),
+            createAttempt(0, jobId, AttemptStatus.FAILED, LOG_PATH),
+            createAttempt(1, jobId, AttemptStatus.FAILED, LOG_PATH)),
         NOW.getEpochSecond());
 
     assertEquals(Optional.of(expected), actual);
@@ -514,15 +593,14 @@ class DefaultJobPersistenceTest {
     jobPersistence.importDatabase("test", outputStreams);
 
     final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
-
     final Job actual = actualList.get(0);
     final Job expected = createJob(
         jobId,
         SPEC_JOB_CONFIG,
         JobStatus.SUCCEEDED,
         Lists.newArrayList(
-            createAttempt(0L, jobId, AttemptStatus.FAILED, LOG_PATH),
-            createAttempt(1L, jobId, AttemptStatus.SUCCEEDED, secondAttemptLogPath)),
+            createAttempt(0, jobId, AttemptStatus.FAILED, LOG_PATH),
+            createAttempt(1, jobId, AttemptStatus.SUCCEEDED, secondAttemptLogPath)),
         NOW.getEpochSecond());
 
     assertEquals(1, actualList.size());
@@ -557,8 +635,8 @@ class DefaultJobPersistenceTest {
     assertEquals(jobs.size(), 1);
     assertEquals(jobs.get(0).getId(), syncJobId);
     assertEquals(jobs.get(0).getAttempts().size(), 2);
-    assertEquals(jobs.get(0).getAttempts().get(0).getId(), 0);
-    assertEquals(jobs.get(0).getAttempts().get(1).getId(), 1);
+    assertEquals(jobs.get(0).getAttempts().get(0).getAttemptNumber(), 0);
+    assertEquals(jobs.get(0).getAttempts().get(1).getAttemptNumber(), 1);
 
     final Path syncJobThirdAttemptLogPath = LOG_PATH.resolve("3");
     final int syncJobAttemptNumber2 = jobPersistence.createAttempt(syncJobId, syncJobThirdAttemptLogPath);
@@ -578,12 +656,12 @@ class DefaultJobPersistenceTest {
     assertEquals(secondQueryJobs.size(), 2);
     assertEquals(secondQueryJobs.get(0).getId(), syncJobId);
     assertEquals(secondQueryJobs.get(0).getAttempts().size(), 1);
-    assertEquals(secondQueryJobs.get(0).getAttempts().get(0).getId(), 2);
+    assertEquals(secondQueryJobs.get(0).getAttempts().get(0).getAttemptNumber(), 2);
 
     assertEquals(secondQueryJobs.get(1).getId(), newSyncJobId);
     assertEquals(secondQueryJobs.get(1).getAttempts().size(), 2);
-    assertEquals(secondQueryJobs.get(1).getAttempts().get(0).getId(), 0);
-    assertEquals(secondQueryJobs.get(1).getAttempts().get(1).getId(), 1);
+    assertEquals(secondQueryJobs.get(1).getAttempts().get(0).getAttemptNumber(), 0);
+    assertEquals(secondQueryJobs.get(1).getAttempts().get(1).getAttemptNumber(), 1);
 
     Long maxEndedAtTimestampAfterSecondQuery = -1L;
     for (final Job c : secondQueryJobs) {
@@ -628,35 +706,35 @@ class DefaultJobPersistenceTest {
     assertEquals(6, allAttempts.size());
 
     assertEquals(job1, allAttempts.get(0).getJobInfo().getId());
-    assertEquals(job1Attempt1, allAttempts.get(0).getAttempt().getId());
+    assertEquals(job1Attempt1, allAttempts.get(0).getAttempt().getAttemptNumber());
 
     assertEquals(job2, allAttempts.get(1).getJobInfo().getId());
-    assertEquals(job2Attempt1, allAttempts.get(1).getAttempt().getId());
+    assertEquals(job2Attempt1, allAttempts.get(1).getAttempt().getAttemptNumber());
 
     assertEquals(job2, allAttempts.get(2).getJobInfo().getId());
-    assertEquals(job2Attempt2, allAttempts.get(2).getAttempt().getId());
+    assertEquals(job2Attempt2, allAttempts.get(2).getAttempt().getAttemptNumber());
 
     assertEquals(job1, allAttempts.get(3).getJobInfo().getId());
-    assertEquals(job1Attempt2, allAttempts.get(3).getAttempt().getId());
+    assertEquals(job1Attempt2, allAttempts.get(3).getAttempt().getAttemptNumber());
 
     assertEquals(job1, allAttempts.get(4).getJobInfo().getId());
-    assertEquals(job1Attempt3, allAttempts.get(4).getAttempt().getId());
+    assertEquals(job1Attempt3, allAttempts.get(4).getAttempt().getAttemptNumber());
 
     assertEquals(job2, allAttempts.get(5).getJobInfo().getId());
-    assertEquals(job2Attempt3, allAttempts.get(5).getAttempt().getId());
+    assertEquals(job2Attempt3, allAttempts.get(5).getAttempt().getAttemptNumber());
 
     final List<AttemptWithJobInfo> attemptsAfterTimestamp = jobPersistence.listAttemptsWithJobInfo(ConfigType.SYNC,
         Instant.ofEpochSecond(allAttempts.get(2).getAttempt().getEndedAtInSecond().orElseThrow()));
     assertEquals(3, attemptsAfterTimestamp.size());
 
     assertEquals(job1, attemptsAfterTimestamp.get(0).getJobInfo().getId());
-    assertEquals(job1Attempt2, attemptsAfterTimestamp.get(0).getAttempt().getId());
+    assertEquals(job1Attempt2, attemptsAfterTimestamp.get(0).getAttempt().getAttemptNumber());
 
     assertEquals(job1, attemptsAfterTimestamp.get(1).getJobInfo().getId());
-    assertEquals(job1Attempt3, attemptsAfterTimestamp.get(1).getAttempt().getId());
+    assertEquals(job1Attempt3, attemptsAfterTimestamp.get(1).getAttempt().getAttemptNumber());
 
     assertEquals(job2, attemptsAfterTimestamp.get(2).getJobInfo().getId());
-    assertEquals(job2Attempt3, attemptsAfterTimestamp.get(2).getAttempt().getId());
+    assertEquals(job2Attempt3, attemptsAfterTimestamp.get(2).getAttempt().getAttemptNumber());
   }
 
   private static Supplier<Instant> incrementingSecondSupplier(final Instant startTime) {
@@ -887,7 +965,7 @@ class DefaultJobPersistenceTest {
           jobId,
           SPEC_JOB_CONFIG,
           JobStatus.RUNNING,
-          Lists.newArrayList(createUnfinishedAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
+          Lists.newArrayList(createUnfinishedAttempt(0, jobId, AttemptStatus.RUNNING, LOG_PATH)),
           NOW.getEpochSecond());
       assertEquals(expected, actual);
     }
@@ -901,12 +979,12 @@ class DefaultJobPersistenceTest {
 
       final Job jobAfterOneAttempts = jobPersistence.getJob(jobId);
       assertEquals(0, attemptNumber1);
-      assertEquals(0, jobAfterOneAttempts.getAttempts().get(0).getId());
+      assertEquals(0, jobAfterOneAttempts.getAttempts().get(0).getAttemptNumber());
 
       final int attemptNumber2 = jobPersistence.createAttempt(jobId, LOG_PATH);
       final Job jobAfterTwoAttempts = jobPersistence.getJob(jobId);
       assertEquals(1, attemptNumber2);
-      assertEquals(Sets.newHashSet(0L, 1L), jobAfterTwoAttempts.getAttempts().stream().map(Attempt::getId).collect(Collectors.toSet()));
+      assertEquals(Sets.newHashSet(0, 1), jobAfterTwoAttempts.getAttempts().stream().map(Attempt::getAttemptNumber).collect(Collectors.toSet()));
     }
 
     @Test
@@ -922,7 +1000,7 @@ class DefaultJobPersistenceTest {
           jobId,
           SPEC_JOB_CONFIG,
           JobStatus.RUNNING,
-          Lists.newArrayList(createUnfinishedAttempt(0L, jobId, AttemptStatus.RUNNING, LOG_PATH)),
+          Lists.newArrayList(createUnfinishedAttempt(0, jobId, AttemptStatus.RUNNING, LOG_PATH)),
           NOW.getEpochSecond());
       assertEquals(expected, actual);
     }
@@ -941,7 +1019,7 @@ class DefaultJobPersistenceTest {
           jobId,
           SPEC_JOB_CONFIG,
           JobStatus.SUCCEEDED,
-          Lists.newArrayList(createAttempt(0L, jobId, AttemptStatus.SUCCEEDED, LOG_PATH)),
+          Lists.newArrayList(createAttempt(0, jobId, AttemptStatus.SUCCEEDED, LOG_PATH)),
           NOW.getEpochSecond());
       assertEquals(expected, actual);
     }
@@ -1336,8 +1414,8 @@ class DefaultJobPersistenceTest {
           SPEC_JOB_CONFIG,
           JobStatus.PENDING,
           Lists.newArrayList(
-              createAttempt(0L, jobId, AttemptStatus.FAILED, LOG_PATH),
-              createAttempt(1L, jobId, AttemptStatus.FAILED, LOG_PATH)),
+              createAttempt(0, jobId, AttemptStatus.FAILED, LOG_PATH),
+              createAttempt(1, jobId, AttemptStatus.FAILED, LOG_PATH)),
           NOW.getEpochSecond());
 
       assertEquals(Optional.of(expected), actual);
@@ -1562,8 +1640,8 @@ class DefaultJobPersistenceTest {
           SPEC_JOB_CONFIG,
           JobStatus.SUCCEEDED,
           Lists.newArrayList(
-              createAttempt(0L, jobId, AttemptStatus.FAILED, LOG_PATH),
-              createAttempt(1L, jobId, AttemptStatus.SUCCEEDED, secondAttemptLogPath)),
+              createAttempt(0, jobId, AttemptStatus.FAILED, LOG_PATH),
+              createAttempt(1, jobId, AttemptStatus.SUCCEEDED, secondAttemptLogPath)),
           NOW.getEpochSecond());
 
       assertEquals(1, actualList.size());
@@ -1682,7 +1760,7 @@ class DefaultJobPersistenceTest {
           SPEC_JOB_CONFIG,
           JobStatus.INCOMPLETE,
           Lists.newArrayList(
-              createAttempt(0L, jobId, AttemptStatus.FAILED, LOG_PATH)),
+              createAttempt(0, jobId, AttemptStatus.FAILED, LOG_PATH)),
           NOW.getEpochSecond());
 
       assertEquals(1, actualList.size());
@@ -1720,7 +1798,7 @@ class DefaultJobPersistenceTest {
           SPEC_JOB_CONFIG,
           JobStatus.INCOMPLETE,
           Lists.newArrayList(
-              createAttempt(0L, failedSpecJobId, AttemptStatus.FAILED, LOG_PATH)),
+              createAttempt(0, failedSpecJobId, AttemptStatus.FAILED, LOG_PATH)),
           NOW.getEpochSecond(),
           SPEC_SCOPE);
 
@@ -1757,12 +1835,12 @@ class DefaultJobPersistenceTest {
           Set.of(ConfigType.SYNC, ConfigType.CHECK_CONNECTION_DESTINATION), Set.of(JobStatus.PENDING, JobStatus.SUCCEEDED));
 
       final Job expectedDesiredJob1 = createJob(desiredJobId1, SYNC_JOB_CONFIG, JobStatus.SUCCEEDED,
-          Lists.newArrayList(createAttempt(0L, desiredJobId1, AttemptStatus.SUCCEEDED, LOG_PATH)),
+          Lists.newArrayList(createAttempt(0, desiredJobId1, AttemptStatus.SUCCEEDED, LOG_PATH)),
           NOW.getEpochSecond(), desiredConnectionId.toString());
       final Job expectedDesiredJob2 =
           createJob(desiredJobId2, SYNC_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), desiredConnectionId.toString());
       final Job expectedDesiredJob3 = createJob(desiredJobId3, CHECK_JOB_CONFIG, JobStatus.SUCCEEDED,
-          Lists.newArrayList(createAttempt(0L, desiredJobId3, AttemptStatus.SUCCEEDED, LOG_PATH)),
+          Lists.newArrayList(createAttempt(0, desiredJobId3, AttemptStatus.SUCCEEDED, LOG_PATH)),
           NOW.getEpochSecond(), desiredConnectionId.toString());
       final Job expectedDesiredJob4 =
           createJob(desiredJobId4, CHECK_JOB_CONFIG, JobStatus.PENDING, Lists.newArrayList(), NOW.getEpochSecond(), desiredConnectionId.toString());

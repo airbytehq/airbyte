@@ -9,7 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -59,27 +59,30 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
-  private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
+  private final boolean featureFlagLogConnectorMsgs;
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultProtocolSerializer());
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultProtocolSerializer(), featureFlags);
   }
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
                               final AirbyteStreamFactory streamFactory,
-                              final ProtocolSerializer protocolSerializer) {
-    this(integrationLauncher, streamFactory, protocolSerializer, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
+                              final ProtocolSerializer protocolSerializer,
+                              final FeatureFlags featureFlags) {
+    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION), protocolSerializer, featureFlags);
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
                        final AirbyteStreamFactory streamFactory,
+                       final HeartbeatMonitor heartbeatMonitor,
                        final ProtocolSerializer protocolSerializer,
-                       final HeartbeatMonitor heartbeatMonitor) {
+                       final FeatureFlags featureFlags) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.protocolSerializer = protocolSerializer;
     this.heartbeatMonitor = heartbeatMonitor;
+    this.featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -175,7 +178,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   private void logInitialStateAsJSON(final WorkerSourceConfig sourceConfig) {
-    if (!logConnectorMessages) {
+    if (!featureFlagLogConnectorMsgs) {
       return;
     }
 
