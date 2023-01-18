@@ -143,6 +143,8 @@
   "connectionForm.cursor.info": "Used in incremental sync mode only. It determines which records to sync.",
   "connectionForm.primaryKey.info": "Used in Deduped and History modes only. It determines the unique identifier.",
   "connectionForm.source.info": "<b>Stream name</b> is the raw table name from your source.",
+  "connectionForm.sourceStreamName.info": "<b>Stream name</b> is the raw table name from your source.",
+  "connectionForm.sourceNamespace.info": "<b>Namespace</b> is the database schema of your source tables.",
   "connectionForm.syncType.info": "How data will be replicated from source to destination.",
   "connectionForm.destinationName.info": "<b>Namespace</b> is the database schema of your destination tables.",
   "connectionForm.destinationStream.info": "<b>Stream name</b> is the final table name in destination.",
