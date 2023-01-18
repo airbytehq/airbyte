@@ -168,11 +168,12 @@ class PaginatorTestReadDecorator(Paginator):
     pages that are queried throughout a read command.
     """
 
+    _PAGE_COUNT_BEFORE_FIRST_NEXT_CALL = 1
     _DEFAULT_PAGINATION_LIMIT = 5
 
     def __init__(self, decorated, maximum_number_of_pages: int = None):
         self._decorated = decorated
-        self._page_count = 1
+        self._page_count = self._PAGE_COUNT_BEFORE_FIRST_NEXT_CALL
         self._maximum_number_of_pages = maximum_number_of_pages if maximum_number_of_pages else self._DEFAULT_PAGINATION_LIMIT
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
@@ -223,4 +224,4 @@ class PaginatorTestReadDecorator(Paginator):
 
     def reset(self):
         self._decorated.reset()
-        self._page_count = 1
+        self._page_count = self._PAGE_COUNT_BEFORE_FIRST_NEXT_CALL
