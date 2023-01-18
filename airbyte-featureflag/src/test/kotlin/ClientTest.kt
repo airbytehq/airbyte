@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
 import kotlin.test.Ignore
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -71,7 +70,7 @@ class ConfigFileClient {
 
     @Test
     @Ignore
-    fun `verify platform reload capabilities`() {
+    fun `verify config-file reload capabilities`() {
         val contents0 = """flags:
             |  - name: reload-test-true
             |    enabled: true
