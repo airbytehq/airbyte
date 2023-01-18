@@ -216,25 +216,7 @@
     },
     {
       "stream": {
-        "name": "happytable",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "unhappytable",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "ad_group_custom",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
