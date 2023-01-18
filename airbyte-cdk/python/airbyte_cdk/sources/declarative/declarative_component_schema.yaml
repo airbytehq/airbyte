@@ -1,0 +1,1130 @@
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml
+title: DeclarativeSource
+type: object
+description: An API source that extracts data according to its declarative components
+version: 1.0.0
+required:
+  - type
+  - check
+  - streams
+  - version
+properties:
+  type:
+    type: string
+    enum: [DeclarativeSource]
+  check:
+    "$ref": "#/definitions/CheckStream"
+  streams:
+    type: array
+    items:
+      "$ref": "#/definitions/DeclarativeStream"
+  version:
+    type: string
+  schemas:
+    "$ref": "#/definitions/Schemas"
+  definitions:
+    type: object
+  spec:
+    "$ref": "#/definitions/Spec"
+additionalProperties: false
+definitions:
+  AddedFieldDefinition:
+    description: Defines the field to add on a record
+    type: object
+    required:
+      - type
+      - path
+      - value
+    properties:
+      type:
+        type: string
+        enum: [AddedFieldDefinition]
+      path:
+        type: array
+        items:
+          type: string
+      value:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  AddFields:
+    description: Transformation which adds field to an output record. The path of the added field can be nested.
+    type: object
+    required:
+      - type
+      - fields
+    properties:
+      type:
+        type: string
+        enum: [AddFields]
+      fields:
+        type: array
+        items:
+          - "$ref": "#/definitions/AddedFieldDefinition"
+      $options:
+        type: object
+        additionalProperties: true
+  ApiKeyAuthenticator:
+    description: Authenticator for requests requiring an api token
+    type: object
+    required:
+      - type
+      - api_token
+    properties:
+      type:
+        type: string
+        enum: [ApiKeyAuthenticator]
+      api_token:
+        type: string
+      header:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  BasicHttpAuthenticator:
+    description: Authenticator for requests authenticated with a username and optional password
+    type: object
+    required:
+      - type
+      - username
+    properties:
+      type:
+        type: string
+        enum: [BasicHttpAuthenticator]
+      username:
+        description: The username that will be combined with the password, base64 encoded and used to make requests
+        type: string
+      password:
+        description: The password that will be combined with the username, base64 encoded and used to make requests
+        type: string
+        default: ""
+      $options:
+        type: object
+        additionalProperties: true
+  BearerAuthenticator:
+    description: Authenticator for requests authenticated with a Bearer token
+    type: object
+    required:
+      - type
+      - api_token
+    properties:
+      type:
+        type: string
+        enum: [BearerAuthenticator]
+      api_token:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  CartesianProductStreamSlicer:
+    description: Stream slicer that iterates over the cartesian product of input stream slicers
+    type: object
+    required:
+      - type
+      - stream_slicers
+    properties:
+      type:
+        enum: [CartesianProductStreamSlicer]
+      stream_slicers:
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/CustomStreamSlicer"
+            - "$ref": "#/definitions/DatetimeStreamSlicer"
+            - "$ref": "#/definitions/ListStreamSlicer"
+            - "$ref": "#/definitions/SingleSlice"
+            - "$ref": "#/definitions/SubstreamSlicer"
+      $options:
+        type: object
+        additionalProperties: true
+  CheckStream:
+    description: Checks the connections by trying to read records from one or many of the streams selected by the developer
+    type: object
+    required:
+      - type
+      - stream_names
+    properties:
+      type:
+        type: string
+        enum: [CheckStream]
+      stream_names:
+        type: array
+        items:
+          type: string
+  CompositeErrorHandler:
+    description: Error handler that sequentially iterates over a list of error handlers
+    type: object
+    required:
+      - type
+      - error_handlers
+    properties:
+      type:
+        type: string
+        enum: [CompositeErrorHandler]
+      error_handlers:
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/CompositeErrorHandler"
+            - "$ref": "#/definitions/DefaultErrorHandler"
+      $options:
+        type: object
+        additionalProperties: true
+  ConstantBackoffStrategy:
+    description: Backoff strategy with a constant backoff interval
+    type: object
+    required:
+      - type
+      - backoff_time_in_seconds
+    properties:
+      type:
+        type: string
+        enum: [ConstantBackoffStrategy]
+      backoff_time_in_seconds:
+        anyOf:
+          - type: number
+          - type: string
+      $options:
+        type: object
+        additionalProperties: true
+  CursorPagination:
+    description: Pagination strategy that evaluates an interpolated string to define the next page token
+    type: object
+    required:
+      - type
+      - cursor_value
+    properties:
+      type:
+        type: string
+        enum: [CursorPagination]
+      cursor_value:
+        type: string
+      page_size:
+        type: integer
+      stop_condition:
+        type: string
+      decoder:
+        "$ref": "#/definitions/JsonDecoder"
+      $options:
+        type: object
+        additionalProperties: true
+  CustomAuthenticator:
+    description: Authenticator component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomAuthenticator]
+      class_name:
+        type: string
+        additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
+  CustomBackoffStrategy:
+    description: Backoff strategy component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomBackoffStrategy]
+      class_name:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  CustomErrorHandler:
+    description: Error handler component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomErrorHandler]
+      class_name:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  CustomPaginationStrategy:
+    description: Pagination strategy component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomPaginationStrategy]
+      class_name:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  CustomRecordExtractor:
+    description: Record extractor component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRecordExtractor]
+      class_name:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  CustomRequester:
+    description: Requester component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRequester]
+      class_name:
+        type: string
+        additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
+  CustomRequestOptionsProvider:
+    description: (DO NOT USE) Added for backwards compatibility but this will be deprecated in a future release
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRequestOptionsProvider]
+      class_name:
+        type: string
+        additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
+  CustomRetriever:
+    description: Retriever component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomRetriever]
+      class_name:
+        type: string
+        additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
+  CustomStreamSlicer:
+    description: Stream slicer component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomStreamSlicer]
+      class_name:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  CustomTransformation:
+    description: Transformation component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomTransformation]
+      class_name:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  DatetimeStreamSlicer:
+    description: Stream slicer that slices the stream over a datetime range
+    type: object
+    required:
+      - type
+      - cursor_field
+      - end_datetime
+      - datetime_format
+      - cursor_granularity
+      - start_datetime
+      - step
+    properties:
+      type:
+        type: string
+        enum: [DatetimeStreamSlicer]
+      cursor_field:
+        type: string
+      datetime_format:
+        type: string
+      cursor_granularity:
+        type: string
+      end_datetime:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/MinMaxDatetime"
+      start_datetime:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/MinMaxDatetime"
+      step:
+        type: string
+      end_time_option:
+        "$ref": "#/definitions/RequestOption"
+      lookback_window:
+        type: string
+      start_time_option:
+        "$ref": "#/definitions/RequestOption"
+      stream_state_field_end:
+        type: string
+      stream_state_field_start:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  OAuthAuthenticator:
+    description: Authenticator for requests using OAuth 2.0 authentication
+    type: object
+    required:
+      - type
+      - client_id
+      - client_secret
+      - refresh_token
+      - token_refresh_endpoint
+    properties:
+      type:
+        type: string
+        enum: [OAuthAuthenticator]
+      client_id:
+        type: string
+      client_secret:
+        type: string
+      refresh_token:
+        type: string
+      token_refresh_endpoint:
+        type: string
+      access_token_name:
+        type: string
+        default: "access_token"
+      expires_in_name:
+        type: string
+        default: "expires_in"
+      grant_type:
+        type: string
+        default: "refresh_token"
+      refresh_request_body:
+        type: object
+        additionalProperties: true
+      scopes:
+        type: array
+        items:
+          type: string
+      token_expiry_date:
+        type: string
+      token_expiry_date_format:
+        description: The format of the datetime; provide it if expires_in is returned in datetime instead of seconds
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  DeclarativeStream:
+    description: A stream whose behavior is described by a set of declarative low code components
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - retriever
+    properties:
+      type:
+        type: string
+        enum: [DeclarativeStream]
+      retriever:
+        definition: Component used to coordinate how records are extracted across stream slices and request pages
+        anyOf:
+          - "$ref": "#/definitions/CustomRetriever"
+          - "$ref": "#/definitions/SimpleRetriever"
+      checkpoint_interval:
+        definition: How often the stream will checkpoint state (i.e. emit a STATE message)
+        type: integer
+      name:
+        definition: The stream name
+        type: string
+        default: ""
+      primary_key:
+        definition: The primary key of the stream
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+          - type: array
+            items:
+              type: array
+              items:
+                type: string
+        default: ""
+      schema_loader:
+        definition: The schema loader used to retrieve the schema for the current stream
+        anyOf:
+          - "$ref": "#/definitions/InlineSchemaLoader"
+          - "$ref": "#/definitions/JsonFileSchemaLoader"
+      stream_cursor_field:
+        definition: The field of the records being read that will be used during checkpointing
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              - type: string
+      transformations:
+        definition: A list of transformations to be applied to each output record in the
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/AddFields"
+            - "$ref": "#/definitions/CustomTransformation"
+            - "$ref": "#/definitions/RemoveFields"
+      $options:
+        type: object
+        additional_properties: true
+  DefaultErrorHandler:
+    description: The default error handler. Default behavior includes only retrying server errors (HTTP 5XX) and too many requests (HTTP 429) with an exponential backoff
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [DefaultErrorHandler]
+      backoff_strategies:
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/ConstantBackoffStrategy"
+            - "$ref": "#/definitions/CustomBackoffStrategy"
+            - "$ref": "#/definitions/ExponentialBackoffStrategy"
+            - "$ref": "#/definitions/WaitTimeFromHeader"
+            - "$ref": "#/definitions/WaitUntilTimeFromHeader"
+      max_retries:
+        type: integer
+        default: 5
+      response_filters:
+        type: array
+        items:
+          "$ref": "#/definitions/HttpResponseFilter"
+      $options:
+        type: object
+        additional_properties: true
+  DefaultPaginator:
+    description: Default pagination implementation to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
+    type: object
+    required:
+      - type
+      - pagination_strategy
+      - url_base
+    properties:
+      type:
+        type: string
+        enum: [DefaultPaginator]
+      pagination_strategy:
+        anyOf:
+          - "$ref": "#/definitions/CursorPagination"
+          - "$ref": "#/definitions/CustomPaginationStrategy"
+          - "$ref": "#/definitions/OffsetIncrement"
+          - "$ref": "#/definitions/PageIncrement"
+      url_base:
+        type: string
+      decoder:
+        "$ref": "#/definitions/JsonDecoder"
+      page_size_option:
+        "$ref": "#/definitions/RequestOption"
+      page_token_option:
+        "$ref": "#/definitions/RequestOption"
+      $options:
+        type: object
+        additionalProperties: true
+  DpathExtractor:
+    description: Record extractor that searches a decoded response over a path defined as an array of fields
+    type: object
+    required:
+      - type
+      - field_pointer
+    properties:
+      type:
+        type: string
+        enum: [DpathExtractor]
+      field_pointer:
+        type: array
+        items:
+          - type: string
+      decoder:
+        "$ref": "#/definitions/JsonDecoder"
+      $options:
+        type: object
+        additionalProperties: true
+  ExponentialBackoffStrategy:
+    description: Backoff strategy with an exponential backoff interval
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [ExponentialBackoffStrategy]
+      factor:
+        anyOf:
+          - type: number
+          - type: string
+        default: 5
+      $options:
+        type: object
+        additionalProperties: true
+  HttpRequester:
+    description: Default implementation of a requester
+    type: object
+    required:
+      - type
+      - name
+      - path
+      - url_base
+    properties:
+      type:
+        type: string
+        enum: [HttpRequester]
+      name:
+        type: string
+      path:
+        type: string
+      url_base:
+        type: string
+      authenticator:
+        anyOf:
+          - "$ref": "#/definitions/ApiKeyAuthenticator"
+          - "$ref": "#/definitions/BasicHttpAuthenticator"
+          - "$ref": "#/definitions/BearerAuthenticator"
+          - "$ref": "#/definitions/CustomAuthenticator"
+          - "$ref": "#/definitions/OAuthAuthenticator"
+          - "$ref": "#/definitions/NoAuth"
+          - "$ref": "#/definitions/SessionTokenAuthenticator"
+      error_handler:
+        anyOf:
+          - "$ref": "#/definitions/DefaultErrorHandler"
+          - "$ref": "#/definitions/CustomErrorHandler"
+          - "$ref": "#/definitions/CompositeErrorHandler"
+      http_method:
+        anyOf:
+          - type: string
+          - type: string
+            enum:
+              - GET
+              - POST
+        default: GET
+      request_options_provider:
+        anyOf:
+          - "$ref": "#/definitions/CustomRequestOptionsProvider"
+          - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+      $options:
+        type: object
+        additionalProperties: true
+  HttpResponseFilter:
+    description: A filter that is used to select on properties of the HTTP response received
+    type: object
+    required:
+      - type
+      - action
+    properties:
+      type:
+        type: string
+        enum: [HttpResponseFilter]
+      action:
+        type: string
+        enum:
+          - SUCCESS
+          - FAIL
+          - RETRY
+          - IGNORE
+      error_message:
+        type: string
+      error_message_contains:
+        type: string
+      http_codes:
+        type: array
+        items:
+          type: integer
+        uniqueItems: true
+      predicate:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  InlineSchemaLoader:
+    description: Loads a schema that is defined directly in the manifest file
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [InlineSchemaLoader]
+      schema:
+        type: object
+  InterpolatedRequestOptionsProvider:
+    description: Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [InterpolatedRequestOptionsProvider]
+      request_body_data:
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_body_json:
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_headers:
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_parameters:
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      $options:
+        type: object
+        additionalProperties: true
+  JsonFileSchemaLoader:
+    description: Loads the schema from a json file
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        enum: [JsonFileSchemaLoader, JsonSchema] # TODO As part of Beta, remove JsonSchema and update connectors to use JsonFileSchemaLoader
+      file_path:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  JsonDecoder:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [JsonDecoder]
+  ListStreamSlicer:
+    description: Stream slicer that iterates over the values of a list
+    type: object
+    required:
+      - type
+      - cursor_field
+      - slice_values
+    properties:
+      type:
+        type: string
+        enum: [ListStreamSlicer]
+      cursor_field:
+        type: string
+      slice_values:
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+      request_option:
+        "$ref": "#/definitions/RequestOption"
+      $options:
+        type: object
+        additionalProperties: true
+  MinMaxDatetime:
+    description: Compares the provided date against optional minimum or maximum times. The max_datetime serves as the ceiling and will be returned when datetime exceeds it. The min_datetime serves as the floor
+    type: object
+    required:
+      - type
+      - datetime
+    properties:
+      type:
+        type: string
+        enum: [MinMaxDatetime]
+      datetime:
+        type: string
+      datetime_format:
+        type: string
+        default: ""
+      max_datetime:
+        type: string
+      min_datetime:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  NoAuth:
+    description: Authenticator for requests requiring no authentication
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [NoAuth]
+      $options:
+        type: object
+        additionalProperties: true
+  NoPagination:
+    description: Pagination implementation that never returns a next page
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [NoPagination]
+  OffsetIncrement:
+    description: Pagination strategy that returns the number of records reads so far and returns it as the next page token
+    type: object
+    required:
+      - type
+      - page_size
+    properties:
+      type:
+        type: string
+        enum: [OffsetIncrement]
+      page_size:
+        description: The number of records to request
+        anyOf:
+          - type: integer
+          - type: string
+      $options:
+        type: object
+        additionalProperties: true
+  PageIncrement:
+    description: Pagination strategy that returns the number of pages reads so far and returns it as the next page token
+    type: object
+    required:
+      - type
+      - page_size
+    properties:
+      type:
+        type: string
+        enum: [PageIncrement]
+      page_size:
+        description: The number of records to request
+        type: integer
+      start_from_page:
+        type: integer
+        default: 0
+      $options:
+        type: object
+        additionalProperties: true
+  ParentStreamConfig:
+    description: Describes how to create a stream slice from a parent stream
+    type: object
+    required:
+      - type
+      - parent_key
+      - stream
+      - stream_slice_field
+    properties:
+      type:
+        type: string
+        enum: [ParentStreamConfig]
+      parent_key:
+        type: string
+      stream:
+        "$ref": "#/definitions/DeclarativeStream"
+      stream_slice_field:
+        type: string
+      request_option:
+        "$ref": "#/definitions/RequestOption"
+      $options:
+        type: object
+        additionalProperties: true
+  PrimaryKey:
+    description: The stream field to be used to distinguish unique rows
+    anyOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+      - type: array
+        items:
+          type: array
+          items:
+            type: string
+    default: ""
+  RecordFilter:
+    description: Filter applied on a list of Records
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [RecordFilter]
+      condition:
+        description: The predicate to filter a record. Records will be removed if evaluated to False
+        type: string
+        default: ""
+      $options:
+        type: object
+        additionalProperties: true
+  RecordSelector:
+    description: Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering records based on a heuristic.
+    type: object
+    required:
+      - type
+      - extractor
+    properties:
+      type:
+        type: string
+        enum: [RecordSelector]
+      extractor:
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
+      record_filter:
+        "$ref": "#/definitions/RecordFilter"
+      $options:
+        type: object
+        additionalProperties: true
+  RemoveFields:
+    description: A transformation which removes fields from a record. The fields removed are designated using FieldPointers. During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
+    type: object
+    required:
+      - type
+      - field_pointers
+    properties:
+      type:
+        type: string
+        enum: [RemoveFields]
+      field_pointers:
+        type: array
+        items:
+          items:
+            type: string
+  RequestOption:
+    description: Describes an option to set on a request
+    type: object
+    required:
+      - type
+      - inject_into
+    properties:
+      type:
+        type: string
+        enum: [RequestOption]
+      inject_into:
+        enum:
+          - request_parameter
+          - header
+          - path
+          - body_data
+          - body_json
+      field_name:
+        type: string
+  Schemas:
+    description: The stream schemas representing the shape of the data emitted by the stream
+    type: object
+    additionalProperties: true
+  SessionTokenAuthenticator:
+    description: Authenticator for requests based on session tokens. A session token is a random value generated by a server to identify a specific user for the duration of one interaction session
+    type: object
+    required:
+      - type
+      - api_url
+      - header
+      - login_url
+      - session_token
+      - session_token_response_key
+      - username
+      - validate_session_url
+    properties:
+      type:
+        type: string
+        enum: [SessionTokenAuthenticator]
+      api_url:
+        type: string
+      header:
+        type: string
+      login_url:
+        type: string
+      session_token:
+        type: string
+      session_token_response_key:
+        type: string
+      username:
+        type: string
+      validate_session_url:
+        type: string
+      password:
+        type: string
+        default: ""
+      $options:
+        type: object
+        additionalProperties: true
+  SimpleRetriever:
+    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
+    type: object
+    required:
+      - type
+      - record_selector
+      - requester
+    properties:
+      type:
+        type: string
+        enum: [SimpleRetriever]
+      record_selector:
+        "$ref": "#/definitions/RecordSelector"
+      requester:
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      name:
+        type: string
+        default: ""
+      paginator:
+        anyOf:
+          - "$ref": "#/definitions/DefaultPaginator"
+          - "$ref": "#/definitions/NoPagination"
+      primary_key:
+        "$ref": "#/definitions/PrimaryKey"
+      stream_slicer:
+        anyOf:
+          - "$ref": "#/definitions/CartesianProductStreamSlicer"
+          - "$ref": "#/definitions/CustomStreamSlicer"
+          - "$ref": "#/definitions/DatetimeStreamSlicer"
+          - "$ref": "#/definitions/ListStreamSlicer"
+          - "$ref": "#/definitions/SingleSlice"
+          - "$ref": "#/definitions/SubstreamSlicer"
+      $options:
+        type: object
+        additionalProperties: true
+  SingleSlice:
+    description: Stream slicer returning only a single stream slice
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [SingleSlice]
+      $options:
+        type: object
+        additionalProperties: true
+  Spec:
+    description: A connection specification made up of information about the connector and how it can be configured
+    type: object
+    required:
+      - type
+      - connection_specification
+    properties:
+      type:
+        type: string
+        enum: [Spec]
+      connection_specification:
+        type: object
+        additionalProperties: true
+      documentation_url:
+        type: string
+  SubstreamSlicer:
+    description: Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
+    type: object
+    required:
+      - type
+      - parent_stream_configs
+    properties:
+      type:
+        type: string
+        enum: [SubstreamSlicer]
+      parent_stream_configs:
+        type: array
+        items:
+          "$ref": "#/definitions/ParentStreamConfig"
+      $options:
+        type: object
+        additionalProperties: true
+  WaitTimeFromHeader:
+    description: Extract wait time from http header
+    type: object
+    required:
+      - type
+      - header
+    properties:
+      type:
+        type: string
+        enum: [WaitTimeFromHeader]
+      header:
+        type: string
+      regex:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  WaitUntilTimeFromHeader:
+    description: Extract time at which we can retry the request from response header and wait for the difference between now and that time
+    type: object
+    required:
+      - type
+      - header
+    properties:
+      type:
+        type: string
+        enum: [WaitUntilTimeFromHeader]
+      header:
+        type: string
+      min_wait:
+        anyOf:
+          - type: number
+          - type: string
+      regex:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
