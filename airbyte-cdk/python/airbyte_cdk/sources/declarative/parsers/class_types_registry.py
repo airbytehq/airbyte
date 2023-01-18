@@ -7,6 +7,7 @@ from typing import Mapping, Type
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
+    AccessTokenAuthenticator,
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
     BearerAuthenticator,
@@ -98,6 +99,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "Spec": Spec,
     "SubstreamSlicer": SubstreamSlicer,
     "SessionTokenAuthenticator": SessionTokenAuthenticator,
+    "AccessTokenAuthenticator": AccessTokenAuthenticator,
     "WaitUntilTimeFromHeader": WaitUntilTimeFromHeaderBackoffStrategy,
     "WaitTimeFromHeader": WaitTimeFromHeaderBackoffStrategy,
 }

@@ -641,6 +641,7 @@ definitions:
           - "$ref": "#/definitions/OAuthAuthenticator"
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
+          - "$ref": "#/definitions/AccessTokenAuthenticator"
       error_handler:
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
@@ -1006,6 +1007,32 @@ definitions:
       password:
         type: string
         default: ""
+      $options:
+        type: object
+        additionalProperties: true
+  AccessTokenAuthenticator:
+    type: object
+    required:
+      - type
+      - client_id
+      - secret_key
+      - url
+    properties:
+      type:
+        type: string
+        enum: [AccessTokenAuthenticator]
+      client_id:
+        type: string
+      secret_key:
+        type: string
+      url:
+        type: string
+      token_key:
+        type: string
+      lifetime:
+        anyOf:
+          - type: integer
+          - type: string
       $options:
         type: object
         additionalProperties: true
