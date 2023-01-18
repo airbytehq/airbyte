@@ -6,7 +6,7 @@ import { ThemeProvider } from "styled-components";
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
-import { ConfigServiceProvider, newStaticConfig } from "config";
+import { ConfigServiceProvider, config } from "config";
 import { I18nProvider } from "core/i18n";
 import { AppMonitoringServiceProvider } from "hooks/services/AppMonitoringService";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
@@ -64,7 +64,7 @@ const App: React.FC = () => {
         <I18nProvider locale="en" messages={messages}>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ConfigServiceProvider config={newStaticConfig}>
+              <ConfigServiceProvider config={config}>
                 <Router>
                   <Services>
                     <Routing />

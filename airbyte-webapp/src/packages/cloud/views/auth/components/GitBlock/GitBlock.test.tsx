@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { IntlProvider } from "react-intl";
 
-import { ConfigContext, newStaticConfig } from "config";
+import { ConfigContext, config } from "config";
 
 import en from "../../../../locales/en.json";
 import { GitBlock, GitBlockProps } from "./GitBlock";
@@ -9,7 +9,7 @@ import { GitBlock, GitBlockProps } from "./GitBlock";
 const renderGitBlock = (props?: GitBlockProps) =>
   render(
     <IntlProvider locale="en" messages={en}>
-      <ConfigContext.Provider value={{ config: newStaticConfig }}>
+      <ConfigContext.Provider value={{ config }}>
         <GitBlock {...props} />
       </ConfigContext.Provider>
     </IntlProvider>

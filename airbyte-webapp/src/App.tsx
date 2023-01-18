@@ -5,7 +5,7 @@ import { ThemeProvider } from "styled-components";
 
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
-import { newStaticConfig } from "config/config";
+import { config } from "config";
 import { ApiServices } from "core/ApiServices";
 import { I18nProvider } from "core/i18n";
 import { ServicesProvider } from "core/servicesProvider";
@@ -61,7 +61,7 @@ const App: React.FC = () => {
           <StoreProvider>
             <ServicesProvider>
               <Suspense fallback={<LoadingPage />}>
-                <ConfigServiceProvider config={newStaticConfig}>
+                <ConfigServiceProvider config={config}>
                   <Router>
                     <Services>
                       <Routing />
