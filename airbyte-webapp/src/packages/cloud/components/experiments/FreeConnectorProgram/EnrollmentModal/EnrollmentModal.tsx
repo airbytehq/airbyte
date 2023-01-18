@@ -1,7 +1,10 @@
+import { faWarning } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
+import { Callout } from "components/ui/Callout";
 import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 import { ModalFooter } from "components/ui/Modal/ModalFooter";
@@ -64,27 +67,23 @@ export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
     };
   }, []);
 
-  const EnrollmentCta = () =>
-    emailVerified ? (
-      <Button isLoading={isLoading} onClick={startStripeCheckout}>
-        <FormattedMessage id="freeConnectorProgram.enrollmentModal.enrollButtonText" />
-      </Button>
-    ) : (
-      <Button isLoading={isLoading} onClick={sendEmailVerification}>
-        <FormattedMessage id="freeConnectorProgram.enrollmentModal.unvalidatedEmailButtonText" />
-      </Button>
-    );
-
   const EnrollmentEmailVerificationWarning = () => {
     const WarningContent = () => (
-      <FlexContainer>
-        <FlexContainer justifyContent="center" className={styles.iconContainer}>
-          <MailSVG />
-        </FlexContainer>
-        <Text size="lg" className={styles.warning}>
-          <FormattedMessage id="freeConnectorProgram.enrollmentModal.unvalidatedEmailWarning" />
+      <Callout>
+        <FontAwesomeIcon icon={faWarning} />
+        <Text>
+          <FormattedMessage
+            id="freeConnectorProgram.enrollmentModal.unvalidatedEmailWarning"
+            values={{
+              resendEmail: (content: React.ReactNode) => (
+                <button className={styles.resendEmailLink} onClick={sendEmailVerification}>
+                  {content}
+                </button>
+              ),
+            }}
+          />
         </Text>
-      </FlexContainer>
+      </Callout>
     );
 
     return <>{!emailVerified && <WarningContent />}</>;
@@ -146,7 +145,9 @@ export const EnrollmentModalContent: React.FC<EnrollmentModalContentProps> = ({
             </Button>
           </FlexItem>
           <FlexItem>
-            <EnrollmentCta />
+            <Button disabled={!emailVerified} isLoading={isLoading} onClick={startStripeCheckout}>
+              <FormattedMessage id="freeConnectorProgram.enrollmentModal.enrollButtonText" />
+            </Button>
           </FlexItem>
         </FlexContainer>
       </ModalFooter>
