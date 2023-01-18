@@ -1,6 +1,11 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
+import {
+  getInitialNormalization,
+  getInitialTransformations,
+  mapFormPropsToOperation,
+} from "components/connection/ConnectionForm/formConfig";
 import { Card } from "components/ui/Card";
 import { Text } from "components/ui/Text";
 
@@ -13,11 +18,6 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { FormikOnSubmit } from "types/formik";
-import {
-  getInitialNormalization,
-  getInitialTransformations,
-  mapFormPropsToOperation,
-} from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./ConnectionTransformationPage.module.scss";
 import { CustomTransformationsCard } from "./CustomTransformationsCard";
@@ -31,7 +31,7 @@ export const ConnectionTransformationPage: React.FC = () => {
   const workspace = useCurrentWorkspace();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_TRANSFORMATION);
-  const supportsNormalization = Boolean(definition.normalizationConfig);
+  const supportsNormalization = definition.normalizationConfig.supported;
   const supportsDbt = useFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
   const supportsCloudDbtIntegration = useFeature(FeatureItem.AllowDBTCloudIntegration) && definition.supportsDbt;
   const noSupportedTransformations = !supportsNormalization && !supportsDbt && !supportsCloudDbtIntegration;

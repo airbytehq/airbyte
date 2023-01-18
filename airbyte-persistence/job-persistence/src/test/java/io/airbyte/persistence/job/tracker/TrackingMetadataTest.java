@@ -61,7 +61,7 @@ class TrackingMetadataTest {
     final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
     final StandardSyncOutput standardSyncOutput = new StandardSyncOutput().withStandardSyncSummary(standardSyncSummary);
     final JobOutput jobOutput = new JobOutput().withSync(standardSyncOutput);
-    final Attempt attempt = new Attempt(0, 10L, Path.of("test"), jobOutput, AttemptStatus.SUCCEEDED, null, 100L, 100L, 99L);
+    final Attempt attempt = new Attempt(0, 10L, Path.of("test"), jobOutput, AttemptStatus.SUCCEEDED, null, null, 100L, 100L, 99L);
     final Job job = mock(Job.class);
     when(job.getAttempts()).thenReturn(List.of(attempt));
 
