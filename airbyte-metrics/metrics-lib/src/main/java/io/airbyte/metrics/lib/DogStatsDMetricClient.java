@@ -103,7 +103,7 @@ public class DogStatsDMetricClient implements MetricClient {
         return;
       }
 
-      log.info("publishing gauge, name: {}, value: {}, attributes: {}", metric, val, attributes);
+      log.debug("publishing gauge, name: {}, value: {}, attributes: {}", metric, val, attributes);
       statsDClient.gauge(metric.getMetricName(), val, toTags(attributes));
     }
   }
@@ -117,7 +117,7 @@ public class DogStatsDMetricClient implements MetricClient {
         return;
       }
 
-      log.info("recording distribution, name: {}, value: {}, attributes: {}", metric, val, attributes);
+      log.debug("recording distribution, name: {}, value: {}, attributes: {}", metric, val, attributes);
       statsDClient.distribution(metric.getMetricName(), val, toTags(attributes));
     }
   }

@@ -101,7 +101,7 @@ class SourceExchangeRates(AbstractSource):
             # When API requests is sent but the requested data is not available or the API call fails
             # for some reason, a JSON error is returned.
             # https://exchangeratesapi.io/documentation/#errors
-            error = resp.json().get("error")
+            error = resp.json().get("error", resp.json())
             code = error.get("code")
             message = error.get("message") or error.get("info")
             # If code is base_currency_access_restricted, error is caused by switching base currency while using free

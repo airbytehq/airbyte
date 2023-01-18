@@ -1,4 +1,4 @@
-documentationUrl: https://docs.airbyte.io/integrations/sources/appfollow
+documentationUrl: https://docs.airbyte.com/integrations/sources/appfollow
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Appfollow Spec

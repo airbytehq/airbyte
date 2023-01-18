@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/okta",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/okta",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Okta Spec",
@@ -10,7 +10,7 @@
       "domain": {
         "type": "string",
         "title": "Okta domain",
-        "description": "The Okta domain. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\">docs</a> for instructions on how to find it.",
+        "description": "The Okta domain. See the <a href=\"https://docs.airbyte.com/integrations/sources/okta\">docs</a> for instructions on how to find it.",
         "airbyte_secret": false
       },
       "start_date": {
@@ -72,65 +72,12 @@
               "api_token": {
                 "type": "string",
                 "title": "Personal API Token",
-                "description": "An Okta token. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\">docs</a> for instructions on how to generate it.",
+                "description": "An Okta token. See the <a href=\"https://docs.airbyte.com/integrations/sources/okta\">docs</a> for instructions on how to generate it.",
                 "airbyte_secret": true
               }
             }
           }
         ]
-      }
-    }
-  },
-  "advanced_auth": {
-    "auth_flow_type": "oauth2.0",
-    "predicate_key": ["credentials", "auth_type"],
-    "predicate_value": "oauth2.0",
-    "oauth_config_specification": {
-      "complete_oauth_output_specification": {
-        "type": "object",
-        "additionalProperties": true,
-        "properties": {
-          "refresh_token": {
-            "type": "string",
-            "path_in_connector_config": ["credentials", "refresh_token"]
-          }
-        }
-      },
-      "complete_oauth_server_input_specification": {
-        "type": "object",
-        "additionalProperties": true,
-        "properties": {
-          "client_id": {
-            "type": "string"
-          },
-          "client_secret": {
-            "type": "string"
-          }
-        }
-      },
-      "complete_oauth_server_output_specification": {
-        "type": "object",
-        "additionalProperties": true,
-        "properties": {
-          "client_id": {
-            "type": "string",
-            "path_in_connector_config": ["credentials", "client_id"]
-          },
-          "client_secret": {
-            "type": "string",
-            "path_in_connector_config": ["credentials", "client_secret"]
-          }
-        }
-      },
-      "oauth_user_input_from_connector_config_specification": {
-        "type": "object",
-        "additionalProperties": true,
-        "properties": {
-          "domain": {
-            "type": "string",
-            "path_in_connector_config": ["domain"]
-          }
-        }
       }
     }
   }

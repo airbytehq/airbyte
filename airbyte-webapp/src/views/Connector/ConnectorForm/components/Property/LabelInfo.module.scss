@@ -1,0 +1,54 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+}
+
+.descriptionHeader {
+  margin-top: 0;
+  margin-bottom: variables.$spacing-sm;
+}
+
+.description ul {
+  padding-left: variables.$spacing-xl;
+  margin-bottom: variables.$spacing-sm;
+  margin-top: variables.$spacing-sm;
+}
+
+.optionsHeader {
+  margin-top: 0;
+  margin-bottom: variables.$spacing-sm;
+}
+
+.options {
+  padding-left: variables.$spacing-xl;
+  margin-bottom: 0;
+  margin-top: variables.$spacing-sm;
+}
+
+.options li {
+  margin-top: variables.$spacing-sm;
+}
+
+.exampleHeader {
+  margin-block-start: 0;
+  margin-bottom: variables.$spacing-sm;
+}
+
+.exampleContainer {
+  display: flex;
+  flex-flow: row wrap;
+  row-gap: variables.$spacing-sm;
+  column-gap: variables.$spacing-sm;
+}
+
+.exampleItem {
+  width: max-content;
+  max-width: 100%;
+  padding: variables.$spacing-xs variables.$spacing-sm;
+  background-color: colors.$dark-blue-400;
+  border-radius: variables.$border-radius-md;
+}

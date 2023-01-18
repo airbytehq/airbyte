@@ -71,6 +71,7 @@ public class SecretsHelpersTest {
 
   @ParameterizedTest
   @MethodSource(PROVIDE_TEST_CASES)
+  @SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert"})
   public void validateTestCases(final SecretsTestCase testCase) throws JsonValidationException {
     final var validator = new JsonSchemaValidator();
     final var spec = testCase.getSpec().getConnectionSpecification();
@@ -88,7 +89,7 @@ public class SecretsHelpersTest {
         uuidIterator::next,
         WORKSPACE_ID,
         inputConfig,
-        testCase.getSpec());
+        testCase.getSpec().getConnectionSpecification());
 
     assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
@@ -131,7 +132,7 @@ public class SecretsHelpersTest {
         WORKSPACE_ID,
         inputPartialConfig,
         inputUpdateConfig,
-        testCase.getSpec(),
+        testCase.getSpec().getConnectionSpecification(),
         secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfig(), updatedSplit.getPartialConfig());
@@ -179,7 +180,7 @@ public class SecretsHelpersTest {
         uuidIterator::next,
         WORKSPACE_ID,
         testCase.getFullConfig(),
-        testCase.getSpec());
+        testCase.getSpec().getConnectionSpecification());
 
     assertEquals(testCase.getPartialConfig(), splitConfig.getPartialConfig());
     assertEquals(testCase.getFirstSecretMap(), splitConfig.getCoordinateToPayload());
@@ -193,7 +194,7 @@ public class SecretsHelpersTest {
         WORKSPACE_ID,
         testCase.getPartialConfig(),
         testCase.getFullConfigUpdate1(),
-        testCase.getSpec(),
+        testCase.getSpec().getConnectionSpecification(),
         secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate1(), updatedSplit1.getPartialConfig());
@@ -208,7 +209,7 @@ public class SecretsHelpersTest {
         WORKSPACE_ID,
         updatedSplit1.getPartialConfig(),
         testCase.getFullConfigUpdate2(),
-        testCase.getSpec(),
+        testCase.getSpec().getConnectionSpecification(),
         secretPersistence::read);
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());

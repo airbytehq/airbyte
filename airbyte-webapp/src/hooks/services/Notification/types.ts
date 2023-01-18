@@ -1,10 +1,8 @@
-export interface Notification {
+import { ToastProps } from "components/ui/Toast";
+
+export interface Notification extends ToastProps {
   id: string | number;
-  title: string;
-  text?: string;
-  isError?: boolean;
   nonClosable?: boolean;
-  onClose?: () => void;
 }
 
 export interface NotificationServiceApi {

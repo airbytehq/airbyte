@@ -21,7 +21,7 @@ You'll need the following information to configure the Postgres destination:
 * **Database** - The database name. The default is to connect to a database with the same name as the user name.
 * **JDBC URL Params** (optional)
 
-[Refer to this guide for more details](https://jdbc.postgresql.org/documentation/head/connect.html)
+[Refer to this guide for more details](https://jdbc.postgresql.org/documentation/use/#connecting-to-the-database)
 
 #### Configure Network Access
 
@@ -40,7 +40,7 @@ You need a Postgres user with the following permissions:
 You can create such a user by running:
 
 ```
-CREATE USER airbyte_user PASSWORD <password>;
+CREATE USER airbyte_user WITH PASSWORD '<password>';
 GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
 ```
 

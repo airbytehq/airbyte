@@ -1,18 +1,18 @@
 {
-  "type" : "object",
-  "properties" : {
-    "uuid" : {
-      "type" : "string",
-      "format" : "uuid"
+  "type": "object",
+  "properties": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
     },
-    "connector" : {
-      "type" : "string"
+    "connector": {
+      "type": "string"
     },
-    "status" : {
-      "type" : "string"
+    "status": {
+      "type": "string"
     },
-    "name" : {
-      "type" : "string"
+    "name": {
+      "type": "string"
     }
   }
 }

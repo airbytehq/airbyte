@@ -1,4 +1,4 @@
-import { Field, FieldProps, Formik } from "formik";
+import { Field, FieldProps, Formik, Form } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useSearchParams } from "react-router-dom";
@@ -8,14 +8,15 @@ import * as yup from "yup";
 import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
 
-import { useConfig } from "config";
 import { useExperiment } from "hooks/services/Experiment";
+import { SignupSourceDropdown } from "packages/cloud/components/experiments/SignupSourceDropdown";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { isGdprCountry } from "utils/dataPrivacy";
+import { links } from "utils/links";
 
 import CheckBoxControl from "../../components/CheckBoxControl";
-import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
+import { BottomBlock, FieldItem, RowFieldItem } from "../../components/FormComponents";
 import styles from "./SignupForm.module.scss";
 
 interface FormValues {
@@ -114,39 +115,29 @@ export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) 
   );
 };
 
-export const NewsField: React.FC = () => {
-  const { formatMessage } = useIntl();
-  return (
-    <Field name="news">
-      {({ field, meta }: FieldProps<string>) => (
-        <MarginBlock>
-          <CheckBoxControl
-            {...field}
-            checked={!!field.value}
-            checkbox
-            label={<FormattedMessage id="login.subscribe" />}
-            message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-          />
-        </MarginBlock>
-      )}
-    </Field>
-  );
-};
+export const NewsField: React.FC = () => (
+  <Field name="news">
+    {({ field }: FieldProps<string>) => (
+      <MarginBlock>
+        <CheckBoxControl {...field} checked={!!field.value} label={<FormattedMessage id="login.subscribe" />} />
+      </MarginBlock>
+    )}
+  </Field>
+);
 
 export const Disclaimer: React.FC = () => {
-  const config = useConfig();
   return (
     <div className={styles.disclaimer}>
       <FormattedMessage
         id="login.disclaimer"
         values={{
           terms: (terms: React.ReactNode) => (
-            <Link $clear target="_blank" href={config.links.termsLink} as="a">
+            <Link $clear target="_blank" href={links.termsLink} as="a">
               {terms}
             </Link>
           ),
           privacy: (privacy: React.ReactNode) => (
-            <Link $clear target="_blank" href={config.links.privacyLink} as="a">
+            <Link $clear target="_blank" href={links.privacyLink} as="a">
               {privacy}
             </Link>
           ),
@@ -181,6 +172,7 @@ export const SignupForm: React.FC = () => {
 
   const showName = !useExperiment("authPage.signup.hideName", false);
   const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
+  const showSourceSelector = useExperiment("authPage.signup.sourceSelector", false);
 
   const validationSchema = useMemo(() => {
     const shape = {
@@ -224,7 +216,7 @@ export const SignupForm: React.FC = () => {
       validateOnBlur
       validateOnChange
     >
-      {({ isValid, isSubmitting, status }) => (
+      {({ isValid, isSubmitting, status, values }) => (
         <Form>
           {(showName || showCompanyName) && (
             <RowFieldItem>
@@ -233,6 +225,12 @@ export const SignupForm: React.FC = () => {
             </RowFieldItem>
           )}
 
+          {/* exp-select-source-signup */}
+          {showSourceSelector && (
+            <FieldItem>
+              <SignupSourceDropdown disabled={isSubmitting} email={values.email} />
+            </FieldItem>
+          )}
           <FieldItem>
             <EmailField />
           </FieldItem>

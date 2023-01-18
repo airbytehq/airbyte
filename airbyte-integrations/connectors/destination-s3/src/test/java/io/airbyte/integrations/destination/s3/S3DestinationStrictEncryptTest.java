@@ -15,8 +15,8 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +34,7 @@ public class S3DestinationStrictEncryptTest {
     when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class))).thenReturn(uploadResult);
 
     factoryConfig = new S3DestinationConfigFactory() {
+
       public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("https://s3.example.com")
@@ -41,9 +42,9 @@ public class S3DestinationStrictEncryptTest {
             .withS3Client(s3)
             .get();
       }
+
     };
   }
-
 
   /**
    * Test that checks if user is using a connection that is HTTPS only
@@ -56,12 +57,16 @@ public class S3DestinationStrictEncryptTest {
   }
 
   /**
-   * Test that checks if user is using a connection that is deemed insecure since it does not always enforce HTTPS only
-   * <p>https://docs.aws.amazon.com/general/latest/gr/s3.html</p>
+   * Test that checks if user is using a connection that is deemed insecure since it does not always
+   * enforce HTTPS only
+   * <p>
+   * https://docs.aws.amazon.com/general/latest/gr/s3.html
+   * </p>
    */
   @Test
   public void checksCustomEndpointIsNotHttpsOnly() {
     final S3Destination destinationWithStandardUnsecuredEndpoint = new S3DestinationStrictEncrypt(new S3DestinationConfigFactory() {
+
       public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("s3.us-west-1.amazonaws.com")
@@ -69,8 +74,10 @@ public class S3DestinationStrictEncryptTest {
             .withS3Client(s3)
             .get();
       }
+
     });
     final AirbyteConnectionStatus status = destinationWithStandardUnsecuredEndpoint.check(null);
     assertEquals(Status.FAILED, status.getStatus());
   }
+
 }

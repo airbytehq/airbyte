@@ -47,15 +47,11 @@ The Firebolt source does not alter schema present in your database. Depending on
 1. A running engine (if an engine is stopped or booting up you won't be able to connect to it)
 1. Your data in either [Fact or Dimension](https://docs.firebolt.io/working-with-tables.html#fact-and-dimension-tables) tables.
 
-
 You can now use the Airbyte Firebolt source.
-
-
-
 
 ## Changelog
 
-
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-04-28 | TBD | Create Firebolt source |
+| 0.2.0 | 2022-09-09 | https://github.com/airbytehq/airbyte/pull/16583 | Reading from views |
+| 0.1.0 | 2022-04-28 | https://github.com/airbytehq/airbyte/pull/13874 | Create Firebolt source |

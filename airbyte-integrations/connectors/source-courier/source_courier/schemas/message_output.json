@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "message_id": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "channel_id": {
+      "type": "string"
+    },
+    "content": {
+      "properties": {
+        "blocks": {
+          "type": "array"
+        },
+        "body": {
+          "type": "string"
+        },
+        "html": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "type": "object"
+}

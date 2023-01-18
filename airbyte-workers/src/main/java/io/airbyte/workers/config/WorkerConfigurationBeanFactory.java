@@ -7,11 +7,13 @@ package io.airbyte.workers.config;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.WorkerConstants;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
@@ -40,7 +42,6 @@ public class WorkerConfigurationBeanFactory {
   private static final String DOCKER = "DOCKER";
   private static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
   private static final String KUBERNETES = "KUBERNETES";
-  public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
 
   @Singleton
   @Named("checkJobKubeAnnotations")
@@ -85,6 +86,18 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
+  @Named("isolatedNodeSelectors")
+  public Map<String, String> isolatedNodeSelectors(@Value("${airbyte.worker.isolated.kube.node-selectors}") final String kubeNodeSelectors) {
+    return splitKVPairsFromEnvString(kubeNodeSelectors);
+  }
+
+  @Singleton
+  @Named("useCustomNodeSelector")
+  public boolean useCustomNodeSelector(@Value("${airbyte.worker.isolated.kube.use-custom-node-selector}") final boolean kubeNodeSelectors) {
+    return kubeNodeSelectors;
+  }
+
+  @Singleton
   @Named("specJobKubeNodeSelectors")
   public Map<String, String> specJobKubeNodeSelectors(@Value("${airbyte.worker.spec.kube.node-selectors}") final String kubeNodeSelectors) {
     return splitKVPairsFromEnvString(kubeNodeSelectors);
@@ -104,7 +117,7 @@ public class WorkerConfigurationBeanFactory {
     final Map<String, String> jobSharedEnvMap = Map.of(AIRBYTE_ROLE, airbyteRole,
         AIRBYTE_VERSION, airbyteVersion,
         DEPLOYMENT_MODE, deploymentMode.name(),
-        WORKER_ENVIRONMENT, environment.getActiveNames().contains(Environment.KUBERNETES) ? KUBERNETES : DOCKER);
+        WorkerConstants.WORKER_ENVIRONMENT, environment.getActiveNames().contains(Environment.KUBERNETES) ? KUBERNETES : DOCKER);
     return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
   }
 
@@ -197,6 +210,12 @@ public class WorkerConfigurationBeanFactory {
         .withMemoryLimit(memoryLimit);
   }
 
+  void validateIsolatedPoolConfigInitialization(boolean useCustomNodeSelector, Map<String, String> isolatedNodeSelectors) {
+    if (useCustomNodeSelector && isolatedNodeSelectors.isEmpty()) {
+      throw new RuntimeException("Isolated Node selectors is empty while useCustomNodeSelector is set to true.");
+    }
+  }
+
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("checkWorkerConfigs")
@@ -205,19 +224,23 @@ public class WorkerConfigurationBeanFactory {
                                           @Named("checkResourceRequirements") final ResourceRequirements resourceRequirements,
                                           final List<TolerationPOJO> jobKubeTolerations,
                                           @Named("checkJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
+                                          @Named("isolatedNodeSelectors") final Map<String, String> isolatedNodeSelectors,
+                                          @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                           @Named("checkJobKubeAnnotations") final Map<String, String> annotations,
-                                          @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
+                                          @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final List<String> mainContainerImagePullSecret,
                                           @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
                                           @Value("${airbyte.worker.job.kube.sidecar.container.image-pull-policy}") final String sidecarContainerImagePullPolicy,
                                           @Value("${airbyte.worker.job.kube.images.socat}") final String socatImage,
                                           @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                           @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                           @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    validateIsolatedPoolConfigInitialization(useCustomNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
+        useCustomNodeSelector ? Optional.of(isolatedNodeSelectors) : Optional.empty(),
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,
@@ -235,19 +258,23 @@ public class WorkerConfigurationBeanFactory {
                                             @Named("defaultResourceRequirements") final ResourceRequirements resourceRequirements,
                                             final List<TolerationPOJO> jobKubeTolerations,
                                             @Named("defaultJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
+                                            @Named("isolatedNodeSelectors") final Map<String, String> isolatedNodeSelectors,
+                                            @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                             @Named("defaultJobKubeAnnotations") final Map<String, String> annotations,
-                                            @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
+                                            @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final List<String> mainContainerImagePullSecret,
                                             @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
                                             @Value("${airbyte.worker.job.kube.sidecar.container.image-pull-policy}") final String sidecarContainerImagePullPolicy,
                                             @Value("${airbyte.worker.job.kube.images.socat}") final String socatImage,
                                             @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                             @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                             @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    validateIsolatedPoolConfigInitialization(useCustomNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
+        useCustomNodeSelector ? Optional.of(isolatedNodeSelectors) : Optional.empty(),
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,
@@ -266,19 +293,23 @@ public class WorkerConfigurationBeanFactory {
                                              @Named("defaultResourceRequirements") final ResourceRequirements resourceRequirements,
                                              final List<TolerationPOJO> jobKubeTolerations,
                                              @Named("discoverJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
+                                             @Named("isolatedNodeSelectors") final Map<String, String> isolatedNodeSelectors,
+                                             @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                              @Named("discoverJobKubeAnnotations") final Map<String, String> annotations,
-                                             @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
+                                             @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final List<String> mainContainerImagePullSecret,
                                              @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
                                              @Value("${airbyte.worker.job.kube.sidecar.container.image-pull-policy}") final String sidecarContainerImagePullPolicy,
                                              @Value("${airbyte.worker.job.kube.images.socat}") final String socatImage,
                                              @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                              @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                              @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    validateIsolatedPoolConfigInitialization(useCustomNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
+        useCustomNodeSelector ? Optional.of(isolatedNodeSelectors) : Optional.empty(),
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,
@@ -296,19 +327,23 @@ public class WorkerConfigurationBeanFactory {
                                                 @Named("replicationResourceRequirements") final ResourceRequirements resourceRequirements,
                                                 final List<TolerationPOJO> jobKubeTolerations,
                                                 @Named("defaultJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
+                                                @Named("isolatedNodeSelectors") final Map<String, String> isolatedNodeSelectors,
+                                                @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                                 @Named("defaultJobKubeAnnotations") final Map<String, String> annotations,
-                                                @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
+                                                @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final List<String> mainContainerImagePullSecret,
                                                 @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
                                                 @Value("${airbyte.worker.job.kube.sidecar.container.image-pull-policy}") final String sidecarContainerImagePullPolicy,
                                                 @Value("${airbyte.worker.job.kube.images.socat}") final String socatImage,
                                                 @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                                 @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                                 @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    validateIsolatedPoolConfigInitialization(useCustomNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
+        useCustomNodeSelector ? Optional.of(isolatedNodeSelectors) : Optional.empty(),
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,
@@ -327,19 +362,23 @@ public class WorkerConfigurationBeanFactory {
                                          @Named("defaultResourceRequirements") final ResourceRequirements resourceRequirements,
                                          final List<TolerationPOJO> jobKubeTolerations,
                                          @Named("specJobKubeNodeSelectors") final Map<String, String> nodeSelectors,
+                                         @Named("isolatedNodeSelectors") final Map<String, String> isolatedNodeSelectors,
+                                         @Named("useCustomNodeSelector") final boolean useCustomNodeSelector,
                                          @Named("specJobKubeAnnotations") final Map<String, String> annotations,
-                                         @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final String mainContainerImagePullSecret,
+                                         @Value("${airbyte.worker.job.kube.main.container.image-pull-secret}") final List<String> mainContainerImagePullSecret,
                                          @Value("${airbyte.worker.job.kube.main.container.image-pull-policy}") final String mainContainerImagePullPolicy,
                                          @Value("${airbyte.worker.job.kube.sidecar.container.image-pull-policy}") final String sidecarContainerImagePullPolicy,
                                          @Value("${airbyte.worker.job.kube.images.socat}") final String socatImage,
                                          @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                          @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                          @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    validateIsolatedPoolConfigInitialization(useCustomNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
         jobKubeTolerations,
         nodeSelectors,
+        useCustomNodeSelector ? Optional.of(isolatedNodeSelectors) : Optional.empty(),
         annotations,
         mainContainerImagePullSecret,
         mainContainerImagePullPolicy,

@@ -17,13 +17,15 @@ class PageIncrement(PaginationStrategy, JsonSchemaMixin):
 
     Attributes:
         page_size (int): the number of records to request
+        start_from_page (int): number of the initial page
     """
 
     page_size: int
     options: InitVar[Mapping[str, Any]]
+    start_from_page: int = 0
 
     def __post_init__(self, options: Mapping[str, Any]):
-        self._page = 0
+        self._page = self.start_from_page
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         if len(last_records) < self.page_size:
@@ -33,7 +35,7 @@ class PageIncrement(PaginationStrategy, JsonSchemaMixin):
             return self._page
 
     def reset(self):
-        self._page = 0
+        self._page = self.start_from_page
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size

@@ -7,7 +7,7 @@ package io.airbyte.workers.temporal.support;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.workers.temporal.exception.RetryableException;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.stubs.ErrorTestWorkflowImpl;
 import io.airbyte.workers.temporal.stubs.InvalidTestWorkflowImpl;
 import io.airbyte.workers.temporal.stubs.TestActivity;

@@ -12,7 +12,11 @@ import { Button } from "components/ui/Button";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Modal } from "components/ui/Modal";
+import { ToastType } from "components/ui/Toast";
 
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { useNotificationService } from "hooks/services/Notification";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
 
@@ -55,14 +59,16 @@ const ROLE_OPTIONS = [
 
 export const InviteUsersModal: React.FC<{
   onClose: () => void;
+  invitedFrom: "source" | "destination" | "user.settings";
 }> = (props) => {
   const { formatMessage } = useIntl();
   const { workspaceId } = useCurrentWorkspace();
   const { inviteUserLogic } = useUserHook();
+  const { registerNotification } = useNotificationService();
   const { mutateAsync: invite } = inviteUserLogic;
 
   const isRoleVisible = false; // Temporarily hiding roles because there's only 'Admin' in cloud.
-
+  const analyticsService = useAnalyticsService();
   return (
     <Modal title={<FormattedMessage id="modals.addUser.title" />} onClose={props.onClose}>
       <Formik
@@ -81,9 +87,19 @@ export const InviteUsersModal: React.FC<{
           await invite(
             { users: values.users, workspaceId },
             {
-              onSuccess: () => props.onClose(),
+              onSuccess: () => {
+                registerNotification({
+                  text: formatMessage({ id: "addUsers.success.title" }),
+                  id: "invite-users-success",
+                  type: ToastType.SUCCESS,
+                });
+                props.onClose();
+              },
             }
           );
+          analyticsService.track(Namespace.USER, Action.INVITE, {
+            invited_from: props.invitedFrom,
+          });
         }}
       >
         {({ values, isValid, isSubmitting, dirty, setFieldValue }) => {

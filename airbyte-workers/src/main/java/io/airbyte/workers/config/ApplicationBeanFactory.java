@@ -7,12 +7,12 @@ package io.airbyte.workers.config;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.SecretPersistenceType;
 import io.airbyte.config.Configs.TrackingStrategy;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -28,7 +28,6 @@ import io.airbyte.workers.WorkerConfigs;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
-import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -66,11 +65,6 @@ public class ApplicationBeanFactory {
   @Singleton
   public TrackingStrategy trackingStrategy(@Value("${airbyte.tracking-strategy}") final String trackingStrategy) {
     return convertToEnum(trackingStrategy, TrackingStrategy::valueOf, TrackingStrategy.LOGGING);
-  }
-
-  @Singleton
-  public WorkerEnvironment workerEnvironment(final Environment environment) {
-    return environment.getActiveNames().contains(Environment.KUBERNETES) ? WorkerEnvironment.KUBERNETES : WorkerEnvironment.DOCKER;
   }
 
   @Singleton
@@ -150,7 +144,7 @@ public class ApplicationBeanFactory {
   @Singleton
   public AirbyteConfigValidator airbyteConfigValidator() {
     return new AirbyteConfigValidator();
-  };
+  }
 
   @Singleton
   public MetricClient metricClient() {

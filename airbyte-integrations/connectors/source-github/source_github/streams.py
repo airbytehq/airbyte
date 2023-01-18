@@ -4,7 +4,7 @@
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib import parse
 
 import pendulum
@@ -66,47 +66,53 @@ class GithubStream(HttpStream, ABC):
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
-        # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
-        # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
+        if super().should_retry(response):
+            return True
+
         retry_flag = (
             # The GitHub GraphQL API has limitations
             # https://docs.github.com/en/graphql/overview/resource-limitations
             (response.headers.get("X-RateLimit-Resource") == "graphql" and self.check_graphql_rate_limited(response.json()))
             # Rate limit HTTP headers
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-            or response.headers.get("X-RateLimit-Remaining") == "0"
+            or (response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0")
             # Secondary rate limits
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-            or response.headers.get("Retry-After")
-            or response.status_code
-            in (
-                requests.codes.SERVER_ERROR,
-                requests.codes.BAD_GATEWAY,
-            )
+            or "Retry-After" in response.headers
         )
         if retry_flag:
+            headers = [
+                "X-RateLimit-Resource",
+                "X-RateLimit-Remaining",
+                "X-RateLimit-Reset",
+                "X-RateLimit-Limit",
+                "X-RateLimit-Used",
+                "Retry-After",
+            ]
+            headers = ", ".join([f"{h}: {response.headers[h]}" for h in headers if h in response.headers])
+            if headers:
+                headers = f"HTTP headers: {headers},"
+
             self.logger.info(
-                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
+                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code, {headers} with message: {response.text}"
             )
 
         return retry_flag
 
-    def backoff_time(self, response: requests.Response) -> Union[int, float]:
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        if response.status_code in (requests.codes.SERVER_ERROR, requests.codes.BAD_GATEWAY):
-            return None
+        min_backoff_time = 60.0
 
-        retry_after = int(response.headers.get("Retry-After", 0))
-        if retry_after:
-            return retry_after
+        retry_after = response.headers.get("Retry-After")
+        if retry_after is not None:
+            return max(float(retry_after), min_backoff_time)
 
         reset_time = response.headers.get("X-RateLimit-Reset")
-        backoff_time = float(reset_time) - time.time() if reset_time else 60
-
-        return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
+        if reset_time:
+            return max(float(reset_time) - time.time(), min_backoff_time)
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if (

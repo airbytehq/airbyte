@@ -11,7 +11,7 @@ export interface TextInputContainerProps {
   onBlur?: React.FocusEventHandler<HTMLDivElement>;
 }
 
-export const TextInputContainer: React.FC<TextInputContainerProps> = ({
+export const TextInputContainer: React.FC<React.PropsWithChildren<TextInputContainerProps>> = ({
   disabled,
   light,
   error,

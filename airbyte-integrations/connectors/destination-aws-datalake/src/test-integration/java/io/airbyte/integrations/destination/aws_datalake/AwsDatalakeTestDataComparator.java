@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.aws_datalake;
 
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
@@ -14,4 +18,5 @@ public class AwsDatalakeTestDataComparator extends AdvancedTestDataComparator {
     result.add(identifier.toLowerCase(Locale.ROOT));
     return result;
   }
+
 }

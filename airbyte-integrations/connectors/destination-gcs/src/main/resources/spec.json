@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/gcs",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/gcs",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,

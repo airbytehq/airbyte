@@ -22,8 +22,8 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -51,6 +51,7 @@ public class S3DestinationTest {
         .get();
 
     factoryConfig = new S3DestinationConfigFactory() {
+
       public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("https://s3.example.com")
@@ -58,6 +59,7 @@ public class S3DestinationTest {
             .withS3Client(s3)
             .get();
       }
+
     };
   }
 

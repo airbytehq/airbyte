@@ -1,0 +1,35 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://api.ip2whois.com"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        key: "{{ config['api_key'] }}"
+        domain: "{{ config['domain'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  whois_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "whois"
+      primary_key: "domain_id"
+      path: "/v2"
+
+streams:
+  - "*ref(definitions.whois_stream)"
+check:
+  stream_names:
+    - "whois"

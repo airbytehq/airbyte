@@ -9,13 +9,15 @@ import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @WorkflowInterface
 public interface ConnectionManagerWorkflow {
+
+  long NON_RUNNING_JOB_ID = -1;
+  int NON_RUNNING_ATTEMPT_ID = -1;
 
   /**
    * Workflow method to launch a {@link ConnectionManagerWorkflow}. Launches a workflow responsible
@@ -60,13 +62,6 @@ public interface ConnectionManagerWorkflow {
   void resetConnectionAndSkipNextScheduling();
 
   /**
-   * If an activity fails the workflow will be stuck. This signal activity can be used to retry the
-   * activity.
-   */
-  @SignalMethod
-  void retryFailedActivity();
-
-  /**
    * Return the current state of the workflow.
    */
   @QueryMethod
@@ -87,23 +82,5 @@ public interface ConnectionManagerWorkflow {
    */
   @QueryMethod
   JobInformation getJobInformation();
-
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  class QuarantinedInformation {
-
-    private UUID connectionId;
-    private long jobId;
-    private int attemptId;
-    private boolean isQuarantined;
-
-  }
-
-  /**
-   * Return if a job is stuck or not with the job information
-   */
-  @QueryMethod
-  QuarantinedInformation getQuarantinedInformation();
 
 }

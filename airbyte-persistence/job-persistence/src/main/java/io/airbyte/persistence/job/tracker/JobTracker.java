@@ -397,7 +397,7 @@ public class JobTracker {
     // unfortunate but in the case of jobs that cannot be linked to a workspace there not a sensible way
     // track it.
     if (workspaceId != null) {
-      final StandardWorkspace standardWorkspace = configRepository.getStandardWorkspace(workspaceId, true);
+      final StandardWorkspace standardWorkspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, true);
       if (standardWorkspace != null && standardWorkspace.getName() != null) {
         final Map<String, Object> standardTrackingMetadata = Map.of(
             "workspace_id", workspaceId,

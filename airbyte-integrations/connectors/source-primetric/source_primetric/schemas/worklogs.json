@@ -1,68 +1,41 @@
 {
-  "type" : "object",
-  "properties" : {
-    "uuid" : {
-      "type" : "string",
-      "format" : "uuid"
+  "type": "object",
+  "properties": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
     },
-    "assignment_id" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+    "assignment_id": {
+      "type": ["null", "string"]
     },
-    "project_id" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+    "project_id": {
+      "type": ["null", "string"]
     },
-    "starts_at" : {
-      "type" : [
-        "null",
-        "string"
-      ],
-      "format" : "date-time"
+    "starts_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
-    "created_at" : {
-      "type" : [
-        "null",
-        "string"
-      ],
-      "format" : "date-time"
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
-    "work" : {
-      "type" : [
-        "null",
-        "integer"
-      ]
+    "work": {
+      "type": ["null", "integer"]
     },
-    "desc" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+    "desc": {
+      "type": ["null", "string"]
     },
-    "in_progress" : {
-      "type" : [
-        "null",
-        "boolean"
-      ]
+    "in_progress": {
+      "type": ["null", "boolean"]
     },
-    "billable" : {
-      "type" : [
-        "null",
-        "boolean"
-      ]
+    "billable": {
+      "type": ["null", "boolean"]
     },
-    "developer_id" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+    "developer_id": {
+      "type": ["null", "string"]
     },
-    "custom_attributes" : {
-      "$ref" : "custom_attributes.json"
+    "custom_attributes": {
+      "$ref": "custom_attributes.json"
     }
   }
 }

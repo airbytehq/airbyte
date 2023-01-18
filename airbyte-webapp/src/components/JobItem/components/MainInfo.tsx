@@ -4,14 +4,15 @@ import classNames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
-import { StatusIcon } from "components";
+import { JobProgress } from "components/connection/JobProgress";
 import { Cell, Row } from "components/SimpleTableComponents";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
-import { getJobStatus } from "../JobItem";
-import AttemptDetails from "./AttemptDetails";
+import { JobsWithJobs } from "../types";
+import { getJobStatus } from "../utils";
+import { AttemptDetails } from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
 import { ResetStreamsDetails } from "./ResetStreamDetails";
 
@@ -43,8 +44,10 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   const isPartialSuccess = partialSuccessCheck(attempts);
 
   const statusIcon = useMemo(() => {
-    if (jobStatus === JobStatus.cancelled || (!isPartialSuccess && isFailed)) {
+    if (!isPartialSuccess && isFailed) {
       return <StatusIcon status="error" />;
+    } else if (jobStatus === JobStatus.cancelled) {
+      return <StatusIcon status="cancelled" />;
     } else if (jobStatus === JobStatus.running) {
       return <StatusIcon status="loading" />;
     } else if (jobStatus === JobStatus.succeeded) {
@@ -87,17 +90,13 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         <div className={styles.statusIcon}>{statusIcon}</div>
         <div className={styles.justification}>
           {label}
+          {jobConfigType === "sync" && <JobProgress job={job} expanded={isOpen} />}
           {attempts.length > 0 && (
             <>
-              {attempts.length > 1 && (
-                <div className={styles.lastAttempt}>
-                  <FormattedMessage id="sources.lastAttempt" />
-                </div>
-              )}
               {jobConfigType === "reset_connection" ? (
                 <ResetStreamsDetails isOpen={isOpen} names={streamsToReset?.map((stream) => stream.name)} />
               ) : (
-                <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
+                <AttemptDetails attempt={attempts[attempts.length - 1]} hasMultipleAttempts={attempts.length > 1} />
               )}
             </>
           )}

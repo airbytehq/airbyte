@@ -60,6 +60,7 @@ You can also enter your own password for the keystore, but if you don't, the pas
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+|        | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.1.16 | 2022-09-06 | [16354](https://github.com/airbytehq/airbyte/pull/16354) | Add custom JDBC params |
 | 0.1.15 | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
 | 0.1.14 | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |

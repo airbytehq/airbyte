@@ -11,8 +11,11 @@ import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.model.generated.ConnectionStatus;
+import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobType;
 import io.airbyte.api.model.generated.JobTypeResourceLimit;
+import io.airbyte.api.model.generated.NonBreakingChangesPreference;
+import io.airbyte.api.model.generated.NormalizationDestinationDefinitionConfig;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.BasicSchedule;
@@ -79,6 +82,17 @@ public class ApiPojoConverters {
         .memoryLimit(resourceReqs.getMemoryLimit());
   }
 
+  public static NormalizationDestinationDefinitionConfig normalizationDestinationDefinitionConfigToApi(final io.airbyte.config.NormalizationDestinationDefinitionConfig normalizationDestinationDefinitionConfig) {
+    if (normalizationDestinationDefinitionConfig == null) {
+      return new NormalizationDestinationDefinitionConfig().supported(false);
+    }
+    return new NormalizationDestinationDefinitionConfig()
+        .supported(true)
+        .normalizationRepository(normalizationDestinationDefinitionConfig.getNormalizationRepository())
+        .normalizationTag(normalizationDestinationDefinitionConfig.getNormalizationTag())
+        .normalizationIntegrationType(normalizationDestinationDefinitionConfig.getNormalizationIntegrationType());
+  }
+
   public static ConnectionRead internalToConnectionRead(final StandardSync standardSync) {
     final ConnectionRead connectionRead = new ConnectionRead()
         .connectionId(standardSync.getConnectionId())
@@ -90,8 +104,12 @@ public class ApiPojoConverters {
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.generated.NamespaceDefinitionType.class))
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
-        .sourceCatalogId(standardSync.getSourceCatalogId());
+        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionData()))
+        .sourceCatalogId(standardSync.getSourceCatalogId())
+        .breakingChange(standardSync.getBreakingChange())
+        .geography(Enums.convertTo(standardSync.getGeography(), Geography.class))
+        .nonBreakingChangesPreference(Enums.convertTo(standardSync.getNonBreakingChangesPreference(), NonBreakingChangesPreference.class))
+        .notifySchemaChanges(standardSync.getNotifySchemaChanges());
 
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(resourceRequirementsToApi(standardSync.getResourceRequirements()));
@@ -125,6 +143,18 @@ public class ApiPojoConverters {
 
   public static StandardSync.Status toPersistenceStatus(final ConnectionStatus apiStatus) {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
+  }
+
+  public static StandardSync.NonBreakingChangesPreference toPersistenceNonBreakingChangesPreference(final NonBreakingChangesPreference preference) {
+    return Enums.convertTo(preference, StandardSync.NonBreakingChangesPreference.class);
+  }
+
+  public static Geography toApiGeography(final io.airbyte.config.Geography geography) {
+    return Enums.convertTo(geography, Geography.class);
+  }
+
+  public static io.airbyte.config.Geography toPersistenceGeography(final Geography apiGeography) {
+    return Enums.convertTo(apiGeography, io.airbyte.config.Geography.class);
   }
 
   public static Schedule.TimeUnit toPersistenceTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {

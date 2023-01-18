@@ -1,0 +1,45 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.card {
+  padding: variables.$spacing-xl;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xl;
+  position: relative;
+}
+
+.toggleContainer {
+  display: flex;
+  gap: variables.$spacing-md;
+}
+
+.copyButtonContainer {
+  position: absolute;
+  right: -50px;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+}
+
+.modalStreamListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  align-items: stretch;
+}
+
+.streamItem {
+  border-radius: variables.$border-radius-sm;
+  padding: variables.$spacing-md;
+  border: none;
+  background: none;
+  display: block;
+  text-align: left;
+
+  &:hover {
+    cursor: pointer;
+    background: colors.$grey-50;
+  }
+}

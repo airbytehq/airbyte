@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/lever-hiring",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/lever-hiring#changelog",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/lever-hiring",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/lever-hiring#changelog",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Lever Hiring Source Spec",
@@ -22,8 +22,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "Client",
-                "enum": ["Client"],
-                "default": "Client",
                 "order": 0
               },
               "client_id": {
@@ -37,17 +35,30 @@
                 "description": "The Client Secret of your Lever Hiring developer application.",
                 "airbyte_secret": true
               },
-              "option_title": {
-                "type": "string",
-                "title": "Credentials Title",
-                "description": "OAuth Credentials",
-                "const": "OAuth Credentials"
-              },
               "refresh_token": {
                 "type": "string",
                 "title": "Refresh Token",
                 "description": "The token for obtaining new access token.",
                 "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Authenticate via Lever (Api Key)",
+            "required": ["api_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Api Key",
+                "order": 0
+              },
+              "api_key": {
+                "title": "Api key",
+                "type": "string",
+                "description": "The Api Key of your Lever Hiring account.",
+                "airbyte_secret": true,
+                "order": 1
               }
             }
           }

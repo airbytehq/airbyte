@@ -1,7 +1,7 @@
 # Step 4: Reading data
 
 Now that we're able to authenticate to the source API, we'll want to select data from the HTTP responses.
-Let's first add the stream to the configured catalog in `source-exchange_rates-tutorial/integration_tests/configured_catalog.json`
+Let's first add the stream to the configured catalog in `source-exchange-rates-tutorial/integration_tests/configured_catalog.json`
 
 ```json
 {
@@ -38,6 +38,8 @@ We can also delete the boilerplate schema files
 rm source_exchange_rates_tutorial/schemas/customers.json
 rm source_exchange_rates_tutorial/schemas/employees.json
 ```
+
+As an alternative to storing the stream's data schema to the `schemas/` directory, we can store it inline in the YAML file, by including the optional `schema_loader` key and associated schema in the entry for each stream. More information on how to define a stream's schema in the YAML file can be found [here](../understanding-the-yaml-file/yaml-overview.md).
 
 Reading from the source can be done by running the `read` operation
 

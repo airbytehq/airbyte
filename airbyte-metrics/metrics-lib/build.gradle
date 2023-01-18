@@ -17,11 +17,13 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
 
-    implementation 'com.datadoghq:java-dogstatsd-client:4.0.0'
+    implementation libs.java.dogstatsd.client
+    implementation libs.bundles.datadog
 
     testImplementation project(':airbyte-config:config-persistence')
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.platform.testcontainers.postgresql
+    testImplementation "io.opentracing:opentracing-util:0.33.0:tests"
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

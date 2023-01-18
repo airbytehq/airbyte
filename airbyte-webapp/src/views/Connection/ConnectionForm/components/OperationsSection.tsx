@@ -3,7 +3,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 
 import { Card } from "components/ui/Card";
-import { Text } from "components/ui/Text";
+import { Heading } from "components/ui/Heading";
 
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -24,9 +24,10 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
   const { formatMessage } = useIntl();
 
   const {
-    destDefinition: { supportsNormalization, supportsDbt },
+    destDefinition: { normalizationConfig, supportsDbt },
   } = useConnectionFormService();
 
+  const supportsNormalization = normalizationConfig.supported;
   const supportsTransformations = useFeature(FeatureItem.AllowCustomDBT) && supportsDbt;
 
   if (!supportsNormalization && !supportsTransformations) {
@@ -37,14 +38,14 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
     <Card>
       <Section>
         {supportsNormalization || supportsTransformations ? (
-          <Text as="h5">
+          <Heading as="h2" size="sm">
             {[
               supportsNormalization && formatMessage({ id: "connectionForm.normalization.title" }),
               supportsTransformations && formatMessage({ id: "connectionForm.transformation.title" }),
             ]
               .filter(Boolean)
               .join(" & ")}
-          </Text>
+          </Heading>
         ) : null}
         {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
         {supportsTransformations && (

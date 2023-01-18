@@ -4,9 +4,9 @@
 
 package io.airbyte.server.scheduler;
 
+import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -40,8 +40,8 @@ public class TemporalEventRunner implements EventRunner {
   }
 
   @Override
-  public void deleteConnection(final UUID connectionId) {
-    temporalClient.deleteConnection(connectionId);
+  public void forceDeleteConnection(final UUID connectionId) {
+    temporalClient.forceDeleteWorkflow(connectionId);
   }
 
   @Override

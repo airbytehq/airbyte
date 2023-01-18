@@ -1,0 +1,567 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "integer"
+    },
+    "account_id": {
+      "type": "string",
+      "format": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "missing_data": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "track_opens": {
+          "type": "string",
+          "format": "integer"
+        },
+        "use_google_analytics": {
+          "type": "string",
+          "format": "integer"
+        },
+        "ecommerce_tracking": {
+          "type": "string",
+          "format": "integer"
+        }
+      },
+      "required": ["ecommerce_tracking", "track_opens", "use_google_analytics"]
+    },
+    "filter": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "operator": {
+              "type": "string"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "integer"
+                    }
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          },
+          "required": ["args", "operator"]
+        }
+      }
+    },
+    "filter_for_humans": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "delivery_schedule": {
+      "type": "string"
+    },
+    "language_id": {
+      "type": "string",
+      "format": "integer"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "queued_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "started_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "stopped_at": {
+      "type": ["string", "null"]
+    },
+    "default_email_id": {
+      "type": "string"
+    },
+    "emails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "integer"
+          },
+          "account_id": {
+            "type": "string",
+            "format": "integer"
+          },
+          "emailable_id": {
+            "type": "string",
+            "format": "integer"
+          },
+          "emailable_type": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "from_name": {
+            "type": "string"
+          },
+          "name": {
+            "type": ["string", "null"]
+          },
+          "subject": {
+            "type": "string"
+          },
+          "plain_text": {
+            "type": "string"
+          },
+          "screenshot_url": {
+            "type": ["string", "null"]
+          },
+          "preview_url": {
+            "type": ["string", "null"]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "is_designed": {
+            "type": "boolean"
+          },
+          "language_id": {
+            "type": ["integer", "null"]
+          },
+          "is_winner": {
+            "type": "boolean"
+          },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "sent": {
+                "type": "integer"
+              },
+              "opens_count": {
+                "type": "integer"
+              },
+              "unique_opens_count": {
+                "type": "integer"
+              },
+              "open_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "number"
+                  },
+                  "string": {
+                    "type": "string"
+                  }
+                },
+                "required": ["float", "string"]
+              },
+              "clicks_count": {
+                "type": "integer"
+              },
+              "unique_clicks_count": {
+                "type": "integer"
+              },
+              "click_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "number"
+                  },
+                  "string": {
+                    "type": "string"
+                  }
+                },
+                "required": ["float", "string"]
+              },
+              "unsubscribes_count": {
+                "type": "integer"
+              },
+              "unsubscribe_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "number"
+                  },
+                  "string": {
+                    "type": "string"
+                  }
+                },
+                "required": ["float", "string"]
+              },
+              "spam_count": {
+                "type": "integer"
+              },
+              "spam_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "number"
+                  },
+                  "string": {
+                    "type": "string"
+                  }
+                },
+                "required": ["float", "string"]
+              },
+              "hard_bounces_count": {
+                "type": "integer"
+              },
+              "hard_bounce_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "number"
+                  },
+                  "string": {
+                    "type": "string"
+                  }
+                },
+                "required": ["float", "string"]
+              },
+              "soft_bounces_count": {
+                "type": "integer"
+              },
+              "soft_bounce_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "number"
+                  },
+                  "string": {
+                    "type": "string"
+                  }
+                },
+                "required": ["float", "string"]
+              },
+              "forwards_count": {
+                "type": "integer"
+              },
+              "click_to_open_rate": {
+                "type": "object",
+                "properties": {
+                  "float": {
+                    "type": "number"
+                  },
+                  "string": {
+                    "type": "string"
+                  }
+                },
+                "required": ["float", "string"]
+              }
+            },
+            "required": [
+              "click_rate",
+              "clicks_count",
+              "forwards_count",
+              "hard_bounce_rate",
+              "hard_bounces_count",
+              "open_rate",
+              "opens_count",
+              "sent",
+              "soft_bounce_rate",
+              "soft_bounces_count",
+              "spam_count",
+              "spam_rate",
+              "unique_clicks_count",
+              "unique_opens_count",
+              "unsubscribe_rate",
+              "unsubscribes_count"
+            ]
+          },
+          "send_after": {
+            "type": ["string", "null"]
+          },
+          "track_opens": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "account_id",
+          "created_at",
+          "emailable_id",
+          "emailable_type",
+          "from",
+          "from_name",
+          "id",
+          "is_designed",
+          "is_winner",
+          "language_id",
+          "name",
+          "plain_text",
+          "preview_url",
+          "screenshot_url",
+          "send_after",
+          "stats",
+          "subject",
+          "track_opens",
+          "type",
+          "updated_at"
+        ]
+      }
+    },
+    "used_in_automations": {
+      "type": "boolean"
+    },
+    "type_for_humans": {
+      "type": "string"
+    },
+    "stats": {
+      "type": "object",
+      "properties": {
+        "sent": {
+          "type": "integer"
+        },
+        "opens_count": {
+          "type": "integer"
+        },
+        "unique_opens_count": {
+          "type": "integer"
+        },
+        "open_rate": {
+          "type": "object",
+          "properties": {
+            "float": {
+              "type": "number"
+            },
+            "string": {
+              "type": "string"
+            }
+          },
+          "required": ["float", "string"]
+        },
+        "clicks_count": {
+          "type": "integer"
+        },
+        "unique_clicks_count": {
+          "type": "integer"
+        },
+        "click_rate": {
+          "type": "object",
+          "properties": {
+            "float": {
+              "type": "number"
+            },
+            "string": {
+              "type": "string"
+            }
+          },
+          "required": ["float", "string"]
+        },
+        "unsubscribes_count": {
+          "type": "integer"
+        },
+        "unsubscribe_rate": {
+          "type": "object",
+          "properties": {
+            "float": {
+              "type": "number"
+            },
+            "string": {
+              "type": "string"
+            }
+          },
+          "required": ["float", "string"]
+        },
+        "spam_count": {
+          "type": "integer"
+        },
+        "spam_rate": {
+          "type": "object",
+          "properties": {
+            "float": {
+              "type": "number"
+            },
+            "string": {
+              "type": "string"
+            }
+          },
+          "required": ["float", "string"]
+        },
+        "hard_bounces_count": {
+          "type": "integer"
+        },
+        "hard_bounce_rate": {
+          "type": "object",
+          "properties": {
+            "float": {
+              "type": "number"
+            },
+            "string": {
+              "type": "string"
+            }
+          },
+          "required": ["float", "string"]
+        },
+        "soft_bounces_count": {
+          "type": "integer"
+        },
+        "soft_bounce_rate": {
+          "type": "object",
+          "properties": {
+            "float": {
+              "type": "number"
+            },
+            "string": {
+              "type": "string"
+            }
+          },
+          "required": ["float", "string"]
+        },
+        "forwards_count": {
+          "type": "integer"
+        },
+        "click_to_open_rate": {
+          "type": "object",
+          "properties": {
+            "float": {
+              "type": "number"
+            },
+            "string": {
+              "type": "string"
+            }
+          },
+          "required": ["float", "string"]
+        }
+      },
+      "required": [
+        "click_rate",
+        "clicks_count",
+        "forwards_count",
+        "hard_bounce_rate",
+        "hard_bounces_count",
+        "open_rate",
+        "opens_count",
+        "sent",
+        "soft_bounce_rate",
+        "soft_bounces_count",
+        "spam_count",
+        "spam_rate",
+        "unique_clicks_count",
+        "unique_opens_count",
+        "unsubscribe_rate",
+        "unsubscribes_count"
+      ]
+    },
+    "is_stopped": {
+      "type": "boolean"
+    },
+    "has_winner": {
+      "type": ["string", "null"]
+    },
+    "winner_version_for_human": {
+      "type": ["string", "null"]
+    },
+    "winner_sending_time_for_humans": {
+      "type": ["string", "null"]
+    },
+    "winner_selected_manually_at": {
+      "type": ["string", "null"]
+    },
+    "uses_ecommerce": {
+      "type": "boolean"
+    },
+    "uses_survey": {
+      "type": "boolean"
+    },
+    "can_be_scheduled": {
+      "type": "boolean"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "initial_created_at": {
+      "type": ["string", "null"]
+    },
+    "is_currently_sending_out": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "account_id",
+    "can_be_scheduled",
+    "created_at",
+    "default_email_id",
+    "delivery_schedule",
+    "emails",
+    "filter",
+    "filter_for_humans",
+    "finished_at",
+    "has_winner",
+    "id",
+    "initial_created_at",
+    "is_currently_sending_out",
+    "is_stopped",
+    "language_id",
+    "missing_data",
+    "name",
+    "queued_at",
+    "scheduled_for",
+    "settings",
+    "started_at",
+    "status",
+    "stopped_at",
+    "type",
+    "type_for_humans",
+    "updated_at",
+    "used_in_automations",
+    "uses_ecommerce",
+    "uses_survey",
+    "warnings",
+    "winner_selected_manually_at",
+    "winner_sending_time_for_humans",
+    "winner_version_for_human"
+  ]
+}

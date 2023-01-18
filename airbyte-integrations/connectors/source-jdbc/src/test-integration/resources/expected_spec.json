@@ -1,0 +1,33 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "JDBC Source Spec",
+    "type": "object",
+    "required": ["username", "jdbc_url"],
+    "properties": {
+      "username": {
+        "title": "Username",
+        "description": "The username which is used to access the database.",
+        "type": "string"
+      },
+      "password": {
+        "title": "Password",
+        "description": "The password associated with this username.",
+        "type": "string",
+        "airbyte_secret": true
+      },
+      "jdbc_url": {
+        "title": "JDBC URL",
+        "description": "JDBC formatted URL. See the standard <a href=\"https://docs.oracle.com/cd/E17952_01/connector-j-8.0-en/connector-j-reference-jdbc-url-format.html\">here</a>.",
+        "type": "string"
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string"
+      }
+    }
+  },
+  "supported_destination_sync_modes": []
+}

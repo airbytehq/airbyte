@@ -19,10 +19,10 @@ import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.S3BaseChecks;
 import io.airbyte.integrations.destination.s3.S3ConsumerFactory;
 import io.airbyte.integrations.destination.s3.SerializedBufferFactory;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,15 +57,14 @@ public class GcsDestination extends BaseConnector implements Destination {
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final AmazonS3Exception e) {
-      LOGGER.error("Exception attempting to access the AWS bucket: {}", e.getMessage());
+      LOGGER.error("Exception attempting to access the Gcs bucket", e);
       final String message = getErrorMessage(e.getErrorCode(), 0, e.getMessage(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(message);
     } catch (final Exception e) {
-      LOGGER.error("Exception attempting to access the AWS bucket: {}. Please make sure you account has all of these roles: {}", e.getMessage(),
-          EXPECTED_ROLES);
+      LOGGER.error("Exception attempting to access the Gcs bucket: {}. Please make sure you account has all of these roles: " + EXPECTED_ROLES, e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getMessage());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)

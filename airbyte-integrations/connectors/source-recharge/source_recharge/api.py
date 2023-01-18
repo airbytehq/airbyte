@@ -64,11 +64,10 @@ class RechargeStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         content_length = int(response.headers.get("Content-Length", 0))
         incomplete_data_response = response.status_code == 200 and content_length > len(response.content)
-        forbidden_error = isinstance(response.json(), dict) and response.status_code == requests.codes.FORBIDDEN
 
         if incomplete_data_response:
             return True
-        elif forbidden_error:
+        elif response.status_code == requests.codes.FORBIDDEN:
             setattr(self, "raise_on_http_errors", False)
             self.logger.error(f"Skiping stream {self.name} because of a 403 error.")
             return False

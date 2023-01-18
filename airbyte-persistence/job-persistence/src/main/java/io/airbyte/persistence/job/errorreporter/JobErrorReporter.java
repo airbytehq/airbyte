@@ -4,13 +4,16 @@
 
 package io.airbyte.persistence.job.errorreporter;
 
+import com.google.common.collect.ImmutableSet;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
@@ -47,27 +50,24 @@ public class JobErrorReporter {
   private static final String NORMALIZATION_REPOSITORY_META_KEY = "normalization_repository";
   private static final String JOB_ID_KEY = "job_id";
 
+  private static final ImmutableSet<FailureType> UNSUPPORTED_FAILURETYPES =
+      ImmutableSet.of(FailureType.CONFIG_ERROR, FailureType.MANUAL_CANCELLATION);
+
   private final ConfigRepository configRepository;
   private final DeploymentMode deploymentMode;
   private final String airbyteVersion;
-  private final String normalizationImage;
-  private final String normalizationVersion;
   private final WebUrlHelper webUrlHelper;
   private final JobErrorReportingClient jobErrorReportingClient;
 
   public JobErrorReporter(final ConfigRepository configRepository,
                           final DeploymentMode deploymentMode,
                           final String airbyteVersion,
-                          final String normalizationImage,
-                          final String normalizationVersion,
                           final WebUrlHelper webUrlHelper,
                           final JobErrorReportingClient jobErrorReportingClient) {
 
     this.configRepository = configRepository;
     this.deploymentMode = deploymentMode;
     this.airbyteVersion = airbyteVersion;
-    this.normalizationImage = normalizationImage;
-    this.normalizationVersion = normalizationVersion;
     this.webUrlHelper = webUrlHelper;
     this.jobErrorReportingClient = jobErrorReportingClient;
   }
@@ -114,10 +114,11 @@ public class JobErrorReporter {
           // the destination)
           final Map<String, String> metadata = MoreMaps.merge(
               commonMetadata,
-              getNormalizationMetadata(),
+              getNormalizationMetadata(destinationDefinition.getNormalizationConfig().getNormalizationRepository()),
               prefixConnectorMetadataKeys(getSourceMetadata(sourceDefinition), "source"),
               getDestinationMetadata(destinationDefinition));
-          final String dockerImage = String.format("%s:%s", normalizationImage, normalizationVersion);
+          final String dockerImage = DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
+              destinationDefinition.getNormalizationConfig().getNormalizationTag());
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
         }
@@ -137,7 +138,7 @@ public class JobErrorReporter {
                                           final FailureReason failureReason,
                                           final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspace(workspaceId, true) : null;
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspaceNoSecrets(workspaceId, true) : null;
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final Map<String, String> metadata = MoreMaps.merge(
         getSourceMetadata(sourceDefinition),
@@ -158,7 +159,7 @@ public class JobErrorReporter {
                                                final FailureReason failureReason,
                                                final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspace(workspaceId, true) : null;
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspaceNoSecrets(workspaceId, true) : null;
     final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     final Map<String, String> metadata = MoreMaps.merge(
         getDestinationMetadata(destinationDefinition),
@@ -178,7 +179,7 @@ public class JobErrorReporter {
                                        final FailureReason failureReason,
                                        final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspace(workspaceId, true) : null;
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspaceNoSecrets(workspaceId, true) : null;
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final Map<String, String> metadata = MoreMaps.merge(
         getSourceMetadata(sourceDefinition),
@@ -224,7 +225,7 @@ public class JobErrorReporter {
         Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
   }
 
-  private Map<String, String> getNormalizationMetadata() {
+  private Map<String, String> getNormalizationMetadata(String normalizationImage) {
     return Map.ofEntries(
         Map.entry(NORMALIZATION_REPOSITORY_META_KEY, normalizationImage));
   }
@@ -268,6 +269,11 @@ public class JobErrorReporter {
                                       final FailureReason failureReason,
                                       final String dockerImage,
                                       final Map<String, String> metadata) {
+    // Failure types associated with a config-error or a manual-cancellation should NOT be reported.
+    if (UNSUPPORTED_FAILURETYPES.contains(failureReason.getFailureType())) {
+      return;
+    }
+
     final Map<String, String> commonMetadata = new HashMap<>(Map.ofEntries(
         Map.entry(AIRBYTE_VERSION_META_KEY, airbyteVersion),
         Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));

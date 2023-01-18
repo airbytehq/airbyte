@@ -1,0 +1,115 @@
+@use "scss/colors";
+@use "scss/variables";
+
+@mixin theme($name, $background, $text, $hover) {
+  &.#{$name} {
+    background-color: $background;
+    color: $text;
+
+    .text {
+      color: $text;
+    }
+
+    &:not(:disabled) {
+      &:hover,
+      &.active {
+        background: $hover;
+      }
+    }
+  }
+}
+
+@mixin divider-theme($name, $background, $hover) {
+  &.#{$name} {
+    .divider {
+      background-color: $background;
+    }
+
+    &:not(:disabled) {
+      &:hover,
+      &.active {
+        .divider {
+          background: $hover;
+        }
+      }
+    }
+  }
+}
+
+@mixin disabled-theme($name, $background, $text) {
+  &.#{$name} {
+    &.disabled {
+      .icon {
+        visibility: hidden;
+      }
+
+      .text {
+        color: $text;
+      }
+
+      pointer-events: none;
+      background-color: $background;
+    }
+  }
+}
+
+.button {
+  height: 19px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  border: none;
+  border-radius: variables.$border-radius-pill;
+  cursor: pointer;
+  transition: background-color variables.$transition-out, color variables.$transition-out;
+
+  @include theme("grey", colors.$grey-50, colors.$grey-600, colors.$grey-100);
+  @include theme("blue", colors.$blue-50, colors.$blue-600, colors.$blue-100);
+  @include theme("strongBlue", colors.$blue-300, colors.$white, colors.$blue-200);
+  @include theme("green", colors.$green-50, colors.$green-600, colors.$green-100);
+  @include theme("red", colors.$red-50, colors.$red-600, colors.$red-100);
+  @include theme("strongRed", colors.$red-300, colors.$white, colors.$red-400);
+
+  @include disabled-theme("grey", colors.$grey-50, colors.$grey-600);
+  @include disabled-theme("blue", colors.$blue-50, colors.$blue-600);
+  @include disabled-theme("strongBlue", colors.$blue-500, colors.$blue-200);
+  @include disabled-theme("green", colors.$green-50, colors.$green-600);
+  @include disabled-theme("red", colors.$red-50, colors.$red-600);
+  @include disabled-theme("strongRed", colors.$red-300, colors.$white);
+
+  @include divider-theme("grey", colors.$grey-100, colors.$grey-200);
+  @include divider-theme("blue", colors.$blue-100, colors.$blue-200);
+  @include divider-theme("strongBlue", colors.$blue-200, colors.$blue-100);
+  @include divider-theme("green", colors.$green-100, colors.$green-500);
+  @include divider-theme("red", colors.$red-100, colors.$red-200);
+  @include divider-theme("strongRed", colors.$red-100, colors.$red-100);
+}
+
+.text {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.icon {
+  margin-left: auto;
+  margin-right: variables.$spacing-md;
+}
+
+.labelContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: variables.$spacing-xs variables.$spacing-md;
+  justify-content: flex-start;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.divider {
+  height: 100%;
+  min-width: 1px;
+  transition: background-color variables.$transition-out, color variables.$transition-out;
+}

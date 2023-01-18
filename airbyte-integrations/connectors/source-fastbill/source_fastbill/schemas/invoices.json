@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "INVOICE_ID": {
+      "type": "string"
+    },
+    "TYPE": {
+      "type": "string"
+    },
+    "CUSTOMER_ID": {
+      "type": "string"
+    },
+    "CUSTOMER_NUMBER": {
+      "type": "string"
+    },
+    "CUSTOMER_COSTCENTER_ID": {
+      "type": "string"
+    },
+    "CONTACT_ID": {
+      "type": "string"
+    },
+    "PROJECT_ID": {
+      "type": "string"
+    },
+    "CURRENCY_CODE": {
+      "type": "string"
+    },
+    "DELIVERY_DATE": {
+      "type": "string"
+    },
+    "INVOICE_TITLE": {
+      "type": "string",
+      "empty": true
+    },
+    "CASH_DISCOUNT_PERCENT": {
+      "type": "string"
+    },
+    "CASH_DISCOUNT_DAYS": {
+      "type": "string"
+    },
+    "SUB_TOTAL": {
+      "type": "number"
+    },
+    "VAT_TOTAL": {
+      "type": "number"
+    },
+    "VAT_CASE": {
+      "type": "string"
+    },
+    "VAT_ITEMS": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "VAT_PERCENT": {
+            "type": "integer"
+          },
+          "COMPLETE_NET": {
+            "type": "number"
+          },
+          "VAT_VALUE": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "ITEMS": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "INVOICE_ITEM_ID": {
+            "type": "integer"
+          },
+          "ARTICLE_NUMBER": {
+            "type": "string"
+          },
+          "DESCRIPTION": {
+            "type": "string",
+            "empty": true
+          },
+          "QUANTITY": {
+            "type": "integer"
+          },
+          "UNIT_PRICE": {
+            "type": "number"
+          },
+          "VAT_PERCENT": {
+            "type": "integer"
+          },
+          "VAT_VALUE": {
+            "type": "number"
+          },
+          "COMPLETE_NET": {
+            "type": "number"
+          },
+          "COMPLETE_GROSS": {
+            "type": "number"
+          },
+          "CATEGORY": {
+            "type": ["null", "array"],
+            "items": {}
+          },
+          "CATEGORY_ID": {
+            "type": ["null", "array"],
+            "items": {}
+          },
+          "SORT_ORDER": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "TOTAL": {
+      "type": "number"
+    },
+    "ORGANIZATION": {
+      "type": "string",
+      "empty": true
+    },
+    "NOTE": {
+      "type": "string",
+      "empty": true
+    },
+    "SALUTATION": {
+      "type": "string",
+      "empty": true
+    },
+    "FIRST_NAME": {
+      "type": "string",
+      "empty": true
+    },
+    "LAST_NAME": {
+      "type": "string",
+      "empty": true
+    },
+    "ADDRESS": {
+      "type": "string",
+      "empty": true
+    },
+    "ADDRESS_2": {
+      "type": "string",
+      "empty": true
+    },
+    "ZIPCODE": {
+      "type": "string",
+      "empty": true
+    },
+    "CITY": {
+      "type": "string",
+      "empty": true
+    },
+    "SERVICE_PERIOD_START": {
+      "type": "string"
+    },
+    "SERVICE_PERIOD_END": {
+      "type": "string"
+    },
+    "PAYMENT_TYPE": {
+      "type": "string",
+      "empty": true
+    },
+    "BANK_NAME": {
+      "type": "string",
+      "empty": true
+    },
+    "BANK_ACCOUNT_NUMBER": {
+      "type": "string",
+      "empty": true
+    },
+    "BANK_CODE": {
+      "type": "string",
+      "empty": true
+    },
+    "BANK_ACCOUNT_OWNER": {
+      "type": "string",
+      "empty": true
+    },
+    "BANK_IBAN": {
+      "type": "string",
+      "empty": true
+    },
+    "BANK_BIC": {
+      "type": "string",
+      "empty": true
+    },
+    "COUNTRY_CODE": {
+      "type": "string"
+    },
+    "VAT_ID": {
+      "type": "string"
+    },
+    "TEMPLATE_ID": {
+      "type": "string",
+      "empty": true
+    },
+    "INVOICE_NUMBER": {
+      "type": "string"
+    },
+    "INTROTEXT": {
+      "type": "string",
+      "empty": true
+    },
+    "PAID_DATE": {
+      "type": "string"
+    },
+    "IS_CANCELED": {
+      "type": "string"
+    },
+    "INVOICE_DATE": {
+      "type": "string"
+    },
+    "DUE_DATE": {
+      "type": "string"
+    },
+    "PAYMENT_INFO": {
+      "type": "string"
+    },
+    "PAYMENTS": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "LASTUPDATE": {
+      "type": "string"
+    },
+    "DOCUMENT_URL": {
+      "type": "string"
+    }
+  }
+}

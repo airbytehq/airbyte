@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class MariadbSpecTest {
+
   private static JsonNode schema;
   private static JsonNode config;
   private static String configText;
@@ -32,15 +33,15 @@ public class MariadbSpecTest {
   @BeforeAll
   static void init() throws IOException {
     configText = """
-        {
-          "host": "localhost",
-          "port": 1521,
-          "username": "mariadb",
-          "password": "password",
-          "database": "db",
-          "jdbc_url_params": "property1=pValue1&property2=pValue2"
-        }
-        """;
+                 {
+                   "host": "localhost",
+                   "port": 1521,
+                   "username": "mariadb",
+                   "password": "password",
+                   "database": "db",
+                   "jdbc_url_params": "property1=pValue1&property2=pValue2"
+                 }
+                 """;
     final String spec = MoreResources.readResource("spec.json");
     final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "spec-test"), "schema.json", spec).toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
@@ -92,4 +93,5 @@ public class MariadbSpecTest {
     final ConnectorSpecification spec = new MariadbColumnstoreDestination().spec();
     assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
   }
+
 }

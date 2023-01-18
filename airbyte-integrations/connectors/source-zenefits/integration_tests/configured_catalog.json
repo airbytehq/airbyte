@@ -1,32 +1,32 @@
 {
-    "streams": [
-      {
-        "stream": {
-          "name": "people",
-          "json_schema": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "type": "object",
-            "properties":{
-              "token":{
-                "type":"string"
-              }
+  "streams": [
+    {
+      "stream": {
+        "name": "people",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string"
             }
-          },
-          "supported_sync_modes": ["full_refresh"],
-          "supported_destination_sync_modes": ["overwrite", "append"]
+          }
         },
-        "sync_mode": "full_refresh",
-        "destination_sync_mode": "append"
+        "supported_sync_modes": ["full_refresh"],
+        "supported_destination_sync_modes": ["overwrite", "append"]
       },
-      {
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
       "stream": {
         "name": "employments",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -42,9 +42,9 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -60,9 +60,9 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -78,9 +78,9 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -96,9 +96,9 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -114,9 +114,9 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -132,9 +132,9 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -150,9 +150,9 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -168,9 +168,9 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -186,9 +186,9 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
-          "properties":{
-            "token":{
-              "type":"string"
+          "properties": {
+            "token": {
+              "type": "string"
             }
           }
         },
@@ -198,5 +198,5 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     }
-    ]
-  }
+  ]
+}

@@ -8,7 +8,7 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 ## Low-code Connector-Development Framework
 
-You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs by modifying boilerplate YAML files.
+You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs via a [connector builder UI](config-based/connector-builder-ui.md) or by modifying boilerplate YAML files.
 
 ## Python Connector-Development Kit \(CDK\)
 

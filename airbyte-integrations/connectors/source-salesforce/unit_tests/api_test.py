@@ -33,6 +33,33 @@ def test_bulk_sync_creation_failed(stream_config, stream_api):
         assert err.value.response.json()[0]["message"] == "test_error"
 
 
+def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stream_api):
+    """
+    Here we mock BULK API with response returning error, saying BULK is not supported for this kind of entity.
+    On the other hand, we mock REST API for this same entity with a successful response.
+    After having instantiated a BulkStream, sync should succeed in case it falls back to REST API. Otherwise it would throw an error.
+    """
+    stream = generate_stream("CustomEntity", stream_config, stream_api)
+    # mock a BULK API
+    requests_mock.register_uri(
+        "POST",
+        "https://fase-account.salesforce.com/services/data/v52.0/jobs/query",
+        status_code=400,
+        json=[{
+            "errorCode": "INVALIDENTITY",
+            "message": "CustomEntity is not supported by the Bulk API"
+        }]
+    )
+    rest_stream_records = [
+        {"id": 1, "name": "custom entity", "created": "2010-11-11"},
+        {"id": 11, "name": "custom entity", "created": "2020-01-02"}
+    ]
+    # mock REST API
+    mocker.patch("source_salesforce.source.SalesforceStream.read_records", Mock(return_value=rest_stream_records))
+    assert type(stream) is BulkIncrementalSalesforceStream
+    assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == rest_stream_records
+
+
 def test_stream_unsupported_by_bulk(stream_config, stream_api, caplog):
     """
     Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it.
@@ -460,7 +487,9 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name=catalog_stream_name, json_schema={"type": "object"}),
+                    stream=AirbyteStream(
+                        name=catalog_stream_name, supported_sync_modes=[SyncMode.full_refresh], json_schema={"type": "object"}
+                    ),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
@@ -496,7 +525,9 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                 ],
             },
         )
-        streams = SourceSalesforce().streams(config=stream_config, catalog=catalog)
+        source = SourceSalesforce()
+        source.catalog = catalog
+        streams = source.streams(config=stream_config)
     expected_names = catalog_stream_names if catalog else stream_names
     assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
 
@@ -528,3 +559,59 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalSalesforceStream)
+
+
+def test_bulk_stream_paging(stream_config, stream_api_pk):
+    last_modified_date1 = "2022-10-01T00:00:00Z"
+    last_modified_date2 = "2022-10-02T00:00:00Z"
+    assert last_modified_date1 < last_modified_date2
+
+    stream_config["start_date"] = last_modified_date1
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api_pk)
+    stream.page_size = 2
+
+    csv_header = "Field1,LastModifiedDate,Id"
+    pages = [
+        [f"test,{last_modified_date1},1", f"test,{last_modified_date1},3"],
+        [f"test,{last_modified_date1},5", f"test,{last_modified_date2},2"],
+        [f"test,{last_modified_date2},2", f"test,{last_modified_date2},4"],
+        [f"test,{last_modified_date2},6"],
+    ]
+
+    with requests_mock.Mocker() as mocked_requests:
+
+        post_responses = []
+        for job_id, page in enumerate(pages, 1):
+            post_responses.append({"json": {"id": f"{job_id}"}})
+            mocked_requests.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+            mocked_requests.register_uri("GET", stream.path() + f"/{job_id}/results", text="\n".join([csv_header] + page))
+            mocked_requests.register_uri("DELETE", stream.path() + f"/{job_id}")
+        mocked_requests.register_uri("POST", stream.path(), post_responses)
+
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+        assert records == [
+            {"Field1": "test", "Id": 1, "LastModifiedDate": last_modified_date1},
+            {"Field1": "test", "Id": 3, "LastModifiedDate": last_modified_date1},
+            {"Field1": "test", "Id": 5, "LastModifiedDate": last_modified_date1},
+            {"Field1": "test", "Id": 2, "LastModifiedDate": last_modified_date2},
+            {"Field1": "test", "Id": 2, "LastModifiedDate": last_modified_date2},  # duplicate record
+            {"Field1": "test", "Id": 4, "LastModifiedDate": last_modified_date2},
+            {"Field1": "test", "Id": 6, "LastModifiedDate": last_modified_date2},
+        ]
+
+        def get_query(request_index):
+            return mocked_requests.request_history[request_index].json()["query"]
+
+        SELECT = "SELECT LastModifiedDate,Id FROM Account"
+        ORDER_BY = "ORDER BY LastModifiedDate,Id ASC LIMIT 2"
+
+        assert get_query(0) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date1} {ORDER_BY}"
+
+        q = f"{SELECT} WHERE (LastModifiedDate = {last_modified_date1} AND Id > '3') OR (LastModifiedDate > {last_modified_date1}) {ORDER_BY}"
+        assert get_query(4) == q
+
+        assert get_query(8) == f"{SELECT} WHERE LastModifiedDate >= {last_modified_date2} {ORDER_BY}"
+
+        q = f"{SELECT} WHERE (LastModifiedDate = {last_modified_date2} AND Id > '4') OR (LastModifiedDate > {last_modified_date2}) {ORDER_BY}"
+        assert get_query(12) == q
