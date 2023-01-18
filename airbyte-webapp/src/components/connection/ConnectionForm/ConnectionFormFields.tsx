@@ -19,14 +19,14 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 
-import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
-import { NonBreakingChangesPreferenceField } from "./components/NonBreakingChangesPreferenceField";
-import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
-import { Section } from "./components/Section";
-import { SyncCatalogField } from "./components/SyncCatalogField";
 import styles from "./ConnectionFormFields.module.scss";
 import { FormikConnectionFormValues } from "./formConfig";
+import { NamespaceDefinitionField } from "./NamespaceDefinitionField";
+import { NonBreakingChangesPreferenceField } from "./NonBreakingChangesPreferenceField";
+import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./refreshSourceSchemaWithConfirmationOnDirty";
 import { ScheduleField } from "./ScheduleField";
+import { Section } from "./Section";
+import { SyncCatalogField } from "./SyncCatalogField";
 
 interface ConnectionFormFieldsProps {
   values: ValuesProps | FormikConnectionFormValues;

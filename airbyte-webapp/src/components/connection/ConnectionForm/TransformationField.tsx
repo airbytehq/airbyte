@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import ArrayOfObjectsEditor from "components/ArrayOfObjectsEditor";
+import TransformationForm from "components/connection/TransformationForm";
 
 import { OperationRead } from "core/request/AirbyteClient";
 import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { isDefined } from "utils/common";
-import TransformationForm from "views/Connection/TransformationForm";
 
-import { useDefaultTransformation } from "../formConfig";
+import { useDefaultTransformation } from "./formConfig";
 
 interface TransformationFieldProps extends ArrayHelpers {
   form: FormikProps<{ transformations: OperationRead[] }>;

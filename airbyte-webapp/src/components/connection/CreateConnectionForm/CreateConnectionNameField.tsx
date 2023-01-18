@@ -1,11 +1,10 @@
 import { Field, FieldProps } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { Section } from "components/connection/ConnectionForm/Section";
 import { ControlLabels } from "components/LabeledControl";
 import { FlexContainer } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
-
-import { Section } from "views/Connection/ConnectionForm/components/Section";
 
 import styles from "./CreateConnectionNameField.module.scss";
 
