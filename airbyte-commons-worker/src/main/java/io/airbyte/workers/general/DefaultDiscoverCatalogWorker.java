@@ -10,11 +10,11 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -29,7 +29,6 @@ import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,16 +77,10 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
           Jsons.serialize(discoverSchemaInput.getConnectionConfiguration()));
 
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType;
-
-      try (final InputStream stdout = process.getInputStream()) {
-        messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
-            .collect(Collectors.groupingBy(AirbyteMessage::getType));
-
-        WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
-      }
+      final Map<Type, List<AirbyteMessage>> messagesByType = WorkerUtils.getMessagesByType(process, streamFactory, 30);
 
       final Optional<AirbyteCatalog> catalog = messagesByType
           .getOrDefault(Type.CATALOG, new ArrayList<>()).stream()
@@ -102,12 +93,15 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
               UUID.fromString(discoverSchemaInput.getSourceId()),
               configMessage.getConfig()));
 
-      final int exitCode = process.exitValue();
-      if (exitCode == 0) {
-        if (catalog.isEmpty()) {
-          throw new WorkerException("Integration failed to output a catalog struct.");
-        }
+      final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.DISCOVER_CATALOG_ID, messagesByType);
+      failureReason.ifPresent(jobOutput::setFailureReason);
 
+      final int exitCode = process.exitValue();
+      if (exitCode != 0) {
+        LOGGER.warn("Discover job subprocess finished with exit codee {}", exitCode);
+      }
+
+      if (catalog.isPresent()) {
         final UUID catalogId =
             configRepository.writeActorCatalogFetchEvent(catalog.get(),
                 // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
@@ -115,13 +109,11 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
                 discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()),
                 discoverSchemaInput.getConnectorVersion(),
                 discoverSchemaInput.getConfigHash());
-        return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID).withDiscoverCatalogId(catalogId);
-      } else {
-        return WorkerUtils.getJobFailureOutputOrThrow(
-            OutputType.DISCOVER_CATALOG_ID,
-            messagesByType,
-            String.format("Discover job subprocess finished with exit code %s", exitCode));
+        jobOutput.setDiscoverCatalogId(catalogId);
+      } else if (failureReason.isEmpty()) {
+        WorkerUtils.throwWorkerException("Integration failed to output a catalog struct and did not output a failure reason", process);
       }
+      return jobOutput;
     } catch (final WorkerException e) {
       ApmTraceUtils.addExceptionToTrace(e);
       throw e;

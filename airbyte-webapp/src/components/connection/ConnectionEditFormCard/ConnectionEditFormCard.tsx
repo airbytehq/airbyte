@@ -33,7 +33,7 @@ export const ConnectionEditFormCard = <T extends object>({
     Error,
     { values: T; formikHelpers: FormikHelpers<T> }
   >(async ({ values, formikHelpers }) => {
-    form.onSubmit(values, formikHelpers);
+    await form.onSubmit(values, formikHelpers);
   });
 
   const errorMessage = error ? generateMessageFromError(error) : null;

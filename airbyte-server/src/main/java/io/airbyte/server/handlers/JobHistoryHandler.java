@@ -168,7 +168,8 @@ public class JobHistoryHandler {
         .estimatedBytes(combinedStats.getEstimatedBytes())
         .estimatedRecords(combinedStats.getEstimatedRecords())
         .bytesEmitted(combinedStats.getBytesEmitted())
-        .recordsEmitted(combinedStats.getRecordsEmitted());
+        .recordsEmitted(combinedStats.getRecordsEmitted())
+        .recordsCommitted(combinedStats.getRecordsCommitted());
 
     final var streamStats = attemptStats.perStreamStats().stream().map(s -> new AttemptStreamStats()
         .streamName(s.getStreamName())
@@ -176,6 +177,7 @@ public class JobHistoryHandler {
         .stats(new AttemptStats()
             .bytesEmitted(s.getStats().getBytesEmitted())
             .recordsEmitted(s.getStats().getRecordsEmitted())
+            .recordsCommitted(s.getStats().getRecordsCommitted())
             .estimatedBytes(s.getStats().getEstimatedBytes())
             .estimatedRecords(s.getStats().getEstimatedRecords())))
         .collect(Collectors.toList());

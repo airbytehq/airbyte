@@ -20,10 +20,13 @@ import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
 import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 
 @Controller("/api/v1/web_backend")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 public class WebBackendApiController implements WebBackendApi {
 
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;

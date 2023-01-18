@@ -9,11 +9,11 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -29,14 +29,11 @@ import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,18 +70,12 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
           Jsons.serialize(input.getConnectionConfiguration()));
 
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION);
+
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType;
-      try (final InputStream stdout = process.getInputStream()) {
-        messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
-            .collect(Collectors.groupingBy(AirbyteMessage::getType));
-
-        WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
-      }
-
-      final int exitCode = process.exitValue();
-      final Optional<AirbyteConnectionStatus> status = messagesByType
+      final Map<Type, List<AirbyteMessage>> messagesByType = WorkerUtils.getMessagesByType(process, streamFactory, 30);
+      final Optional<AirbyteConnectionStatus> connectionStatus = messagesByType
           .getOrDefault(Type.CONNECTION_STATUS, new ArrayList<>()).stream()
           .map(AirbyteMessage::getConnectionStatus)
           .findFirst();
@@ -104,25 +95,30 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
             });
       }
 
-      if (status.isPresent() && exitCode == 0) {
-        final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
-            .withStatus(Enums.convertTo(status.get().getStatus(), Status.class))
-            .withMessage(status.get().getMessage());
+      final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
+      failureReason.ifPresent(jobOutput::setFailureReason);
 
-        LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
-        LOGGER.debug("Check connection job received output: {}", output);
-        LineGobbler.endSection("CHECK");
-        return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output);
-      } else {
-        final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
-        LOGGER.error(message);
-
-        return WorkerUtils.getJobFailureOutputOrThrow(OutputType.CHECK_CONNECTION, messagesByType, message);
+      final int exitCode = process.exitValue();
+      if (exitCode != 0) {
+        LOGGER.warn("Check connection job subprocess finished with exit code {}", exitCode);
       }
+
+      if (connectionStatus.isPresent()) {
+        final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
+            .withStatus(Enums.convertTo(connectionStatus.get().getStatus(), Status.class))
+            .withMessage(connectionStatus.get().getMessage());
+        LOGGER.info("Check connection job received output: {}", output);
+        jobOutput.setCheckConnection(output);
+      } else if (failureReason.isEmpty()) {
+        WorkerUtils.throwWorkerException("Error checking connection status: no status nor failure reason were outputted", process);
+      }
+      LineGobbler.endSection("CHECK");
+      return jobOutput;
 
     } catch (final Exception e) {
       ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.error("Unexpected error while checking connection: ", e);
+      LineGobbler.endSection("CHECK");
       throw new WorkerException("Unexpected error while getting checking connection.", e);
     }
   }
