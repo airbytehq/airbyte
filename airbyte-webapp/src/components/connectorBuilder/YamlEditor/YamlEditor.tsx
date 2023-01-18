@@ -9,7 +9,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CodeEditor } from "components/ui/CodeEditor";
 
 import { ConnectorManifest } from "core/request/ConnectorManifest";
-// import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
   useConnectorBuilderFormState,
