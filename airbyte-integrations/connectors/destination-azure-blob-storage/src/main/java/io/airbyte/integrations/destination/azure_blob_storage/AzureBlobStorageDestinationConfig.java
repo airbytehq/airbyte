@@ -88,9 +88,9 @@ public class AzureBlobStorageDestinationConfig {
 
   }
 
-  public int getBlobSpillSize() {
+  public long getBlobSpillSize() {
     // Convert from MB to Bytes
-    return blobSpillSize * 1024 * 1024;
+    return (long) blobSpillSize * 1024 * 1024;
   }
 
   public int getOutputStreamBufferSize() {

@@ -30,11 +30,13 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
 
   private static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
+  private final SpecializedBlobClientBuilder specializedBlobClientBuilder;
+
   private BufferedOutputStream blobOutputStream;
 
   private PrintWriter printWriter;
 
-  private int replicatedBytes;
+  private long replicatedBytes;
 
   private int sequence;
 
@@ -42,6 +44,7 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
                                      final AppendBlobClient appendBlobClient,
                                      final ConfiguredAirbyteStream configuredStream) {
     super(config, appendBlobClient, configuredStream);
+    this.specializedBlobClientBuilder = AzureBlobStorageDestinationConfig.createSpecializedBlobClientBuilder(config);
     // at this moment we already receive appendBlobClient initialized
     this.blobOutputStream = new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
     // layered buffered streams/writers on multiple levels might not bring any benefits
@@ -57,36 +60,35 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
+    String jsonRecord = Jsons.serialize(json);
     // inefficient way to calculate correct size in bytes.
     // depending on char encoding something similar can be achieved with str.length() * N
-    String jsonRecord = Jsons.serialize(json);
     int recordSize = jsonRecord.getBytes(StandardCharsets.UTF_8).length;
     if (config.getBlobSpillSize() > 0 && replicatedBytes + recordSize > config.getBlobSpillSize()) {
+      sequence++;
       String subBlobName = appendBlobClient.getBlobName().substring(0, appendBlobClient.getBlobName().length() - 1);
-      String blobName = subBlobName + (sequence++);
-
-      final SpecializedBlobClientBuilder specializedBlobClientBuilder =
-          AzureBlobStorageDestinationConfig.createSpecializedBlobClientBuilder(config);
+      String blobName = subBlobName + sequence;
 
       final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
           .blobName(blobName)
           .buildAppendBlobClient();
 
-      this.reinitAppendBlobClient(appendBlobClient);
+      appendBlobClient.create(true);
 
-      this.blobOutputStream =
-          new BufferedOutputStream(this.appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
+      reinitAppendBlobClient(appendBlobClient);
 
-      // force flush of records
-      this.printWriter.close();
-      this.printWriter = new PrintWriter(blobOutputStream, false, StandardCharsets.UTF_8);
+      blobOutputStream =
+          new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());
 
-      this.printWriter.println(jsonRecord);
+      // force flush of previous records
+      printWriter.close();
+      printWriter = new PrintWriter(blobOutputStream, false, StandardCharsets.UTF_8);
+      printWriter.println(jsonRecord);
 
       replicatedBytes = 0;
       replicatedBytes += recordSize;
     } else {
-      this.printWriter.println(jsonRecord);
+      printWriter.println(jsonRecord);
       replicatedBytes += recordSize;
     }
     LOGGER.info("Replicated bytes to destination {}", replicatedBytes);
