@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
+import { FlexContainer } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
 
 import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
@@ -95,27 +96,29 @@ const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, feedba
       >
         {({ isSubmitting, dirty }) => (
           <Form>
-            {renderFeedback(dirty, feedback)}
-            <Field name="version">
-              {({ field }: FieldProps<string>) => (
-                <InputField
-                  showNote={version === field.value}
-                  data-before={formatMessage({
-                    id: "admin.latestNote",
-                  })}
-                >
-                  <VersionInput {...field} type="text" autoComplete="off" />
-                </InputField>
-              )}
-            </Field>
-            <Button
-              size="xs"
-              isLoading={isSubmitting || updating}
-              type="submit"
-              disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
-            >
-              <FormattedMessage id="form.change" />
-            </Button>
+            <FlexContainer alignItems="center">
+              {renderFeedback(dirty, feedback)}
+              <Field name="version">
+                {({ field }: FieldProps<string>) => (
+                  <InputField
+                    showNote={version === field.value}
+                    data-before={formatMessage({
+                      id: "admin.latestNote",
+                    })}
+                  >
+                    <VersionInput {...field} type="text" autoComplete="off" />
+                  </InputField>
+                )}
+              </Field>
+              <Button
+                size="xs"
+                isLoading={isSubmitting || updating}
+                type="submit"
+                disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
+              >
+                <FormattedMessage id="form.change" />
+              </Button>
+            </FlexContainer>
           </Form>
         )}
       </Formik>

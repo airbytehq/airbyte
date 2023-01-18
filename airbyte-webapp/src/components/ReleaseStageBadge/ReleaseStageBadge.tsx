@@ -27,7 +27,7 @@ interface ReleaseStageBadgeProps {
 }
 
 export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({ stage, small, tooltip = true }) => {
-  if (!stage || stage === ReleaseStage.custom) {
+  if (!stage) {
     return null;
   }
 
