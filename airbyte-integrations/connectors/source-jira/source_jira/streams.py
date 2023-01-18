@@ -194,8 +194,11 @@ class Boards(JiraStream):
                 yield board
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["projectId"] = str(record["location"]["projectId"])
-        record["projectKey"] = record["location"]["projectKey"]
+        if record.get("location"):
+            location = record.get("location")
+            if location:
+                record["projectId"] = str(location.get("projectId"))
+                record["projectKey"] = location.get("projectKey")
         return record
 
 
@@ -553,7 +556,8 @@ class IssueRemoteLinks(StartDateJiraStream):
         return f"issue/{stream_slice['key']}/remotelink"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for issue in read_full_refresh(self.issues_stream):
+        meias = read_full_refresh(self.issues_stream)
+        for issue in meias:
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
