@@ -148,7 +148,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
     LOGGER.info("[Stream {}] tmp table schema: {}", stream.getName(), schemaString);
 
     return String.format("CREATE TABLE %s.%s (%s) USING csv LOCATION '%s' " +
-        "options (\"header\" = \"true\", \"multiLine\" = \"true\") ;",
+        "options (\"header\" = \"true\", \"multiLine\" = \"true\", \"escape\" = \"\\\"\") ;",
         schemaName, tmpTableName, schemaString,
         getTmpTableLocation().replace(AZURE_BLOB_ENDPOINT_DOMAIN_NAME, AZURE_DFS_ENDPOINT_DOMAIN_NAME));
   }
@@ -173,7 +173,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
         }
       }
 
-      if (columnType.equals("")) {
+      if (columnType.equals("") || columnType.equals("object")) {
         LOGGER.info("Unable to parse type for the `{}` column. Falling back to \"string\"", header);
         columnType = "string";
       }
