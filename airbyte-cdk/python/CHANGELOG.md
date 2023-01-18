@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.21.1
+Low-code: Add `AccessTokenAuthenticator`
+
 ## 0.21.0
 Add AvailabilityStrategy concept and use check_availability within CheckStream
 
