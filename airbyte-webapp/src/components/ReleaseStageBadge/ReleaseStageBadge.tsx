@@ -5,7 +5,7 @@ import { GAIcon } from "components/icons/GAIcon";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
-import { useFreeConnectorProgramInfo } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
+import { useFreeConnectorProgram } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
 
 import styles from "./ReleaseStageBadge.module.scss";
 
@@ -19,8 +19,8 @@ interface ReleaseStageBadgeProps {
 }
 
 export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({ stage, small, tooltip = true }) => {
-  const { data } = useFreeConnectorProgramInfo();
-  const showEnrollmentUi = Boolean(data?.showEnrollmentUi) || true;
+  const { data: showEnrollmentUiResponse } = useFreeConnectorProgram();
+  const showEnrollmentUi = Boolean(showEnrollmentUiResponse) || true;
   const { formatMessage } = useIntl();
 
   const showFreeTag = showEnrollmentUi && (stage === "alpha" || stage === "beta");
