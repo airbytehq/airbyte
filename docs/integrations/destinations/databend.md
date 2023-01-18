@@ -17,11 +17,13 @@ Each stream will be output into its own table in Databend. Each table will conta
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Databend is `VARCHAR`.
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Databend is `TIMESTAMP`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in Databend is `VARVHAR`.
+## Getting Started (Airbyte Cloud)
+Coming soon...
 
-## Getting Started
+## Getting Started (Airbyte Open-Source)
 You can follow the [Connecting to a Warehouse docs](https://docs.databend.com/using-databend-cloud/warehouses/connecting-a-warehouse) to get the user, password, host etc.
 
-Or You can create such a user by running:
+Or you can create such a user by running:
 
 ```
 GRANT CREATE ON * TO airbyte_user;
@@ -51,4 +53,9 @@ You should now have all the requirements needed to configure Databend as a desti
 
 
 ## Changelog
-######TODO: more info
+
+| Version | Date       | Pull Request                                             | Subject                                  |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------|
+| 0.1.1   | 2022-01-09 | [21182](https://github.com/airbytehq/airbyte/pull/21182)   | Remove protocol option and enforce HTTPS |
+| 0.1.0   | 2022-01-09 | [20909](https://github.com/airbytehq/airbyte/pull/20909)   | Destination Databend                     |
+
