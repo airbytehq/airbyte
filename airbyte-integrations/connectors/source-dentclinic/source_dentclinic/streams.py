@@ -153,6 +153,10 @@ class DentclinicBookingStream(HttpStream, ABC):
 
 
 class DentclinicUtilizationStream(HttpStream, ABC):
+
+    # TODO: Must have ability to split this into multiple streams: ProfessionalsAndShifts and BookingsAndBlockings
+    # 
+
     primary_key = None
     state_checkpoint_interval = 1
 
