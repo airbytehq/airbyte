@@ -8,6 +8,10 @@ import static io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.PRIMITIVE_TO_RE
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -87,7 +91,6 @@ public class JsonSchemaType {
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withLegacyAirbyteTypeProperty("big_integer")
           .build();
-  public static final JsonSchemaType JSONB_V1 = null;
 
     private final Map<String, Object> jsonSchemaTypeMap;
 
@@ -95,8 +98,8 @@ public class JsonSchemaType {
     this.jsonSchemaTypeMap = jsonSchemaTypeMap;
   }
 
-  public static Builder builder(final JsonSchemaPrimitive type) {
-    return new Builder(type);
+  public static Builder builder(final JsonSchemaPrimitive ... types) {
+    return new Builder(types);
   }
 
   public Map<String, Object> getJsonSchemaTypeMap() {
@@ -107,12 +110,21 @@ public class JsonSchemaType {
 
     private final ImmutableMap.Builder<String, Object> typeMapBuilder;
 
-    private Builder(final JsonSchemaPrimitive type) {
-      typeMapBuilder = ImmutableMap.builder();
-      if (JsonSchemaPrimitiveUtil.isV0Schema(type)) {
-        typeMapBuilder.put(TYPE, type.name().toLowerCase());
+    private Builder(final JsonSchemaPrimitive ... types) {
+      final List<JsonSchemaPrimitive> schemaPrimitives = Arrays.asList(types);
+      if (schemaPrimitives.size() > 1) {
+        typeMapBuilder = ImmutableMap.builder();
+        final List<ImmutableMap<Object, Object>> typeList = new ArrayList<>();
+        schemaPrimitives.forEach(x -> typeList.add(ImmutableMap.builder().put(TYPE, x.name().toLowerCase()).build()));
+        typeMapBuilder.put("oneOf", typeList);
       } else {
-        typeMapBuilder.put(REF, PRIMITIVE_TO_REFERENCE_BIMAP.get(type));
+        final JsonSchemaPrimitive type = schemaPrimitives.get(0);
+        typeMapBuilder = ImmutableMap.builder();
+        if (JsonSchemaPrimitiveUtil.isV0Schema(type)) {
+          typeMapBuilder.put(TYPE, type.name().toLowerCase());
+        } else {
+          typeMapBuilder.put(REF, PRIMITIVE_TO_REFERENCE_BIMAP.get(type));
+        }
       }
     }
 
