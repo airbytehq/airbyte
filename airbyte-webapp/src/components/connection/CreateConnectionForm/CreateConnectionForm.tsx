@@ -2,6 +2,13 @@ import { Form, Formik, FormikHelpers } from "formik";
 import React, { Suspense, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { ConnectionFormFields } from "components/connection/ConnectionForm/ConnectionFormFields";
+import CreateControls from "components/connection/ConnectionForm/CreateControls";
+import {
+  FormikConnectionFormValues,
+  useConnectionValidationSchema,
+} from "components/connection/ConnectionForm/formConfig";
+import { OperationsSection } from "components/connection/ConnectionForm/OperationsSection";
 import LoadingSchema from "components/LoadingSchema";
 
 import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
@@ -15,10 +22,6 @@ import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useCreateConnection } from "hooks/services/useConnectionHook";
 import { SchemaError as SchemaErrorType, useDiscoverSchema } from "hooks/services/useSourceHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
-import CreateControls from "views/Connection/ConnectionForm/components/CreateControls";
-import { OperationsSection } from "views/Connection/ConnectionForm/components/OperationsSection";
-import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
-import { useConnectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./CreateConnectionForm.module.scss";
 import { CreateConnectionNameField } from "./CreateConnectionNameField";
