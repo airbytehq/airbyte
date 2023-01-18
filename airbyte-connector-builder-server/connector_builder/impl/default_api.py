@@ -5,12 +5,15 @@
 import json
 import logging
 import traceback
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
+from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
+from fastapi import Body, HTTPException, Depends
+from fastapi.security import OAuth2PasswordBearer
 from json import JSONDecodeError
+from jsonschema import ValidationError
 from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
-from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
@@ -22,8 +25,8 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.adapter import CdkAdapter
-from fastapi import Body, HTTPException
-from jsonschema import ValidationError
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 class DefaultApiImpl(DefaultApi):
@@ -34,7 +37,7 @@ class DefaultApiImpl(DefaultApi):
         self.max_record_limit = max_record_limit
         super().__init__()
 
-    async def get_manifest_template(self) -> str:
+    async def get_manifest_template(self, token: str = Depends(oauth2_scheme)) -> str:
         return """version: "0.1.0"
 definitions:
   selector:
@@ -85,7 +88,8 @@ spec:
         description: API Key
 """
 
-    async def list_streams(self, streams_list_request_body: StreamsListRequestBody = Body(None, description="")) -> StreamsListRead:
+    async def list_streams(self, streams_list_request_body: StreamsListRequestBody = Body(None, description=""),
+                           token: str = Depends(oauth2_scheme)) -> StreamsListRead:
         """
         Takes in a low code manifest and a config to resolve the list of streams that are available for testing
         :param streams_list_request_body: Input parameters to retrieve the list of available streams
@@ -108,7 +112,8 @@ spec:
             raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {error.args[0]}")
         return StreamsListRead(streams=stream_list_read)
 
-    async def read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description="")) -> StreamRead:
+    async def read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description=""),
+                          token: str = Depends(oauth2_scheme)) -> StreamRead:
         """
         Using the provided manifest and config, invokes a sync for the specified stream and returns groups of Airbyte messages
         that are produced during the read operation
