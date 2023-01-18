@@ -33,26 +33,30 @@ sealed interface FeatureFlagClient {
 }
 
 /**
- * Config file based feature-flag client. Feature-flag are derived from a yaml config file.
- * Also supports flags defined via environment-variables via the [EnvVar] class.
+ * Config file based feature-flag client.
  *
- * @param [config] the location of the yaml config file that contains the feature-flag definitions.
- * The [config] will be watched for changes and the internal representation of the [config] will be updated to match.
+ * If no [config] is provided, will return the default state for each [Flag] requested.
+ * Supports [EnvVar] flags as well.
+ *
+ * @param [config] optional location of the yaml config file that contains the feature-flag definitions.
+ * If the [config] is provided, it will be watched for changes and the internal representation of the [config] will be updated to match.
  */
-class ConfigFileClient(config: Path) : FeatureFlagClient {
+class ConfigFileClient(config: Path?) : FeatureFlagClient {
     /** [flags] holds the mappings of the flag-name to the flag properties */
-    private var flags: Map<String, ConfigFileFlag> = readConfig(config)
+    private var flags: Map<String, ConfigFileFlag> = config?.let { readConfig(it) } ?: mapOf()
 
     /** lock is used for ensuring access to the flags map is handled correctly when the map is being updated. */
     private val lock = ReentrantReadWriteLock()
 
     init {
-        if (!config.isRegularFile()) {
-            throw IllegalArgumentException("config must reference a file")
-        }
+        config?.also {
+            if (!it.isRegularFile()) {
+                throw IllegalArgumentException("config must reference a file")
+            }
 
-        config.onChange {
-            lock.write { flags = readConfig(config) }
+            it.onChange {
+                lock.write { flags = readConfig(config) }
+            }
         }
     }
 

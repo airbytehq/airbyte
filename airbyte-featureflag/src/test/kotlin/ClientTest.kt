@@ -31,7 +31,7 @@ import kotlin.test.assertTrue
 
 class ConfigFileClient {
     @Test
-    fun `verify platform functionality`() {
+    fun `verify config-file functionality`() {
         val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
         val client: FeatureFlagClient = ConfigFileClient(cfg)
 
@@ -49,7 +49,20 @@ class ConfigFileClient {
     }
 
     @Test
-    fun `verify platform reload capabilities`() {
+    fun `verify no-config file returns default flag state`() {
+        val client: FeatureFlagClient = ConfigFileClient(null)
+        val defaultFalse = Temporary(key = "default-false")
+        val defaultTrue = Temporary(key = "default-true", default = true)
+
+        val ctx = Workspace("workspace")
+        with(client) {
+            assertTrue { enabled(defaultTrue, ctx) }
+            assertFalse { enabled(defaultFalse, ctx) }
+        }
+    }
+
+    @Test
+    fun `verify config-file reload capabilities`() {
         val contents0 = """flags:
             |  - name: reload-test-true
             |    enabled: true
