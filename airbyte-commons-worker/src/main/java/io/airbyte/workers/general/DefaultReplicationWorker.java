@@ -47,6 +47,7 @@ import io.airbyte.workers.internal.book_keeping.MessageTracker;
 import io.airbyte.workers.internal.exception.DestinationException;
 import io.airbyte.workers.internal.exception.SourceException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,10 +56,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -122,7 +120,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    this.executors = Executors.newFixedThreadPool(2);
+    this.executors = Executors.newFixedThreadPool(3);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.connectorConfigUpdater = connectorConfigUpdater;
@@ -316,8 +314,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
+  private Duration getDurationSinceLast(final long previousMessageTime, final long now) {
+    return Duration.ofMillis(now - previousMessageTime);
+  }
+
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
-  private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
+  private Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                            final AirbyteDestination destination,
                                                            final ConfiguredAirbyteCatalog catalog,
                                                            final AtomicBoolean cancelled,
@@ -340,16 +342,30 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         populatedStreamToSelectedFields(catalog, streamToSelectedFields);
       }
       try {
+        final Duration MAX_FETCH_SECONDS = Duration.ofSeconds(30);
+        long lastMessageRecieved = System.currentTimeMillis();
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
+          final Callable<Optional<AirbyteMessage>> task = () -> source.attemptRead();
+
+          final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved, System.currentTimeMillis());
+
+          final Future<Optional<AirbyteMessage>> future = executors.submit(task);
+
           try {
-            messageOptional = source.attemptRead();
+            messageOptional = future.get(MAX_FETCH_SECONDS.minus(durationSinceLast).getSeconds(), TimeUnit.SECONDS);
+          } catch (final TimeoutException ex) {
+            throw new SourceException("Source process was un-responsive");
           } catch (final Exception e) {
             throw new SourceException("Source process read attempt failed", e);
           }
 
           if (messageOptional.isPresent()) {
             final AirbyteMessage airbyteMessage = messageOptional.get();
+            if (airbyteMessage.getType() == Type.STATE || airbyteMessage.getType() == Type.RECORD) {
+              lastMessageRecieved = System.currentTimeMillis();
+            }
+
             if (fieldSelectionEnabled) {
               filterSelectedFields(streamToSelectedFields, airbyteMessage);
             }
