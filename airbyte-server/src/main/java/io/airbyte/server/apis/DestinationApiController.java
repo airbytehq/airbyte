@@ -18,7 +18,7 @@ import lombok.AllArgsConstructor;
 
 @Controller("/api/v1/destinations")
 @Requires(property = "airbyte.deployment-mode",
-        value = "OSS")
+          value = "OSS")
 @AllArgsConstructor
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class DestinationApiController implements DestinationApi {

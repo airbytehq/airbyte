@@ -16,7 +16,7 @@ import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/source_definitions")
 @Requires(property = "airbyte.deployment-mode",
-        value = "OSS")
+          value = "OSS")
 @Context
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class SourceDefinitionApiController implements SourceDefinitionApi {

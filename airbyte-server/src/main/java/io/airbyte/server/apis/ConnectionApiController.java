@@ -20,7 +20,7 @@ import io.micronaut.security.rules.SecurityRule;
 @Controller("/api/v1/connections")
 @Context()
 @Requires(property = "airbyte.deployment-mode",
-        value = "OSS")
+          value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class ConnectionApiController implements ConnectionApi {
 

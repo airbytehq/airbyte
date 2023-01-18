@@ -16,12 +16,11 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
-
 import java.util.Map;
 
 @Controller("/api/v1/source_oauths")
 @Requires(property = "airbyte.deployment-mode",
-        value = "OSS")
+          value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class SourceOauthApiController implements SourceOauthApi {
 

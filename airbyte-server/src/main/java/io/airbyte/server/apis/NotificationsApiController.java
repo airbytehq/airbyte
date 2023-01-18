@@ -17,7 +17,7 @@ import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/notifications/try")
 @Requires(property = "airbyte.deployment-mode",
-        value = "OSS")
+          value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class NotificationsApiController implements NotificationsApi {
 

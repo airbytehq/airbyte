@@ -16,7 +16,7 @@ import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/destination_definition_specifications")
 @Requires(property = "airbyte.deployment-mode",
-        value = "OSS")
+          value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class DestinationDefinitionSpecificationApiController implements DestinationDefinitionSpecificationApi {
 
