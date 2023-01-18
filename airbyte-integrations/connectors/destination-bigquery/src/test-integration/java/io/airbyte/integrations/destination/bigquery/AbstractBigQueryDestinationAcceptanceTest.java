@@ -170,7 +170,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   protected void setUpBigQuery() throws IOException {
-    //secrets file should be set by the inhereting class
+    // secrets file should be set by the inhereting class
     Assertions.assertNotNull(secretsFile);
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
     config = BigQueryDestinationTestUtils.createConfig(secretsFile, datasetId);

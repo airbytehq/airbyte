@@ -164,7 +164,7 @@ public class BigQueryUploaderFactory {
     try {
       writer = bigQuery.writer(job, writeChannelConfiguration);
     } catch (final BigQueryException e) {
-      if (e.getCode() == FORBIDDEN || e.getCode() == NOT_FOUND){
+      if (e.getCode() == FORBIDDEN || e.getCode() == NOT_FOUND) {
         throw new ConfigErrorException(CONFIG_ERROR_MSG + e);
       } else {
         throw new BigQueryException(e.getCode(), e.getMessage());
