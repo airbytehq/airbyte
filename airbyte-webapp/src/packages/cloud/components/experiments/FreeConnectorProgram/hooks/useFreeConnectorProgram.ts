@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 
-import { useConfig } from "packages/cloud/services/config";
+import { MissingConfigError, useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
@@ -9,6 +9,9 @@ import { webBackendGetFreeConnectorProgramInfoForWorkspace } from "../lib/api";
 export const useFreeConnectorProgramInfo = () => {
   const workspaceId = useCurrentWorkspaceId();
   const { cloudApiUrl } = useConfig();
+  if (!cloudApiUrl) {
+    throw new MissingConfigError("Missing required configuration cloudApiUrl");
+  }
   const config = { apiUrl: cloudApiUrl };
   const middlewares = useDefaultRequestMiddlewares();
   const requestOptions = { config, middlewares };
