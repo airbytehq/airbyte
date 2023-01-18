@@ -38,7 +38,7 @@ import {
 } from "pages/modals/catalogDiffModal";
 import { updateSchemaModalConfirmBtnClick } from "pages/modals/updateSchemaModal";
 
-describe("Connection - main actions", () => {
+describe("Connection - creation, updating connection replication settings, deletion", () => {
   beforeEach(() => {
     initialSetupCompleted();
 
@@ -46,12 +46,11 @@ describe("Connection - main actions", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
   });
 
-  it("Create new connection", () => {
+  it("Create Postgres <> LocalJSON connection, check it's creation", () => {
     const sourceName = appendRandomString("Test connection source cypress");
     const destName = appendRandomString("Test connection destination cypress");
 
     createTestConnection(sourceName, destName);
-
     cy.get("div").contains(sourceName).should("exist");
     cy.get("div").contains(destName).should("exist");
 
@@ -59,7 +58,7 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Update connection", () => {
+  it("Create Postgres <> LocalJSON connection, update connection replication settings - select schedule and add destination prefix", () => {
     const sourceName = appendRandomString("Test update connection source cypress");
     const destName = appendRandomString("Test update connection destination cypress");
 
@@ -86,7 +85,8 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Update connection (pokeAPI)", () => {
+  it(`Creates PokeAPI <> Local JSON connection, update connection replication settings - 
+  select schedule, add destination prefix, set destination namespace custom format, change prefix and make sure that it's applied to all streams`, () => {
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -148,7 +148,7 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Creates a connection, then edits the schedule type", () => {
+  it("Create PokeAPI <> Local JSON connection, update connection replication settings - edit the schedule type one by one - cron, manual, every hour", () => {
     const sourceName = appendRandomString("Test connection source cypress PokeAPI");
     const destName = appendRandomString("Test connection destination cypress");
 
@@ -172,7 +172,7 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Saving a connection's schedule type only changes expected values", () => {
+  it("Create PokeAPI <> Local JSON connection, update connection replication settings - make sure that saving a connection's schedule type only changes expected values", () => {
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -218,7 +218,7 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Delete connection", () => {
+  it("Create PokeAPI <> Local JSON connection, and delete connection", () => {
     const sourceName = "Test delete connection source cypress";
     const destName = "Test delete connection destination cypress";
     createTestConnection(sourceName, destName);
@@ -235,7 +235,7 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Saving a connection's destination namespace with 'Custom format' option", () => {
+  it("Create PokeAPI <> Local JSON connection, update connection replication settings - set destination namespace with 'Custom format' option", () => {
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -279,7 +279,7 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Saving a connection's destination namespace with 'Mirror source structure' option", () => {
+  it("Create PokeAPI <> Local JSON connection, update connection replication settings - set destination namespace with 'Mirror source structure' option", () => {
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -300,7 +300,7 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Saving a connection's destination namespace with 'Destination default' option", () => {
+  it("Create PokeAPI <> Local JSON connection, update connection replication settings - set destination namespace with 'Destination default' option", () => {
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -346,7 +346,7 @@ describe("Connection - main actions", () => {
   });
 });
 
-describe("Connection - stream view", () => {
+describe("Connection - stream details", () => {
   beforeEach(() => {
     initialSetupCompleted();
     populateDBSource();
@@ -356,7 +356,7 @@ describe("Connection - stream view", () => {
     cleanDBSource();
   });
 
-  it("Stream view", () => {
+  it("Create Postgres <> Postgres connection, connection replication settings, expand stream details", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "users";
@@ -393,7 +393,7 @@ describe("Connection sync modes", () => {
     cleanDBSource();
   });
 
-  it("Connection sync mode Incremental Append", () => {
+  it("Create Postgres <> Postgres connection, update connection replication settings - select 'Incremental Append' sync mode, select required Cursor field, verify changes", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "users";
@@ -426,13 +426,14 @@ describe("Connection sync modes", () => {
     goToReplicationTab();
 
     searchStream("users");
+    //FIXME: rename "check" to "verify" or similar
     checkCursorField(streamName, "col1");
 
     deleteSource(sourceName);
     deleteDestination(destName);
   });
 
-  it("Connection sync mode Incremental Deduped History - PK is defined", () => {
+  it("Create Postgres <> Postgres connection, update connection replication settings - select 'Incremental Deduped History'(PK is defined), select Cursor field, verify changes", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "users";
@@ -474,7 +475,7 @@ describe("Connection sync modes", () => {
     deleteDestination(destName);
   });
 
-  it("Connection sync mode Incremental Deduped History - PK is not defined", () => {
+  it("Create Postgres <> Postgres connection, update connection replication settings - select 'Incremental Deduped History'(PK is NOT defined), select Cursor field, select PK, verify changes", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "cities";
@@ -518,7 +519,7 @@ describe("Connection sync modes", () => {
   });
 });
 
-describe("Connection - detect changes in source", () => {
+describe("Connection - detect source schema changes in source", () => {
   beforeEach(() => {
     initialSetupCompleted();
     populateDBSource();
@@ -530,7 +531,7 @@ describe("Connection - detect changes in source", () => {
     cleanDBSource();
   });
 
-  it("Create a connection, update data in source, show diff modal, reset streams", () => {
+  it("Create Postgres <> Local JSON connection, update data in source (async), refresh source schema, check diff modal, reset streams", () => {
     const sourceName = appendRandomString(
       "Test refresh source schema with changed data - connection Postgres source cypress"
     );
