@@ -14,13 +14,9 @@ acceptance_tests:
       - bypass_reason: The stream could return 0 records, because of low rate-limits
         name: ads
       - bypass_reason: The stream could return 0 records, because of low rate-limits
-        name: board_pins
-      - bypass_reason: The stream could return 0 records, because of low rate-limits
         name: board_section_pins
       - bypass_reason: The stream could return 0 records, because of low rate-limits
         name: board_sections
-      - bypass_reason: The stream could return 0 records, because of low rate-limits
-        name: boards
       - bypass_reason: The stream could return 0 records, because of low rate-limits
         name: campaign_analytics
       - bypass_reason: The stream could return 0 records, because of low rate-limits
