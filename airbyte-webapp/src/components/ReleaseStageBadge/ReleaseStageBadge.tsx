@@ -19,11 +19,11 @@ interface ReleaseStageBadgeProps {
 }
 
 export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({ stage, small, tooltip = true }) => {
-  const { data: showEnrollmentUiResponse } = useFreeConnectorProgram();
-  const showEnrollmentUi = Boolean(showEnrollmentUiResponse) || true;
+  const { data: freeConnectorProgramInfo } = useFreeConnectorProgram();
+  const showFreeConnectorUi = Boolean(freeConnectorProgramInfo?.isEnrolled);
   const { formatMessage } = useIntl();
 
-  const showFreeTag = showEnrollmentUi && (stage === "alpha" || stage === "beta");
+  const showFreeTag = showFreeConnectorUi && (stage === "alpha" || stage === "beta");
 
   if (!stage || stage === ReleaseStage.custom) {
     return null;
