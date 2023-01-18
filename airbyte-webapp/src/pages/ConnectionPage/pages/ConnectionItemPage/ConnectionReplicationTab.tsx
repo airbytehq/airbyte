@@ -46,7 +46,7 @@ const ValidateFormOnSchemaRefresh: React.FC = () => {
 };
 
 export const ConnectionReplicationTab: React.FC = () => {
-  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
   const analyticsService = useAnalyticsService();
   const connectionService = useConnectionService();
   const workspaceId = useCurrentWorkspaceId();
@@ -99,7 +99,7 @@ export const ConnectionReplicationTab: React.FC = () => {
         workspaceId,
         mode,
         allowSubOneHourCronExpressions,
-        allowAutoDetectSchemaChanges,
+        allowAutoDetectSchema,
         connection.operations
       );
 
@@ -158,7 +158,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       workspaceId,
       mode,
       allowSubOneHourCronExpressions,
-      allowAutoDetectSchemaChanges,
+      allowAutoDetectSchema,
       connection.operations,
       connection.catalogDiff?.transforms,
       connection.syncCatalog.streams,
@@ -188,7 +188,7 @@ export const ConnectionReplicationTab: React.FC = () => {
           validationSchema={createConnectionValidationSchema({
             mode,
             allowSubOneHourCronExpressions,
-            allowAutoDetectSchemaChanges,
+            allowAutoDetectSchema,
           })}
           onSubmit={onFormSubmit}
           enableReinitialize

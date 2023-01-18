@@ -12,7 +12,7 @@ import { OctaviaYellowFlag } from "./OctaviaYellowFlag";
 import styles from "./SchemaChangeBackdrop.module.scss";
 
 export const SchemaChangeBackdrop: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
 
   const {
     schemaHasBeenRefreshed,
@@ -25,11 +25,7 @@ export const SchemaChangeBackdrop: React.FC<React.PropsWithChildren<unknown>> = 
     return hasBreakingSchemaChange ? <OctaviaRedFlag /> : hasNonBreakingSchemaChange ? <OctaviaYellowFlag /> : null;
   }, [hasBreakingSchemaChange, hasNonBreakingSchemaChange]);
 
-  if (
-    !allowAutoDetectSchemaChanges ||
-    (!hasBreakingSchemaChange && !hasNonBreakingSchemaChange) ||
-    schemaHasBeenRefreshed
-  ) {
+  if (!allowAutoDetectSchema || (!hasBreakingSchemaChange && !hasNonBreakingSchemaChange) || schemaHasBeenRefreshed) {
     return <>{children}</>;
   }
 

@@ -39,14 +39,14 @@ export const tidyConnectionFormValues = (
   workspaceId: string,
   mode: ConnectionFormMode,
   allowSubOneHourCronExpressions: boolean,
-  allowAutoDetectSchemaChanges: boolean,
+  allowAutoDetectSchema: boolean,
   operations?: OperationRead[]
 ): ValuesProps => {
   // TODO (https://github.com/airbytehq/airbyte/issues/17279): We should try to fix the types so we don't need the casting.
   const formValues: ConnectionFormValues = createConnectionValidationSchema({
     mode,
     allowSubOneHourCronExpressions,
-    allowAutoDetectSchemaChanges,
+    allowAutoDetectSchema,
   }).cast(values, {
     context: { isRequest: true },
   }) as unknown as ConnectionFormValues;

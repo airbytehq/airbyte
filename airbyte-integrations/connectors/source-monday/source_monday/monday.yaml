@@ -9,8 +9,8 @@ definitions:
     extractor:
       type: DpathExtractor
       field_pointer:
-       - "data"
-       - "{{ options['name'] }}"
+        - "data"
+        - "{{ options['name'] }}"
   requester:
     url_base: "https://api.monday.com/v2"
     http_method: "GET"

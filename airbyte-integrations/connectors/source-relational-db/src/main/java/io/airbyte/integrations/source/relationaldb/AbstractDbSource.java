@@ -30,6 +30,10 @@ import io.airbyte.integrations.source.relationaldb.InvalidCursorInfoUtil.Invalid
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
+import io.airbyte.protocol.models.CommonField;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -41,12 +45,8 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -182,7 +182,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   private void validateCursorFieldForIncrementalTables(
                                                        final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                       final ConfiguredAirbyteCatalog catalog, final Database database) throws SQLException {
+                                                       final ConfiguredAirbyteCatalog catalog,
+                                                       final Database database)
+      throws SQLException {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     final List<InvalidCursorInfo> tablesWithInvalidCursorToWarnAbout = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
@@ -235,14 +237,17 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   /**
    * Verify that cursor column allows syncing to go through.
+   *
    * @param database database
    * @return true if syncing can go through. false otherwise
    * @throws SQLException exception
    */
-  protected boolean verifyCursorColumnValues(final Database database, final String schema, final String tableName, final String columnName) throws SQLException {
+  protected boolean verifyCursorColumnValues(final Database database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
     /* no-op */
     return true;
   }
+
   private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
                                                                              final Database database)
       throws Exception {

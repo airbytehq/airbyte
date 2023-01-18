@@ -136,7 +136,6 @@ definitions:
           - "*ref(definitions.survey_groups_slicer)"
           - "*ref(definitions.date_slicer)"
 
-
 streams:
   - "*ref(definitions.surveys)"
   - "*ref(definitions.survey_groups)"
