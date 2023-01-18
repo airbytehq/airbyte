@@ -61,7 +61,6 @@ public class NamespacingMapper implements AirbyteMapper {
   @Override
   public AirbyteMessage mapMessage(final AirbyteMessage message) {
     if (message.getType() == Type.RECORD) {
-      // final AirbyteMessage message = Jsons.clone(inputMessage);
       // Default behavior if namespaceDefinition is not set is to follow SOURCE
       if (namespaceDefinition != null) {
         if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
