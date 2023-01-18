@@ -102,6 +102,23 @@ class Clinics(DentclinicStaticStream):
     def http_method(self) -> str:
         return "POST"
 
+class PatientsReport(DentclinicStaticStream):
+    primary_key = "PatientId"
+    static_endpoint = 'GetPatientsReport'
+    endpoint_data_path = ['soap:Envelope', 'soap:Body', 'GetPatientsReportResponse', 'GetPatientsReportResult', 'PatientsReportModel']
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "clinics". Required.
+        """
+        return ""
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
 
 class Services(DentclinicStaticStream):
     primary_key = "Id"
@@ -139,6 +156,6 @@ class SourceDentclinic(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         return [BookingsFr(config=config, enable_days_back_limit=True), Bookings(config=config), Clinics(config=config),
-                Services(config=config), Resources(config=config)]
+                Services(config=config), Resources(config=config), PatientsReport(config=config)]
 
 
