@@ -10,7 +10,6 @@ import io.airbyte.featureflag.EnvVar
 import io.airbyte.featureflag.FeatureFlagClient
 import io.airbyte.featureflag.Flag
 import io.airbyte.featureflag.LaunchDarklyClient
-import io.airbyte.featureflag.Multi
 import io.airbyte.featureflag.Temporary
 import io.airbyte.featureflag.TestClient
 import io.airbyte.featureflag.User
@@ -25,7 +24,6 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -161,22 +159,6 @@ class LaunchDarklyClient {
             ldClient.boolVariation(testTrue.key, any<LDUser>(), testTrue.default)
             ldClient.boolVariation(testFalse.key, any<LDUser>(), testFalse.default)
             ldClient.boolVariation(testDne.key, any<LDUser>(), testDne.default)
-        }
-    }
-
-    @Test
-    fun `verify multi-context is not supported`() {
-        /**
-         * TODO replace this test once LDv6 is being used and Context.toLDUser no longer exists, to verify Multi support
-         */
-        val ldClient: LDClient = mockk()
-        every { ldClient.boolVariation(any(), any<LDUser>(), any()) } returns false
-
-        val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
-        val multiCtx = Multi(listOf(User("test")))
-
-        assertFailsWith<IllegalArgumentException> {
-            client.enabled(Temporary(key = "test"), multiCtx)
         }
     }
 
