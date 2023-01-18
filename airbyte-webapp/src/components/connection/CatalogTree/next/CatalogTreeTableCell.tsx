@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import React, { useCallback, useLayoutEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useWindowSize } from "react-use";
 
 import { Tooltip } from "components/ui/Tooltip";
@@ -35,43 +35,42 @@ export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeT
   className,
   children,
 }) => {
-  const [tooltipDisabled, setTooltipDisabled] = useState(false);
+  const [tooltipDisabled, setTooltipDisabled] = useState(true);
   const [textNodes, setTextNodes] = useState<Element[]>([]);
+  const cell = useRef<HTMLDivElement | null>(null);
 
   const { width: windowWidth } = useWindowSize();
 
-  const handleCell = useCallback(
-    (cell: HTMLDivElement) => cell && setTextNodes(Array.from(cell.querySelectorAll(`[data-type="text"]`))),
-    []
-  );
+  const getTextNodes = useCallback(() => {
+    if (withTooltip && cell.current) {
+      setTextNodes(Array.from(cell.current.querySelectorAll(`[data-type="text"]`)));
+    }
+  }, [withTooltip]);
 
-  useLayoutEffect(() => {
-    // need setTimeout so this runs after the DOM is finished rendering
-    // otherwise the node width's aren't calculated correctly
-    setTimeout(() => {
-      // windowWidth is only here so this functionality changes based on window width
-      if (textNodes.length && windowWidth) {
-        const [scrollWidths, clientWidths] = textNodes.reduce(
-          ([scrollWidths, clientWidths], textNode) => {
-            if (textNode) {
-              scrollWidths += textNode.scrollWidth;
-              clientWidths += textNode.clientWidth;
-            }
-            return [scrollWidths, clientWidths];
-          },
-          [0, 0]
-        );
-        if (scrollWidths > clientWidths) {
-          setTooltipDisabled(false);
-        } else {
-          setTooltipDisabled(true);
-        }
+  useEffect(() => {
+    // windowWidth is only here so this functionality changes based on window width
+    if (textNodes.length && windowWidth) {
+      const [scrollWidths, clientWidths] = textNodes.reduce(
+        ([scrollWidths, clientWidths], textNode) => {
+          if (textNode) {
+            scrollWidths += textNode.scrollWidth;
+            clientWidths += textNode.clientWidth;
+          }
+          return [scrollWidths, clientWidths];
+        },
+        [0, 0]
+      );
+      console.log(scrollWidths, clientWidths);
+      if (scrollWidths > clientWidths) {
+        setTooltipDisabled(false);
+      } else {
+        setTooltipDisabled(true);
       }
-    }, 100);
+    }
   }, [textNodes, windowWidth]);
 
   return (
-    <div ref={handleCell} className={classNames(styles.tableCell, className, sizeMap[size])}>
+    <div ref={cell} className={classNames(styles.tableCell, className, sizeMap[size])} onMouseEnter={getTextNodes}>
       {withTooltip ? (
         <Tooltip className={styles.noEllipsis} control={children} placement="top-start" disabled={tooltipDisabled}>
           <TooltipText textNodes={textNodes} />

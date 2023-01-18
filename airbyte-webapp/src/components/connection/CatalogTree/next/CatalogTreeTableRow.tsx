@@ -91,7 +91,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell withTooltip>
+      <CatalogTreeTableCell>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
@@ -103,7 +103,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell withTooltip>
+      <CatalogTreeTableCell>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
