@@ -2,12 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
 
-logger = None
+logger = logging.getLogger("test")
 config = dict()
 
 stream_names = ["s1"]
@@ -49,3 +50,31 @@ def test_check_stream_with_slices_as_list(test_name, record, streams_to_check, s
 
 def mock_read_records(responses, default_response=None, **kwargs):
     return lambda stream_slice, sync_mode: responses[frozenset(stream_slice)] if frozenset(stream_slice) in responses else default_response
+
+
+def test_check_empty_stream():
+    stream = MagicMock()
+    stream.name = "s1"
+    stream.read_records.return_value = iter([])
+    stream.stream_slices.return_value = iter([None])
+
+    source = MagicMock()
+    source.streams.return_value = [stream]
+
+    check_stream = CheckStream(["s1"], options={})
+    stream_is_available, reason = check_stream.check_connection(source, logger, config)
+    assert stream_is_available
+
+
+def test_check_stream_with_no_stream_slices_aborts():
+    stream = MagicMock()
+    stream.name = "s1"
+    stream.stream_slices.return_value = iter([])
+
+    source = MagicMock()
+    source.streams.return_value = [stream]
+
+    check_stream = CheckStream(["s1"], options={})
+    stream_is_available, reason = check_stream.check_connection(source, logger, config)
+    assert not stream_is_available
+    assert "no stream slices were found, likely because the parent stream is empty" in reason
