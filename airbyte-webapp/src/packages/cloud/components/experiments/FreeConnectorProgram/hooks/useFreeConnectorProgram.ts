@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 
-import { useExperiment } from "hooks/services/Experiment";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useConfig } from "packages/cloud/services/config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
@@ -13,14 +13,13 @@ export const useFreeConnectorProgramInfo = () => {
   const config = { apiUrl: cloudApiUrl };
   const middlewares = useDefaultRequestMiddlewares();
   const requestOptions = { config, middlewares };
-  const freeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
+  const { emailVerified } = useAuthService();
 
   return useQuery(["freeConnectorProgramInfo", workspaceId], () =>
     webBackendGetFreeConnectorProgramInfoForWorkspace({ workspaceId }, requestOptions).then(
       ({ hasEligibleConnector, hasPaymentAccountSaved }) => {
-        const showEnrollmentUi = !hasPaymentAccountSaved && hasEligibleConnector && freeConnectorProgramEnabled;
-        // TODO hardcoding this value to allow testing while data source gets sorted out
-        const needsEmailVerification = false;
+        const showEnrollmentUi = !hasPaymentAccountSaved && hasEligibleConnector;
+        const needsEmailVerification: boolean = emailVerified;
 
         return { showEnrollmentUi, needsEmailVerification };
       }
