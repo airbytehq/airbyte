@@ -87,8 +87,9 @@ public class JsonSchemaType {
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withLegacyAirbyteTypeProperty("big_integer")
           .build();
+  public static final JsonSchemaType JSONB_V1 = null;
 
-  private final Map<String, Object> jsonSchemaTypeMap;
+    private final Map<String, Object> jsonSchemaTypeMap;
 
   private JsonSchemaType(final Map<String, Object> jsonSchemaTypeMap) {
     this.jsonSchemaTypeMap = jsonSchemaTypeMap;

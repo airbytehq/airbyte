@@ -69,9 +69,9 @@ public enum PostgresType implements SQLType {
   OID_ARRAY(Types.ARRAY),
   FLOAT4_ARRAY(Types.ARRAY),
   FLOAT8_ARRAY(Types.ARRAY),
-  BYTEA_ARRAY(Types.ARRAY);
-
-  /**
+  BYTEA_ARRAY(Types.ARRAY),
+  JSONB(Types.JAVA_OBJECT) ;
+    /**
    * The Integer value for the JDBCType. It maps to a value in {@code Types.java}
    */
   private Integer type;

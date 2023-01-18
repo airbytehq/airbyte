@@ -196,6 +196,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
         case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
         case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
+        case "jsonb" -> putObject(json, columnName, resultSet, colIndex, PGobject.class);
         case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
         case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
         case "_numeric", "_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
@@ -431,6 +432,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
         case "bytea" -> PostgresType.VARCHAR;
+        case "jsonb" -> PostgresType.JSONB;
         case TIMESTAMPTZ -> PostgresType.TIMESTAMP_WITH_TIMEZONE;
         case TIMETZ -> PostgresType.TIME_WITH_TIMEZONE;
         default -> PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
@@ -529,7 +531,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
           .withItems(JsonSchemaType.STRING_DATE)
           .build();
-
+      case JSONB -> JsonSchemaType.JSONB_V1;
       case DATE -> JsonSchemaType.STRING_DATE;
       case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
       case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
