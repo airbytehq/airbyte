@@ -52,7 +52,7 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
     Source sshWrappedSource = MySqlSource.sshWrappedSource();
     Exception exception = assertThrows(ConfigErrorException.class, () -> sshWrappedSource.discover(config));
 
-    String expectedMessage = "Failed to get operation result within specified timeout";
+    String expectedMessage = "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
     String actualMessage = exception.getMessage();
 
     assertTrue(actualMessage.contains(expectedMessage));

@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 public class SshTunnel implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SshTunnel.class);
+  public static final String SSH_TIMEOUT_DISPLAY_MESSAGE = "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
 
   public enum TunnelMethod {
     NO_TUNNEL,
@@ -369,7 +370,7 @@ public class SshTunnel implements AutoCloseable {
       if (e instanceof SshException && e.getMessage()
           .toLowerCase(Locale.ROOT)
           .contains("failed to get operation result within specified timeout")) {
-        throw new ConfigErrorException(e.getMessage(), e);
+        throw new ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e);
       } else {
         throw new RuntimeException(e);
       }
