@@ -6,12 +6,15 @@ package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.generated.HealthCheckRead;
 import io.airbyte.config.persistence.ConfigRepository;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
+@Singleton
 public class HealthCheckHandler {
 
   private final ConfigRepository repository;
 
-  public HealthCheckHandler(final ConfigRepository repository) {
+  public HealthCheckHandler(@Named("configRepository") final ConfigRepository repository) {
     this.repository = repository;
   }
 
