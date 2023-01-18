@@ -121,9 +121,15 @@ public class DockerProcessFactory implements ProcessFactory {
       cmd.add("--name");
       cmd.add(containerName);
 
+      if (imageName.startsWith("airbyte/source-postgres")) {
+        LOGGER.info("Exp/osing image {} port 6000", imageName);
+        cmd.add("-p");
+        cmd.add("6000:6000");
+      }
+
       if (networkName != null) {
-        cmd.add("--network");
-        cmd.add(networkName);
+        LOGGER.info("Network: " + networkName);
+        // cmd.add("--network"); cmd.add(networkName);
       }
 
       if (workspaceMountSource != null) {
