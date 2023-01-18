@@ -3,6 +3,7 @@ import isEqual from "lodash/isEqual";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 
+import { ConnectionFormValues, SUPPORTED_MODES } from "components/connection/ConnectionForm/formConfig";
 import { DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
@@ -18,7 +19,6 @@ import { useDestinationNamespace } from "hooks/connection/useDestinationNamespac
 import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
-import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./CatalogSection.module.scss";
 import { CatalogTreeTableRow } from "./next/CatalogTreeTableRow";
