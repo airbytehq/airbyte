@@ -2,11 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+
 from connector_builder.generated.apis.default_api_interface import initialize_router
 from connector_builder.impl.default_api import DefaultApiImpl
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Connector Builder Server API",
@@ -20,6 +22,10 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts="airbyte-connector-builder-server-micronaut*"
 )
 
 app.include_router(initialize_router(DefaultApiImpl(LowCodeSourceAdapter)))
