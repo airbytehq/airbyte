@@ -75,6 +75,9 @@ def secret_property_names_fixture():
         "refresh_token",
     )
 
+DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
+DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
+
 
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
@@ -284,7 +287,9 @@ class TestSpec(BaseTest):
                 if len(value) != 2:
                     errors.append(f"{type_path} is not either a simple type or an array of a simple type plus null: {value}")
                 if value[1] != "null":
-                    errors.append(f"Second type of {type_path} is not null: {value}. Type can either be a simple type or an array of a simple type plus null")
+                    errors.append(
+                        f"Second type of {type_path} is not null: {value}. Type can either be a simple type or an array of a simple type plus null"
+                    )
         if len(errors) > 0:
             pytest.fail("\n".join(errors))
 
@@ -308,8 +313,10 @@ class TestSpec(BaseTest):
         for type_path, value in dpath.util.search(specification, "**/type", yielded=True):
             if value == "object":
                 property = self._get_parent(specification, type_path)
-                if "properties" not in property or len(property["properties"]) == 0:
-                    errors.append(f"{type_path} is an empty object which will not be represented correctly in the UI. Either remove or add specific properties")
+                if "oneOf" not in property and ("properties" not in property or len(property["properties"]) == 0):
+                    errors.append(
+                        f"{type_path} is an empty object which will not be represented correctly in the UI. Either remove or add specific properties"
+                    )
         if len(errors) > 0:
             pytest.fail("\n".join(errors))
 
@@ -338,7 +345,18 @@ class TestSpec(BaseTest):
         """
         not, anyOf, patternProperties, prefixItems, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed
         """
-        forbidden_keys = ["not", "anyOf", "patternProperties", "prefixItems", "allOf", "if", "then", "else", "dependentSchemas", "dependentRequired"]
+        forbidden_keys = [
+            "not",
+            "anyOf",
+            "patternProperties",
+            "prefixItems",
+            "allOf",
+            "if",
+            "then",
+            "else",
+            "dependentSchemas",
+            "dependentRequired",
+        ]
         specification = connector_spec_dict["connectionSpecification"]
         found_keys = set()
         for forbidden_key in forbidden_keys:
@@ -349,18 +367,17 @@ class TestSpec(BaseTest):
             # remove forbidden keys if they are used as properties directly
             for path, _value in dpath.util.search(specification, f"**/properties/{forbidden_key}", yielded=True):
                 found_keys.remove(path)
-        
+
         if len(found_keys) > 0:
             key_list = ", ".join(found_keys)
             pytest.fail(f"Found the following disallowed JSON schema features: {key_list}")
 
-    def test_date_pattern(self, connector_spec_dict: dict):
+    def test_date_pattern(self, connector_spec_dict: dict, detailed_logger):
         """
         Properties with format date or date-time should always have a pattern defined how the date/date-time should be formatted
         that corresponds with the format the datepicker component is creating.
         """
         specification = connector_spec_dict["connectionSpecification"]
-        errors = []
         for format_path, format in dpath.util.search(specification, "**/format", yielded=True):
             if not isinstance(format, str):
                 # format is not a format definition here but a property named format
@@ -368,12 +385,27 @@ class TestSpec(BaseTest):
             if format == "date" or format == "date-time":
                 property_definition = self._get_parent(specification, format_path)
                 pattern = property_definition.get("pattern")
-                if format == "date" and not pattern == "^[0-9]{2}-[0-9]{2}-[0-9]{4}$":
-                    errors.append(f"{format_path} is defining a date format without the corresponding pattern")
-                if format == "date-time" and not pattern == "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$":
-                    errors.append(f"{format_path} is defining a date-time format without the corresponding pattern")
-        if len(errors) > 0:
-            pytest.fail("\n".join(errors))
+                if format == "date" and not pattern == DATE_PATTERN:
+                    detailed_logger.warning(f"{format_path} is defining a date format without the corresponding pattern. Consider setting the pattern to {DATE_PATTERN} to make it easier for users to edit this field in the UI.")
+                if format == "date-time" and not pattern == DATETIME_PATTERN:
+                    detailed_logger.warning(f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI.")
+
+    def test_date_format(self, connector_spec_dict: dict, detailed_logger):
+        """
+        Properties with a pattern that looks like a date should have their format set to date or date-time.
+        """
+        specification = connector_spec_dict["connectionSpecification"]
+        for pattern_path, pattern in dpath.util.search(specification, "**/pattern", yielded=True):
+            if not isinstance(pattern, str):
+                # pattern is not a pattern definition here but a property named pattern
+                continue
+            if pattern == DATE_PATTERN or pattern == DATETIME_PATTERN:
+                property_definition = self._get_parent(specification, pattern_path)
+                format = property_definition.get("format")
+                if not format == "date" and pattern == DATE_PATTERN:
+                    detailed_logger.warning(f"{pattern_path} is defining a pattern that looks like a date without setting the format to `date`. Consider specifying the format to make it easier for users to edit this field in the UI.")
+                if not format == "date-time" and pattern == DATETIME_PATTERN:
+                    detailed_logger.warning(f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI.")
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""

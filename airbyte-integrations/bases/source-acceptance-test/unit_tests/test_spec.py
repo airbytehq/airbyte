@@ -770,6 +770,25 @@ def test_property_type_is_not_array(mocker, connector_spec, should_fail):
         ),
         (
             {
+                "type": "object", "properties": {"jwt": {"type": "object", "oneOf": [
+                    { "type": "object", "properties": { "a": { "type": "string"}}},
+                    { "type": "object", "properties": { "b": { "type": "string"}}},
+                ]}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"jwt": {"type": "object", "oneOf": [
+                    { "type": "object", "properties": { "a": { "type": "string"}}},
+                    { "type": "object", "properties": { "b": { "type": "string"}}},
+                    { "type": "object", "properties": {}},
+                ]}}
+            },
+            True
+        ),
+        (
+            {
                 "type": "object", "properties": {"jwt": {"type": "object", "properties": {}}}
             },
             True
@@ -868,16 +887,23 @@ def test_array_type(mocker, connector_spec, should_fail):
         ),
         (
             {
-                "type": "object", "properties": {"allOf": {"type": "object", "patternProperties": { 
-                    "^S_": { "type": "string" },
-                    "^I_": { "type": "integer" }
-                 }}}
+                "type": "object",
+                "properties": {
+                    "allOf": {
+                        "type": "object",
+                        "patternProperties": { 
+                            "^S_": { "type": "string" },
+                            "^I_": { "type": "integer" }
+                        }
+                    }
+                }
             },
             True
         ),
         (
             {
-                "type": "object", "properties": {
+                "type": "object",
+                "properties": {
                     "list": {
                         "type": "array",
                         "prefixItems": [
@@ -901,7 +927,7 @@ def test_forbidden_complex_types(mocker, connector_spec, should_fail):
         conftest.pytest.fail.assert_not_called()
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    "connector_spec, is_warning_logged",
     (
         (
             {
@@ -947,14 +973,68 @@ def test_forbidden_complex_types(mocker, connector_spec, should_fail):
         ),
     ),
 )
-def test_date_pattern(mocker, connector_spec, should_fail):
+def test_date_pattern(mocker, connector_spec, is_warning_logged):
     mocker.patch.object(conftest.pytest, "fail")
+    logger = mocker.Mock()
     t = _TestSpec()
-    t.test_date_pattern({ "connectionSpecification": connector_spec })
-    if should_fail:
-        conftest.pytest.fail.assert_called_once()
-    else:
-        conftest.pytest.fail.assert_not_called()
+    t.test_date_pattern({ "connectionSpecification": connector_spec }, logger)
+    conftest.pytest.fail.assert_not_called()
+    if is_warning_logged:
+        _, args, _ = logger.warning.mock_calls[0]
+        msg, *_ = args
+        assert "Consider setting the pattern" in msg
+
+@pytest.mark.parametrize(
+    "connector_spec, is_warning_logged",
+    (
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "pattern": "[a-z]*"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "format": "date", "pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"}}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"}}
+            },
+            True
+        ),
+        (
+            {
+                "type": "object", "properties": {"date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"}}
+            },
+            True
+        ),
+    ),
+)
+def test_date_format(mocker, connector_spec, is_warning_logged):
+    mocker.patch.object(conftest.pytest, "fail")
+    logger = mocker.Mock()
+    t = _TestSpec()
+    t.test_date_format({ "connectionSpecification": connector_spec }, logger)
+    conftest.pytest.fail.assert_not_called()
+    if is_warning_logged:
+        _, args, _ = logger.warning.mock_calls[0]
+        msg, *_ = args
+        assert "Consider specifying the format" in msg
 
 @pytest.mark.parametrize(
     "path, expected_name, expected_result",
