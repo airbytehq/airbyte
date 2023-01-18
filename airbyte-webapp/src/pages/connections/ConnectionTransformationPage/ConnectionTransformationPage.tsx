@@ -1,6 +1,11 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
+import {
+  getInitialNormalization,
+  getInitialTransformations,
+  mapFormPropsToOperation,
+} from "components/connection/ConnectionForm/formConfig";
 import { Card } from "components/ui/Card";
 import { Text } from "components/ui/Text";
 
@@ -13,11 +18,6 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { FormikOnSubmit } from "types/formik";
-import {
-  getInitialNormalization,
-  getInitialTransformations,
-  mapFormPropsToOperation,
-} from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./ConnectionTransformationPage.module.scss";
 import { CustomTransformationsCard } from "./CustomTransformationsCard";

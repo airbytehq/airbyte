@@ -6,7 +6,8 @@ import { ControlLabels } from "components/LabeledControl";
 import { DropDown } from "components/ui/DropDown";
 import { FlexContainer } from "components/ui/Flex";
 
-import { NamespaceDefinitionType } from "../../../../core/request/AirbyteClient";
+import { NamespaceDefinitionType } from "core/request/AirbyteClient";
+
 import styles from "./NamespaceDefinitionField.module.scss";
 
 export const StreamOptions = [

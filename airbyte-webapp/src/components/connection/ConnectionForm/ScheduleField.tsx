@@ -8,14 +8,14 @@ import { FlexContainer } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
 
+import availableCronTimeZones from "config/availableCronTimeZones.json";
 import { Action, Namespace } from "core/analytics";
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { links } from "utils/links";
 
-import availableCronTimeZones from "../../../../config/availableCronTimeZones.json";
-import { FormikConnectionFormValues, useFrequencyDropdownData } from "../formConfig";
+import { FormikConnectionFormValues, useFrequencyDropdownData } from "./formConfig";
 import styles from "./ScheduleField.module.scss";
 
 const CRON_DEFAULT_VALUE = {
