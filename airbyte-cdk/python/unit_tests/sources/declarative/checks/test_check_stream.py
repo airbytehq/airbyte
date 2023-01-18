@@ -9,6 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 

@@ -13,9 +13,7 @@ from urllib.parse import urljoin
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
