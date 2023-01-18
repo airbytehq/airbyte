@@ -36,7 +36,7 @@ import { formatJson } from "./utils";
 export const convertToBuilderFormValues = (
   manifest: ConnectorManifest,
   currentBuilderFormValues: BuilderFormValues,
-  streamListErrorMessage: string | undefined
+  streamListErrorMessage?: string
 ) => {
   // TODO: replace these checks with a call to the soon-to-be /manifest/resolve endpoint, to resolve refs, options, and validate the manifest against the schema
   if (streamListErrorMessage) {
@@ -56,6 +56,7 @@ export const convertToBuilderFormValues = (
 
   const builderFormValues = DEFAULT_BUILDER_FORM_VALUES;
   builderFormValues.global.connectorName = currentBuilderFormValues.global.connectorName;
+  builderFormValues.checkStreams = manifest.check.stream_names;
 
   const streams = manifest.streams;
   if (streams === undefined || streams.length === 0) {

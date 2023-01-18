@@ -51,6 +51,7 @@ export interface BuilderFormValues {
   inputs: BuilderFormInput[];
   inferredInputOverrides: Record<string, Partial<AirbyteJSONSchema>>;
   streams: BuilderStream[];
+  checkStreams: string[];
 }
 
 export interface BuilderPaginator {
@@ -104,6 +105,7 @@ export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   inputs: [],
   inferredInputOverrides: {},
   streams: [],
+  checkStreams: [],
 };
 
 export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
@@ -636,14 +638,14 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     type: "Spec",
   };
 
-  return {
+  return merge({
     version: "0.1.0",
     type: "DeclarativeSource",
     check: {
       type: "CheckStream",
-      stream_names: [],
+      stream_names: values.checkStreams,
     },
     streams: manifestStreams,
     spec,
-  };
+  });
 };
