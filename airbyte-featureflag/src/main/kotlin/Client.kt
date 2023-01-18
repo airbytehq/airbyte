@@ -182,7 +182,10 @@ private fun Context.toLDUser(): LDUser = when (this) {
     is Multi -> {
         val builder = LDUser.Builder(key)
         with(contexts) {
+            // Add each individual context's value as an attribute on the LDUser.
+            // This allows for more granular targeting of feature-flag rules that target LDUser types.
             forEach { builder.custom(it.kind, it.key) }
+
             if (all { it.key == ANONYMOUS.toString() }) {
                 builder.anonymous(true)
             }
