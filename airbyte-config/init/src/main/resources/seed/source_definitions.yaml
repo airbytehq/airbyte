@@ -605,11 +605,11 @@
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
-  dockerImageTag: 0.1.12
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   icon: gitlab.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Glassfrog
   sourceDefinitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
   dockerRepository: airbyte/source-glassfrog
