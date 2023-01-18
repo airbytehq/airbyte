@@ -575,6 +575,7 @@ function builderStreamToDeclarativeSteam(
         name: stream.name,
         url_base: values.global?.urlBase,
         path: stream.urlPath,
+        http_method: stream.httpMethod,
         request_options_provider: {
           type: "InterpolatedRequestOptionsProvider",
           request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
