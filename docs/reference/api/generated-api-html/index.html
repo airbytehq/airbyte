@@ -274,6 +274,7 @@ font-style: italic;
   <li><a href="#getAttemptNormalizationStatusesForJob"><code><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></a></li>
   <li><a href="#saveStats"><code><span class="http-method">post</span> /v1/attempt/save_stats</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
+  <li><a href="#writeDiscoverFetchEvent"><code><span class="http-method">post</span> /v1/sources/write_discover_fetch_event</code></a></li>
   </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
@@ -4112,6 +4113,58 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
       <div class="param">SetWorkflowInAttemptRequestBody <a href="#SetWorkflowInAttemptRequestBody">SetWorkflowInAttemptRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#InternalOperationResult">InternalOperationResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "succeeded" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#InternalOperationResult">InternalOperationResult</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="writeDiscoverFetchEvent"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/write_discover_fetch_event</code></pre></div>
+    <div class="method-summary">Should only called from worker, to write result from discover activity back to DB. (<span class="nickname">writeDiscoverFetchEvent</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDiscoverSchemaWriteRequestBody <a href="#SourceDiscoverSchemaWriteRequestBody">SourceDiscoverSchemaWriteRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 

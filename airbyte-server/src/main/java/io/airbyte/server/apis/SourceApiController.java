@@ -107,10 +107,10 @@ public class SourceApiController implements SourceApi {
     return ApiHelper.execute(() -> sourceHandler.updateSource(sourceUpdate));
   }
 
+  @Post("/write_discover_fetch_event")
   @Override
   public InternalOperationResult writeDiscoverFetchEvent(final SourceDiscoverSchemaWriteRequestBody request) {
     return ApiHelper.execute(() -> sourceHandler.writeDiscoverFetchEvent(request));
-
   }
 
 }

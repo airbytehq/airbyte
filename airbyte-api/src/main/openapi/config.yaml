@@ -759,6 +759,7 @@ paths:
     post:
       tags:
         - source
+        - internal
       summary: Should only called from worker, to write result from discover activity back to DB.
       operationId: writeDiscoverFetchEvent
       requestBody:
