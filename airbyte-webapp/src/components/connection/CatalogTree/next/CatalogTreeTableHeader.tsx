@@ -85,9 +85,15 @@ export const CatalogTreeTableHeader: React.FC = () => {
       </TextCell> */}
       <HeaderCell>
         <FormattedMessage id="form.namespace" />
+        <InfoTooltip>
+          <FormattedMessage id="connectionForm.sourceNamespace.info" />
+        </InfoTooltip>
       </HeaderCell>
       <HeaderCell>
         <FormattedMessage id="form.streamName" />
+        <InfoTooltip>
+          <FormattedMessage id="connectionForm.sourceStreamName.info" />
+        </InfoTooltip>
       </HeaderCell>
       <HeaderCell size="large">
         <FormattedMessage id="form.syncMode" />
@@ -104,6 +110,9 @@ export const CatalogTreeTableHeader: React.FC = () => {
       </HeaderCell>
       <HeaderCell>
         <FormattedMessage id="form.primaryKey" />
+        <InfoTooltip>
+          <FormattedMessage id="connectionForm.primaryKey.info" />
+        </InfoTooltip>
       </HeaderCell>
       <CatalogTreeTableCell size="xsmall" />
       <HeaderCell>
