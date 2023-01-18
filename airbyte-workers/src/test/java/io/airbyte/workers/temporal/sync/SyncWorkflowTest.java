@@ -229,9 +229,8 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    // Temporarily disabled to address OC issue #1210
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     assertEquals(
         replicationSuccessOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
         actualOutput.getStandardSyncSummary());
@@ -247,9 +246,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // Temporarily disabled to address OC issue #1210
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -271,9 +269,8 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
-    // Temporarily disabled to address OC issue #1210
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationFailOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -299,9 +296,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // Temporarily disabled to address OC issue #1210
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -321,9 +317,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // Temporarily disabled to address OC issue #1210
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -348,9 +343,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // Temporarily disabled to address OC issue #1210
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -403,7 +397,6 @@ class SyncWorkflowTest {
   }
 
   @Test
-  @Disabled("Temporarily disabled to address OC issue #1210")
   void testSkipReplicationAfterRefreshSchema() {
     when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(ConnectionStatus.INACTIVE));
     final StandardSyncOutput output = execute();
