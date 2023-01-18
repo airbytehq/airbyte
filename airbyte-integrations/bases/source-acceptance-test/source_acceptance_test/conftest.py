@@ -107,7 +107,7 @@ def configured_catalog_fixture(
 
 @pytest.fixture(name="image_tag")
 def image_tag_fixture(acceptance_test_config) -> str:
-    return acceptance_test_config.connector_image
+    return acceptance_test_config.connector_image.replace("dev","latest")
 
 
 @pytest.fixture(name="connector_config")
@@ -170,7 +170,7 @@ def previous_connector_docker_runner_fixture(previous_connector_image_name, tmp_
 @pytest.fixture(scope="session", autouse=True)
 def pull_docker_image(acceptance_test_config) -> None:
     """Startup fixture to pull docker image"""
-    image_name = acceptance_test_config.connector_image
+    image_name = acceptance_test_config.connector_image.replace("dev","latest")
     config_filename = "acceptance-test-config.yml"
     try:
         ConnectorRunner(image_name=image_name, volume=Path("."))
