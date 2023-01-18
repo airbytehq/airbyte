@@ -50,16 +50,6 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
     return "airbyte/destination-mssql-strict-encrypt:dev";
   }
 
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
