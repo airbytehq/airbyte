@@ -3,6 +3,7 @@ export interface StripeCheckoutSessionCreate {
   successUrl: string;
   cancelUrl: string;
   quantity?: number;
+  stripeMode: "payment" | "setup";
 }
 
 export interface StripeCheckoutSessionRead {
