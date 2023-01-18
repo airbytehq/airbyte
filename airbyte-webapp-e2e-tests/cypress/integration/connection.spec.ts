@@ -41,14 +41,14 @@ import {
   interceptGetConnectionRequest,
   interceptUpdateConnectionRequest,
   waitForGetConnectionRequest,
-  waitForUpdateConnectionRequest
+  waitForUpdateConnectionRequest,
 } from "commands/interceptors";
 
 describe("Connection - creation, updating connection replication settings, deletion", () => {
   beforeEach(() => {
     initialSetupCompleted();
 
-    interceptGetConnectionRequest()
+    interceptGetConnectionRequest();
     interceptUpdateConnectionRequest();
   });
 
@@ -455,7 +455,7 @@ describe("Connection sync modes", () => {
     searchStream(streamName);
     selectSyncMode("Incremental", "Deduped + history");
     selectCursorField(streamName, "col1");
-    checkPreFilledPrimaryKeyField("id");
+    checkPreFilledPrimaryKeyField(streamName, "id");
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
@@ -475,7 +475,7 @@ describe("Connection sync modes", () => {
     searchStream(streamName);
 
     checkCursorField(streamName, "col1");
-    checkPreFilledPrimaryKeyField("id");
+    checkPreFilledPrimaryKeyField(streamName, "id");
 
     deleteSource(sourceName);
     deleteDestination(destName);
@@ -497,7 +497,7 @@ describe("Connection sync modes", () => {
     searchStream(streamName);
     selectSyncMode("Incremental", "Deduped + history");
     selectCursorField(streamName, "city");
-    isPrimaryKeyNonExist();
+    isPrimaryKeyNonExist(streamName);
     selectPrimaryKeyField(streamName, ["city_code"]);
 
     submitButtonClick();

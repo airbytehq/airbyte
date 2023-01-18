@@ -16,7 +16,7 @@ const dropDownOverlayContainer = "div[data-testid='overlayContainer']";
 const streamNameCell = "[data-testid='nameCell']";
 const streamDataTypeCell = "[data-testid='dataTypeCell']";
 const getExpandStreamArrowBtn = (streamName: string) => `[data-testid='${streamName}_expandStreamDetails']`;
-const preFilledPrimaryKeyText = "div[class^='PathPopout_text']";
+const getPreFilledPrimaryKeyText = (streamName: string) => `[data-testid='${streamName}_primaryKey_PathPopout_text']`;
 const successResult = "div[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
@@ -157,12 +157,12 @@ export const checkCursorField = (streamName: string, expectedValue: string) =>
 export const checkPrimaryKey = (streamName: string, expectedValues: string[]) =>
   checkDropdownField(streamName, "primaryKey", expectedValues);
 
-export const checkPreFilledPrimaryKeyField = (expectedValue: string) => {
-  cy.get(preFilledPrimaryKeyText).contains(expectedValue);
+export const checkPreFilledPrimaryKeyField = (streamName: string, expectedValue: string) => {
+  cy.get(getPreFilledPrimaryKeyText(streamName)).contains(expectedValue);
 };
 
-export const isPrimaryKeyNonExist = () => {
-  cy.get(preFilledPrimaryKeyText).should("not.exist");
+export const isPrimaryKeyNonExist = (streamName: string) => {
+  cy.get(getPreFilledPrimaryKeyText(streamName)).should("not.exist");
 };
 
 export const searchStream = (value: string) => {
