@@ -132,6 +132,8 @@ normalizationConfig:
     normalizationIntegrationType: postgres
 ```
 
+For more information about what these fields mean, see the [NormalizationDestinationDefinitionConfig](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/config-models/src/main/resources/types/NormalizationDestinationDefinitionConfig.yaml) schema.
+
 The presence of these fields will enable normalization for the connector, and determine which docker image will run.
 
 ## Publishing a connector
