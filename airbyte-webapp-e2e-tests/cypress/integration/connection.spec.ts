@@ -37,13 +37,19 @@ import {
   toggleStreamWithChangesAccordion,
 } from "pages/modals/catalogDiffModal";
 import { updateSchemaModalConfirmBtnClick } from "pages/modals/updateSchemaModal";
+import {
+  interceptGetConnectionRequest,
+  interceptUpdateConnectionRequest,
+  waitForGetConnectionRequest,
+  waitForUpdateConnectionRequest
+} from "commands/interceptors";
 
 describe("Connection - creation, updating connection replication settings, deletion", () => {
   beforeEach(() => {
     initialSetupCompleted();
 
-    cy.intercept("/api/v1/web_backend/connections/get").as("getConnection");
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+    interceptGetConnectionRequest()
+    interceptUpdateConnectionRequest();
   });
 
   it("Create Postgres <> LocalJSON connection, check it's creation", () => {
@@ -75,7 +81,7 @@ describe("Connection - creation, updating connection replication settings, delet
 
     submitButtonClick();
 
-    cy.wait("@updateConnection").then((interception) => {
+    waitForUpdateConnectionRequest().then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
     });
 
@@ -112,7 +118,7 @@ describe("Connection - creation, updating connection replication settings, delet
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
 
-    cy.wait("@updateConnection").then((interception) => {
+    waitForUpdateConnectionRequest().then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
       expect(interception.request.method).to.eq("POST");
       expect(interception.request)
@@ -183,7 +189,7 @@ describe("Connection - creation, updating connection replication settings, delet
     openConnectionOverviewByDestinationName(destName);
 
     let loadedConnection: any = null; // Should be a WebBackendConnectionRead
-    cy.wait("@getConnection").then((interception) => {
+    waitForGetConnectionRequest().then((interception) => {
       const {
         scheduleType: readScheduleType,
         scheduleData: readScheduleData,
@@ -201,7 +207,7 @@ describe("Connection - creation, updating connection replication settings, delet
     selectSchedule("Every hour");
     submitButtonClick();
 
-    cy.wait("@updateConnection").then((interception) => {
+    waitForUpdateConnectionRequest().then((interception) => {
       // Schedule is pulled out here, but we don't do anything with is as it's legacy
       const { scheduleType, scheduleData, schedule, ...connectionUpdate } = interception.response?.body;
       expect(scheduleType).to.eq("basic");
@@ -255,7 +261,7 @@ describe("Connection - creation, updating connection replication settings, delet
 
     submitButtonClick();
 
-    cy.wait("@updateConnection").then((interception) => {
+    waitForUpdateConnectionRequest().then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
       expect(interception.request.method).to.eq("POST");
       expect(interception.request)
@@ -321,7 +327,7 @@ describe("Connection - creation, updating connection replication settings, delet
 
     submitButtonClick();
 
-    cy.wait("@updateConnection").then((interception) => {
+    waitForUpdateConnectionRequest().then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
       expect(interception.request.method).to.eq("POST");
       expect(interception.request)
@@ -386,7 +392,7 @@ describe("Connection sync modes", () => {
     initialSetupCompleted();
     populateDBSource();
 
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+    interceptUpdateConnectionRequest();
   });
 
   afterEach(() => {
@@ -413,7 +419,7 @@ describe("Connection sync modes", () => {
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
 
-    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
+    waitForUpdateConnectionRequest().then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
     });
 
@@ -454,7 +460,7 @@ describe("Connection sync modes", () => {
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
 
-    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
+    waitForUpdateConnectionRequest().then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
     });
 
@@ -497,7 +503,7 @@ describe("Connection sync modes", () => {
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
 
-    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
+    waitForUpdateConnectionRequest().then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
     });
 
@@ -524,7 +530,7 @@ describe("Connection - detect source schema changes in source", () => {
     initialSetupCompleted();
     populateDBSource();
 
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+    interceptUpdateConnectionRequest();
   });
 
   afterEach(() => {
@@ -564,7 +570,7 @@ describe("Connection - detect source schema changes in source", () => {
     submitButtonClick();
     resetModalSaveBtnClick();
 
-    cy.wait("@updateConnection").then((interception) => {
+    waitForUpdateConnectionRequest().then((interception) => {
       assert.isNotNull(interception.response?.statusCode, "200");
     });
 
