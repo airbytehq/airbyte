@@ -1,24 +1,19 @@
 # Request Options
 
-The primary way to set request parameters and headers is to define them as key-value pairs using a `RequestOptionsProvider`.
+The primary way to set request options is through the `HttpRequester`'s `request_*` fields.
+
 Other components, such as an `Authenticator` can also set additional request params or headers as needed.
 
 Additionally, some stateful components use a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](./pagination.md) and [Stream slicers](./stream-slicers.md).
 
-## Request Options Provider
-
-The primary way to set request options is through the `Requester`'s `RequestOptionsProvider`.
 The options can be configured as key value pairs:
 
 Schema:
 
 ```yaml
-  RequestOptionsProvider:
+  HttpRequester:
     type: object
-    anyOf:
-      - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
-  InterpolatedRequestOptionsProvider:
-    type: object
+    name: string
     additionalProperties: true
     properties:
       "$parameters":
@@ -41,13 +36,12 @@ requester:
   name: "{{ parameters['name'] }}"
   url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
-  request_options_provider:
-    request_parameters:
-      k1: v1
-      k2: v2
-    request_headers:
-      header_key1: header_value1
-      header_key2: header_value2
+  request_parameters:
+    k1: v1
+    k2: v2
+  request_headers:
+    header_key1: header_value1
+    header_key2: header_value2
 ```
 
 It is also possible to configure add a json-encoded body to outgoing requests.
@@ -58,9 +52,8 @@ requester:
   name: "{{ parameters['name'] }}"
   url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
-  request_options_provider:
-    request_body_json:
-      key: value
+  request_body_json:
+    key: value
 ```
 
 ### Request Options
