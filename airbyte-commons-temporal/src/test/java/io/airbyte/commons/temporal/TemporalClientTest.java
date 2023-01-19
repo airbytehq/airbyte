@@ -271,19 +271,19 @@ public class TemporalClientTest {
       final JobSyncConfig syncConfig = new JobSyncConfig()
           .withSourceDockerImage(IMAGE_NAME1)
           .withDestinationDockerImage(IMAGE_NAME2)
-          .withSourceConfiguration(Jsons.emptyObject())
-          .withDestinationConfiguration(Jsons.emptyObject())
+          // .withSourceConfiguration(Jsons.emptyObject())
+          // .withDestinationConfiguration(Jsons.emptyObject())
           .withOperationSequence(List.of())
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
       final StandardSyncInput input = new StandardSyncInput()
           .withNamespaceDefinition(syncConfig.getNamespaceDefinition())
           .withNamespaceFormat(syncConfig.getNamespaceFormat())
           .withPrefix(syncConfig.getPrefix())
-          .withSourceConfiguration(syncConfig.getSourceConfiguration())
-          .withDestinationConfiguration(syncConfig.getDestinationConfiguration())
+          // .withSourceConfiguration(syncConfig.getSourceConfiguration())
+          // .withDestinationConfiguration(syncConfig.getDestinationConfiguration())
           .withOperationSequence(syncConfig.getOperationSequence())
-          .withCatalog(syncConfig.getConfiguredAirbyteCatalog())
-          .withState(syncConfig.getState());
+          .withCatalog(syncConfig.getConfiguredAirbyteCatalog());
+      // .withState(syncConfig.getState());
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(JOB_ID))
@@ -343,8 +343,8 @@ public class TemporalClientTest {
       final JobSyncConfig syncConfig = new JobSyncConfig()
           .withSourceDockerImage(IMAGE_NAME1)
           .withDestinationDockerImage(IMAGE_NAME2)
-          .withSourceConfiguration(Jsons.emptyObject())
-          .withDestinationConfiguration(Jsons.emptyObject())
+          // .withSourceConfiguration(Jsons.emptyObject())
+          // .withDestinationConfiguration(Jsons.emptyObject())
           .withOperationSequence(List.of())
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
 

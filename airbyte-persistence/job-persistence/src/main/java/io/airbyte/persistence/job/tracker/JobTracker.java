@@ -15,8 +15,10 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -135,6 +137,7 @@ public class JobTracker {
       final Map<String, Object> syncMetadata = generateSyncMetadata(connectionId);
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
       final Map<String, Object> syncConfigMetadata = generateSyncConfigMetadata(
+          connectionId,
           job.getConfig(),
           sourceDefinition.getSpec().getConnectionSpecification(),
           destinationDefinition.getSpec().getConnectionSpecification());
@@ -184,12 +187,18 @@ public class JobTracker {
     });
   }
 
-  private Map<String, Object> generateSyncConfigMetadata(final JobConfig config,
+  private Map<String, Object> generateSyncConfigMetadata(
+                                                         final UUID connectionId,
+                                                         final JobConfig config,
                                                          final JsonNode sourceConfigSchema,
-                                                         final JsonNode destinationConfigSchema) {
+                                                         final JsonNode destinationConfigSchema)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     if (config.getConfigType() == ConfigType.SYNC) {
-      final JsonNode sourceConfiguration = config.getSync().getSourceConfiguration();
-      final JsonNode destinationConfiguration = config.getSync().getDestinationConfiguration();
+      final SourceConnection sourceConnection = configRepository.getSourceConnection(connectionId);
+      final DestinationConnection destinationConnection = configRepository.getDestinationConnection(connectionId);
+
+      final JsonNode sourceConfiguration = sourceConnection.getConfiguration();
+      final JsonNode destinationConfiguration = destinationConnection.getConfiguration();
 
       final Map<String, Object> sourceMetadata = configToMetadata(CONFIG + ".source", sourceConfiguration, sourceConfigSchema);
       final Map<String, Object> destinationMetadata = configToMetadata(CONFIG + ".destination", destinationConfiguration, destinationConfigSchema);

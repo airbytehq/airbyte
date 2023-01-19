@@ -57,10 +57,14 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Slf4j
 @Singleton
 public class TemporalClient {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TemporalClient.class);
 
   /**
    * This is used to sleep between 2 temporal queries. The query is needed to ensure that the cancel
@@ -375,6 +379,11 @@ public class TemporalClient {
   public TemporalResponse<StandardSyncOutput> submitSync(final long jobId, final int attempt, final JobSyncConfig config, final UUID connectionId) {
     final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
+    // write a 10 iteration for loop
+    for (int i = 0; i < 10; i++) {
+      LOGGER.warn("EXECUTING SUPPOSEDLY DEAD CODE");
+    }
+
     final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
@@ -389,15 +398,16 @@ public class TemporalClient {
         .withProtocolVersion(config.getDestinationProtocolVersion())
         .withIsCustomConnector(config.getIsDestinationCustomConnector());
 
+    // TODO(pedroslopez) build this from attemptsyncconfig
     final StandardSyncInput input = new StandardSyncInput()
         .withNamespaceDefinition(config.getNamespaceDefinition())
         .withNamespaceFormat(config.getNamespaceFormat())
         .withPrefix(config.getPrefix())
-        .withSourceConfiguration(config.getSourceConfiguration())
-        .withDestinationConfiguration(config.getDestinationConfiguration())
+        // .withSourceConfiguration(config.getSourceConfiguration())
+        // .withDestinationConfiguration(config.getDestinationConfiguration())
         .withOperationSequence(config.getOperationSequence())
         .withCatalog(config.getConfiguredAirbyteCatalog())
-        .withState(config.getState())
+        // .withState(config.getState())
         .withResourceRequirements(config.getResourceRequirements())
         .withSourceResourceRequirements(config.getSourceResourceRequirements())
         .withDestinationResourceRequirements(config.getDestinationResourceRequirements());

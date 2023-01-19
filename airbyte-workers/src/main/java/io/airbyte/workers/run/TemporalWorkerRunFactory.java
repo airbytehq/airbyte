@@ -6,7 +6,6 @@ package io.airbyte.workers.run;
 
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalResponse;
@@ -59,8 +58,6 @@ public class TemporalWorkerRunFactory {
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
             .withDestinationProtocolVersion(resetConnection.getDestinationProtocolVersion())
-            .withSourceConfiguration(Jsons.emptyObject())
-            .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
             .withOperationSequence(resetConnection.getOperationSequence())
             .withResourceRequirements(resetConnection.getResourceRequirements())
