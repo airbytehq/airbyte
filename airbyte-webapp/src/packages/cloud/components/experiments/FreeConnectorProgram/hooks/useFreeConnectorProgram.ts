@@ -20,7 +20,10 @@ export const useFreeConnectorProgram = () => {
       ({ hasEligibleConnector, hasPaymentAccountSaved }) => {
         const userIsEligibleToEnroll = !hasPaymentAccountSaved && hasEligibleConnector;
 
-        return freeConnectorProgramEnabled && userIsEligibleToEnroll;
+        return {
+          showEnrollmentUi: freeConnectorProgramEnabled && userIsEligibleToEnroll,
+          isEnrolled: freeConnectorProgramEnabled && hasPaymentAccountSaved,
+        };
       }
     )
   );
