@@ -109,7 +109,7 @@ public class CatalogConverter {
     Boolean suggestingStreams = sourceDefinition.getSuggestedStreams() != null;
     List<String> suggestedStreams = new ArrayList<>();
     if (suggestingStreams) {
-      sourceDefinition.getSuggestedStreams().getStreams().stream().map(s -> suggestedStreams.add(s));
+      suggestedStreams.addAll(sourceDefinition.getSuggestedStreams().getStreams());
     }
 
     return new io.airbyte.api.model.generated.AirbyteCatalog()
