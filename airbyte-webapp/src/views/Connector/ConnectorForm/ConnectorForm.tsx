@@ -100,7 +100,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
       onSubmit={onFormSubmit}
       enableReinitialize
     >
-      {({ dirty, resetForm, values }) => (
+      {({ dirty, resetForm }) => (
         <ConnectorFormContextProvider
           formType={formType}
           getValues={getValues}
@@ -110,7 +110,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           validationSchema={validationSchema}
           connectorId={connectorId}
         >
-          <pre>{JSON.stringify(values, null, 2)}</pre>
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
           <FormRoot

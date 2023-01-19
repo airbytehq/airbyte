@@ -20,8 +20,4 @@ const FormContent = styled.div`
   position: relative;
 `;
 
-const FormContentTitle = styled(FormContent)`
-  margin: 0 0 0 200px;
-`;
-
-export { Title, Block, FormContent, FormContentTitle };
+export { Title, Block, FormContent };
