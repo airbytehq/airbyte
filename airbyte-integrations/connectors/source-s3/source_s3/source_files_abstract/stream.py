@@ -230,9 +230,12 @@ class FileStream(Stream, ABC):
                     continue
 
                 storagefile = self.storagefile_class(file_info, self._provider)
-                with storagefile.open(file_reader.is_binary) as f:
-                    this_schema = file_reader.get_inferred_schema(f, file_info)
-                    processed_files.append(file_info)
+                try:
+                    with storagefile.open(file_reader.is_binary) as f:
+                        this_schema = file_reader.get_inferred_schema(f, file_info)
+                        processed_files.append(file_info)
+                except OSError:
+                    continue
 
                 if this_schema == master_schema:
                     continue  # exact schema match so go to next file
@@ -348,18 +351,21 @@ class FileStream(Stream, ABC):
         """
         for file_item in stream_slice["files"]:
             storage_file: StorageFile = file_item["storage_file"]
-            with storage_file.open(file_reader.is_binary) as f:
-                # TODO: make this more efficient than mutating every record one-by-one as they stream
-                for record in file_reader.stream_records(f, storage_file.file_info):
-                    schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
-                    complete_record = self._add_extra_fields_from_map(
-                        schema_matched_record,
-                        {
-                            self.ab_last_mod_col: datetime.strftime(storage_file.last_modified, self.datetime_format_string),
-                            self.ab_file_name_col: storage_file.url,
-                        },
-                    )
-                    yield complete_record
+            try:
+                with storage_file.open(file_reader.is_binary) as f:
+                    # TODO: make this more efficient than mutating every record one-by-one as they stream
+                    for record in file_reader.stream_records(f, storage_file.file_info):
+                        schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
+                        complete_record = self._add_extra_fields_from_map(
+                            schema_matched_record,
+                            {
+                                self.ab_last_mod_col: datetime.strftime(storage_file.last_modified, self.datetime_format_string),
+                                self.ab_file_name_col: storage_file.url,
+                            },
+                        )
+                        yield complete_record
+            except OSError:
+                continue
         LOGGER.info("finished reading a stream slice")
 
     def read_records(
