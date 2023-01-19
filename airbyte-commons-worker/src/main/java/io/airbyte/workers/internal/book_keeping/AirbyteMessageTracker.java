@@ -50,12 +50,12 @@ import lombok.extern.slf4j.Slf4j;
  * downstream actions etc. - on specific messages.
  */
 @Slf4j
-public class AirbyteMessageTracker implements MessageTracker {
+public class AirbyteMessageTracker implements MessageTracker{
 
   private static final long STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES = 10L * 1024L * 1024L; // 10 MiB, ~5% of default cloud worker memory
   private static final long STATE_METRICS_TRACKER_MESSAGE_LIMIT = 873813L; // 12 bytes per message tracked, maximum of 10MiB of memory
 
-  private final AtomicReference<State> sourceOutputState;
+  private final AtomicReference<State> sourceOutputState;                                                                                            
   private final AtomicReference<State> destinationOutputState;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
