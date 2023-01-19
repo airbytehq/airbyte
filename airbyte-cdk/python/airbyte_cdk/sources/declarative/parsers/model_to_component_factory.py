@@ -10,6 +10,7 @@ from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union,
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.token import (
+    AccessTokenAuthenticator,
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
     BearerAuthenticator,
@@ -21,6 +22,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AccessTokenAuthenticator as AccessTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
@@ -609,6 +611,18 @@ def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, co
     )
 
 
+def create_access_token_authenticator(model: AccessTokenAuthenticatorModel, config: Config, **kwargs) -> AccessTokenAuthenticator:
+    return AccessTokenAuthenticator(
+        client_id=model.client_id,
+        secret_key=model.secret_key,
+        url=model.url,
+        token_key=model.token_key,
+        lifetime=model.lifetime,
+        config=config,
+        options=model.options,
+    )
+
+
 def create_simple_retriever(model: SimpleRetrieverModel, config: Config, **kwargs) -> SimpleRetriever:
     requester = _create_component_from_model(model=model.requester, config=config)
     record_selector = _create_component_from_model(model=model.record_selector, config=config)
@@ -712,6 +726,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     RemoveFieldsModel: create_remove_fields,
     RequestOptionModel: create_request_option,
     SessionTokenAuthenticatorModel: create_session_token_authenticator,
+    AccessTokenAuthenticatorModel: create_access_token_authenticator,
     SimpleRetrieverModel: create_simple_retriever,
     SingleSliceModel: create_single_slice,
     SpecModel: create_spec,

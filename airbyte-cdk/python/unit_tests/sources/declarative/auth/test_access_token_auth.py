@@ -1,0 +1,33 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+from airbyte_cdk.sources.declarative.auth.token import AccessTokenAuthenticator
+from freezegun import freeze_time
+
+
+def test_get_tokens(requests_mock):
+    url = "https://auth.railz.ai/getAccess"
+
+    responses = [
+        {"access_token": "access_token1"},
+        {"access_token": "access_token2"},
+    ]
+    requests_mock.get(url, json=lambda request, context: responses.pop(0))
+
+    authenticator = AccessTokenAuthenticator(
+        client_id="client_id",
+        secret_key="secret_key",
+        url=url,
+        token_key="access_token",
+        lifetime=3600,
+        config={},
+        options={},
+    )
+
+    with freeze_time("2023-01-01 12:00:00"):
+        assert authenticator.token == "Bearer access_token1"
+    with freeze_time("2023-01-01 12:30:00"):
+        assert authenticator.token == "Bearer access_token1"
+    with freeze_time("2023-01-01 13:00:00"):
+        assert authenticator.token == "Bearer access_token2"
