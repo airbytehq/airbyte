@@ -75,7 +75,7 @@ Deployment options: [Docker](https://docs.airbyte.com/deploying-airbyte/local-de
 
 Airbyte Cloud is the fastest and most reliable way to run Airbyte. You can get started with free credits in minutes.
 
-Sign up for [Airbyte Cloud](https://cloud.airbyte.io/signup).
+Sign up for [Airbyte Cloud](https://cloud.airbyte.com/signup).
 
 ## Contributing
 

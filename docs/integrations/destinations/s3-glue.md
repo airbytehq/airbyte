@@ -39,7 +39,7 @@ Prepare the Glue database that will be used as destination, see [this](https://d
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **S3** from the Destination type dropdown and enter a name for this connector.
 4. Configure fields:

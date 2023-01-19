@@ -8,7 +8,7 @@ To set up the Delighted source connector, you'll need the [Delighted API key](ht
 
 ## Set up the Delighted connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, enter the name for the Delighted connector and select **Delighted** from the Source type dropdown.
 4. For **Since**, enter the date in a Unix Timestamp format. The data added on and after this date will be replicated.

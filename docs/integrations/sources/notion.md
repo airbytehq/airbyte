@@ -27,7 +27,7 @@ You must be the owner of a Notion workspace to create a new integration.
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
 4. Enter a name for your source.

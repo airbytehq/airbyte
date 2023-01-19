@@ -67,7 +67,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the google search console connector and select **google search console** from the Source type dropdown.
 4. Click Authenticate your account to sign in with Google and authorize your account.

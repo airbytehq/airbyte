@@ -35,7 +35,7 @@ When you apply for a token, make sure to mention:
 
 To set up Google Ads as a source in Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Google Ads** from the Source type dropdown.
 4. Enter a **Name** for your source.

@@ -6,7 +6,7 @@ This page guides you through setting up your Airbyte Cloud account, setting up a
 
 To use Airbyte Cloud:
 
-1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide) using your email address, Google login, or GitHub login.
+1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.com/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide) using your email address, Google login, or GitHub login.
 
    Airbyte Cloud offers a 14-day free trial. For more information, see [Pricing](https://airbyte.com/pricing).
 

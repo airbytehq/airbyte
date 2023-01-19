@@ -16,7 +16,7 @@ Go to **Tempo &gt; Settings**, scroll down to **Data Access** and select **API i
 
 ## Step 2: Set up the Tempo connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Tempo connector and select **Tempo** from the Source type dropdown.
 4. Enter your API token that you obtained from Tempo.

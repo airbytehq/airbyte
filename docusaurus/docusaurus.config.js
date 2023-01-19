@@ -132,7 +132,7 @@ const config = {
                         position: 'left',
                     },
                     {
-                        href: 'https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar',
+                        href: 'https://cloud.airbyte.com/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar',
                         label: 'Try Airbyte Cloud',
                         position: 'left',
                     },

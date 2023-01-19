@@ -60,7 +60,7 @@ Optional parameters:
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a name for this connector.
 4. Fill in all the required fields to use the INSERT or COPY strategy

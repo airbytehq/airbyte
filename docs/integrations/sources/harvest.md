@@ -11,7 +11,7 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces).
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces).
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
