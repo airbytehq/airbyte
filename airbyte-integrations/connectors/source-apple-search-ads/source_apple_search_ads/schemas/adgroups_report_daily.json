@@ -1,6 +1,12 @@
 {
   "$schema": "http://json-schema.org/schema#",
   "properties": {
+    "adGroupId": {
+      "type": "integer"
+    },
+    "date": {
+      "type": "string"
+    },
     "granularity": {
       "items": {
         "properties": {
@@ -149,12 +155,6 @@
     },
     "other": {
       "type": "boolean"
-    },
-    "date": {
-      "type": "string"
-    },
-    "adGroupId": {
-      "type": "string"
     }
   },
   "type": "object"

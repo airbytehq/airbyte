@@ -1,6 +1,9 @@
 {
   "$schema": "http://json-schema.org/schema#",
   "properties": {
+    "date": {
+      "type": "string"
+    },
     "granularity": {
       "items": {
         "properties": {
@@ -118,6 +121,9 @@
       },
       "type": "object"
     },
+    "keywordId": {
+      "type": "integer"
+    },
     "metadata": {
       "properties": {
         "adGroupDeleted": {
@@ -169,12 +175,6 @@
     },
     "other": {
       "type": "boolean"
-    },
-    "date": {
-      "type": "string"
-    },
-    "keywordId": {
-      "type": "string"
     }
   },
   "type": "object"

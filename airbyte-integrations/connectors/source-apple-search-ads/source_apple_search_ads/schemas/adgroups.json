@@ -119,6 +119,37 @@
             }
           ]
         },
+        "appCategories": {
+          "properties": {
+            "excluded": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "included": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                }
+              ]
+            }
+          },
+          "type": "object"
+        },
         "appDownloaders": {
           "properties": {
             "excluded": {

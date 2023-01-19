@@ -1,6 +1,12 @@
 {
   "$schema": "http://json-schema.org/schema#",
   "properties": {
+    "campaignId": {
+      "type": "integer"
+    },
+    "date": {
+      "type": "string"
+    },
     "granularity": {
       "items": {
         "properties": {
@@ -181,12 +187,6 @@
     },
     "other": {
       "type": "boolean"
-    },
-    "date": {
-      "type": "string"
-    },
-    "campaignId": {
-      "type": "string"
     }
   },
   "type": "object"
