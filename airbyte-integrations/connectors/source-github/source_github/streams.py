@@ -171,6 +171,8 @@ class GithubStream(HttpStream, ABC):
                 )
             elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.BAD_GATEWAY:
+                error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
             else:
                 # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
                 self.logger.error(f"Undefined error while reading records: {e.response.text}")

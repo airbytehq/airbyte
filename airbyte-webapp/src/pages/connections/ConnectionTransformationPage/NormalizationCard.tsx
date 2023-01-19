@@ -2,13 +2,14 @@ import { Field } from "formik";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { ConnectionEditFormCard } from "components/connection/ConnectionEditFormCard";
+import { getInitialNormalization } from "components/connection/ConnectionForm/formConfig";
+import { NormalizationField } from "components/connection/ConnectionForm/NormalizationField";
+
 import { NormalizationType } from "core/domain/connection";
 import { OperationRead } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FormikOnSubmit } from "types/formik";
-import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
-import { getInitialNormalization } from "views/Connection/ConnectionForm/formConfig";
-import { FormCard } from "views/Connection/FormCard";
 
 export const NormalizationCard: React.FC<{
   operations?: OperationRead[];
@@ -23,7 +24,7 @@ export const NormalizationCard: React.FC<{
   );
 
   return (
-    <FormCard<{ normalization?: NormalizationType }>
+    <ConnectionEditFormCard<{ normalization?: NormalizationType }>
       form={{
         initialValues,
         onSubmit,
@@ -32,6 +33,6 @@ export const NormalizationCard: React.FC<{
       collapsible
     >
       <Field name="normalization" component={NormalizationField} mode={mode} />
-    </FormCard>
+    </ConnectionEditFormCard>
   );
 };
