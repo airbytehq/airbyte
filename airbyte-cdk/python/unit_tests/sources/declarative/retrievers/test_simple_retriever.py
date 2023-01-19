@@ -633,8 +633,9 @@ def test_response_to_airbyte_message(test_name, response_body, response_headers,
 
 
 def test_limit_stream_slices():
+    maximum_number_of_slices = 4
     stream_slicer = MagicMock()
-    stream_slicer.stream_slices.return_value = [{"date": f"2022-01-0{day}"} for day in range(1, 10)]
+    stream_slicer.stream_slices.return_value = _generate_slices(maximum_number_of_slices * 2)
     retriever = SimpleRetrieverTestReadDecorator(
         name="stream_name",
         primary_key=primary_key,
@@ -642,10 +643,15 @@ def test_limit_stream_slices():
         paginator=MagicMock(),
         record_selector=MagicMock(),
         stream_slicer=stream_slicer,
+        maximum_number_of_slices=maximum_number_of_slices,
         options={},
         config={},
     )
 
-    truncated_slices = retriever.stream_slices(sync_mode=SyncMode.incremental, stream_state=None)
+    truncated_slices = list(retriever.stream_slices(sync_mode=SyncMode.incremental, stream_state=None))
 
-    assert truncated_slices == [{"date": f"2022-01-0{day}"} for day in range(1, 6)]
+    assert truncated_slices == _generate_slices(maximum_number_of_slices)
+
+
+def _generate_slices(number_of_slices):
+    return [{"date": f"2022-01-0{day + 1}"} for day in range(number_of_slices)]

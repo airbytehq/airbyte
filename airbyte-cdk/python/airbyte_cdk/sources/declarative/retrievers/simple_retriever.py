@@ -417,18 +417,24 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
+@dataclass
 class SimpleRetrieverTestReadDecorator(SimpleRetriever):
     """
     In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
     slices that are queried throughout a read command.
     """
 
-    _MAXIMUM_NUMBER_OF_SLICES = 5
+    _MAXIMUM_NUMBER_OF_SLICES: int = 5
+    maximum_number_of_slices: int = None
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        super().__post_init__(options)
+        self.maximum_number_of_slices = self.maximum_number_of_slices or self._MAXIMUM_NUMBER_OF_SLICES
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self._MAXIMUM_NUMBER_OF_SLICES)
+        return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self.maximum_number_of_slices)
 
 
 def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:

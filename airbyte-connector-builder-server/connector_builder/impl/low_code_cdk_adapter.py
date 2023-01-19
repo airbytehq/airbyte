@@ -14,9 +14,13 @@ from connector_builder.impl.adapter import CdkAdapter
 
 
 class LowCodeSourceAdapter(CdkAdapter):
-    def __init__(self, manifest: Dict[str, Any]):
+    def __init__(self, manifest: Dict[str, Any], limit_page_fetched_per_slice, limit_slices_fetched):
         # Request and response messages are only emitted for a sources that have debug turned on
-        self._source = ManifestDeclarativeSource(manifest, debug=True, component_factory=ModelToComponentFactory(is_test_read=True))
+        self._source = ManifestDeclarativeSource(
+            manifest,
+            debug=True,
+            component_factory=ModelToComponentFactory(limit_page_fetched_per_slice, limit_slices_fetched)
+        )
 
     def get_http_streams(self, config: Dict[str, Any]) -> List[HttpStream]:
         http_streams = []

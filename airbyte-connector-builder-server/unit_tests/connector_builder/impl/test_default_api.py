@@ -628,13 +628,8 @@ def test_create_response_from_log_message(log_message, expected_response):
 
 
 def test_read_stream_with_many_slices():
-    request = {
-        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
-        "headers": {"Content-Type": "application/json"},
-        "body": {"custom": "field"},
-        "http_method": "GET",
-    }
-    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+    request = {}
+    response = {"status_code": 200}
 
     mock_source_adapter_cls = make_mock_adapter_cls(
         iter(
@@ -662,6 +657,7 @@ def test_read_stream_with_many_slices():
         api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
     )
 
+    assert not stream_read.test_read_limit_reached
     assert 2 == len(stream_read.slices)
 
     assert 2 == len(stream_read.slices[0].pages)
@@ -670,6 +666,51 @@ def test_read_stream_with_many_slices():
 
     assert 1 == len(stream_read.slices[1].pages)
     assert 1 == len(stream_read.slices[1].pages[0].records)
+
+
+def test_read_stream_given_maximum_number_of_slices_then_test_read_limit_reached():
+    maximum_number_of_slices = 5
+    request = {}
+    response = {"status_code": 200}
+    mock_source_adapter_cls = make_mock_adapter_cls(
+        iter(
+            [
+                slice_message(),
+                request_log_message(request),
+                response_log_message(response)
+            ] * maximum_number_of_slices
+        )
+    )
+
+    api = DefaultApiImpl(mock_source_adapter_cls)
+
+    loop = asyncio.get_event_loop()
+    stream_read: StreamRead = loop.run_until_complete(
+        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
+    )
+
+    assert stream_read.test_read_limit_reached
+
+
+def test_read_stream_given_maximum_number_of_pages_then_test_read_limit_reached():
+    maximum_number_of_pages_per_slice = 5
+    request = {}
+    response = {"status_code": 200}
+    mock_source_adapter_cls = make_mock_adapter_cls(
+        iter(
+            [slice_message()] + [request_log_message(request), response_log_message(response)] * maximum_number_of_pages_per_slice
+        )
+    )
+
+    api = DefaultApiImpl(mock_source_adapter_cls)
+
+    loop = asyncio.get_event_loop()
+    stream_read: StreamRead = loop.run_until_complete(
+        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
+    )
+
+    assert stream_read.test_read_limit_reached
+
 
 
 def make_mock_adapter_cls(return_value: Iterator) -> MagicMock:

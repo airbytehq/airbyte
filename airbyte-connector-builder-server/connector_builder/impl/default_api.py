@@ -27,6 +27,9 @@ from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
+    _MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
+    _MAXIMUM_NUMBER_OF_SLICES = 5
+
     logger = logging.getLogger("airbyte.connector-builder")
 
     def __init__(self, adapter_cls: Callable[[Dict[str, Any]], CdkAdapter], max_record_limit: int = 1000):
@@ -144,8 +147,17 @@ spec:
                 detail=f"Could not perform read with with error: {error.args[0]}",
             )
 
-        return StreamRead(logs=log_messages, slices=slices,
+        return StreamRead(logs=log_messages, slices=slices, test_read_limit_reached=self._has_reached_limit(slices),
                           inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream))
+
+    def _has_reached_limit(self, slices):
+        if len(slices) >= self._MAXIMUM_NUMBER_OF_SLICES:
+            return True
+
+        for slice in slices:
+            if len(slice.pages) >= self._MAXIMUM_NUMBER_OF_PAGES_PER_SLICE:
+                return True
+        return False
 
     def _get_message_groups(self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int) -> Iterable[
         Union[StreamReadPages, AirbyteLogMessage]]:
@@ -237,7 +249,7 @@ spec:
 
     def _create_low_code_adapter(self, manifest: Dict[str, Any]) -> CdkAdapter:
         try:
-            return self.adapter_cls(manifest=manifest)
+            return self.adapter_cls(manifest, self._MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, self._MAXIMUM_NUMBER_OF_SLICES)
         except ValidationError as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
             self.logger.error(f"Invalid connector manifest with error: {error.message} - {DefaultApiImpl._get_stacktrace_as_string(error)}")
