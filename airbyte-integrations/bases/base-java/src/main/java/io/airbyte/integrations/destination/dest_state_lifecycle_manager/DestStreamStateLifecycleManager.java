@@ -79,8 +79,8 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   }
 
   @Override
-  public void markCommittedAsEmitted() {
-    moveToNextPhase(streamToLastCommittedState, streamToLastEmittedState);
+  public void clearCommitted() {
+    streamToLastCommittedState.clear();
   }
 
   @Override
@@ -91,6 +91,11 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   @Override
   public Queue<AirbyteMessage> listCommitted() {
     return listStatesInOrder(streamToLastCommittedState);
+  }
+
+  @Override
+  public boolean supportsPerStreamFlush() {
+    return true;
   }
 
   /**

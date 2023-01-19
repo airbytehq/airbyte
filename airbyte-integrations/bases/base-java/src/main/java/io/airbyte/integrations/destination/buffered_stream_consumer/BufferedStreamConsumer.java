@@ -14,7 +14,6 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
-import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStreamStateLifecycleManager;
 import io.airbyte.integrations.destination.record_buffer.BufferFlushType;
 import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -138,14 +137,14 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      final Optional flushType = bufferingStrategy.addRecord(stream, message);
+      final Optional<BufferFlushType> flushType = bufferingStrategy.addRecord(stream, message);
       // if present means that a flush occurred
       if (flushType.isPresent()) {
-        if (flushType.equals(BufferFlushType.FLUSH_ALL)) {
+        if (BufferFlushType.FLUSH_ALL.equals(flushType.get())) {
           // when all buffers have been flushed then we can update all states as flushed
           markStatesAsFlushedToDestination();
-        } else if (flushType.equals(BufferFlushType.FLUSH_SINGLE_STREAM)) {
-          if (stateManager instanceof DestStreamStateLifecycleManager) {
+        } else if (BufferFlushType.FLUSH_SINGLE_STREAM.equals(flushType.get())) {
+          if (stateManager.supportsPerStreamFlush()) {
             // per-stream instance can handle flush of just a single stream
             markStatesAsFlushedToDestination();
           }
@@ -169,17 +168,16 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
-
   }
 
   /**
-   * After marking states as committed, emit the state message to platform then mark state messages as
-   * emitted to avoid resending the same state message to the platform
+   * After marking states as committed, emit the state message to platform then clear state messages
+   * to avoid resending the same state message to the platform
    */
   private void markStatesAsFlushedToDestination() {
     stateManager.markPendingAsCommitted();
     stateManager.listCommitted().forEach(outputRecordCollector);
-    stateManager.markCommittedAsEmitted();
+    stateManager.clearCommitted();
   }
 
   private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {

@@ -56,7 +56,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public Optional addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+  public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
     Optional<BufferFlushType> flushed = Optional.empty();
 
     final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.getRecord());

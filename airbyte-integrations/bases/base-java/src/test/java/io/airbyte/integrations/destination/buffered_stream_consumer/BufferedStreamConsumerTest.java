@@ -185,6 +185,7 @@ public class BufferedStreamConsumerTest {
     verify(outputRecordCollector).accept(STATE_MESSAGE1);
   }
 
+  /* TODO: (ryankfu) */
   @Test
   void testExceptionAfterOneStateMessage() throws Exception {
     final List<AirbyteMessage> expectedRecordsBatch1 = generateRecords(1_000);
@@ -227,6 +228,7 @@ public class BufferedStreamConsumerTest {
     verifyNoInteractions(outputRecordCollector);
   }
 
+  /* TODO: (ryankfu) */
   @Test
   void testExceptionDuringOnClose() throws Exception {
     doThrow(new IllegalStateException("induced exception")).when(onClose).accept(false);

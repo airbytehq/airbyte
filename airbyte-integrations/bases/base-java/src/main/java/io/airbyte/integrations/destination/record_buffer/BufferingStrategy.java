@@ -30,7 +30,7 @@ public interface BufferingStrategy extends AutoCloseable {
    *         value means only a record was added
    * @throws Exception throw on failure
    */
-  Optional addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message) throws Exception;
+  Optional<BufferFlushType> addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message) throws Exception;
 
   /**
    * Flush buffered messages in a writer from a particular stream

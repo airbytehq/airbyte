@@ -60,11 +60,8 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
   }
 
   @Override
-  public void markCommittedAsEmitted() {
-    if (lastCommittedState != null) {
-      lastEmittedState = lastCommittedState;
-      lastCommittedState = null;
-    }
+  public void clearCommitted() {
+    lastCommittedState = null;
   }
 
   @Override
@@ -82,6 +79,11 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
 
   private static Queue<AirbyteMessage> stateMessageToQueue(final AirbyteMessage stateMessage) {
     return new LinkedList<>(stateMessage == null ? Collections.emptyList() : List.of(stateMessage));
+  }
+
+  @Override
+  public boolean supportsPerStreamFlush() {
+    return false;
   }
 
 }

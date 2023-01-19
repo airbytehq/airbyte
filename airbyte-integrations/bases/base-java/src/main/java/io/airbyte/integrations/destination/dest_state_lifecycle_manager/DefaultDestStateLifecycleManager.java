@@ -116,13 +116,18 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   }
 
   @Override
-  public void markCommittedAsEmitted() {
-    internalStateManagerSupplier.get().markCommittedAsEmitted();
+  public void clearCommitted() {
+    internalStateManagerSupplier.get().clearCommitted();
   }
 
   @Override
   public Queue<AirbyteMessage> listCommitted() {
     return internalStateManagerSupplier.get().listCommitted();
+  }
+
+  @Override
+  public boolean supportsPerStreamFlush() {
+    return internalStateManagerSupplier.get().supportsPerStreamFlush();
   }
 
 }
