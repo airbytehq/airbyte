@@ -4,11 +4,8 @@
 
 package io.airbyte.integrations.standardtest.source;
 
-import static io.airbyte.workers.helper.CatalogConverter.toClientApi;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -23,8 +20,6 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -123,7 +118,6 @@ public abstract class AbstractSourceConnectorTest {
   // This has to be using the protocol version of the platform in order to capture the arg
   private final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> discoverWriteRequest =
       ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
-
 
   @BeforeEach
   public void setUpInternal() throws Exception {
