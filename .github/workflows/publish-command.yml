@@ -274,7 +274,7 @@ jobs:
           sudo add-apt-repository ppa:rmescandon/yq
           sudo apt update
           sudo apt install yq -y
-      - name: Test and install CI scripts
+      - name: Install CI scripts
         # all CI python packages have the prefix "ci_"
         run: |
           source venv/bin/activate

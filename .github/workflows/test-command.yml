@@ -101,7 +101,7 @@ jobs:
           python3 -m virtualenv venv
           source venv/bin/activate
           pip install --quiet tox==3.24.4
-      - name: Test and install CI scripts
+      - name: Install CI scripts
         # all CI python packages have the prefix "ci_"
         run: |
           source venv/bin/activate
