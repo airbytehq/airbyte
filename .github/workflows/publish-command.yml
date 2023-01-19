@@ -260,12 +260,13 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Install Pyenv
+      - name: Install Pyenv and Tox
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
           rm -r venv || echo "no pre-existing venv"
           python3 -m virtualenv venv
           source venv/bin/activate
+          pip install --quiet tox==3.24.4
       - name: Install yq
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
@@ -273,10 +274,11 @@ jobs:
           sudo add-apt-repository ppa:rmescandon/yq
           sudo apt update
           sudo apt install yq -y
-      - name: Install CI scripts
+      - name: Test and install CI scripts
         # all CI python packages have the prefix "ci_"
         run: |
           source venv/bin/activate
+          tox -r -c ./tools/tox_ci.ini
           pip install --quiet -e ./tools/ci_*
       - name: Write Integration Test Credentials for ${{ matrix.connector }}
         run: |
@@ -318,6 +320,19 @@ jobs:
             ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
           attempt_limit: 3
           attempt_delay: 5000 in # ms
+      - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
+        if: always()
+        run: |
+          source venv/bin/activate
+          ci_credentials ${{ matrix.connector }} update-secrets
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
+            ci_credentials destination-bigquery update-secrets
+            ci_credentials destination-postgres update-secrets
+            ci_credentials destination-snowflake update-secrets
+          fi
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Create Sentry Release
         if: startsWith(matrix.connector, 'connectors') && success()
         run: |
