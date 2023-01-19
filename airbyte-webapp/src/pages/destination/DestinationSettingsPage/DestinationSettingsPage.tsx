@@ -49,10 +49,10 @@ export const DestinationSettingsPage: React.FC = () => {
       return null;
     }
     return (
-      <>
+      <p>
         <FormattedMessage id="tables.affectedConnectionsOnDestinationDeletion" />
         {connectionsWithDestination.map((connection) => `- ${connection.name}\n`)}
-      </>
+      </p>
     );
   }, [connectionsWithDestination]);
 

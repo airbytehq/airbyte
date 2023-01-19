@@ -59,10 +59,10 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
       return null;
     }
     return (
-      <>
+      <p>
         <FormattedMessage id="tables.affectedConnectionsOnSourceDeletion" />
         {connectionsWithSource.map((connection) => `- ${connection.name}\n`)}
-      </>
+      </p>
     );
   }, [connectionsWithSource]);
 

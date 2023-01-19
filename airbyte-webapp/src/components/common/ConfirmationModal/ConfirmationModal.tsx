@@ -22,7 +22,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onClose,
   title,
   text,
-  extra = "",
+  extra = null,
   onSubmit,
   submitButtonText,
   submitButtonDataId,
@@ -35,7 +35,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     <Modal onClose={onClose} title={<FormattedMessage id={title} />} testId="confirmationModal">
       <div className={styles.content}>
         <FormattedMessage id={text} />
-        {Boolean(extra) && <p>{extra}</p>}
+        {extra}
         <div className={styles.buttonContent}>
           <Button
             className={styles.buttonWithMargin}
