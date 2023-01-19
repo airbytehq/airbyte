@@ -755,13 +755,13 @@ paths:
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
 
-  /v1/sources/write_discover_fetch_event:
+  /v1/sources/write_discover_catalog_result:
     post:
       tags:
         - source
         - internal
       summary: Should only called from worker, to write result from discover activity back to DB.
-      operationId: writeDiscoverFetchEvent
+      operationId: writeDiscoverCatalogResult
       requestBody:
         content:
           application/json:
@@ -3166,7 +3166,7 @@ components:
     ReleaseStage:
       type: string
       enum:
-        - alphf
+        - alpha
         - beta
         - generally_available
         - custom

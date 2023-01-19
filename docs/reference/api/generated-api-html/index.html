@@ -274,7 +274,7 @@ font-style: italic;
   <li><a href="#getAttemptNormalizationStatusesForJob"><code><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></a></li>
   <li><a href="#saveStats"><code><span class="http-method">post</span> /v1/attempt/save_stats</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
-  <li><a href="#writeDiscoverFetchEvent"><code><span class="http-method">post</span> /v1/sources/write_discover_fetch_event</code></a></li>
+  <li><a href="#writeDiscoverCatalogResult"><code><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></a></li>
   </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
@@ -325,7 +325,7 @@ font-style: italic;
   <li><a href="#listSourcesForWorkspace"><code><span class="http-method">post</span> /v1/sources/list</code></a></li>
   <li><a href="#searchSources"><code><span class="http-method">post</span> /v1/sources/search</code></a></li>
   <li><a href="#updateSource"><code><span class="http-method">post</span> /v1/sources/update</code></a></li>
-  <li><a href="#writeDiscoverFetchEvent"><code><span class="http-method">post</span> /v1/sources/write_discover_fetch_event</code></a></li>
+  <li><a href="#writeDiscoverCatalogResult"><code><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></a></li>
   </ul>
   <h4><a href="#SourceDefinition">SourceDefinition</a></h4>
   <ul>
@@ -1973,7 +1973,6 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "didUpdateConfiguration" : true,
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
@@ -2044,7 +2043,6 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "didUpdateConfiguration" : true,
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
@@ -4153,11 +4151,11 @@ containing the updated stream needs to be sent.</div>
         <a href="#InternalOperationResult">InternalOperationResult</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="writeDiscoverFetchEvent"/>
+  <div class="method"><a name="writeDiscoverCatalogResult"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/write_discover_fetch_event</code></pre></div>
-    <div class="method-summary">Should only called from worker, to write result from discover activity back to DB. (<span class="nickname">writeDiscoverFetchEvent</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></pre></div>
+    <div class="method-summary">Should only called from worker, to write result from discover activity back to DB. (<span class="nickname">writeDiscoverCatalogResult</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -5927,7 +5925,6 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "didUpdateConfiguration" : true,
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
@@ -5995,7 +5992,6 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "didUpdateConfiguration" : true,
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
@@ -6221,7 +6217,6 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "didUpdateConfiguration" : true,
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
@@ -6292,7 +6287,6 @@ containing the updated stream needs to be sent.</div>
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "didUpdateConfiguration" : true,
   "message" : "message",
   "jobInfo" : {
     "createdAt" : 0,
@@ -7008,11 +7002,11 @@ containing the updated stream needs to be sent.</div>
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="writeDiscoverFetchEvent"/>
+  <div class="method"><a name="writeDiscoverCatalogResult"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/write_discover_fetch_event</code></pre></div>
-    <div class="method-summary">Should only called from worker, to write result from discover activity back to DB. (<span class="nickname">writeDiscoverFetchEvent</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></pre></div>
+    <div class="method-summary">Should only called from worker, to write result from discover activity back to DB. (<span class="nickname">writeDiscoverCatalogResult</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -10674,7 +10668,6 @@ containing the updated stream needs to be sent.</div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
 <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">didUpdateConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>

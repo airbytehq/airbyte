@@ -382,7 +382,7 @@ class SourceHandlerTest {
   }
 
   @Test
-  void testWriteDiscoverFetchEvent() throws JsonValidationException, IOException {
+  void testWriteDiscoverCatalogResult() throws JsonValidationException, IOException {
     UUID actorId = UUID.randomUUID();
     UUID catalogId = UUID.randomUUID();
     String connectorVersion = "0.0.1";
@@ -391,7 +391,7 @@ class SourceHandlerTest {
         CatalogConverter.toApi(airbyteCatalog)).sourceId(actorId).connectorVersion(connectorVersion).configurationHash(hashValue);
 
     when(configRepository.writeActorCatalogFetchEvent(airbyteCatalog, actorId, connectorVersion, hashValue)).thenReturn(catalogId);
-    DiscoverCatalogResult result = sourceHandler.writeDiscoverFetchEvent(request);
+    DiscoverCatalogResult result = sourceHandler.writeDiscoverCatalogResult(request);
 
     verify(configRepository).writeActorCatalogFetchEvent(airbyteCatalog, actorId, connectorVersion, hashValue);
     assert (result.getCatalogId()).equals(catalogId);

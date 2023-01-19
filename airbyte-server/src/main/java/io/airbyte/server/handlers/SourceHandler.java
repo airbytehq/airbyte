@@ -265,9 +265,9 @@ public class SourceHandler {
         spec);
   }
 
-  public DiscoverCatalogResult writeDiscoverFetchEvent(final SourceDiscoverSchemaWriteRequestBody request)
+  public DiscoverCatalogResult writeDiscoverCatalogResult(final SourceDiscoverSchemaWriteRequestBody request)
       throws JsonValidationException, IOException {
-    final AirbyteCatalog persistenceCatalog = CatalogConverter.toAirbyteCatalogProtocol(request.getCatalog());
+    final AirbyteCatalog persistenceCatalog = CatalogConverter.toProtocol(request.getCatalog());
     UUID catalogId = configRepository.writeActorCatalogFetchEvent(
         persistenceCatalog,
         request.getSourceId(),
