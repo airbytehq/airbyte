@@ -99,9 +99,6 @@ const manifestStreamToBuilder = (
   assertType<HttpRequester>(retriever.requester, "HttpRequester", stream.name);
   const requester = retriever.requester;
 
-  console.log("retriever.requester.authenticator", retriever.requester.authenticator);
-  console.log("builderFormGlobal.authenticator", builderFormGlobal.authenticator);
-
   if (
     builderFormGlobal.authenticator.type === "NoAuth"
       ? requester.authenticator && requester.authenticator.type !== "NoAuth"

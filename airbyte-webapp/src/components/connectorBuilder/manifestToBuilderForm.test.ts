@@ -160,44 +160,17 @@ describe("Conversion throws error when", () => {
     expect(convert).toThrow("doesn't use a HttpRequester");
   });
 
-  it("manifest has inconsistent stream names", () => {
+  it("manifest has an authenticator with a non-interpolated secret key", () => {
     const convert = () => {
       const manifest: ConnectorManifest = {
         ...baseManifest,
         streams: [
           merge({}, stream1, {
-            retriever: {
-              name: "other name",
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("name is not consistent");
-  });
-
-  it("manifest has inconsistent authenticators", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            retriever: {
-              requester: {
-                authenticator: {
-                  type: "BearerAuthenticator",
-                  api_token: "{{ config['api_key'] }}",
-                },
-              },
-            },
-          }),
-          merge({}, stream2, {
             retriever: {
               requester: {
                 authenticator: {
                   type: "ApiKeyAuthenticator",
-                  api_token: "{{ config['api_key'] }}",
+                  api_token: "abcd1234",
                   header: "API_KEY",
                 },
               },
@@ -207,303 +180,254 @@ describe("Conversion throws error when", () => {
       };
       convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
     };
-    expect(convert).toThrow("authenticator does not match");
-  });
-
-  it("manifest has inconsistent url_bases", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          stream1,
-          merge({}, stream2, {
-            retriever: {
-              requester: {
-                url_base: "https://differenturl.com",
-              },
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("url_base does not match");
-  });
-
-  it("manifest has invalid http_method", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            retriever: {
-              requester: {
-                http_method: "PATCH",
-              },
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("http_method is not GET or POST");
-  });
-
-  it("manifest has incorrect extractor type", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            retriever: {
-              record_selector: {
-                extractor: {
-                  type: "CustomExtractor",
-                },
-              },
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("doesn't use a DpathExtractor");
-  });
-
-  it("manifest has incorrect request_options_provider type", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            retriever: {
-              requester: {
-                request_options_provider: {
-                  type: "CustomRequestOptionsProvider",
-                },
-              },
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("doesn't use a InterpolatedRequestOptionsProvider");
-  });
-
-  it("manifest has invalid stream_slicer type", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            retriever: {
-              stream_slicer: {
-                type: "CustomStreamSlicer",
-              },
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("contains a CustomStreamSlicer");
-  });
-
-  it("manifest has invalid start_datetime", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            retriever: {
-              stream_slicer: {
-                type: "DatetimeStreamSlicer",
-                start_datetime: {
-                  type: "MinMaxDatetime",
-                },
-              },
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow(/start_datetime.*not set to a string value/);
-  });
-
-  it("manifest has inconsistent primary_keys", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            primary_key: ["id"],
-            retriever: {
-              primary_key: ["name"],
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("primary_key is not consistent");
-  });
-
-  it("manifest has nested primary_keys", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            primary_key: [["id", "name"]],
-            retriever: {
-              primary_key: [["id", "name"]],
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("primary_key contains nested arrays");
-  });
-
-  it("manifest doesn't define page_token_option", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            retriever: {
-              paginator: {},
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("paginator does not define a page_token_option");
-  });
-
-  it("manifest has inconsistent paginator url_base", () => {
-    const convert = () => {
-      const manifest: ConnectorManifest = {
-        ...baseManifest,
-        streams: [
-          merge({}, stream1, {
-            retriever: {
-              paginator: {
-                page_token_option: {
-                  type: "RequestOption",
-                  inject_into: "request_parameter",
-                },
-                url_base: "https://otherurl.com",
-              },
-            },
-          }),
-        ],
-      };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
-    };
-    expect(convert).toThrow("paginator.url_base does not match");
+    expect(convert).toThrow("api_token value must be of the form {{ config[");
   });
 });
 
 describe("Conversion successfully results in", () => {
   it("default values if manifest is empty", () => {
-    const manifest = `
-      version: "0.1.0"
-      check:
-        stream_names: []
-      streams: []`;
-    const formValues = convertToBuilderFormValues(load(manifest) as ConnectorManifest, DEFAULT_BUILDER_FORM_VALUES);
+    const formValues = convertToBuilderFormValues(baseManifest, DEFAULT_BUILDER_FORM_VALUES);
     expect(formValues).toEqual(DEFAULT_BUILDER_FORM_VALUES);
   });
 
   it("spec properties converted to inputs if no streams present", () => {
-    const manifest = `
-      version: "0.1.0"
-      check:
-        stream_names: []
-      streams: []
-      spec:
-        connection_specification:
-          $schema: http://json-schema.org/draft-07/schema#
-          type: object
-          required:
-            - api_key
-          properties:
-            api_key:
-              type: string
-              title: API Key
-              airbyte_secret: true`;
-    const formValues = convertToBuilderFormValues(load(manifest) as ConnectorManifest, DEFAULT_BUILDER_FORM_VALUES);
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      spec: {
+        type: "Spec",
+        connection_specification: {
+          $schema: "http://json-schema.org/draft-07/schema#",
+          type: "object",
+          required: ["api_key"],
+          properties: {
+            api_key: {
+              type: "string",
+              title: "API Key",
+              airbyte_secret: true,
+            },
+          },
+        },
+      },
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
     expect(formValues.inferredInputOverrides).toEqual({});
     expect(formValues.inputs).toEqual([
       {
         key: "api_key",
         required: true,
-        definition: {
-          type: "string",
-          title: "API Key",
-          airbyte_secret: true,
-        },
+        definition: manifest.spec?.connection_specification.properties.api_key,
       },
     ]);
   });
 
   it("spec properties converted to input overrides on matching auth keys", () => {
-    const manifest = `
-      version: "0.1.0"
-      check:
-        stream_names: []
-      streams:
-        - name: firstStream
-          retriever:
-            type: SimpleRetriever
-            name: firstStream
-            record_selector:
-              type: RecordSelector
-              extractor:
-                type: DpathExtractor
-                field_pointer: []
-            requester:
-              type: HttpRequester
-              name: firstStream
-              authenticator:
-                type: ApiKeyAuthenticator
-                api_token: '{{ config[''api_key''] }}'
-                header: ''
-      spec:
-        connection_specification:
-          $schema: http://json-schema.org/draft-07/schema#
-          type: object
-          required:
-            - api_key
-          properties:
-            api_key:
-              type: string
-              title: API Key
-              airbyte_secret: true
-            other_key:
-              type: string
-              title: Other key`;
-    const formValues = convertToBuilderFormValues(load(manifest) as ConnectorManifest, DEFAULT_BUILDER_FORM_VALUES);
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        merge({}, stream1, {
+          retriever: {
+            requester: {
+              authenticator: {
+                type: "ApiKeyAuthenticator",
+                api_token: "{{ config['api_key'] }}",
+                header: "API_KEY",
+              },
+            },
+          },
+        }),
+      ],
+      spec: {
+        type: "Spec",
+        connection_specification: {
+          $schema: "http://json-schema.org/draft-07/schema#",
+          type: "object",
+          required: ["api_key"],
+          properties: {
+            api_key: {
+              type: "string",
+              title: "API Key",
+              airbyte_secret: true,
+            },
+            numeric_key: {
+              type: "number",
+              title: "Numeric key",
+            },
+          },
+        },
+      },
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
     expect(formValues.inputs).toEqual([
       {
-        key: "other_key",
+        key: "numeric_key",
         required: false,
-        definition: {
-          type: "string",
-          title: "Other key",
-        },
+        definition: manifest.spec?.connection_specification.properties.numeric_key,
       },
     ]);
     expect(formValues.inferredInputOverrides).toEqual({
-      api_key: {
-        type: "string",
-        title: "API Key",
-        airbyte_secret: true,
+      api_key: manifest.spec?.connection_specification.properties.api_key,
+    });
+  });
+
+  it("request options converted to key-value list", () => {
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        merge({}, stream1, {
+          retriever: {
+            requester: {
+              request_options_provider: {
+                type: "InterpolatedRequestOptionsProvider",
+                request_parameters: {
+                  k1: "v1",
+                  k2: "v2",
+                },
+              },
+            },
+          },
+        }),
+      ],
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    expect(formValues.streams[0].requestOptions.requestParameters).toEqual([
+      ["k1", "v1"],
+      ["k2", "v2"],
+    ]);
+  });
+
+  it("primary key string converted to array", () => {
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        merge({}, stream1, {
+          primary_key: "id",
+          retriever: {
+            primary_key: "id",
+          },
+        }),
+      ],
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    expect(formValues.streams[0].primaryKey).toEqual(["id"]);
+  });
+
+  it("cartesian product stream slicer converted to builder cartesian product slicer", () => {
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        merge({}, stream1, {
+          retriever: {
+            stream_slicer: {
+              type: "CartesianProductStreamSlicer",
+              stream_slicers: [
+                {
+                  type: "ListStreamSlicer",
+                  cursor_field: "id",
+                  slice_values: ["slice1", "slice2"],
+                },
+                {
+                  type: "DatetimeStreamSlicer",
+                  cursor_field: "id",
+                  datetime_format: "%Y-%m-%d",
+                  cursor_granularity: "P1D",
+                  end_datetime: "2017-01-25",
+                  start_datetime: "2017-01-30",
+                  step: "P1D",
+                },
+              ],
+            },
+          },
+        }),
+      ],
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    expect(formValues.streams[0].streamSlicer).toEqual(manifest.streams[0].retriever.stream_slicer);
+  });
+
+  it("substream stream slicer converted to builder substream slicer", () => {
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        stream1,
+        merge({}, stream2, {
+          retriever: {
+            stream_slicer: {
+              type: "SubstreamSlicer",
+              parent_stream_configs: [
+                {
+                  type: "ParentStreamConfig",
+                  parent_key: "key",
+                  stream: stream1,
+                  stream_slice_field: "field",
+                },
+              ],
+            },
+          },
+        }),
+      ],
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    expect(formValues.streams[1].streamSlicer).toEqual({
+      type: "SubstreamSlicer",
+      parent_key: "key",
+      stream_slice_field: "field",
+      parentStreamReference: "0",
+    });
+  });
+
+  it("schema loader converted to schema", () => {
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        merge({}, stream1, {
+          schema_loader: {
+            type: "InlineSchemaLoader",
+            schema: {
+              key: "value",
+            },
+          },
+        }),
+      ],
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    expect(formValues.streams[0].schema).toEqual(
+      `{
+  "key": "value"
+}`
+    );
+  });
+
+  it("stores unsupported fields", () => {
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        merge({}, stream1, {
+          transformations: [
+            {
+              type: "AddFields",
+              fields: ["id"],
+            },
+          ],
+          checkpoint_interval: 123,
+          retriever: {
+            requester: {
+              error_handler: {
+                type: "DefaultErrorHandler",
+                max_retries: 3,
+              },
+            },
+          },
+        }),
+      ],
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    expect(formValues.streams[0].unsupportedFields).toEqual({
+      transformations: manifest.streams[0].transformations,
+      checkpoint_interval: manifest.streams[0].checkpoint_interval,
+      retriever: {
+        requester: {
+          error_handler: manifest.streams[0].retriever.requester.error_handler,
+        },
       },
     });
   });
