@@ -92,7 +92,8 @@ const selectFieldDropdownOption = (streamName: string, dropdownType: Dropdown, v
       cy.get(getFieldDropdownOption(value)).click();
     }
   });
-  // close dropdown - click on dropdown overlay if exist
+  // close dropdown
+  // (dropdown need to be closed manually by clicking on overlay in case if multiple option selection is available)
   cy.get("body").then(($body) => {
     if ($body.find(dropDownOverlayContainer).length > 0) {
       cy.get(dropDownOverlayContainer).click();
