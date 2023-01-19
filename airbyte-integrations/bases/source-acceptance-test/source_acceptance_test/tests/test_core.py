@@ -306,11 +306,15 @@ class TestSpec(BaseTest):
 
     def test_object_not_empty(self, connector_spec_dict: dict):
         """
-        Each object field needs to have at least one property as the UI won't be able to show them otherwise
+        Each object field needs to have at least one property as the UI won't be able to show them otherwise.
+        If the whole spec is empty, it's allowed to have a single empty object at the top level
         """
         specification = connector_spec_dict["connectionSpecification"]
         errors = []
         for type_path, value in dpath.util.search(specification, "**/type", yielded=True):
+            if type_path == "type":
+                # allow empty root object
+                continue
             if value == "object":
                 property = self._get_parent(specification, type_path)
                 if "oneOf" not in property and ("properties" not in property or len(property["properties"]) == 0):
@@ -333,10 +337,10 @@ class TestSpec(BaseTest):
                 continue
             items_value = property_definition.get("items", None)
             if items_value is None:
-                errors.append(f"{type_path} is is an array definition without specifying items type")
+                continue
             elif isinstance(items_value, List):
                 errors.append(f"{type_path} is not just a single item type: {items_value}")
-            elif items_value["type"] not in ["object", "string"] and not "enum" in items_value:
+            elif items_value.get("type") not in ["object", "string"] and not "enum" in items_value:
                 errors.append(f"Items of {type_path} has to be either object or string or define an enum")
         if len(errors) > 0:
             pytest.fail("\n".join(errors))

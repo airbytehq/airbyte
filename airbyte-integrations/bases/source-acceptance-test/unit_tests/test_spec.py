@@ -764,6 +764,12 @@ def test_property_type_is_not_array(mocker, connector_spec, should_fail):
         ),
         (
             {
+                "type": "object", "properties": {}
+            },
+            False
+        ),
+        (
+            {
                 "type": "object", "properties": {"jwt": {"type": "object"}}
             },
             True
@@ -811,7 +817,7 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
             {
                 "type": "object", "properties": {"list": {"type": "array"}}
             },
-            True
+            False
         ),
         (
             {
@@ -834,6 +840,12 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
         (
             {
                 "type": "object", "properties": {"list": {"type": "array", "items": { "type": "number", "enum": [1,2,3] } }}
+            },
+            False
+        ),
+        (
+            {
+                "type": "object", "properties": {"list": {"type": "array", "items": { "enum": ["a","b","c"] } }}
             },
             False
         ),
