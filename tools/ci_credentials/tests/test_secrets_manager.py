@@ -158,4 +158,3 @@ def test_validate_mask_values(connector_name, dict_json_value, expected_secret, 
     json_value = json.loads(dict_json_value)
     manager.mask_secrets_from_action_log(None, json_value)
     assert expected_secret in capsys.readouterr().out
-
