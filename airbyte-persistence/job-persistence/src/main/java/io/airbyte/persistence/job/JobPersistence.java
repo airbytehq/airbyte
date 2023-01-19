@@ -47,7 +47,7 @@ public interface JobPersistence {
    * @param combinedStats
    * @param perStreamStats
    */
-  record AttemptStats(SyncStats combinedStats, List<StreamSyncStats> perStreamStats) {}
+  record AttemptStats(final SyncStats combinedStats,final List<StreamSyncStats> perStreamStats) {}
 
   record JobAttemptPair(long id, int attemptNumber) {}
 
@@ -57,7 +57,7 @@ public interface JobPersistence {
    * @return {@link AttemptStats}
    * @throws IOException
    */
-  AttemptStats getAttemptStats(long jobId, int attemptNumber) throws IOException;
+  AttemptStats getAttemptStats(final long jobId, final int attemptNumber) throws IOException;
 
   /**
    * Alternative method to retrieve combined and per stream stats per attempt for a list of jobs to
@@ -70,11 +70,11 @@ public interface JobPersistence {
    * @return
    * @throws IOException
    */
-  Map<JobAttemptPair, AttemptStats> getAttemptStats(List<Long> jobIds) throws IOException;
+  Map<JobAttemptPair, AttemptStats> getAttemptStats(final List<Long> jobIds) throws IOException;
 
-  List<NormalizationSummary> getNormalizationSummary(long jobId, int attemptNumber) throws IOException;
+  List<NormalizationSummary> getNormalizationSummary(final long jobId,final int attemptNumber) throws IOException;
 
-  Job getJob(long jobId) throws IOException;
+  Job getJob(final long jobId) throws IOException;
 
   //
   // JOB LIFECYCLE

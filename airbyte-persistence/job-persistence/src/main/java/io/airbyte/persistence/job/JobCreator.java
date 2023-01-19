@@ -31,18 +31,16 @@ public interface JobCreator {
    * @return the new job if no other conflicting job was running, otherwise empty
    * @throws IOException if something wrong happens
    */
-  Optional<Long> createSyncJob(SourceConnection source,
-                               DestinationConnection destination,
-                               StandardSync standardSync,
-                               String sourceDockerImage,
-                               Version sourceProtocolVersion,
-                               String destinationDockerImage,
-                               Version destinationProtocolVersion,
-                               List<StandardSyncOperation> standardSyncOperations,
-                               @Nullable JsonNode webhookOperationConfigs,
-                               StandardSourceDefinition sourceDefinition,
-                               StandardDestinationDefinition destinationDefinition,
-                               UUID workspaceId)
+  Optional<Long> createSyncJob(final SourceConnection source, final DestinationConnection destination,final StandardSync standardSync,
+                               final String sourceDockerImage,
+                               final Version sourceProtocolVersion,
+                               final String destinationDockerImage,
+                               final Version destinationProtocolVersion,
+                               final List<StandardSyncOperation> standardSyncOperations,
+                               final @Nullable JsonNode webhookOperationConfigs,
+                               final StandardSourceDefinition sourceDefinition,
+                               final StandardDestinationDefinition destinationDefinition,
+                               final UUID workspaceId)
       throws IOException;
 
   /**
@@ -54,13 +52,13 @@ public interface JobCreator {
    * @return the new job if no other conflicting job was running, otherwise empty
    * @throws IOException if something wrong happens
    */
-  Optional<Long> createResetConnectionJob(DestinationConnection destination,
-                                          StandardSync standardSync,
-                                          String destinationDockerImage,
-                                          Version destinationProtocolVersion,
-                                          boolean isCustom,
-                                          List<StandardSyncOperation> standardSyncOperations,
-                                          List<StreamDescriptor> streamsToReset)
+  Optional<Long> createResetConnectionJob(final DestinationConnection destination,
+                                          final StandardSync standardSync,
+                                          final String destinationDockerImage,
+                                          final Version destinationProtocolVersion,
+                                          final boolean isCustom,
+                                          final List<StandardSyncOperation> standardSyncOperations,
+                                          final List<StreamDescriptor> streamsToReset)
       throws IOException;
 
 }
