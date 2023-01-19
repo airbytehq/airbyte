@@ -8,7 +8,7 @@ definitions:
   air_quality_current_stream:
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       requester:
@@ -26,7 +26,7 @@ definitions:
   air_quality_forecast_stream:
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       requester:
@@ -45,7 +45,7 @@ definitions:
   air_quality_historical_stream:
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       requester:
@@ -64,7 +64,7 @@ definitions:
   pollen_forecast_stream:
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       requester:
@@ -83,7 +83,7 @@ definitions:
   weather_current_stream:
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       requester:
@@ -101,7 +101,7 @@ definitions:
   weather_forecast_stream:
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       requester:
@@ -119,7 +119,7 @@ definitions:
   wildfire_burnt_area_stream:
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       requester:
@@ -137,7 +137,7 @@ definitions:
   wildfire_locate_stream:
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       requester:
@@ -153,14 +153,14 @@ definitions:
       path: "/fires/v1/locate-and-track"
 
 streams:
-  - "*ref(definitions.air_quality_current_stream)"
-  - "*ref(definitions.air_quality_forecast_stream)"
-  - "*ref(definitions.air_quality_historical_stream)"
-  - "*ref(definitions.pollen_forecast_stream)"
-  - "*ref(definitions.weather_current_stream)"
-  - "*ref(definitions.weather_forecast_stream)"
-  - "*ref(definitions.wildfire_burnt_area_stream)"
-  - "*ref(definitions.wildfire_locate_stream)"
+  - "#/definitions/air_quality_current_stream"
+  - "#/definitions/air_quality_forecast_stream"
+  - "#/definitions/air_quality_historical_stream"
+  - "#/definitions/pollen_forecast_stream"
+  - "#/definitions/weather_current_stream"
+  - "#/definitions/weather_forecast_stream"
+  - "#/definitions/wildfire_burnt_area_stream"
+  - "#/definitions/wildfire_locate_stream"
 
 check:
   stream_names:
