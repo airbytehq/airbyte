@@ -22,18 +22,18 @@ public class SnowflakeTestSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putDate(final ObjectNode node,
-      final String columnName,
-      final ResultSet resultSet,
-      final int index)
+                         final String columnName,
+                         final ResultSet resultSet,
+                         final int index)
       throws SQLException {
     putJavaSQLDate(node, columnName, resultSet, index);
   }
 
   @Override
   protected void putTime(final ObjectNode node,
-      final String columnName,
-      final ResultSet resultSet,
-      final int index)
+                         final String columnName,
+                         final ResultSet resultSet,
+                         final int index)
       throws SQLException {
     putJavaSQLTime(node, columnName, resultSet, index);
   }
