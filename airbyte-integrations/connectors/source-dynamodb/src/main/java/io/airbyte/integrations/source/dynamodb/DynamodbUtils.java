@@ -58,7 +58,8 @@ public class DynamodbUtils {
         StateMessageHelper.getTypedState(state, useStreamCapableState);
     return typedState.map(stateWrapper -> switch (stateWrapper.getStateType()) {
       case STREAM:
-        yield new StreamState(AirbyteStateMessage.AirbyteStateType.STREAM, stateWrapper.getStateMessages());
+        yield new StreamState(AirbyteStateMessage.AirbyteStateType.STREAM, stateWrapper.getStateMessages().stream()
+            .map(sm -> Jsons.object(Jsons.jsonNode(sm), AirbyteStateMessage.class)).toList());
       case LEGACY:
         yield new StreamState(AirbyteStateMessage.AirbyteStateType.LEGACY, List.of(
             new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
