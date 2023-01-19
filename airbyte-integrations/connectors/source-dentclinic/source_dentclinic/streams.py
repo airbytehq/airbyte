@@ -22,6 +22,8 @@ class DentclinicBookingStream(HttpStream, ABC):
         self.api_key = config.get("api_key")
         self.days_forward = int(config.get("days_forward"))
 
+        self.days_back = int(config.get("days_back"))
+
         self.start_date = pendulum.parse(config.get("start_date"))
         if enable_days_back_limit:
             self.start_date = max(self.start_date, pendulum.today().add(days = -int(config.get('days_back'))))
@@ -88,9 +90,9 @@ class DentclinicBookingStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
 
-        print("*" * 100)
-        print({"clinic_id": self.clinic_id, "start_date": self.cursor_start_date, "end_date": self.cursor_end_date})
-        print("*" * 100)
+        #print("*" * 100)
+        #print({"clinic_id": self.clinic_id, "start_date": self.cursor_start_date, "end_date": self.cursor_end_date})
+        #print("*" * 100)
 
         if self.clinic_id is None:
             return None
@@ -115,10 +117,14 @@ class DentclinicBookingStream(HttpStream, ABC):
         end_ts = self.cursor_end_date
 
         clinic_state = stream_state.get(self.cursor_field, {}).get(self.clinic_id)
+        
+        #print(f"days_back: {self.days_back}")
+        #print('*****************************************************')
         if clinic_state:
             state_ts = pendulum.parse(clinic_state)
             start_ts = max(start_ts, state_ts)
             end_ts = start_ts.add(days=self.fetch_interval_days)
+
 
         return f"""<?xml version="1.0" encoding="utf-8"?>
         <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
@@ -154,11 +160,10 @@ class DentclinicBookingStream(HttpStream, ABC):
 
 class DentclinicUtilizationStream(HttpStream, ABC):
 
-    # TODO: Must have ability to split this into multiple streams: ProfessionalsAndShifts and BookingsAndBlockings
-    # 
-
+    
     primary_key = None
     state_checkpoint_interval = 1
+    endpoint_data_path = None
 
     url_base = "https://dcm-nhn.dentclinicmanager.com/API/DCMConnect.asmx?WSDL"
 
@@ -170,15 +175,17 @@ class DentclinicUtilizationStream(HttpStream, ABC):
         self.days_forward = int(config.get("days_forward"))
 
         self.start_date = pendulum.parse(config.get("start_date"))
-        if enable_days_back_limit:
-            self.start_date = max(self.start_date, pendulum.today().add(days = -int(config.get('days_back'))))
-        self.stop_date = pendulum.today().add(days=self.days_forward)
+        self.enable_days_back_limit = enable_days_back_limit
+        self.days_back = int(config.get('days_back'))
 
+        self.stop_date = pendulum.today().add(days=self.days_forward)
         self.cursor_start_date = self.start_date
         self.cursor_end_date = self.start_date.add(days=self.fetch_interval_days)
 
         self.clinic_ids = self.get_clinic_ids()
         self.clinic_id = next(self.clinic_ids)
+
+        
 
     def request_headers(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -190,7 +197,7 @@ class DentclinicUtilizationStream(HttpStream, ABC):
         """
         :return str: The name of the cursor field.
         """
-        return "stop_date"
+        return "DateFrom"
 
     @property
     def raise_on_http_errors(self) -> bool:
@@ -235,10 +242,6 @@ class DentclinicUtilizationStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
 
-        print("*" * 100)
-        print({"clinic_id": self.clinic_id, "start_date": self.cursor_start_date, "end_date": self.cursor_end_date})
-        print("*" * 100)
-
         if self.clinic_id is None:
             return None
 
@@ -261,11 +264,28 @@ class DentclinicUtilizationStream(HttpStream, ABC):
         start_ts = self.cursor_start_date
         end_ts = self.cursor_end_date
 
+
+
         clinic_state = stream_state.get(self.cursor_field, {}).get(self.clinic_id)
+
+        print('Stream State',stream_state)
+
+
+
         if clinic_state:
+
+
             state_ts = pendulum.parse(clinic_state)
             start_ts = max(start_ts, state_ts)
             end_ts = start_ts.add(days=self.fetch_interval_days)
+
+
+            if self.enable_days_back_limit:
+                start_ts = start_ts.add(days = -int(self.days_back))
+
+
+            print(f'Fetching Interval - {self.clinic_id} : {start_ts} - {end_ts}')
+
 
         return f"""<?xml version="1.0" encoding="utf-8"?>
         <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
@@ -284,7 +304,8 @@ class DentclinicUtilizationStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
-        path = ['soap:Envelope', 'soap:Body', 'GetUtilizationReportResponse', 'GetUtilizationReportResult','ProfessionalsAndShifts','ProfessionalShifts']
+        # path = ['soap:Envelope', 'soap:Body', 'GetUtilizationReportResponse', 'GetUtilizationReportResult','ProfessionalsAndShifts','ProfessionalShifts']
+        path = self.endpoint_data_path
         data = xmltodict.parse(response.text).copy()
         for key in path:
             data = data.get(key)

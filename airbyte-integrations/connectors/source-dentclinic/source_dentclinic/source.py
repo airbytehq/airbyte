@@ -68,9 +68,12 @@ class Bookings(DentclinicBookingStream):
 
         return {self.cursor_field: state_mapping}
 
+
 class UtilizationReport(DentclinicUtilizationStream):
     state_checkpoint_interval = 1
-    primary_key = "ProfessionalId"
+    primary_key = "Id"
+    endpoint_data_path = ['soap:Envelope', 'soap:Body', 'GetUtilizationReportResponse', 'GetUtilizationReportResult']
+
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -89,7 +92,7 @@ class UtilizationReport(DentclinicUtilizationStream):
 
         :return str: The name of the cursor field.
         """
-        return "Time"
+        return "DateFrom"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -192,6 +195,6 @@ class SourceDentclinic(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         return [BookingsFr(config=config, enable_days_back_limit=True), Bookings(config=config), Clinics(config=config),
-                Services(config=config), Resources(config=config), PatientsReport(config=config), UtilizationReport(config=config)]
+                Services(config=config), Resources(config=config), PatientsReport(config=config), UtilizationReport(config=config,enable_days_back_limit=True)]
 
 
