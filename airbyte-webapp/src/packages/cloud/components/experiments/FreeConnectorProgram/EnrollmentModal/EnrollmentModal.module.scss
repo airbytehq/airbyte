@@ -18,6 +18,10 @@
 
 .pill {
   z-index: 2;
+
+  // HACK: the hardcoded top margin is to vertically center the image, which was exported
+  // from Figma with an off-center vertical alignment
+  margin-top: 2em;
 }
 
 .contentWrapper {
