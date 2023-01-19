@@ -61,7 +61,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    *
    * @param stream stream associated with record
    * @param message {@link AirbyteMessage} to buffer
-   * @return Optional which contains a {@link BufferFlushType} if a flush occurred, otherwise empty
+   * @return Optional which contains a {@link BufferFlushType} if a flush occurred, otherwise empty)
    * @throws Exception
    */
   @Override

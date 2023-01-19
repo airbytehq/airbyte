@@ -48,7 +48,7 @@ public interface StagingOperations extends SqlOperations {
 
   /**
    * Load the data stored in the stage area into a temporary table in the destination
-   * 
+   *
    * @param database database interface
    * @param stageName name of staging area folder
    * @param stagingPath path to staging files
