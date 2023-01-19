@@ -27,4 +27,6 @@ export interface Experiments {
   "connection.onboarding.destinations": string;
   "connection.autoDetectSchemaChanges": boolean;
   "connection.columnSelection": boolean;
+  "connection.newTableDesign": boolean;
+  "workspace.freeConnectorsProgram.visible": boolean;
 }
