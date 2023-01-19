@@ -56,7 +56,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
-  private final FeatureFlags featureFlags;
+  private final boolean featureFlagLogConnectorMsgs;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
     this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), featureFlags);
@@ -76,7 +76,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;
-    this.featureFlags = featureFlags;
+    this.featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -171,7 +171,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   private void logInitialStateAsJSON(final WorkerSourceConfig sourceConfig) {
-    if (!featureFlags.logConnectorMessages()) {
+    if (!featureFlagLogConnectorMsgs) {
       return;
     }
 
