@@ -18,6 +18,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.commons.features.FeatureFlagHelper;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
@@ -37,6 +38,7 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.metrics.lib.ApmTraceUtils;
+import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
@@ -51,7 +53,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
-import io.airbyte.workers.internal.AirbyteMessageTracker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
@@ -59,6 +61,9 @@ import io.airbyte.workers.internal.EmptyAirbyteSource;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
+import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
+import io.airbyte.workers.internal.exception.DestinationException;
+import io.airbyte.workers.internal.exception.SourceException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -75,6 +80,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,9 +148,14 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                       final IntegrationLauncherConfig destinationLauncherConfig,
                                       final StandardSyncInput syncInput,
                                       @Nullable final String taskQueue) {
+    final Map<String, Object> traceAttributes =
+        Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+            destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage());
     ApmTraceUtils
-        .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
-            destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
+        .addTagsToTrace(traceAttributes);
+    if (isResetJob(sourceLauncherConfig.getDockerImage())) {
+      MetricClientFactory.getMetricClient().count(OssMetricsRegistry.RESET_REQUEST, 1);
+    }
     final ActivityExecutionContext context = Activity.getExecutionContext();
     return temporalUtils.withBackgroundHeartbeat(
         () -> {
@@ -192,7 +203,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   Optional.ofNullable(taskQueue));
 
           final ReplicationOutput attemptOutput = temporalAttempt.get();
-          final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
+          final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput, traceAttributes);
 
           final String standardSyncOutputString = standardSyncOutput.toString();
           LOGGER.info("sync summary: {}", standardSyncOutputString);
@@ -208,12 +219,12 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         () -> context);
   }
 
-  private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
+  private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output, final Map<String, Object> metricAttributes) {
     final StandardSyncOutput standardSyncOutput = new StandardSyncOutput();
     final StandardSyncSummary syncSummary = new StandardSyncSummary();
     final ReplicationAttemptSummary replicationSummary = output.getReplicationAttemptSummary();
 
-    traceReplicationSummary(replicationSummary);
+    traceReplicationSummary(replicationSummary, metricAttributes);
 
     syncSummary.setBytesSynced(replicationSummary.getBytesSynced());
     syncSummary.setRecordsSynced(replicationSummary.getRecordsSynced());
@@ -231,19 +242,22 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     return standardSyncOutput;
   }
 
-  private static void traceReplicationSummary(final ReplicationAttemptSummary replicationSummary) {
+  private static void traceReplicationSummary(final ReplicationAttemptSummary replicationSummary, final Map<String, Object> metricAttributes) {
     if (replicationSummary == null) {
       return;
     }
 
+    final MetricAttribute[] attributes = metricAttributes.entrySet().stream()
+        .map(e -> new MetricAttribute(ApmTraceUtils.formatTag(e.getKey()), e.getValue().toString()))
+        .collect(Collectors.toSet()).toArray(new MetricAttribute[] {});
     final Map<String, Object> tags = new HashMap<>();
     if (replicationSummary.getBytesSynced() != null) {
       tags.put(REPLICATION_BYTES_SYNCED_KEY, replicationSummary.getBytesSynced());
-      MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_BYTES_SYNCED, replicationSummary.getBytesSynced());
+      MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_BYTES_SYNCED, replicationSummary.getBytesSynced(), attributes);
     }
     if (replicationSummary.getRecordsSynced() != null) {
       tags.put(REPLICATION_RECORDS_SYNCED_KEY, replicationSummary.getRecordsSynced());
-      MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_RECORDS_SYNCED, replicationSummary.getRecordsSynced());
+      MetricClientFactory.getMetricClient().count(OssMetricsRegistry.REPLICATION_RECORDS_SYNCED, replicationSummary.getRecordsSynced(), attributes);
     }
     if (replicationSummary.getStatus() != null) {
       tags.put(REPLICATION_STATUS_KEY, replicationSummary.getStatus().value());
@@ -253,7 +267,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     }
   }
 
-  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getLegacyWorkerFactory(final IntegrationLauncherConfig sourceLauncherConfig,
+  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getLegacyWorkerFactory(
+                                                                                                          final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                           final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                           final JobRunConfig jobRunConfig,
                                                                                                           final StandardSyncInput syncInput) {
@@ -263,21 +278,25 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           Math.toIntExact(sourceLauncherConfig.getAttemptId()),
           sourceLauncherConfig.getDockerImage(),
           processFactory,
-          syncInput.getSourceResourceRequirements());
+          syncInput.getSourceResourceRequirements(),
+          sourceLauncherConfig.getIsCustomConnector(),
+          featureFlags);
       final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
           destinationLauncherConfig.getJobId(),
           Math.toIntExact(destinationLauncherConfig.getAttemptId()),
           destinationLauncherConfig.getDockerImage(),
           processFactory,
-          syncInput.getDestinationResourceRequirements());
+          syncInput.getDestinationResourceRequirements(),
+          destinationLauncherConfig.getIsCustomConnector(),
+          featureFlags);
 
       // reset jobs use an empty source to induce resetting all data in destination.
-      final AirbyteSource airbyteSource =
-          WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
-              ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
-              : new DefaultAirbyteSource(sourceLauncher,
-                  new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
-                      DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER));
+      final AirbyteSource airbyteSource = isResetJob(sourceLauncherConfig.getDockerImage())
+          ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
+          : new DefaultAirbyteSource(sourceLauncher,
+              new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
+                  DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER, Optional.of(SourceException.class)),
+              featureFlags);
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
@@ -289,15 +308,18 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(destinationLauncher,
               new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
-                  DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
+                  DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER, Optional.of(DestinationException.class)),
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
-          new AirbyteMessageTracker(),
+          new AirbyteMessageTracker(featureFlags),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-          metricReporter);
+          metricReporter,
+          new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()),
+          FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
     };
   }
 
-  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(final ContainerOrchestratorConfig containerOrchestratorConfig,
+  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(
+                                                                                                                     final ContainerOrchestratorConfig containerOrchestratorConfig,
                                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                                      final JobRunConfig jobRunConfig,
@@ -325,6 +347,10 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         serverPort,
         temporalUtils,
         workerConfigs);
+  }
+
+  private boolean isResetJob(final String dockerImage) {
+    return WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equalsIgnoreCase(dockerImage);
   }
 
 }

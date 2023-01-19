@@ -237,7 +237,8 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
         .select(CONNECTION.ID, CONNECTION.UNSUPPORTED_PROTOCOL_VERSION)
         .from(CONNECTION)
         .where(CONNECTION.ID.in(standardSync.stream().map(StandardSync::getConnectionId).toList()))
-        .fetchStream())
+        .fetch())
+        .stream()
         .map(r -> new StandardSyncProtocolVersionFlag(r.get(CONNECTION.ID), r.get(CONNECTION.UNSUPPORTED_PROTOCOL_VERSION)))
         .collect(Collectors.toSet());
   }
@@ -341,7 +342,7 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
   }
 
   private DestinationConnection createDestinationConnection(final UUID workspaceId, final StandardDestinationDefinition destDef)
-      throws JsonValidationException, IOException {
+      throws IOException {
     final UUID destinationId = UUID.randomUUID();
     final DestinationConnection dest = new DestinationConnection()
         .withName("source-" + destinationId)

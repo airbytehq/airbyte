@@ -6,12 +6,13 @@ import * as yup from "yup";
 import { LabeledInput, Link } from "components";
 import { HeadTitle } from "components/common/HeadTitle";
 import { Button } from "components/ui/Button";
+import { ToastType } from "components/ui/Toast";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
-import { CloudRoutes } from "../../../cloudRoutes";
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { FormTitle } from "../components/FormTitle";
 
@@ -42,8 +43,8 @@ const ResetPasswordPage: React.FC = () => {
             await requirePasswordReset(email);
             registerNotification({
               id: "resetPassword.emailSent",
-              title: formatMessage({ id: "login.resetPassword.emailSent" }),
-              isError: false,
+              text: formatMessage({ id: "login.resetPassword.emailSent" }),
+              type: ToastType.SUCCESS,
             });
           } catch (err) {
             err.message.includes("user-not-found")

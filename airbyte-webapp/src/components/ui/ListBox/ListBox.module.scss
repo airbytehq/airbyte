@@ -3,8 +3,21 @@
 
 .button {
   width: 100%;
-  height: 100%;
   cursor: pointer;
+  border: 1px solid colors.$grey-50;
+  background-color: colors.$grey-50;
+  border-radius: variables.$border-radius-xs;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 36px;
+
+  &:hover {
+    border-color: colors.$grey-100;
+  }
 }
 
 .optionsContainer {
@@ -25,14 +38,33 @@
   z-index: 1;
 }
 
+.caret {
+  color: colors.$grey-300;
+}
+
 .option {
   list-style-type: none;
 }
 
+.icon {
+  padding-right: variables.$spacing-md;
+
+  & svg {
+    max-width: 18px;
+    max-height: 18px;
+  }
+}
+
+.label {
+  padding: variables.$spacing-lg 0;
+}
+
 .optionValue {
-  padding: variables.$spacing-lg variables.$spacing-md;
-  border-radius: variables.$border-radius-lg;
+  padding: 0 variables.$spacing-md;
+  border-radius: variables.$border-radius-md;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .active {

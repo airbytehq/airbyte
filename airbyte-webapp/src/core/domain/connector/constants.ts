@@ -1,4 +1,5 @@
 import { isCloudApp } from "utils/app";
+import { ConnectorIds } from "utils/connectors";
 
 export const DEV_IMAGE_TAG = "dev";
 
@@ -15,26 +16,24 @@ export const DEV_IMAGE_TAG = "dev";
  * @param {string} workspaceId The workspace Id
  * @returns {array} List of connectorIds that should be filtered out
  */
-export const getExcludedConnectorIds = (workspaceId?: string) =>
+export const getExcludedConnectorIds = (workspaceId?: string): string[] =>
   isCloudApp()
     ? [
-        "707456df-6f4f-4ced-b5c6-03f73bcad1c5", // hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
-        "9f760101-60ae-462f-9ee6-b7a9dafd454d", // hide Kafka Destination https://github.com/airbytehq/airbyte-cloud/issues/2610
-        "294a4790-429b-40ae-9516-49826b9702e1", // hide MariaDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2611
-        "f3802bc4-5406-4752-9e8d-01e504ca8194", // hide MQTT Destination https://github.com/airbytehq/airbyte-cloud/issues/2613
-        "2340cbba-358e-11ec-8d3d-0242ac130203", // hide Pular Destination https://github.com/airbytehq/airbyte-cloud/issues/2614
-        "2c9d93a7-9a17-4789-9de9-f46f0097eb70", // hide Rockset Destination https://github.com/airbytehq/airbyte-cloud/issues/2615
-        "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
-        "3dc6f384-cd6b-4be3-ad16-a41450899bf0", // hide Scylla Destination https://github.com/airbytehq/airbyte-cloud/issues/2617
-        "af7c921e-5892-4ff2-b6c1-4a5ab258fb7e", // hide MeiliSearch Destination https://github.com/airbytehq/airbyte/issues/16313
-        "e06ad785-ad6f-4647-b2e8-3027a5c59454", // hide RabbitMQ Destination https://github.com/airbytehq/airbyte/issues/16315
-        "0eeee7fb-518f-4045-bacc-9619e31c43ea", // hide Amazon SQS Destination https://github.com/airbytehq/airbyte/issues/16316
-        ...(workspaceId !== "54135667-ce73-4820-a93c-29fe1510d348" // Shopify workspace for review
-          ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
-          : []),
+        ConnectorIds.Destinations.Cassandra, // hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
+        ConnectorIds.Destinations.Kafka, // hide Kafka Destination https://github.com/airbytehq/airbyte-cloud/issues/2610
+        ConnectorIds.Destinations.MariaDbColumnStore, // hide MariaDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2611
+        ConnectorIds.Destinations.Mqtt, // hide MQTT Destination https://github.com/airbytehq/airbyte-cloud/issues/2613
+        ConnectorIds.Destinations.Pulsar, // hide Pulsar Destination https://github.com/airbytehq/airbyte-cloud/issues/2614
+        ConnectorIds.Destinations.Rockset, // hide Rockset Destination https://github.com/airbytehq/airbyte-cloud/issues/2615
+        ConnectorIds.Sources.SalesforceSinger, // Salesforce Singer
+        ConnectorIds.Destinations.Scylla, // hide Scylla Destination https://github.com/airbytehq/airbyte-cloud/issues/2617
+        ConnectorIds.Destinations.MeiliSearch, // hide MeiliSearch Destination https://github.com/airbytehq/airbyte/issues/16313
+        ConnectorIds.Destinations.RabbitMq, // hide RabbitMQ Destination https://github.com/airbytehq/airbyte/issues/16315
+        ConnectorIds.Destinations.AmazonSqs, // hide Amazon SQS Destination https://github.com/airbytehq/airbyte/issues/16316
+        ConnectorIds.Sources.AmazonSellerPartner, // hide Amazon Seller Partner Source https://github.com/airbytehq/airbyte/issues/14734
         // revert me
         ...(workspaceId !== "d705a766-e9e3-4689-85cb-52143422317d" // `oauth-testing` workspace for review
-          ? ["78752073-6d96-447d-8a93-2b6953f3c787"] // Youtube Analytics Business
+          ? [ConnectorIds.Sources.YouTubeAnalyticsBusiness] // Youtube Analytics Business
           : []),
         //
       ]

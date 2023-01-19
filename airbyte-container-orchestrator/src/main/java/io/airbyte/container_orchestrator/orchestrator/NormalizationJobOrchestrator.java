@@ -18,7 +18,7 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.general.DefaultNormalizationWorker;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.workers.normalization.DefaultNormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationWorker;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
@@ -70,11 +70,10 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
     final NormalizationWorker normalizationWorker = new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
-        NormalizationRunnerFactory.create(
-            destinationLauncherConfig.getDockerImage(),
+        new DefaultNormalizationRunner(
             processFactory,
-            NormalizationRunnerFactory.NORMALIZATION_VERSION,
-            destinationLauncherConfig.getNormalizationDockerImage()),
+            destinationLauncherConfig.getNormalizationDockerImage(),
+            destinationLauncherConfig.getNormalizationIntegrationType()),
         configs.getWorkerEnvironment());
 
     log.info("Running normalization worker...");

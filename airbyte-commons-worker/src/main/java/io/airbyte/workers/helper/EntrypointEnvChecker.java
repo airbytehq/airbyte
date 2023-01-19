@@ -41,6 +41,7 @@ public class EntrypointEnvChecker {
         jobRoot,
         imageName,
         false,
+        false,
         Collections.emptyMap(),
         "printenv",
         null,

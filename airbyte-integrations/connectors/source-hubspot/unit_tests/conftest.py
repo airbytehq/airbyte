@@ -34,17 +34,17 @@ def common_params_fixture(config):
 
 @pytest.fixture(name="config")
 def config_fixture():
-    return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "API Key Credentials", "api_key": "test_api_key"}}
+    return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"}}
 
 
 @pytest.fixture(name="some_credentials")
 def some_credentials_fixture():
-    return {"credentials_title": "API Key Credentials", "api_key": "wrong_key"}
+    return {"credentials_title": "Private App Credentials", "access_token": "wrong token"}
 
 
 @pytest.fixture(name="creds_with_wrong_permissions")
 def creds_with_wrong_permissions():
-    return {"credentials_title": "API Key Credentials", "api_key": "THIS-IS-THE-API_KEY"}
+    return {"credentials_title": "Private App Credentials", "access_token": "THIS-IS-THE-ACCESS_TOKEN"}
 
 
 @pytest.fixture(name="fake_properties_list")

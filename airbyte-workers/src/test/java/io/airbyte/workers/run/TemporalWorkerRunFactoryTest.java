@@ -80,14 +80,18 @@ class TemporalWorkerRunFactoryTest {
         .withDestinationDockerImage("airbyte/fusion_reactor")
         .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("a", 1)))
         .withOperationSequence(List.of(new StandardSyncOperation().withName("b")))
-        .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
+        .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog())
+        .withIsSourceCustomConnector(false)
+        .withIsDestinationCustomConnector(false);
     final JobSyncConfig syncConfig = new JobSyncConfig()
         .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
         .withDestinationDockerImage(resetConfig.getDestinationDockerImage())
         .withDestinationConfiguration(resetConfig.getDestinationConfiguration())
         .withOperationSequence(List.of(new StandardSyncOperation().withName("b")))
         .withSourceConfiguration(Jsons.emptyObject())
-        .withConfiguredAirbyteCatalog(resetConfig.getConfiguredAirbyteCatalog());
+        .withConfiguredAirbyteCatalog(resetConfig.getConfiguredAirbyteCatalog())
+        .withIsSourceCustomConnector(false)
+        .withIsDestinationCustomConnector(false);
     when(job.getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
     when(job.getConfig().getResetConnection()).thenReturn(resetConfig);
     final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);

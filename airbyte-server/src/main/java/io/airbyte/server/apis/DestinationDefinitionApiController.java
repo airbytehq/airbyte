@@ -6,8 +6,6 @@ package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.DestinationDefinitionApi;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
-import io.airbyte.api.model.generated.CustomDestinationDefinitionUpdate;
-import io.airbyte.api.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -17,35 +15,30 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
-import javax.ws.rs.Path;
-import lombok.AllArgsConstructor;
+import io.micronaut.context.annotation.Context;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
 
-@Path("/v1/destination_definitions")
-@AllArgsConstructor
+@Controller("/api/v1/destination_definitions")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
+@Context
 public class DestinationDefinitionApiController implements DestinationDefinitionApi {
 
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
 
+  public DestinationDefinitionApiController(final DestinationDefinitionsHandler destinationDefinitionsHandler) {
+    this.destinationDefinitionsHandler = destinationDefinitionsHandler;
+  }
+
+  @Post(uri = "/create_custom")
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
   }
 
-  // TODO: Deprecate this route in favor of createCustomDestinationDefinition
-  // since all connector definitions created through the API are custom
-  @Override
-  public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.createPrivateDestinationDefinition(destinationDefinitionCreate));
-  }
-
-  @Override
-  public void deleteCustomDestinationDefinition(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    ApiHelper.execute(() -> {
-      destinationDefinitionsHandler.deleteCustomDestinationDefinition(destinationDefinitionIdWithWorkspaceId);
-      return null;
-    });
-  }
-
+  @Post(uri = "/delete")
   @Override
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     ApiHelper.execute(() -> {
@@ -54,42 +47,50 @@ public class DestinationDefinitionApiController implements DestinationDefinition
     });
   }
 
+  @Post(uri = "/get")
   @Override
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody));
   }
 
+  @Post(uri = "/get_for_workspace")
   @Override
   public DestinationDefinitionRead getDestinationDefinitionForWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
   }
 
+  @Post(uri = "/grant_definition")
   @Override
   public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
     return ApiHelper
         .execute(() -> destinationDefinitionsHandler.grantDestinationDefinitionToWorkspace(destinationDefinitionIdWithWorkspaceId));
   }
 
+  @Post(uri = "/list")
   @Override
   public DestinationDefinitionReadList listDestinationDefinitions() {
     return ApiHelper.execute(destinationDefinitionsHandler::listDestinationDefinitions);
   }
 
+  @Post(uri = "/list_for_workspace")
   @Override
   public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(workspaceIdRequestBody));
   }
 
+  @Post(uri = "/list_latest")
   @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
     return ApiHelper.execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
   }
 
+  @Post(uri = "/list_private")
   @Override
   public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.listPrivateDestinationDefinitions(workspaceIdRequestBody));
   }
 
+  @Post(uri = "/revoke_definition")
   @Override
   public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
     ApiHelper.execute(() -> {
@@ -98,11 +99,7 @@ public class DestinationDefinitionApiController implements DestinationDefinition
     });
   }
 
-  @Override
-  public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.updateCustomDestinationDefinition(customDestinationDefinitionUpdate));
-  }
-
+  @Post(uri = "/update")
   @Override
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));

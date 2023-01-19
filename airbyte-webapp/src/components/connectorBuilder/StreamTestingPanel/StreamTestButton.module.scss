@@ -1,0 +1,14 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.testButton {
+  width: 100%;
+}
+
+.testButtonTooltipContainer {
+  width: 100%;
+}
+
+.testButtonText {
+  color: colors.$white;
+}

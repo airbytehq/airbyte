@@ -20,6 +20,7 @@ from source_iterable.streams import (
     Templates,
     Users,
 )
+from source_iterable.utils import dateutil_parse
 
 
 @pytest.mark.parametrize(
@@ -80,7 +81,7 @@ def test_templates_parse_response():
         rsps.add(
             responses.GET,
             "https://api.iterable.com/api/1/foobar",
-            json={"templates": [{"createdAt": "2022", "id": 1}]},
+            json={"templates": [{"createdAt": "2022-01-01", "id": 1}]},
             status=200,
             content_type="application/json",
         )
@@ -88,7 +89,7 @@ def test_templates_parse_response():
 
         records = stream.parse_response(response=resp)
 
-        assert list(records) == [{"id": 1, "createdAt": pendulum.parse("2022", strict=False)}]
+        assert list(records) == [{"id": 1, "createdAt": dateutil_parse("2022-01-01")}]
 
 
 def test_list_users_parse_response():

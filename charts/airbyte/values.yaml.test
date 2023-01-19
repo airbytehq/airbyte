@@ -174,6 +174,10 @@ webapp:
   ##
   podAnnotations: {}
 
+  ##  webapp.podLabels [object] Add extra labels to the webapp pod(s)
+  ##
+  podLabels: {}
+
   ##  webapp.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
@@ -394,6 +398,10 @@ pod-sweeper:
   ##
   podAnnotations: {}
 
+  ##  podSweeper.podLabels [object] Add extra labels to the podSweeper pod
+  ##
+  podLabels: {}
+
   ##  podSweeper.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
@@ -502,6 +510,10 @@ server:
   ##  server.podAnnotations [object] Add extra annotations to the server pod(s)
   ##
   podAnnotations: {}
+
+  ##  server.podLabels [object] Add extra labels to the server pod(s)
+  ##
+  podLabels: {}
 
   ##  server.containerSecurityContext Security context for the container
   ## Examples:
@@ -676,6 +688,10 @@ worker:
   ##
   podAnnotations: {}
 
+  ##  worker.podLabels [object] Add extra labels to the worker pod(s)
+  ##
+  podLabels: {}
+
   ##  worker.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
@@ -809,6 +825,10 @@ metrics:
   ##
   podAnnotations: {}
 
+  ##  metrics.podLabels [object] Add extra labels to the metrics-reporter pod
+  ##
+  podLabels: {}
+
   ##  metrics.containerSecurityContext Security context for the container
   ## Examples:
   ## containerSecurityContext:
@@ -896,6 +916,10 @@ airbyte-bootloader:
   ##  podAnnotations [object] Add extra annotations to the bootloader pod
   ##
   podAnnotations: {}
+
+  ##  podLabels [object] Add extra labels to the bootloader pod
+  ##
+  podLabels: {}
 
   ##  nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -1033,9 +1057,9 @@ temporal:
   ##  temporal.image.pullPolicy The pull policy for the temporal image
   ##  temporal.image.tag The temporal image tag to use
   image:
-    repository: temporalio/auto-setup
+    repository: airbyte/temporal-auto-setup
     pullPolicy: IfNotPresent
-    tag: "1.7.0"
+    tag: "1.13.0"
 
   ##  temporal.service.type The Kubernetes Service Type
   ##  temporal.service.port The temporal port and exposed kubernetes port
@@ -1046,6 +1070,10 @@ temporal:
   ##  temporal.podAnnotations [object] Add extra annotations to the temporal pod
   ##
   podAnnotations: {}
+
+  ##  temporal.podLabels [object] Add extra labels to the temporal pod
+  ##
+  podLabels: {}
 
   ##  temporal.containerSecurityContext Security context for the container
   ## Examples:
@@ -1059,7 +1087,7 @@ temporal:
   ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
   ## extraInitContainers:
   ##   - name: config-loader
-  ##     image: temporalio/auto-setup:1.7.0
+  ##     image: airbyte/temporal-auto-setup:1.13.0
   ##     command:
   ##       - /bin/sh
   ##       - -c

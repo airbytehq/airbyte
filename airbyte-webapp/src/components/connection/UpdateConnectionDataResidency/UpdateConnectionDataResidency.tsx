@@ -5,6 +5,8 @@ import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
 import { ControlLabels } from "components/LabeledControl";
 import { Card } from "components/ui/Card";
 import { Spinner } from "components/ui/Spinner";
+import { ToastType } from "components/ui/Toast";
+import { TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { Geography } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
@@ -32,8 +34,8 @@ export const UpdateConnectionDataResidency: React.FC = () => {
     } catch (e) {
       registerNotification({
         id: "connection.geographyUpdateError",
-        title: formatMessage({ id: "connection.geographyUpdateError" }),
-        isError: true,
+        text: formatMessage({ id: "connection.geographyUpdateError" }),
+        type: ToastType.ERROR,
       });
     }
     setSelectedValue(undefined);
@@ -42,19 +44,20 @@ export const UpdateConnectionDataResidency: React.FC = () => {
   return (
     <Card withPadding>
       <div className={styles.wrapper}>
-        <div>
+        <div className={styles.label}>
           <ControlLabels
             nextLine
             label={<FormattedMessage id="connection.geographyTitle" />}
-            message={
+            infoTooltipContent={
               <FormattedMessage
                 id="connection.geographyDescription"
                 values={{
-                  lnk: (node: React.ReactNode) => (
+                  ipLink: (node: React.ReactNode) => (
                     <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
                       {node}
                     </a>
                   ),
+                  docLink: () => <TooltipLearnMoreLink url={links.connectionDataResidency} />,
                 }}
               />
             }

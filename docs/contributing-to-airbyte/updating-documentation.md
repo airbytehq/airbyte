@@ -49,17 +49,32 @@ To make complex changes or edit multiple files, edit the files on your local mac
 
    While cloning on Windows, you might encounter errors about long filenames. Refer to the instructions [here](../deploying-airbyte/local-deployment.md#handling-long-filename-error) to correct it.
 
-3. Test changes locally: 
+3. Test changes locally:
 
-  Run the following commands in your terminal:
+   To install the docs locally, run the following commands in your terminal:
 
-  ```bash
-  cd docusaurus
-  yarn install
-  yarn build
-  yarn serve
-  ```
-  Then navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.
+   ```bash
+   cd docusaurus
+   yarn install
+   ```
+
+   To see changes as you make them, run:
+
+   ```bash
+   yarn start
+   ```
+
+   Then navigate to [http://localhost:3000/](http://localhost:3000/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
+
+   You can also build the docs locally and see the resulting changes. This is useful if you introduce changes that need to be run at build-time (e.g. adding a docs plug-in). To do so, run:
+
+   ```bash
+   yarn build
+   yarn serve
+   ```
+  
+   Then navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
+
 
 4. [Follow the GitHub workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects/) to edit the files and create a pull request.
 

@@ -19,7 +19,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
-from source_hubspot.constants import API_KEY_CREDENTIALS, OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
+from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
@@ -135,12 +135,9 @@ class API:
     def __init__(self, credentials: Mapping[str, Any]):
         self._session = requests.Session()
         self.credentials = credentials
-        credentials_title = credentials.get("credentials_title")
 
         if self.is_oauth2() or self.is_private_app():
             self._session.auth = self.get_authenticator()
-        elif credentials_title == API_KEY_CREDENTIALS:
-            self._session.params["hapikey"] = credentials.get("api_key")
         else:
             raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
 
@@ -258,9 +255,7 @@ class Stream(HttpStream, ABC):
         if isinstance(self._start_date, str):
             self._start_date = pendulum.parse(self._start_date)
         creds_title = self._credentials["credentials_title"]
-        if creds_title == API_KEY_CREDENTIALS:
-            self._session.params["hapikey"] = credentials.get("api_key")
-        elif creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
+        if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -1574,10 +1569,3 @@ class Tickets(CRMSearchStream):
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
-
-
-class Quotes(CRMObjectIncrementalStream):
-    entity = "quote"
-    associations = ["deals"]
-    primary_key = "id"
-    scopes = {"e-commerce"}
