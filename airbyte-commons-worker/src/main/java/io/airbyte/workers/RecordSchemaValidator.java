@@ -6,26 +6,40 @@ package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.PerfBackgroundJsonValidation;
+import io.airbyte.featureflag.Workspace;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
+import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
  * configured catalog
  */
-
 public class RecordSchemaValidator {
 
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private final FeatureFlagClient ffClient;
+  private final UUID workspaceId;
   private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
 
-  public RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas) {
+  public RecordSchemaValidator(final FeatureFlagClient ffClient,
+                               final UUID workspaceId,
+                               final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas) {
+    this.ffClient = ffClient;
+    this.workspaceId = workspaceId;
     // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema
     this.streams = streamNamesToSchemas;
@@ -42,6 +56,16 @@ public class RecordSchemaValidator {
       throws RecordSchemaValidationException {
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
+
+    if (workspaceId != null) {
+      if (ffClient.enabled(PerfBackgroundJsonValidation.INSTANCE, new Workspace(workspaceId))) {
+        log.info("feature flag enabled for workspace {}", workspaceId);
+      } else {
+        log.info("feature flag disabled for workspace {}", workspaceId);
+      }
+    } else {
+      log.info("workspace id is null");
+    }
 
     final JsonSchemaValidator validator = new JsonSchemaValidator();
 
