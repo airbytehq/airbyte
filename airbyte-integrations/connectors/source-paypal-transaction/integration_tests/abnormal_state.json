@@ -3,7 +3,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date": "2022-06-09T00:00:00+00:00"
+        "date": "2023-06-09T00:00:00+00:00"
       },
       "stream_descriptor": {
         "name": "balances"
@@ -14,7 +14,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date": "2022-06-09T00:00:00+00:00"
+        "date": "2023-06-09T00:00:00+00:00"
       },
       "stream_descriptor": {
         "name": "transactions"
