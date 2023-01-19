@@ -158,17 +158,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
-    } catch (final DateTimeParseException e) {
-      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
-      // version of the connector
-      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
-    }
-  }
-
-  @Override
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
   }
@@ -381,16 +370,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       arrayNode.add(arrayResultSet.getLong(2));
     }
     node.set(columnName, arrayNode);
-  }
-
-  @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
-  }
-
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
   }
 
   @Override
