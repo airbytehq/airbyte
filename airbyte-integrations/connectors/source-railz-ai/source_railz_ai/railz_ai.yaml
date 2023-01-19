@@ -21,9 +21,11 @@ definitions:
     url_base: "https://api.railz.ai/"
     http_method: "GET"
     authenticator:
-      class_name: source_railz_ai.components.AccessTokenAuthenticator
-      client_id: "{{ config['client_id'] }}"
-      secret_key: "{{ config['secret_key'] }}"
+      type: "AccessTokenAuthenticator"
+      url: "https://auth.railz.ai/getAccess"
+      client_id: "{{ config.client_id }}"
+      secret_key: "{{ config.secret_key }}"
+      lifetime: 3600
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"

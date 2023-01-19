@@ -2,74 +2,22 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import time
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime
-from typing import Any, Iterable, Mapping, Optional, Union, List
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.auth.token import AbstractHeaderAuthenticator
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.sources.declarative.extractors import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
-from airbyte_cdk.sources.declarative.extractors import RecordSelector
 from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer, SingleSlice
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 from dataclasses_jsonschema import JsonSchemaMixin
-from requests.adapters import HTTPAdapter, Retry
-
-
-@dataclass
-class AccessTokenAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
-    """
-    https://docs.railz.ai/reference/authentication
-    """
-
-    options: InitVar[Mapping[str, Any]]
-    config: Config
-    client_id: Union[InterpolatedString, str]
-    secret_key: Union[InterpolatedString, str]
-
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._options = options
-        self.client_id = InterpolatedString.create(self.client_id, options=options)
-        self.secret_key = InterpolatedString.create(self.secret_key, options=options)
-        self._basic_auth = BasicHttpAuthenticator(username=self.client_id.eval(self.config), password=self.secret_key.eval(self.config))
-        self._timestamp = time.time()
-        self._token_auth = None
-        self.url = "https://auth.railz.ai/getAccess"
-        self.refresh_after = 60  # minutes
-
-    def __call__(self, request):
-        request.headers.update(self.get_auth_header())
-        return request
-
-    def check_token(self):
-        if not self._token_auth or time.time() - self._timestamp > self.refresh_after * 60:
-            headers = {"accept": "application/json", **self._basic_auth.get_auth_header()}
-            session = requests.Session()
-            retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-            session.mount("https://", HTTPAdapter(max_retries=retries))
-            response = session.get(self.url, headers=headers)
-            response.raise_for_status()
-            response_json = response.json()
-            self._token_auth = TokenAuthenticator(token=response_json["access_token"])
-            self._timestamp = time.time()
-
-    @property
-    def auth_header(self) -> str:
-        self.check_token()
-        return self._token_auth._auth_header
-
-    @property
-    def token(self) -> str:
-        self.check_token()
-        return self._token_auth.token
 
 
 @dataclass
@@ -149,7 +97,7 @@ class RailzAiServiceSlicer(SingleSlice):
 
 @dataclass
 class RailzAiDatetimeStreamSlicer(DatetimeStreamSlicer):
-    cursor_format: str = '%Y-%m-%d'
+    cursor_format: str = "%Y-%m-%d"
 
     def parse_date(self, date: str) -> datetime:
         return self._parser.parse(date, self.cursor_format, self._timezone)
@@ -194,11 +142,15 @@ class RailzAiIncrementalServiceSlicer(RailzAiServiceSlicer):
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
         for stream_slice in super().stream_slices(sync_mode, stream_state):
-            state_cursor_value = stream_state \
-                .get(stream_slice["businessName"], {}).get(stream_slice["serviceName"], {}).get(self._datetime_cursor_field, None)
+            state_cursor_value = (
+                stream_state.get(stream_slice["businessName"], {})
+                .get(stream_slice["serviceName"], {})
+                .get(self._datetime_cursor_field, None)
+            )
             if state_cursor_value:
-                start = self._datetime_parse_date(state_cursor_value) \
-                    .strftime(self.base_datetime_stream_slicer_options["start_datetime"]["datetime_format"])
+                start = self._datetime_parse_date(state_cursor_value).strftime(
+                    self.base_datetime_stream_slicer_options["start_datetime"]["datetime_format"]
+                )
                 datetime_stream_slicer = self._create_datetime_stream_slicer(
                     {
                         **self.base_datetime_stream_slicer_options,
@@ -281,7 +233,6 @@ class RailzAiIncrementalServiceSlicer(RailzAiServiceSlicer):
 
 @dataclass
 class RailzAiIncrementalServiceReportsSlicer(RailzAiIncrementalServiceSlicer):
-
     def get_request_params(
         self,
         stream_state: Optional[StreamState] = None,
@@ -313,11 +264,11 @@ class RailzAiServiceRetriever(SimpleRetriever):
         self._failed_services = set()
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: Optional[List[str]] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            stream_state: Optional[StreamState] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
         if stream_slice["serviceName"] in self._failed_services:
             yield from []
@@ -346,11 +297,11 @@ class RailzAiReportsSelector(RecordSelector):
                 self.meta_fields = None
 
     def select_records(
-            self,
-            response: requests.Response,
-            stream_state: StreamState,
-            stream_slice: Optional[StreamSlice] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        response: requests.Response,
+        stream_state: StreamState,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
         records = super().select_records(response, stream_state, stream_slice, next_page_token)
 
@@ -360,7 +311,9 @@ class RailzAiReportsSelector(RecordSelector):
             meta_fields = self.meta_fields or self._default_meta_fields
             data_set = record["data"] if isinstance(record["data"], list) else [record["data"]]
             for data_element in data_set:
-                selected_records.append({**data_element, **{_field: value for _field, value in record["meta"].items() if _field in meta_fields}})
+                selected_records.append(
+                    {**data_element, **{_field: value for _field, value in record["meta"].items() if _field in meta_fields}}
+                )
 
         return selected_records
 
