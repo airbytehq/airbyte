@@ -11,7 +11,9 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 interface SyncFieldCellProps {
   field: SyncSchemaField;
   checkIsCursor: (path: string[]) => boolean;
+  checkIsChildFieldCursor: (path: string[]) => boolean;
   checkIsPrimaryKey: (path: string[]) => boolean;
+  checkIsChildFieldPrimaryKey: (path: string[]) => boolean;
   isFieldSelected: boolean;
   handleFieldToggle: (fieldPath: string[], isSelected: boolean) => void;
   syncMode?: SyncMode;
@@ -20,7 +22,9 @@ interface SyncFieldCellProps {
 
 export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
   checkIsCursor,
+  checkIsChildFieldCursor,
   checkIsPrimaryKey,
+  checkIsChildFieldPrimaryKey,
   isFieldSelected,
   field,
   handleFieldToggle,
@@ -30,11 +34,13 @@ export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
   const { mode } = useConnectionFormService();
   const isNestedField = SyncSchemaFieldObject.isNestedField(field);
   const isCursor = checkIsCursor(field.path);
+  const isChildFieldCursor = checkIsChildFieldCursor(field.path);
   const isPrimaryKey = checkIsPrimaryKey(field.path);
+  const isChildFieldPrimaryKey = checkIsChildFieldPrimaryKey(field.path);
   const isDisabled =
     mode === "readonly" ||
-    (syncMode === SyncMode.incremental && isCursor) ||
-    (destinationSyncMode === DestinationSyncMode.append_dedup && isPrimaryKey) ||
+    (syncMode === SyncMode.incremental && (isCursor || isChildFieldCursor)) ||
+    (destinationSyncMode === DestinationSyncMode.append_dedup && (isPrimaryKey || isChildFieldPrimaryKey)) ||
     isNestedField;
   const showTooltip = isDisabled && mode !== "readonly";
 
@@ -42,14 +48,14 @@ export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
     if (isNestedField) {
       return <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />;
     }
-    if (isPrimaryKey) {
+    if (isPrimaryKey || isChildFieldPrimaryKey) {
       return <FormattedMessage id="form.field.sync.primaryKeyTooltip" />;
     }
-    if (isCursor) {
+    if (isCursor || isChildFieldCursor) {
       return <FormattedMessage id="form.field.sync.cursorFieldTooltip" />;
     }
     return null;
-  }, [isCursor, isPrimaryKey, isNestedField, field.path]);
+  }, [isCursor, isChildFieldCursor, isPrimaryKey, isChildFieldPrimaryKey, isNestedField, field.path]);
 
   return (
     <>

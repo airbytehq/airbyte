@@ -16,7 +16,6 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { useExperiment } from "hooks/services/Experiment";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { equal } from "utils/objects";
 import { getDataType } from "utils/useTranslateDataType";
 
 import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
@@ -47,6 +46,22 @@ export interface StreamFieldsTableProps {
   toggleAllFieldsSelected: () => void;
 }
 
+export function isCursor(config: AirbyteStreamConfiguration | undefined, path: string[]): boolean {
+  return config ? isEqual(config?.cursorField, path) : false;
+}
+
+export function isChildFieldCursor(config: AirbyteStreamConfiguration | undefined, path: string[]): boolean {
+  return config?.cursorField ? isEqual([config.cursorField[0]], path) : false;
+}
+
+export function isPrimaryKey(config: AirbyteStreamConfiguration | undefined, path: string[]): boolean {
+  return !!config?.primaryKey?.some((p) => isEqual(p, path));
+}
+
+export function isChildFieldPrimaryKey(config: AirbyteStreamConfiguration | undefined, path: string[]): boolean {
+  return !!config?.primaryKey?.some((p) => isEqual([p[0]], path));
+}
+
 export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   config,
   handleFieldToggle,
@@ -61,11 +76,11 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
 }) => {
   const { formatMessage } = useIntl();
   const isColumnSelectionEnabled = useExperiment("connection.columnSelection", false);
-  const isCursor = useCallback((path: string[]) => equal(config?.cursorField, path), [config?.cursorField]);
-  const isPrimaryKey = useCallback(
-    (path: string[]) => !!config?.primaryKey?.some((p) => equal(p, path)),
-    [config?.primaryKey]
-  );
+  const checkIsCursor = useCallback((path: string[]) => isCursor(config, path), [config]);
+  const checkIsChildFieldCursor = useCallback((path: string[]) => isChildFieldCursor(config, path), [config]);
+  const checkIsPrimaryKey = useCallback((path: string[]) => isPrimaryKey(config, path), [config]);
+  const checkIsChildFieldPrimaryKey = useCallback((path: string[]) => isChildFieldPrimaryKey(config, path), [config]);
+
   const checkIsFieldSelected = useCallback(
     (field: SyncSchemaField): boolean => {
       // All fields are implicitly selected if field selection is disabled
@@ -124,8 +139,10 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
                   field={props.row.original.field}
                   isFieldSelected={props.row.original.isFieldSelected}
                   handleFieldToggle={handleFieldToggle}
-                  checkIsCursor={isCursor}
-                  checkIsPrimaryKey={isPrimaryKey}
+                  checkIsCursor={checkIsCursor}
+                  checkIsChildFieldCursor={checkIsChildFieldCursor}
+                  checkIsPrimaryKey={checkIsPrimaryKey}
+                  checkIsChildFieldPrimaryKey={checkIsChildFieldPrimaryKey}
                   syncMode={config?.syncMode}
                   destinationSyncMode={config?.destinationSyncMode}
                 />
@@ -162,7 +179,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         header: () => <FormattedMessage id="form.field.cursorField" />,
         cell: (props) => (
           <CursorCell
-            isCursor={isCursor}
+            isCursor={checkIsCursor}
             isCursorDefinitionSupported={isCursorDefinitionSupported}
             onCursorSelect={onCursorSelect}
             {...props}
@@ -179,7 +196,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         cell: (props) => (
           <PKCell
             isPKDefinitionSupported={isPKDefinitionSupported}
-            isPrimaryKey={isPrimaryKey}
+            isPrimaryKey={checkIsPrimaryKey}
             onPkSelect={onPkSelect}
             {...props}
           />
@@ -198,8 +215,10 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       formatMessage,
       handleFieldToggle,
       isColumnSelectionEnabled,
-      isCursor,
-      isPrimaryKey,
+      checkIsCursor,
+      checkIsChildFieldCursor,
+      checkIsPrimaryKey,
+      checkIsChildFieldPrimaryKey,
       isCursorDefinitionSupported,
       isPKDefinitionSupported,
       onCursorSelect,

@@ -1,3 +1,5 @@
+import { mockStreamConfiguration } from "test-utils/mock-data/mockAirbyteStreamConfiguration";
+
 import { SyncSchemaField } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 
@@ -9,14 +11,6 @@ import {
   updateFieldSelected,
   toggleAllFieldsSelected,
 } from "./streamConfigHelpers";
-
-const mockStreamConfiguration: AirbyteStreamConfiguration = {
-  fieldSelectionEnabled: false,
-  selectedFields: [],
-  selected: true,
-  syncMode: "full_refresh",
-  destinationSyncMode: "overwrite",
-};
 
 const FIELD_ONE: SyncSchemaField = {
   path: ["field_one"],
