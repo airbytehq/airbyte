@@ -2,7 +2,7 @@ import { Form } from "formik";
 import debounce from "lodash/debounce";
 import { useEffect, useMemo } from "react";
 
-import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { builderFormValidationSchema, BuilderFormValues } from "../types";
 import styles from "./Builder.module.scss";
@@ -17,19 +17,19 @@ interface BuilderProps {
   toggleYamlEditor: () => void;
 }
 
-function getView(selectedView: BuilderView) {
+function getView(selectedView: BuilderView, hasMultipleStreams: boolean) {
   switch (selectedView) {
     case "global":
       return <GlobalConfigView />;
     case "inputs":
       return <InputsView />;
     default:
-      return <StreamConfigView streamNum={selectedView} />;
+      return <StreamConfigView streamNum={selectedView} hasMultipleStreams={hasMultipleStreams} />;
   }
 }
 
 export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor, validateForm }) => {
-  const { setBuilderFormValues, selectedView } = useConnectorBuilderState();
+  const { setBuilderFormValues, selectedView } = useConnectorBuilderFormState();
   const debouncedSetBuilderFormValues = useMemo(
     () =>
       debounce((values) => {
@@ -47,7 +47,7 @@ export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor, vali
   return (
     <div className={styles.container}>
       <BuilderSidebar className={styles.sidebar} toggleYamlEditor={toggleYamlEditor} />
-      <Form className={styles.form}>{getView(selectedView)}</Form>
+      <Form className={styles.form}>{getView(selectedView, values.streams.length > 1)}</Form>
     </div>
   );
 };

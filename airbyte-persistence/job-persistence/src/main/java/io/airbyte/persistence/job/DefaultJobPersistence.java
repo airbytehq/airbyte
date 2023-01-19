@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import io.airbyte.commons.enums.Enums;
@@ -72,6 +73,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
@@ -155,6 +157,7 @@ public class DefaultJobPersistence implements JobPersistence {
         + "attempts.log_path AS log_path,\n"
         + "attempts.output AS attempt_output,\n"
         + "attempts.status AS attempt_status,\n"
+        + "attempts.processing_task_queue AS processing_task_queue,\n"
         + "attempts.failure_summary AS attempt_failure_summary,\n"
         + "attempts.created_at AS attempt_created_at,\n"
         + "attempts.updated_at AS attempt_updated_at,\n"
@@ -512,6 +515,77 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public Map<JobAttemptPair, AttemptStats> getAttemptStats(final List<Long> jobIds) throws IOException {
+    if (jobIds == null || jobIds.isEmpty()) {
+      return Map.of();
+    }
+
+    final var jobIdsStr = StringUtils.join(jobIds, ',');
+    return jobDatabase.query(ctx -> {
+      // Instead of one massive join query, separate this query into two queries for better readability
+      // for now.
+      // We can combine the queries at a later date if this still proves to be not efficient enough.
+      final Map<JobAttemptPair, AttemptStats> attemptStats = hydrateSyncStats(jobIdsStr, ctx);
+      hydrateStreamStats(jobIdsStr, ctx, attemptStats);
+      return attemptStats;
+    });
+  }
+
+  private static Map<JobAttemptPair, AttemptStats> hydrateSyncStats(final String jobIdsStr, final DSLContext ctx) {
+    final var attemptStats = new HashMap<JobAttemptPair, AttemptStats>();
+    final var syncResults = ctx.fetch(
+        "SELECT atmpt.attempt_number, atmpt.job_id,"
+            + "stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted, stats.records_committed "
+            + "FROM sync_stats stats "
+            + "INNER JOIN attempts atmpt ON stats.attempt_id = atmpt.id "
+            + "WHERE job_id IN ( " + jobIdsStr + ");");
+    syncResults.forEach(r -> {
+      final var key = new JobAttemptPair(r.get(ATTEMPTS.JOB_ID), r.get(ATTEMPTS.ATTEMPT_NUMBER));
+      final var syncStats = new SyncStats()
+          .withBytesEmitted(r.get(SYNC_STATS.BYTES_EMITTED))
+          .withRecordsEmitted(r.get(SYNC_STATS.RECORDS_EMITTED))
+          .withRecordsCommitted(r.get(SYNC_STATS.RECORDS_COMMITTED))
+          .withEstimatedRecords(r.get(SYNC_STATS.ESTIMATED_RECORDS))
+          .withEstimatedBytes(r.get(SYNC_STATS.ESTIMATED_BYTES));
+      attemptStats.put(key, new AttemptStats(syncStats, Lists.newArrayList()));
+    });
+    return attemptStats;
+  }
+
+  /**
+   * This method needed to be called after
+   * {@link DefaultJobPersistence#hydrateSyncStats(String, DSLContext)} as it assumes hydrateSyncStats
+   * has prepopulated the map.
+   */
+  private static void hydrateStreamStats(final String jobIdsStr, final DSLContext ctx, final Map<JobAttemptPair, AttemptStats> attemptStats) {
+    final var streamResults = ctx.fetch(
+        "SELECT atmpt.attempt_number, atmpt.job_id, "
+            + "stats.stream_name, stats.stream_namespace, stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted "
+            + "FROM stream_stats stats "
+            + "INNER JOIN attempts atmpt ON atmpt.id = stats.attempt_id "
+            + "WHERE attempt_id IN "
+            + "( SELECT id FROM attempts WHERE job_id IN ( " + jobIdsStr + "));");
+
+    streamResults.forEach(r -> {
+      final var streamSyncStats = new StreamSyncStats()
+          .withStreamNamespace(r.get(STREAM_STATS.STREAM_NAMESPACE))
+          .withStreamName(r.get(STREAM_STATS.STREAM_NAME))
+          .withStats(new SyncStats()
+              .withBytesEmitted(r.get(STREAM_STATS.BYTES_EMITTED))
+              .withRecordsEmitted(r.get(STREAM_STATS.RECORDS_EMITTED))
+              .withEstimatedRecords(r.get(STREAM_STATS.ESTIMATED_RECORDS))
+              .withEstimatedBytes(r.get(STREAM_STATS.ESTIMATED_BYTES)));
+
+      final var key = new JobAttemptPair(r.get(ATTEMPTS.JOB_ID), r.get(ATTEMPTS.ATTEMPT_NUMBER));
+      if (!attemptStats.containsKey(key)) {
+        LOGGER.error("{} stream stats entry does not have a corresponding sync stats entry. This suggest the database is in a bad state.", key);
+        return;
+      }
+      attemptStats.get(key).perStreamStats().add(streamSyncStats);
+    });
+  }
+
+  @Override
   public List<NormalizationSummary> getNormalizationSummary(final long jobId, final int attemptNumber) throws IOException {
     return jobDatabase
         .query(ctx -> {
@@ -528,6 +602,10 @@ public class DefaultJobPersistence implements JobPersistence {
     final Optional<Record> record =
         ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
             attemptNumber).stream().findFirst();
+    if (record.isEmpty()) {
+      return -1L;
+    }
+
     return record.get().get("id", Long.class);
   }
 
@@ -849,11 +927,12 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static Attempt getAttemptFromRecord(final Record record) {
     return new Attempt(
-        record.get(ATTEMPT_NUMBER, Long.class),
+        record.get(ATTEMPT_NUMBER, int.class),
         record.get(JOB_ID, Long.class),
         Path.of(record.get("log_path", String.class)),
         record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+        record.get("processing_task_queue", String.class),
         record.get("attempt_failure_summary", String.class) == null ? null
             : Jsons.deserialize(record.get("attempt_failure_summary", String.class), AttemptFailureSummary.class),
         getEpoch(record, "attempt_created_at"),

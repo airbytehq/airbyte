@@ -11,6 +11,7 @@ export const BuilderOptional: React.FC<React.PropsWithChildren<unknown>> = ({ ch
   return (
     <div className={styles.wrapper}>
       <button
+        type="button"
         onClick={() => {
           setIsOpen(!isOpen);
         }}

@@ -6,7 +6,8 @@ $controlButtonWidth: 24px;
 .controls {
   display: flex;
   justify-content: center;
-  gap: variables.$spacing-sm;
+  align-items: center;
+  gap: variables.$spacing-md;
 }
 
 .controlButton {
@@ -31,4 +32,46 @@ $controlButtonWidth: 24px;
   &:hover {
     background-color: colors.$red;
   }
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: variables.$spacing-md;
+  border-bottom: variables.$border-thick solid transparent;
+  color: colors.$grey-400;
+  cursor: pointer;
+  display: flex;
+  gap: variables.$spacing-md;
+  align-items: center;
+}
+
+.selectedTab {
+  color: colors.$black;
+  border-bottom-color: colors.$yellow-900;
+}
+
+.errorMessage {
+  color: colors.$red;
+}
+
+.schemaEditor {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+
+  // Needs to be set so the element is not overflowing its container due to the fixed Monaco height but respecting the flex flow.
+  // Monaco will remeasure its container to relayout itself correctly according to the changed height.
+  min-height: 0;
+}
+
+.editorContainer {
+  // Needs to be set so the element is not overflowing its container due to the fixed Monaco height but respecting the flex flow.
+  // Monaco will remeasure its container to relayout itself correctly according to the changed height.
+  min-height: 0;
+  flex: 1 1 0;
+}
+
+.multiStreams {
+  padding-right: 50px;
 }

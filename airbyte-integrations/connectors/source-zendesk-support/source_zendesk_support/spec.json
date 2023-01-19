@@ -68,6 +68,13 @@
             }
           }
         ]
+      },
+      "ignore_pagination": {
+        "type": "boolean",
+        "default": false,
+        "description": "Makes each stream read a single page of data.",
+        "title": "Should the connector read the second and further pages of data.",
+        "airbyte_hidden": true
       }
     }
   },

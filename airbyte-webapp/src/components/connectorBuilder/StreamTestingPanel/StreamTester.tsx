@@ -5,8 +5,7 @@ import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
-import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
@@ -14,22 +13,15 @@ import { StreamTestButton } from "./StreamTestButton";
 import styles from "./StreamTester.module.scss";
 
 export const StreamTester: React.FC<{
-  hasConfigJsonErrors: boolean;
+  hasTestInputJsonErrors: boolean;
   setTestInputOpen: (open: boolean) => void;
-}> = ({ hasConfigJsonErrors, setTestInputOpen }) => {
+}> = ({ hasTestInputJsonErrors, setTestInputOpen }) => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, configJson, streams, testStreamIndex } = useConnectorBuilderState();
   const {
-    data: streamReadData,
-    refetch: readStream,
-    isError,
-    error,
-    isFetching,
-  } = useReadStream({
-    manifest: jsonManifest,
-    stream: streams[testStreamIndex]?.name,
-    config: configJson,
-  });
+    streams,
+    testStreamIndex,
+    streamRead: { data: streamReadData, refetch: readStream, isError, error, isFetching },
+  } = useConnectorBuilderTestState();
 
   const [logsFlex, setLogsFlex] = useState(0);
   const handleLogsTitleClick = () => {
@@ -60,7 +52,7 @@ export const StreamTester: React.FC<{
 
       <StreamTestButton
         readStream={readStream}
-        hasConfigJsonErrors={hasConfigJsonErrors}
+        hasTestInputJsonErrors={hasTestInputJsonErrors}
         setTestInputOpen={setTestInputOpen}
       />
 
@@ -75,7 +67,11 @@ export const StreamTester: React.FC<{
           orientation="horizontal"
           firstPanel={{
             children: (
-              <>{streamReadData !== undefined && !isError && <ResultDisplay slices={streamReadData.slices} />}</>
+              <>
+                {streamReadData !== undefined && !isError && (
+                  <ResultDisplay slices={streamReadData.slices} inferredSchema={streamReadData.inferred_schema} />
+                )}
+              </>
             ),
             minWidth: 80,
           }}

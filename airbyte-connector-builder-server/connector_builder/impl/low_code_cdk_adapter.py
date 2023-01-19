@@ -2,19 +2,17 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterator, List
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.yaml_declarative_source import \
-    ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.streams.http import HttpStream
+from connector_builder.impl.adapter import CdkAdapter
 
 
-class LowCodeSourceAdapter:
-
+class LowCodeSourceAdapter(CdkAdapter):
     def __init__(self, manifest: Dict[str, Any]):
         # Request and response messages are only emitted for a sources that have debug turned on
         self._source = ManifestDeclarativeSource(manifest, debug=True)
@@ -27,13 +25,15 @@ class LowCodeSourceAdapter:
                     http_streams.append(stream.retriever)
                 else:
                     raise TypeError(
-                        f"A declarative stream should only have a retriever of type HttpStream, but received: {stream.retriever.__class__}")
+                        f"A declarative stream should only have a retriever of type HttpStream, but received: {stream.retriever.__class__}"
+                    )
             else:
                 raise TypeError(
-                    f"A declarative source should only contain streams of type DeclarativeStream, but received: {stream.__class__}")
+                    f"A declarative source should only contain streams of type DeclarativeStream, but received: {stream.__class__}"
+                )
         return http_streams
 
-    def read_stream(self, stream: str, config: Dict[str, Any]) -> Iterable[AirbyteMessage]:
+    def read_stream(self, stream: str, config: Dict[str, Any]) -> Iterator[AirbyteMessage]:
         configured_catalog = ConfiguredAirbyteCatalog.parse_obj(
             {
                 "streams": [
