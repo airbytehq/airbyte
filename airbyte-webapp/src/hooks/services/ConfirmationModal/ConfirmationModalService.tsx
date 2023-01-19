@@ -60,6 +60,7 @@ export const ConfirmationModalService = ({ children }: { children: React.ReactNo
       {state.isOpen && state.confirmationModal ? (
         <ConfirmationModal
           onClose={closeConfirmationModal}
+          extra={state.confirmationModal.extra}
           title={state.confirmationModal.title}
           text={state.confirmationModal.text}
           onSubmit={state.confirmationModal.onSubmit}

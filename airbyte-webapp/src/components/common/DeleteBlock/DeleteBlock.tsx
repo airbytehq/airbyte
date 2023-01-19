@@ -13,14 +13,16 @@ import styles from "./DeleteBlock.module.scss";
 interface IProps {
   type: "source" | "destination" | "connection";
   onDelete: () => Promise<unknown>;
+  extraModal?: React.ReactNode;
 }
 
-export const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
+export const DeleteBlock: React.FC<IProps> = ({ type, onDelete, extraModal = "" }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const navigate = useNavigate();
 
   const onDeleteButtonClick = useCallback(() => {
     openConfirmationModal({
+      extra: extraModal,
       text: `tables.${type}DeleteModalText`,
       title: `tables.${type}DeleteConfirm`,
       submitButtonText: "form.delete",
@@ -31,7 +33,7 @@ export const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
       },
       submitButtonDataId: "delete",
     });
-  }, [closeConfirmationModal, onDelete, openConfirmationModal, navigate, type]);
+  }, [closeConfirmationModal, onDelete, openConfirmationModal, navigate, type, extraModal]);
 
   return (
     <Card className={styles.deleteBlock}>

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { DeleteBlock } from "components/common/DeleteBlock";
@@ -54,6 +54,18 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
     await deleteSource({ connectionsWithSource, source: currentSource });
   };
 
+  const extraModal = useMemo<React.ReactNode>(() => {
+    if (connectionsWithSource.length === 0) {
+      return null;
+    }
+    return (
+      <>
+        <FormattedMessage id="tables.affectedConnectionsOnSourceDeletion" />
+        {connectionsWithSource.map((connection) => `- ${connection.name}\n`)}
+      </>
+    );
+  }, [connectionsWithSource]);
+
   return (
     <div className={styles.content}>
       <ConnectorCard
@@ -67,7 +79,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         connector={currentSource}
         onSubmit={onSubmit}
       />
-      <DeleteBlock type="source" onDelete={onDelete} />
+      <DeleteBlock extraModal={extraModal} type="source" onDelete={onDelete} />
     </div>
   );
 };

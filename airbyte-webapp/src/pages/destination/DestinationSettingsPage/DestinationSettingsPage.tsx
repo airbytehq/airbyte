@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useParams } from "react-router-dom";
 
@@ -44,6 +44,18 @@ export const DestinationSettingsPage: React.FC = () => {
     });
   };
 
+  const extraModal = useMemo<React.ReactNode>(() => {
+    if (connectionsWithDestination.length === 0) {
+      return null;
+    }
+    return (
+      <>
+        <FormattedMessage id="tables.affectedConnectionsOnDestinationDeletion" />
+        {connectionsWithDestination.map((connection) => `- ${connection.name}\n`)}
+      </>
+    );
+  }, [connectionsWithDestination]);
+
   return (
     <div className={styles.content}>
       <ConnectorCard
@@ -57,7 +69,7 @@ export const DestinationSettingsPage: React.FC = () => {
         connector={destination}
         onSubmit={onSubmitForm}
       />
-      <DeleteBlock type="destination" onDelete={onDelete} />
+      <DeleteBlock extraModal={extraModal} type="destination" onDelete={onDelete} />
     </div>
   );
 };
