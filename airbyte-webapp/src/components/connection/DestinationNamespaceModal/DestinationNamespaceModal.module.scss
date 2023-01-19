@@ -3,7 +3,7 @@
 
 .content {
   display: flex;
-  height: 340px;
+  height: 360px;
 }
 
 .actions,
@@ -41,5 +41,14 @@
   .generalInfo {
     color: colors.$grey;
     margin: variables.$spacing-lg 0;
+  }
+
+  .namespaceLink {
+    margin-top: variables.$spacing-lg;
+    color: colors.$blue;
+
+    .text {
+      color: colors.$blue;
+    }
   }
 }
