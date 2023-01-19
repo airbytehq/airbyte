@@ -160,6 +160,9 @@ const manifestStreamToBuilder = (
         requester: {
           error_handler: stream.retriever.requester.error_handler,
         },
+        record_selector: {
+          record_filter: stream.retriever.record_selector.record_filter,
+        },
       },
     },
   };
