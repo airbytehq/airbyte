@@ -116,7 +116,6 @@ DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
 
 class ModelToComponentFactory:
-
     def __init__(self, is_test_read=False):
         self._init_mappings()
         self._is_test_read = is_test_read
@@ -216,7 +215,8 @@ class ModelToComponentFactory:
 
     def create_add_fields(self, model: AddFieldsModel, config: Config, **kwargs) -> AddFields:
         added_field_definitions = [
-            self._create_component_from_model(model=added_field_definition_model, config=config) for added_field_definition_model in model.fields
+            self._create_component_from_model(model=added_field_definition_model, config=config)
+            for added_field_definition_model in model.fields
         ]
         return AddFields(fields=added_field_definitions, options=model.options)
 
@@ -236,7 +236,9 @@ class ModelToComponentFactory:
             options=model.options,
         )
 
-    def create_cartesian_product_slicer(self, model: CartesianProductStreamSlicerModel, config: Config, **kwargs) -> CartesianProductStreamSlicer:
+    def create_cartesian_product_slicer(
+        self, model: CartesianProductStreamSlicerModel, config: Config, **kwargs
+    ) -> CartesianProductStreamSlicer:
         stream_slicers = [
             self._create_component_from_model(model=stream_slicer_model, config=config) for stream_slicer_model in model.stream_slicers
         ]
@@ -347,7 +349,6 @@ class ModelToComponentFactory:
             return False
         return cls.__module__ == "builtins"
 
-
     def _create_nested_component(self, model, model_field: str, model_value: Any, config: Config) -> Any:
         type_name = model_value.get("type", None)
         if not type_name:
@@ -367,12 +368,13 @@ class ModelToComponentFactory:
     def _is_component(model_value: Any) -> bool:
         return isinstance(model_value, dict) and model_value.get("type")
 
-
     def create_datetime_stream_slicer(self, model: DatetimeStreamSlicerModel, config: Config, **kwargs) -> DatetimeStreamSlicer:
         start_datetime = (
             model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
         )
-        end_datetime = model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
+        end_datetime = (
+            model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
+        )
 
         end_time_option = (
             RequestOption(
@@ -409,7 +411,6 @@ class ModelToComponentFactory:
             options=model.options,
         )
 
-
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
         retriever = self._create_component_from_model(model=model.retriever, config=config)
 
@@ -433,7 +434,6 @@ class ModelToComponentFactory:
             config=config,
             options={},
         )
-
 
     def create_default_error_handler(self, model: DefaultErrorHandlerModel, config: Config, **kwargs) -> DefaultErrorHandler:
         backoff_strategies = []
@@ -463,11 +463,14 @@ class ModelToComponentFactory:
             options=model.options,
         )
 
-
     def create_default_paginator(self, model: DefaultPaginatorModel, config: Config, **kwargs) -> DefaultPaginator:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(options={})
-        page_size_option = self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
-        page_token_option = self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
+        page_size_option = (
+            self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
+        )
+        page_token_option = (
+            self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
+        )
         pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config)
 
         paginator = DefaultPaginator(
@@ -499,7 +502,9 @@ class ModelToComponentFactory:
             else DefaultErrorHandler(backoff_strategies=[], response_filters=[], config=config, options=model.options)
         )
         request_options_provider = (
-            self._create_component_from_model(model=model.request_options_provider, config=config) if model.request_options_provider else None
+            self._create_component_from_model(model=model.request_options_provider, config=config)
+            if model.request_options_provider
+            else None
         )
 
         return HttpRequester(
@@ -639,7 +644,6 @@ class ModelToComponentFactory:
         inject_into = RequestOptionType(model.inject_into.value)
         return RequestOption(field_name=model.field_name, inject_into=inject_into, options={})
 
-
     def create_record_selector(self, model: RecordSelectorModel, config: Config, **kwargs) -> RecordSelector:
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
@@ -664,7 +668,6 @@ class ModelToComponentFactory:
             config=config,
             options=model.options,
         )
-
 
     def create_simple_retriever(self, model: SimpleRetrieverModel, config: Config, **kwargs) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config)
@@ -707,7 +710,6 @@ class ModelToComponentFactory:
     @staticmethod
     def create_spec(model: SpecModel, config: Config, **kwargs) -> Spec:
         return Spec(connection_specification=model.connection_specification, documentation_url=model.documentation_url, options={})
-
 
     def create_substream_slicer(self, model: SubstreamSlicerModel, config: Config, **kwargs) -> SubstreamSlicer:
         parent_stream_configs = []
