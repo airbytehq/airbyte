@@ -14,14 +14,20 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
+import io.airbyte.config.AttemptSyncConfig;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.State;
+import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
@@ -30,21 +36,30 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
 public class GenerateInputActivityImpl implements GenerateInputActivity {
 
+  private final StatePersistence statePersistence;
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
 
   public GenerateInputActivityImpl(final JobPersistence jobPersistence,
+                                   final StatePersistence statePersistence,
                                    final ConfigRepository configRepository) {
     this.jobPersistence = jobPersistence;
+    this.statePersistence = statePersistence;
     this.configRepository = configRepository;
+  }
+
+  private Optional<State> getCurrentConnectionState(final UUID connectionId) throws IOException {
+    return statePersistence.getCurrentState(connectionId).map(StateMessageHelper::getState);
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -56,6 +71,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final int attempt = input.getAttemptId();
       final JobSyncConfig config;
 
+      final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig();
+
       final Job job = jobPersistence.getJob(jobId);
       final ConfigType jobConfigType = job.getConfig().getConfigType();
       if (ConfigType.SYNC.equals(jobConfigType)) {
@@ -63,6 +80,12 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       } else if (ConfigType.RESET_CONNECTION.equals(jobConfigType)) {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
         final ResetSourceConfiguration resetSourceConfiguration = resetConnection.getResetSourceConfiguration();
+
+        // null check for backwards compatibility with reset jobs that did not have a
+        // resetSourceConfiguration
+        attemptSyncConfig
+            .setSourceConfiguration(resetSourceConfiguration == null ? Jsons.emptyObject() : Jsons.jsonNode(resetSourceConfiguration));
+
         config = new JobSyncConfig()
             .withNamespaceDefinition(resetConnection.getNamespaceDefinition())
             .withNamespaceFormat(resetConnection.getNamespaceFormat())
@@ -70,14 +93,9 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
             .withDestinationProtocolVersion(resetConnection.getDestinationProtocolVersion())
-            // null check for backwards compatibility with reset jobs that did not have a
-            // resetSourceConfiguration
-            .withSourceConfiguration(resetSourceConfiguration == null ? Jsons.emptyObject() : Jsons.jsonNode(resetSourceConfiguration))
-            .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
             .withOperationSequence(resetConnection.getOperationSequence())
             .withResourceRequirements(resetConnection.getResourceRequirements())
-            .withState(resetConnection.getState())
             .withIsSourceCustomConnector(resetConnection.getIsSourceCustomConnector())
             .withIsDestinationCustomConnector(resetConnection.getIsDestinationCustomConnector())
             .withWorkspaceId(resetConnection.getWorkspaceId());
@@ -93,6 +111,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
       final UUID connectionId = UUID.fromString(job.getScope());
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+      getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::withState);
 
       final StandardDestinationDefinition destinationDefinition =
           configRepository.getDestinationDefinitionFromDestination(standardSync.getDestinationId());
@@ -121,18 +140,26 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withSupportsDbt(destinationDefinition.getSupportsDbt())
           .withNormalizationIntegrationType(normalizationIntegrationType);
 
+      if (attemptSyncConfig.getSourceConfiguration() == null) {
+        final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
+        attemptSyncConfig.setSourceConfiguration(source.getConfiguration());
+      }
+
+      final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
+      attemptSyncConfig.setDestinationConfiguration(destination.getConfiguration());
+
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
           .withNamespaceFormat(config.getNamespaceFormat())
           .withPrefix(config.getPrefix())
           .withSourceId(standardSync.getSourceId())
           .withDestinationId(standardSync.getDestinationId())
-          .withSourceConfiguration(config.getSourceConfiguration())
-          .withDestinationConfiguration(config.getDestinationConfiguration())
+          .withSourceConfiguration(attemptSyncConfig.getSourceConfiguration())
+          .withDestinationConfiguration(attemptSyncConfig.getDestinationConfiguration())
           .withOperationSequence(config.getOperationSequence())
           .withWebhookOperationConfigs(config.getWebhookOperationConfigs())
           .withCatalog(config.getConfiguredAirbyteCatalog())
-          .withState(config.getState())
+          .withState(attemptSyncConfig.getState())
           .withResourceRequirements(config.getResourceRequirements())
           .withSourceResourceRequirements(config.getSourceResourceRequirements())
           .withDestinationResourceRequirements(config.getDestinationResourceRequirements())
