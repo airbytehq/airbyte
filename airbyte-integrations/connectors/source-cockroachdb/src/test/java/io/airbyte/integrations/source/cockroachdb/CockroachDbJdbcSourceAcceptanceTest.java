@@ -511,16 +511,16 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("CREATE TABLE " + dbName + ".%s(id VARCHAR(200), name VARCHAR(200))",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES ('1','picard')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES ('2', 'crusher')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO " + dbName + ".%s(id, name) VALUES ('3', 'vash')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
     final AirbyteCatalog actual = source.discover(config);

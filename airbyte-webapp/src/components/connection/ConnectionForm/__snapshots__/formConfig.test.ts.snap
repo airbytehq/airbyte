@@ -1,0 +1,1602 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`#useInitialValues should generate initial values w/ 'not create' mode: false 1`] = `
+{
+  "geography": "auto",
+  "name": "Scrafty <> Heroku Postgres",
+  "namespaceDefinition": "source",
+  "namespaceFormat": "\${SOURCE_NAMESPACE}",
+  "nonBreakingChangesPreference": "ignore",
+  "normalization": "basic",
+  "prefix": "",
+  "scheduleData": null,
+  "scheduleType": "manual",
+  "syncCatalog": {
+    "streams": [
+      {
+        "config": {
+          "aliasName": "pokemon",
+          "cursorField": [],
+          "destinationSyncMode": "overwrite",
+          "primaryKey": [],
+          "selected": true,
+          "syncMode": "full_refresh",
+        },
+        "id": "0",
+        "stream": {
+          "defaultCursorField": [],
+          "jsonSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+              "abilities": {
+                "items": {
+                  "properties": {
+                    "ability": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                    "is_hidden": {
+                      "type": [
+                        "null",
+                        "boolean",
+                      ],
+                    },
+                    "slot": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "base_experience": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "forms": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": [
+                        "null",
+                        "string",
+                      ],
+                    },
+                    "url": {
+                      "type": [
+                        "null",
+                        "string",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "game_indices": {
+                "items": {
+                  "properties": {
+                    "game_index": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "version": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "height": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "held_items": {
+                "items": {
+                  "properties": {
+                    "item": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                    "version_details": {
+                      "items": {
+                        "properties": {
+                          "rarity": {
+                            "type": [
+                              "null",
+                              "integer",
+                            ],
+                          },
+                          "version": {
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                              "url": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                            },
+                            "type": [
+                              "null",
+                              "object",
+                            ],
+                          },
+                        },
+                        "type": [
+                          "null",
+                          "object",
+                        ],
+                      },
+                      "type": [
+                        "null",
+                        "array",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "id": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "is_default ": {
+                "type": [
+                  "null",
+                  "boolean",
+                ],
+              },
+              "location_area_encounters": {
+                "type": [
+                  "null",
+                  "string",
+                ],
+              },
+              "moves": {
+                "items": {
+                  "properties": {
+                    "move": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                    "version_group_details": {
+                      "items": {
+                        "properties": {
+                          "level_learned_at": {
+                            "type": [
+                              "null",
+                              "integer",
+                            ],
+                          },
+                          "move_learn_method": {
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                              "url": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                            },
+                            "type": [
+                              "null",
+                              "object",
+                            ],
+                          },
+                          "version_group": {
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                              "url": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                            },
+                            "type": [
+                              "null",
+                              "object",
+                            ],
+                          },
+                        },
+                        "type": [
+                          "null",
+                          "object",
+                        ],
+                      },
+                      "type": [
+                        "null",
+                        "array",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "name": {
+                "type": [
+                  "null",
+                  "string",
+                ],
+              },
+              "order": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "species": {
+                "properties": {
+                  "name": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "url": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                },
+                "type": [
+                  "null",
+                  "object",
+                ],
+              },
+              "sprites": {
+                "properties": {
+                  "back_default": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_default": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                },
+                "type": [
+                  "null",
+                  "object",
+                ],
+              },
+              "stats": {
+                "items": {
+                  "properties": {
+                    "base_stat": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "effort": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "stat": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "types": {
+                "items": {
+                  "properties": {
+                    "slot": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "type": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "weight": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+            },
+            "type": "object",
+          },
+          "name": "pokemon",
+          "sourceDefinedPrimaryKey": [],
+          "supportedSyncModes": [
+            "full_refresh",
+          ],
+        },
+      },
+    ],
+  },
+  "transformations": [],
+}
+`;
+
+exports[`#useInitialValues should generate initial values w/ 'not create' mode: true 1`] = `
+{
+  "geography": "auto",
+  "namespaceDefinition": "source",
+  "namespaceFormat": "\${SOURCE_NAMESPACE}",
+  "nonBreakingChangesPreference": "ignore",
+  "normalization": "basic",
+  "prefix": "",
+  "scheduleData": null,
+  "scheduleType": "manual",
+  "syncCatalog": {
+    "streams": [
+      {
+        "config": {
+          "aliasName": "pokemon",
+          "cursorField": [],
+          "destinationSyncMode": "append",
+          "primaryKey": [],
+          "selected": true,
+          "syncMode": "full_refresh",
+        },
+        "id": "0",
+        "stream": {
+          "defaultCursorField": [],
+          "jsonSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+              "abilities": {
+                "items": {
+                  "properties": {
+                    "ability": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                    "is_hidden": {
+                      "type": [
+                        "null",
+                        "boolean",
+                      ],
+                    },
+                    "slot": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "base_experience": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "forms": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": [
+                        "null",
+                        "string",
+                      ],
+                    },
+                    "url": {
+                      "type": [
+                        "null",
+                        "string",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "game_indices": {
+                "items": {
+                  "properties": {
+                    "game_index": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "version": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "height": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "held_items": {
+                "items": {
+                  "properties": {
+                    "item": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                    "version_details": {
+                      "items": {
+                        "properties": {
+                          "rarity": {
+                            "type": [
+                              "null",
+                              "integer",
+                            ],
+                          },
+                          "version": {
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                              "url": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                            },
+                            "type": [
+                              "null",
+                              "object",
+                            ],
+                          },
+                        },
+                        "type": [
+                          "null",
+                          "object",
+                        ],
+                      },
+                      "type": [
+                        "null",
+                        "array",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "id": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "is_default ": {
+                "type": [
+                  "null",
+                  "boolean",
+                ],
+              },
+              "location_area_encounters": {
+                "type": [
+                  "null",
+                  "string",
+                ],
+              },
+              "moves": {
+                "items": {
+                  "properties": {
+                    "move": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                    "version_group_details": {
+                      "items": {
+                        "properties": {
+                          "level_learned_at": {
+                            "type": [
+                              "null",
+                              "integer",
+                            ],
+                          },
+                          "move_learn_method": {
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                              "url": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                            },
+                            "type": [
+                              "null",
+                              "object",
+                            ],
+                          },
+                          "version_group": {
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                              "url": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                            },
+                            "type": [
+                              "null",
+                              "object",
+                            ],
+                          },
+                        },
+                        "type": [
+                          "null",
+                          "object",
+                        ],
+                      },
+                      "type": [
+                        "null",
+                        "array",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "name": {
+                "type": [
+                  "null",
+                  "string",
+                ],
+              },
+              "order": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "species": {
+                "properties": {
+                  "name": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "url": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                },
+                "type": [
+                  "null",
+                  "object",
+                ],
+              },
+              "sprites": {
+                "properties": {
+                  "back_default": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_default": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                },
+                "type": [
+                  "null",
+                  "object",
+                ],
+              },
+              "stats": {
+                "items": {
+                  "properties": {
+                    "base_stat": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "effort": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "stat": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "types": {
+                "items": {
+                  "properties": {
+                    "slot": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "type": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "weight": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+            },
+            "type": "object",
+          },
+          "name": "pokemon",
+          "sourceDefinedPrimaryKey": [],
+          "supportedSyncModes": [
+            "full_refresh",
+          ],
+        },
+      },
+    ],
+  },
+  "transformations": [],
+}
+`;
+
+exports[`#useInitialValues should generate initial values w/ no 'not create' mode 1`] = `
+{
+  "geography": "auto",
+  "name": "Scrafty <> Heroku Postgres",
+  "namespaceDefinition": "source",
+  "namespaceFormat": "\${SOURCE_NAMESPACE}",
+  "nonBreakingChangesPreference": "ignore",
+  "normalization": "basic",
+  "prefix": "",
+  "scheduleData": null,
+  "scheduleType": "manual",
+  "syncCatalog": {
+    "streams": [
+      {
+        "config": {
+          "aliasName": "pokemon",
+          "cursorField": [],
+          "destinationSyncMode": "overwrite",
+          "primaryKey": [],
+          "selected": true,
+          "syncMode": "full_refresh",
+        },
+        "id": "0",
+        "stream": {
+          "defaultCursorField": [],
+          "jsonSchema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+              "abilities": {
+                "items": {
+                  "properties": {
+                    "ability": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                    "is_hidden": {
+                      "type": [
+                        "null",
+                        "boolean",
+                      ],
+                    },
+                    "slot": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "base_experience": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "forms": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": [
+                        "null",
+                        "string",
+                      ],
+                    },
+                    "url": {
+                      "type": [
+                        "null",
+                        "string",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "game_indices": {
+                "items": {
+                  "properties": {
+                    "game_index": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "version": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "height": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "held_items": {
+                "items": {
+                  "properties": {
+                    "item": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                    "version_details": {
+                      "items": {
+                        "properties": {
+                          "rarity": {
+                            "type": [
+                              "null",
+                              "integer",
+                            ],
+                          },
+                          "version": {
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                              "url": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                            },
+                            "type": [
+                              "null",
+                              "object",
+                            ],
+                          },
+                        },
+                        "type": [
+                          "null",
+                          "object",
+                        ],
+                      },
+                      "type": [
+                        "null",
+                        "array",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "id": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "is_default ": {
+                "type": [
+                  "null",
+                  "boolean",
+                ],
+              },
+              "location_area_encounters": {
+                "type": [
+                  "null",
+                  "string",
+                ],
+              },
+              "moves": {
+                "items": {
+                  "properties": {
+                    "move": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                    "version_group_details": {
+                      "items": {
+                        "properties": {
+                          "level_learned_at": {
+                            "type": [
+                              "null",
+                              "integer",
+                            ],
+                          },
+                          "move_learn_method": {
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                              "url": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                            },
+                            "type": [
+                              "null",
+                              "object",
+                            ],
+                          },
+                          "version_group": {
+                            "properties": {
+                              "name": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                              "url": {
+                                "type": [
+                                  "null",
+                                  "string",
+                                ],
+                              },
+                            },
+                            "type": [
+                              "null",
+                              "object",
+                            ],
+                          },
+                        },
+                        "type": [
+                          "null",
+                          "object",
+                        ],
+                      },
+                      "type": [
+                        "null",
+                        "array",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "name": {
+                "type": [
+                  "null",
+                  "string",
+                ],
+              },
+              "order": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+              "species": {
+                "properties": {
+                  "name": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "url": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                },
+                "type": [
+                  "null",
+                  "object",
+                ],
+              },
+              "sprites": {
+                "properties": {
+                  "back_default": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "back_shiny_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_default": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                  "front_shiny_female": {
+                    "type": [
+                      "null",
+                      "string",
+                    ],
+                  },
+                },
+                "type": [
+                  "null",
+                  "object",
+                ],
+              },
+              "stats": {
+                "items": {
+                  "properties": {
+                    "base_stat": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "effort": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "stat": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "types": {
+                "items": {
+                  "properties": {
+                    "slot": {
+                      "type": [
+                        "null",
+                        "integer",
+                      ],
+                    },
+                    "type": {
+                      "properties": {
+                        "name": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                        "url": {
+                          "type": [
+                            "null",
+                            "string",
+                          ],
+                        },
+                      },
+                      "type": [
+                        "null",
+                        "object",
+                      ],
+                    },
+                  },
+                  "type": [
+                    "null",
+                    "object",
+                  ],
+                },
+                "type": [
+                  "null",
+                  "array",
+                ],
+              },
+              "weight": {
+                "type": [
+                  "null",
+                  "integer",
+                ],
+              },
+            },
+            "type": "object",
+          },
+          "name": "pokemon",
+          "sourceDefinedPrimaryKey": [],
+          "supportedSyncModes": [
+            "full_refresh",
+          ],
+        },
+      },
+    ],
+  },
+  "transformations": [],
+}
+`;

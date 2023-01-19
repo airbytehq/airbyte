@@ -43,7 +43,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       return "TIMESTAMPLTZ".equalsIgnoreCase(typeName)
@@ -75,7 +75,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
@@ -95,7 +95,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
@@ -104,7 +104,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
       putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       return;
     }
-    super.setJsonField(resultSet, colIndex, json);
+    super.copyToJsonField(resultSet, colIndex, json);
   }
 
   @Override

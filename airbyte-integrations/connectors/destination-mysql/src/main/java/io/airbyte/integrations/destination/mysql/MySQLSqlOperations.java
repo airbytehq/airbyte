@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -13,10 +14,14 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+@SuppressFBWarnings(
+    value = {"SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"},
+    justification = "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement.")
 public class MySQLSqlOperations extends JdbcSqlOperations {
 
   private boolean isLocalFileEnabled = false;
