@@ -1,5 +1,5 @@
 import { builder } from "@builder.io/sdk";
-import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faLightbulb } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo, useState } from "react";
 import { useQuery } from "react-query";
@@ -90,10 +90,19 @@ export const ErrorDetails: React.FC<ErrorDetailsProps> = ({ errorMessage }) => {
       </Callout>
       {analytic && (
         <Callout variant="info">
-          <FontAwesomeIcon icon={faInfoCircle} />
-          <Text size="md">
-            <Markdown className={styles.analyticsMessage} content={analytic.message} />
-          </Text>
+          <FlexContainer direction="column">
+            <FlexContainer alignItems="center" gap="md">
+              <FlexItem grow={false}>
+                <FontAwesomeIcon icon={faLightbulb} />
+              </FlexItem>
+              <FlexItem grow>
+                <Text bold>How can I solve this?</Text>
+              </FlexItem>
+            </FlexContainer>
+            <Text size="md">
+              <Markdown className={styles.analyticsMessage} content={analytic.message} />
+            </Text>
+          </FlexContainer>
         </Callout>
       )}
     </FlexContainer>
