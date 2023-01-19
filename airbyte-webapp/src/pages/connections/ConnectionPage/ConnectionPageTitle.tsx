@@ -26,7 +26,8 @@ export const ConnectionPageTitle: React.FC = () => {
 
   const { connection } = useConnectionEditService();
 
-  const { data: freeConnectorProgramInfo } = useFreeConnectorProgram();
+  const { enrollmentStatusQuery } = useFreeConnectorProgram();
+  const { data: freeConnectorProgramInfo } = enrollmentStatusQuery;
   const displayEnrollmentCallout = freeConnectorProgramInfo?.showEnrollmentUi;
 
   const steps = useMemo(() => {

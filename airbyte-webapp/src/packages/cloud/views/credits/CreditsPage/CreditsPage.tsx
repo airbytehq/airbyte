@@ -20,7 +20,8 @@ import styles from "./CreditsPage.module.scss";
 const CreditsPage: React.FC = () => {
   const { emailVerified } = useAuthService();
   useTrackPage(PageTrackingCodes.CREDITS);
-  const { data: freeConnectorProgramInfo } = useFreeConnectorProgram();
+  const { enrollmentStatusQuery } = useFreeConnectorProgram();
+  const { data: freeConnectorProgramInfo } = enrollmentStatusQuery;
   const { showEnrollmentUi } = freeConnectorProgramInfo || {};
 
   return (

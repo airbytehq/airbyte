@@ -5,6 +5,7 @@ import { Callout } from "components/ui/Callout";
 import { Text } from "components/ui/Text";
 
 import { useShowEnrollmentModal } from "./EnrollmentModal";
+import { useFreeConnectorProgram } from "./hooks/useFreeConnectorProgram";
 import styles from "./InlineEnrollmentCallout.module.scss";
 
 export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
@@ -17,7 +18,12 @@ export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) =
   );
 };
 export const InlineEnrollmentCallout: React.FC = () => {
-  return (
+  const { userDidEnroll } = useFreeConnectorProgram();
+
+  return userDidEnroll ? (
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    <></>
+  ) : (
     <Callout variant="info" className={styles.container}>
       <Text size="sm">
         <FormattedMessage

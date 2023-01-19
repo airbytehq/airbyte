@@ -9,12 +9,17 @@ import { Text } from "components/ui/Text";
 
 import { ReactComponent as ConnectorsBadges } from "./connectors-badges.svg";
 import { useShowEnrollmentModal } from "./EnrollmentModal";
+import { useFreeConnectorProgram } from "./hooks/useFreeConnectorProgram";
 import styles from "./LargeEnrollmentCallout.module.scss";
 
 export const LargeEnrollmentCallout: React.FC = () => {
   const { showEnrollmentModal } = useShowEnrollmentModal();
+  const { userDidEnroll } = useFreeConnectorProgram();
 
-  return (
+  return userDidEnroll ? (
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    <></>
+  ) : (
     <Callout variant="boldInfo" className={styles.container}>
       <FlexContainer direction="row" alignItems="center" className={styles.flexRow}>
         <FlexItem grow={false} alignSelf="center">
