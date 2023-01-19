@@ -26,7 +26,7 @@ const TooltipText: React.FC<{ textNodes: Element[] }> = ({ textNodes }) => {
   if (!textNodes.length) {
     return null;
   }
-  return <>{textNodes.map((t) => t.innerHTML).join(" | ")}</>;
+  return <>{textNodes.map((t) => decodeURIComponent(t.innerHTML)).join(" | ")}</>;
 };
 
 export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeTableCellProps>> = ({
