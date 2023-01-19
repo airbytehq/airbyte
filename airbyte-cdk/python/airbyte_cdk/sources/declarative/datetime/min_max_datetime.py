@@ -30,7 +30,7 @@ class MinMaxDatetime(JsonSchemaMixin):
     """
 
     datetime: Union[InterpolatedString, str]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     # datetime_format is a unique case where we inherit it from the parent if it is not specified before using the default value
     # which is why we need dedicated getter/setter methods and private dataclass field
     datetime_format: str = ""
@@ -38,12 +38,12 @@ class MinMaxDatetime(JsonSchemaMixin):
     min_datetime: Union[InterpolatedString, str] = ""
     max_datetime: Union[InterpolatedString, str] = ""
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.datetime = InterpolatedString.create(self.datetime, options=options or {})
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.datetime = InterpolatedString.create(self.datetime, parameters=parameters or {})
         self.timezone = dt.timezone.utc
         self._parser = DatetimeParser()
-        self.min_datetime = InterpolatedString.create(self.min_datetime, options=options) if self.min_datetime else None
-        self.max_datetime = InterpolatedString.create(self.max_datetime, options=options) if self.max_datetime else None
+        self.min_datetime = InterpolatedString.create(self.min_datetime, parameters=parameters) if self.min_datetime else None
+        self.max_datetime = InterpolatedString.create(self.max_datetime, parameters=parameters) if self.max_datetime else None
 
         self._timezone = dt.timezone.utc
 

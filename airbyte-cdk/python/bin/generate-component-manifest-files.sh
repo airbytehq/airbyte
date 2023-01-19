@@ -28,10 +28,10 @@ function main() {
     # or while reading the field. There is no estimated timeline on the fix even though it is widely debated here:
     # https://github.com/pydantic/pydantic/issues/288.
     #
-    # Our low effort way to address this is to perform additional post-processing to rename _options to options.
+    # Our low effort way to address this is to perform additional post-processing to rename _parameters to parameters.
     # We can revisit this if there is movement on a fix.
     temp_file=$(mktemp)
-    sed 's/_options:/options:/g' "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" > "${temp_file}"
+    sed 's/ _parameters:/ parameters:/g' "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" > "${temp_file}"
     mv "${temp_file}" "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py"
   done
 }

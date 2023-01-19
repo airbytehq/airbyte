@@ -21,11 +21,11 @@ class InterpolatedMapping(JsonSchemaMixin):
     """
 
     mapping: Mapping[str, str]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Optional[Mapping[str, Any]]):
+    def __post_init__(self, parameters: Optional[Mapping[str, Any]]):
         self._interpolation = JinjaInterpolation()
-        self._options = options
+        self._parameters = parameters
 
     def eval(self, config: Config, **additional_options):
         """
@@ -36,7 +36,7 @@ class InterpolatedMapping(JsonSchemaMixin):
         :return: The interpolated string
         """
         interpolated_values = {
-            self._interpolation.eval(name, config, options=self._options, **additional_options): self._eval(
+            self._interpolation.eval(name, config, parameters=self._parameters, **additional_options): self._eval(
                 value, config, **additional_options
             )
             for name, value in self.mapping.items()
@@ -47,6 +47,6 @@ class InterpolatedMapping(JsonSchemaMixin):
         # The values in self._mapping can be of Any type
         # We only want to interpolate them if they are strings
         if type(value) == str:
-            return self._interpolation.eval(value, config, options=self._options, **kwargs)
+            return self._interpolation.eval(value, config, parameters=self._parameters, **kwargs)
         else:
             return value

@@ -18,7 +18,7 @@ class TestingSomeComponent(DefaultErrorHandler):
     A basic test class with various field permutations used to test manifests with custom components
     """
 
-    subcomponent_field_with_hint: DpathExtractor = DpathExtractor(field_pointer=[], config={}, options={})
+    subcomponent_field_with_hint: DpathExtractor = DpathExtractor(field_pointer=[], config={}, parameters={})
     basic_field: str = ""
     optional_subcomponent_field: Optional[RequestOption] = None
     list_of_subcomponents: List[RequestOption] = None

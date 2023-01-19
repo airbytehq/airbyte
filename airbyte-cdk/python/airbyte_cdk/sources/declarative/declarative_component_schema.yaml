@@ -46,7 +46,7 @@ definitions:
           type: string
       value:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   AddFields:
@@ -63,7 +63,7 @@ definitions:
         type: array
         items:
           - "$ref": "#/definitions/AddedFieldDefinition"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   ApiKeyAuthenticator:
@@ -80,7 +80,7 @@ definitions:
         type: string
       header:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   BasicHttpAuthenticator:
@@ -100,7 +100,7 @@ definitions:
         description: The password that will be combined with the username, base64 encoded and used to make requests
         type: string
         default: ""
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   BearerAuthenticator:
@@ -115,7 +115,7 @@ definitions:
         enum: [BearerAuthenticator]
       api_token:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CartesianProductStreamSlicer:
@@ -136,7 +136,7 @@ definitions:
             - "$ref": "#/definitions/ListStreamSlicer"
             - "$ref": "#/definitions/SingleSlice"
             - "$ref": "#/definitions/SubstreamSlicer"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CheckStream:
@@ -169,7 +169,7 @@ definitions:
           anyOf:
             - "$ref": "#/definitions/CompositeErrorHandler"
             - "$ref": "#/definitions/DefaultErrorHandler"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   ConstantBackoffStrategy:
@@ -186,7 +186,7 @@ definitions:
         anyOf:
           - type: number
           - type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CursorPagination:
@@ -207,7 +207,7 @@ definitions:
         type: string
       decoder:
         "$ref": "#/definitions/JsonDecoder"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomAuthenticator:
@@ -224,7 +224,7 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomBackoffStrategy:
@@ -240,7 +240,7 @@ definitions:
         enum: [CustomBackoffStrategy]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomErrorHandler:
@@ -256,7 +256,7 @@ definitions:
         enum: [CustomErrorHandler]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomPaginationStrategy:
@@ -272,7 +272,7 @@ definitions:
         enum: [CustomPaginationStrategy]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomRecordExtractor:
@@ -288,7 +288,7 @@ definitions:
         enum: [CustomRecordExtractor]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomRequester:
@@ -305,7 +305,7 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomRequestOptionsProvider:
@@ -322,7 +322,7 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomRetriever:
@@ -339,7 +339,7 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomStreamSlicer:
@@ -355,7 +355,7 @@ definitions:
         enum: [CustomStreamSlicer]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   CustomTransformation:
@@ -371,7 +371,7 @@ definitions:
         enum: [CustomTransformation]
       class_name:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   DatetimeStreamSlicer:
@@ -415,7 +415,7 @@ definitions:
         type: string
       stream_state_field_start:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   OAuthAuthenticator:
@@ -460,7 +460,7 @@ definitions:
       token_expiry_date_format:
         description: The format of the datetime; provide it if expires_in is returned in datetime instead of seconds
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   DeclarativeStream:
@@ -519,7 +519,7 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
-      $options:
+      $parameters:
         type: object
         additional_properties: true
   DefaultErrorHandler:
@@ -547,7 +547,7 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/HttpResponseFilter"
-      $options:
+      $parameters:
         type: object
         additional_properties: true
   DefaultPaginator:
@@ -575,7 +575,7 @@ definitions:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
         "$ref": "#/definitions/RequestOption"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   DpathExtractor:
@@ -594,7 +594,7 @@ definitions:
           - type: string
       decoder:
         "$ref": "#/definitions/JsonDecoder"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   ExponentialBackoffStrategy:
@@ -611,7 +611,7 @@ definitions:
           - type: number
           - type: string
         default: 5
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   HttpRequester:
@@ -658,7 +658,7 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRequestOptionsProvider"
           - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   HttpResponseFilter:
@@ -689,7 +689,7 @@ definitions:
         uniqueItems: true
       predicate:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   InlineSchemaLoader:
@@ -736,7 +736,7 @@ definitions:
           - type: object
             additionalProperties:
               type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   JsonFileSchemaLoader:
@@ -749,7 +749,7 @@ definitions:
         enum: [JsonFileSchemaLoader, JsonSchema] # TODO As part of Beta, remove JsonSchema and update connectors to use JsonFileSchemaLoader
       file_path:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   JsonDecoder:
@@ -781,7 +781,7 @@ definitions:
               type: string
       request_option:
         "$ref": "#/definitions/RequestOption"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   MinMaxDatetime:
@@ -803,7 +803,7 @@ definitions:
         type: string
       min_datetime:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   NoAuth:
@@ -815,7 +815,7 @@ definitions:
       type:
         type: string
         enum: [NoAuth]
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   NoPagination:
@@ -842,7 +842,7 @@ definitions:
         anyOf:
           - type: integer
           - type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   PageIncrement:
@@ -861,7 +861,7 @@ definitions:
       start_from_page:
         type: integer
         default: 0
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   ParentStreamConfig:
@@ -884,7 +884,7 @@ definitions:
         type: string
       request_option:
         "$ref": "#/definitions/RequestOption"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   PrimaryKey:
@@ -913,7 +913,7 @@ definitions:
         description: The predicate to filter a record. Records will be removed if evaluated to False
         type: string
         default: ""
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   RecordSelector:
@@ -932,7 +932,7 @@ definitions:
           - "$ref": "#/definitions/DpathExtractor"
       record_filter:
         "$ref": "#/definitions/RecordFilter"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   RemoveFields:
@@ -1006,7 +1006,7 @@ definitions:
       password:
         type: string
         default: ""
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   SimpleRetriever:
@@ -1043,7 +1043,7 @@ definitions:
           - "$ref": "#/definitions/ListStreamSlicer"
           - "$ref": "#/definitions/SingleSlice"
           - "$ref": "#/definitions/SubstreamSlicer"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   SingleSlice:
@@ -1055,7 +1055,7 @@ definitions:
       type:
         type: string
         enum: [SingleSlice]
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   Spec:
@@ -1087,7 +1087,7 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/ParentStreamConfig"
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   WaitTimeFromHeader:
@@ -1104,7 +1104,7 @@ definitions:
         type: string
       regex:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true
   WaitUntilTimeFromHeader:
@@ -1125,6 +1125,6 @@ definitions:
           - type: string
       regex:
         type: string
-      $options:
+      $parameters:
         type: object
         additionalProperties: true

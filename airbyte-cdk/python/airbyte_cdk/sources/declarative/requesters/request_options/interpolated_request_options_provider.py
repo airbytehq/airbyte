@@ -26,14 +26,14 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
         request_body_json (Union[str, Mapping[str, str]]): The json content to set on an outgoing HTTP request
     """
 
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     config: Config = field(default_factory=dict)
     request_parameters: Optional[RequestInput] = None
     request_headers: Optional[RequestInput] = None
     request_body_data: Optional[RequestInput] = None
     request_body_json: Optional[RequestInput] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if self.request_parameters is None:
             self.request_parameters = {}
         if self.request_headers is None:
@@ -47,16 +47,16 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin
             raise ValueError("RequestOptionsProvider should only contain either 'request_body_data' or 'request_body_json' not both")
 
         self._parameter_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_parameters, options=options
+            config=self.config, request_inputs=self.request_parameters, parameters=parameters
         )
         self._headers_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_headers, options=options
+            config=self.config, request_inputs=self.request_headers, parameters=parameters
         )
         self._body_data_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_data, options=options
+            config=self.config, request_inputs=self.request_body_data, parameters=parameters
         )
         self._body_json_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_json, options=options
+            config=self.config, request_inputs=self.request_body_json, parameters=parameters
         )
 
     def get_request_params(

@@ -27,7 +27,7 @@ class ParentStreamConfig(JsonSchemaMixin):
     stream: Stream
     parent_key: str
     stream_slice_field: str
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
 
@@ -42,13 +42,13 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
     """
 
     parent_stream_configs: List[ParentStreamConfig]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.parent_stream_configs:
             raise ValueError("SubstreamSlicer needs at least 1 parent stream")
         self._cursor = None
-        self._options = options
+        self._parameters = parameters
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         # This method is called after the records are processed.

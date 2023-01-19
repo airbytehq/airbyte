@@ -37,7 +37,7 @@ def test_check_stream_with_slices_as_list(test_name, record, streams_to_check, s
     source = MagicMock()
     source.streams.return_value = [stream]
 
-    check_stream = CheckStream(streams_to_check, options={})
+    check_stream = CheckStream(streams_to_check, parameters={})
 
     if expectation:
         actual = check_stream.check_connection(source, logger, config)

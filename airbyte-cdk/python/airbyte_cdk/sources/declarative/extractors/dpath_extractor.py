@@ -56,13 +56,13 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
 
     field_pointer: List[Union[InterpolatedString, str]]
     config: Config
-    options: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(options={})
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(parameters={})
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         for pointer_index in range(len(self.field_pointer)):
             if isinstance(self.field_pointer[pointer_index], str):
-                self.field_pointer[pointer_index] = InterpolatedString.create(self.field_pointer[pointer_index], options=options)
+                self.field_pointer[pointer_index] = InterpolatedString.create(self.field_pointer[pointer_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)

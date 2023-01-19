@@ -74,7 +74,7 @@ class TestYamlDeclarativeSource:
                 field_pointer: ["result"]
         streams:
           - type: DeclarativeStream
-            $options:
+            $parameters:
               name: "lists"
               primary_key: id
               url_base: "https://api.sendgrid.com"
@@ -94,7 +94,7 @@ class TestYamlDeclarativeSource:
           this is not parsable yaml: " at all
         streams:
           - type: DeclarativeStream
-            $options:
+            $parameters:
               name: "lists"
               primary_key: id
               url_base: "https://api.sendgrid.com"
@@ -115,7 +115,7 @@ class TestYamlDeclarativeSource:
             file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
         streams:
           - type: DeclarativeStream
-            $options:
+            $parameters:
               name: "lists"
               primary_key: id
               url_base: "https://api.sendgrid.com"

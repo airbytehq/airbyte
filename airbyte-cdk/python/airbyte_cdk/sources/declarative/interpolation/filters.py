@@ -19,7 +19,7 @@ def hash(value, hash_type="md5", salt=None):
 
     rates_stream:
       $ref: "*ref(definitions.base_stream)"
-      $options:
+      $parameters:
         name: "rates"
         primary_key: "date"
         path: "/exchangerates_data/latest"

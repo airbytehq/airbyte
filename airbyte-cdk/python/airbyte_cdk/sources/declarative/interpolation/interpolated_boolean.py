@@ -22,12 +22,12 @@ class InterpolatedBoolean(JsonSchemaMixin):
         condition (str): The string representing the condition to evaluate to a boolean
     """
     condition: str
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self._default = "False"
         self._interpolation = JinjaInterpolation()
-        self._options = options
+        self._parameters = parameters
 
     def eval(self, config: Config, **additional_options):
         """
@@ -40,7 +40,7 @@ class InterpolatedBoolean(JsonSchemaMixin):
         if isinstance(self.condition, bool):
             return self.condition
         else:
-            evaluated = self._interpolation.eval(self.condition, config, self._default, options=self._options, **additional_options)
+            evaluated = self._interpolation.eval(self.condition, config, self._default, parameters=self._parameters, **additional_options)
             if evaluated in FALSE_VALUES:
                 return False
             # The presence of a value is generally regarded as truthy, so we treat it as such

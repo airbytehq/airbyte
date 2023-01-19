@@ -25,11 +25,11 @@ class RecordSelector(HttpSelector, JsonSchemaMixin):
     """
 
     extractor: RecordExtractor
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     record_filter: RecordFilter = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._options = options
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._parameters = parameters
 
     def select_records(
         self,
