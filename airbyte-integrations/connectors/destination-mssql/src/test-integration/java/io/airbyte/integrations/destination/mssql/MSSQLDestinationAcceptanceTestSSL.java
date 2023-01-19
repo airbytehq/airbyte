@@ -42,16 +42,6 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
     return "airbyte/destination-mssql:dev";
   }
 
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
 
     return Jsons.jsonNode(ImmutableMap.builder()

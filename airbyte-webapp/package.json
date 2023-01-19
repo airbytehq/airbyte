@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.27",
+  "version": "0.40.28",
   "private": true,
   "engines": {
     "node": "16.18.1"
@@ -8,13 +8,14 @@
   "scripts": {
     "prepare": "cd .. && husky install airbyte-webapp/.husky",
     "prestart": "npm run generate-client",
-    "start": "craco start",
+    "start": "node -r ./scripts/dev-overwrites.js ./node_modules/.bin/craco start",
     "prestart:cloud": "npm run generate-client",
-    "start:cloud": "AB_ENV=${AB_ENV-frontend-dev} node -r ./scripts/environment.js ./node_modules/.bin/craco start",
+    "start:cloud": "AB_ENV=${AB_ENV-frontend-dev} node -r ./scripts/environment.js -r ./scripts/dev-overwrites.js ./node_modules/.bin/craco start",
     "prebuild": "npm run generate-client",
     "build": "BUILD_PATH='./build/app' craco build",
     "pretest": "npm run generate-client",
     "test": "jest --watch",
+    "test:ci": "jest --watchAll=false --silent",
     "test:coverage": "jest --coverage --watchAll=false",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 --quiet",
@@ -39,10 +40,12 @@
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
     "@tanstack/react-table": "^8.7.0",
+    "@types/diff": "^5.0.2",
     "@types/segment-analytics": "^0.0.34",
     "@types/uuid": "^9.0.0",
     "classnames": "^2.3.1",
     "dayjs": "^1.11.3",
+    "diff": "^5.1.0",
     "firebase": "^9.8.2",
     "flat": "^5.0.2",
     "formik": "^2.2.9",
