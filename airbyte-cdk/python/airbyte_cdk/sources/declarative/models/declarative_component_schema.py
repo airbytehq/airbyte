@@ -420,10 +420,22 @@ class HttpRequester(BaseModel):
     ] = None
     error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = None
     http_method: Optional[Union[str, HttpMethodEnum]] = "GET"
-    request_body_data: Optional[Union[str, Dict[str, str]]] = None
-    request_body_json: Optional[Union[str, Dict[str, str]]] = None
-    request_headers: Optional[Union[str, Dict[str, str]]] = None
-    request_parameters: Optional[Union[str, Dict[str, str]]] = None
+    request_body_data: Optional[Union[str, Dict[str, str]]] = Field(
+        None,
+        description="Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.",
+    )
+    request_body_json: Optional[Union[str, Dict[str, str]]] = Field(
+        None,
+        description="Specifies how to populate the body of the request with a JSON payload.",
+    )
+    request_headers: Optional[Union[str, Dict[str, str]]] = Field(
+        None,
+        description="Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.",
+    )
+    request_parameters: Optional[Union[str, Dict[str, str]]] = Field(
+        None,
+        description="Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.",
+    )
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
