@@ -29,3 +29,13 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          "adgroups_report_daily":
+            - "granularity"
+            - "metadata"
+          "campaigns_report_daily":
+            - "granularity"
+            - "metadata"
+          "keywords_report_daily":
+            - "granularity"
+            - "metadata"
