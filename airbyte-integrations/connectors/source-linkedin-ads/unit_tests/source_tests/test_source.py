@@ -35,7 +35,7 @@ TEST_OAUTH_CONFIG: dict = {
 
 TEST_CONFIG: dict = {
     "start_date": "2021-08-01",
-    "account_ids": [1, 2],
+    "account_ids": ["1", "2"],
     "credentials": {
         "auth_method": "access_token",
         "access_token": "access_token",
