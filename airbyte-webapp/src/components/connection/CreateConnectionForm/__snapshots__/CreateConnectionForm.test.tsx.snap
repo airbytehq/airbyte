@@ -717,6 +717,7 @@ exports[`CreateConnectionForm should render 1`] = `
                         >
                           <span
                             class="<removed-for-snapshot-test>"
+                            data-testid="pokemon_expandStreamDetails"
                           >
                             <svg
                               aria-hidden="true"
@@ -769,6 +770,7 @@ exports[`CreateConnectionForm should render 1`] = `
                           </div>
                           <div
                             class="<removed-for-snapshot-test>"
+                            data-testid="streamNameCell"
                             title="pokemon"
                           >
                             pokemon
