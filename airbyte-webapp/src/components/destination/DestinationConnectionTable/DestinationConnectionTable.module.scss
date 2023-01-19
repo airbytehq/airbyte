@@ -1,0 +1,5 @@
+@use "scss/variables";
+
+.content {
+  padding: 0 variables.$spacing-xl;
+}

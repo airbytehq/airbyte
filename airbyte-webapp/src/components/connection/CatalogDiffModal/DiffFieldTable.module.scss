@@ -1,0 +1,30 @@
+@use "scss/variables";
+@use "./DiffSection.module.scss";
+
+.header {
+  @extend %sectionSubHeader;
+
+  padding: 0 0 0 30px;
+
+  & th {
+    font-size: 10px;
+    width: 228px;
+  }
+}
+
+.table {
+  width: 100%;
+  border-spacing: 0;
+
+  & tbody > tr:first-of-type > td:nth-of-type(2) {
+    border-radius: variables.$border-radius-md variables.$border-radius-md 0 0;
+  }
+
+  & tbody > tr:last-of-type > td:nth-of-type(2) {
+    border-radius: 0 0 variables.$border-radius-md variables.$border-radius-md;
+  }
+
+  & tbody > tr:only-of-type > td:nth-of-type(2) {
+    border-radius: variables.$border-radius-md;
+  }
+}

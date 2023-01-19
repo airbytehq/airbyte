@@ -43,9 +43,12 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self._cursor = None
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        # This method is called after the records are processed.
         slice_value = stream_slice.get(self.cursor_field.eval(self.config))
         if slice_value and slice_value in self.slice_values:
             self._cursor = slice_value
+        else:
+            raise ValueError(f"Unexpected stream slice: {slice_value}")
 
     def get_stream_state(self) -> StreamState:
         return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}
@@ -56,7 +59,8 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.request_parameter)
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
 
     def get_request_headers(
         self,
@@ -64,7 +68,8 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.header)
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        return self._get_request_option(RequestOptionType.header, stream_slice)
 
     def get_request_body_data(
         self,
@@ -72,7 +77,8 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.body_data)
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        return self._get_request_option(RequestOptionType.body_data, stream_slice)
 
     def get_request_body_json(
         self,
@@ -80,13 +86,18 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.body_json)
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         return [{self.cursor_field.eval(self.config): slice_value} for slice_value in self.slice_values]
 
-    def _get_request_option(self, request_option_type: RequestOptionType):
-        if self.request_option and self.request_option.inject_into == request_option_type:
-            return {self.request_option.field_name: self._cursor}
+    def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: StreamSlice):
+        if self.request_option and self.request_option.inject_into == request_option_type and stream_slice:
+            slice_value = stream_slice.get(self.cursor_field.eval(self.config))
+            if slice_value:
+                return {self.request_option.field_name: slice_value}
+            else:
+                return {}
         else:
             return {}

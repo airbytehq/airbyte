@@ -3,7 +3,7 @@
 #
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pendulum
 import pytest
@@ -124,3 +124,36 @@ def test_read_records(
     records = list(stream.read_records(sync_mode=SyncMode))
 
     assert records == expected
+
+
+@pytest.mark.parametrize(
+    "stream_class, expected",
+    (
+        [Templates, "templates"],
+        [Lists, "marketing/lists"],
+        [Campaigns, "marketing/campaigns"],
+        [Contacts, "marketing/contacts"],
+        [Segments, "marketing/segments"],
+        [Blocks, "suppression/blocks"],
+        [SuppressionGroupMembers, "asm/suppressions"],
+        [SuppressionGroups, "asm/groups"],
+        [GlobalSuppressions, "suppression/unsubscribes"],
+    ),
+)
+def test_path(stream_class, expected):
+    stream = stream_class(Mock())
+    assert stream.path() == expected
+
+
+@pytest.mark.parametrize(
+    "stream_class, status, expected",
+    (
+        (Messages, 400, False),
+        (SuppressionGroupMembers, 401, False),
+    ),
+)
+def test_should_retry_on_permission_error(requests_mock, stream_class, status, expected):
+    stream = stream_class(Mock())
+    response_mock = MagicMock()
+    response_mock.status_code = status
+    assert stream.should_retry(response_mock) == expected

@@ -42,9 +42,10 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
                 DatetimeStreamSlicer(
                     start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", options={}),
                     end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", options={}),
-                    step="1d",
+                    step="P1D",
                     cursor_field=InterpolatedString.create("", options={}),
                     datetime_format="%Y-%m-%d",
+                    cursor_granularity="P1D",
                     config={},
                     options={},
                 ),
@@ -87,17 +88,23 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         DatetimeStreamSlicer(
             start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", options={}),
             end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", options={}),
-            step="1d",
+            step="P1D",
             cursor_field=InterpolatedString(string="date", options={}),
             datetime_format="%Y-%m-%d",
+            cursor_granularity="P1D",
             config={},
             options={},
         ),
     ]
     slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
-    slicer.update_cursor(stream_slice, None)
-    updated_state = slicer.get_stream_state()
-    assert expected_state == updated_state
+
+    if expected_state:
+        slicer.update_cursor(stream_slice, None)
+        updated_state = slicer.get_stream_state()
+        assert expected_state == updated_state
+    else:
+        with pytest.raises(ValueError):
+            slicer.update_cursor(stream_slice, None)
 
 
 @pytest.mark.parametrize(
@@ -169,9 +176,37 @@ def test_request_option(
         ],
         options={},
     )
-    slicer.update_cursor({"owner_resource": "customer", "repository": "airbyte"}, None)
+    stream_slice = {"owner_resource": "customer", "repository": "airbyte"}
 
-    assert expected_req_params == slicer.get_request_params()
-    assert expected_headers == slicer.get_request_headers()
-    assert expected_body_json == slicer.get_request_body_json()
-    assert expected_body_data == slicer.get_request_body_data()
+    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
+    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
+    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
+    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
+
+
+def test_request_option_before_updating_cursor():
+    stream_1_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, options={}, field_name="owner")
+    stream_2_request_option = RequestOption(inject_into=RequestOptionType.header, options={}, field_name="repo")
+    slicer = CartesianProductStreamSlicer(
+        stream_slicers=[
+            ListStreamSlicer(
+                slice_values=["customer", "store", "subscription"],
+                cursor_field="owner_resource",
+                config={},
+                request_option=stream_1_request_option,
+                options={},
+            ),
+            ListStreamSlicer(
+                slice_values=["airbyte", "airbyte-cloud"],
+                cursor_field="repository",
+                config={},
+                request_option=stream_2_request_option,
+                options={},
+            ),
+        ],
+        options={},
+    )
+    assert {} == slicer.get_request_params()
+    assert {} == slicer.get_request_headers()
+    assert {} == slicer.get_request_body_json()
+    assert {} == slicer.get_request_body_data()

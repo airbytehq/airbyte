@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
-from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
@@ -48,7 +48,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
     def __post_init__(self, options: Mapping[str, Any]):
         self.stream_cursor_field = self.stream_cursor_field or []
         self.transformations = self.transformations or []
-        self._schema_loader = self.schema_loader if self.schema_loader else JsonSchema(config=self.config, options=options)
+        self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, options=options)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:

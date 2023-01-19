@@ -60,7 +60,7 @@ export const InviteUsersHint: React.VFC<InviteUsersHintProps> = (props) => {
   const isVisible = useExperiment("connector.inviteUsersHint.visible", false);
 
   return isVisible ? (
-    <InviteUsersModalServiceProvider>
+    <InviteUsersModalServiceProvider invitedFrom={props.connectorType}>
       <InviteUsersHintContent {...props} />
     </InviteUsersModalServiceProvider>
   ) : null;

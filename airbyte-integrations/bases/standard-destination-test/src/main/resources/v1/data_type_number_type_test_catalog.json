@@ -1,0 +1,14 @@
+{
+  "streams": [
+    {
+      "name": "nan_test",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/Number"
+          }
+        }
+      }
+    }
+  ]
+}

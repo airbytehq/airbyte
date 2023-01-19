@@ -1,0 +1,12 @@
+@use "scss/variables";
+
+.catalogTreeTable {
+  padding: variables.$spacing-lg variables.$spacing-xl 0;
+  overflow: auto;
+  border-radius: 10px;
+  margin-bottom: 29px;
+
+  &.newCatalogTreeTable {
+    padding: 0;
+  }
+}

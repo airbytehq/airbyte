@@ -3,6 +3,7 @@ import classNames from "classnames";
 import React, { useState } from "react";
 
 import { Card } from "../Card";
+import { Overlay } from "../Overlay";
 import styles from "./Modal.module.scss";
 
 export interface ModalProps {
@@ -37,7 +38,7 @@ export const Modal: React.FC<React.PropsWithChildren<ModalProps>> = ({
 
   return (
     <Dialog open={isOpen} onClose={onModalClose} data-testid={testId} className={styles.modalPageContainer}>
-      <div className={styles.backdrop} />
+      <Overlay />
       <div className={styles.modalContainer}>
         <Dialog.Panel className={styles.modalPanel}>
           {cardless ? (

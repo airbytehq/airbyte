@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "href": {
+      "type": "string"
+    },
+    "browserLink": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "browserLink": {
+          "type": "string"
+        }
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "owner_name": {
+      "type": "string"
+    },
+    "docSize": {
+      "type": "object",
+      "properties": {
+        "totalRowCount": {
+          "type": "integer"
+        },
+        "tableViewCount": {
+          "type": "integer"
+        },
+        "pageCount": {
+          "type": "integer"
+        },
+        "overApiSizeLimit": {
+          "type": "boolean"
+        }
+      }
+    },
+    "sourceDoc": {
+      "type": "object",
+      "properties": {
+        "totalRowCount": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "href": {
+          "type": "string"
+        },
+        "browserLink": {
+          "type": "string"
+        }
+      }
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "published": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "browserLink": {
+          "type": "string"
+        },
+        "imageLink": {
+          "type": "string"
+        },
+        "discoverable": {
+          "type": "boolean"
+        },
+        "earnCredit": {
+          "type": "boolean"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "categories": {
+          "type": "string",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "folder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "browserLink": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "workspace": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string"
+        },
+        "browserLink": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "workspaceId": {
+      "type": "string"
+    },
+    "folderId": {
+      "type": "string"
+    }
+  }
+}

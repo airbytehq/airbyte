@@ -16,6 +16,7 @@ import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationReadList;
 import io.airbyte.api.model.generated.DestinationSearch;
+import io.airbyte.api.model.generated.DestinationSnippetRead;
 import io.airbyte.api.model.generated.DestinationUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
@@ -26,15 +27,19 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+@Singleton
 public class DestinationHandler {
 
   private final ConnectionsHandler connectionsHandler;
@@ -45,6 +50,7 @@ public class DestinationHandler {
   private final JsonSchemaValidator validator;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
@@ -54,7 +60,8 @@ public class DestinationHandler {
                      final ConnectionsHandler connectionsHandler,
                      final Supplier<UUID> uuidGenerator,
                      final JsonSecretsProcessor secretsProcessor,
-                     final ConfigurationUpdate configurationUpdate) {
+                     final ConfigurationUpdate configurationUpdate,
+                     final OAuthConfigSupplier oAuthConfigSupplier) {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
@@ -63,13 +70,16 @@ public class DestinationHandler {
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
     this.secretsProcessor = secretsProcessor;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
+  @Inject
   public DestinationHandler(final ConfigRepository configRepository,
                             final SecretsRepositoryReader secretsRepositoryReader,
                             final SecretsRepositoryWriter secretsRepositoryWriter,
                             final JsonSchemaValidator integrationSchemaValidation,
-                            final ConnectionsHandler connectionsHandler) {
+                            final ConnectionsHandler connectionsHandler,
+                            final OAuthConfigSupplier oAuthConfigSupplier) {
     this(
         configRepository,
         secretsRepositoryReader,
@@ -80,7 +90,8 @@ public class DestinationHandler {
         JsonSecretsProcessor.builder()
             .copySecrets(true)
             .build(),
-        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader),
+        oAuthConfigSupplier);
   }
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
@@ -100,7 +111,7 @@ public class DestinationHandler {
         false);
 
     // read configuration from db
-    return buildDestinationRead(destinationId, spec);
+    return buildDestinationRead(configRepository.getDestinationConnection(destinationId), spec);
   }
 
   public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody)
@@ -157,7 +168,8 @@ public class DestinationHandler {
         updatedDestination.getTombstone());
 
     // read configuration from db
-    return buildDestinationRead(destinationUpdate.getDestinationId(), spec);
+    return buildDestinationRead(
+        configRepository.getDestinationConnection(destinationUpdate.getDestinationId()), spec);
   }
 
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody)
@@ -195,20 +207,11 @@ public class DestinationHandler {
 
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+
     final List<DestinationRead> reads = Lists.newArrayList();
-
-    for (final DestinationConnection dci : configRepository.listDestinationConnection()) {
-      if (!dci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
-        continue;
-      }
-
-      if (dci.getTombstone()) {
-        continue;
-      }
-
-      reads.add(buildDestinationRead(dci.getDestinationId()));
+    for (final DestinationConnection dci : configRepository.listWorkspaceDestinationConnection(workspaceIdRequestBody.getWorkspaceId())) {
+      reads.add(buildDestinationRead(dci));
     }
-
     return new DestinationReadList().destinations(reads);
   }
 
@@ -216,15 +219,9 @@ public class DestinationHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<DestinationRead> reads = Lists.newArrayList();
 
-    for (final DestinationConnection destinationConnection : configRepository.listDestinationConnection()) {
-      if (!destinationConnection.getDestinationDefinitionId().equals(destinationDefinitionIdRequestBody.getDestinationDefinitionId())) {
-        continue;
-      }
-      if (destinationConnection.getTombstone() != null && destinationConnection.getTombstone()) {
-        continue;
-      }
-
-      reads.add(buildDestinationRead(destinationConnection.getDestinationId()));
+    for (final DestinationConnection destinationConnection : configRepository
+        .listDestinationsForDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId())) {
+      reads.add(buildDestinationRead(destinationConnection));
     }
 
     return new DestinationReadList().destinations(reads);
@@ -236,7 +233,7 @@ public class DestinationHandler {
 
     for (final DestinationConnection dci : configRepository.listDestinationConnection()) {
       if (!dci.getTombstone()) {
-        final DestinationRead destinationRead = buildDestinationRead(dci.getDestinationId());
+        final DestinationRead destinationRead = buildDestinationRead(dci);
         if (connectionsHandler.matchSearch(destinationSearch, destinationRead)) {
           reads.add(destinationRead);
         }
@@ -262,26 +259,33 @@ public class DestinationHandler {
                                             final JsonNode configurationJson,
                                             final boolean tombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
+    final JsonNode oAuthMaskedConfigurationJson =
+        oAuthConfigSupplier.maskDestinationOAuthParameters(destinationDefinitionId, workspaceId, configurationJson);
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withName(name)
         .withDestinationDefinitionId(destinationDefinitionId)
         .withWorkspaceId(workspaceId)
         .withDestinationId(destinationId)
-        .withConfiguration(configurationJson)
+        .withConfiguration(oAuthMaskedConfigurationJson)
         .withTombstone(tombstone);
     secretsRepositoryWriter.writeDestinationConnection(destinationConnection, getSpec(destinationDefinitionId));
   }
 
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    final ConnectorSpecification spec = getSpec(configRepository.getDestinationConnection(destinationId).getDestinationDefinitionId());
-    return buildDestinationRead(destinationId, spec);
+    return buildDestinationRead(configRepository.getDestinationConnection(destinationId));
   }
 
-  private DestinationRead buildDestinationRead(final UUID destinationId, final ConnectorSpecification spec)
+  private DestinationRead buildDestinationRead(final DestinationConnection destinationConnection)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final ConnectorSpecification spec = getSpec(destinationConnection.getDestinationDefinitionId());
+    return buildDestinationRead(destinationConnection, spec);
+  }
+
+  private DestinationRead buildDestinationRead(final DestinationConnection destinationConnection, final ConnectorSpecification spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read
-    final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
+    final DestinationConnection dci = Jsons.clone(destinationConnection);
     dci.setConfiguration(secretsProcessor.prepareSecretsForOutput(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
@@ -308,6 +312,16 @@ public class DestinationHandler {
         .destinationDefinitionId(destinationConnection.getDestinationDefinitionId())
         .connectionConfiguration(destinationConnection.getConfiguration())
         .name(destinationConnection.getName())
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
+  }
+
+  protected static DestinationSnippetRead toDestinationSnippetRead(final DestinationConnection destinationConnection,
+                                                                   final StandardDestinationDefinition standardDestinationDefinition) {
+    return new DestinationSnippetRead()
+        .destinationId(destinationConnection.getDestinationId())
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationName(standardDestinationDefinition.getName())
         .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
   }

@@ -1,0 +1,15 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/coda
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Required attributes for hitting apis
+  type: object
+  required:
+    - auth_token
+  additionalProperties: true
+  properties:
+    auth_token:
+      title: Authentication token
+      type: string
+      description: Bearer token
+      airbyte_secret: true
+      order: 0

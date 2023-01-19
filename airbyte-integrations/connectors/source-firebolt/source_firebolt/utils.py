@@ -52,6 +52,10 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
         airbyte_type = convert_type(inner_type, nullable=True)
         result = {"type": "array", "items": airbyte_type}
     else:
+        # Strip complex type info e.g. DECIMAL(8,23) -> DECIMAL
+        fb_type = fb_type[: fb_type.find("(")] if "(" in fb_type else fb_type
+        # Remove NULL/NOT NULL from child type of an array e.g. ARRAY(INT NOT NULL)
+        fb_type = fb_type.removesuffix(" NOT NULL").removesuffix(" NULL")
         result = map.get(fb_type.upper(), {"type": "string"})
         if nullable:
             result["type"] = ["null", result["type"]]

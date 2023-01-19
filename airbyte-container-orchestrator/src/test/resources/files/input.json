@@ -1,0 +1,162 @@
+{
+  "destinationConfiguration": {
+    "host": "example.us-east-2.rds.amazonaws.com",
+    "port": 5432,
+    "schema": "public",
+    "database": "example",
+    "password": "dmVyeXN0cm9uZ3Bhc3N3b3Jk",
+    "ssl_mode": {
+      "mode": "require"
+    },
+    "username": "legit-user",
+    "tunnel_method": {
+      "tunnel_method": "NO_TUNNEL"
+    }
+  },
+  "catalog": {
+    "streams": [
+      {
+        "stream": {
+          "name": "example",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "logs": {
+                "type": "string"
+              },
+              "checksum": {
+                "type": "string"
+              },
+              "started_at": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              },
+              "finished_at": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              },
+              "migration_name": {
+                "type": "string"
+              },
+              "rolled_back_at": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_with_timezone"
+              },
+              "applied_steps_count": {
+                "type": "number",
+                "airbyte_type": "integer"
+              }
+            }
+          },
+          "supported_sync_modes": ["full_refresh", "incremental"],
+          "default_cursor_field": [],
+          "source_defined_primary_key": [["id"]],
+          "namespace": "events"
+        },
+        "sync_mode": "full_refresh",
+        "cursor_field": [],
+        "destination_sync_mode": "overwrite",
+        "primary_key": [["id"]]
+      },
+      {
+        "stream": {
+          "name": "example",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "event": {
+                "type": "string"
+              },
+              "context": {
+                "type": "string"
+              },
+              "sent_at": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_without_timezone"
+              },
+              "user_id": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_without_timezone"
+              },
+              "message_id": {
+                "type": "string"
+              },
+              "properties": {
+                "type": "string"
+              },
+              "anonymous_id": {
+                "type": "string"
+              },
+              "integrations": {
+                "type": "string"
+              }
+            }
+          },
+          "supported_sync_modes": ["full_refresh", "incremental"],
+          "default_cursor_field": [],
+          "source_defined_primary_key": [["id"]],
+          "namespace": "events"
+        },
+        "sync_mode": "incremental",
+        "cursor_field": ["timestamp"],
+        "destination_sync_mode": "append_dedup",
+        "primary_key": [["id"]]
+      },
+      {
+        "stream": {
+          "name": "example",
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "doc_id": {
+                "type": "string"
+              },
+              "event_id": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "airbyte_type": "timestamp_without_timezone"
+              }
+            }
+          },
+          "supported_sync_modes": ["full_refresh", "incremental"],
+          "default_cursor_field": [],
+          "source_defined_primary_key": [["id"]],
+          "namespace": "events"
+        },
+        "sync_mode": "incremental",
+        "cursor_field": ["timestamp"],
+        "destination_sync_mode": "append_dedup",
+        "primary_key": [["id"]]
+      }
+    ]
+  },
+  "resourceRequirements": {
+    "cpu_request": "",
+    "cpu_limit": "",
+    "memory_request": "1.5Gi",
+    "memory_limit": "1.5Gi"
+  }
+}

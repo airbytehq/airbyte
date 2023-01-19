@@ -11,6 +11,7 @@ const windowConfigProvider: ConfigProvider = async () => {
       token: window.SEGMENT_TOKEN,
     },
     apiUrl: window.API_URL,
+    connectorBuilderApiUrl: window.CONNECTOR_BUILDER_API_URL,
     version: window.AIRBYTE_VERSION,
     // cloud only start
     // TODO: remove when infra team supports proper webapp building

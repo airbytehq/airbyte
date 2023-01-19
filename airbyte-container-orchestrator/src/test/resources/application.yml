@@ -1,0 +1,23 @@
+micronaut:
+  server:
+    port: 9000
+
+airbyte:
+  acceptance:
+    test:
+      enabled: false
+  config-dir: src/test/resources/files
+  control:
+    plane:
+      auth-endpoint: ""
+  data:
+    plane:
+      service-account:
+        credentials-path: ""
+        email: ""
+  internal:
+    api:
+      auth-header:
+        name: ""
+        value: ""
+      host: airbyte-server-svc:8001

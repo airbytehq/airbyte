@@ -1,0 +1,168 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.webhookGuide {
+  opacity: 0;
+  visibility: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 0;
+  max-height: 0;
+  padding: 0 variables.$spacing-xl;
+  margin-bottom: 0;
+  background-color: colors.$grey-50;
+  border-radius: variables.$border-radius-xs;
+  transition: variables.$transition-out;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+    height: 150px;
+    max-height: 100%;
+    margin-bottom: variables.$spacing-xl;
+  }
+
+  .webhookGuideTitle {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: variables.$spacing-lg;
+
+    .crossIcon {
+      font-size: 22px;
+    }
+  }
+
+  ul {
+    list-style-type: none;
+    list-style-position: inside;
+    margin: 0;
+    padding: 0;
+
+    li + li {
+      padding-top: variables.$spacing-md;
+    }
+  }
+
+  .webhookGuideLink {
+    display: inline-flex;
+    align-items: center;
+    padding: variables.$spacing-sm 0;
+    color: colors.$blue;
+
+    .text {
+      color: colors.$blue;
+      padding-left: variables.$spacing-md;
+    }
+  }
+
+  .webhookGuideImg {
+    position: absolute;
+    right: 60px;
+    bottom: -20px;
+    width: 106px;
+    height: 125px;
+  }
+}
+
+.webhookUrlLabelRow {
+  position: relative;
+  margin-bottom: variables.$spacing-md;
+
+  .webhookUrlLabelCell {
+    flex: auto;
+    width: 100%;
+
+    label {
+      padding-bottom: 0;
+    }
+  }
+
+  .webhookGuideButtonCell {
+    position: relative;
+    flex: auto;
+    padding: 0;
+
+    .webhookGuideButton {
+      color: colors.$blue;
+      text-decoration: underline;
+      padding-left: 0;
+      padding-right: 0;
+      white-space: nowrap;
+      margin-right: 45px;
+
+      &:hover {
+        color: colors.$blue;
+      }
+    }
+
+    .webhookGuideButtonImg {
+      position: absolute;
+      bottom: 6px;
+      right: 0;
+      width: 34px;
+      height: 40px;
+    }
+  }
+}
+
+.webhookUrlRow {
+  margin-bottom: variables.$spacing-xl;
+
+  .webhookUrlInputCell {
+    position: relative;
+    flex: auto;
+    width: 100%;
+
+    .webhookErrorMessage {
+      position: absolute;
+      bottom: -16px;
+      left: 0;
+      color: colors.$red-600;
+    }
+  }
+
+  .testButtonCell {
+    flex: auto;
+    padding: 0;
+
+    .testButton {
+      white-space: nowrap;
+    }
+  }
+}
+
+.notificationSettingsLabelRow {
+  margin-bottom: variables.$spacing-md;
+
+  .notificationSettingsLabelCell {
+    label {
+      padding-bottom: 0;
+    }
+  }
+}
+
+.notificationSettingsRow {
+  margin-bottom: variables.$spacing-md;
+
+  .notificationSettingsCell {
+    position: relative;
+    display: flex;
+
+    .sendOnFailure {
+      margin-right: variables.$spacing-xl;
+    }
+  }
+}
+
+.tooltip {
+  transform: translate(-#{variables.$spacing-xs}, -#{variables.$spacing-md});
+  white-space: nowrap;
+}
+
+.action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: variables.$spacing-xl;
+}

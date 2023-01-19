@@ -2,9 +2,9 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { ConnectorIcon } from "components/ConnectorIcon";
-import StatusIcon from "components/StatusIcon";
-import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
+import { StatusIcon } from "components/ui/StatusIcon";
+import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 
 import { Status } from "../types";
 
@@ -46,6 +46,8 @@ const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
         ? "inactive"
         : status === Status.PENDING
         ? "loading"
+        : status === Status.CANCELLED
+        ? "cancelled"
         : undefined,
     [status]
   );

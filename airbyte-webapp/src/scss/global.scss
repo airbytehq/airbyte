@@ -1,0 +1,28 @@
+@use "./theme-light";
+@use "./colors";
+@use "./fonts";
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  font-weight: normal;
+  -webkit-font-smoothing: antialiased;
+  color: colors.$dark-blue;
+  font-family: fonts.$primary;
+  background: colors.$grey-50;
+  font-size: 14px;
+}
+
+button,
+input,
+textarea {
+  font-family: fonts.$primary;
+}
+
+* {
+  box-sizing: border-box;
+}

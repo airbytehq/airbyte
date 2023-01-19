@@ -1,0 +1,22 @@
+## What
+A `test_strictness_level` field was introduced to Source Acceptance Tests (SAT).
+{{ connector_name }} is a {{ release_stage }} connector, we want it to have a `high` test strictness level.
+
+**This will help**:
+- maximize the SAT coverage on this connector.
+- document its potential weaknesses in term of test coverage.
+
+## How
+1. Migrate the existing `acceptance-test-config.yml` file to the latest configuration format. (See instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/source-acceptance-test/README.md#L61))
+2. Enable `high` test strictness level in `acceptance-test-config.yml`. (See instructions [here](https://github.com/airbytehq/airbyte/blob/master/docs/connector-development/testing-connectors/source-acceptance-tests-reference.md#L240))
+
+⚠️ ⚠️ ⚠️ 
+**If tests are failing please fix the failing test by changing the `acceptance-test-config.yml` file or use `bypass_reason` fields to explain why a specific test can't be run.**
+
+Please open a new PR if the new enabled tests help discover a new bug. 
+Once this bug fix is merged please rebase this branch and run `/test` again.
+
+You can find more details about the rules enforced by `high` test strictness level [here](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference/).
+
+## Review process
+Please ask the `connector-operations` teams for review.

@@ -8,7 +8,7 @@ import logging
 import os
 import pkgutil
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
+from typing import Any, Generic, List, Mapping, Optional, Protocol, TypeVar, Union
 
 import yaml
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
@@ -47,10 +47,24 @@ class BaseConnector(ABC, Generic[TConfig]):
         """
 
     @staticmethod
-    def read_config(config_path: str) -> TConfig:
-        with open(config_path, "r") as file:
+    def read_config(config_path: str) -> Mapping[str, Any]:
+        config = BaseConnector._read_json_file(config_path)
+        if isinstance(config, Mapping):
+            return config
+        else:
+            raise ValueError(
+                f"The content of {config_path} is not an object and therefore is not a valid config. Please ensure the file represent a config."
+            )
+
+    @staticmethod
+    def _read_json_file(file_path: str) -> Union[None, bool, float, int, str, List[Any], Mapping[str, Any]]:
+        with open(file_path, "r") as file:
             contents = file.read()
-        return json.loads(contents)
+
+        try:
+            return json.loads(contents)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Could not read json file {file_path}: {error}. Please ensure that it is a valid JSON.")
 
     @staticmethod
     def write_config(config: TConfig, config_path: str):
@@ -74,7 +88,10 @@ class BaseConnector(ABC, Generic[TConfig]):
         if yaml_spec:
             spec_obj = yaml.load(yaml_spec, Loader=yaml.SafeLoader)
         elif json_spec:
-            spec_obj = json.loads(json_spec)
+            try:
+                spec_obj = json.loads(json_spec)
+            except json.JSONDecodeError as error:
+                raise ValueError(f"Could not read json spec file: {error}. Please ensure that it is a valid JSON.")
         else:
             raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
 

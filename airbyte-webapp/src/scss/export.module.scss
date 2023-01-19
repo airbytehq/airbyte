@@ -21,7 +21,6 @@
   blue800: colors.$blue-800;
   blue900: colors.$blue-900;
   blue: colors.$blue;
-  blueTransparent: colors.$blue-transparent;
 
   darkBlue50: colors.$dark-blue-50;
   darkBlue100: colors.$dark-blue-100;
@@ -84,10 +83,6 @@
   red900: colors.$red-900;
   red: colors.$red;
 
-  beige50: colors.$beige-50;
-  beige100: colors.$beige-100;
-  beige: colors.$beige;
-
   black: colors.$black;
   white: colors.$white;
 
@@ -109,9 +104,6 @@
 
   shadowColor: colors.$shadowColor;
   cardShadowColor: colors.$cardShadowColor;
-
-  textColor90: rgba(colors.$dark-blue, 0.9);
-  darkBlue90: rgba(colors.$dark-blue, 0.9);
 
   lightRedColor: colors.$lightRedColor;
   transparentColor: colors.$transparentColor;

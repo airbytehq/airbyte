@@ -183,3 +183,9 @@ class ConnectorConfig(BaseConfig):
         description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
         default=50,
     )
+
+    action_breakdowns_allow_empty: bool = Field(
+        description="Allows action_breakdowns to be an empty list",
+        default=True,
+        airbyte_hidden=True,
+    )

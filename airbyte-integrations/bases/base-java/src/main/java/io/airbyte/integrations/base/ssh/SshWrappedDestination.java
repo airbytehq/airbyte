@@ -6,20 +6,18 @@ package io.airbyte.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.List;
 import java.util.function.Consumer;
-import org.apache.sshd.common.SshException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +65,7 @@ public class SshWrappedDestination implements Destination {
     try {
       return (endPointKey != null) ? SshTunnel.sshWrap(config, endPointKey, delegate::check)
           : SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
-    } catch (final SshException | ConnectionErrorException e) {
+    } catch (final RuntimeException e) {
       final String sshErrorMessage = "Could not connect with provided SSH configuration. Error: " + e.getMessage();
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, sshErrorMessage);
       return new AirbyteConnectionStatus()

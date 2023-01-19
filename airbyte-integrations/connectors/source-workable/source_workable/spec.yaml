@@ -1,0 +1,28 @@
+documentationUrl: https://docs.airbyte.io/integrations/sources/workable
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Workable API Spec
+  type: object
+  required:
+    - api_key
+    - account_subdomain
+    - start_date
+  additionalProperties: true
+  properties:
+    api_key:
+      title: API Key
+      type: string
+      description: Your Workable API Key. See <a href="https://workable.readme.io/reference/generate-an-access-token">here</a>.
+      airbyte_secret: true
+    account_subdomain:
+      title: Account Subdomain
+      type: string
+      description: Your Workable account subdomain, e.g. https://your_account_subdomain.workable.com.
+    start_date:
+      title: Start Date
+      type: string
+      description: "Get data that was created since this date (format: YYYYMMDDTHHMMSSZ)."
+      pattern: ^[0-9]{8}T[0-9]{6}Z$
+      examples:
+        - 20150708T115616Z
+        - 20221115T225616Z

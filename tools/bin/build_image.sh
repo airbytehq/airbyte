@@ -19,8 +19,8 @@ assert_root
 cd "$PROJECT_DIR"
 
 function validate_dockerignore() {
-  excludes_all=$(grep -w '^\*$' .dockerignore)
-  excludes_except=$(grep -w '^!.*' .dockerignore)
+  excludes_all=$(grep -w '^\*$' .dockerignore || true)
+  excludes_except=$(grep -w '^!.*' .dockerignore || true)
   if [ -n "$excludes_all" ] || [ -n "$excludes_except" ]; then
     error "Cannot include exclusion exceptions when following symlinks. Please use an exclude pattern that doesn't use exclude-all (e.g: *) or exclude-except (e.g: !/some/pattern)"
   fi

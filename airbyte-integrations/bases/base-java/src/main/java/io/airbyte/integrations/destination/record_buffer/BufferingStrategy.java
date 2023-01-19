@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 
 /**
  * High-level interface used by
@@ -23,7 +23,7 @@ public interface BufferingStrategy extends AutoCloseable {
    * Add a new message to the buffer while consuming streams
    *
    * @param stream - stream associated with record
-   * @param message - message to buffer
+   * @param message - {@link AirbyteMessage} to buffer
    * @return true if this record cause ALL records in the buffer to flush, otherwise false.
    * @throws Exception throw on failure
    */

@@ -4,7 +4,10 @@
 
 package io.airbyte.workers.internal;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import datadog.trace.api.Trace;
 import io.airbyte.protocol.models.AirbyteProtocolSchema;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.function.Predicate;
@@ -23,6 +26,7 @@ public class AirbyteProtocolPredicate implements Predicate<JsonNode> {
     schema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.getFile(), "AirbyteMessage");
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public boolean test(final JsonNode s) {
     return jsonSchemaValidator.test(schema, s);

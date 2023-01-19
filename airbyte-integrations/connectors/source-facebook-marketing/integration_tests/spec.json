@@ -173,6 +173,7 @@
                   "social_spend",
                   "spend",
                   "total_postbacks",
+                  "total_postbacks_detailed",
                   "unique_actions",
                   "unique_clicks",
                   "unique_conversions",
@@ -231,12 +232,15 @@
                   "hourly_stats_aggregated_by_audience_time_zone",
                   "image_asset",
                   "impression_device",
+                  "is_conversion_id_modeled",
                   "link_url_asset",
+                  "mmm",
                   "place_page_id",
                   "platform_position",
                   "product_id",
                   "publisher_platform",
                   "region",
+                  "skan_campaign_id",
                   "skan_conversion_id",
                   "title_asset",
                   "video_asset"
@@ -327,6 +331,13 @@
         "order": 9,
         "exclusiveMinimum": 0,
         "type": "integer"
+      },
+      "action_breakdowns_allow_empty": {
+        "title": "Action Breakdowns Allow Empty",
+        "description": "Allows action_breakdowns to be an empty list",
+        "default": true,
+        "airbyte_hidden": true,
+        "type": "boolean"
       }
     },
     "required": ["account_id", "start_date", "access_token"]

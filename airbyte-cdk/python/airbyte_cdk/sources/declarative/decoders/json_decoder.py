@@ -19,4 +19,7 @@ class JsonDecoder(Decoder, JsonSchemaMixin):
     options: InitVar[Mapping[str, Any]]
 
     def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List]:
-        return response.json() or {}
+        try:
+            return response.json()
+        except requests.exceptions.JSONDecodeError:
+            return {}

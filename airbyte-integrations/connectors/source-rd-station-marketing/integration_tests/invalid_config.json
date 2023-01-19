@@ -1,0 +1,10 @@
+{
+  "authorization": {
+    "auth_type": "Client",
+    "client_id": "fake-client-id",
+    "client_secret": "fake-client-secret",
+    "refresh_token": "fake-refresh-token"
+  },
+  "replication_start_date": "2022-01-01T00:00:00Z",
+  "all_contacts_segmentation": "9999999999999"
+}
