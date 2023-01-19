@@ -90,8 +90,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     """
 
     primary_key = ["profileId", "recordType", "reportDate", "updatedAt"]
-    # Amazon ads updates the data for the next 3 days
-    LOOK_BACK_WINDOW = 3
     # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
     REPORTING_PERIOD = 60
     # (Service limits section)
@@ -118,7 +116,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._session = requests.Session()
         self._model = self._generate_model()
         self._start_date: Optional[Date] = config.get("start_date")
-        self._look_back_window: int = config.get("look_back_window", self.LOOK_BACK_WINDOW)
+        self._look_back_window: int = config.get("look_back_window")
         # Timeout duration in minutes for Reports. Default is 180 minutes.
         self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
         # Maximum retries Airbyte will attempt for fetching report data. Default is 5.
