@@ -32,3 +32,18 @@
 .iconContainer {
   flex: 0 0 82px;
 }
+
+.resendEmailLink {
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  color: colors.$dark-blue;
+  border: none;
+  background-color: transparent;
+  font-size: inherit;
+
+  &:hover,
+  &:active {
+    color: colors.$blue;
+  }
+}
