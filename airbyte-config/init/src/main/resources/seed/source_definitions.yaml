@@ -1167,6 +1167,13 @@
   icon: openweather.svg
   sourceType: api
   releaseStage: alpha
+- name: Opsgenie
+  sourceDefinitionId: 06bdb480-2598-40b8-8b0f-fc2e2d2abdda
+  dockerRepository: airbyte/source-opsgenie
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/opsgenie
+  sourceType: api
+  releaseStage: alpha
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
