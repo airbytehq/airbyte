@@ -106,10 +106,17 @@ public class CatalogConverter {
 
   public static io.airbyte.api.model.generated.AirbyteCatalog toApi(final io.airbyte.protocol.models.AirbyteCatalog catalog,
                                                                     StandardSourceDefinition sourceDefinition) {
-    Boolean suggestingStreams = sourceDefinition.getSuggestedStreams() != null;
     List<String> suggestedStreams = new ArrayList<>();
-    if (suggestingStreams) {
-      suggestedStreams.addAll(sourceDefinition.getSuggestedStreams().getStreams());
+    Boolean suggestingStreams;
+
+    // There are occasions in tests where we have not seeded the sourceDefinition fully.  This is to prevent those tests from failing
+    if (sourceDefinition != null){
+      suggestingStreams = sourceDefinition.getSuggestedStreams() != null;
+      if (suggestingStreams) {
+        suggestedStreams.addAll(sourceDefinition.getSuggestedStreams().getStreams());
+      }
+    } else {
+      suggestingStreams = false;
     }
 
     return new io.airbyte.api.model.generated.AirbyteCatalog()
