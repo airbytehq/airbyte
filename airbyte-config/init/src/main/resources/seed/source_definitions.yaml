@@ -511,6 +511,8 @@
   releaseStage: alpha
   allowedHosts:
     hosts: []
+  suggestedStreams:
+    streams: []
 - name: Fastbill
   sourceDefinitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
   dockerRepository: airbyte/source-fastbill
@@ -602,6 +604,18 @@
   icon: github.svg
   sourceType: api
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - branches
+      - comments
+      - issues
+      - organizations
+      - pull_requests
+      - repositories
+      - stargazers
+      - tags
+      - teams
+      - users
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
