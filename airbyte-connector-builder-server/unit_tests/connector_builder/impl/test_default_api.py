@@ -93,6 +93,10 @@ def record_message(stream: str, data: dict) -> AirbyteMessage:
     return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=1234))
 
 
+def slice_message() -> AirbyteMessage:
+    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"key": "value"}'))
+
+
 def test_list_streams():
     expected_streams = [
         StreamsListReadStreams(name="hashiras", url="https://demonslayers.com/api/v1/hashiras"),
@@ -621,6 +625,51 @@ def test_create_response_from_log_message(log_message, expected_response):
     actual_response = api._create_response_from_log_message(airbyte_log_message)
 
     assert actual_response == expected_response
+
+
+def test_read_stream_with_many_slices():
+    request = {
+        "url": "https://demonslayers.com/api/v1/hashiras?era=taisho",
+        "headers": {"Content-Type": "application/json"},
+        "body": {"custom": "field"},
+        "http_method": "GET",
+    }
+    response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
+
+    mock_source_adapter_cls = make_mock_adapter_cls(
+        iter(
+            [
+                slice_message(),
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Shinobu Kocho"}),
+                record_message("hashiras", {"name": "Mitsuri Kanroji"}),
+                request_log_message(request),
+                response_log_message(response),
+                record_message("hashiras", {"name": "Obanai Iguro"}),
+                request_log_message(request),
+                response_log_message(response),
+                slice_message(),
+                record_message("hashiras", {"name": "Muichiro Tokito"}),
+            ]
+        )
+    )
+
+    api = DefaultApiImpl(mock_source_adapter_cls)
+
+    loop = asyncio.get_event_loop()
+    stream_read: StreamRead = loop.run_until_complete(
+        api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
+    )
+
+    assert 2 == len(stream_read.slices)
+
+    assert 2 == len(stream_read.slices[0].pages)
+    assert 2 == len(stream_read.slices[0].pages[0].records)
+    assert 1 == len(stream_read.slices[0].pages[1].records)
+
+    assert 1 == len(stream_read.slices[1].pages)
+    assert 1 == len(stream_read.slices[1].pages[0].records)
 
 
 def make_mock_adapter_cls(return_value: Iterator) -> MagicMock:

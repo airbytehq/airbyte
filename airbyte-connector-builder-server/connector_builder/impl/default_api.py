@@ -124,7 +124,7 @@ spec:
         else:
             record_limit = min(stream_read_request_body.record_limit, self.max_record_limit)
 
-        single_slice = StreamReadSlices(pages=[])
+        slices = []
         log_messages = []
         try:
             for message_group in self._get_message_groups(
@@ -135,7 +135,7 @@ spec:
                 if isinstance(message_group, AirbyteLogMessage):
                     log_messages.append({"message": message_group.message})
                 else:
-                    single_slice.pages.append(message_group)
+                    slices.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
             self.logger.error(f"Could not perform read with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}")
@@ -144,7 +144,7 @@ spec:
                 detail=f"Could not perform read with with error: {error.args[0]}",
             )
 
-        return StreamRead(logs=log_messages, slices=[single_slice],
+        return StreamRead(logs=log_messages, slices=slices,
                           inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream))
 
     def _get_message_groups(self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int) -> Iterable[
@@ -168,16 +168,24 @@ spec:
         current_records = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
+        first_slice = True
+        current_slice_pages = []
 
         while len(current_records) < limit and (message := next(messages, None)):
-            if first_page and message.type == Type.LOG and message.log.message.startswith("request:"):
+            if message.type == Type.LOG and message.log.message.startswith("slice:"):
+                if first_slice:
+                    first_slice = False
+                else:
+                    yield StreamReadSlices(pages=current_slice_pages)
+                    current_slice_pages = []
+            elif first_page and message.type == Type.LOG and message.log.message.startswith("request:"):
                 first_page = False
                 request = self._create_request_from_log_message(message.log)
                 current_page_request = request
             elif message.type == Type.LOG and message.log.message.startswith("request:"):
                 if not current_page_request or not current_page_response:
                     raise ValueError("Every message grouping should have at least one request and response")
-                yield StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
+                current_slice_pages.append(StreamReadPages(request=current_page_request, response=current_page_response, records=current_records))
                 current_page_request = self._create_request_from_log_message(message.log)
                 current_records = []
             elif message.type == Type.LOG and message.log.message.startswith("response:"):
@@ -190,7 +198,8 @@ spec:
         else:
             if not current_page_request or not current_page_response:
                 raise ValueError("Every message grouping should have at least one request and response")
-            yield StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
+            current_slice_pages.append(StreamReadPages(request=current_page_request, response=current_page_response, records=current_records))
+            yield StreamReadSlices(pages=current_slice_pages)
 
     def _create_request_from_log_message(self, log_message: AirbyteLogMessage) -> Optional[HttpRequest]:
         # TODO: As a temporary stopgap, the CDK emits request data as a log message string. Ideally this should come in the
