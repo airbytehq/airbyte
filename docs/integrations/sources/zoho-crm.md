@@ -132,4 +132,5 @@ Make sure to complete the auth flow quickly, as the initial token granted by Zoh
 
 | Version | Date       | Pull Request                                             | Subject         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------|
+| 0.1.1  | 2023-01-19 | [21587](https://github.com/airbytehq/airbyte/pull/21587) | Make sure spec works as expected in UI                                                                          |
 | 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release |
