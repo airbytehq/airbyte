@@ -83,16 +83,6 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }

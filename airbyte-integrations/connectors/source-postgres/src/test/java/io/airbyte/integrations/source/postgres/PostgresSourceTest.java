@@ -31,6 +31,8 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -40,6 +42,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +104,8 @@ class PostgresSourceTest {
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final ConfiguredAirbyteCatalog CONFIGURED_INCR_CATALOG = toIncrementalConfiguredCatalog(CATALOG);
+
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
@@ -459,6 +464,34 @@ class PostgresSourceTest {
   }
 
   @Test
+  void testReadIncrementalSuccess() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_INCR_CATALOG
+            .withStreams(CONFIGURED_INCR_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
+                Collectors.toList()));
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
+
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+    setEmittedAtToNull(actualMessages);
+
+    // An extra state message is emitted, in addition to the record messages.
+    assertEquals(actualMessages.size(), ASCII_MESSAGES.size() + 1);
+    assertThat(actualMessages.contains(ASCII_MESSAGES));
+
+    final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
+
+    // Incremental sync should only read one new message (where id = 'NaN')
+    final Set<AirbyteMessage> nextSyncMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, state));
+    setEmittedAtToNull(nextSyncMessages);
+
+    // An extra state message is emitted, in addition to the record messages.
+    assertEquals(nextSyncMessages.size(), 2);
+    assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", null, "name", "piccolo", "power", null))));
+  }
+
+  @Test
   void testIsCdc() {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
@@ -632,6 +665,28 @@ class PostgresSourceTest {
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
+  }
+
+  private static List<AirbyteStateMessage> extractStateMessage(final Set<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  private static ConfiguredAirbyteCatalog toIncrementalConfiguredCatalog(final AirbyteCatalog catalog) {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(catalog.getStreams()
+            .stream()
+            .map(s -> toIncrementalConfiguredStream(s))
+            .toList());
+  }
+
+  private static ConfiguredAirbyteStream toIncrementalConfiguredStream(final AirbyteStream stream) {
+    return new ConfiguredAirbyteStream()
+        .withStream(stream)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(List.of("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withPrimaryKey(new ArrayList<>());
   }
 
 }
