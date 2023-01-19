@@ -146,3 +146,9 @@ spec:
           resources: {{- toYaml .Values.resources | nindent 12 }}
           {{- end }}
 
+        {{- if .Values.extraContainers }}
+          {{ toYaml .Values.extraContainers | nindent 6 }}
+        {{- end }}
+        {{- if .Values.global.extraContainers }}
+          {{ toYaml .Values.global.extraContainers | nindent 8 }}
+        {{- end }}
