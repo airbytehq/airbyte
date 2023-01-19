@@ -1,7 +1,7 @@
 definition_type: connection
 resource_name: revenue_db <> Snowflake
 source_configuration_path: sources/revenue_db/configuration.yaml
-destination_configuration_path: destinations/snowflake_raw_test_cdc/configuration.yaml
+destination_configuration_path: destinations/snowflake_raw_revenue_db_public/configuration.yaml
 configuration:
   sync_catalog:
     streams:
@@ -2403,7 +2403,7 @@ configuration:
   non_breaking_changes_preference: ignore
   namespace_definition: destination
   namespace_format: ${SOURCE_NAMESPACE}
-  prefix: revenue_db_public_
+  prefix: ''
   schedule_type: manual
   operations:
   - name: Normalization
