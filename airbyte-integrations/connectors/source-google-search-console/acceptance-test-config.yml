@@ -27,7 +27,9 @@ acceptance_tests:
           extra_records: yes
         timeout_seconds: 1800
         empty_streams:
-          - name: "search_analytics_all_fields"
+          - name: search_analytics_all_fields
+            bypass_reason: "Stream has PII data."
+          - name: search_analytics_by_page
             bypass_reason: "Stream has PII data."
   full_refresh:
     tests:
