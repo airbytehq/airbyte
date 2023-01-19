@@ -54,7 +54,6 @@ class DestinationConvex(Destination):
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 streams_to_delete.append(configured_stream.stream.name)
             elif configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup and configured_stream.primary_key:
-
                 indexes_to_add[configured_stream.stream.name] = configured_stream.primary_key
         if len(streams_to_delete) != 0:
             writer.delete_stream_entries(streams_to_delete)
