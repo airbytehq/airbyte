@@ -13,7 +13,7 @@ declare global {
     REACT_APP_WEBAPP_TAG?: string;
     REACT_APP_INTERCOM_APP_ID?: string;
     REACT_APP_INTEGRATION_DOCS_URLS?: string;
-    SEGMENT_TOKEN: string;
+    SEGMENT_TOKEN?: string;
     LAUNCHDARKLY_KEY?: string;
     analytics: SegmentAnalytics.AnalyticsJS;
     // Cloud specific properties
