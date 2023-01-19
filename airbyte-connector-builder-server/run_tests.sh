@@ -1,4 +1,9 @@
+set -e
+
 cd $1
+
+# Fail script on failing command
+set -e
 
 # Install dependencies
 pip install -e .

@@ -4,33 +4,29 @@
 
 package io.airbyte.server.errors;
 
-import io.micronaut.context.annotation.Requires;
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.HttpResponse;
-import io.micronaut.http.HttpStatus;
-import io.micronaut.http.MediaType;
-import io.micronaut.http.annotation.Produces;
-import io.micronaut.http.server.exceptions.ExceptionHandler;
-import jakarta.inject.Singleton;
+import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Produces
-@Singleton
-@Requires(classes = NotFoundException.class)
-public class NotFoundExceptionMapper implements ExceptionHandler<NotFoundException, HttpResponse> {
+@Provider
+public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundException> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NotFoundExceptionMapper.class);
 
   @Override
-  public HttpResponse handle(final HttpRequest request, final NotFoundException exception) {
-    final IdNotFoundKnownException idnf = new IdNotFoundKnownException("Object not found. " + exception.getMessage(), exception);
+  public Response toResponse(final NotFoundException e) {
+    // Would like to send the id along but we don't have access to the http request anymore to fetch it
+    // from. TODO: Come back to this with issue #4189
+    final IdNotFoundKnownException idnf = new IdNotFoundKnownException("Object not found. " + e.getMessage(), e);
     LOGGER.error("Not found exception", idnf.getNotFoundKnownExceptionInfo());
-
-    return HttpResponse.status(HttpStatus.NOT_FOUND)
-        .body(KnownException.infoFromThrowableWithMessage(exception, "Internal Server Error: " + exception.getMessage()))
-        .contentType(MediaType.APPLICATION_JSON);
+    return Response.status(404)
+        .entity(Jsons.serialize(idnf.getNotFoundKnownExceptionInfo()))
+        .type("application/json")
+        .build();
   }
 
 }
