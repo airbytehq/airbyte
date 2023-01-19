@@ -1,7 +1,11 @@
-import { load } from "js-yaml";
 import merge from "lodash/merge";
 
-import { ConnectorManifest, DeclarativeStream } from "core/request/ConnectorManifest";
+import {
+  ConnectorManifest,
+  DeclarativeStream,
+  DeclarativeStreamRetriever,
+  HttpRequester,
+} from "core/request/ConnectorManifest";
 
 import { convertToBuilderFormValues } from "./manifestToBuilderForm";
 import { DEFAULT_BUILDER_FORM_VALUES } from "./types";
@@ -60,62 +64,72 @@ describe("Conversion throws error when", () => {
 
   it("manifest contains refs", () => {
     const convert = () => {
-      // have to use a string manifest here, because refs aren't in the schema
-      const manifest = `
-        version: "0.1.0"
-        definitions:
-          retriever:
-            name: "pokemon"
-            primary_key: "id"
-            requester:
-              name: "pokemon"
-              path: "/pokemon/{{config['pokemon_name']}}"
-              url_base: "https://pokeapi.co/api/v2"
-              http_method: "GET"
-            record_selector:
-              extractor:
-                type: DpathExtractor
-                field_pointer: []
-        streams:
-          - type: DeclarativeStream
-            name: "pokemon"
-            primary_key: "id"
-            schema_loader:
-              type: InlineSchemaLoader
-              schema: {}
-            retriever:
-              $ref: "*ref(definitions.retriever)"
-        check:
-          stream_names:
-            - "pokemon"`;
-      convertToBuilderFormValues(load(manifest) as ConnectorManifest, DEFAULT_BUILDER_FORM_VALUES);
+      const manifest: ConnectorManifest = {
+        ...baseManifest,
+        definitions: {
+          retriever: {
+            name: "pokemon",
+            primary_key: "id",
+            requester: {
+              name: "pokemon",
+              path: "/pokemon/{{config['pokemon_name']}}",
+              url_base: "https://pokeapi.co/api/v2",
+              http_method: "GET",
+            },
+            record_selector: {
+              extractor: {
+                type: "DpathExtractor",
+                field_pointer: [],
+              },
+            },
+          },
+        },
+        streams: [
+          {
+            type: "DeclarativeStream",
+            name: "pokemon",
+            retriever: {
+              $ref: "*ref(definitions.retriever)",
+            } as unknown as DeclarativeStreamRetriever,
+          },
+        ],
+      };
+      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
     };
     expect(convert).toThrow("contains refs");
   });
 
   it("manifest contains options", () => {
-    // have to use a string manifest here, because using $options results in an invalid schema
     const convert = () => {
-      const manifest = `
-        version: "0.1.0"
-        streams:
-          - type: DeclarativeStream
-            $options:
-              name: "pokemon"
-              primary_key: "id"
-              path: "/pokemon/{{config['pokemon_name']}}"
-            retriever:
-              requester:
-                url_base: "https://pokeapi.co/api/v2"
-                http_method: "GET"
-              record_selector:
-                extractor:
-                  type: DpathExtractor
-                  field_pointer: []
-        check:
-          stream_names:
-            - "pokemon"`;
-      convertToBuilderFormValues(load(manifest) as ConnectorManifest, DEFAULT_BUILDER_FORM_VALUES);
+      const manifest: ConnectorManifest = {
+        ...baseManifest,
+        streams: [
+          {
+            type: "DeclarativeStream",
+            $options: {
+              name: "pokemon",
+              primary_key: "id",
+              path: "/pokemon/{{config['pokemon_name']}}",
+            },
+            retriever: {
+              type: "SimpleRetriever",
+              requester: {
+                type: "HttpRequester",
+                url_base: "https://pokeapi.co/api/v2",
+                http_method: "GET",
+              } as unknown as HttpRequester,
+              record_selector: {
+                type: "RecordSelector",
+                extractor: {
+                  type: "DpathExtractor",
+                  field_pointer: [],
+                },
+              },
+            },
+          },
+        ],
+      };
+      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
     };
     expect(convert).toThrow("contains refs");
   });
@@ -416,6 +430,12 @@ describe("Conversion successfully results in", () => {
                 max_retries: 3,
               },
             },
+            record_selector: {
+              record_filter: {
+                type: "RecordFilter",
+                condition: "true",
+              },
+            },
           },
         }),
       ],
@@ -427,6 +447,9 @@ describe("Conversion successfully results in", () => {
       retriever: {
         requester: {
           error_handler: manifest.streams[0].retriever.requester.error_handler,
+        },
+        record_selector: {
+          record_filter: manifest.streams[0].retriever.record_selector.record_filter,
         },
       },
     });
