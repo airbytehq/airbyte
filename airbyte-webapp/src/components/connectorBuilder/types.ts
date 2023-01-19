@@ -4,7 +4,6 @@ import * as yup from "yup";
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import {
   ConnectorManifest,
-  InterpolatedRequestOptionsProvider,
   Spec,
   ApiKeyAuthenticator,
   BasicHttpAuthenticator,
@@ -536,13 +535,9 @@ function builderStreamToDeclarativeSteam(
         name: stream.name,
         url_base: values.global?.urlBase,
         path: stream.urlPath,
-        request_options_provider: {
-          // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
-          // type: "InterpolatedRequestOptionsProvider",
-          request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
-          request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
-          request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
-        } as InterpolatedRequestOptionsProvider,
+        request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
+        request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
+        request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
         authenticator: builderFormAuthenticatorToAuthenticator(values.global),
       },
       record_selector: {
