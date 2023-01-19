@@ -1,6 +1,6 @@
 # Connector Builder UI
 
-The connector builder UI provides an ergonomic iteration interface on top of the [low-code YAML format](../config-based/understanding-the-yaml-file/yaml-overview). We recommend using it to iterate on your low-code connectors.
+The connector builder UI provides an ergonomic iteration interface on top of the [low-code YAML format](understanding-the-yaml-file/yaml-overview). We recommend using it to iterate on your low-code connectors.
 
 :::caution
 The connector builder UI is in alpha, which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our Slack channel or email us at feedback@airbyte.io
