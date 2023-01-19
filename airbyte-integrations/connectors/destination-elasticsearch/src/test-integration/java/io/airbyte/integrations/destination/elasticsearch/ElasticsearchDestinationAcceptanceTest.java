@@ -61,11 +61,6 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return false;
-  }
-
-  @Override
   protected boolean supportBasicDataTypeTest() {
     return true;
   }

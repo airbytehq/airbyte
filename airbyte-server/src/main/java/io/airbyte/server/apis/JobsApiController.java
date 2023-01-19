@@ -15,10 +15,13 @@ import io.airbyte.api.model.generated.JobReadList;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Context;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 
 @Controller("/api/v1/jobs")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 @Context
 public class JobsApiController implements JobsApi {
 
