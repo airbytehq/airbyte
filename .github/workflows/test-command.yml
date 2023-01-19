@@ -105,7 +105,6 @@ jobs:
         # all CI python packages have the prefix "ci_"
         run: |
           source venv/bin/activate
-          tox -r -c ./tools/tox_ci.ini
           pip install --quiet -e ./tools/ci_*
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
