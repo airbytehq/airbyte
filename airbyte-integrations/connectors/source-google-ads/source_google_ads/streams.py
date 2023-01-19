@@ -108,7 +108,6 @@ class GoogleAdsStream(Stream, ABC):
     CATCH_API_ERRORS = True
 
     def __init__(self, api: GoogleAds, customers: List[Customer]):
-        super().__init__()
         self.google_ads_client = api
         self.customers = customers
         self.base_sieve_logger = cyclic_sieve(self.logger, 10)
