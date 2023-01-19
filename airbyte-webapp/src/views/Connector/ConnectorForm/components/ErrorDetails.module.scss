@@ -1,0 +1,19 @@
+@use "scss/variables";
+
+.container {
+  margin-top: variables.$spacing-lg;
+}
+
+// .analyticsContainer {
+//   align-items: flex-start;
+// }
+
+.analyticsMessage {
+  p:first-child {
+    margin-top: 0;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}

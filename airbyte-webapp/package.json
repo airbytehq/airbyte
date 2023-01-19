@@ -93,6 +93,7 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
     "@babel/preset-typescript": "^7.18.6",
+    "@builder.io/sdk": "^1.1.30",
     "@craco/craco": "^7.0.0-alpha.7",
     "@storybook/addon-essentials": "^6.5.7",
     "@storybook/builder-webpack5": "^6.5.7",

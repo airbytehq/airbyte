@@ -4,7 +4,6 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components/ui/Button";
 
 import styles from "./CreateControls.module.scss";
-import { TestingConnectionError } from "./TestingConnectionError";
 import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
@@ -20,7 +19,6 @@ interface CreateControlProps {
   onReset?: () => void;
   submitLabel?: string;
   isSubmitting: boolean;
-  errorMessage?: React.ReactNode;
   connectionTestSuccess?: boolean;
 
   isTestConnectionInProgress: boolean;
@@ -32,7 +30,6 @@ const CreateControls: React.FC<CreateControlProps> = ({
   isSubmitting,
   formType,
   connectionTestSuccess,
-  errorMessage,
   onCancelTesting,
   onCancel,
   onReset,
@@ -48,7 +45,6 @@ const CreateControls: React.FC<CreateControlProps> = ({
 
   return (
     <div className={styles.controlContainer}>
-      {errorMessage && <TestingConnectionError errorMessage={errorMessage} />}
       {onReset && (
         <div className={styles.deleteButtonContainer}>
           <Button onClick={onReset} type="button" variant="danger">

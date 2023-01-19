@@ -5,6 +5,7 @@ import { FormBlock } from "core/form/types";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
+import { ErrorDetails } from "./components/ErrorDetails";
 import { FormSection } from "./components/Sections/FormSection";
 import { useConnectorForm } from "./connectorFormContext";
 import { ConnectorFormValues } from "./types";
@@ -73,7 +74,6 @@ export const FormRoot: React.FC<FormRootProps> = ({
             isTestConnectionInProgress={isTestConnectionInProgress}
             onCancelTesting={onStopTestingConnector}
             isSubmitting={isSubmitting || isTestConnectionInProgress}
-            errorMessage={errorMessage}
             formType={formType}
             submitLabel={submitLabel}
             onCancel={onCancel}
@@ -82,6 +82,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
           />
         )}
       </div>
+      {errorMessage && <ErrorDetails errorMessage={String(errorMessage)} />}
     </Form>
   );
 };

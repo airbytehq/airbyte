@@ -1,0 +1,8 @@
+[
+  {
+    "message": "The pokemon name you entered is not valid. You can check the [Pokedex](https://www.pokemon.com/us/pokedex) for a list of all Pokemons.",
+    "connectors": ["6371b14b-bc68-4236-bfbd-468e8df8e968"],
+    "match": "Input Pokemon * is invalid.",
+    "priority": 10
+  }
+]
