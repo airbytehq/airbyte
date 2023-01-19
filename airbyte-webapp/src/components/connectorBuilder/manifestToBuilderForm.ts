@@ -99,7 +99,14 @@ const manifestStreamToBuilder = (
   assertType<HttpRequester>(retriever.requester, "HttpRequester", stream.name);
   const requester = retriever.requester;
 
-  if (!isEqual(retriever.requester.authenticator, builderFormGlobal.authenticator)) {
+  console.log("retriever.requester.authenticator", retriever.requester.authenticator);
+  console.log("builderFormGlobal.authenticator", builderFormGlobal.authenticator);
+
+  if (
+    builderFormGlobal.authenticator.type === "NoAuth"
+      ? requester.authenticator && requester.authenticator.type !== "NoAuth"
+      : !isEqual(retriever.requester.authenticator, builderFormGlobal.authenticator)
+  ) {
     throw new ManifestCompatibilityError(stream.name, "authenticator does not match the first stream's");
   }
 
@@ -182,8 +189,19 @@ function manifestStreamSlicerToBuilder(
     throw new ManifestCompatibilityError(streamName, "stream_slicer contains a SingleSlice");
   }
 
-  if (manifestStreamSlicer.type === "DatetimeStreamSlicer" || manifestStreamSlicer.type === "ListStreamSlicer") {
-    return manifestStreamSlicer as DatetimeStreamSlicer | ListStreamSlicer;
+  if (manifestStreamSlicer.type === "DatetimeStreamSlicer") {
+    const datetimeStreamSlicer = manifestStreamSlicer as DatetimeStreamSlicer;
+    if (
+      typeof datetimeStreamSlicer.start_datetime !== "string" ||
+      typeof datetimeStreamSlicer.end_datetime !== "string"
+    ) {
+      throw new ManifestCompatibilityError(streamName, "start_datetime or end_datetime are not set to a string value");
+    }
+    return manifestStreamSlicer as DatetimeStreamSlicer;
+  }
+
+  if (manifestStreamSlicer.type === "ListStreamSlicer") {
+    return manifestStreamSlicer as ListStreamSlicer;
   }
 
   if (manifestStreamSlicer.type === "CartesianProductStreamSlicer") {
@@ -235,7 +253,7 @@ function manifestPrimaryKeyToBuilder(manifestStream: DeclarativeStream): Builder
     return [];
   } else if (Array.isArray(manifestStream.retriever.primary_key)) {
     if (manifestStream.retriever.primary_key.length > 0 && Array.isArray(manifestStream.retriever.primary_key[0])) {
-      throw new ManifestCompatibilityError(manifestStream.stream.name, "primary_key contains nested arrays");
+      throw new ManifestCompatibilityError(manifestStream.name, "primary_key contains nested arrays");
     } else {
       return manifestStream.retriever.primary_key as string[];
     }
