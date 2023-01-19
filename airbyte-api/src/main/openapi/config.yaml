@@ -4200,6 +4200,9 @@ components:
           format: int64
         succeeded:
           type: boolean
+        connectorConfigurationUpdated:
+          type: boolean
+          default: false
         logs:
           $ref: "#/components/schemas/LogRead"
     Pagination:

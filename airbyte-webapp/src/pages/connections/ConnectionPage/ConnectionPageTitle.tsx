@@ -7,11 +7,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ConnectionInfoCard } from "components/connection/ConnectionInfoCard";
 import { ConnectionName } from "components/connection/ConnectionName";
 import { Callout } from "components/ui/Callout";
+import { FlexContainer } from "components/ui/Flex";
 import { StepsMenu } from "components/ui/StepsMenu";
 import { Text } from "components/ui/Text";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { useFreeConnectorProgramInfo } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
+import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
 
 import { ConnectionRoutePaths } from "../types";
 import styles from "./ConnectionPageTitle.module.scss";
@@ -22,6 +25,10 @@ export const ConnectionPageTitle: React.FC = () => {
   const currentStep = params["*"] || ConnectionRoutePaths.Status;
 
   const { connection } = useConnectionEditService();
+
+  const { data: freeConnectorProgramInfo } = useFreeConnectorProgramInfo();
+
+  const displayEnrollmentCallout = freeConnectorProgramInfo?.showEnrollmentUi;
 
   const steps = useMemo(() => {
     const steps = [
@@ -72,7 +79,10 @@ export const ConnectionPageTitle: React.FC = () => {
       </Text>
       <ConnectionName />
       <div className={styles.statusContainer}>
-        <ConnectionInfoCard />
+        <FlexContainer direction="column" gap="none">
+          <ConnectionInfoCard />
+          {displayEnrollmentCallout && <InlineEnrollmentCallout />}
+        </FlexContainer>
       </div>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </div>
