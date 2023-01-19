@@ -7,6 +7,8 @@ import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 import { webBackendGetFreeConnectorProgramInfoForWorkspace } from "../lib/api";
 
+export const STRIPE_SUCCESS_QUERY = "fcpEnrollmentSuccess";
+
 export const useFreeConnectorProgram = () => {
   const workspaceId = useCurrentWorkspaceId();
   const { cloudApiUrl } = useConfig();
