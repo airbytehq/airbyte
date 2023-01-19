@@ -10,7 +10,10 @@ import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import (
-    DefaultPaginator, PaginatorTestReadDecorator, RequestOption, RequestOptionType
+    DefaultPaginator,
+    PaginatorTestReadDecorator,
+    RequestOption,
+    RequestOptionType,
 )
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 
