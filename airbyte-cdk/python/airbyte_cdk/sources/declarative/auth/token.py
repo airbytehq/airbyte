@@ -285,7 +285,7 @@ class AccessTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthentic
         url = self._url.eval(self.config)
         token_key = self._token_key.eval(self.config)
         lifetime = self._get_lifetime()
-        if not self._token or now - self._timestamp > lifetime:
+        if not self._token or now - self._timestamp >= lifetime:
             response = self._session.get(url, headers=self._basic_auth.get_auth_header())
             response.raise_for_status()
             response_json = response.json()
