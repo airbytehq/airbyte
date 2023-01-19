@@ -21,7 +21,6 @@ application {
 //            '-Dcom.sun.management.jmxremote.ssl=false',
 //            '-agentpath:/usr/local/YourKit-JavaProfiler-2021.3/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all'
     ]
-
 }
 
 dependencies {
