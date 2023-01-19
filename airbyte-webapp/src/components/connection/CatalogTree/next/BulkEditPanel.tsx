@@ -6,6 +6,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Header } from "components";
+import { SUPPORTED_MODES } from "components/connection/ConnectionForm/formConfig";
 import { Button } from "components/ui/Button";
 import { Switch } from "components/ui/Switch";
 
@@ -13,7 +14,6 @@ import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchem
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
 import { pathDisplayName } from "../PathPopout";
 import { HeaderCell } from "../styles";

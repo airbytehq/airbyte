@@ -1518,6 +1518,30 @@ public class ConfigRepository {
   }
 
   /**
+   * Specialized query for efficiently determining eligibility for the Free Connector Program. If a
+   * workspace has at least one Alpha or Beta connector, users of that workspace will be prompted to
+   * sign up for the program. This check is performed on nearly every page load so the query needs to
+   * be as efficient as possible.
+   *
+   * @param workspaceId ID of the workspace to check connectors for
+   * @return boolean indicating if an alpha or beta connector exists within the workspace
+   */
+  public boolean getWorkspaceHasAlphaOrBetaConnector(final UUID workspaceId) throws IOException {
+    final Condition releaseStageAlphaOrBeta = ACTOR_DEFINITION.RELEASE_STAGE.eq(ReleaseStage.alpha)
+        .or(ACTOR_DEFINITION.RELEASE_STAGE.eq(ReleaseStage.beta));
+
+    final Integer countResult = database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .join(ACTOR_DEFINITION).on(ACTOR_DEFINITION.ID.eq(ACTOR.ACTOR_DEFINITION_ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .and(ACTOR.TOMBSTONE.notEqual(true))
+        .and(releaseStageAlphaOrBeta))
+        .fetchOneInto(Integer.class);
+
+    return countResult > 0;
+  }
+
+  /**
    * Deletes all records with given id. If it deletes anything, returns true. Otherwise, false.
    *
    * @param table - table from which to delete the record

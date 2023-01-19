@@ -67,16 +67,6 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
