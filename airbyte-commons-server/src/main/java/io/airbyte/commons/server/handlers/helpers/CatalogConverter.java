@@ -109,8 +109,9 @@ public class CatalogConverter {
     List<String> suggestedStreams = new ArrayList<>();
     Boolean suggestingStreams;
 
-    // There are occasions in tests where we have not seeded the sourceDefinition fully.  This is to prevent those tests from failing
-    if (sourceDefinition != null){
+    // There are occasions in tests where we have not seeded the sourceDefinition fully. This is to
+    // prevent those tests from failing
+    if (sourceDefinition != null) {
       suggestingStreams = sourceDefinition.getSuggestedStreams() != null;
       if (suggestingStreams) {
         suggestedStreams.addAll(sourceDefinition.getSuggestedStreams().getStreams());
