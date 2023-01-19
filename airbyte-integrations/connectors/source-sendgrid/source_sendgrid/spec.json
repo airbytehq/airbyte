@@ -16,7 +16,7 @@
       },
       "start_time": {
         "title": "Start time",
-        "type": ["integer", "string"],
+        "type": "string",
         "description": "Start time in ISO8601 format. Any data before this time point will not be replicated.",
         "examples": [
           "2021-12-12",
