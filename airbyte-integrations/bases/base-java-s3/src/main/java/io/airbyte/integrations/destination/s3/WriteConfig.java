@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -17,10 +17,10 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;

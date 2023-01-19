@@ -20,7 +20,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.JDBCType;
 import java.util.function.Function;
 import javax.sql.DataSource;

@@ -24,11 +24,11 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -109,16 +109,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
   }
 
   @Override

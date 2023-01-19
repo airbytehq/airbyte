@@ -22,5 +22,9 @@ properties:
     format: uuid
   spec:
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+  connectorConfigurationUpdated:
+    description: A boolean indicating whether the configuration was updated during the job, e.g. if an AirbyteConfigControlMessage was received.
+    type: boolean
+    default: false
   failureReason:
     "$ref": FailureReason.yaml

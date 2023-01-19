@@ -7,6 +7,7 @@ package io.airbyte.persistence.job;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.NORMALIZATION_SUMMARIES;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.STREAM_STATS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import io.airbyte.commons.enums.Enums;
@@ -33,7 +35,9 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
+import io.airbyte.config.persistence.PersistenceHelpers;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
@@ -69,6 +73,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
@@ -152,6 +157,7 @@ public class DefaultJobPersistence implements JobPersistence {
         + "attempts.log_path AS log_path,\n"
         + "attempts.output AS attempt_output,\n"
         + "attempts.status AS attempt_status,\n"
+        + "attempts.processing_task_queue AS processing_task_queue,\n"
         + "attempts.failure_summary AS attempt_failure_summary,\n"
         + "attempts.created_at AS attempt_created_at,\n"
         + "attempts.updated_at AS attempt_updated_at,\n"
@@ -337,8 +343,6 @@ public class DefaultJobPersistence implements JobPersistence {
   public void writeOutput(final long jobId, final int attemptNumber, final JobOutput output)
       throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    final SyncStats syncStats = output.getSync().getStandardSyncSummary().getTotalStats();
-    final NormalizationSummary normalizationSummary = output.getSync().getNormalizationSummary();
 
     jobDatabase.transaction(ctx -> {
       ctx.update(ATTEMPTS)
@@ -348,10 +352,12 @@ public class DefaultJobPersistence implements JobPersistence {
           .execute();
       final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
 
+      final SyncStats syncStats = output.getSync().getStandardSyncSummary().getTotalStats();
       if (syncStats != null) {
-        writeSyncStats(now, syncStats, attemptId, ctx);
+        saveToSyncStatsTable(now, syncStats, attemptId, ctx);
       }
 
+      final NormalizationSummary normalizationSummary = output.getSync().getNormalizationSummary();
       if (normalizationSummary != null) {
         ctx.insertInto(NORMALIZATION_SUMMARIES)
             .set(NORMALIZATION_SUMMARIES.ID, UUID.randomUUID())
@@ -369,14 +375,65 @@ public class DefaultJobPersistence implements JobPersistence {
 
   }
 
-  private static void writeSyncStats(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
+  @Override
+  public void writeStats(final long jobId,
+                         final int attemptNumber,
+                         final long estimatedRecords,
+                         final long estimatedBytes,
+                         final long recordsEmitted,
+                         final long bytesEmitted,
+                         final List<StreamSyncStats> streamStats)
+      throws IOException {
+    final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    jobDatabase.transaction(ctx -> {
+      final var attemptId = getAttemptId(jobId, attemptNumber, ctx);
+
+      final var syncStats = new SyncStats()
+          .withEstimatedRecords(estimatedRecords)
+          .withEstimatedBytes(estimatedBytes)
+          .withRecordsEmitted(recordsEmitted)
+          .withBytesEmitted(bytesEmitted);
+      saveToSyncStatsTable(now, syncStats, attemptId, ctx);
+
+      saveToStreamStatsTable(now, streamStats, attemptId, ctx);
+      return null;
+    });
+
+  }
+
+  private static void saveToSyncStatsTable(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
+    // Although JOOQ supports upsert using the onConflict statement, we cannot use it as the table
+    // currently has duplicate records and also doesn't contain the unique constraint on the attempt_id
+    // column JOOQ requires. We are forced to check for existence.
+    final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
+    if (isExisting) {
+      ctx.update(SYNC_STATS)
+          .set(SYNC_STATS.UPDATED_AT, now)
+          .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+          .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+          .set(SYNC_STATS.ESTIMATED_RECORDS, syncStats.getEstimatedRecords())
+          .set(SYNC_STATS.ESTIMATED_BYTES, syncStats.getEstimatedBytes())
+          .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
+          .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
+          .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
+          .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
+          .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
+          .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
+          .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
+          .where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+          .execute();
+      return;
+    }
+
     ctx.insertInto(SYNC_STATS)
         .set(SYNC_STATS.ID, UUID.randomUUID())
-        .set(SYNC_STATS.UPDATED_AT, now)
         .set(SYNC_STATS.CREATED_AT, now)
         .set(SYNC_STATS.ATTEMPT_ID, attemptId)
+        .set(SYNC_STATS.UPDATED_AT, now)
         .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
         .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+        .set(SYNC_STATS.ESTIMATED_RECORDS, syncStats.getEstimatedRecords())
+        .set(SYNC_STATS.ESTIMATED_BYTES, syncStats.getEstimatedBytes())
         .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
         .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
         .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
@@ -385,6 +442,50 @@ public class DefaultJobPersistence implements JobPersistence {
         .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
         .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
         .execute();
+  }
+
+  private static void saveToStreamStatsTable(final OffsetDateTime now,
+                                             final List<StreamSyncStats> perStreamStats,
+                                             final Long attemptId,
+                                             final DSLContext ctx) {
+    Optional.ofNullable(perStreamStats).orElse(Collections.emptyList()).forEach(
+        streamStats -> {
+          // We cannot entirely rely on JOOQ's generated SQL for upserts as it does not support null fields
+          // for conflict detection. We are forced to separately check for existence.
+          final var stats = streamStats.getStats();
+          final var isExisting =
+              ctx.fetchExists(STREAM_STATS, STREAM_STATS.ATTEMPT_ID.eq(attemptId).and(STREAM_STATS.STREAM_NAME.eq(streamStats.getStreamName()))
+                  .and(PersistenceHelpers.isNullOrEquals(STREAM_STATS.STREAM_NAMESPACE, streamStats.getStreamNamespace())));
+          if (isExisting) {
+            ctx.update(STREAM_STATS)
+                .set(STREAM_STATS.UPDATED_AT, now)
+                .set(STREAM_STATS.BYTES_EMITTED, stats.getBytesEmitted())
+                .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
+                .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
+                .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
+                .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
+                .execute();
+            return;
+          }
+
+          ctx.insertInto(STREAM_STATS)
+              .set(STREAM_STATS.ID, UUID.randomUUID())
+              .set(STREAM_STATS.ATTEMPT_ID, attemptId)
+              .set(STREAM_STATS.STREAM_NAME, streamStats.getStreamName())
+              .set(STREAM_STATS.STREAM_NAMESPACE, streamStats.getStreamNamespace())
+              .set(STREAM_STATS.CREATED_AT, now)
+              .set(STREAM_STATS.UPDATED_AT, now)
+              .set(STREAM_STATS.BYTES_EMITTED, stats.getBytesEmitted())
+              .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
+              .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
+              .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
+              .set(STREAM_STATS.UPDATED_AT, now)
+              .set(STREAM_STATS.BYTES_EMITTED, stats.getBytesEmitted())
+              .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
+              .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
+              .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
+              .execute();
+        });
   }
 
   @Override
@@ -400,15 +501,88 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<SyncStats> getSyncStats(final long jobId, final int attemptNumber) throws IOException {
+  public AttemptStats getAttemptStats(final long jobId, final int attemptNumber) throws IOException {
     return jobDatabase
         .query(ctx -> {
           final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
-          return ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
-              .fetch(getSyncStatsRecordMapper())
-              .stream()
-              .toList();
+          final var syncStats = ctx.select(DSL.asterisk()).from(SYNC_STATS).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+              .orderBy(SYNC_STATS.UPDATED_AT.desc())
+              .fetchOne(getSyncStatsRecordMapper());
+          final var perStreamStats = ctx.select(DSL.asterisk()).from(STREAM_STATS).where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
+              .fetch(getStreamStatsRecordsMapper());
+          return new AttemptStats(syncStats, perStreamStats);
         });
+  }
+
+  @Override
+  public Map<JobAttemptPair, AttemptStats> getAttemptStats(final List<Long> jobIds) throws IOException {
+    if (jobIds == null || jobIds.isEmpty()) {
+      return Map.of();
+    }
+
+    final var jobIdsStr = StringUtils.join(jobIds, ',');
+    return jobDatabase.query(ctx -> {
+      // Instead of one massive join query, separate this query into two queries for better readability
+      // for now.
+      // We can combine the queries at a later date if this still proves to be not efficient enough.
+      final Map<JobAttemptPair, AttemptStats> attemptStats = hydrateSyncStats(jobIdsStr, ctx);
+      hydrateStreamStats(jobIdsStr, ctx, attemptStats);
+      return attemptStats;
+    });
+  }
+
+  private static Map<JobAttemptPair, AttemptStats> hydrateSyncStats(final String jobIdsStr, final DSLContext ctx) {
+    final var attemptStats = new HashMap<JobAttemptPair, AttemptStats>();
+    final var syncResults = ctx.fetch(
+        "SELECT atmpt.attempt_number, atmpt.job_id,"
+            + "stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted, stats.records_committed "
+            + "FROM sync_stats stats "
+            + "INNER JOIN attempts atmpt ON stats.attempt_id = atmpt.id "
+            + "WHERE job_id IN ( " + jobIdsStr + ");");
+    syncResults.forEach(r -> {
+      final var key = new JobAttemptPair(r.get(ATTEMPTS.JOB_ID), r.get(ATTEMPTS.ATTEMPT_NUMBER));
+      final var syncStats = new SyncStats()
+          .withBytesEmitted(r.get(SYNC_STATS.BYTES_EMITTED))
+          .withRecordsEmitted(r.get(SYNC_STATS.RECORDS_EMITTED))
+          .withRecordsCommitted(r.get(SYNC_STATS.RECORDS_COMMITTED))
+          .withEstimatedRecords(r.get(SYNC_STATS.ESTIMATED_RECORDS))
+          .withEstimatedBytes(r.get(SYNC_STATS.ESTIMATED_BYTES));
+      attemptStats.put(key, new AttemptStats(syncStats, Lists.newArrayList()));
+    });
+    return attemptStats;
+  }
+
+  /**
+   * This method needed to be called after
+   * {@link DefaultJobPersistence#hydrateSyncStats(String, DSLContext)} as it assumes hydrateSyncStats
+   * has prepopulated the map.
+   */
+  private static void hydrateStreamStats(final String jobIdsStr, final DSLContext ctx, final Map<JobAttemptPair, AttemptStats> attemptStats) {
+    final var streamResults = ctx.fetch(
+        "SELECT atmpt.attempt_number, atmpt.job_id, "
+            + "stats.stream_name, stats.stream_namespace, stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted "
+            + "FROM stream_stats stats "
+            + "INNER JOIN attempts atmpt ON atmpt.id = stats.attempt_id "
+            + "WHERE attempt_id IN "
+            + "( SELECT id FROM attempts WHERE job_id IN ( " + jobIdsStr + "));");
+
+    streamResults.forEach(r -> {
+      final var streamSyncStats = new StreamSyncStats()
+          .withStreamNamespace(r.get(STREAM_STATS.STREAM_NAMESPACE))
+          .withStreamName(r.get(STREAM_STATS.STREAM_NAME))
+          .withStats(new SyncStats()
+              .withBytesEmitted(r.get(STREAM_STATS.BYTES_EMITTED))
+              .withRecordsEmitted(r.get(STREAM_STATS.RECORDS_EMITTED))
+              .withEstimatedRecords(r.get(STREAM_STATS.ESTIMATED_RECORDS))
+              .withEstimatedBytes(r.get(STREAM_STATS.ESTIMATED_BYTES)));
+
+      final var key = new JobAttemptPair(r.get(ATTEMPTS.JOB_ID), r.get(ATTEMPTS.ATTEMPT_NUMBER));
+      if (!attemptStats.containsKey(key)) {
+        LOGGER.error("{} stream stats entry does not have a corresponding sync stats entry. This suggest the database is in a bad state.", key);
+        return;
+      }
+      attemptStats.get(key).perStreamStats().add(streamSyncStats);
+    });
   }
 
   @Override
@@ -423,15 +597,21 @@ public class DefaultJobPersistence implements JobPersistence {
         });
   }
 
-  private static Long getAttemptId(final long jobId, final int attemptNumber, final DSLContext ctx) {
+  @VisibleForTesting
+  static Long getAttemptId(final long jobId, final int attemptNumber, final DSLContext ctx) {
     final Optional<Record> record =
         ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
             attemptNumber).stream().findFirst();
+    if (record.isEmpty()) {
+      return -1L;
+    }
+
     return record.get().get("id", Long.class);
   }
 
   private static RecordMapper<Record, SyncStats> getSyncStatsRecordMapper() {
     return record -> new SyncStats().withBytesEmitted(record.get(SYNC_STATS.BYTES_EMITTED)).withRecordsEmitted(record.get(SYNC_STATS.RECORDS_EMITTED))
+        .withEstimatedBytes(record.get(SYNC_STATS.ESTIMATED_BYTES)).withEstimatedRecords(record.get(SYNC_STATS.ESTIMATED_RECORDS))
         .withSourceStateMessagesEmitted(record.get(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED))
         .withDestinationStateMessagesEmitted(record.get(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED))
         .withRecordsCommitted(record.get(SYNC_STATS.RECORDS_COMMITTED))
@@ -441,8 +621,19 @@ public class DefaultJobPersistence implements JobPersistence {
         .withMaxSecondsBetweenStateMessageEmittedandCommitted(record.get(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED));
   }
 
+  private static RecordMapper<Record, StreamSyncStats> getStreamStatsRecordsMapper() {
+    return record -> {
+      final var stats = new SyncStats()
+          .withEstimatedRecords(record.get(STREAM_STATS.ESTIMATED_RECORDS)).withEstimatedBytes(record.get(STREAM_STATS.ESTIMATED_BYTES))
+          .withRecordsEmitted(record.get(STREAM_STATS.RECORDS_EMITTED)).withBytesEmitted(record.get(STREAM_STATS.BYTES_EMITTED));
+      return new StreamSyncStats()
+          .withStreamName(record.get(STREAM_STATS.STREAM_NAME)).withStreamNamespace(record.get(STREAM_STATS.STREAM_NAMESPACE))
+          .withStats(stats);
+    };
+  }
+
   private static RecordMapper<Record, NormalizationSummary> getNormalizationSummaryRecordMapper() {
-    final RecordMapper<Record, NormalizationSummary> recordMapper = record -> {
+    return record -> {
       try {
         return new NormalizationSummary().withStartTime(record.get(NORMALIZATION_SUMMARIES.START_TIME).toInstant().toEpochMilli())
             .withEndTime(record.get(NORMALIZATION_SUMMARIES.END_TIME).toInstant().toEpochMilli())
@@ -451,7 +642,6 @@ public class DefaultJobPersistence implements JobPersistence {
         throw new RuntimeException(e);
       }
     };
-    return recordMapper;
   }
 
   private static List<FailureReason> deserializeFailureReasons(final Record record) throws JsonProcessingException {
@@ -737,11 +927,12 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static Attempt getAttemptFromRecord(final Record record) {
     return new Attempt(
-        record.get(ATTEMPT_NUMBER, Long.class),
+        record.get(ATTEMPT_NUMBER, int.class),
         record.get(JOB_ID, Long.class),
         Path.of(record.get("log_path", String.class)),
         record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+        record.get("processing_task_queue", String.class),
         record.get("attempt_failure_summary", String.class) == null ? null
             : Jsons.deserialize(record.get("attempt_failure_summary", String.class), AttemptFailureSummary.class),
         getEpoch(record, "attempt_created_at"),

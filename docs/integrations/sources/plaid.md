@@ -66,6 +66,8 @@ This guide will walk through how to create the credentials you need to run this 
 
 - We should now have everything we need to configure this source in the UI.
 
+## Changelog
+
 | Version | Date       | Pull Request                                             | Subject                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------ |
 | 0.3.2   | 2022-08-02 | [15231](https://github.com/airbytehq/airbyte/pull/15231) | Added min_last_updated_datetime support for Capital One items |
