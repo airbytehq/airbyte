@@ -2,6 +2,7 @@ import isEqual from "lodash/isEqual";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import {
+  CartesianProductStreamSlicer,
   ConnectorManifest,
   DatetimeStreamSlicer,
   DeclarativeStream,
@@ -25,6 +26,7 @@ import {
   BuilderFormValues,
   BuilderPaginator,
   BuilderStream,
+  BuilderSubstreamSlicer,
   DEFAULT_BUILDER_FORM_VALUES,
   DEFAULT_BUILDER_STREAM_VALUES,
   isInterpolatedConfigKey,
@@ -206,7 +208,9 @@ function manifestStreamSlicerToBuilder(
     return {
       type: "CartesianProductStreamSlicer",
       stream_slicers: manifestStreamSlicer.stream_slicers.map((subSlicer) => {
-        return manifestStreamSlicerToBuilder(subSlicer, serializedStreamToIndex, streamName);
+        return manifestStreamSlicerToBuilder(subSlicer, serializedStreamToIndex, streamName) as
+          | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
+          | BuilderSubstreamSlicer;
       }),
     };
   }
