@@ -1,17 +1,20 @@
 plugins {
     id "base"
-    id "com.github.node-gradle.node" version "3.3.0"
+    id "com.github.node-gradle.node" version "3.4.0"
 }
 
 // Use the node version that's defined in the .nvmrc file
 def nodeVersion = new File("${projectDir}/.nvmrc").text.trim();
+
+// Read pnpm version to use from package.json engines.pnpm entry
+def pnpmVer = new groovy.json.JsonSlurper().parse(new File("${projectDir}/package.json")).engines.pnpm.trim();
 
 // This array should contain a path to all configs that are common to most build tasks and
 // might affect them (i.e. if any of those files change we want to rerun most tasks)
 def commonConfigs = [
     '.env',
     'package.json',
-    'package-lock.json',
+    'pnpm-lock.yaml',
     'tsconfig.json',
     '.prettierrc.js'
 ]
@@ -19,10 +22,14 @@ def commonConfigs = [
 node {
     download = true
     version = nodeVersion
-    npmInstallCommand = 'ci'
+    pnpmVersion = pnpmVer
 }
 
-npm_run_build {
+task pnpmBuild(type: PnpmTask) {
+    dependsOn pnpmInstall
+
+    args = ['build']
+
     inputs.files commonConfigs
     inputs.file '.eslintrc.js'
     inputs.dir 'public'
@@ -40,7 +47,7 @@ task test(type: NpmTask) {
 }
 
 task licenseCheck(type: NpmTask) {
-    dependsOn npmInstall
+    dependsOn pnpmInstall
 
     args = ['run', 'license-check']
     inputs.files commonConfigs
@@ -52,7 +59,7 @@ task licenseCheck(type: NpmTask) {
 }
 
 task validateLinks(type: NpmTask) {
-    dependsOn npmInstall
+    dependsOn pnpmInstall
 
     args = ['run', 'validate-links']
 
@@ -62,7 +69,7 @@ task validateLinks(type: NpmTask) {
 }
 
 task buildStorybook(type: NpmTask) {
-    dependsOn npmInstall
+    dependsOn pnpmInstall
     args = ['run', 'build:storybook']
 
     inputs.files commonConfigs
@@ -74,7 +81,7 @@ task buildStorybook(type: NpmTask) {
 }
 
 task copyBuildOutput(type: Copy) {
-    dependsOn copyDocker, npm_run_build
+    dependsOn copyDocker, pnpmBuild
 
     from "${project.projectDir}/build/app"
     into 'build/docker/bin/build'
@@ -107,7 +114,7 @@ task copyNginx(type: Copy) {
 }
 
 task stylelint(type: NpmTask) {
-    dependsOn npmInstall
+    dependsOn pnpmInstall
     args = ['run', 'stylelint']
     inputs.files commonConfigs
     inputs.file '.stylelintrc'

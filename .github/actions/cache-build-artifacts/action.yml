@@ -22,14 +22,14 @@ runs:
         restore-keys: |
           ${{ inputs.cache-key }}-pip-${{ runner.os }}-
 
-    - name: Npm Caching
+    - name: pnpm Caching
       uses: actions/cache@v3
       with:
         path: |
           ~/.npm
-        key: ${{ inputs.cache-key }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ inputs.cache-key }}-pnpm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
-          ${{ inputs.cache-key }}-npm-${{ runner.os }}-
+          ${{ inputs.cache-key }}-pnpm-${{ runner.os }}-
 
     # this intentionally does not use restore-keys so we don't mess with gradle caching
     - name: Gradle and Python Caching
