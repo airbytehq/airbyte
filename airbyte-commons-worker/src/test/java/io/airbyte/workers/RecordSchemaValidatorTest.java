@@ -35,15 +35,16 @@ class RecordSchemaValidatorTest {
 
   @Test
   void testValidateValidSchema() throws Exception {
-    final var ffClient = new TestClient();
-    final var recordSchemaValidator = new RecordSchemaValidator(ffClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput));
+    final var featureFlagClient = new TestClient();
+    final var recordSchemaValidator = new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(),
+        WorkerUtils.mapStreamNamesToSchemas(syncInput));
     recordSchemaValidator.validateSchema(VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()));
   }
 
   @Test
   void testValidateInvalidSchema() throws Exception {
-    final var ffClient = new TestClient();
-    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(ffClient, syncInput.getWorkspaceId(),
+    final var featureFlagClient = new TestClient();
+    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(),
         WorkerUtils.mapStreamNamesToSchemas(syncInput));
     assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord(),
         AirbyteStreamNameNamespacePair.fromRecordMessage(INVALID_RECORD.getRecord())));

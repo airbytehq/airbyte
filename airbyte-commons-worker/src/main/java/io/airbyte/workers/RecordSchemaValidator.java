@@ -31,14 +31,14 @@ public class RecordSchemaValidator {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final FeatureFlagClient ffClient;
+  private final FeatureFlagClient featureFlagClient;
   private final UUID workspaceId;
   private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
 
-  public RecordSchemaValidator(final FeatureFlagClient ffClient,
+  public RecordSchemaValidator(final FeatureFlagClient featureFlagClient,
                                final UUID workspaceId,
                                final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas) {
-    this.ffClient = ffClient;
+    this.featureFlagClient = featureFlagClient;
     this.workspaceId = workspaceId;
     // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema
@@ -58,7 +58,7 @@ public class RecordSchemaValidator {
     final JsonNode matchingSchema = streams.get(messageStream);
 
     if (workspaceId != null) {
-      if (ffClient.enabled(PerfBackgroundJsonValidation.INSTANCE, new Workspace(workspaceId))) {
+      if (featureFlagClient.enabled(PerfBackgroundJsonValidation.INSTANCE, new Workspace(workspaceId))) {
         log.info("feature flag enabled for workspace {}", workspaceId);
       } else {
         log.info("feature flag disabled for workspace {}", workspaceId);
