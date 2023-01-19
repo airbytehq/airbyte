@@ -4,7 +4,7 @@
       "stream": {
         "name": "standard",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "date": {
@@ -33,7 +33,7 @@
       "stream": {
         "name": "reach",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "date": {
@@ -62,7 +62,7 @@
       "stream": {
         "name": "unique_reach_audience",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "date": {

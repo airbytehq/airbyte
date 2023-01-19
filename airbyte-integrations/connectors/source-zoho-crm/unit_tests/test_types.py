@@ -55,7 +55,7 @@ def test_module_schema():
             "id": {"type": "string"},
         },
         "required": ["id", "Modified_Time", "Content"],
-        "schema": "http://json-schema.org/draft-07/schema#",
+        "schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
     }
 

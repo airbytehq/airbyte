@@ -5,7 +5,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/activecampaign"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Activecampaign Spec"
       type: "object"
       required:
@@ -27,7 +27,7 @@
   spec:
     documentationUrl: "https://raw.githubusercontent.com/appchoose/airbyte/feature/source-adjust/docs/integrations/sources/adjust.md"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       description: "Adjust reporting API connector."
       properties:
         additional_metrics:
@@ -182,7 +182,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Airtable Source Spec"
       type: "object"
       required:
@@ -204,7 +204,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/aha"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Aha Spec"
       type: "object"
       required:
@@ -227,7 +227,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/alpha-vantage"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Alpha Vantage Spec"
       type: "object"
       required:
@@ -284,7 +284,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Postgres Source Spec"
       type: "object"
       required:
@@ -660,7 +660,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/aws-cloudtrail"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Aws CloudTrail Spec"
       type: "object"
       required:
@@ -1052,7 +1052,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-sqs"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Amazon SQS Source Spec"
       type: "object"
       required:
@@ -1161,7 +1161,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Amplitude Spec"
       type: "object"
       required:
@@ -1205,7 +1205,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/apify-dataset"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Apify Dataset Spec"
       type: "object"
       required:
@@ -1229,7 +1229,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/appfollow"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Appfollow Spec"
       type: "object"
       required:
@@ -1264,7 +1264,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Appsflyer Spec"
       type: "object"
       required:
@@ -1306,7 +1306,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/appstore"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Appstore Singer Spec"
       type: "object"
       required:
@@ -1354,7 +1354,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Asana Spec"
       type: "object"
       additionalProperties: true
@@ -1425,7 +1425,7 @@
   spec:
     documentationUrl: "https://developers.ashbyhq.com/reference/introduction"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Ashby Spec"
       type: "object"
       required:
@@ -1454,7 +1454,7 @@
   spec:
     documentationUrl: "https://auth0.com/docs/api/management/v2/"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Auth0 Management API Spec"
       type: "object"
       required:
@@ -1537,7 +1537,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Azure Data Table Spec"
       type: "object"
       required:
@@ -1576,7 +1576,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Babelforce Spec"
       type: "object"
       required:
@@ -1630,7 +1630,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bamboo-hr"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Bamboo HR Spec"
       type: "object"
       required:
@@ -1661,7 +1661,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bigcommerce"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "BigCommerce Source CDK Specifications"
       type: "object"
       required:
@@ -1694,7 +1694,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bigquery"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "BigQuery Source Spec"
       type: "object"
       required:
@@ -1731,7 +1731,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Bing Ads Spec"
       type: "object"
       required:
@@ -1899,7 +1899,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/breezometer"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Breezometer Spec"
       type: "object"
       required:
@@ -1961,7 +1961,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/callrail"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Call Rail Spec"
       type: "object"
       required:
@@ -1991,7 +1991,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/cart"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Cart.com Spec"
       type: "object"
       required:
@@ -2075,7 +2075,7 @@
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Chargebee Spec"
       type: "object"
       required:
@@ -2123,7 +2123,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/chargify"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Chargify Spec"
       type: "object"
       required:
@@ -2146,7 +2146,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/chartmogul"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Chartmogul Spec"
       type: "object"
       required:
@@ -2189,7 +2189,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/clickhouse"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "ClickHouse Source Spec"
       type: "object"
       required:
@@ -2354,7 +2354,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "ClickUp Api Spec"
       type: "object"
       required:
@@ -2394,7 +2394,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/close-com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Close.com Spec"
       type: "object"
       required:
@@ -2421,7 +2421,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "CoinGecko Coins Spec"
       type: "object"
       required:
@@ -2480,7 +2480,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/cockroachdb"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Cockroach Source Spec"
       type: "object"
       required:
@@ -2542,7 +2542,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/coda"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Required attributes for hitting apis"
       type: "object"
       required:
@@ -2562,7 +2562,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/coin-api"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Coin API Spec"
       type: "object"
       required:
@@ -2625,7 +2625,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/coinmarketcap"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Coinmarketcap Spec"
       type: "object"
       required:
@@ -2666,7 +2666,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/commercetools"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Commercetools Source CDK Specifications"
       type: "object"
       required:
@@ -2714,7 +2714,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/configcat"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Configcat Spec"
       type: "object"
       required:
@@ -2740,7 +2740,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Confluence Spec"
       type: "object"
       required:
@@ -2771,7 +2771,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/convertkit"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Convertkit Spec"
       type: "object"
       required:
@@ -2789,7 +2789,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Commcare Source Spec"
       type: "object"
       required:
@@ -2829,7 +2829,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/copper"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Copper Spec"
       type: "object"
       required:
@@ -2852,7 +2852,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/convex"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Convex Source Spec"
       type: "object"
       required:
@@ -2877,7 +2877,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/courier"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Courier Source Spec"
       type: "object"
       required:
@@ -2895,7 +2895,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/clockify"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Clockify Spec"
       type: "object"
       required:
@@ -2920,7 +2920,7 @@
   spec:
     documentationUrl: "https://docs.faros.ai"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Customer.io Spec"
       type: "object"
       required:
@@ -2938,7 +2938,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/datadog"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Datadog Source Spec"
       type: "object"
       required:
@@ -3000,7 +3000,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/datascope"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Datascope Spec"
       type: "object"
       required:
@@ -3027,7 +3027,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Delighted Spec"
       type: "object"
       required:
@@ -3056,7 +3056,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/dixa"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Dixa Spec"
       type: "object"
       required:
@@ -3089,7 +3089,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/dockerhub"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Dockerhub Spec"
       type: "object"
       required:
@@ -3110,7 +3110,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/dremio"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Dremio Spec"
       type: "object"
       additionalProperties: true
@@ -3134,7 +3134,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/drift"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Drift Spec"
       type: "object"
       required: []
@@ -3217,7 +3217,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Display & Video 360 Spec"
       type: "object"
       required:
@@ -3287,7 +3287,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/dynamodb"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Dynamodb Source Spec"
       type: "object"
       required:
@@ -3356,7 +3356,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/e2e-test"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "E2E Test Source Spec"
       type: "object"
       required:
@@ -3470,7 +3470,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/emailoctopus"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "EmailOctopus Spec"
       type: "object"
       required:
@@ -3490,7 +3490,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/exchangeratesapi"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "exchangeratesapi.io Source Spec"
       type: "object"
       required:
@@ -3894,7 +3894,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-pages"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Facebook Pages Spec"
       type: "object"
       required:
@@ -3920,7 +3920,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Faker Source Spec"
       type: "object"
       required:
@@ -3975,7 +3975,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/fastbill"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Fastbill Spec"
       type: "object"
       required:
@@ -3998,7 +3998,7 @@
   spec:
     documentationUrl: "https://github.com/fauna/airbyte/blob/source-fauna/docs/integrations/sources/fauna.md"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Fauna Spec"
       type: "object"
       required:
@@ -4095,7 +4095,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "File Source Spec"
       type: "object"
       additionalProperties: true
@@ -4328,7 +4328,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshcaller"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Freshcaller Spec"
       type: "object"
       required:
@@ -4375,7 +4375,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/flexport"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Flexport Spec"
       additionalProperties: true
       type: "object"
@@ -4400,7 +4400,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshdesk"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Freshdesk Spec"
       type: "object"
       required:
@@ -4443,7 +4443,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshsales"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Freshsales Spec"
       type: "object"
       required:
@@ -4470,7 +4470,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshservice"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Freshservice Spec"
       type: "object"
       required:
@@ -4506,7 +4506,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/genesys"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Genesys Connector Configuration"
       type: "object"
       required:
@@ -4559,7 +4559,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/getlago"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Getlago Spec"
       type: "object"
       required:
@@ -4579,7 +4579,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gridly"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Gridly Spec"
       type: "object"
       required:
@@ -4601,7 +4601,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "GitHub Source Spec"
       type: "object"
       required:
@@ -4736,7 +4736,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Gitlab Spec"
       type: "object"
       required:
@@ -4889,7 +4889,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/glassfrog"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Glassfrog Spec"
       type: "object"
       required:
@@ -4907,7 +4907,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gnews"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Gnews Spec"
       type: "object"
       required:
@@ -5136,7 +5136,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gocardless"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Gocardless Spec"
       type: "object"
       required:
@@ -5184,7 +5184,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gong"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Gong Spec"
       type: "object"
       required:
@@ -5219,7 +5219,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google Ads Spec"
       type: "object"
       required:
@@ -5379,7 +5379,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google Analytics (Universal Analytics) Spec"
       type: "object"
       required:
@@ -5509,7 +5509,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google Analytics 4 (GA4) Spec"
       type: "object"
       required:
@@ -5640,7 +5640,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-directory"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google Directory Spec"
       type: "object"
       required: []
@@ -5734,7 +5734,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-pagespeed-insights"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google PageSpeed Insights Spec"
       type: "object"
       required:
@@ -5793,7 +5793,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-search-console"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google Search Console Spec"
       type: "object"
       required:
@@ -5930,7 +5930,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google Sheets Source Spec"
       type: "object"
       required:
@@ -6017,7 +6017,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-webfonts"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google Webfonts Spec"
       type: "object"
       required:
@@ -6045,7 +6045,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google Directory Spec"
       type: "object"
       required:
@@ -6079,7 +6079,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/greenhouse"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Greenhouse Spec"
       type: "object"
       required:
@@ -6100,7 +6100,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gutendex"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Gutendex Spec"
       type: "object"
       additionalProperties: true
@@ -6178,7 +6178,7 @@
   spec:
     documentationUrl: "https://docs.faros.ai"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Harness Spec"
       type: "object"
       required:
@@ -6222,7 +6222,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/harvest"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Harvest Spec"
       type: "object"
       required:
@@ -6362,7 +6362,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Hellobaton Spec"
       type: "object"
       required:
@@ -6388,7 +6388,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/hubplanner"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Hubplanner Spec"
       type: "object"
       required:
@@ -6407,7 +6407,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/hubspot"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "HubSpot Source Spec"
       type: "object"
       required:
@@ -6504,7 +6504,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/ip2whois"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Ip2whois Spec"
       type: "object"
       additionalProperties: true
@@ -6530,7 +6530,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/db2"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "IBM Db2 Source Spec"
       type: "object"
       required:
@@ -6619,7 +6619,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/insightly"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Insightly Spec"
       type: "object"
       required:
@@ -6710,7 +6710,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Intercom Spec"
       type: "object"
       required:
@@ -6747,7 +6747,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intruder"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Intruder Spec"
       type: "object"
       required:
@@ -6767,7 +6767,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Iterable Spec"
       type: "object"
       required:
@@ -6799,7 +6799,7 @@
   spec:
     documentationUrl: "https://docs.faros.ai"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Jenkins Spec"
       type: "object"
       required:
@@ -6845,7 +6845,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Jira Spec"
       type: "object"
       required:
@@ -6925,7 +6925,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/k6-cloud"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "K6 Cloud Spec"
       type: "object"
       required:
@@ -6945,7 +6945,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/kafka"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Kafka Source Spec"
       type: "object"
       required:
@@ -7218,7 +7218,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/klarna"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Klarna Spec"
       type: "object"
       required:
@@ -7262,7 +7262,7 @@
     documentationUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Klaviyo Spec"
       type: "object"
       properties:
@@ -7290,7 +7290,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Kyriba Spec"
       type: "object"
       required:
@@ -7338,7 +7338,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/launchdarkly"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Launchdarkly Spec"
       type: "object"
       required:
@@ -7358,7 +7358,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/lemlist"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Lemlist Spec"
       type: "object"
       required:
@@ -7378,7 +7378,7 @@
     documentationUrl: "https://docs.airbyte.com/integrations/sources/lever-hiring"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/lever-hiring#changelog"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Lever Hiring Source Spec"
       type: "object"
       required:
@@ -7512,7 +7512,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-ads"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Linkedin Ads Spec"
       type: "object"
       required:
@@ -7599,7 +7599,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-pages/"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Linkedin Pages Spec"
       type: "object"
       required:
@@ -7677,7 +7677,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linnworks"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Linnworks Spec"
       type: "object"
       required:
@@ -7712,7 +7712,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/lokalise"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Lokalise Spec"
       type: "object"
       required:
@@ -7738,7 +7738,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/looker"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Looker Spec"
       type: "object"
       required:
@@ -7781,7 +7781,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailchimp"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Mailchimp Spec"
       type: "object"
       required: []
@@ -7882,7 +7882,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailjet-mail"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Mailjet Mail Spec"
       type: "object"
       required:
@@ -7908,7 +7908,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailjet-sms"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Mailjet Sms Spec"
       type: "object"
       required:
@@ -7944,7 +7944,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailerlite"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Mailerlite Spec"
       type: "object"
       required:
@@ -7963,7 +7963,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailersend"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Mailersend Spec"
       type: "object"
       required:
@@ -7994,7 +7994,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailgun"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Mailgun Spec"
       type: "object"
       required:
@@ -8027,7 +8027,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/marketo"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Marketo Spec"
       type: "object"
       required:
@@ -8078,7 +8078,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/metabase"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Metabase Source Spec"
       type: "object"
       required:
@@ -8117,7 +8117,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "MSSQL Source Spec"
       type: "object"
       required:
@@ -8380,7 +8380,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/microsoft-teams"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Microsoft Teams Spec"
       type: "object"
       required:
@@ -8527,7 +8527,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/microsoft-dataverse"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Microsoft Dataverse Spec"
       type: "object"
       required:
@@ -8575,7 +8575,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Mixpanel Spec"
       type: "object"
       properties:
@@ -8703,7 +8703,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/monday"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Monday Spec"
       type: "object"
       required: []
@@ -8817,7 +8817,7 @@
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mongodb-v2"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/mongodb-v2"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "MongoDb Source Spec"
       type: "object"
       required:
@@ -8937,7 +8937,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/my-hours"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "My Hours Spec"
       type: "object"
       required:
@@ -8980,7 +8980,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "MySql Source Spec"
       type: "object"
       required:
@@ -9302,7 +9302,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/n8n"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "N8n Spec"
       type: "object"
       required:
@@ -9324,7 +9324,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/nasa-apod"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "NASA spec"
       type: "object"
       required:
@@ -9378,7 +9378,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Netsuite Spec"
       type: "object"
       required:
@@ -9458,7 +9458,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/news-api"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "News Api Spec"
       type: "object"
       required:
@@ -9639,7 +9639,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/newsdata"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Newsdata Spec"
       type: "object"
       required:
@@ -9844,7 +9844,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Notion Source Spec"
       type: "object"
       required:
@@ -9924,7 +9924,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/nytimes"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Nytimes Spec"
       type: "object"
       required:
@@ -9980,7 +9980,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/okta"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Okta Spec"
       type: "object"
       required: []
@@ -10055,7 +10055,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/omnisend"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Omnisend Spec"
       type: "object"
       required:
@@ -10074,7 +10074,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/onesignal"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "OneSignal Source Spec"
       type: "object"
       required:
@@ -10113,7 +10113,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Open Weather Spec"
       type: "object"
       required:
@@ -10231,7 +10231,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/oracle"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Oracle Source Spec"
       type: "object"
       required:
@@ -10474,7 +10474,7 @@
   spec:
     documentationUrl: "https://docs.withorb.com/"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Orb Spec"
       type: "object"
       required:
@@ -10528,7 +10528,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/orbit"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Orbit Source Spec"
       type: "object"
       required:
@@ -10563,7 +10563,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Oura Spec"
       type: "object"
       required:
@@ -10593,7 +10593,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/outreach"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Outreach Spec"
       type: "object"
       required:
@@ -10640,7 +10640,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pardot"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Pardot Spec"
       type: "object"
       required:
@@ -10691,7 +10691,7 @@
   spec:
     documentationUrl: "https://docs.faros.ai"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "PagerDuty Spec"
       type: "object"
       required:
@@ -10740,7 +10740,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/partnerstack"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Partnerstack Spec"
       type: "object"
       required:
@@ -10773,7 +10773,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/paypal-transactions"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Paypal Transaction Search"
       type: "object"
       required:
@@ -10817,7 +10817,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/paystack"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Paystack Source Spec"
       type: "object"
       required:
@@ -10856,7 +10856,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/persistiq"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Persistiq Spec"
       type: "object"
       required:
@@ -10875,7 +10875,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pexels-api"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Pexel API Spec"
       type: "object"
       required:
@@ -10941,7 +10941,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Pinterest Spec"
       type: "object"
       required:
@@ -11059,7 +11059,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Pipedrive Spec"
       type: "object"
       required:
@@ -11141,7 +11141,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Pivotal Tracker Spec"
       type: "object"
       required:
@@ -11160,7 +11160,7 @@
   spec:
     documentationUrl: "https://plaid.com/docs/api/"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       type: "object"
       required:
       - "access_token"
@@ -11206,7 +11206,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/plausible"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Plausible Spec"
       type: "object"
       required:
@@ -11245,7 +11245,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pocket"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Pocket Spec"
       type: "object"
       required:
@@ -11339,7 +11339,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pokeapi"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Pokeapi Spec"
       type: "object"
       required:
@@ -11362,7 +11362,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Weather API Spec"
       type: "object"
       required:
@@ -11445,7 +11445,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/posthog"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "PostHog Spec"
       type: "object"
       required:
@@ -11480,7 +11480,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Postgres Source Spec"
       type: "object"
       required:
@@ -11870,7 +11870,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Postmarkapp Spec"
       type: "object"
       required:
@@ -11895,7 +11895,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/prestashop"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "PrestaShop Spec"
       type: "object"
       required:
@@ -11930,7 +11930,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Primetric Spec"
       type: "object"
       required:
@@ -11964,7 +11964,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/public-apis"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Public Apis Spec"
       type: "object"
       required: []
@@ -11976,7 +11976,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/punk-api"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Punk Api Spec"
       type: "object"
       required:
@@ -12012,7 +12012,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pypi"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Pypi Spec"
       type: "object"
       required:
@@ -12040,7 +12040,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Qonto Spec"
       type: "object"
       required:
@@ -12085,7 +12085,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/qualaroo"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Qualaroo Spec"
       type: "object"
       required:
@@ -12138,7 +12138,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/quickbooks-singer"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source QuickBooks Singer Spec"
       type: "object"
       required:
@@ -12201,7 +12201,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Recharge Spec"
       type: "object"
       required:
@@ -12232,7 +12232,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recreation"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Recreation Spec"
       type: "object"
       required:
@@ -12254,7 +12254,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recruitee"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Recruitee Spec"
       type: "object"
       required:
@@ -12281,7 +12281,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recurly"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Recurly Source Spec"
       type: "object"
       required:
@@ -12318,7 +12318,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Redshift Source Spec"
       type: "object"
       required:
@@ -12388,7 +12388,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/reply-io"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Reply Io Spec"
       type: "object"
       required:
@@ -12407,7 +12407,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Retently Api Spec"
       type: "object"
       additionalProperties: true
@@ -12505,7 +12505,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/rd-station-marketing"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "RD Station Marketing Spec"
       type: "object"
       required:
@@ -12569,7 +12569,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/rki-covid"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "RKI Covid Spec"
       type: "object"
       required:
@@ -12589,7 +12589,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/rss"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "RSS Spec"
       type: "object"
       required:
@@ -12605,7 +12605,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/rocket-chat"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Rocket Chat Spec"
       type: "object"
       required:
@@ -12933,7 +12933,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesloft"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Salesloft Spec"
       type: "object"
       required:
@@ -12973,7 +12973,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Salesforce Source Spec"
       type: "object"
       required:
@@ -13102,7 +13102,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sap-fieldglass"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Sap Fieldglass Spec"
       type: "object"
       required:
@@ -13120,7 +13120,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/seacrh-metrics"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Search Metrics Spec"
       type: "object"
       required:
@@ -13194,7 +13194,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/secoda"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Secoda Spec"
       type: "object"
       required:
@@ -13214,7 +13214,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sendgrid"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Sendgrid Spec"
       type: "object"
       required:
@@ -13248,7 +13248,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/senseforce"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Senseforce Source Spec"
       type: "object"
       required:
@@ -13324,7 +13324,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sendinblue"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Sendinblue Spec"
       type: "object"
       required:
@@ -13344,7 +13344,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Shopify Source CDK Specifications"
       type: "object"
       required:
@@ -13472,7 +13472,7 @@
   spec:
     documentationUrl: "https://developers.short.io/reference"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Shortio Spec"
       type: "object"
       required:
@@ -13503,7 +13503,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Slack Spec"
       type: "object"
       required:
@@ -13641,7 +13641,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smaily"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Smaily Spec"
       type: "object"
       required:
@@ -13670,7 +13670,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartengage"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "SmartEngage Spec"
       type: "object"
       required:
@@ -13689,7 +13689,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Smartsheets Source Spec"
       type: "object"
       required:
@@ -13733,7 +13733,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Snapchat Marketing Spec"
       type: "object"
       required:
@@ -13794,7 +13794,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Snowflake Source Spec"
       type: "object"
       required:
@@ -13972,7 +13972,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sonar-cloud"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Sonar Cloud Spec"
       type: "object"
       required:
@@ -14022,7 +14022,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/spacex-api"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Spacex Api Spec"
       type: "object"
       additionalProperties: true
@@ -14043,7 +14043,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Square Spec"
       type: "object"
       required:
@@ -14176,7 +14176,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/strava"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Strava Spec"
       type: "object"
       required:
@@ -14270,7 +14270,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/statuspage"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Statuspage Spec"
       type: "object"
       required:
@@ -14290,7 +14290,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Stripe Source Spec"
       type: "object"
       required:
@@ -14354,7 +14354,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/surveycto"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Surveycto Spec"
       type: "object"
       required:
@@ -14401,7 +14401,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/surveymonkey"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "SurveyMonkey Spec"
       type: "object"
       required:
@@ -14524,7 +14524,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/surveysparrow"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Survey Sparrow Spec"
       type: "object"
       required:
@@ -14574,7 +14574,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Talkdesk Explore API Spec"
       type: "object"
       required:
@@ -14623,7 +14623,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Tempo Spec"
       type: "object"
       required:
@@ -14642,7 +14642,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tidb"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "TiDB Source Spec"
       type: "object"
       required:
@@ -14955,7 +14955,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Timely Integration Spec"
       type: "object"
       required:
@@ -14985,7 +14985,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tmdb"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Tmdb Spec"
       type: "object"
       required:
@@ -15029,7 +15029,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/toggl"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Toggl Spec"
       type: "object"
       required:
@@ -15077,7 +15077,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/the-guardian-api"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "The Guardian Api Spec"
       type: "object"
       required:
@@ -15149,7 +15149,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tplcentral"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Tplcentral Spec"
       type: "object"
       required:
@@ -15200,7 +15200,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/trello"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Trello Spec"
       type: "object"
       required:
@@ -15252,7 +15252,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tvmaze-schedule"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "TVMaze Schedule Spec"
       type: "object"
       required:
@@ -15293,7 +15293,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Twilio Spec"
       type: "object"
       required:
@@ -15342,7 +15342,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/twilio-taskrouter"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Twilio Taskrouter Spec"
       type: "object"
       required:
@@ -15367,7 +15367,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Twitter Spec"
       type: "object"
       required:
@@ -15399,7 +15399,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tyntec-sms"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Tyntec Sms Spec"
       type: "object"
       required:
@@ -15437,7 +15437,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/typeform"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Typeform Spec"
       type: "object"
       required:
@@ -15479,7 +15479,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/us-census"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "https://api.census.gov/ Source Spec"
       type: "object"
       required:
@@ -15515,7 +15515,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/youtube-analytics"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "YouTube Analytics Spec"
       type: "object"
       required:
@@ -15564,7 +15564,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/youtube-analytics-business"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "YouTube Analytics Business Spec"
       type: "object"
       required:
@@ -15613,7 +15613,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/vantage"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Vantage Spec"
       type: "object"
       required:
@@ -15633,7 +15633,7 @@
   spec:
     documentationUrl: "https://docs.faros.ai"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "VictorOps Spec"
       type: "object"
       required:
@@ -15670,7 +15670,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/visma-economic"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Visma E-conomic Spec"
       type: "object"
       required:
@@ -15694,7 +15694,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/vitally"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Vitally Spec"
       type: "object"
       required:
@@ -15723,7 +15723,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/xero"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Xero Spec"
       type: "object"
       required:
@@ -15793,7 +15793,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/xkcd"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Xkcd Spec"
       type: "object"
       properties: {}
@@ -15804,7 +15804,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/weatherstack"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Weatherstack Spec"
       type: "object"
       required:
@@ -15851,7 +15851,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/webflow"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Webflow Spec"
       type: "object"
       required:
@@ -15880,7 +15880,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/whisky-hunter"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Whisky Hunter Spec"
       type: "object"
       additionalProperties: true
@@ -15892,7 +15892,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/woocommerce"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Woocommerce Spec"
       type: "object"
       required:
@@ -15947,7 +15947,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/workable"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Workable API Spec"
       type: "object"
       required:
@@ -15981,7 +15981,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Wrike Spec"
       type: "object"
       required:
@@ -16018,7 +16018,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zapier-supported-storage"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Zapier Supported Storage Spec"
       type: "object"
       required:
@@ -16037,7 +16037,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-chat"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Zendesk Chat Spec"
       type: "object"
       required:
@@ -16161,7 +16161,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-sell"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Zendesk Sell Spec"
       type: "object"
       required:
@@ -16181,7 +16181,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk_sunshine"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Zendesk Sunshine Spec"
       type: "object"
       required:
@@ -16312,7 +16312,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Zendesk Support Spec"
       type: "object"
       required:
@@ -16439,7 +16439,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-talk"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Zendesk Talk Spec"
       type: "object"
       required:
@@ -16561,7 +16561,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Zenefits Integration Spec"
       type: "object"
       required:
@@ -16580,7 +16580,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zenloop"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Zenloop Spec"
       type: "object"
       required:
@@ -16615,7 +16615,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sentry"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Sentry Spec"
       type: "object"
       required:
@@ -16657,7 +16657,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zuora"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Zuora Connector Configuration"
       type: "object"
       required:
@@ -16733,7 +16733,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/kustomer"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Source Kustomer Singer Spec"
       type: "object"
       required:
@@ -16760,7 +16760,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zoho-crm"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Zoho Crm Configuration"
       type: "object"
       required:
@@ -16840,7 +16840,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/source/sftp"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "SFTP Source Spec"
       type: "object"
       required:
@@ -16944,7 +16944,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/source/ftp"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "FTP Source Spec"
       type: "object"
       required:
@@ -17051,7 +17051,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/firebolt"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Firebolt Spec"
       type: "object"
       required:
@@ -17096,7 +17096,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/source/elasticsearch"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Elasticsearch Connection Configuration"
       type: "object"
       required:
@@ -17171,7 +17171,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Waiteraid Spec"
       type: "object"
       required:
@@ -17205,7 +17205,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Wikipedia Pageviews Spec"
       type: "object"
       required:
@@ -17282,7 +17282,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/workramp"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Workramp Spec"
       type: "object"
       required:
@@ -17306,7 +17306,7 @@
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Yandex Metrica Spec"
       type: "object"
       required:
@@ -17351,7 +17351,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/younium"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Younium Spec"
       type: "object"
       required:
@@ -17385,7 +17385,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zoom"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Zoom Spec"
       type: "object"
       required:
@@ -17403,7 +17403,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/braze"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Braze Spec"
       type: "object"
       additionalProperties: true

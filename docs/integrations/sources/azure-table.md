@@ -14,7 +14,7 @@ Azure Table storage is a service that stores non-relational structured data (als
 
 `
     {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
         "data": {

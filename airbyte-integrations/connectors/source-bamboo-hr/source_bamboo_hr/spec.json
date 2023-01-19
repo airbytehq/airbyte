@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/bamboo-hr",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Bamboo HR Spec",
     "type": "object",
     "required": ["subdomain", "api_key"],

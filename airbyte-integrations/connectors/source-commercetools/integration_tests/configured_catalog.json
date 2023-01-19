@@ -4,7 +4,7 @@
       "stream": {
         "name": "customers",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -398,7 +398,7 @@
       "stream": {
         "name": "orders",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -3584,7 +3584,7 @@
       "stream": {
         "name": "discount_codes",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -3833,7 +3833,7 @@
       "stream": {
         "name": "payments",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -4193,7 +4193,7 @@
       "stream": {
         "name": "products",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {

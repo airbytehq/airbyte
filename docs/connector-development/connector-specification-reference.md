@@ -131,7 +131,7 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
 ```javascript
 {
   "connection_specification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
     "required": ["dataset_name", "format", "url", "provider"],
@@ -194,7 +194,7 @@ For example, this spec is invalid, since `a_format` is listed twice under the en
 ```javascript
 {
   "connection_specification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
     "required": ["format"],

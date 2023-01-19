@@ -46,7 +46,7 @@ We're working with the PokeAPI, so we need to define our input schema to reflect
 ```yaml
 documentationUrl: https://docs.airbyte.io/integrations/sources/pokeapi
 connectionSpecification:
-  $schema: http://json-schema.org/draft-07/schema#
+  $schema: https://json-schema.org/draft-07/schema#
   title: Pokeapi Spec
   type: object
   required:

@@ -26,7 +26,7 @@ exports[`#useInitialValues should generate initial values w/ 'not create' mode: 
         "stream": {
           "defaultCursorField": [],
           "jsonSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "properties": {
               "abilities": {
                 "items": {
@@ -559,7 +559,7 @@ exports[`#useInitialValues should generate initial values w/ 'not create' mode: 
         "stream": {
           "defaultCursorField": [],
           "jsonSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "properties": {
               "abilities": {
                 "items": {
@@ -1093,7 +1093,7 @@ exports[`#useInitialValues should generate initial values w/ no 'not create' mod
         "stream": {
           "defaultCursorField": [],
           "jsonSchema": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "properties": {
               "abilities": {
                 "items": {

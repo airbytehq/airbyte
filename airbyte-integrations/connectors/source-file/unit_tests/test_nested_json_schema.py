@@ -90,7 +90,7 @@ json_array = [
 
 
 expected_obj_schema = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "properties": {
         "batters": {
             "properties": {
@@ -121,7 +121,7 @@ expected_obj_schema = {
 
 
 expected_array_schema = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "properties": {
         "batters": {
             "properties": {

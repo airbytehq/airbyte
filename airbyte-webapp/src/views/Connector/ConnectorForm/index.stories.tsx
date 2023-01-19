@@ -78,7 +78,7 @@ Common.args = {
       succeeded: true,
     },
     connectionSpecification: JSON.parse(`{
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
     "required": ["project_id", "dataset_id"],
@@ -164,7 +164,7 @@ Oneof.args = {
       succeeded: true,
     },
     connectionSpecification: JSON.parse(`{
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",
     "type": "object",
     "additionalProperties": false,

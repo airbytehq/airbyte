@@ -3,7 +3,7 @@
     {
       "name": "stock_locations",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -114,7 +114,7 @@
     {
       "name": "stock_items",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -634,7 +634,7 @@
     {
       "name": "processed_orders",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -899,7 +899,7 @@
     {
       "name": "processed_order_details",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "OrderId": {

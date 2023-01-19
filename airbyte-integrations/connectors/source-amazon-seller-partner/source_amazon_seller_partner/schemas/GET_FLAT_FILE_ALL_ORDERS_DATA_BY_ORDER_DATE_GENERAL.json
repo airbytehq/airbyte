@@ -2,7 +2,7 @@
   "title": "Flat File All Orders Data Reports",
   "description": "Flat File All Orders Data by Order Date General Reports",
   "type": "object",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "properties": {
     "order-id": {
       "type": ["null", "string"]

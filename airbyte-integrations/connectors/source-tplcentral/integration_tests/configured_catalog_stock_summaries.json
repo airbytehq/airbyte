@@ -4,7 +4,7 @@
       "stream": {
         "name": "stock_summaries",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -12,7 +12,7 @@
               "type": "integer"
             },
             "ItemIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {

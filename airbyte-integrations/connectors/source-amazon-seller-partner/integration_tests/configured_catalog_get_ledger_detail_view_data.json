@@ -7,7 +7,7 @@
           "title": "Inventory Ledger Report - Detailed View",
           "description": "",
           "type": "object",
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "properties": {
             "Date": { "type": ["null", "string"], "format": "date" },
             "FNSKU": { "type": ["null", "string"] },

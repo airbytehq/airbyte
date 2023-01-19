@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/paystack",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Paystack Source Spec",
     "type": "object",
     "required": ["secret_key", "start_date"],

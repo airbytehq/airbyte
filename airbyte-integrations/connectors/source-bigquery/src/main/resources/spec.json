@@ -3,7 +3,7 @@
   "supportsIncremental": true,
   "supported_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "BigQuery Source Spec",
     "type": "object",
     "required": ["project_id", "credentials_json"],

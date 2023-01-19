@@ -28,7 +28,7 @@ class JsonSchemaValidatorTest {
 
   private static final JsonNode VALID_SCHEMA = Jsons.deserialize(
       "{\n" +
-          "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n" +
+          "    \"$schema\": \"https://json-schema.org/draft-07/schema#\",\n" +
           "    \"title\": \"test\",\n" +
           "    \"type\": \"object\",\n" +
           "    \"required\": [\"host\"],\n" +
@@ -74,7 +74,7 @@ class JsonSchemaValidatorTest {
   @Test
   void test() throws IOException {
     final String schema = "{\n"
-        + "  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n"
+        + "  \"$schema\": \"https://json-schema.org/draft-07/schema#\",\n"
         + "  \"title\": \"OuterObject\",\n"
         + "  \"type\": \"object\",\n"
         + "  \"properties\": {\n"

@@ -52,7 +52,7 @@ def test_json_schema(config, get_sheet_mocker):
     sheet = SmartSheetAPIWrapper(config)
     _ = get_sheet_mocker(sheet)
     json_schema = sheet.json_schema
-    assert json_schema["$schema"] == "http://json-schema.org/draft-07/schema#"
+    assert json_schema["$schema"] == "https://json-schema.org/draft-07/schema#"
     assert json_schema["type"] == "object"
     assert "properties" in json_schema
     assert "modifiedAt" in json_schema["properties"]

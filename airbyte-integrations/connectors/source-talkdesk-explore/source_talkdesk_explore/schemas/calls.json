@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "Calls report",
   "description": "Includes all calls that have been made / received during a period of time, as well as detailed information about each one: time, duration, type, agent, call disposition, description, recording, waiting times, etc.",

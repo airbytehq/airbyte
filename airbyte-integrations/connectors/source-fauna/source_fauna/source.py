@@ -257,7 +257,7 @@ class SourceFauna(Source):
                 for collection in page["data"]:
                     stream_name = collection.id()
                     json_schema = {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
                             "ref": {

@@ -4,7 +4,7 @@
       "stream": {
         "name": "companies",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "_object": {
@@ -32,7 +32,7 @@
               "type": "array",
               "description": "Array of company entities that belong to this company.",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -59,7 +59,7 @@
                         "type": "null"
                       },
                       {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
                           "_object": {
@@ -115,7 +115,7 @@
                     "type": "array",
                     "description": "Array of VAT numbers of the company entity.",
                     "items": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -138,7 +138,7 @@
               }
             },
             "locations": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -157,7 +157,7 @@
               }
             },
             "contacts": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {

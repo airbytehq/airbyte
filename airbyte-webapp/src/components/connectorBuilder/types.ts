@@ -583,7 +583,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
   const allInputs = [...values.inputs, ...getInferredInputs(values.global, values.inferredInputOverrides)];
 
   const specSchema: JSONSchema7 = {
-    $schema: "http://json-schema.org/draft-07/schema#",
+    $schema: "https://json-schema.org/draft-07/schema#",
     type: "object",
     required: allInputs.filter((input) => input.required).map((input) => input.key),
     properties: Object.fromEntries(allInputs.map((input) => [input.key, input.definition])),

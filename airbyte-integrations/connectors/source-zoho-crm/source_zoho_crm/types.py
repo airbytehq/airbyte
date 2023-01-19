@@ -15,7 +15,7 @@ from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 class Schema:
     description: str
     properties: Dict[str, Any]
-    schema: str = "http://json-schema.org/draft-07/schema#"
+    schema: str = "https://json-schema.org/draft-07/schema#"
     type: str = "object"
     additionalProperties: Any = True
     required: Optional[List[str]] = dataclasses.field(default_factory=list)

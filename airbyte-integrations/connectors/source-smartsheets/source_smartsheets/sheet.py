@@ -65,7 +65,7 @@ class SmartSheetAPIWrapper:
         column_info = {column.title: self._column_to_property(column.type.value) for column in self.data.columns}
         column_info["modifiedAt"] = {"type": "string", "format": "date-time"}  # add cursor field explicitly
         json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": column_info,
         }

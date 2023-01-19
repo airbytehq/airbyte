@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/e2e-test",
   "protocol_version": "0.2.1",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "E2E Test Source Spec",
     "type": "object",
     "required": ["max_messages", "mock_catalog"],

@@ -44,7 +44,7 @@ def create_schema(name: str, content: Mapping):
 def spec_object():
     spec = {
         "connectionSpecification": {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "required": ["api_token"],
             "additionalProperties": False,

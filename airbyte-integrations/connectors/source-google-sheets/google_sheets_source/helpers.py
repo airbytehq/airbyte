@@ -54,7 +54,7 @@ class Helpers(object):
             logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
 
         sheet_json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             # For simplicity, the type of every cell is a string
             "properties": {field: {"type": "string"} for field in fields},

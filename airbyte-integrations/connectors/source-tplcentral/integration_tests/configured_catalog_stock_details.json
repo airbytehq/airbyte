@@ -4,7 +4,7 @@
       "stream": {
         "name": "stock_details",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -19,7 +19,7 @@
               "type": "integer"
             },
             "ItemIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -82,7 +82,7 @@
               "type": ["null", "number"]
             },
             "SupplierIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -95,17 +95,17 @@
               }
             },
             "LocationIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
                 "NameKey": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
                     "FacilityIdentifier": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
@@ -128,17 +128,17 @@
               }
             },
             "PalletIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
                 "NameKey": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
                     "FacilityIdentifier": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
@@ -161,7 +161,7 @@
               }
             },
             "InventoryUnitOfMeasureIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -174,7 +174,7 @@
               }
             },
             "SecondaryUnitOfMeasureIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -208,7 +208,7 @@
             "SavedElements": {
               "type": "array",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {

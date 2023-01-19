@@ -4,7 +4,7 @@
       "stream": {
         "name": "stream_1",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -36,7 +36,7 @@
       "stream": {
         "name": "stream_2",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -68,7 +68,7 @@
       "stream": {
         "name": "stream_3",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {

@@ -10,7 +10,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/amazon-sqs",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Destination Amazon Sqs",
           "type": "object",
           "required": ["queue_url", "region"],
@@ -116,7 +116,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/azureblobstorage",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "AzureBlobStorage Destination Spec",
           "type": "object",
           "required": [
@@ -229,7 +229,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "BigQuery Destination Spec",
           "type": "object",
           "required": ["project_id", "dataset_location", "dataset_id"],
@@ -447,7 +447,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "BigQuery Denormalized Typed Struct Destination Spec",
           "type": "object",
           "required": ["project_id", "dataset_id"],
@@ -656,7 +656,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/cassandra",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Cassandra Destination Spec",
           "type": "object",
           "required": ["keyspace", "username", "password", "address", "port"],
@@ -732,7 +732,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/keen",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Keen Spec",
           "type": "object",
           "required": ["project_id", "api_key"],
@@ -777,7 +777,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/clickhouse",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "ClickHouse Destination Spec",
           "type": "object",
           "required": ["host", "port", "database", "username"],
@@ -964,7 +964,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/databricks",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Databricks Lakehouse Destination Spec",
           "type": "object",
           "required": [
@@ -1153,7 +1153,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/dynamodb",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "DynamoDB Destination Spec",
           "type": "object",
           "required": [
@@ -1246,7 +1246,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/elasticsearch",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Elasticsearch Connection Configuration",
           "type": "object",
           "required": ["endpoint"],
@@ -1349,7 +1349,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/e2e-test",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "E2E Test (/dev/null) Destination Spec",
           "type": "object",
           "oneOf": [
@@ -1384,7 +1384,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/firebolt",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Firebolt Spec",
           "type": "object",
           "required": ["username", "password", "database"],
@@ -1504,7 +1504,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/gcs",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "GCS Destination Spec",
           "type": "object",
           "required": [
@@ -1886,7 +1886,7 @@
         "supportsNormalization": false,
         "supportsDBT": false,
         "supported_destination_sync_modes": ["overwrite", "append"],
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "$schema": "https://json-schema.org/draft-07/schema#"
       },
       "public": true,
       "custom": false,
@@ -1913,7 +1913,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/firestore",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Destination Google Firestore",
           "type": "object",
           "required": ["project_id"],
@@ -1951,7 +1951,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/pubsub",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Google PubSub Destination Spec",
           "type": "object",
           "required": ["project_id", "topic_id", "credentials_json"],
@@ -1994,7 +1994,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/google-sheets",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Destination Google Sheets",
           "type": "object",
           "required": ["spreadsheet_id", "credentials"],
@@ -2067,7 +2067,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "MS SQL Server Destination Spec",
           "type": "object",
           "required": ["host", "port", "username", "database", "schema"],
@@ -2306,7 +2306,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mariadb-columnstore",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "MariaDB Columnstore Destination Spec",
           "type": "object",
           "required": ["host", "port", "username", "database"],
@@ -2482,7 +2482,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/meilisearch",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "MeiliSearch Destination Spec",
           "type": "object",
           "required": ["host"],
@@ -2522,7 +2522,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mongodb",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "MongoDB Destination Spec",
           "type": "object",
           "required": ["database", "auth_type"],
@@ -2678,7 +2678,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mysql",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "MySQL Destination Spec",
           "type": "object",
           "required": ["host", "port", "username", "database"],
@@ -2860,7 +2860,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/oracle",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Oracle Destination Spec",
           "type": "object",
           "required": ["host", "port", "username", "sid"],
@@ -3050,7 +3050,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/postgres",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Postgres Destination Spec",
           "type": "object",
           "required": ["host", "port", "username", "database", "schema"],
@@ -3363,7 +3363,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/pulsar",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Pulsar Destination Spec",
           "type": "object",
           "required": [
@@ -3511,7 +3511,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/rabbitmq",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Destination Rabbitmq",
           "type": "object",
           "required": ["host", "routing_key"],
@@ -3571,7 +3571,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redis",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Redis Destination Spec",
           "type": "object",
           "required": ["host", "port", "username", "password", "cache_type"],
@@ -3635,7 +3635,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Redshift Destination Spec",
           "type": "object",
           "required": [
@@ -3872,7 +3872,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/rockset",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Rockset Destination Spec",
           "type": "object",
           "required": ["api_key", "workspace"],
@@ -3925,7 +3925,7 @@
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/s3",
         "protocol_version": "0.2.2",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "S3 Destination Spec",
           "type": "object",
           "required": [
@@ -4337,7 +4337,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/sftp-json",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Destination SFTP JSON",
           "type": "object",
           "required": ["host", "username", "password", "destination_path"],
@@ -4400,7 +4400,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/scylla",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Scylla Destination Spec",
           "type": "object",
           "required": ["keyspace", "username", "password", "address", "port"],
@@ -4468,7 +4468,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/snowflake",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Snowflake Destination Spec",
           "type": "object",
           "required": [
@@ -4983,7 +4983,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/aws-cloudtrail",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Aws CloudTrail Spec",
           "type": "object",
           "required": [
@@ -5040,7 +5040,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/airtable",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Airtable Source Spec",
           "type": "object",
           "required": ["api_key", "base_id", "tables"],
@@ -5223,7 +5223,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-sqs",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Amazon SQS Source Spec",
           "type": "object",
           "required": ["queue_url", "region", "delete_messages"],
@@ -5594,7 +5594,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/amplitude",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Amplitude Spec",
           "type": "object",
           "required": ["api_key", "secret_key", "start_date"],
@@ -5640,7 +5640,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/apify-dataset",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Apify Dataset Spec",
           "type": "object",
           "required": ["datasetId"],
@@ -5677,7 +5677,7 @@
       "spec": {
         "documentationUrl": "https://docsurl.com",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Azure Data Table Spec",
           "type": "object",
           "required": ["storage_account_name", "storage_access_key"],
@@ -5727,7 +5727,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/bigcommerce",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "BigCommerce Source CDK Specifications",
           "type": "object",
           "required": ["start_date", "store_hash", "access_token"],
@@ -5772,7 +5772,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/bigquery",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "BigQuery Source Spec",
           "type": "object",
           "required": ["project_id", "credentials_json"],
@@ -5816,7 +5816,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/bing-ads",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Bing Ads Spec",
           "type": "object",
           "required": [
@@ -6015,7 +6015,7 @@
       "spec": {
         "documentationUrl": "https://apidocs.chargebee.com/docs/api",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Chargebee Spec",
           "type": "object",
           "required": ["site", "site_api_key", "start_date", "product_catalog"],
@@ -6068,7 +6068,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/chartmogul",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Chartmogul Spec",
           "type": "object",
           "required": ["api_key", "start_date", "interval"],
@@ -6115,7 +6115,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/clickhouse",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "ClickHouse Source Spec",
           "type": "object",
           "required": ["host", "port", "database", "username"],
@@ -6286,7 +6286,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/close-com",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Close.com Spec",
           "type": "object",
           "required": ["api_key"],
@@ -6325,7 +6325,7 @@
       "spec": {
         "documentationUrl": "https://docsurl.com",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Delighted Spec",
           "type": "object",
           "required": ["since", "api_key"],
@@ -6367,7 +6367,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/dixa",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Dixa Spec",
           "type": "object",
           "required": ["api_token", "start_date"],
@@ -6412,7 +6412,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/dockerhub",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Dockerhub Spec",
           "type": "object",
           "required": ["docker_username"],
@@ -6445,7 +6445,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/e2e-test",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Cloud E2E Test Source Spec",
           "type": "object",
           "required": ["max_messages", "mock_catalog"],
@@ -6563,7 +6563,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "exchangeratesapi.io Source Spec",
           "type": "object",
           "required": ["start_date", "access_key"],
@@ -6969,7 +6969,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/faker",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Faker Source Spec",
           "type": "object",
           "required": ["count"],
@@ -7027,7 +7027,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/file",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "File Source Spec",
           "type": "object",
           "additionalProperties": true,
@@ -7273,7 +7273,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/firebolt",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Firebolt Spec",
           "type": "object",
           "required": ["username", "password", "database"],
@@ -7332,7 +7332,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/freshdesk",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Freshdesk Spec",
           "type": "object",
           "required": ["domain", "api_key"],
@@ -7385,7 +7385,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/github",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "GitHub Source Spec",
           "type": "object",
           "required": ["start_date", "repository"],
@@ -7536,7 +7536,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/gitlab",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Source Gitlab Singer Spec",
           "type": "object",
           "required": ["api_url", "private_token", "start_date"],
@@ -7590,7 +7590,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-ads",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Google Ads Spec",
           "type": "object",
           "required": ["credentials", "start_date", "customer_id"],
@@ -7743,7 +7743,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Google Analytics V4 Spec",
           "type": "object",
           "required": ["view_id", "start_date"],
@@ -7874,7 +7874,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-directory",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Google Directory Spec",
           "type": "object",
           "required": ["credentials_json", "email"],
@@ -7910,7 +7910,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-search-console",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Google Search Console Spec",
           "type": "object",
           "required": ["site_urls", "start_date", "authorization"],
@@ -8044,7 +8044,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-sheets",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Stripe Source Spec",
           "type": "object",
           "required": ["spreadsheet_id", "credentials"],
@@ -8154,7 +8154,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Google Directory Spec",
           "type": "object",
           "required": ["credentials_json", "email"],
@@ -8196,7 +8196,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/greenhouse",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Greenhouse Spec",
           "type": "object",
           "required": ["api_key"],
@@ -8228,7 +8228,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/hubspot",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "HubSpot Source Spec",
           "type": "object",
           "required": ["start_date", "credentials"],
@@ -8405,7 +8405,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/intercom",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Source Intercom Spec",
           "type": "object",
           "required": ["start_date", "access_token"],
@@ -8453,7 +8453,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/iterable",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Iterable Spec",
           "type": "object",
           "required": ["start_date", "api_key"],
@@ -8494,7 +8494,7 @@
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/klaviyo",
         "changelogUrl": "https://docs.airbyte.io/integrations/sources/klaviyo",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Klaviyo Spec",
           "type": "object",
           "properties": {
@@ -8532,7 +8532,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/kustomer",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Source Kustomer Singer Spec",
           "type": "object",
           "required": ["api_token", "start_date"],
@@ -8570,7 +8570,7 @@
       "spec": {
         "documentationUrl": "https://docsurl.com",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Lemlist Spec",
           "type": "object",
           "required": ["api_key"],
@@ -8602,7 +8602,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/linkedin-ads",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Linkedin Ads Spec",
           "type": "object",
           "required": ["start_date"],
@@ -8705,7 +8705,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/linnworks",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Linnworks Spec",
           "type": "object",
           "required": [
@@ -8758,7 +8758,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/looker",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Looker Spec",
           "type": "object",
           "required": ["domain", "client_id", "client_secret"],
@@ -8814,7 +8814,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/mailchimp",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Mailchimp Spec",
           "type": "object",
           "required": [],
@@ -8938,7 +8938,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/marketo",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Source Marketo Spec",
           "type": "object",
           "required": [
@@ -9000,7 +9000,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/metabase",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Metabase Source Spec",
           "type": "object",
           "required": ["instance_api_url"],
@@ -9049,7 +9049,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "MSSQL Source Spec",
           "type": "object",
           "required": ["host", "port", "database", "username"],
@@ -9327,7 +9327,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/microsoft-teams",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Microsoft Teams Spec",
           "type": "object",
           "required": ["period"],
@@ -9493,7 +9493,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/mixpanel",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Source Mixpanel Spec",
           "type": "object",
           "required": ["api_secret"],
@@ -9579,7 +9579,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/monday",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Monday Spec",
           "type": "object",
           "required": [],
@@ -9726,7 +9726,7 @@
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/mongodb-v2",
         "changelogUrl": "https://docs.airbyte.io/integrations/sources/mongodb-v2",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "MongoDb Source Spec",
           "type": "object",
           "required": ["database"],
@@ -9857,7 +9857,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/my-hours",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "My Hours Spec",
           "type": "object",
           "required": ["email", "password", "start_date"],
@@ -9912,7 +9912,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/mysql",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "MySql Source Spec",
           "type": "object",
           "required": [
@@ -10107,7 +10107,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/okta",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Okta Spec",
           "type": "object",
           "required": [],
@@ -10259,7 +10259,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/oracle",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Oracle Source Spec",
           "type": "object",
           "required": ["host", "port", "username", "encryption"],
@@ -10537,7 +10537,7 @@
       "spec": {
         "documentationUrl": "https://docs.withorb.com/",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Orb Spec",
           "type": "object",
           "required": ["api_key"],
@@ -10605,7 +10605,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/orbit",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Orbit Source Spec",
           "type": "object",
           "required": ["api_token", "workspace"],
@@ -10652,7 +10652,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/paypal-transactions",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Paypal Transaction Search",
           "type": "object",
           "required": ["start_date", "is_sandbox"],
@@ -10710,7 +10710,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/persistiq",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Persistiq Spec",
           "type": "object",
           "required": ["api_key"],
@@ -10742,7 +10742,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/pokeapi",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Pokeapi Spec",
           "type": "object",
           "required": ["pokemon_name"],
@@ -10776,7 +10776,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/posthog",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "PostHog Spec",
           "type": "object",
           "required": ["api_key", "start_date"],
@@ -10822,7 +10822,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Postgres Source Spec",
           "type": "object",
           "required": ["host", "port", "database", "username"],
@@ -11214,7 +11214,7 @@
       "spec": {
         "documentationUrl": "https://docsurl.com",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "PrestaShop Spec",
           "type": "object",
           "required": ["url", "access_key"],
@@ -11250,7 +11250,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/qualaroo",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Qualaroo Spec",
           "type": "object",
           "required": ["token", "key", "start_date"],
@@ -11313,7 +11313,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/recharge",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Recharge Spec",
           "type": "object",
           "required": ["start_date", "access_token"],
@@ -11353,7 +11353,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/recurly",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Recurly Source Spec",
           "type": "object",
           "required": ["api_key"],
@@ -11401,7 +11401,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Redshift Source Spec",
           "type": "object",
           "required": ["host", "port", "database", "username", "password"],
@@ -11475,7 +11475,7 @@
       "spec": {
         "documentationUrl": "https://docsurl.com",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Retently Api Spec",
           "type": "object",
           "additionalProperties": true,
@@ -11900,7 +11900,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/source/sftp",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "SFTP Source Spec",
           "type": "object",
           "required": ["user", "host", "port"],
@@ -12021,7 +12021,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.com/integrations/sources/salesforce",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Salesforce Source Spec",
           "type": "object",
           "required": ["client_id", "client_secret", "refresh_token"],
@@ -12172,7 +12172,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/salesforce",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Salesforce Source Spec",
           "type": "object",
           "_comment": "todo (cgardens) - allow default fields. is_sandbox and api_type should not be required and fall back on default. depends on change in api.",
@@ -12247,7 +12247,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/sendgrid",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Sendgrid Spec",
           "type": "object",
           "required": ["apikey"],
@@ -12287,7 +12287,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/sentry",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Sentry Spec",
           "type": "object",
           "required": ["auth_token", "organization", "project"],
@@ -12336,7 +12336,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/shopify",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Shopify Source CDK Specifications",
           "type": "object",
           "required": ["shop", "start_date"],
@@ -12488,7 +12488,7 @@
       "spec": {
         "documentationUrl": "https://developers.short.io/reference",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Shortio Spec",
           "type": "object",
           "required": ["domain_id", "secret_key", "start_date"],
@@ -12532,7 +12532,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/smartsheets",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Smartsheets Source Spec",
           "type": "object",
           "required": ["access_token", "spreadsheet_id"],
@@ -12616,7 +12616,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/snapchat-marketing",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Snapchat Marketing Spec",
           "type": "object",
           "required": ["client_id", "client_secret", "refresh_token"],
@@ -12688,7 +12688,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/snowflake",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Snowflake Source Spec",
           "type": "object",
           "required": ["host", "role", "warehouse", "database"],
@@ -12889,7 +12889,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/square",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Square Source CDK Specifications",
           "type": "object",
           "required": ["is_sandbox"],
@@ -13053,7 +13053,7 @@
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/stripe",
         "protocol_version": "0.2.1",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Stripe Source Spec",
           "type": "object",
           "required": ["client_secret", "account_id", "start_date"],
@@ -13117,7 +13117,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/surveymonkey",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "SurveyMonkey Spec",
           "type": "object",
           "required": ["access_token", "start_date"],
@@ -13177,7 +13177,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Tempo Spec",
           "type": "object",
           "required": ["api_token"],
@@ -13379,7 +13379,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/twilio",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Twilio Spec",
           "type": "object",
           "required": ["account_sid", "auth_token", "start_date"],
@@ -13437,7 +13437,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/typeform",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Typeform Spec",
           "type": "object",
           "required": ["token", "start_date"],
@@ -13484,7 +13484,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/us-census",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "https://api.census.gov/ Source Spec",
           "type": "object",
           "required": ["api_key", "query_path"],
@@ -13535,7 +13535,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/webflow",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Webflow Spec",
           "type": "object",
           "required": ["api_key", "site_id"],
@@ -13577,7 +13577,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/youtube-analytics",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "YouTube Analytics Spec",
           "type": "object",
           "required": ["credentials"],
@@ -13638,7 +13638,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk-chat",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Zendesk Chat Spec",
           "type": "object",
           "required": ["start_date"],
@@ -13791,7 +13791,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk_sunshine",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Zendesk Sunshine Spec",
           "type": "object",
           "required": ["start_date", "subdomain"],
@@ -13951,7 +13951,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk-support",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Source Zendesk Support Spec",
           "type": "object",
           "required": ["start_date", "subdomain"],
@@ -14092,7 +14092,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/zenloop",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Zenloop Spec",
           "type": "object",
           "required": ["api_token"],
@@ -14139,7 +14139,7 @@
       "spec": {
         "documentationUrl": "https://docs.airbyte.io/integrations/sources/zuora",
         "connectionSpecification": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "Zuora Connector Configuration",
           "type": "object",
           "required": ["start_date", "client_id", "client_secret"],

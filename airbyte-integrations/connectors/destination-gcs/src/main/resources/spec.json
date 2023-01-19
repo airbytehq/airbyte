@@ -1,12 +1,12 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/gcs",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
   "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "GCS Destination Spec",
     "type": "object",
     "required": ["gcs_bucket_name", "gcs_bucket_path", "credential", "format"],

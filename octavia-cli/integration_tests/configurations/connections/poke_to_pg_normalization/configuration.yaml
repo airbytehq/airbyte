@@ -38,7 +38,7 @@ configuration:
         stream:
           default_cursor_field: []
           json_schema:
-            $schema: http://json-schema.org/draft-07/schema#
+            $schema: https://json-schema.org/draft-07/schema#
             properties:
               abilities:
                 items:

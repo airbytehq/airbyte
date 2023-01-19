@@ -87,7 +87,7 @@ class SourceAmazonSqs(Source):
         logger.debug("Amazon SQS Source Stream Discovery - stream is: " + stream_name)
 
         json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {"id": {"type": "string"}, "body": {"type": "string"}, "attributes": {"type": ["object", "null"]}},
         }

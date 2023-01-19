@@ -3,7 +3,7 @@
     {
       "name": "customers",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "email": {
@@ -184,7 +184,7 @@
     {
       "name": "orders",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "id": {
@@ -465,7 +465,7 @@
     {
       "name": "transactions",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "event": {
@@ -611,7 +611,7 @@
     {
       "name": "order_products",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "id": {
@@ -791,7 +791,7 @@
     {
       "name": "pages",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "email": {
@@ -857,7 +857,7 @@
     {
       "name": "brands",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "id": {
@@ -901,7 +901,7 @@
     {
       "name": "categories",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "id": {
@@ -966,7 +966,7 @@
     {
       "name": "products",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "name": {
@@ -1766,7 +1766,7 @@
     {
       "name": "channels",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "id": {
@@ -1810,7 +1810,7 @@
     {
       "name": "store",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "id": {

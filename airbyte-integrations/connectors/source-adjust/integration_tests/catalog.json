@@ -6,7 +6,7 @@
       "source_defined_cursor": true,
       "default_cursor_field": "day",
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "clicks": {

@@ -393,7 +393,7 @@ class Activities(MarketoExportBase):
                 properties[attr_name] = field_schema
 
         schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
             "additionalProperties": True,
             "properties": properties,

@@ -1,6 +1,6 @@
 documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
 connectionSpecification:
-  $schema: http://json-schema.org/draft-07/schema#
+  $schema: https://json-schema.org/draft-07/schema#
   title: Visma E-conomic Spec
   type: object
   required:

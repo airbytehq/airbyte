@@ -4,7 +4,7 @@
       "stream": {
         "name": "customers",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -12,7 +12,7 @@
               "type": "integer"
             },
             "ReadOnly": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -29,7 +29,7 @@
               }
             },
             "CompanyInfo": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact ",
               "type": "object",
               "additionalProperties": false,
@@ -81,7 +81,7 @@
                   "type": "string"
                 },
                 "AddressStatus": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "integer",
                   "enum": [0, 1, 2],
                   "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
@@ -89,7 +89,7 @@
               }
             },
             "PrimaryContact": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact ",
               "type": "object",
               "additionalProperties": false,
@@ -141,7 +141,7 @@
                   "type": "string"
                 },
                 "AddressStatus": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "integer",
                   "enum": [0, 1, 2],
                   "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
@@ -152,12 +152,12 @@
               "description": "customer.customercontacts where contact type is other than primary",
               "type": "array",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
                   "Type": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "integer",
                     "enum": [2, 3, 4, 5],
                     "description": "2: invoicing; 3: additional; 4: for753; 5: small_parcel_return_label"
@@ -209,7 +209,7 @@
                     "type": "string"
                   },
                   "AddressStatus": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "integer",
                     "enum": [0, 1, 2],
                     "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
@@ -236,7 +236,7 @@
               "description": "list of facilities this customer's items are stored in, the first is the primary facility",
               "type": "array",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
@@ -250,7 +250,7 @@
               }
             },
             "PrimaryFacilityIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -263,12 +263,12 @@
               }
             },
             "Options": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
                 "Alerts": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -292,7 +292,7 @@
                       "description": "Web Hook configuration at the Customer (C2) level",
                       "type": "array",
                       "items": {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
@@ -316,7 +316,7 @@
                   }
                 },
                 "Storage": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -336,7 +336,7 @@
                   }
                 },
                 "Edi": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -358,7 +358,7 @@
                   }
                 },
                 "Receiving": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -372,7 +372,7 @@
                       "type": "boolean"
                     },
                     "ReceiveAgainstAsns": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2],
                       "description": "0: disabled; 1: enabled; 2: blind"
@@ -385,19 +385,19 @@
                       "type": "boolean"
                     },
                     "TrackLocation": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2],
                       "description": "0: disallow; 1: allow; 2: require"
                     },
                     "TrackPallets": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2],
                       "description": "0: disallow; 1: allow; 2: require"
                     },
                     "TrackSupplier": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2],
                       "description": "0: disallow; 1: allow; 2: require"
@@ -409,7 +409,7 @@
                   }
                 },
                 "Shipping": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -428,7 +428,7 @@
                       "type": "boolean"
                     },
                     "FulfillmentInvoicing": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2],
                       "description": "0: disabled; 1: enabled; 2: prepopulated"
@@ -456,7 +456,7 @@
                       "type": "string"
                     },
                     "PrepopulateCarrierInfo": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2, 3],
                       "description": "0: off; 1: on; 2: prepaid_only; 3: third_party_only"
@@ -476,7 +476,7 @@
                       "type": "string"
                     },
                     "AsnPreCheck": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
@@ -489,7 +489,7 @@
                           "type": "boolean"
                         },
                         "AsnPreCheckOptions": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "integer",
                           "description": "0: none; 1: has_weight Prevents sending an ASN when total pkg weight or any individual packages weight is 0; 2: has_volume Prevents sending an ASN when total volume or any individual packages volume is 0; 4: has_packages Prevents sending an ASN when the number of packages is 0; 8: has_carrier Prevents sending an ASN when Carrier is not specified; 16: has_bill_of_lading Prevents sending an ASN when BillOfLading is not specified; 32: has_load_number Prevents sending an ASN when LoadNumber is not specified; 64: has_po_number Prevents sending an ASN when PO Number is not specified; 128: is_closed Prevents sending an ASN when the order is not closed"
                         },
@@ -512,7 +512,7 @@
                   }
                 },
                 "Packaging": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -579,7 +579,7 @@
                   }
                 },
                 "OtherSystemBehaviors": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -593,7 +593,7 @@
                   }
                 },
                 "UserInterface": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -607,7 +607,7 @@
                       "type": "boolean"
                     },
                     "TransactionConfirmInvoiceCreateDefault": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2, 3],
                       "description": "0: off; 1: on; 2: receivers_only; 3: orders_only"
@@ -627,12 +627,12 @@
                   }
                 },
                 "SavedElements": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
                     "Orders": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
@@ -640,7 +640,7 @@
                           "description": "for the transaction itself, listed in customer's preferred display order",
                           "type": "array",
                           "items": {
-                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "$schema": "https://json-schema.org/draft-07/schema#",
                             "description": "a suggested saved element",
                             "type": "object",
                             "additionalProperties": false,
@@ -660,7 +660,7 @@
                           "description": "for the transaction's line items, listed in customer's preferred display order",
                           "type": "array",
                           "items": {
-                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "$schema": "https://json-schema.org/draft-07/schema#",
                             "description": "a suggested saved element",
                             "type": "object",
                             "additionalProperties": false,
@@ -679,7 +679,7 @@
                       }
                     },
                     "Receivers": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
@@ -687,7 +687,7 @@
                           "description": "for the transaction itself, listed in customer's preferred display order",
                           "type": "array",
                           "items": {
-                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "$schema": "https://json-schema.org/draft-07/schema#",
                             "description": "a suggested saved element",
                             "type": "object",
                             "additionalProperties": false,
@@ -707,7 +707,7 @@
                           "description": "for the transaction's line items, listed in customer's preferred display order",
                           "type": "array",
                           "items": {
-                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "$schema": "https://json-schema.org/draft-07/schema#",
                             "description": "a suggested saved element",
                             "type": "object",
                             "additionalProperties": false,

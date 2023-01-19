@@ -4,7 +4,7 @@
       "stream": {
         "name": "tickets",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "attachments": { "type": "array" },
@@ -57,7 +57,7 @@
       "stream": {
         "name": "problems",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -95,7 +95,7 @@
       "stream": {
         "name": "changes",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -136,7 +136,7 @@
       "stream": {
         "name": "releases",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -175,7 +175,7 @@
       "stream": {
         "name": "requesters",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -217,7 +217,7 @@
       "stream": {
         "name": "agents",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -270,7 +270,7 @@
       "stream": {
         "name": "locations",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -299,7 +299,7 @@
       "stream": {
         "name": "products",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -327,7 +327,7 @@
       "stream": {
         "name": "vendors",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -355,7 +355,7 @@
       "stream": {
         "name": "assets",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -389,7 +389,7 @@
       "stream": {
         "name": "purchase_orders",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },
@@ -427,7 +427,7 @@
       "stream": {
         "name": "software",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": { "type": "integer" },

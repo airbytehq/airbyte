@@ -13,7 +13,7 @@ First we'll update the spec block in `source_exchange_rates_tutorial/exchange_ra
 spec: 
   documentation_url: https://docs.airbyte.io/integrations/sources/exchangeratesapi
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: https://json-schema.org/draft-07/schema#
     title: exchangeratesapi.io Source Spec
     type: object
     required:
@@ -214,7 +214,7 @@ check:
 spec: 
   documentation_url: https://docs.airbyte.io/integrations/sources/exchangeratesapi
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: https://json-schema.org/draft-07/schema#
     title: exchangeratesapi.io Source Spec
     type: object
     required:

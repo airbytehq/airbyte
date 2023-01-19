@@ -47,7 +47,7 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
         "provider": {"storage": "local"},
     }
     expected_schema = {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "properties": {
             "header1": {"type": ["string", "null"]},
             "header2": {"type": ["number", "null"]},
@@ -68,7 +68,7 @@ def get_catalog(properties):
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(
                     name="test",
-                    json_schema={"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": properties},
+                    json_schema={"$schema": "https://json-schema.org/draft-07/schema#", "type": "object", "properties": properties},
                     supported_sync_modes=[SyncMode.full_refresh],
                 ),
                 sync_mode=SyncMode.full_refresh,

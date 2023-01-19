@@ -91,7 +91,7 @@ class Helpers(object):
             properties[column_id] = {"type": ["null", Helpers.to_airbyte_data_type(column_type)]}
 
         json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": properties,
         }

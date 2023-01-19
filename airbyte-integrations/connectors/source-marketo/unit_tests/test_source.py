@@ -46,7 +46,7 @@ def test_create_export_job(mocker, send_email_stream, caplog):
                 ],
             },
             {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "additionalProperties": True,
                 "properties": {
                     "activityDate": {"format": "date-time", "type": ["null", "string"]},
@@ -76,7 +76,7 @@ def test_create_export_job(mocker, send_email_stream, caplog):
                 "primaryAttribute": {"name": "Meeting ID", "dataType": "integer"},
             },
             {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "additionalProperties": True,
                 "properties": {
                     "activityDate": {"format": "date-time", "type": ["null", "string"]},

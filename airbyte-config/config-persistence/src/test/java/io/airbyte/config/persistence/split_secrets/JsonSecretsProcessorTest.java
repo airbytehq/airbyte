@@ -80,7 +80,7 @@ class JsonSecretsProcessorTest {
   private static final JsonNode ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS = Jsons.deserialize(
       """
       {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "title": "S3 Destination Spec",
           "type": "object",
           "required": [
@@ -499,7 +499,7 @@ class JsonSecretsProcessorTest {
   void testCopySecretsWithTopLevelOneOf() {
     final JsonNode schema = Jsons.deserialize("""
                                               {
-                                                  "$schema": "http://json-schema.org/draft-07/schema#",
+                                                  "$schema": "https://json-schema.org/draft-07/schema#",
                                                   "title": "E2E Test Destination Spec",
                                                   "type": "object",
                                                   "oneOf": [

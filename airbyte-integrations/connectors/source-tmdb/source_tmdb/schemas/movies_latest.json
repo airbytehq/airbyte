@@ -1,6 +1,6 @@
 {
   "definitions": {},
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "$id": "https://example.com/object1666853268.json",
   "title": "Root",
   "type": "object",

@@ -31,7 +31,7 @@ def json_response():
 @pytest.fixture
 def expected_json_schema():
     return {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "properties": {'fields': {'name': 'test'}, 'id': 'abc'},
         "type": "object",
     }

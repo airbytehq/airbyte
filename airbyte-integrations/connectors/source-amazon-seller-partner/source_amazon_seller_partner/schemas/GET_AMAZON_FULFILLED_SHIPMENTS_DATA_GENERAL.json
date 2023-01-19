@@ -2,7 +2,7 @@
   "title": "Amazon Fulfilled Data General",
   "description": "Amazon Fulfilled Data General Reports",
   "type": "object",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "properties": {
     "amazon-order-id": { "type": ["null", "string"] },
     "merchant-order-id": { "type": ["null", "string"] },

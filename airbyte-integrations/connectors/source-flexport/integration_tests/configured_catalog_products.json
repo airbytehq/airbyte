@@ -4,7 +4,7 @@
       "stream": {
         "name": "products",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "_object": {
@@ -44,7 +44,7 @@
               "type": "array",
               "description": "An array of product properties, represented by ProductProperty",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -67,7 +67,7 @@
               "type": "array",
               "description": "DEPRECATED - HS codes can be found in the classifications array",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -94,7 +94,7 @@
               "type": "array",
               "description": "An array of product classifications, represented by Classification",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -120,7 +120,7 @@
               "type": "array",
               "description": "Array of suppliers.",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {

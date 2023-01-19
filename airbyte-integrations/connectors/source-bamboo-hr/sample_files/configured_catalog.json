@@ -4,7 +4,7 @@
       "stream": {
         "name": "employees_directory_stream",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -76,7 +76,7 @@
       "stream": {
         "name": "custom_reports_stream",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "zipcode": {

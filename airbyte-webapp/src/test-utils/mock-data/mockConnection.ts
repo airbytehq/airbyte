@@ -18,7 +18,7 @@ export const mockConnection: WebBackendConnectionRead = {
           name: "pokemon",
           jsonSchema: {
             type: "object",
-            $schema: "http://json-schema.org/draft-07/schema#",
+            $schema: "https://json-schema.org/draft-07/schema#",
             properties: {
               id: {
                 type: ["null", "integer"],

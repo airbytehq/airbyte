@@ -284,7 +284,7 @@ class LookerStream(BaseLookerStream, ABC):
         # Overrides default logic. All schema should be generated dynamically.
         schema = self.endpoint.schema.get("items") or self.endpoint.schema
         schema = self.format_null_in_schema(schema["properties"])
-        return {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": schema}
+        return {"$schema": "https://json-schema.org/draft-07/schema#", "type": "object", "properties": schema}
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs: Any) -> str:
         stream_slice = stream_slice or {}
@@ -507,7 +507,7 @@ class RunLooks(LookerStream):
             }
         # raise LookerException(properties)
         return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "additionalProperties": True,
             "type": "object",
             "properties": properties,

@@ -1,6 +1,6 @@
 documentationUrl: https://github.com/fauna/airbyte/blob/source-fauna/docs/integrations/sources/fauna.md
 connectionSpecification:
-  $schema: http://json-schema.org/draft-07/schema#
+  $schema: https://json-schema.org/draft-07/schema#
   title: Fauna Spec
   type: object
   required:

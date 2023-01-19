@@ -30,7 +30,7 @@ class TestHelpers(unittest.TestCase):
         expected_stream = AirbyteStream(
             name=sheet_name,
             json_schema={
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in header_values},
@@ -61,7 +61,7 @@ class TestHelpers(unittest.TestCase):
         expected_stream = AirbyteStream(
             name=sheet_name,
             json_schema={
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in expected_stream_header_values},
@@ -79,7 +79,7 @@ class TestHelpers(unittest.TestCase):
         expected_stream = AirbyteStream(
             name=sheet_name,
             json_schema={
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 # For simplicity, the type of every cell is a string
                 "properties": {"h1": {"type": "string"}},

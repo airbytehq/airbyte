@@ -7,7 +7,7 @@
           "title": "Flat File Returns Report by Return Date",
           "description": "",
           "type": "object",
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "properties": {
             "Order ID": { "type": ["null", "string"] },
             "Order date": { "type": ["null", "string"] },

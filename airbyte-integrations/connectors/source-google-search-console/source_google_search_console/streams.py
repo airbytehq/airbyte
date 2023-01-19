@@ -315,7 +315,7 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
             return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
         except FileNotFoundError:
             schema: Mapping[str, Any] = {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
                 "additionalProperties": True,
                 "properties": {

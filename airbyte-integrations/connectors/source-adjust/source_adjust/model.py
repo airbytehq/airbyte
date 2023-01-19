@@ -170,7 +170,7 @@ class Spec(pydantic.BaseModel):
 
         @staticmethod
         def schema_extra(schema: typing.Dict[str, typing.Any]):
-            spec = {"$schema": "http://json-schema.org/draft-07/schema#"}
+            spec = {"$schema": "https://json-schema.org/draft-07/schema#"}
             for key in list(schema.keys()):
                 spec[key] = schema.pop(key)
 
@@ -629,4 +629,4 @@ class Report(pydantic.BaseModel):
     class Config:
         @staticmethod
         def schema_extra(schema: typing.Dict[str, typing.Any]):
-            schema["$schema"] = "http://json-schema.org/draft-07/schema#"
+            schema["$schema"] = "https://json-schema.org/draft-07/schema#"

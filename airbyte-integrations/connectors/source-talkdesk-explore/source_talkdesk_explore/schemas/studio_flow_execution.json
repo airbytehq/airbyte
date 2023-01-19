@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "Studio Flow Execution",
   "description": "The Studio Flow Execution is a detailed report that contains, at the step level, all the information related to the interaction.",

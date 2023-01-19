@@ -7,7 +7,7 @@ export const mockDestinationDefinitionSpecification: DestinationDefinitionSpecif
   connectionSpecification: {
     type: "object",
     title: "Postgres Destination Spec",
-    $schema: "http://json-schema.org/draft-07/schema#",
+    $schema: "https://json-schema.org/draft-07/schema#",
     required: ["host", "port", "username", "database", "schema"],
     properties: {
       ssl: {

@@ -277,7 +277,7 @@ class SourceCommcare(AbstractSource):
 
     def base_schema(self):
         return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {"id": {"type": "string"}, "indexed_on": {"type": "string", "format": "date-time"}},
         }

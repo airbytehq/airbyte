@@ -108,6 +108,6 @@ def test_dynamic_attrs(stream_factory):
             "id": {"type": "string"},
         },
         "required": ["id", "Modified_Time", "Name"],
-        "schema": "http://json-schema.org/draft-07/schema#",
+        "schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
     }

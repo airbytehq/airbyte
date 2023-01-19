@@ -1,6 +1,6 @@
 documentationUrl: https://auth0.com/docs/api/management/v2/
 connectionSpecification:
-  $schema: http://json-schema.org/draft-07/schema#
+  $schema: https://json-schema.org/draft-07/schema#
   title: Auth0 Management API Spec
   type: object
   required:

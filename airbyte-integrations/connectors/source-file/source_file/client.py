@@ -268,7 +268,7 @@ class Client:
             # this means we have a json list e.g. [{...}, {...}]
             # but need to emit schema of an inside dict
             result = result["items"]
-        result["$schema"] = "http://json-schema.org/draft-07/schema#"
+        result["$schema"] = "https://json-schema.org/draft-07/schema#"
         return result
 
     def load_nested_json(self, fp) -> list:
@@ -417,7 +417,7 @@ class Client:
                 json_schema = self.load_nested_json_schema(fp)
             else:
                 json_schema = {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": self._stream_properties(fp),
                 }

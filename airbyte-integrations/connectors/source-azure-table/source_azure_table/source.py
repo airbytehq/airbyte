@@ -37,7 +37,7 @@ class SourceAzureTable(AbstractSource):
     def get_typed_schema(self) -> object:
         """Static schema for tables"""
         return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {"PartitionKey": {"type": "string"}},
         }

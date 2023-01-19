@@ -7,7 +7,7 @@ export const mockSourceDefinition: SourceDefinitionSpecificationRead = {
   connectionSpecification: {
     type: "object",
     title: "Pokeapi Spec",
-    $schema: "http://json-schema.org/draft-07/schema#",
+    $schema: "https://json-schema.org/draft-07/schema#",
     required: ["pokemon_name"],
     properties: {
       pokemon_name: {

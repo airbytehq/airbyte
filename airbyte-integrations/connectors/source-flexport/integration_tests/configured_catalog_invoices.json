@@ -4,7 +4,7 @@
       "stream": {
         "name": "invoices",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "_object": {
@@ -31,7 +31,7 @@
               "format": "date"
             },
             "total": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -50,7 +50,7 @@
               }
             },
             "balance": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -94,7 +94,7 @@
               "format": "date-time"
             },
             "recipient": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -121,7 +121,7 @@
                       "type": "null"
                     },
                     {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -177,7 +177,7 @@
                   "type": "array",
                   "description": "Array of VAT numbers of the company entity.",
                   "items": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
                       "_object": {
@@ -199,7 +199,7 @@
               }
             },
             "issuer": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -226,7 +226,7 @@
                       "type": "null"
                     },
                     {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -282,7 +282,7 @@
                   "type": "array",
                   "description": "Array of VAT numbers of the company entity.",
                   "items": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
                       "_object": {
@@ -307,7 +307,7 @@
               "type": "array",
               "description": "Inlined list of InvoiceItems",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -328,7 +328,7 @@
                     "description": "Category of the charge. Example freight"
                   },
                   "amount": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
                       "_object": {
@@ -353,7 +353,7 @@
                         "type": "null"
                       },
                       {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
                           "_object": {
@@ -380,7 +380,7 @@
                         "type": "null"
                       },
                       {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
                           "_object": {
@@ -407,7 +407,7 @@
               "type": "array",
               "description": "Inlined list of CreditMemos",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -416,7 +416,7 @@
                     "pattern": "^/credit_memo$"
                   },
                   "amount": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
                       "_object": {
@@ -464,7 +464,7 @@
               }
             },
             "shipments": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {

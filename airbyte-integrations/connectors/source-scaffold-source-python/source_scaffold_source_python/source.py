@@ -62,7 +62,7 @@ class SourceScaffoldSourcePython(Source):
 
         stream_name = "TableName"  # Example
         json_schema = {  # Example
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {"columnName": {"type": "string"}},
         }

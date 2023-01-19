@@ -4,7 +4,7 @@
       "stream": {
         "name": "calls",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -21,7 +21,7 @@
       "stream": {
         "name": "user_status",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -38,7 +38,7 @@
       "stream": {
         "name": "studio_flow_execution",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -59,7 +59,7 @@
       "stream": {
         "name": "contacts",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -76,7 +76,7 @@
       "stream": {
         "name": "ring_attempts",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },

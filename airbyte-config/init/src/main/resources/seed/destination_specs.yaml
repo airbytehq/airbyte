@@ -5,7 +5,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/azureblobstorage"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "AzureBlobStorage Destination Spec"
       type: "object"
       required:
@@ -94,7 +94,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/amazon-sqs"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Amazon Sqs"
       type: "object"
       required:
@@ -192,7 +192,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/doris"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Doris Destination Spec"
       type: "object"
       required:
@@ -253,7 +253,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/iceberg"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Iceberg Destination Spec"
       type: "object"
       required:
@@ -528,7 +528,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/aws-datalake"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "AWS Datalake Destination Spec"
       type: "object"
       required:
@@ -625,7 +625,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "BigQuery Destination Spec"
       type: "object"
       required:
@@ -835,7 +835,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "BigQuery Denormalized Typed Struct Destination Spec"
       type: "object"
       required:
@@ -1033,7 +1033,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/cassandra"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Cassandra Destination Spec"
       type: "object"
       required:
@@ -1098,7 +1098,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/keen"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Keen Spec"
       type: "object"
       required:
@@ -1137,7 +1137,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/clickhouse"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "ClickHouse Destination Spec"
       type: "object"
       required:
@@ -1303,7 +1303,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/r2"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "R2 Destination Spec"
       type: "object"
       required:
@@ -1579,7 +1579,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databricks"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Databricks Lakehouse Destination Spec"
       type: "object"
       required:
@@ -1800,7 +1800,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/dynamodb"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "DynamoDB Destination Spec"
       type: "object"
       required:
@@ -1881,7 +1881,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/e2e-test"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "E2E Test Destination Spec"
       type: "object"
       oneOf:
@@ -2040,7 +2040,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/elasticsearch"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Elasticsearch Connection Configuration"
       type: "object"
       required:
@@ -2233,7 +2233,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/firebolt"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Firebolt Spec"
       type: "object"
       required:
@@ -2329,7 +2329,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/gcs"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "GCS Destination Spec"
       type: "object"
       required:
@@ -2703,12 +2703,12 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-    $schema: "http://json-schema.org/draft-07/schema#"
+    $schema: "https://json-schema.org/draft-07/schema#"
 - dockerImage: "airbyte/destination-firestore:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/firestore"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Google Firestore"
       type: "object"
       required:
@@ -2738,7 +2738,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/pubsub"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Google PubSub Destination Spec"
       type: "object"
       required:
@@ -2804,7 +2804,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/heap-analytics"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Heap Analytics Destination Spec"
       type: "object"
       required:
@@ -2946,7 +2946,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/kafka"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Kafka Destination Spec"
       type: "object"
       required:
@@ -3237,7 +3237,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/kinesis"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Kinesis Destination Spec"
       type: "object"
       required:
@@ -3301,7 +3301,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/local-csv"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "CSV Destination Spec"
       type: "object"
       required:
@@ -3367,7 +3367,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/local-json"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Local Json Destination Spec"
       type: "object"
       required:
@@ -3393,7 +3393,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mqtt"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "MQTT Destination Spec"
       type: "object"
       required:
@@ -3500,7 +3500,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "MS SQL Server Destination Spec"
       type: "object"
       required:
@@ -3722,7 +3722,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/meilisearch"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Meilisearch"
       type: "object"
       required:
@@ -3751,7 +3751,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mongodb"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "MongoDB Destination Spec"
       type: "object"
       required:
@@ -3990,7 +3990,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mysql"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "MySQL Destination Spec"
       type: "object"
       required:
@@ -4155,7 +4155,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/oracle"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Oracle Destination Spec"
       type: "object"
       required:
@@ -4387,7 +4387,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/postgres"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Postgres Destination Spec"
       type: "object"
       required:
@@ -4708,7 +4708,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/pulsar"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Pulsar Destination Spec"
       type: "object"
       required:
@@ -4856,7 +4856,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/rabbitmq"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Rabbitmq"
       type: "object"
       required:
@@ -4900,7 +4900,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redis"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Redis Destination Spec"
       type: "object"
       required:
@@ -5127,7 +5127,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Redshift Destination Spec"
       type: "object"
       required:
@@ -5361,7 +5361,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redpanda"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Redpanda destination connector"
       type: "object"
       required:
@@ -5453,7 +5453,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/rockset"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Rockset Destination Spec"
       type: "object"
       required:
@@ -5496,7 +5496,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/s3"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "S3 Destination Spec"
       type: "object"
       required:
@@ -5873,7 +5873,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/s3"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "S3 Destination Spec"
       type: "object"
       required:
@@ -6060,7 +6060,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/sftp-json"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination SFTP JSON"
       type: "object"
       required:
@@ -6113,7 +6113,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Snowflake Destination Spec"
       type: "object"
       required:
@@ -6577,7 +6577,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mariadb-columnstore"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "MariaDB Columnstore Destination Spec"
       type: "object"
       required:
@@ -6736,7 +6736,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/streamr"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Streamr"
       type: "object"
       required:
@@ -6763,7 +6763,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/scylla"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Scylla Destination Spec"
       type: "object"
       required:
@@ -6820,7 +6820,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/google-sheets"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Google Sheets"
       type: "object"
       required:
@@ -6881,7 +6881,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/sqlite"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Sqlite"
       type: "object"
       required:
@@ -6904,7 +6904,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/tidb"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "TiDB Destination Spec"
       type: "object"
       required:
@@ -7070,7 +7070,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/typesense"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Typesense"
       type: "object"
       required:
@@ -7115,7 +7115,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/yugabytedb"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Yugabytedb destination spec"
       type: "object"
       required:
@@ -7184,7 +7184,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databend"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Databend"
       type: "object"
       required:
@@ -7250,7 +7250,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/teradata"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Teradata Destination Spec"
       type: "object"
       required:
@@ -7301,7 +7301,7 @@
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/weaviate"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "https://json-schema.org/draft-07/schema#"
       title: "Destination Weaviate"
       type: "object"
       required:

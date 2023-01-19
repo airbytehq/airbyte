@@ -4,7 +4,7 @@
       "name": "sales_report",
       "supported_sync_modes": ["incremental"],
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "_line_id": {
@@ -111,7 +111,7 @@
       "name": "subscriber_report",
       "supported_sync_modes": ["incremental"],
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "_line_id": {
@@ -212,7 +212,7 @@
       "name": "subscription_event_report",
       "supported_sync_modes": ["incremental"],
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "_line_id": {
@@ -319,7 +319,7 @@
       "name": "subscription_report",
       "supported_sync_modes": ["incremental"],
       "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "_line_id": {

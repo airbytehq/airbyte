@@ -36,7 +36,7 @@ def record_response():
 @pytest.fixture
 def expected_json_schema():
     return {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "properties": {
             "_recordId": {"type": ["null", "string"]},
             "column1": {"type": ["null", "string"]},

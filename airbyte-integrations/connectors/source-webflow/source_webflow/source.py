@@ -247,7 +247,7 @@ class CollectionContents(WebflowStream):
         json_schema.update(extra_fields)
 
         return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "additionalProperties": True,
             "type": "object",
             "properties": json_schema,

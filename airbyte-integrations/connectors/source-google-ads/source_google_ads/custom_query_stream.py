@@ -43,7 +43,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
         """
 
         local_json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {},
             "additionalProperties": True,

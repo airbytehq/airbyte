@@ -4,7 +4,7 @@
       "stream": {
         "name": "accounts",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "self": {
@@ -115,7 +115,7 @@
       "stream": {
         "name": "customers",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "self": {
@@ -142,7 +142,7 @@
       "stream": {
         "name": "workload-schemes",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "self": {
@@ -201,7 +201,7 @@
       "stream": {
         "name": "worklogs",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "self": {

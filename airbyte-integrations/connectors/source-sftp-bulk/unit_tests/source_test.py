@@ -19,7 +19,7 @@ def test_generate_json_schema():
 
     result = source._generate_json_schema(dtypes)
     assert result == {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "properties": {
             "col1": {"type": ["null", "integer"]},
             "col2": {"type": ["null", "number"]},

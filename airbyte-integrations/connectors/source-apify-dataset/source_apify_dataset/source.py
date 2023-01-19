@@ -85,7 +85,7 @@ class SourceApifyDataset(Source):
         """
         stream_name = DATASET_ITEMS_STREAM_NAME
         json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
         }
 

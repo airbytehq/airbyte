@@ -82,7 +82,7 @@ class CustomReportsStream(BambooHrStream):
         else:
             properties = {}
         return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": properties,
         }

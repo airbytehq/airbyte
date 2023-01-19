@@ -526,7 +526,7 @@ Based on the above rules, here is an overall example. Given the following Json s
 ```json
 {
   "type": "object",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "properties": {
     "id": {
       "type": "integer"

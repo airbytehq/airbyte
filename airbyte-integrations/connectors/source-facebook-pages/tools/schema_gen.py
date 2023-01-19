@@ -356,7 +356,7 @@ for node_name in MAIN_NODES:
 
     page_schema = build_schema(node_name=node_name, with_refs=True)
 
-    SCHEMA = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": page_schema}
+    SCHEMA = {"$schema": "https://json-schema.org/draft-07/schema#", "type": "object", "properties": page_schema}
     file_name = node_name.lower()
     json.dump(SCHEMA, open(f"./schemas/{file_name}.json", "w"), indent=2)
 

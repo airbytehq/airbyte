@@ -4,7 +4,7 @@
       "stream": {
         "name": "shipments",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -32,7 +32,7 @@
                   "type": "null"
                 },
                 {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "properties": {
                     "_object": {
@@ -104,7 +104,7 @@
               ]
             },
             "calculated_weight": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -124,7 +124,7 @@
               }
             },
             "calculated_volume": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -272,7 +272,7 @@
                   "type": "null"
                 },
                 {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "properties": {
                     "_object": {
@@ -301,7 +301,7 @@
                       "format": "date-time"
                     },
                     "containers": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -330,7 +330,7 @@
                   "type": "null"
                 },
                 {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "properties": {
                     "_object": {
@@ -347,7 +347,7 @@
                       "description": "Master air waybill number"
                     },
                     "chargeable_weight": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -367,7 +367,7 @@
                       }
                     },
                     "chargeable_volume": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -391,7 +391,7 @@
               ]
             },
             "dangerous_goods": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -411,7 +411,7 @@
               "type": "array",
               "description": "Array of shippers of the shipment, represented by the CompanyEntity objects.",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -438,7 +438,7 @@
                         "type": "null"
                       },
                       {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
                           "_object": {
@@ -494,7 +494,7 @@
                     "type": "array",
                     "description": "Array of VAT numbers of the company entity.",
                     "items": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -520,7 +520,7 @@
               "type": "array",
               "description": "Array of consignees of the shipment, represented by CompanyEntity objects.",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -547,7 +547,7 @@
                         "type": "null"
                       },
                       {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
                           "_object": {
@@ -603,7 +603,7 @@
                     "type": "array",
                     "description": "Array of VAT numbers of the company entity.",
                     "items": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -629,7 +629,7 @@
               "type": "array",
               "description": "Array of buyers of the shipment, represented by CompanyEntity objects.",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -656,7 +656,7 @@
                         "type": "null"
                       },
                       {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
                           "_object": {
@@ -712,7 +712,7 @@
                     "type": "array",
                     "description": "Array of VAT numbers of the company entity.",
                     "items": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -738,7 +738,7 @@
               "type": "array",
               "description": "Array of sellers of the shipment, represented by CompanyEntity objects.",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -765,7 +765,7 @@
                         "type": "null"
                       },
                       {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
                           "_object": {
@@ -821,7 +821,7 @@
                     "type": "array",
                     "description": "Array of VAT numbers of the company entity.",
                     "items": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -847,7 +847,7 @@
               "type": "array",
               "description": "Array of importers of record of the shipment, represented by CompanyEntity objects.",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -874,7 +874,7 @@
                         "type": "null"
                       },
                       {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
                           "_object": {
@@ -930,7 +930,7 @@
                     "type": "array",
                     "description": "Array of VAT numbers of the company entity.",
                     "items": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "_object": {
@@ -956,7 +956,7 @@
               "type": "array",
               "description": "Array of products and SKUs in the shipment, represented by ShipmentItem objects.",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "_object": {
@@ -973,7 +973,7 @@
                     "description": "Total quantity of specific SKU within shipment."
                   },
                   "total_weight": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
                       "_object": {
@@ -993,7 +993,7 @@
                     }
                   },
                   "total_volume": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
                       "_object": {
@@ -1017,7 +1017,7 @@
                     "description": "Purchase order number associated with SKU within shipment."
                   },
                   "product": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
                       "_object": {
@@ -1057,7 +1057,7 @@
                         "type": "array",
                         "description": "An array of product properties, represented by ProductProperty",
                         "items": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "properties": {
                             "_object": {
@@ -1080,7 +1080,7 @@
                         "type": "array",
                         "description": "DEPRECATED - HS codes can be found in the classifications array",
                         "items": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "properties": {
                             "_object": {
@@ -1107,7 +1107,7 @@
                         "type": "array",
                         "description": "An array of product classifications, represented by Classification",
                         "items": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "properties": {
                             "_object": {
@@ -1133,7 +1133,7 @@
                         "type": "array",
                         "description": "Array of suppliers.",
                         "items": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "properties": {
                             "_object": {
@@ -1164,7 +1164,7 @@
               }
             },
             "legs": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -1183,7 +1183,7 @@
               }
             },
             "customs_entries": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -1202,7 +1202,7 @@
               }
             },
             "commercial_invoices": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {
@@ -1221,7 +1221,7 @@
               }
             },
             "documents": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "properties": {
                 "_object": {

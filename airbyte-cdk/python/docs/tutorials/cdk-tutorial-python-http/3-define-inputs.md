@@ -14,7 +14,7 @@ Given that we'll pulling currency data for our example source, we'll define the 
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Python Http Tutorial Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],

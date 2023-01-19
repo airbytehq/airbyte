@@ -20,7 +20,7 @@ def setup_responses():
                 "_ts": {"type": "integer"},
                 "_deleted": {"type": "boolean"},
             },
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
         },
         "users": {
             "type": "object",
@@ -32,7 +32,7 @@ def setup_responses():
                 "_ts": {"type": "integer"},
                 "_deleted": {"type": "boolean"},
             },
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
         },
     }
     responses.add(

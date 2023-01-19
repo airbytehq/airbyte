@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Amplitude Spec",
     "type": "object",
     "required": ["api_key", "secret_key", "start_date"],

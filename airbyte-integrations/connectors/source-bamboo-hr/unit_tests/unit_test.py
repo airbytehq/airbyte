@@ -59,7 +59,7 @@ def test_employees_directory_stream_url_base(config):
 def test_custom_reports_stream_get_json_schema_from_config(config):
     config["custom_reports_fields"] = "one,two , three"
     assert CustomReportsStream(config)._get_json_schema_from_config() == {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
             "one": {"type": ["null", "string"]},

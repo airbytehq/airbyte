@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/lever-hiring",
   "changelogUrl": "https://docs.airbyte.com/integrations/sources/lever-hiring#changelog",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Lever Hiring Source Spec",
     "type": "object",
     "required": ["start_date"],

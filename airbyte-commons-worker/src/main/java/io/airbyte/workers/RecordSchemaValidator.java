@@ -47,7 +47,7 @@ public class RecordSchemaValidator {
 
     // We must choose a JSON validator version for validating the schema
     // Rather than allowing connectors to use any version, we enforce validation using V7
-    ((ObjectNode) matchingSchema).put("$schema", "http://json-schema.org/draft-07/schema#");
+    ((ObjectNode) matchingSchema).put("$schema", "https://json-schema.org/draft-07/schema#");
 
     try {
       validator.ensure(matchingSchema, messageData);

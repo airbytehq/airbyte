@@ -7,7 +7,7 @@
 e.g.
 ```
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
     "required": ["project_id", "dataset_id"],

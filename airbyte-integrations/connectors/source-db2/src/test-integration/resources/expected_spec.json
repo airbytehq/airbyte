@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/db2",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "IBM Db2 Source Spec",
     "type": "object",
     "required": ["host", "port", "db", "username", "password", "encryption"],

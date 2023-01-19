@@ -1,7 +1,7 @@
 {
   "title": "XML Browse Tree Data",
   "type": "object",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "properties": {
     "browseNodeId": {
       "type": ["string"]

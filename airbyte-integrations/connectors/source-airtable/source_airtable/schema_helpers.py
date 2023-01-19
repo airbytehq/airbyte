@@ -27,7 +27,7 @@ class SchemaHelpers:
             properties[field_name] = {"type": ["null", "string"]}
 
         json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "additionalProperties": True,
             "properties": properties,

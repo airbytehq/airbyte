@@ -21,7 +21,7 @@ class SourceFtp(AbstractSource):
     @property
     def _default_json_schema(self):
         return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {},
         }

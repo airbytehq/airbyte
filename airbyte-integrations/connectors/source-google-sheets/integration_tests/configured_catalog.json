@@ -4,7 +4,7 @@
       "stream": {
         "name": "Sheet1-one-col",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "ID": {
@@ -22,7 +22,7 @@
       "stream": {
         "name": "Sheet2-two-cols",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "ID": {
@@ -43,7 +43,7 @@
       "stream": {
         "name": "Sheet3-two-cols-with-diagram",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "ID": {
@@ -64,7 +64,7 @@
       "stream": {
         "name": "Sheet4-two-cols-no-header",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "1": {
@@ -85,7 +85,7 @@
       "stream": {
         "name": "Sheet6-4000-rows",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "ID": {

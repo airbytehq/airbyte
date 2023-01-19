@@ -4,7 +4,7 @@
       "stream": {
         "name": "agents_activity",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "agent_id": {
@@ -94,7 +94,7 @@
       "stream": {
         "name": "agents_overview",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "average_wrap_up_time": {

@@ -4,7 +4,7 @@
       "stream": {
         "name": "orders",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -16,7 +16,7 @@
               "format": "date-time"
             },
             "ReadOnly": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -79,7 +79,7 @@
                   "format": "date-time"
                 },
                 "LoadedState": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "integer",
                   "enum": [0, 1, 2],
                   "description": "0: not_loaded; 1: loaded; 2: loaded_incomplete"
@@ -107,17 +107,17 @@
                   "type": ["null", "boolean"]
                 },
                 "BatchIdentifier": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
                     "NameKey": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
                         "CustomerIdentifier": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "additionalProperties": false,
                           "properties": {
@@ -145,7 +145,7 @@
                 "Packages": {
                   "type": "array",
                   "items": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
@@ -156,7 +156,7 @@
                         "type": "integer"
                       },
                       "PackageDefIdentifier": {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
@@ -214,7 +214,7 @@
                       "PackageContents": {
                         "type": "array",
                         "items": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "additionalProperties": false,
                           "properties": {
@@ -265,12 +265,12 @@
                 "OutboundSerialNumbers": {
                   "type": "array",
                   "items": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                       "ItemIdentifier": {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
@@ -295,13 +295,13 @@
                   }
                 },
                 "ParcelLabelType": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "integer",
                   "enum": [0, 1, 2],
                   "description": "0: none; 1: pdf; 2: zpl"
                 },
                 "CustomerIdentifier": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -317,7 +317,7 @@
                   }
                 },
                 "FacilityIdentifier": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -336,7 +336,7 @@
                       "type": "null"
                     },
                     {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2, 3, 4, 5, 6, 7],
                       "description": "0: unknown; 1: ui_manual; 2: ui_import; 3: automated_import; 4: external_soap_api; 5: quick_books_soap_api; 6: automated_system_charge; 7: rest_api"
@@ -350,7 +350,7 @@
                       "type": "null"
                     },
                     {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2, 3, 4],
                       "description": "0: doang_hair (unknown); 1: manual_warehouse_user; 2: manual_customer_user; 3: ftp; 4: api"
@@ -358,7 +358,7 @@
                   ]
                 },
                 "ImportChannelIdentifier": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -375,7 +375,7 @@
                   "format": "date-time"
                 },
                 "CreatedByIdentifier": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -392,7 +392,7 @@
                   "format": "date-time"
                 },
                 "LastModifiedByIdentifier": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -405,7 +405,7 @@
                   }
                 },
                 "Status": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "integer",
                   "enum": [0, 1, 2],
                   "description": "0: open (Has not yet been confirmed); 1: closed (Has been confirmed); 2: canceled (Has been canceled)"
@@ -415,12 +415,12 @@
             "OrderItems": {
               "type": "array",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
                   "ReadOnly": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
@@ -431,7 +431,7 @@
                         "type": "boolean"
                       },
                       "UnitIdentifier": {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
@@ -444,7 +444,7 @@
                         }
                       },
                       "SecondaryUnitIdentifier": {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
@@ -476,7 +476,7 @@
                         "description": "supplied on GET {get;set;} ignored on PUT, POST",
                         "type": "array",
                         "items": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "additionalProperties": false,
                           "properties": {
@@ -496,17 +496,17 @@
                               "type": "boolean"
                             },
                             "Detail": {
-                              "$schema": "http://json-schema.org/draft-07/schema#",
+                              "$schema": "https://json-schema.org/draft-07/schema#",
                               "type": "object",
                               "additionalProperties": false,
                               "properties": {
                                 "ItemTraits": {
-                                  "$schema": "http://json-schema.org/draft-07/schema#",
+                                  "$schema": "https://json-schema.org/draft-07/schema#",
                                   "type": "object",
                                   "additionalProperties": false,
                                   "properties": {
                                     "ItemIdentifier": {
-                                      "$schema": "http://json-schema.org/draft-07/schema#",
+                                      "$schema": "https://json-schema.org/draft-07/schema#",
                                       "type": "object",
                                       "additionalProperties": false,
                                       "properties": {
@@ -532,17 +532,17 @@
                                       "format": "date-time"
                                     },
                                     "PalletIdentifier": {
-                                      "$schema": "http://json-schema.org/draft-07/schema#",
+                                      "$schema": "https://json-schema.org/draft-07/schema#",
                                       "type": "object",
                                       "additionalProperties": false,
                                       "properties": {
                                         "NameKey": {
-                                          "$schema": "http://json-schema.org/draft-07/schema#",
+                                          "$schema": "https://json-schema.org/draft-07/schema#",
                                           "type": "object",
                                           "additionalProperties": false,
                                           "properties": {
                                             "FacilityIdentifier": {
-                                              "$schema": "http://json-schema.org/draft-07/schema#",
+                                              "$schema": "https://json-schema.org/draft-07/schema#",
                                               "type": "object",
                                               "additionalProperties": false,
                                               "properties": {
@@ -567,17 +567,17 @@
                                   }
                                 },
                                 "LocationIdentifier": {
-                                  "$schema": "http://json-schema.org/draft-07/schema#",
+                                  "$schema": "https://json-schema.org/draft-07/schema#",
                                   "type": "object",
                                   "additionalProperties": false,
                                   "properties": {
                                     "NameKey": {
-                                      "$schema": "http://json-schema.org/draft-07/schema#",
+                                      "$schema": "https://json-schema.org/draft-07/schema#",
                                       "type": "object",
                                       "additionalProperties": false,
                                       "properties": {
                                         "FacilityIdentifier": {
-                                          "$schema": "http://json-schema.org/draft-07/schema#",
+                                          "$schema": "https://json-schema.org/draft-07/schema#",
                                           "type": "object",
                                           "additionalProperties": false,
                                           "properties": {
@@ -602,7 +602,7 @@
                                 "SavedElements": {
                                   "type": "array",
                                   "items": {
-                                    "$schema": "http://json-schema.org/draft-07/schema#",
+                                    "$schema": "https://json-schema.org/draft-07/schema#",
                                     "type": "object",
                                     "additionalProperties": false,
                                     "properties": {
@@ -627,7 +627,7 @@
                     }
                   },
                   "ItemIdentifier": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
@@ -693,7 +693,7 @@
                   "SavedElements": {
                     "type": "array",
                     "items": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
@@ -710,7 +710,7 @@
                     "description": "empty on GET; may be supplied on PUT, POST",
                     "type": "array",
                     "items": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "description": "A manual allocation.",
                       "type": "object",
                       "additionalProperties": false,
@@ -728,7 +728,7 @@
                     "description": "declares the package arrangement, which gets translated into real packages, during order creation; empty on GET; ignored on PUT; may be supplied on POST",
                     "type": "array",
                     "items": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
@@ -741,7 +741,7 @@
                           "type": "number"
                         },
                         "PackageDefIdentifier": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "additionalProperties": false,
                           "properties": {
@@ -787,7 +787,7 @@
               "type": ["null", "number"]
             },
             "Unit1Identifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -803,7 +803,7 @@
               "type": ["null", "number"]
             },
             "Unit2Identifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -840,7 +840,7 @@
               "type": "boolean"
             },
             "ExportChannelIdentifier": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -866,7 +866,7 @@
               "type": "string"
             },
             "FulfillInvInfo": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -888,7 +888,7 @@
               }
             },
             "RoutingInfo": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -920,7 +920,7 @@
                   "type": "string"
                 },
                 "CapacityTypeIdentifier": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
@@ -957,7 +957,7 @@
               }
             },
             "Billing": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -965,12 +965,12 @@
                   "description": "PUT: set to NULL or empty to delete all charges",
                   "type": "array",
                   "items": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "$schema": "https://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                       "ChargeType": {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "$schema": "https://json-schema.org/draft-07/schema#",
                         "type": "integer",
                         "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8],
                         "description": "1: handling; 2: storage; 3: prepaid_freight; 4: third_party_freight; 5: special_charges; 6: materials; 7: auto_calc_storage (used internally for sys-gen'ed charges); 8: auto_calc_handling (used internally for sys-gen'ed charges); 8: maxval (ignore, not a real value)"
@@ -981,7 +981,7 @@
                       "Details": {
                         "type": "array",
                         "items": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "additionalProperties": false,
                           "properties": {
@@ -1027,22 +1027,22 @@
               }
             },
             "ShipTo": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
                 "RetailerInfo": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
                     "NameKey": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
                         "CustomerIdentifier": {
-                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "$schema": "https://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "additionalProperties": false,
                           "properties": {
@@ -1077,7 +1077,7 @@
                       "type": "null"
                     },
                     {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2],
                       "description": "0: ship_to; 1: sold_to; 2: bill_to"
@@ -1139,7 +1139,7 @@
                   "type": "string"
                 },
                 "AddressStatus": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "integer",
                   "enum": [0, 1, 2],
                   "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
@@ -1147,7 +1147,7 @@
               }
             },
             "SoldTo": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact",
@@ -1159,7 +1159,7 @@
                       "type": "null"
                     },
                     {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2],
                       "description": "0: ship_to; 1: sold_to; 2: bill_to"
@@ -1221,7 +1221,7 @@
                   "type": "string"
                 },
                 "AddressStatus": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "integer",
                   "enum": [0, 1, 2],
                   "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
@@ -1229,7 +1229,7 @@
               }
             },
             "BillTo": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact",
@@ -1241,7 +1241,7 @@
                       "type": "null"
                     },
                     {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "$schema": "https://json-schema.org/draft-07/schema#",
                       "type": "integer",
                       "enum": [0, 1, 2],
                       "description": "0: ship_to; 1: sold_to; 2: bill_to"
@@ -1303,7 +1303,7 @@
                   "type": "string"
                 },
                 "AddressStatus": {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "$schema": "https://json-schema.org/draft-07/schema#",
                   "type": "integer",
                   "enum": [0, 1, 2],
                   "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
@@ -1313,7 +1313,7 @@
             "SavedElements": {
               "type": "array",
               "items": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
@@ -1327,7 +1327,7 @@
               }
             },
             "ParcelOption": {
-              "$schema": "http://json-schema.org/draft-07/schema#",
+              "$schema": "https://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {

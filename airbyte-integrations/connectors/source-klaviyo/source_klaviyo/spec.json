@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/klaviyo",
   "changelogUrl": "https://docs.airbyte.com/integrations/sources/klaviyo",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Klaviyo Spec",
     "type": "object",
     "properties": {

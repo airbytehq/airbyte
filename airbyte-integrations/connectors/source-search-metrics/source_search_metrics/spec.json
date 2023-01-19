@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/seacrh-metrics",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Source Search Metrics Spec",
     "type": "object",
     "required": ["api_key", "client_secret", "country_code", "start_date"],

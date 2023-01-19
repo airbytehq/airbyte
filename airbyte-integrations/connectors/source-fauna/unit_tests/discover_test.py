@@ -20,7 +20,7 @@ def mock_source() -> SourceFauna:
 
 def schema(properties) -> dict:
     return {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": properties,
     }
@@ -67,7 +67,7 @@ def test_simple_discover():
         AirbyteStream(
             name="foo",
             json_schema={
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                     "data": {
@@ -93,7 +93,7 @@ def test_simple_discover():
         AirbyteStream(
             name="bar",
             json_schema={
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                     "data": {

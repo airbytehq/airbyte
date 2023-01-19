@@ -2,7 +2,7 @@ dockerImage: "airbyte/destination-postgres:0.3.13"
 spec:
   documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
   connectionSpecification:
-    $schema: "http://json-schema.org/draft-07/schema#"
+    $schema: "https://json-schema.org/draft-07/schema#"
     title: "Postgres Destination Spec"
     type: "object"
     required:

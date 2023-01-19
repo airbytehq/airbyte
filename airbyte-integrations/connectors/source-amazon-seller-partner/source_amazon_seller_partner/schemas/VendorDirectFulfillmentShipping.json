@@ -1,7 +1,7 @@
 {
   "title": "Vendor Direct Fulfillment Shipping",
   "description": "Vendor Direct Fulfillment Shipping",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "purchaseOrderNumber": {

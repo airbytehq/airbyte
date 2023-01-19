@@ -50,7 +50,7 @@ def singer_state_fixture(simple_state):
 @pytest.fixture(name="stream_schema")
 def stream_schema_fixture():
     return {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
             "id": {"type": "integer"},

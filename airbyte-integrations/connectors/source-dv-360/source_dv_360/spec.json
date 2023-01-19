@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docsurl.com",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Display & Video 360 Spec",
     "type": "object",
     "required": ["credentials", "partner_id", "start_date"],

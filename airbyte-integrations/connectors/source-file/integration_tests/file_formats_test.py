@@ -94,7 +94,7 @@ def test_csv_schema():
     assert len(catalog["streams"]) == 1
     schema = catalog["streams"][0]["json_schema"]
     assert schema == {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "properties": {
             "Address": {"type": ["string", "null"]},
             "City": {"type": ["string", "null"]},

@@ -154,7 +154,7 @@ class UsCensusStream(HttpStream, ABC):
         json_schema = {k: {"type": "string"} for (k, _) in first_record.items()}
         if first_record:
             return {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "additionalProperties": True,
                 "type": "object",
                 "properties": json_schema,

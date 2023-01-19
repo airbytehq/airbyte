@@ -45,7 +45,7 @@ def test_discover(mocker, config, tables):
     assert isinstance(catalog, AirbyteCatalog)
     assert len(catalog.streams) == 2
     assert stream.json_schema == {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {"PartitionKey": {"type": "string"}},
     }

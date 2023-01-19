@@ -40,7 +40,7 @@ We're working with the Exchange Rates API, so we need to define our input schema
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Python Http Example Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],

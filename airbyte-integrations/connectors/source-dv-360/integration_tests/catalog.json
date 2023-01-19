@@ -5,7 +5,7 @@
       {
         "name": "reach",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "advertiser": {
@@ -123,7 +123,7 @@
       {
         "name": "standard",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "active_view_custom_metric_id ": {
@@ -1633,7 +1633,7 @@
       {
         "name": "audience_composition",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "audience_list": {
@@ -1688,7 +1688,7 @@
       {
         "name": "floodlight",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "advertiser": {
@@ -1869,7 +1869,7 @@
       {
         "name": "unique_reach_audience",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "advertiser ": {
