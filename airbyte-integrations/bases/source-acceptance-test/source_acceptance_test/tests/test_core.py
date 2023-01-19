@@ -75,6 +75,7 @@ def secret_property_names_fixture():
         "refresh_token",
     )
 
+
 DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
@@ -340,7 +341,7 @@ class TestSpec(BaseTest):
                 continue
             elif isinstance(items_value, List):
                 errors.append(f"{type_path} is not just a single item type: {items_value}")
-            elif items_value.get("type") not in ["object", "string"] and not "enum" in items_value:
+            elif items_value.get("type") not in ["object", "string"] and "enum" not in items_value:
                 errors.append(f"Items of {type_path} has to be either object or string or define an enum")
         if len(errors) > 0:
             pytest.fail("\n".join(errors))
@@ -390,9 +391,13 @@ class TestSpec(BaseTest):
                 property_definition = self._get_parent(specification, format_path)
                 pattern = property_definition.get("pattern")
                 if format == "date" and not pattern == DATE_PATTERN:
-                    detailed_logger.warning(f"{format_path} is defining a date format without the corresponding pattern. Consider setting the pattern to {DATE_PATTERN} to make it easier for users to edit this field in the UI.")
+                    detailed_logger.warning(
+                        f"{format_path} is defining a date format without the corresponding pattern. Consider setting the pattern to {DATE_PATTERN} to make it easier for users to edit this field in the UI."
+                    )
                 if format == "date-time" and not pattern == DATETIME_PATTERN:
-                    detailed_logger.warning(f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI.")
+                    detailed_logger.warning(
+                        f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI."
+                    )
 
     def test_date_format(self, connector_spec_dict: dict, detailed_logger):
         """
@@ -407,9 +412,13 @@ class TestSpec(BaseTest):
                 property_definition = self._get_parent(specification, pattern_path)
                 format = property_definition.get("format")
                 if not format == "date" and pattern == DATE_PATTERN:
-                    detailed_logger.warning(f"{pattern_path} is defining a pattern that looks like a date without setting the format to `date`. Consider specifying the format to make it easier for users to edit this field in the UI.")
+                    detailed_logger.warning(
+                        f"{pattern_path} is defining a pattern that looks like a date without setting the format to `date`. Consider specifying the format to make it easier for users to edit this field in the UI."
+                    )
                 if not format == "date-time" and pattern == DATETIME_PATTERN:
-                    detailed_logger.warning(f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI.")
+                    detailed_logger.warning(
+                        f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI."
+                    )
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
