@@ -26,10 +26,10 @@ acceptance_tests:
             bypass_reason: "Stream not filled yet."
           - name: "click_view"
             bypass_reason: "Stream not filled yet."
-          - name: "unhappytable"
-            bypass_reason: "Stream not filled yet."
           - name: "shopping_performance_report"
             bypass_reason: "Stream not filled yet."
+          - name: "accounts"
+            bypass_reason: "Unable to test."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
