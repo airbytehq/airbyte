@@ -79,7 +79,11 @@ public class EnvConfigs implements Configs {
   private static final String SIDECAR_KUBE_MEMORY_LIMIT = "SIDECAR_KUBE_MEMORY_LIMIT";
   private static final String DEFAULT_SIDECAR_KUBE_CPU_REQUEST = "0.1";
   private static final String SIDECAR_KUBE_CPU_REQUEST = "SIDECAR_KUBE_CPU_REQUEST";
-  private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "0.2";
+  // Test show at least 1.5 CPU is required to hit >20 Mb/s. Overprovision to ensure sidecar resources
+  // do not cause bottlenecks.
+  // This is fine as the limit only affects whether the container is throttled by Kube. It does not
+  // affect scheduling.
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "2.0";
   private static final String SIDECAR_KUBE_CPU_LIMIT = "SIDECAR_KUBE_CPU_LIMIT";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
   private static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
@@ -204,9 +208,9 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
   private static final String AWS_ACCESS_KEY = "AWS_ACCESS_KEY";
   private static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
-  private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.3-r0";
-  private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
-  private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
+  private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.4-r0";
+  private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.35";
+  private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.87.0";
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
   private static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   private static final long DEFAULT_MAX_CHECK_WORKERS = 5;
