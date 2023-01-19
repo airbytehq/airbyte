@@ -123,6 +123,15 @@ public class AuthorizationServerHandler extends ChannelDuplexHandler {
     context.fireChannelRead(updatedMessage);
   }
 
+  /**
+   * Adds the provided header and value to the HTTP request present in the provided {@link ByteBuffer}
+   * content.
+   *
+   * @param headerName The name of the header.
+   * @param headerValue The value of the header.
+   * @param originalContent The current HTTP request content.
+   * @return The modified HTTP content that includes the additional header and value.
+   */
   private ByteBuffer generateBufferWithHeader(final String headerName, final Object headerValue, final ByteBuffer originalContent) {
     final String originalContentAsString = StandardCharsets.UTF_8.decode(originalContent).toString();
     final String updatedContent = originalContentAsString.replaceAll(BLANK_LINE_REGEX, headerName + ": " + headerValue.toString() + "\r\n\r\n");

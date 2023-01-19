@@ -35,6 +35,10 @@ public class AuthNettyServerCustomizer implements BeanCreatedEventListener<Netty
     return registry;
   }
 
+  /**
+   * Custom {@link NettyServerCustomizer} that registers the {@link AuthorizationServerHandler} as the
+   * first handler in the Netty pipeline.
+   */
   private class Customizer implements NettyServerCustomizer {
 
     private final Channel channel;
