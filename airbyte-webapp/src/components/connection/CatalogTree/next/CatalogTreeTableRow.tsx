@@ -104,7 +104,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip={pkType === "sourceDefined"}>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
