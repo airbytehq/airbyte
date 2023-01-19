@@ -15,7 +15,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class GitlabStream(HttpStream, ABC):
     primary_key = "id"
     raise_on_http_errors = True
-    availability_strategy = None
     stream_base_params = {}
     flatten_id_keys = []
     flatten_list_keys = []
@@ -44,9 +43,6 @@ class GitlabStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).
-        # This code is not equivalent of what HttpAvailabilityStrategy does.
-        # Different stream slices (different projects or groups) - may or may not result in a 403 error.
-        # HttpAvailabilityStrategy skips all the slices in case it faces error when reading the first record.
         if response.status_code == 403:
             setattr(self, "raise_on_http_errors", False)
             self.logger.warning(

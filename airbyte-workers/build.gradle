@@ -25,6 +25,16 @@ dependencies {
     implementation (libs.jooq) {
         force = true
     }
+    implementation(libs.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
+    implementation(libs.aws.java.sdk.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
 
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.4.0'
     implementation 'com.auth0:java-jwt:3.19.2'
@@ -133,6 +143,12 @@ task generateWellKnownTypes() {
 
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
+}
+
+// Ideally, we would have buildDockerImage depend on generateWellKnownTypes
+// but some of our actions use copyGeneratedTar as the "set up the docker build context" task
+// so we'll just add it here.
+tasks.named("copyGeneratedTar") {
     dependsOn generateWellKnownTypes
 }
 
