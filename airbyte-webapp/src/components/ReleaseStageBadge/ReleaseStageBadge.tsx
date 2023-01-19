@@ -5,7 +5,6 @@ import { GAIcon } from "components/icons/GAIcon";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
-import { useFreeConnectorProgram } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
 
 import styles from "./ReleaseStageBadge.module.scss";
 
@@ -16,14 +15,16 @@ interface ReleaseStageBadgeProps {
    * Whether to show a detailed message via a tooltip. If not specified, will be {@code true}.
    */
   tooltip?: boolean;
+  showFreeTag?: boolean;
 }
 
-export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({ stage, small, tooltip = true }) => {
-  const { data: freeConnectorProgramInfo } = useFreeConnectorProgram();
-  const showFreeConnectorUi = Boolean(freeConnectorProgramInfo?.isEnrolled);
+export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({
+  stage,
+  small,
+  tooltip = true,
+  showFreeTag = false,
+}) => {
   const { formatMessage } = useIntl();
-
-  const showFreeTag = showFreeConnectorUi && (stage === "alpha" || stage === "beta");
 
   if (!stage || stage === ReleaseStage.custom) {
     return null;
