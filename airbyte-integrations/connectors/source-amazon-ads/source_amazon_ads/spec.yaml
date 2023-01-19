@@ -64,7 +64,7 @@ connectionSpecification:
       order: 6
       type: array
       items:
-        type: integer
+        type: string
     state_filter:
       title: State Filter
       description: Reflects the state of the Display, Product, and Brand Campaign streams as enabled, paused, or archived. If you do not populate this field, it will be ignored completely.
