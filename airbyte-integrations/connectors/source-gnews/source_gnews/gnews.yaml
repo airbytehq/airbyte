@@ -162,12 +162,11 @@ definitions:
       $ref: "*ref(definitions.base_retriever)"
       requester:
         $ref: "*ref(definitions.base_requester)"
-        request_options_provider:
-          request_parameters:
-            $ref: "*ref(definitions.common_parameters)"
-            q: "{{ config['query'] }}"
-            in: "{{ ','.join(config['in']) }}"
-            sortby: "{{ config['sortby'] }}"
+        request_parameters:
+          $ref: "*ref(definitions.common_parameters)"
+          q: "{{ config['query'] }}"
+          in: "{{ ','.join(config['in']) }}"
+          sortby: "{{ config['sortby'] }}"
   top_headlines_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -181,11 +180,10 @@ definitions:
       $ref: "*ref(definitions.base_retriever)"
       requester:
         $ref: "*ref(definitions.base_requester)"
-        request_options_provider:
-          request_parameters:
-            $ref: "*ref(definitions.common_parameters)"
-            topic: "{{ config['top_headlines_topic'] }}"
-            q: "{{ config['top_headlines_query'] }}"
+        request_parameters:
+          $ref: "*ref(definitions.common_parameters)"
+          topic: "{{ config['top_headlines_topic'] }}"
+          q: "{{ config['top_headlines_query'] }}"
 
 streams:
   - "*ref(definitions.search_stream)"

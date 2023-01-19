@@ -10,12 +10,11 @@ definitions:
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['access_key'] }}"
-    request_options_provider:
-      request_headers:
-        Output-Format: JSON
-      request_parameters:
-        display: full
-        limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
+    request_headers:
+      Output-Format: JSON
+    request_parameters:
+      display: full
+      limit: "'{{ next_page_token['next_page_token'] or '0' }},50'"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -49,14 +48,13 @@ definitions:
         cursor_granularity: "PT1S"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_headers:
-            $ref: "*ref(definitions.requester.request_options_provider.request_headers)"
-          request_parameters:
-            $ref: "*ref(definitions.requester.request_options_provider.request_parameters)"
-            date: "1"
-            sort: "[{{ options['cursor_field'] }}_ASC,{{ options['primary_key'] }}_ASC]"
-            "filter[{{ options['cursor_field'] }}]": "[{{ stream_slice['start_time'] }},{{ stream_slice['end_time'] }}]"
+        request_headers:
+          $ref: "*ref(definitions.requester.request_headers)"
+        request_parameters:
+          $ref: "*ref(definitions.requester.request_parameters)"
+          date: "1"
+          sort: "[{{ options['cursor_field'] }}_ASC,{{ options['primary_key'] }}_ASC]"
+          "filter[{{ options['cursor_field'] }}]": "[{{ stream_slice['start_time'] }},{{ stream_slice['end_time'] }}]"
   addresses_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
     $options:

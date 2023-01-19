@@ -7,9 +7,8 @@ definitions:
   requester:
     url_base: "https://store.zapier.com/api"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        secret: "{{ config['secret'] }}"
+    request_parameters:
+      secret: "{{ config['secret'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"

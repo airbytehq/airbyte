@@ -20,10 +20,9 @@ definitions:
   requester:
     url_base: "https://www.googleapis.com/pagespeedonline/v5/"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        key: "{{ config['api_key'] }}"
-        category: "{{ config['categories'] }}"
+    request_parameters:
+      key: "{{ config['api_key'] }}"
+      category: "{{ config['categories'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"

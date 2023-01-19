@@ -44,11 +44,10 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            order_type: "desc"
-            order_by: "inserted_at"
-            date_shortcut: "custom"
+        request_parameters:
+          order_type: "desc"
+          order_by: "inserted_at"
+          date_shortcut: "custom"
   surveys:
     $ref: "*ref(definitions.base_stream)"
     $options:

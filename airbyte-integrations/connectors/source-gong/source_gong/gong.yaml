@@ -11,9 +11,8 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['access_key'] }}"
       password: "{{ config['access_key_secret'] }}"
-    request_options_provider:
-      request_parameters:
-        fromDateTime: "{{ config['start_date'] }}"
+    request_parameters:
+      fromDateTime: "{{ config['start_date'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -81,9 +80,8 @@ definitions:
       requester:
         $ref: "*ref(definitions.requester)"
         http_method: "POST"
-        request_options_provider:
-          request_body_json:
-            filter: '{"callFromDate": "{{ config["start_date"] }}"}'
+        request_body_json:
+          filter: '{"callFromDate": "{{ config["start_date"] }}"}'
 
 streams:
   - "*ref(definitions.users_stream)"

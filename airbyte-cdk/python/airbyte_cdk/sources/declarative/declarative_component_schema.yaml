@@ -308,23 +308,6 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  CustomRequestOptionsProvider:
-    description: (DO NOT USE) Added for backwards compatibility but this will be deprecated in a future release
-    type: object
-    additionalProperties: true
-    required:
-      - type
-      - class_name
-    properties:
-      type:
-        type: string
-        enum: [CustomRequestOptionsProvider]
-      class_name:
-        type: string
-        additionalProperties: true
-      $options:
-        type: object
-        additionalProperties: true
   CustomRetriever:
     description: Retriever component whose behavior is derived from a custom code implementation of the connector
     type: object
@@ -654,10 +637,34 @@ definitions:
               - GET
               - POST
         default: GET
-      request_options_provider:
+      request_body_data:
+        description: Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.
         anyOf:
-          - "$ref": "#/definitions/CustomRequestOptionsProvider"
-          - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_body_json:
+        description: Specifies how to populate the body of the request with a JSON payload.
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_headers:
+        description: Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_parameters:
+        description: Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
       $options:
         type: object
         additionalProperties: true
@@ -703,42 +710,6 @@ definitions:
         enum: [InlineSchemaLoader]
       schema:
         type: object
-  InterpolatedRequestOptionsProvider:
-    description: Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [InterpolatedRequestOptionsProvider]
-      request_body_data:
-        anyOf:
-          - type: string
-          - type: object
-            additionalProperties:
-              type: string
-      request_body_json:
-        anyOf:
-          - type: string
-          - type: object
-            additionalProperties:
-              type: string
-      request_headers:
-        anyOf:
-          - type: string
-          - type: object
-            additionalProperties:
-              type: string
-      request_parameters:
-        anyOf:
-          - type: string
-          - type: object
-            additionalProperties:
-              type: string
-      $options:
-        type: object
-        additionalProperties: true
   JsonFileSchemaLoader:
     description: Loads the schema from a json file
     type: object

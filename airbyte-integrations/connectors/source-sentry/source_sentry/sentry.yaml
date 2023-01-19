@@ -51,9 +51,8 @@ streams:
       requester:
         $ref: "*ref(definitions.requester)"
         path: "projects/{{config.organization}}/{{config.project}}/events/"
-        request_options_provider:
-          request_parameters:
-            full: "true"
+        request_parameters:
+          full: "true"
       paginator:
         $ref: "*ref(definitions.paginator)"
   - type: DeclarativeStream
@@ -69,10 +68,9 @@ streams:
       requester:
         $ref: "*ref(definitions.requester)"
         path: "projects/{{config.organization}}/{{config.project}}/issues/"
-        request_options_provider:
-          request_parameters:
-            statsPeriod: ""
-            query: ""
+        request_parameters:
+          statsPeriod: ""
+          query: ""
       paginator:
         $ref: "*ref(definitions.paginator)"
   - type: DeclarativeStream

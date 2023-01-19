@@ -12,16 +12,16 @@ definitions:
         - "data"
         - "{{ options['name'] }}"
   requester:
+    type: CustomRequester
+    class_name: "source_monday.MondayGraphqlRequester"
     url_base: "https://api.monday.com/v2"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['credentials']['api_token'] if config['credentials']['auth_type'] == 'api_token' else config['credentials']['access_token'] if config['credentials']['auth_type'] == 'oauth2.0' else config.get('api_token', '') }}"
-    request_options_provider:
-      type: CustomRequestOptionsProvider
-      class_name: "source_monday.GraphQLRequestOptionsProvider"
-      limit: "{{ options['items_per_page'] }}"
+    limit: "{{ options['items_per_page'] }}"
     error_handler:
+      type: "DefaultErrorHandler"
       response_filters:
         - predicate: "{{ 'error_code' in response and response['error_code'] == 'ComplexityException' }}"
           action: RETRY

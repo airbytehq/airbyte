@@ -46,9 +46,8 @@ definitions:
       $ref: "*ref(definitions.base_stream.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_body_json:
-            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+        request_body_json:
+          createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
   archive_reasons_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -95,9 +94,8 @@ definitions:
       $ref: "*ref(definitions.base_stream.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_body_json:
-            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+        request_body_json:
+          createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
   job_postings_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
