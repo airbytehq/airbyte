@@ -429,6 +429,8 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
 
     def __post_init__(self, options: Mapping[str, Any]):
         super().__post_init__(options)
+        if self.maximum_number_of_slices and self.maximum_number_of_slices < 1:
+            raise ValueError("The maximum number of slices on a test read needs to be strictly positive")
         self.maximum_number_of_slices = self.maximum_number_of_slices or self._MAXIMUM_NUMBER_OF_SLICES
 
     def stream_slices(
