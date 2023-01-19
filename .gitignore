@@ -83,3 +83,6 @@ charts/**/charts
 
 # Datadog
 dd-java-agent.jar
+
+# Octavia state files
+octavia-configs/**/state*.yaml
