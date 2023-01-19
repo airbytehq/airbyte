@@ -18,7 +18,7 @@ interface ConnectorCellProps {
 
 const ConnectorCell: React.FC<ConnectorCellProps> = ({ connectorName, img, hasUpdate, releaseStage }) => {
   return (
-    <FlexContainer alignItems="center">
+    <FlexContainer alignItems="center" gap="lg">
       <Indicator hidden={!hasUpdate} />
       <div className={styles.iconContainer}>{getIcon(img)}</div>
       <div>{connectorName}</div>

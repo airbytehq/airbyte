@@ -4,12 +4,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
-import { FlexContainer } from "components/ui/Flex";
+import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
 
 import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
 
-import { FormContent } from "./PageComponents";
+import { useUpdatingState } from "./ConnectorsViewContext";
+import styles from "./VersionCell.module.scss";
 
 interface VersionCellProps {
   version: string;
@@ -17,7 +18,6 @@ interface VersionCellProps {
   id: string;
   onChange: ({ version, id }: { version: string; id: string }) => void;
   feedback?: "success" | string;
-  updating: boolean;
 }
 
 const VersionInput = styled(Input)`
@@ -45,40 +45,17 @@ const InputField = styled.div<{ showNote?: boolean }>`
   }
 `;
 
-const SuccessMessage = styled.div`
-  color: ${({ theme }) => theme.successColor};
-  font-size: 12px;
-  line-height: 18px;
-  position: absolute;
-  text-align: right;
-  width: 205px;
-  left: -208px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  white-space: break-spaces;
-`;
-
-const ErrorMessage = styled(SuccessMessage)`
-  color: ${({ theme }) => theme.dangerColor};
-  font-size: 11px;
-  line-height: 14px;
-`;
-
-const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, feedback, currentVersion, updating }) => {
+const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, feedback, currentVersion }) => {
+  const { updatingAll, updatingDefinitionId } = useUpdatingState();
+  const updatingCurrent = id === updatingDefinitionId;
   const { formatMessage } = useIntl();
 
   const renderFeedback = (dirty: boolean, feedback?: string) => {
     if (feedback && !dirty) {
       if (feedback === "success") {
-        return (
-          <SuccessMessage>
-            <FormattedMessage id="form.savedChange" />
-          </SuccessMessage>
-        );
+        return <FormattedMessage id="form.savedChange" />;
       }
-      return <ErrorMessage>{feedback}</ErrorMessage>;
+      return <span className={styles.errorMessage}>{feedback}</span>;
     }
 
     return null;
@@ -87,42 +64,40 @@ const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, feedba
   const isConnectorUpdatable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
 
   return (
-    <FormContent>
-      <Formik
-        initialValues={{
-          version,
-        }}
-        onSubmit={(values) => onChange({ id, version: values.version })}
-      >
-        {({ isSubmitting, dirty }) => (
-          <Form>
-            <FlexContainer alignItems="center">
-              {renderFeedback(dirty, feedback)}
-              <Field name="version">
-                {({ field }: FieldProps<string>) => (
-                  <InputField
-                    showNote={version === field.value}
-                    data-before={formatMessage({
-                      id: "admin.latestNote",
-                    })}
-                  >
-                    <VersionInput {...field} type="text" autoComplete="off" />
-                  </InputField>
-                )}
-              </Field>
-              <Button
-                size="xs"
-                isLoading={isSubmitting || updating}
-                type="submit"
-                disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
-              >
-                <FormattedMessage id="form.change" />
-              </Button>
-            </FlexContainer>
-          </Form>
-        )}
-      </Formik>
-    </FormContent>
+    <Formik
+      initialValues={{
+        version,
+      }}
+      onSubmit={(values) => onChange({ id, version: values.version })}
+    >
+      {({ isSubmitting, dirty }) => (
+        <Form>
+          <FlexContainer justifyContent="flex-end" alignItems="center" className={styles.versionCell}>
+            <FlexItem>{renderFeedback(dirty, feedback)}</FlexItem>
+            <Field name="version">
+              {({ field }: FieldProps<string>) => (
+                <InputField
+                  showNote={version === field.value}
+                  data-before={formatMessage({
+                    id: "admin.latestNote",
+                  })}
+                >
+                  <VersionInput {...field} type="text" autoComplete="off" />
+                </InputField>
+              )}
+            </Field>
+            <Button
+              size="xs"
+              isLoading={(updatingAll && isConnectorUpdatable) || updatingCurrent}
+              type="submit"
+              disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
+            >
+              <FormattedMessage id="form.change" />
+            </Button>
+          </FlexContainer>
+        </Form>
+      )}
+    </Formik>
   );
 };
 
