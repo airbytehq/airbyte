@@ -31,7 +31,6 @@ public class CloudAirbyteAuthenticationProvider implements AuthenticationProvide
 
   @Override
   public Publisher<AuthenticationResponse> authenticate(final HttpRequest<?> httpRequest, final AuthenticationRequest<?, ?> authenticationRequest) {
-    log.info("{} invoked.", getClass().getName());
     return Flux.create(emitter -> {
       emitter.next(authenticateRequest(httpRequest, authenticationRequest));
       emitter.complete();
@@ -42,6 +41,7 @@ public class CloudAirbyteAuthenticationProvider implements AuthenticationProvide
     log.info("Authenticating identity {}...", authenticationRequest.getIdentity());
 
     try {
+      // TODO validate authentication here
       final String username = (String) authenticationRequest.getIdentity();
       final Collection<String> roles = getRoles(httpRequest, authenticationRequest);
       log.info("Authenticating user {} with roles {} for URI {}...", username, roles, httpRequest.getUri().getPath());
@@ -54,7 +54,7 @@ public class CloudAirbyteAuthenticationProvider implements AuthenticationProvide
 
   private Collection<String> getRoles(final HttpRequest<?> httpRequest, final AuthenticationRequest<?, ?> authenticationRequest)
       throws AuthenticationException {
-    if (StringUtils.isNotBlank(httpRequest.getHeaders().get(AuthorizationServerHandler.WORKSPACE_ID_HEADER))) {
+    if (shouldGetWorkspaceRoles(httpRequest)) {
       return getWorkspaceRoles(httpRequest);
     } else {
       return getUserRoles(authenticationRequest);
@@ -70,6 +70,18 @@ public class CloudAirbyteAuthenticationProvider implements AuthenticationProvide
     final String workspaceId = httpRequest.getHeaders().get(AuthorizationServerHandler.WORKSPACE_ID_HEADER);
     log.info("Retrieving workspace roles for workspace '{}'...", workspaceId);
     return permissionService.getWorkspacePermissions(UUID.fromString(workspaceId));
+  }
+
+  /**
+   * Tests whether the request contains the headers that indicate that workspace permissions should be
+   * used.
+   *
+   * @param httpRequest The incoming HTTP request
+   * @return {@code true} if the workspace related roles should be retrieved, {@code false} otherwise.
+   */
+  private boolean shouldGetWorkspaceRoles(final HttpRequest<?> httpRequest) {
+    // TODO if not workspace ID, check other fields that are used to retrieve workspace roles
+    return StringUtils.isNotBlank(httpRequest.getHeaders().get(AuthorizationServerHandler.WORKSPACE_ID_HEADER));
   }
 
 }

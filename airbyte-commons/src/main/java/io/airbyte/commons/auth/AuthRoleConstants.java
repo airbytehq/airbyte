@@ -4,6 +4,9 @@
 
 package io.airbyte.commons.auth;
 
+/**
+ * Collection of constants that defines authorization roles.
+ */
 public final class AuthRoleConstants {
 
   public static final String ADMIN = "ADMIN";

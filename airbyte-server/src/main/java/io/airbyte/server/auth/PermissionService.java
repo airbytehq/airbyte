@@ -7,7 +7,6 @@ package io.airbyte.server.auth;
 import io.airbyte.commons.auth.AuthRole;
 import jakarta.inject.Singleton;
 import java.util.Collection;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -19,7 +18,7 @@ public class PermissionService {
   }
 
   public Collection<String> getWorkspacePermissions(final UUID workspaceId) {
-    return Set.of(AuthRole.OWNER.getLabel());
+    return AuthRole.buildAuthRolesSet(AuthRole.OWNER).stream().map(r -> r.getLabel()).collect(Collectors.toSet());
   }
 
 }

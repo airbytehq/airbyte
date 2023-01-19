@@ -5,7 +5,9 @@
 package io.airbyte.server.auth;
 
 import io.airbyte.commons.auth.AuthRole;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
+import io.micronaut.security.authentication.AuthenticationFailureReason;
 import io.micronaut.security.authentication.AuthenticationProvider;
 import io.micronaut.security.authentication.AuthenticationRequest;
 import io.micronaut.security.authentication.AuthenticationResponse;
@@ -16,6 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
+/**
+ * Basic {@link AuthenticationProvider} that ensures that the basic authentication has been
+ * provided.
+ */
 @Singleton
 @Slf4j
 public class AirbyteAuthenticationProvider implements AuthenticationProvider {
@@ -25,7 +31,10 @@ public class AirbyteAuthenticationProvider implements AuthenticationProvider {
     log.info("Authenticating identity {}...", authenticationRequest.getIdentity());
 
     final String username = (String) authenticationRequest.getIdentity();
-    final AuthenticationResponse authenticationResponse = AuthenticationResponse.success(username, getDefaultRoles());
+    final AuthenticationResponse authenticationResponse =
+        StringUtils.isNotEmpty(username) ? AuthenticationResponse.success(username, getDefaultRoles())
+            : AuthenticationResponse.failure(
+                AuthenticationFailureReason.USER_NOT_FOUND);
 
     return Flux.create(emitter -> {
       emitter.next(authenticationResponse);
