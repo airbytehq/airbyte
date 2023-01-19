@@ -77,7 +77,7 @@ definitions:
 ```yaml
   rates_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/latest"
@@ -159,7 +159,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   rates_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/latest"
