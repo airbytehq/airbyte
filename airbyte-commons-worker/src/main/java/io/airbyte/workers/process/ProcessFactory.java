@@ -91,7 +91,9 @@ public interface ProcessFactory {
    * Docker image names are by convention separated by slashes. The last portion is the image's name.
    * This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
    * gcr.io/my-project/my-project:v2.
-   * @param fullImagePath the image name with repository and version ex gcr.io/my-project/image-name:v2
+   *
+   * @param fullImagePath the image name with repository and version ex
+   *        gcr.io/my-project/image-name:v2
    * @return the image name without the repo and version, ex. image-name
    */
   static String extractShortImageName(final String fullImagePath) {
