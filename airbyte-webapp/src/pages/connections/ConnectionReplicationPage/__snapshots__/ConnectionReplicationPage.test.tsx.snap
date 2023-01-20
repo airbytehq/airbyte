@@ -323,6 +323,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                       </span>
                       <p
                         class="<removed-for-snapshot-test>"
+                        data-type="text"
                       >
                         Optional
                       </p>
@@ -648,6 +649,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                         >
                           <span
                             class="<removed-for-snapshot-test>"
+                            data-testid="pokemon_expandStreamDetails"
                           >
                             <svg
                               aria-hidden="true"
@@ -700,6 +702,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                           </div>
                           <div
                             class="<removed-for-snapshot-test>"
+                            data-testid="streamNameCell"
                             title="pokemon"
                           >
                             pokemon
@@ -881,6 +884,7 @@ exports[`ConnectionReplicationPage should show an error if there is a schemaErro
           </div>
           <p
             class="<removed-for-snapshot-test>"
+            data-type="text"
           >
             Failed to fetch schema. Please try again
           </p>
