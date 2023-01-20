@@ -17,8 +17,10 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
 
 @Controller("/api/v1/destination_definitions")
 @Requires(property = "airbyte.deployment-mode",
@@ -40,6 +42,7 @@ public class DestinationDefinitionApiController implements DestinationDefinition
 
   @Post(uri = "/delete")
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     ApiHelper.execute(() -> {
       destinationDefinitionsHandler.deleteDestinationDefinition(destinationDefinitionIdRequestBody);

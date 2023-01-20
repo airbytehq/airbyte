@@ -17,9 +17,11 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
 import lombok.AllArgsConstructor;
 
 @Controller("/api/v1/destinations")
@@ -57,6 +59,7 @@ public class DestinationApiController implements DestinationApi {
 
   @Post(uri = "/delete")
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void deleteDestination(@Body final DestinationIdRequestBody destinationIdRequestBody) {
     ApiHelper.execute(() -> {
       destinationHandler.deleteDestination(destinationIdRequestBody);

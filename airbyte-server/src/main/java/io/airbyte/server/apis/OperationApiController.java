@@ -15,9 +15,11 @@ import io.airbyte.api.model.generated.OperationUpdate;
 import io.airbyte.api.model.generated.OperatorConfiguration;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
 
 @Controller("/api/v1/operations")
 @Requires(property = "airbyte.deployment-mode",
@@ -44,6 +46,7 @@ public class OperationApiController implements OperationApi {
 
   @Post("/delete")
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void deleteOperation(@Body final OperationIdRequestBody operationIdRequestBody) {
     ApiHelper.execute(() -> {
       operationsHandler.deleteOperation(operationIdRequestBody);

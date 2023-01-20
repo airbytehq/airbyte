@@ -17,8 +17,10 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
 
 @Controller("/api/v1/source_definitions")
 @Requires(property = "airbyte.deployment-mode",
@@ -40,6 +42,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Post("/delete")
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     ApiHelper.execute(() -> {
       sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
@@ -91,6 +94,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Post("/revoke_definition")
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
     ApiHelper.execute(() -> {
       sourceDefinitionsHandler.revokeSourceDefinitionFromWorkspace(sourceDefinitionIdWithWorkspaceId);
