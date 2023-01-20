@@ -441,7 +441,7 @@ def create_http_requester(model: HttpRequesterModel, config: Config, **kwargs) -
         request_headers=model.request_headers,
         request_parameters=model.request_parameters,
         config=config,
-        options=model.options,
+        parameters=model.parameters,
     )
 
     return HttpRequester(
