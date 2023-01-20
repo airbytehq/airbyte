@@ -133,7 +133,8 @@ public class S3StorageOperations extends BlobStorageOperations {
         exceptionsThrown.add(e);
       }
     }
-    // Verifying that ALL exceptions are authentication related before assuming this is a configuration issue
+    // Verifying that ALL exceptions are authentication related before assuming this is a configuration
+    // issue
     // reduces risk of misidentifying errors or reporting a transient error.
     final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream().filter(e -> e instanceof AmazonS3Exception)
         .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode())
