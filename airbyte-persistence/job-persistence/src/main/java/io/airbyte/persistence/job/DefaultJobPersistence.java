@@ -30,6 +30,7 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -154,6 +155,7 @@ public class DefaultJobPersistence implements JobPersistence {
         + "jobs.created_at AS job_created_at,\n"
         + "jobs.updated_at AS job_updated_at,\n"
         + "attempts.attempt_number AS attempt_number,\n"
+        + "attempts.attempt_sync_config AS attempt_sync_config,\n"
         + "attempts.log_path AS log_path,\n"
         + "attempts.output AS attempt_output,\n"
         + "attempts.status AS attempt_status,\n"
@@ -930,6 +932,8 @@ public class DefaultJobPersistence implements JobPersistence {
         record.get(ATTEMPT_NUMBER, int.class),
         record.get(JOB_ID, Long.class),
         Path.of(record.get("log_path", String.class)),
+        record.get("attempt_sync_config", String.class) == null ? null
+            : Jsons.deserialize(record.get("attempt_sync_config", String.class), AttemptSyncConfig.class),
         record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
         record.get("processing_task_queue", String.class),
