@@ -75,6 +75,11 @@ spec:
             secretKeyRef:
               name: {{ .Values.global.secretName | default (printf "%s-airbyte-secrets" .Release.Name) }}
               key: DATABASE_USER
+        - name: RUN_DATABASE_MIGRATION_ON_STARTUP
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.global.configMapName | default (printf "%s-airbyte-env" .Release.Name) }}
+              key: RUN_DATABASE_MIGRATION_ON_STARTUP
         {{- end }}
         # Values from secret
         {{- if .Values.secrets }}
