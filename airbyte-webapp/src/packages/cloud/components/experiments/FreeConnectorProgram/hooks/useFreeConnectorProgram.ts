@@ -7,7 +7,7 @@ import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 import { webBackendGetFreeConnectorProgramInfoForWorkspace } from "../lib/api";
 
-export const useFreeConnectorProgramInfo = () => {
+export const useFreeConnectorProgram = () => {
   const workspaceId = useCurrentWorkspaceId();
   const { cloudApiUrl } = useConfig();
   const config = { apiUrl: cloudApiUrl };
@@ -18,11 +18,12 @@ export const useFreeConnectorProgramInfo = () => {
   return useQuery(["freeConnectorProgramInfo", workspaceId], () =>
     webBackendGetFreeConnectorProgramInfoForWorkspace({ workspaceId }, requestOptions).then(
       ({ hasEligibleConnector, hasPaymentAccountSaved }) => {
-        const showEnrollmentUi = !hasPaymentAccountSaved && hasEligibleConnector && freeConnectorProgramEnabled;
-        // TODO hardcoding this value to allow testing while data source gets sorted out
-        const needsEmailVerification = false;
+        const userIsEligibleToEnroll = !hasPaymentAccountSaved && hasEligibleConnector;
 
-        return { showEnrollmentUi, needsEmailVerification };
+        return {
+          showEnrollmentUi: freeConnectorProgramEnabled && userIsEligibleToEnroll,
+          isEnrolled: freeConnectorProgramEnabled && hasPaymentAccountSaved,
+        };
       }
     )
   );
