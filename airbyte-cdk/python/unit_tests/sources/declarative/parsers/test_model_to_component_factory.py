@@ -924,7 +924,7 @@ def test_parse_custom_component_fields_if_subcomponent():
 
 class TestCreateTransformations:
     # the tabbing matters
-    base_options = """
+    base_parameters = """
                 name: "lists"
                 primary_key: id
                 url_base: "https://api.sendgrid.com"
@@ -947,7 +947,7 @@ class TestCreateTransformations:
         the_stream:
             type: DeclarativeStream
             $parameters:
-                {self.base_options}
+                {self.base_parameters}
         """
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
@@ -964,7 +964,7 @@ class TestCreateTransformations:
         the_stream:
             type: DeclarativeStream
             $parameters:
-                {self.base_options}
+                {self.base_parameters}
                 transformations:
                     - type: RemoveFields
                       field_pointers:
@@ -987,7 +987,7 @@ class TestCreateTransformations:
         the_stream:
             type: DeclarativeStream
             $parameters:
-                {self.base_options}
+                {self.base_parameters}
                 transformations:
                     - type: AddFields
                       fields:

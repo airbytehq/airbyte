@@ -24,7 +24,7 @@ function main() {
 
     # There is a limitation of Pydantic where a model's private fields starting with an underscore are inaccessible.
     # The Pydantic model generator replaces special characters like $ with the underscore which results in all
-    # component's $options field resulting in _options. We have been unable to find a workaround in the model generator
+    # component's $parameters field resulting in _parameters. We have been unable to find a workaround in the model generator
     # or while reading the field. There is no estimated timeline on the fix even though it is widely debated here:
     # https://github.com/pydantic/pydantic/issues/288.
     #

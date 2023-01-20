@@ -56,7 +56,7 @@ class InterpolatedString(JsonSchemaMixin):
         Helper function to obtain an InterpolatedString from either a raw string or an InterpolatedString.
 
         :param string_or_interpolated: either a raw string or an InterpolatedString.
-        :param parameters: options parameters propagated from parent component
+        :param parameters: $parameters propagated from parent component
         :return: InterpolatedString representing the input string.
         """
         if isinstance(string_or_interpolated, str):

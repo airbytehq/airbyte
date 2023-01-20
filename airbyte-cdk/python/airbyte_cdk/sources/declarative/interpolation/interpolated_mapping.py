@@ -27,17 +27,17 @@ class InterpolatedMapping(JsonSchemaMixin):
         self._interpolation = JinjaInterpolation()
         self._parameters = parameters
 
-    def eval(self, config: Config, **additional_options):
+    def eval(self, config: Config, **additional_parameters):
         """
         Wrapper around a Mapping[str, str] that allows for both keys and values to be interpolated.
 
         :param config: The user-provided configuration as specified by the source's spec
-        :param additional_options: Optional parameters used for interpolation
+        :param additional_parameters: Optional parameters used for interpolation
         :return: The interpolated string
         """
         interpolated_values = {
-            self._interpolation.eval(name, config, parameters=self._parameters, **additional_options): self._eval(
-                value, config, **additional_options
+            self._interpolation.eval(name, config, parameters=self._parameters, **additional_parameters): self._eval(
+                value, config, **additional_parameters
             )
             for name, value in self.mapping.items()
         }
