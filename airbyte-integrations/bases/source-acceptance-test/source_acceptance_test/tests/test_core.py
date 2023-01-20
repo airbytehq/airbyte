@@ -387,17 +387,16 @@ class TestSpec(BaseTest):
             if not isinstance(format, str):
                 # format is not a format definition here but a property named format
                 continue
-            if format == "date" or format == "date-time":
-                property_definition = self._get_parent(specification, format_path)
-                pattern = property_definition.get("pattern")
-                if format == "date" and not pattern == DATE_PATTERN:
-                    detailed_logger.warning(
-                        f"{format_path} is defining a date format without the corresponding pattern. Consider setting the pattern to {DATE_PATTERN} to make it easier for users to edit this field in the UI."
-                    )
-                if format == "date-time" and not pattern == DATETIME_PATTERN:
-                    detailed_logger.warning(
-                        f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI."
-                    )
+            property_definition = self._get_parent(specification, format_path)
+            pattern = property_definition.get("pattern")
+            if format == "date" and not pattern == DATE_PATTERN:
+                detailed_logger.warning(
+                    f"{format_path} is defining a date format without the corresponding pattern. Consider setting the pattern to {DATE_PATTERN} to make it easier for users to edit this field in the UI."
+                )
+            if format == "date-time" and not pattern == DATETIME_PATTERN:
+                detailed_logger.warning(
+                    f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI."
+                )
 
     def test_date_format(self, connector_spec_dict: dict, detailed_logger):
         """
