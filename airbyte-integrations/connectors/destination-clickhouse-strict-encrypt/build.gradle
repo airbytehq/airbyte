@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.clickhouse.ClickhouseDestination'
+    mainClass = 'io.airbyte.integrations.destination.clickhouse.ClickhouseDestinationStrictEncrypt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
