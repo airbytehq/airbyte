@@ -6,10 +6,12 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -46,6 +48,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class GenerateInputActivityTest {
 
+  static private JobPersistence jobPersistence;
   static private ConfigRepository configRepository;
   static private GenerateInputActivityImpl generateInputActivity;
   static private Job job;
@@ -63,8 +66,8 @@ class GenerateInputActivityTest {
   @BeforeEach
   void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
     final StatePersistence statePersistence = mock(StatePersistence.class);
-    final JobPersistence jobPersistence = mock(JobPersistence.class);
 
+    jobPersistence = mock(JobPersistence.class);
     configRepository = mock(ConfigRepository.class);
     generateInputActivity = new GenerateInputActivityImpl(jobPersistence, statePersistence, configRepository);
 
@@ -144,10 +147,17 @@ class GenerateInputActivityTest {
 
     final GeneratedJobInput generatedJobInput = generateInputActivity.getSyncWorkflowInput(syncInput);
     assertEquals(expectedGeneratedJobInput, generatedJobInput);
+
+    final AttemptSyncConfig expectedAttemptSyncConfig = new AttemptSyncConfig()
+        .withSourceConfiguration(SOURCE_CONFIGURATION)
+        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withState(STATE);
+
+    verify(jobPersistence).writeAttemptSyncConfig(JOB_ID, ATTEMPT_ID, expectedAttemptSyncConfig);
   }
 
   @Test
-  void testGetResetSyncWorkflowInput() {
+  void testGetResetSyncWorkflowInput() throws IOException {
     final SyncInput syncInput = new SyncInput(ATTEMPT_ID, JOB_ID);
 
     final JobResetConnectionConfig jobResetConfig = new JobResetConnectionConfig()
@@ -194,6 +204,13 @@ class GenerateInputActivityTest {
 
     final GeneratedJobInput generatedJobInput = generateInputActivity.getSyncWorkflowInput(syncInput);
     assertEquals(expectedGeneratedJobInput, generatedJobInput);
+
+    final AttemptSyncConfig expectedAttemptSyncConfig = new AttemptSyncConfig()
+        .withSourceConfiguration(Jsons.emptyObject())
+        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withState(STATE);
+
+    verify(jobPersistence).writeAttemptSyncConfig(JOB_ID, ATTEMPT_ID, expectedAttemptSyncConfig);
   }
 
 }
