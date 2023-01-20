@@ -19,8 +19,7 @@ $sm-size: 14px;
   @include mixins.focus-ring;
 
   input {
-    position: absolute;
-    opacity: 0;
+    @include mixins.sr-only;
   }
 
   &.disabled {

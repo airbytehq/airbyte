@@ -23,3 +23,18 @@
     @include focus-ring-style;
   }
 }
+
+@mixin sr-only {
+  /** 
+    * Hide the input element visually, but make it accessible to screen readers.
+    * https://webaim.org/techniques/css/invisiblecontent/
+  */
+
+  clip: rect(0 0 0 0);
+  clip-path: inset(100%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
