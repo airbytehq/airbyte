@@ -18,8 +18,8 @@
         "title": "Endpoint",
         "description": "Timeplus workspace endpoint",
         "type": "string",
-        "default": "https://beta.timeplus.cloud/<workspace_id>",
-        "examples": ["https://beta.timeplus.cloud/workspace_id"],
+        "default": "https://us.timeplus.cloud/<workspace_id>",
+        "examples": ["https://us.timeplus.cloud/workspace_id"],
         "order": 0
       },
       "apikey": {
