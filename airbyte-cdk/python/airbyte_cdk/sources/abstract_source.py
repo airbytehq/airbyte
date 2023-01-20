@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -9,10 +10,12 @@ from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional,
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
+    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
+    Level,
     Status,
     SyncMode,
 )
@@ -232,7 +235,8 @@ class AbstractSource(Source, ABC):
         has_slices = False
         for _slice in slices:
             has_slices = True
-            logger.debug("Processing stream slice", extra={"slice": _slice})
+            if logger.isEnabledFor(logging.DEBUG):
+                yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"slice:{json.dumps(_slice)}"))
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
@@ -281,7 +285,8 @@ class AbstractSource(Source, ABC):
         )
         total_records_counter = 0
         for _slice in slices:
-            logger.debug("Processing stream slice", extra={"slice": _slice})
+            if logger.isEnabledFor(logging.DEBUG):
+                yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"slice:{json.dumps(_slice)}"))
             record_data_or_messages = stream_instance.read_records(
                 stream_slice=_slice,
                 sync_mode=SyncMode.full_refresh,

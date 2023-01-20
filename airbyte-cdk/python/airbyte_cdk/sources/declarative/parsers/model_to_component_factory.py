@@ -116,9 +116,10 @@ DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
 
 class ModelToComponentFactory:
-    def __init__(self, is_test_read=False):
+    def __init__(self, limit_pages_fetched_per_slice: int = None, limit_slices_fetched: int = None):
         self._init_mappings()
-        self._is_test_read = is_test_read
+        self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
+        self._limit_slices_fetched = limit_slices_fetched
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -482,8 +483,8 @@ class ModelToComponentFactory:
             config=config,
             options=model.options,
         )
-        if self._is_test_read:
-            return PaginatorTestReadDecorator(paginator)
+        if self._limit_pages_fetched_per_slice:
+            return PaginatorTestReadDecorator(paginator, self._limit_pages_fetched_per_slice)
         return paginator
 
     def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, **kwargs) -> DpathExtractor:
@@ -681,7 +682,7 @@ class ModelToComponentFactory:
             self._create_component_from_model(model=model.stream_slicer, config=config) if model.stream_slicer else SingleSlice(options={})
         )
 
-        if self._is_test_read:
+        if self._limit_slices_fetched:
             return SimpleRetrieverTestReadDecorator(
                 name=model.name,
                 paginator=paginator,
@@ -690,6 +691,7 @@ class ModelToComponentFactory:
                 record_selector=record_selector,
                 stream_slicer=stream_slicer,
                 config=config,
+                maximum_number_of_slices=self._limit_slices_fetched,
                 options=model.options,
             )
         return SimpleRetriever(

@@ -208,7 +208,7 @@ MANIFEST_WITH_PAGINATOR = {
 def test_get_http_streams():
     expected_urls = {"https://demonslayers.com/api/v1/breathing_techniques", "https://demonslayers.com/api/v1/hashiras"}
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     actual_streams = adapter.get_http_streams(config={})
     actual_urls = {http_stream.url_base + http_stream.path() for http_stream in actual_streams}
 
@@ -216,10 +216,13 @@ def test_get_http_streams():
     assert actual_urls == expected_urls
 
 
+MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
+MAXIMUM_NUMBER_OF_SLICES = 5
+
 def test_get_http_manifest_with_references():
     expected_urls = {"https://demonslayers.com/api/v1/ranks"}
 
-    adapter = LowCodeSourceAdapter(MANIFEST_WITH_REFERENCES)
+    adapter = LowCodeSourceAdapter(MANIFEST_WITH_REFERENCES, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     actual_streams = adapter.get_http_streams(config={})
     actual_urls = {http_stream.url_base + http_stream.path() for http_stream in actual_streams}
 
@@ -233,7 +236,7 @@ def test_get_http_streams_non_declarative_streams():
     mock_source = MagicMock()
     mock_source.streams.return_value = [non_declarative_stream]
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     adapter._source = mock_source
     with pytest.raises(TypeError):
         adapter.get_http_streams(config={})
@@ -246,7 +249,7 @@ def test_get_http_streams_non_http_stream():
     mock_source = MagicMock()
     mock_source.streams.return_value = [declarative_stream_non_http_retriever]
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     adapter._source = mock_source
     with pytest.raises(TypeError):
         adapter.get_http_streams(config={})
@@ -276,7 +279,7 @@ def test_read_streams():
     mock_source = MagicMock()
     mock_source.read.return_value = expected_messages
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     adapter._source = mock_source
     actual_messages = list(adapter.read_stream("hashiras", {}))
 
@@ -301,7 +304,7 @@ def test_read_streams_with_error():
 
     mock_source.read.side_effect = return_value
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     adapter._source = mock_source
     actual_messages = list(adapter.read_stream("hashiras", {}))
 
@@ -338,11 +341,11 @@ def test_read_streams_invalid_reference():
     }
 
     with pytest.raises(UndefinedReferenceException):
-        LowCodeSourceAdapter(invalid_reference_manifest)
+        LowCodeSourceAdapter(invalid_reference_manifest, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
 
 
 def test_stream_use_read_test_retriever_and_paginator():
-    adapter = LowCodeSourceAdapter(MANIFEST_WITH_PAGINATOR)
+    adapter = LowCodeSourceAdapter(MANIFEST_WITH_PAGINATOR, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     streams = adapter.get_http_streams(config={})
 
     assert streams
