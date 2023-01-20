@@ -86,8 +86,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Slf4j
 public class SchedulerHandler {
 
   private static final HashFunction HASH_FUNCTION = Hashing.md5();
@@ -257,7 +259,7 @@ public class SchedulerHandler {
   }
 
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+      throws ConfigNotFoundException, IOException, JsonValidationException, InterruptedException, ApiException {
     final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag();
@@ -406,7 +408,7 @@ public class SchedulerHandler {
   // containsBreakingChange parameter, and connectionStatus parameter.
   private void generateCatalogDiffsAndDisableConnectionsIfNeeded(final SourceDiscoverSchemaRead discoveredSchema,
                                                                  final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
-      throws JsonValidationException, ConfigNotFoundException, IOException, InterruptedException, ApiException {
+      throws JsonValidationException, ConfigNotFoundException, IOException, InterruptedException {
     final ConnectionNotificationWorkflow notificationWorkflow =
         workflowClient.newWorkflowStub(ConnectionNotificationWorkflow.class, TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.NOTIFY));
     final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
@@ -430,7 +432,11 @@ public class SchedulerHandler {
       updateObject.status(connectionStatus);
       connectionsHandler.updateConnection(updateObject);
       if (!diff.getTransforms().isEmpty()) {
-        notificationWorkflow.sendSchemaChangeNotification(connectionRead.getConnectionId());
+        try {
+          notificationWorkflow.sendSchemaChangeNotification(connectionRead.getConnectionId());
+        } catch (ApiException e) {
+          log.error("There was an error while sending a Schema Change Notification", e);
+        }
       }
       if (connectionRead.getConnectionId().equals(discoverSchemaRequestBody.getConnectionId())) {
         discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
