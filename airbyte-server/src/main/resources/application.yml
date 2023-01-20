@@ -19,6 +19,10 @@ micronaut:
     port: 8001
     cors:
       enabled: true
+      configurations:
+        web:
+          allowedOrigins:
+            - ^http(|s)://www\..*$
 airbyte:
   cloud:
     storage:
