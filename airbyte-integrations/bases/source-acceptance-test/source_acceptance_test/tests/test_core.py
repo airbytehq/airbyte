@@ -341,7 +341,7 @@ class TestSpec(BaseTest):
                 continue
             elif isinstance(items_value, List):
                 errors.append(f"{type_path} is not just a single item type: {items_value}")
-            elif items_value.get("type") not in ["object", "string"] and "enum" not in items_value:
+            elif items_value.get("type") not in ["object", "string", "number", "integer"] and "enum" not in items_value:
                 errors.append(f"Items of {type_path} has to be either object or string or define an enum")
         if len(errors) > 0:
             pytest.fail("\n".join(errors))

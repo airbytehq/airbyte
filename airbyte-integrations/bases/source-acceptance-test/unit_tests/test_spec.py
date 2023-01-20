@@ -761,7 +761,9 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
         ({"type": "object", "properties": {"list": {"type": "array"}}}, False),
         ({"type": "object", "properties": {"list": {"type": "array", "items": [{"type": "string"}, {"type": "boolean"}]}}}, True),
         ({"type": "object", "properties": {"list": {"type": "array", "items": {"type": "string"}}}}, False),
-        ({"type": "object", "properties": {"list": {"type": "array", "items": {"type": "number"}}}}, True),
+        ({"type": "object", "properties": {"list": {"type": "array", "items": {"type": "number"}}}}, False),
+        ({"type": "object", "properties": {"list": {"type": "array", "items": {"type": "integer"}}}}, False),
+        ({"type": "object", "properties": {"list": {"type": "array", "items": {"type": "boolean"}}}}, True),
         ({"type": "object", "properties": {"list": {"type": "array", "items": {"type": "number", "enum": [1, 2, 3]}}}}, False),
         ({"type": "object", "properties": {"list": {"type": "array", "items": {"enum": ["a", "b", "c"]}}}}, False),
         (
