@@ -3,7 +3,7 @@ micronaut:
     name: airbyte-server
   security:
     authentication-provider-strategy: ALL
-    enabled: true
+    enabled: ${API_AUTHORIZATION_ENABLED:false}
   server:
     port: 8001
     cors:
