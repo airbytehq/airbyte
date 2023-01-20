@@ -21,8 +21,7 @@ const CreditsPage: React.FC = () => {
   const { emailVerified } = useAuthService();
   useTrackPage(PageTrackingCodes.CREDITS);
   const { enrollmentStatusQuery } = useFreeConnectorProgram();
-  const { data: freeConnectorProgramInfo } = enrollmentStatusQuery;
-  const { showEnrollmentUi } = freeConnectorProgramInfo || {};
+  const { showEnrollmentUi } = enrollmentStatusQuery.data || {};
 
   return (
     <MainPageWithScroll
