@@ -34,7 +34,8 @@ export const enum Action {
   CONNECTOR_BUILDER_START = "ConnectorBuilderStart",
   API_URL_CREATE = "ApiUrlCreated",
   AUTHENTICATION_METHOD_SELECT = "AuthenticationMethodSelect",
-  USER_INPUT_SELECT = "UserInputSelect",
+  GLOBAL_CONFIGURATION_SELECT = "GlobalConfigurationSelect",
+  USER_INPUTS_SELECT = "UserInputsSelect",
   USER_INPUT_CREATE = "UserInputCreate",
   USER_INPUT_EDIT = "UserInputEdit",
   USER_INPUT_DELETE = "UserInputDelete",
@@ -44,6 +45,7 @@ export const enum Action {
   STREAM_TEST = "StreamTest",
   STREAM_TEST_SUCCESS = "StreamTestSuccess",
   STREAM_TEST_FAILURE = "StreamTestFailure",
+  RESET_ALL = "ResetAll",
 }
 
 export type EventParams = Record<string, unknown>;
