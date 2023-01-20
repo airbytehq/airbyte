@@ -71,12 +71,19 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final int attempt = input.getAttemptId();
       final JobSyncConfig config;
 
-      final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig();
-
       final Job job = jobPersistence.getJob(jobId);
       final ConfigType jobConfigType = job.getConfig().getConfigType();
+
+      final UUID connectionId = UUID.fromString(job.getScope());
+      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+
+      final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig();
+      getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::withState);
+
       if (ConfigType.SYNC.equals(jobConfigType)) {
         config = job.getConfig().getSync();
+        final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
+        attemptSyncConfig.setSourceConfiguration(source.getConfiguration());
       } else if (ConfigType.RESET_CONNECTION.equals(jobConfigType)) {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
         final ResetSourceConfiguration resetSourceConfiguration = resetConnection.getResetSourceConfiguration();
@@ -109,12 +116,11 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
       final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
-      final UUID connectionId = UUID.fromString(job.getScope());
-      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-      getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::withState);
+      final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
+      attemptSyncConfig.setDestinationConfiguration(destination.getConfiguration());
 
       final StandardDestinationDefinition destinationDefinition =
-          configRepository.getDestinationDefinitionFromDestination(standardSync.getDestinationId());
+          configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
       final String destinationNormalizationDockerImage = destinationDefinition.getNormalizationConfig() != null
           ? DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
               destinationDefinition.getNormalizationConfig().getNormalizationTag())
@@ -139,14 +145,6 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
           .withSupportsDbt(destinationDefinition.getSupportsDbt())
           .withNormalizationIntegrationType(normalizationIntegrationType);
-
-      if (attemptSyncConfig.getSourceConfiguration() == null) {
-        final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
-        attemptSyncConfig.setSourceConfiguration(source.getConfiguration());
-      }
-
-      final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
-      attemptSyncConfig.setDestinationConfiguration(destination.getConfiguration());
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
