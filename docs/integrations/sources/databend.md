@@ -58,4 +58,4 @@ You can now use the Airbyte Databend source.
 
 | Version | Date       | Pull Request | Subject                |
 | :--- |:-----------|:-------------|:-----------------------|
-| 0.1.0 | 2023-01-xx | waiting      | Create Databend source |
+| 0.1.0 | 2023-01-20 | waiting      | Create Databend source |

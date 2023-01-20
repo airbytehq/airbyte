@@ -78,7 +78,7 @@ class SourceDatabend(Source):
                 "properties": column_mapping,
             }
             streams.append(AirbyteStream(name=table, json_schema=json_schema, supported_sync_modes=SUPPORTED_SYNC_MODES))
-        logger.info(f"Provided {len(streams)} streams to the Aribyte Catalog.")
+        logger.info(f"Provided {len(streams)} streams to the Airbyte Catalog.")
         return AirbyteCatalog(streams=streams)
 
     def read(

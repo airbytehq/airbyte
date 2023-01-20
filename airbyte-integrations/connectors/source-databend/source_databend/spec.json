@@ -6,6 +6,7 @@
     "type" : "object",
     "required" : [
       "host",
+      "password",
       "username",
       "database"
     ],
@@ -34,16 +35,6 @@
         "description" : "Name of the database.",
         "type" : "string",
         "order" : 2
-      },
-      "table" : {
-        "title" : "Default Table",
-        "description" : "The default  table was written to.",
-        "type" : "string",
-        "examples" : [
-          "default"
-        ],
-        "default" : "default",
-        "order" : 3
       },
       "username" : {
         "title" : "User",
