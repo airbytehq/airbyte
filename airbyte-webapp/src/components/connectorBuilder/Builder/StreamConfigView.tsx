@@ -11,6 +11,8 @@ import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 import { Text } from "components/ui/Text";
 
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
   BuilderView,
@@ -127,6 +129,7 @@ const StreamControls = ({
   setSelectedTab: (tab: "configuration" | "schema") => void;
   selectedTab: "configuration" | "schema";
 }) => {
+  const analyticsService = useAnalyticsService();
   const { formatMessage } = useIntl();
   const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
@@ -151,6 +154,11 @@ const StreamControls = ({
         helpers.setValue(updatedStreams);
         setSelectedView(viewToSelect);
         closeConfirmationModal();
+        analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_DELETE, {
+          actionDescription: "New stream created from the Add Stream button",
+          stream_id: field.value[streamNum].id,
+          stream_name: field.value[streamNum].name,
+        });
       },
     });
   };
