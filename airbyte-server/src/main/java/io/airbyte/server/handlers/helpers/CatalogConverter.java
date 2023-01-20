@@ -183,12 +183,11 @@ public class CatalogConverter {
   }
 
   /**
-   * To convert AirbyteCatalog from APIs to model.
-   * This is to differentiate between toConfiguredProtocol as the other one converts to
-   * ConfiguredAirbyteCatalog object instead.
+   * To convert AirbyteCatalog from APIs to model. This is to differentiate between
+   * toConfiguredProtocol as the other one converts to ConfiguredAirbyteCatalog object instead.
    */
   public static io.airbyte.protocol.models.AirbyteCatalog toProtocol(
-      final io.airbyte.api.model.generated.AirbyteCatalog catalog)
+                                                                     final io.airbyte.api.model.generated.AirbyteCatalog catalog)
       throws JsonValidationException {
     final ArrayList<JsonValidationException> errors = new ArrayList<>();
 
