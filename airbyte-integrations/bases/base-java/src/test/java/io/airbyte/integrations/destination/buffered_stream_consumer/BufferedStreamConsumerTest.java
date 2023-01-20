@@ -226,7 +226,6 @@ public class BufferedStreamConsumerTest {
     verifyNoInteractions(outputRecordCollector);
   }
 
-  /* TODO: (ryankfu) */
   @Test
   void testExceptionDuringOnClose() throws Exception {
     doThrow(new IllegalStateException("induced exception")).when(onClose).accept(false);
