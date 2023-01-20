@@ -20,7 +20,7 @@ export const AuthenticationSection: React.FC = () => {
         tooltip="Authentication method to use for requests sent to the API"
         onSelect={(type) =>
           analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.AUTHENTICATION_METHOD_SELECT, {
-            actionDescription: "Base API URL filled in",
+            actionDescription: "Authentication method selected",
             auth_type: type,
           })
         }
