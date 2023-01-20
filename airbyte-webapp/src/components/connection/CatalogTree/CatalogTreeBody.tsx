@@ -1,11 +1,12 @@
 import { Field, FieldProps, setIn } from "formik";
 import React, { useCallback } from "react";
 
+import { FormikConnectionFormValues } from "components/connection/ConnectionForm/formConfig";
+
 import { SyncSchemaStream } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { BulkHeader } from "./BulkHeader";
 import { CatalogSection } from "./CatalogSection";
