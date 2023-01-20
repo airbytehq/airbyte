@@ -11,9 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -78,7 +76,6 @@ class TemporalWorkerRunFactoryTest {
   void testResetConnection() throws Exception {
     final JobResetConnectionConfig resetConfig = new JobResetConnectionConfig()
         .withDestinationDockerImage("airbyte/fusion_reactor")
-        .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("a", 1)))
         .withOperationSequence(List.of(new StandardSyncOperation().withName("b")))
         .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog())
         .withIsSourceCustomConnector(false)
@@ -86,9 +83,7 @@ class TemporalWorkerRunFactoryTest {
     final JobSyncConfig syncConfig = new JobSyncConfig()
         .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
         .withDestinationDockerImage(resetConfig.getDestinationDockerImage())
-        .withDestinationConfiguration(resetConfig.getDestinationConfiguration())
         .withOperationSequence(List.of(new StandardSyncOperation().withName("b")))
-        .withSourceConfiguration(Jsons.emptyObject())
         .withConfiguredAirbyteCatalog(resetConfig.getConfiguredAirbyteCatalog())
         .withIsSourceCustomConnector(false)
         .withIsDestinationCustomConnector(false);

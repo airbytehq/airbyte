@@ -43,7 +43,7 @@ class JobTest {
 
   private static Job jobWithAttemptWithStatus(final AttemptStatus... attemptStatuses) {
     final List<Attempt> attempts = IntStream.range(0, attemptStatuses.length)
-        .mapToObj(idx -> new Attempt(idx + 1, 1L, null, null, attemptStatuses[idx], null, null, idx, 0L, null))
+        .mapToObj(idx -> new Attempt(idx + 1, 1L, null, null, null, attemptStatuses[idx], null, null, idx, 0L, null))
         .collect(Collectors.toList());
     return new Job(1L, null, null, null, attempts, null, 0L, 0L, 0L);
   }

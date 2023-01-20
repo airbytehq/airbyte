@@ -197,7 +197,8 @@ public interface JobPersistence {
    *
    * @param jobId job id
    * @param attemptNumber attempt number
-   * @param attemptSyncConfig attempt-specific configuration used to build the sync input for this attempt
+   * @param attemptSyncConfig attempt-specific configuration used to build the sync input for this
+   *        attempt
    * @throws IOException exception due to interaction with persistence
    */
   void writeAttemptSyncConfig(long jobId, int attemptNumber, AttemptSyncConfig attemptSyncConfig) throws IOException;

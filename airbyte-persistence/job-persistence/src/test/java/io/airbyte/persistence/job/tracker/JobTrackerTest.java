@@ -550,8 +550,6 @@ class JobTrackerTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withSourceConfiguration(Jsons.jsonNode(ImmutableMap.of("key", "some_value")))
-        .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("key", false)))
         .withConfiguredAirbyteCatalog(catalog);
 
     final JobConfig jobConfig = mock(JobConfig.class);
