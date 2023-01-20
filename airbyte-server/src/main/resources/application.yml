@@ -22,7 +22,7 @@ micronaut:
       configurations:
         web:
           allowedOrigins:
-            - ^http(|s)://www\..*$
+            - ^.*$
 airbyte:
   cloud:
     storage:
