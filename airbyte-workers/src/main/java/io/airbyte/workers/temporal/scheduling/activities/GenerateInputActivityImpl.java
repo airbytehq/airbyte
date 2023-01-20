@@ -96,7 +96,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
       final StandardSourceDefinition sourceDefinition =
-          configRepository.getStandardSourceDefinition(standardSync.getSourceId());
+          configRepository.getSourceDefinitionFromSource(standardSync.getSourceId());
 
       final StandardDestinationDefinition destinationDefinition =
           configRepository.getDestinationDefinitionFromDestination(standardSync.getDestinationId());
