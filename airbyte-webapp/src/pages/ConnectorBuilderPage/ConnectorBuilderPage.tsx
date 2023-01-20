@@ -1,6 +1,6 @@
 import classnames from "classnames";
 import { Formik } from "formik";
-import React, { useCallback, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useIntl } from "react-intl";
 
 import { Builder } from "components/connectorBuilder/Builder/Builder";
@@ -9,6 +9,8 @@ import { builderFormValidationSchema, BuilderFormValues } from "components/conne
 import { YamlEditor } from "components/connectorBuilder/YamlEditor";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import {
   ConnectorBuilderTestStateProvider,
   ConnectorBuilderFormStateProvider,
@@ -22,6 +24,13 @@ const noop = function () {};
 
 const ConnectorBuilderPageInner: React.FC = React.memo(() => {
   const { builderFormValues, editorView, setEditorView } = useConnectorBuilderFormState();
+  const analyticsService = useAnalyticsService();
+
+  useEffect(() => {
+    analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.CONNECTOR_BUILDER_START, {
+      actionDescription: "Connector Builder UI Opened",
+    });
+  }, [analyticsService]);
 
   const switchToUI = useCallback(() => setEditorView("ui"), [setEditorView]);
   const switchToYaml = useCallback(() => setEditorView("yaml"), [setEditorView]);
