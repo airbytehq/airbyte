@@ -270,7 +270,7 @@ jobs:
             nextversion=$nextversion"-alpha."$git_hash
           fi;
 
-          echo "::set-output name=next_version::$nextversion"
+          echo "next_version=$nextversion" >> $GITHUB_OUTPUT
       
       - name: Publish version as a tag
         run: |
