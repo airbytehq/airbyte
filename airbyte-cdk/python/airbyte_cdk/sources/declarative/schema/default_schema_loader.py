@@ -23,9 +23,13 @@ class DefaultSchemaLoader(SchemaLoader, JsonSchemaMixin):
     """
 
     config: Config
+    name: InitVar[str]
     options: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, name: str, options: Mapping[str, Any]):
+        options = options or {}
+        if "name" not in options:
+            options["name"] = name
         self._options = options
         self.default_loader = JsonFileSchemaLoader(options=options, config=self.config)
 
