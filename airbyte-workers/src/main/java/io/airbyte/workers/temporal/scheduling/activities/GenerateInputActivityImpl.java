@@ -19,6 +19,7 @@ import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -94,6 +95,9 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final UUID connectionId = UUID.fromString(job.getScope());
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
+      final StandardSourceDefinition sourceDefinition =
+          configRepository.getStandardSourceDefinition(standardSync.getSourceId());
+
       final StandardDestinationDefinition destinationDefinition =
           configRepository.getDestinationDefinitionFromDestination(standardSync.getDestinationId());
       final String destinationNormalizationDockerImage = destinationDefinition.getNormalizationConfig() != null
@@ -109,7 +113,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withAttemptId((long) attempt)
           .withDockerImage(config.getSourceDockerImage())
           .withProtocolVersion(config.getSourceProtocolVersion())
-          .withIsCustomConnector(config.getIsSourceCustomConnector());
+          .withIsCustomConnector(config.getIsSourceCustomConnector())
+          .withAllowedHosts(sourceDefinition.getAllowedHosts());
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
@@ -119,7 +124,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withIsCustomConnector(config.getIsDestinationCustomConnector())
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
           .withSupportsDbt(destinationDefinition.getSupportsDbt())
-          .withNormalizationIntegrationType(normalizationIntegrationType);
+          .withNormalizationIntegrationType(normalizationIntegrationType)
+          .withAllowedHosts(destinationDefinition.getAllowedHosts());
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())

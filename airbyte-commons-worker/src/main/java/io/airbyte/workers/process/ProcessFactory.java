@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.process;
 
+import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
@@ -49,6 +50,7 @@ public interface ProcessFactory {
                  final Map<String, String> files,
                  final String entrypoint,
                  final ResourceRequirements resourceRequirements,
+                 final AllowedHosts allowedHosts,
                  final Map<String, String> labels,
                  final Map<String, String> jobMetadata,
                  final Map<Integer, Integer> portMapping,

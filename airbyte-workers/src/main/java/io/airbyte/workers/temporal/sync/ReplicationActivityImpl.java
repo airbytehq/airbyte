@@ -279,6 +279,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           sourceLauncherConfig.getDockerImage(),
           processFactory,
           syncInput.getSourceResourceRequirements(),
+          sourceLauncherConfig.getAllowedHosts(),
           sourceLauncherConfig.getIsCustomConnector(),
           featureFlags);
       final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
@@ -287,6 +288,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           destinationLauncherConfig.getDockerImage(),
           processFactory,
           syncInput.getDestinationResourceRequirements(),
+          destinationLauncherConfig.getAllowedHosts(),
           destinationLauncherConfig.getIsCustomConnector(),
           featureFlags);
 

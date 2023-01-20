@@ -45,6 +45,7 @@ public class EntrypointEnvChecker {
         Collections.emptyMap(),
         "printenv",
         null,
+        null,
         Collections.emptyMap(),
         Collections.emptyMap(),
         Collections.emptyMap());
