@@ -772,7 +772,7 @@ public class ConfigRepository {
    * @throws IOException - failed to query data
    */
   public List<UUID> listWorkspacesByMostRecentlyRunningJobs(final int timeWindowInHours) throws IOException {
-    final Result<Record1<UUID>> records = database.query(ctx -> ctx.select(ACTOR.WORKSPACE_ID)
+    final Result<Record1<UUID>> records = database.query(ctx -> ctx.selectDistinct(ACTOR.WORKSPACE_ID)
         .from(ACTOR)
         .join(CONNECTION)
         .on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
