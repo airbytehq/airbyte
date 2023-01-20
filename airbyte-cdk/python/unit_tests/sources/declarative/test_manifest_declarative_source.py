@@ -6,13 +6,13 @@ import json
 import logging
 import os
 import sys
+from unittest.mock import patch
 
 import pytest
 import yaml
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from jsonschema.exceptions import ValidationError
-from unittest.mock import patch
 
 logger = logging.getLogger("airbyte")
 
@@ -541,7 +541,6 @@ class TestManifestDeclarativeSource:
         }
         with pytest.raises(ValidationError):
             ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
-
 
     @patch("airbyte_cdk.sources.declarative.declarative_source.DeclarativeSource.read")
     def test_given_debug_when_read_then_set_log_level(self, declarative_source_read):
