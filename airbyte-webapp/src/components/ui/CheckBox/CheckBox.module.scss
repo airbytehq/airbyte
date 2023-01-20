@@ -15,9 +15,11 @@ $sm-size: 14px;
   color: colors.$white;
   background-color: colors.$white;
   cursor: pointer;
+
   @include mixins.focus-ring;
 
   input {
+    position: absolute;
     opacity: 0;
   }
 

@@ -15,12 +15,10 @@
 
 @mixin focus-ring-style {
   outline: 1px solid colors.$blue;
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 
 @mixin focus-ring {
-  margin: variables.$spacing-xs;
-
   &:focus-within {
     @include focus-ring-style;
   }
