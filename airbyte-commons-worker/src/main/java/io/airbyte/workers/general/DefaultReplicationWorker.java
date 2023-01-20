@@ -355,7 +355,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           try {
             messageOptional = future.get(MAX_FETCH_SECONDS.minus(durationSinceLast).getSeconds(), TimeUnit.SECONDS);
           } catch (final TimeoutException ex) {
-            throw new SourceException("Source process was un-responsive");
+            throw new SourceException("Source process was un-responsive", ex);
           } catch (final Exception e) {
             throw new SourceException("Source process read attempt failed", e);
           }

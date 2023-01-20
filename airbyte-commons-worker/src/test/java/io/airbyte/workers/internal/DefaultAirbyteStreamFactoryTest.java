@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope.Builder;
-import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.io.BufferedReader;
@@ -28,7 +27,6 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -71,17 +69,17 @@ class DefaultAirbyteStreamFactoryTest {
     verifyNoMoreInteractions(logger);
   }
 
-  /*  @Test
-  @Ignore
-  void testLoggingLevel() {
-    final AirbyteMessage logMessage = AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
-
-    final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(logMessage));
-
-    assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
-    verify(logger).warn("warning");
-    verifyNoMoreInteractions(logger);
-  }*/
+  /*
+   * @Test
+   *
+   * @Ignore void testLoggingLevel() { final AirbyteMessage logMessage =
+   * AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
+   *
+   * final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(logMessage));
+   *
+   * assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
+   * verify(logger).warn("warning"); verifyNoMoreInteractions(logger); }
+   */
 
   @Test
   void testFailValidation() {
