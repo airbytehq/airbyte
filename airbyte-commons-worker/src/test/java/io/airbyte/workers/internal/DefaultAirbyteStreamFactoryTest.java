@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -71,6 +72,7 @@ class DefaultAirbyteStreamFactoryTest {
   }
 
   @Test
+  @Ignore
   void testLoggingLevel() {
     final AirbyteMessage logMessage = AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
 

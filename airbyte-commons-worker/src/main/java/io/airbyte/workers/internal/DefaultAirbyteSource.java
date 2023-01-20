@@ -97,7 +97,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
     logInitialStateAsJSON(sourceConfig);
 
     final List<Type> acceptedMessageTypes = List.of(Type.RECORD, Type.STATE, Type.TRACE, Type.CONTROL, Type.LOG);
-    heartbeatMonitor.beat();
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
         .filter(message -> acceptedMessageTypes.contains(message.getType()))
