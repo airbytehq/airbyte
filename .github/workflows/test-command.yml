@@ -131,8 +131,7 @@ jobs:
           attempt_delay: 10000 # in ms
       - name: Scan ${{ github.event.inputs.connector }}
         id: scan
-        with:
-          command: ./tools/bin/ci_docker_scan.sh ${{ github.event.inputs.connector }}
+        run: ./tools/bin/ci_docker_scan.sh ${{ github.event.inputs.connector }}
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
         if: always()
         run: |
