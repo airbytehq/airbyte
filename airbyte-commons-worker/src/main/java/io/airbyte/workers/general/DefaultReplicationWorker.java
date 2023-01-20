@@ -362,8 +362,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
           if (messageOptional.isPresent()) {
             final AirbyteMessage airbyteMessage = messageOptional.get();
-            if (airbyteMessage.getType() == Type.STATE || airbyteMessage.getType() == Type.RECORD) {
-              lastMessageRecieved = System.currentTimeMillis();
+            lastMessageRecieved = System.currentTimeMillis();
+
+            if (airbyteMessage.getType() == Type.LOG) {
+              continue;
             }
 
             if (fieldSelectionEnabled) {

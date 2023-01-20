@@ -112,7 +112,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .flatMap(this::parseJson)
         .filter(this::validate)
         .flatMap(this::toAirbyteMessage)
-        .filter(this::filterLog);
+        .peek(this::filterLog);
   }
 
   protected Stream<JsonNode> parseJson(final String line) {
@@ -144,14 +144,14 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     return m.stream();
   }
 
-  protected boolean filterLog(final AirbyteMessage message) {
+  protected void filterLog(final AirbyteMessage message) {
     final boolean isLog = message.getType() == AirbyteMessage.Type.LOG;
     if (isLog) {
       try (final var mdcScope = containerLogMdcBuilder.build()) {
         internalLog(message.getLog());
       }
     }
-    return !isLog;
+    // return !isLog;
   }
 
   protected void internalLog(final AirbyteLogMessage logMessage) {
