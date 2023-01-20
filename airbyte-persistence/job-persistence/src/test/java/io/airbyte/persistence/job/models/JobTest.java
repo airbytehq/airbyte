@@ -79,6 +79,13 @@ class JobTest {
   }
 
   @Test
+  void testGetAttemptByNumber() {
+    final Job job = jobWithAttemptWithStatus(AttemptStatus.FAILED, AttemptStatus.FAILED, AttemptStatus.SUCCEEDED);
+    assertTrue(job.getAttemptByNumber(2).isPresent());
+    assertEquals(2, job.getAttemptByNumber(2).get().getAttemptNumber());
+  }
+
+  @Test
   void testValidateStatusTransitionFromPending() {
     final Job pendingJob = jobWithStatus(JobStatus.PENDING);
     assertDoesNotThrow(() -> pendingJob.validateStatusTransition(JobStatus.RUNNING));
