@@ -9,6 +9,7 @@
 }
 
 .contentContainer {
+  flex: 1;
   max-width: 100%;
   overflow-x: auto;
   padding-top: variables.$spacing-lg;
@@ -19,4 +20,8 @@
   height: 100%;
   padding: 0 variables.$spacing-xl variables.$spacing-xl;
   min-width: variables.$main-page-content-min-width;
+
+  &.cloud {
+    padding-bottom: variables.$spacing-page-bottom-cloud;
+  }
 }
