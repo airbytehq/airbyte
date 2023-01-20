@@ -7,31 +7,30 @@ definitions:
   requester:
     url_base: "https://api.themoviedb.org/3/"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        api_key: "{{ config['api_key'] }}"
-        language: |
-          {{
-            config['language']
-            if options['name'] == 'search_collections' or 
-            options['name'] == 'search_movies' or 
-            options['name'] == 'search_multi' or 
-            options['name'] == 'search_people' or 
-            options['name'] == 'search_tv_shows'
-            else ''
-          }}
-        query: |
-          {{
-            config['query']
-            if options['name'] == 'search_collections' or 
-            options['name'] == 'search_companies' or 
-            options['name'] == 'search_keywords' or  
-            options['name'] == 'search_movies' or 
-            options['name'] == 'search_multi' or 
-            options['name'] == 'search_people' or 
-            options['name'] == 'search_tv_shows'
-            else ''
-          }}
+    request_parameters:
+      api_key: "{{ config['api_key'] }}"
+      language: |
+        {{
+          config['language']
+          if options['name'] == 'search_collections' or 
+          options['name'] == 'search_movies' or 
+          options['name'] == 'search_multi' or 
+          options['name'] == 'search_people' or 
+          options['name'] == 'search_tv_shows'
+          else ''
+        }}
+      query: |
+        {{
+          config['query']
+          if options['name'] == 'search_collections' or 
+          options['name'] == 'search_companies' or 
+          options['name'] == 'search_keywords' or  
+          options['name'] == 'search_movies' or 
+          options['name'] == 'search_multi' or 
+          options['name'] == 'search_people' or 
+          options['name'] == 'search_tv_shows'
+          else ''
+        }}
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"

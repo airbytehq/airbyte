@@ -2,8 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import MagicMock
+
 import pytest
-from source_monday import GraphQLRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from source_monday import MondayGraphqlRequester
 
 nested_object_schema = {
     "root": {
@@ -80,13 +83,20 @@ nested_array_schema = {
     ]
 )
 def test_get_request_params(mocker, input_schema, graphql_query, stream_name, config):
-    mocker.patch.object(GraphQLRequestOptionsProvider, "_get_schema_root_properties", return_value=input_schema)
-    provider = GraphQLRequestOptionsProvider(
+    mocker.patch.object(MondayGraphqlRequester, "_get_schema_root_properties", return_value=input_schema)
+    requester = MondayGraphqlRequester(
+        name="a name",
+        url_base="https://api.monday.com/v2",
+        path="a-path",
+        http_method=HttpMethod.GET,
+        request_options_provider=MagicMock(),
+        authenticator=MagicMock(),
+        error_handler=MagicMock(),
         limit="{{ options['items_per_page'] }}",
         options={"name": stream_name, "items_per_page": 100},
         config=config
     )
-    assert provider.get_request_params(
+    assert requester.get_request_params(
         stream_state={},
         stream_slice={},
         next_page_token={"next_page_token": 2}

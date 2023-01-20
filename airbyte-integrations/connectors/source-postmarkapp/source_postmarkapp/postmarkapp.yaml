@@ -22,11 +22,10 @@ definitions:
   requester:
     url_base: "https://api.postmarkapp.com"
     http_method: "GET"
-    request_options_provider:
-      request_body_json:
-        Accept: "application/json"
-      request_parameters:
-        count: "500"
+    request_body_json:
+      Accept: "application/json"
+    request_parameters:
+      count: "500"
     authenticator:
       type: "ApiKeyAuthenticator"
       header: "X-Postmark-Server-Token"
@@ -34,11 +33,10 @@ definitions:
   requester_account:
     url_base: "https://api.postmarkapp.com"
     http_method: "GET"
-    request_options_provider:
-      request_body_json:
-        Accept: "application/json"
-      request_parameters:
-        count: "500"
+    request_body_json:
+      Accept: "application/json"
+    request_parameters:
+      count: "500"
     authenticator:
       type: "ApiKeyAuthenticator"
       header: "X-Postmark-Account-Token"

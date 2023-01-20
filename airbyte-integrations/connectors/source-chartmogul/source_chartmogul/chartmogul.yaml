@@ -40,9 +40,8 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            start-date: "{{ config.start_date }}"
+        request_parameters:
+          start-date: "{{ config.start_date }}"
       paginator:
         type: DefaultPaginator
         url_base: "*ref(definitions.requester.url_base)"
@@ -66,11 +65,10 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_body_data:
-            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
-            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
-            interval: "{{ config['interval'] }}"
+        request_body_data:
+          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          interval: "{{ config['interval'] }}"
       paginator:
         type: NoPagination
     $options:

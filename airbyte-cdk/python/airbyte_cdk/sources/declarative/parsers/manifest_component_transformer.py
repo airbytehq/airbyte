@@ -36,7 +36,6 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DpathExtractor.decoder": "JsonDecoder",
     # HttpRequester
     "HttpRequester.error_handler": "DefaultErrorHandler",
-    "HttpRequester.request_options_provider": "InterpolatedRequestOptionsProvider",
     # ListStreamSlicer
     "ListStreamSlicer.request_option": "RequestOption",
     # ParentStreamConfig

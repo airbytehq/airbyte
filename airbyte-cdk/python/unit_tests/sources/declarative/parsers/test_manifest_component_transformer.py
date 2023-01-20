@@ -41,13 +41,12 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
             id="test_simple_retriever",
         ),
         pytest.param(
-            {"type": "DeclarativeStream", "requester": {"type": "HttpRequester", "error_handler": {}, "request_options_provider": {}}},
+            {"type": "DeclarativeStream", "requester": {"type": "HttpRequester", "error_handler": {}}},
             {
                 "type": "DeclarativeStream",
                 "requester": {
                     "type": "HttpRequester",
                     "error_handler": {"type": "DefaultErrorHandler"},
-                    "request_options_provider": {"type": "InterpolatedRequestOptionsProvider"},
                 },
             },
             id="test_http_requester",

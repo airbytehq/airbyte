@@ -41,9 +41,8 @@ definitions:
   requester:
     url_base: "https://api.pexels.com"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        $ref: "*ref(definitions.requester_stream.request_parameters)"
+    request_parameters:
+      $ref: "*ref(definitions.requester_stream.request_parameters)"
     authenticator:
       type: ApiKeyAuthenticator
       header: "Authorization"

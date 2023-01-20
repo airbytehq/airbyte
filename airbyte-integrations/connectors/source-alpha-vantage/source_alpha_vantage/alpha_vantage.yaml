@@ -16,15 +16,14 @@ definitions:
     http_method: "GET"
     authenticator:
       type: NoAuth
-    request_options_provider:
-      request_parameters:
-        apikey: "{{ config['api_key'] }}"
-        symbol: "{{ config['symbol'] }}"
-        function: "{{ options['function'] }}"
-        datatype: json
-        outputsize: "{{ config['outputsize'] }}"
-        interval: "{{ config['interval'] }}"
-        adjusted: "{{ config['adjusted'] }}"
+    request_parameters:
+      apikey: "{{ config['api_key'] }}"
+      symbol: "{{ config['symbol'] }}"
+      function: "{{ options['function'] }}"
+      datatype: json
+      outputsize: "{{ config['outputsize'] }}"
+      interval: "{{ config['interval'] }}"
+      adjusted: "{{ config['adjusted'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"

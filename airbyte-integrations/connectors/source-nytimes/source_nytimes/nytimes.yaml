@@ -4,9 +4,8 @@ definitions:
   requester:
     url_base: "https://api.nytimes.com/svc"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        api-key: "{{ config['api_key'] }}"
+    request_parameters:
+      api-key: "{{ config['api_key'] }}"
   retriever:
     paginator:
       type: NoPagination

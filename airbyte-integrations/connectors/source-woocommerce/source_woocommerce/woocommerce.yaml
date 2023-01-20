@@ -14,11 +14,10 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
       password: "{{ config['api_secret'] }}"
-    request_options_provider:
-      request_parameters:
-        orderby: "id"
-        order: "asc"
-        dates_are_gmt: "true"
+    request_parameters:
+      orderby: "id"
+      order: "asc"
+      dates_are_gmt: "true"
   date_stream_slicer:
     type: DatetimeStreamSlicer
     lookback_window: "P{{ config.get('conversion_window_days', 0) }}D"

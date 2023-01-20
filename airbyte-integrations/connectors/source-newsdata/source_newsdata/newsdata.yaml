@@ -43,14 +43,13 @@ definitions:
       $ref: "*ref(definitions.base_retriever)"
       requester:
         $ref: "*ref(definitions.base_requester)"
-        request_options_provider:
-          request_parameters:
-            country: "{{ ','.join(config['country']) }}"
-            language: "{{ ','.join(config['language']) }}"
-            category: "{{ ','.join(config['category']) }}"
-            q: "{{ config['query'] | urlencode }}"
-            qInTitle: "{{ config['query_in_title'] | urlencode }}"
-            domain: "{{ ','.join(config['domain']) }}"
+        request_parameters:
+          country: "{{ ','.join(config['country']) }}"
+          language: "{{ ','.join(config['language']) }}"
+          category: "{{ ','.join(config['category']) }}"
+          q: "{{ config['query'] | urlencode }}"
+          qInTitle: "{{ config['query_in_title'] | urlencode }}"
+          domain: "{{ ','.join(config['domain']) }}"
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   sources_stream:
@@ -63,11 +62,10 @@ definitions:
       $ref: "*ref(definitions.base_retriever)"
       requester:
         $ref: "*ref(definitions.base_requester)"
-        request_options_provider:
-          request_parameters:
-            country: "{{ config['country'][0] }}"
-            language: "{{ config['language'][0] }}"
-            category: "{{ config['category'][0] }}"
+        request_parameters:
+          country: "{{ config['country'][0] }}"
+          language: "{{ config['language'][0] }}"
+          category: "{{ config['category'][0] }}"
 
 streams:
   - "*ref(definitions.latest_stream)"

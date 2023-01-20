@@ -11,9 +11,8 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['public_key'] }}"
       password: "{{ config['private_key'] }}"
-    request_options_provider:
-      request_parameters:
-        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+    request_parameters:
+      min_created: "{{ timestamp(config['start_date']) * 1000 }}"
   stream_slicer:
     request_cursor_field: "min_updated"
     cursor_field: "updated_at"

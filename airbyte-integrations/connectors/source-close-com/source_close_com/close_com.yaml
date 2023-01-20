@@ -18,9 +18,8 @@ definitions:
       password: ""
   incremental_query_requester:
     $ref: "*ref(definitions.requester)"
-    request_options_provider:
-      request_parameters:
-        query: "sort:updated date_updated > {{ stream_slice['start_time'] }} date_updated <= {{ stream_slice['end_time'] }}"
+    request_parameters:
+      query: "sort:updated date_updated > {{ stream_slice['start_time'] }} date_updated <= {{ stream_slice['end_time'] }}"
   offset_paginator:
     type: DefaultPaginator
     url_base: "*ref(definitions.requester.url_base)"
@@ -157,10 +156,9 @@ definitions:
       $ref: "*ref(definitions.incremental_stream.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            _type: "{{ options['task_type'] }}"
-            _order_by: "date_created"
+        request_parameters:
+          _type: "{{ options['task_type'] }}"
+          _order_by: "date_created"
       stream_slicer:
         $ref: "*ref(definitions.stream_slicer__cursor_date_created)"
     $options:
@@ -174,9 +172,8 @@ definitions:
       $ref: "*ref(definitions.full_refresh_stream.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            _type: "{{ options['connected_accounts_type'] }}"
+        request_parameters:
+          _type: "{{ options['connected_accounts_type'] }}"
     $options:
       path: "connected_account"
       items_per_page: 100
@@ -331,9 +328,8 @@ definitions:
       $ref: "*ref(definitions.incremental_stream.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            _order_by: "date_updated"
+        request_parameters:
+          _order_by: "date_updated"
     $options:
       name: "opportunities"
       path: "opportunity"

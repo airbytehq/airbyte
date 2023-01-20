@@ -8,9 +8,8 @@ definitions:
     url_base: "https://api.convertkit.com/v3"
     http_method: "GET"
     # API Docs: https://developers.convertkit.com/#api-basics
-    request_options_provider:
-      request_parameters:
-        api_secret: "{{ config['api_secret'] }}"
+    request_parameters:
+      api_secret: "{{ config['api_secret'] }}"
   increment_paginator:
     type: DefaultPaginator
     url_base: "*ref(definitions.requester.url_base)"

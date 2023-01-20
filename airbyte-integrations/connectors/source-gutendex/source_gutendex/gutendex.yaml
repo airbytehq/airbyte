@@ -8,15 +8,14 @@ definitions:
   requester:
     url_base: "https://gutendex.com/"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        author_year_start: "{{ config['author_year_start'] }}"
-        author_year_end: "{{ config['author_year_end'] }}"
-        copyright: "{{ config['copyright'] }}"
-        languages: "{{ config['languages'] }}"
-        search: "{{ config['search'] }}"
-        sort: "{{ config['sort'] }}"
-        topic: "{{ config['topic'] }}"
+    request_parameters:
+      author_year_start: "{{ config['author_year_start'] }}"
+      author_year_end: "{{ config['author_year_end'] }}"
+      copyright: "{{ config['copyright'] }}"
+      languages: "{{ config['languages'] }}"
+      search: "{{ config['search'] }}"
+      sort: "{{ config['sort'] }}"
+      topic: "{{ config['topic'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"

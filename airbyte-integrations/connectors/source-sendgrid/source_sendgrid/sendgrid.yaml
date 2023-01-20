@@ -151,9 +151,8 @@ streams:
       $ref: "*ref(definitions.base_stream.retriever)"
       requester:
         $ref: "*ref(definitions.base_stream.retriever.requester)"
-        request_options_provider:
-          request_parameters:
-            generations: "legacy,dynamic"
+        request_parameters:
+          generations: "legacy,dynamic"
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   - $ref: "*ref(definitions.base_stream)"
@@ -248,10 +247,9 @@ streams:
       $ref: "*ref(definitions.base_stream.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            limit: "1000"
-            query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
+        request_parameters:
+          limit: "1000"
+          query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
       stream_slicer:
         $ref: "*ref(definitions.messages_stream_slicer)"
 check:

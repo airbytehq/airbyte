@@ -35,9 +35,6 @@ definitions:
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
-    request_options_provider:
-      request_parameters:
-        start: "{{stream_slice['start_time'] or 'latest'}}"
     paginator:
       type: DefaultPaginator
       url_base: "*ref(definitions.requester.url_base)"

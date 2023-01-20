@@ -10,10 +10,9 @@ definitions:
   requester:
     url_base: "https://pypi.org"
     http_method: "GET"
-    request_options_provider:
-      request_headers:
-        User-Agent: "Airbyte"
-        Accept: "application/json"
+    request_headers:
+      User-Agent: "Airbyte"
+      Accept: "application/json"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"

@@ -9,16 +9,15 @@ definitions:
     # url_base: "http://localhost:8080"
     url_base: "{{ config['backend_url'] }}"
     http_method: "POST"
-    request_options_provider:
-      request_body_data: |
-        [{"clause": {"type": "timestamp", "operator": 10, "parameters": 
-            [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
-             {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
-            ]
-            
-          }, "orderBy": 1, "columnName": "Timestamp"}]/
-      request_headers:
-        Content-Type: application/json
+    request_body_data: |
+      [{"clause": {"type": "timestamp", "operator": 10, "parameters": 
+          [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
+           {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
+          ]
+          
+        }, "orderBy": 1, "columnName": "Timestamp"}]/
+    request_headers:
+      Content-Type: application/json
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
