@@ -18,9 +18,12 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.default_api import DefaultApiImpl
-from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
+from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter, LowCodeSourceAdapterFactory
 from fastapi import HTTPException
 from pydantic.error_wrappers import ValidationError
+
+MAX_PAGES_PER_SLICE = 4
+MAX_SLICES = 3
 
 MANIFEST = {
     "version": "0.1.0",
@@ -103,7 +106,7 @@ def test_list_streams():
         StreamsListReadStreams(name="breathing-techniques", url="https://demonslayers.com/api/v1/breathing_techniques"),
     ]
 
-    api = DefaultApiImpl(LowCodeSourceAdapter)
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
     streams_list_request_body = StreamsListRequestBody(manifest=MANIFEST, config=CONFIG)
     loop = asyncio.get_event_loop()
     actual_streams = loop.run_until_complete(api.list_streams(streams_list_request_body))
@@ -137,7 +140,7 @@ def test_list_streams_with_interpolated_urls():
 
     expected_streams = StreamsListRead(streams=[StreamsListReadStreams(name="demons", url="https://upper-six.muzan.com/api/v1/demons")])
 
-    api = DefaultApiImpl(LowCodeSourceAdapter)
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
     streams_list_request_body = StreamsListRequestBody(manifest=manifest, config=CONFIG)
     loop = asyncio.get_event_loop()
     actual_streams = loop.run_until_complete(api.list_streams(streams_list_request_body))
@@ -171,7 +174,7 @@ def test_list_streams_with_unresolved_interpolation():
     # The interpolated string {{ config['not_in_config'] }} doesn't resolve to anything so it ends up blank during interpolation
     expected_streams = StreamsListRead(streams=[StreamsListReadStreams(name="demons", url="https://.muzan.com/api/v1/demons")])
 
-    api = DefaultApiImpl(LowCodeSourceAdapter)
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     streams_list_request_body = StreamsListRequestBody(manifest=manifest, config=CONFIG)
     loop = asyncio.get_event_loop()
@@ -214,7 +217,7 @@ def test_read_stream():
         ),
     ]
 
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [
                 request_log_message(request),
@@ -228,7 +231,7 @@ def test_read_stream():
         )
     )
 
-    api = DefaultApiImpl(mock_source_adapter_cls)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     loop = asyncio.get_event_loop()
     actual_response: StreamRead = loop.run_until_complete(
@@ -279,7 +282,7 @@ def test_read_stream_with_logs():
         {"message": "log message after the response"},
     ]
 
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [
                 AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="log message before the request")),
@@ -293,7 +296,7 @@ def test_read_stream_with_logs():
         )
     )
 
-    api = DefaultApiImpl(mock_source_adapter_cls)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     loop = asyncio.get_event_loop()
     actual_response: StreamRead = loop.run_until_complete(
@@ -322,7 +325,7 @@ def test_read_stream_record_limit(request_record_limit, max_record_limit):
         "body": {"custom": "field"},
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [
                 request_log_message(request),
@@ -339,7 +342,7 @@ def test_read_stream_record_limit(request_record_limit, max_record_limit):
     n_records = 2
     record_limit = min(request_record_limit, max_record_limit)
 
-    api = DefaultApiImpl(mock_source_adapter_cls, max_record_limit=max_record_limit)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
     loop = asyncio.get_event_loop()
     actual_response: StreamRead = loop.run_until_complete(
         api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras", record_limit=request_record_limit))
@@ -365,7 +368,7 @@ def test_read_stream_default_record_limit(max_record_limit):
         "body": {"custom": "field"},
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [
                 request_log_message(request),
@@ -381,7 +384,7 @@ def test_read_stream_default_record_limit(max_record_limit):
     )
     n_records = 2
 
-    api = DefaultApiImpl(mock_source_adapter_cls, max_record_limit=max_record_limit)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES, max_record_limit=max_record_limit)
     loop = asyncio.get_event_loop()
     actual_response: StreamRead = loop.run_until_complete(
         api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
@@ -400,7 +403,7 @@ def test_read_stream_limit_0():
         "body": {"custom": "field"},
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [
                 request_log_message(request),
@@ -414,7 +417,7 @@ def test_read_stream_limit_0():
             ]
         )
     )
-    api = DefaultApiImpl(mock_source_adapter_cls)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
     loop = asyncio.get_event_loop()
 
     with pytest.raises(ValidationError):
@@ -455,7 +458,7 @@ def test_read_stream_no_records():
         ),
     ]
 
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [
                 request_log_message(request),
@@ -466,7 +469,7 @@ def test_read_stream_no_records():
         )
     )
 
-    api = DefaultApiImpl(mock_source_adapter_cls)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     loop = asyncio.get_event_loop()
     actual_response: StreamRead = loop.run_until_complete(
@@ -503,7 +506,7 @@ def test_invalid_manifest():
 
     expected_status_code = 400
 
-    api = DefaultApiImpl(LowCodeSourceAdapter)
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
     loop = asyncio.get_event_loop()
     with pytest.raises(HTTPException) as actual_exception:
         loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=invalid_manifest, config={}, stream="hashiras")))
@@ -514,7 +517,7 @@ def test_invalid_manifest():
 def test_read_stream_invalid_group_format():
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}'}
 
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [
                 response_log_message(response),
@@ -524,7 +527,7 @@ def test_read_stream_invalid_group_format():
         )
     )
 
-    api = DefaultApiImpl(mock_source_adapter_cls)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     loop = asyncio.get_event_loop()
     with pytest.raises(HTTPException) as actual_exception:
@@ -536,7 +539,7 @@ def test_read_stream_invalid_group_format():
 def test_read_stream_returns_error_if_stream_does_not_exist():
     expected_status_code = 400
 
-    api = DefaultApiImpl(LowCodeSourceAdapter)
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
     loop = asyncio.get_event_loop()
     with pytest.raises(HTTPException) as actual_exception:
         loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config={}, stream="not_in_manifest")))
@@ -586,7 +589,7 @@ def test_read_stream_returns_error_if_stream_does_not_exist():
 )
 def test_create_request_from_log_message(log_message, expected_request):
     airbyte_log_message = AirbyteLogMessage(level=Level.INFO, message=log_message)
-    api = DefaultApiImpl(LowCodeSourceAdapter)
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
     actual_request = api._create_request_from_log_message(airbyte_log_message)
 
     assert actual_request == expected_request
@@ -621,7 +624,7 @@ def test_create_response_from_log_message(log_message, expected_response):
         response_message = f"response:{json.dumps(log_message)}"
 
     airbyte_log_message = AirbyteLogMessage(level=Level.INFO, message=response_message)
-    api = DefaultApiImpl(LowCodeSourceAdapter)
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
     actual_response = api._create_response_from_log_message(airbyte_log_message)
 
     assert actual_response == expected_response
@@ -631,7 +634,7 @@ def test_read_stream_with_many_slices():
     request = {}
     response = {"status_code": 200}
 
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [
                 slice_message(),
@@ -650,7 +653,7 @@ def test_read_stream_with_many_slices():
         )
     )
 
-    api = DefaultApiImpl(mock_source_adapter_cls)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     loop = asyncio.get_event_loop()
     stream_read: StreamRead = loop.run_until_complete(
@@ -672,7 +675,7 @@ def test_read_stream_given_maximum_number_of_slices_then_test_read_limit_reached
     maximum_number_of_slices = 5
     request = {}
     response = {"status_code": 200}
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [
                 slice_message(),
@@ -682,7 +685,7 @@ def test_read_stream_given_maximum_number_of_slices_then_test_read_limit_reached
         )
     )
 
-    api = DefaultApiImpl(mock_source_adapter_cls)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     loop = asyncio.get_event_loop()
     stream_read: StreamRead = loop.run_until_complete(
@@ -696,13 +699,13 @@ def test_read_stream_given_maximum_number_of_pages_then_test_read_limit_reached(
     maximum_number_of_pages_per_slice = 5
     request = {}
     response = {"status_code": 200}
-    mock_source_adapter_cls = make_mock_adapter_cls(
+    mock_source_adapter_cls = make_mock_adapter_factory(
         iter(
             [slice_message()] + [request_log_message(request), response_log_message(response)] * maximum_number_of_pages_per_slice
         )
     )
 
-    api = DefaultApiImpl(mock_source_adapter_cls)
+    api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
 
     loop = asyncio.get_event_loop()
     stream_read: StreamRead = loop.run_until_complete(
@@ -712,10 +715,9 @@ def test_read_stream_given_maximum_number_of_pages_then_test_read_limit_reached(
     assert stream_read.test_read_limit_reached
 
 
-
-def make_mock_adapter_cls(return_value: Iterator) -> MagicMock:
-    mock_source_adapter_cls = MagicMock()
+def make_mock_adapter_factory(return_value: Iterator) -> MagicMock:
+    mock_source_adapter_factory = MagicMock()
     mock_source_adapter = MagicMock()
     mock_source_adapter.read_stream.return_value = return_value
-    mock_source_adapter_cls.return_value = mock_source_adapter
-    return mock_source_adapter_cls
+    mock_source_adapter_factory.create.return_value = mock_source_adapter
+    return mock_source_adapter_factory

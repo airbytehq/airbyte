@@ -424,14 +424,14 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
     slices that are queried throughout a read command.
     """
 
-    _MAXIMUM_NUMBER_OF_SLICES: int = 5
-    maximum_number_of_slices: int = None
+    maximum_number_of_slices: int = 5
 
     def __post_init__(self, options: Mapping[str, Any]):
         super().__post_init__(options)
         if self.maximum_number_of_slices and self.maximum_number_of_slices < 1:
-            raise ValueError("The maximum number of slices on a test read needs to be strictly positive")
-        self.maximum_number_of_slices = self.maximum_number_of_slices or self._MAXIMUM_NUMBER_OF_SLICES
+            raise ValueError(
+                f"The maximum number of slices on a test read needs to be strictly positive. Got {self.maximum_number_of_slices}"
+            )
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
