@@ -32,9 +32,9 @@ import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.helper.CatalogConverter;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.IOException;
@@ -265,9 +265,9 @@ public class SourceHandler {
         spec);
   }
 
-  public DiscoverCatalogResult writeDiscoverFetchEvent(final SourceDiscoverSchemaWriteRequestBody request)
+  public DiscoverCatalogResult writeDiscoverCatalogResult(final SourceDiscoverSchemaWriteRequestBody request)
       throws JsonValidationException, IOException {
-    final AirbyteCatalog persistenceCatalog = CatalogConverter.toAirbyteCatalogProtocol(request.getCatalog());
+    final AirbyteCatalog persistenceCatalog = CatalogConverter.toProtocol(request.getCatalog());
     UUID catalogId = configRepository.writeActorCatalogFetchEvent(
         persistenceCatalog,
         request.getSourceId(),

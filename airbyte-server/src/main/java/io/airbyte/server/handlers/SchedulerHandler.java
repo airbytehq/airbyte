@@ -69,13 +69,13 @@ import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.OauthModelConverter;
 import io.airbyte.server.errors.ValueConflictKnownException;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousJobMetadata;
 import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.helper.CatalogConverter;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -404,7 +404,7 @@ public class SchedulerHandler {
           connectionRead.getSyncCatalog();
       final CatalogDiff diff =
           connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-              CatalogConverter.toProtocol(currentAirbyteCatalog));
+              CatalogConverter.toConfiguredProtocol(currentAirbyteCatalog));
       final boolean containsBreakingChange = containsBreakingChange(diff);
       final ConnectionUpdate updateObject =
           new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(connectionRead.getConnectionId());

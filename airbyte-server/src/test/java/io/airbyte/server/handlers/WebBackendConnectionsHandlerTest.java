@@ -93,6 +93,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
@@ -100,7 +101,6 @@ import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.helper.CatalogConverter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -1016,7 +1016,7 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
 
     verify(connectionsHandler).getDiff(expected.getSyncCatalog(), expectedWithNewSchema.getSyncCatalog(),
-        CatalogConverter.toProtocol(result.getSyncCatalog()));
+        CatalogConverter.toConfiguredProtocol(result.getSyncCatalog()));
     verify(connectionsHandler).getConfigurationDiff(expected.getSyncCatalog(), expectedWithNewSchema.getSyncCatalog());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);

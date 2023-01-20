@@ -57,9 +57,9 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.ConfigRepository.StandardSyncQuery;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.converters.ApiPojoConverters;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.helper.ProtocolConverters;
 import jakarta.inject.Singleton;
 import java.io.IOException;
@@ -546,7 +546,7 @@ public class WebBackendConnectionsHandler {
             Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
         final CatalogDiff catalogDiff =
             connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog),
-                CatalogConverter.toProtocol(newAirbyteCatalog));
+                CatalogConverter.toConfiguredProtocol(newAirbyteCatalog));
         breakingChange = containsBreakingChange(catalogDiff);
       }
     }
@@ -602,7 +602,7 @@ public class WebBackendConnectionsHandler {
           CatalogConverter.getFieldSelectionData(oldConnectionRead.getSyncCatalog()));
       final AirbyteCatalog upToDateAirbyteCatalog = updatedConnectionRead.getSyncCatalog();
       final CatalogDiff catalogDiff =
-          connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog, CatalogConverter.toProtocol(upToDateAirbyteCatalog));
+          connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog, CatalogConverter.toConfiguredProtocol(upToDateAirbyteCatalog));
       final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
       final Set<StreamDescriptor> changedConfigStreamDescriptors =
           connectionsHandler.getConfigurationDiff(apiExistingCatalog, upToDateAirbyteCatalog);

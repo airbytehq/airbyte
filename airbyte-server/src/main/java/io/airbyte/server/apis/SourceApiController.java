@@ -107,10 +107,10 @@ public class SourceApiController implements SourceApi {
     return ApiHelper.execute(() -> sourceHandler.updateSource(sourceUpdate));
   }
 
-  @Post("/write_discover_fetch_event")
+  @Post("/write_discover_catalog_result")
   @Override
-  public DiscoverCatalogResult writeDiscoverFetchEvent(final SourceDiscoverSchemaWriteRequestBody request) {
-    return ApiHelper.execute(() -> sourceHandler.writeDiscoverFetchEvent(request));
+  public DiscoverCatalogResult writeDiscoverCatalogResult(final SourceDiscoverSchemaWriteRequestBody request) {
+    return ApiHelper.execute(() -> sourceHandler.writeDiscoverCatalogResult(request));
   }
 
 }
