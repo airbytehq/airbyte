@@ -147,7 +147,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
       </div>
 
       <div className={styles.streamList}>
-        {values.streams.map(({ name }, num) => (
+        {values.streams.map(({ name, id }, num) => (
           <ViewSelectButton
             key={num}
             data-testid={`navbutton-${String(num)}`}
@@ -157,6 +157,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
               handleViewSelect(num);
               analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_SELECT, {
                 actionDescription: "Stream view selected",
+                stream_id: id,
                 stream_name: name,
               });
             }}

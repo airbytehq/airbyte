@@ -9,7 +9,9 @@ import * as yup from "yup";
 import { Button } from "components/ui/Button";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
+import { Action, Namespace } from "core/analytics";
 import { FormikPatch } from "core/form/FormikPatch";
+import { useAnalyticsService } from "hooks/services/Analytics";
 
 import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
 import { BuilderStream, DEFAULT_BUILDER_STREAM_VALUES } from "../types";
@@ -34,6 +36,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({
   initialValues,
   "data-testid": testId,
 }) => {
+  const analyticsService = useAnalyticsService();
   const { formatMessage } = useIntl();
   const [isOpen, setIsOpen] = useState(false);
   const [streamsField, , helpers] = useField<BuilderStream[]>("streams");
@@ -57,17 +60,24 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({
         <Formik
           initialValues={{ streamName: "", urlPath: "" }}
           onSubmit={(values: AddStreamValues) => {
+            const id = uuid();
             helpers.setValue([
               ...streamsField.value,
               merge({}, DEFAULT_BUILDER_STREAM_VALUES, {
                 ...initialValues,
                 name: values.streamName,
                 urlPath: values.urlPath,
-                id: uuid(),
+                id,
               }),
             ]);
             setIsOpen(false);
             onAddStream(numStreams);
+            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_CREATE, {
+              actionDescription: "New stream created from the Add Stream button",
+              stream_id: id,
+              stream_name: values.streamName,
+              url_path: values.urlPath,
+            });
           }}
           validationSchema={yup.object().shape({
             streamName: yup.string().required("form.empty.error"),
