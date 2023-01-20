@@ -10,11 +10,11 @@ from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union,
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.token import (
-    AccessTokenAuthenticator,
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
     BearerAuthenticator,
     SessionTokenAuthenticator,
+    ShortLivedTokenAuthenticator,
 )
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
@@ -22,7 +22,6 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import AccessTokenAuthenticator as AccessTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
@@ -76,6 +75,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RemoveFields as RemoveFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    ShortLivedTokenAuthenticator as ShortLivedTokenAuthenticatorModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SingleSlice as SingleSliceModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
@@ -611,8 +613,8 @@ def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, co
     )
 
 
-def create_access_token_authenticator(model: AccessTokenAuthenticatorModel, config: Config, **kwargs) -> AccessTokenAuthenticator:
-    return AccessTokenAuthenticator(
+def create_access_token_authenticator(model: ShortLivedTokenAuthenticatorModel, config: Config, **kwargs) -> ShortLivedTokenAuthenticator:
+    return ShortLivedTokenAuthenticator(
         client_id=model.client_id,
         secret_key=model.secret_key,
         url=model.url,
@@ -726,7 +728,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     RemoveFieldsModel: create_remove_fields,
     RequestOptionModel: create_request_option,
     SessionTokenAuthenticatorModel: create_session_token_authenticator,
-    AccessTokenAuthenticatorModel: create_access_token_authenticator,
+    ShortLivedTokenAuthenticatorModel: create_access_token_authenticator,
     SimpleRetrieverModel: create_simple_retriever,
     SingleSliceModel: create_single_slice,
     SpecModel: create_spec,

@@ -641,7 +641,7 @@ definitions:
           - "$ref": "#/definitions/OAuthAuthenticator"
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
-          - "$ref": "#/definitions/AccessTokenAuthenticator"
+          - "$ref": "#/definitions/ShortLivedTokenAuthenticator"
       error_handler:
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
@@ -1010,7 +1010,7 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  AccessTokenAuthenticator:
+  ShortLivedTokenAuthenticator:
     type: object
     required:
       - type
@@ -1020,7 +1020,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [AccessTokenAuthenticator]
+        enum: [ShortLivedTokenAuthenticator]
       client_id:
         type: string
       secret_key:

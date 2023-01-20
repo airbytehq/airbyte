@@ -244,7 +244,7 @@ class SessionTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenti
 
 
 @dataclass
-class AccessTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
+class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
     """
     https://docs.railz.ai/reference/authentication
     """
