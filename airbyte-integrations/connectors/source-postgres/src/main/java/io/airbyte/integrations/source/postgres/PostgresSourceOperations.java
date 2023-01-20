@@ -64,6 +64,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   private static final String TIMETZ = "timetz";
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
   private static final Map<Integer, PostgresType> POSTGRES_TYPE_DICT = new HashMap<>();
+  private Map<String, Map<String, ColumnInfo>> streamColumnInfo = new HashMap<>();
 
   public PostgresSourceOperations() {
     super();
@@ -154,13 +155,12 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
-    final String columnTypeName = metadata.getColumnTypeName(colIndex).toLowerCase();
-    final PostgresType columnType = safeGetJdbcType(metadata.getColumnType(colIndex), POSTGRES_TYPE_DICT);
+    final ColumnInfo columnInfo = getColumnInfo(colIndex, metadata, columnName);
     final String value = resultSet.getString(colIndex);
     if (value == null) {
       json.putNull(columnName);
     } else {
-      switch (columnTypeName) {
+      switch (columnInfo.columnTypeName) {
         case "bool", "boolean" -> putBoolean(json, columnName, resultSet, colIndex);
         case "bytea" -> json.put(columnName, value);
         case TIMETZ -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
@@ -188,7 +188,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_timetz" -> putTimeTzArray(json, columnName, resultSet, colIndex);
         case "_time" -> putTimeArray(json, columnName, resultSet, colIndex);
         default -> {
-          switch (columnType) {
+          switch (columnInfo.columnType) {
             case BOOLEAN -> json.put(columnName, value.equalsIgnoreCase("t"));
             case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
             case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
@@ -569,6 +569,37 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   @Override
   public boolean isCursorType(final PostgresType type) {
     return PostgresUtils.ALLOWED_CURSOR_TYPES.contains(type);
+  }
+
+  private ColumnInfo getColumnInfo(final int colIndex, final PgResultSetMetaData metadata, final String columnName) throws SQLException {
+    final String tableName = metadata.getBaseTableName(colIndex);
+    final String schemaName = metadata.getBaseSchemaName(colIndex);
+    final String key = schemaName + tableName;
+    if (!streamColumnInfo.containsKey(key)) {
+      streamColumnInfo.clear();
+      streamColumnInfo.put(key, new HashMap<>(metadata.getColumnCount()));
+    }
+
+    final Map<String, ColumnInfo> stringColumnInfoMap = streamColumnInfo.get(key);
+    if (stringColumnInfoMap.containsKey(columnName)) {
+      return stringColumnInfoMap.get(columnName);
+    } else {
+      final PostgresType columnType = safeGetJdbcType(metadata.getColumnType(colIndex), POSTGRES_TYPE_DICT);
+      final ColumnInfo columnInfo = new ColumnInfo(metadata.getColumnTypeName(colIndex).toLowerCase(), columnType);
+      stringColumnInfoMap.put(columnName, columnInfo);
+      return columnInfo;
+    }
+  }
+
+  private static class ColumnInfo {
+    public String columnTypeName;
+    public PostgresType columnType;
+
+    public ColumnInfo(final String columnTypeName, final PostgresType columnType) {
+      this.columnTypeName = columnTypeName;
+      this.columnType = columnType;
+    }
+
   }
 
 }
