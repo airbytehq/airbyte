@@ -23,6 +23,8 @@ acceptance_tests:
         empty_streams:
           - name: "media"
             bypass_reason: "Floating data"
+          - name: "users"
+            bypass_reason: "Profile picture url is not constant"
           - name: "stories"
             bypass_reason: "Stories only live for 24 hours"
           - name: "story_insights"
