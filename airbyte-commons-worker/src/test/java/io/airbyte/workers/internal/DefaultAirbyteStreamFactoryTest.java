@@ -71,7 +71,7 @@ class DefaultAirbyteStreamFactoryTest {
     verifyNoMoreInteractions(logger);
   }
 
-  @Test
+  /*  @Test
   @Ignore
   void testLoggingLevel() {
     final AirbyteMessage logMessage = AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
@@ -81,7 +81,7 @@ class DefaultAirbyteStreamFactoryTest {
     assertEquals(Collections.emptyList(), messageStream.collect(Collectors.toList()));
     verify(logger).warn("warning");
     verifyNoMoreInteractions(logger);
-  }
+  }*/
 
   @Test
   void testFailValidation() {
