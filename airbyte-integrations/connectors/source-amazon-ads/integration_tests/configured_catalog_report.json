@@ -9,7 +9,8 @@
           ["profileId"],
           ["recordType"],
           ["reportDate"],
-          ["updatedAt"]
+          ["updatedAt"],
+          ["recordId"]
         ]
       },
       "sync_mode": "incremental",
