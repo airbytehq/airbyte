@@ -28,7 +28,7 @@ public class VersionedAirbyteMessageBufferedWriterFactory implements AirbyteMess
   }
 
   @Override
-  public AirbyteMessageBufferedWriter createWriter(final BufferedWriter bufferedWriter) {
+  public AirbyteMessageBufferedWriter createWriter(BufferedWriter bufferedWriter) {
     final boolean needMigration = !protocolVersion.getMajorVersion().equals(migratorFactory.getMostRecentVersion().getMajorVersion());
     LOGGER.info(
         "Writing messages to protocol version {}{}",
