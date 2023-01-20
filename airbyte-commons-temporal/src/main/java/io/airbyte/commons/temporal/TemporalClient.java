@@ -16,6 +16,7 @@ import io.airbyte.commons.temporal.scheduling.DiscoverCatalogWorkflow;
 import io.airbyte.commons.temporal.scheduling.SpecWorkflow;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -376,7 +377,11 @@ public class TemporalClient {
         () -> getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA).run(jobRunConfig, launcherConfig, input));
   }
 
-  public TemporalResponse<StandardSyncOutput> submitSync(final long jobId, final int attempt, final JobSyncConfig config, final UUID connectionId) {
+  public TemporalResponse<StandardSyncOutput> submitSync(final long jobId,
+                                                         final int attempt,
+                                                         final JobSyncConfig config,
+                                                         final AttemptSyncConfig attemptConfig,
+                                                         final UUID connectionId) {
     final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
     // write a 10 iteration for loop
@@ -398,16 +403,15 @@ public class TemporalClient {
         .withProtocolVersion(config.getDestinationProtocolVersion())
         .withIsCustomConnector(config.getIsDestinationCustomConnector());
 
-    // TODO(pedroslopez) build this from attemptsyncconfig
     final StandardSyncInput input = new StandardSyncInput()
         .withNamespaceDefinition(config.getNamespaceDefinition())
         .withNamespaceFormat(config.getNamespaceFormat())
         .withPrefix(config.getPrefix())
-        // .withSourceConfiguration(config.getSourceConfiguration())
-        // .withDestinationConfiguration(config.getDestinationConfiguration())
+        .withSourceConfiguration(attemptConfig.getSourceConfiguration())
+        .withDestinationConfiguration(attemptConfig.getDestinationConfiguration())
         .withOperationSequence(config.getOperationSequence())
         .withCatalog(config.getConfiguredAirbyteCatalog())
-        // .withState(config.getState())
+        .withState(attemptConfig.getState())
         .withResourceRequirements(config.getResourceRequirements())
         .withSourceResourceRequirements(config.getSourceResourceRequirements())
         .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
