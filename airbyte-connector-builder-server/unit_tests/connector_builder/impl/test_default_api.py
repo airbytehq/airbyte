@@ -18,7 +18,7 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.default_api import DefaultApiImpl
-from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter, LowCodeSourceAdapterFactory
+from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapterFactory
 from fastapi import HTTPException
 from pydantic.error_wrappers import ValidationError
 
@@ -640,6 +640,10 @@ def test_read_stream_with_many_slices():
                 slice_message(),
                 request_log_message(request),
                 response_log_message(response),
+                record_message("hashiras", {"name": "Muichiro Tokito"}),
+                slice_message(),
+                request_log_message(request),
+                response_log_message(response),
                 record_message("hashiras", {"name": "Shinobu Kocho"}),
                 record_message("hashiras", {"name": "Mitsuri Kanroji"}),
                 request_log_message(request),
@@ -647,8 +651,6 @@ def test_read_stream_with_many_slices():
                 record_message("hashiras", {"name": "Obanai Iguro"}),
                 request_log_message(request),
                 response_log_message(response),
-                slice_message(),
-                record_message("hashiras", {"name": "Muichiro Tokito"}),
             ]
         )
     )
@@ -661,14 +663,16 @@ def test_read_stream_with_many_slices():
     )
 
     assert not stream_read.test_read_limit_reached
-    assert 2 == len(stream_read.slices)
+    assert len(stream_read.slices) == 2
 
-    assert 2 == len(stream_read.slices[0].pages)
-    assert 2 == len(stream_read.slices[0].pages[0].records)
-    assert 1 == len(stream_read.slices[0].pages[1].records)
+    assert len(stream_read.slices[0].pages) == 1
+    assert len(stream_read.slices[0].pages[0].records) == 1
 
-    assert 1 == len(stream_read.slices[1].pages)
-    assert 1 == len(stream_read.slices[1].pages[0].records)
+    assert len(stream_read.slices[1].pages) == 3
+    assert len(stream_read.slices[1].pages[0].records) == 2
+    assert len(stream_read.slices[1].pages[1].records) == 1
+    assert len(stream_read.slices[1].pages[2].records) == 0
+
 
 
 def test_read_stream_given_maximum_number_of_slices_then_test_read_limit_reached():

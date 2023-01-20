@@ -161,7 +161,7 @@ spec:
         return False
 
     def _get_message_groups(self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int) -> Iterable[
-        Union[StreamReadPages, AirbyteLogMessage]]:
+        Union[StreamReadSlices, AirbyteLogMessage]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
         and record messages belong to the prior request log message and when we encounter another request, append the latest
@@ -177,42 +177,53 @@ spec:
 
         Note: The exception is that normal log messages can be received at any time which are not incorporated into grouping
         """
-        first_page = True
-        current_records = []
+        records_count = 0
+        at_least_one_page_in_group = False
+        current_page_records = []
+        current_slice_pages = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
-        first_slice = True
-        current_slice_pages = []
 
-        while len(current_records) < limit and (message := next(messages, None)):
-            if message.type == Type.LOG and message.log.message.startswith("slice:"):
-                if first_slice:
-                    first_slice = False
-                else:
-                    yield StreamReadSlices(pages=current_slice_pages)
-                    current_slice_pages = []
-            elif first_page and message.type == Type.LOG and message.log.message.startswith("request:"):
-                first_page = False
-                request = self._create_request_from_log_message(message.log)
-                current_page_request = request
+        while records_count < limit and (message := next(messages, None)):
+            if self._need_to_close_page(at_least_one_page_in_group, message):
+                self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
+
+            if at_least_one_page_in_group and message.type == Type.LOG and message.log.message.startswith("slice:"):
+                yield StreamReadSlices(pages=current_slice_pages)
+                current_slice_pages = []
+                at_least_one_page_in_group = False
             elif message.type == Type.LOG and message.log.message.startswith("request:"):
-                if not current_page_request or not current_page_response:
-                    raise ValueError("Every message grouping should have at least one request and response")
-                current_slice_pages.append(StreamReadPages(request=current_page_request, response=current_page_response, records=current_records))
+                if not at_least_one_page_in_group:
+                    at_least_one_page_in_group = True
                 current_page_request = self._create_request_from_log_message(message.log)
-                current_records = []
+                current_page_response = None
             elif message.type == Type.LOG and message.log.message.startswith("response:"):
                 current_page_response = self._create_response_from_log_message(message.log)
             elif message.type == Type.LOG:
                 yield message.log
             elif message.type == Type.RECORD:
-                current_records.append(message.record.data)
+                current_page_records.append(message.record.data)
+                records_count += 1
                 schema_inferrer.accumulate(message.record)
         else:
-            if not current_page_request or not current_page_response:
-                raise ValueError("Every message grouping should have at least one request and response")
-            current_slice_pages.append(StreamReadPages(request=current_page_request, response=current_page_response, records=current_records))
+            self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
             yield StreamReadSlices(pages=current_slice_pages)
+
+    def _need_to_close_page(self, at_least_one_page_in_group, message):
+        return (
+            at_least_one_page_in_group
+            and message.type == Type.LOG
+            and (message.log.message.startswith("request:") or message.log.message.startswith("slice:"))
+        )
+
+    def _close_page(self, current_page_request, current_page_response, current_slice_pages, current_page_records):
+        if not current_page_request or not current_page_response:
+            raise ValueError("Every message grouping should have at least one request and response")
+
+        current_slice_pages.append(
+            StreamReadPages(request=current_page_request, response=current_page_response, records=current_page_records)
+        )
+        current_page_records.clear()
 
     def _create_request_from_log_message(self, log_message: AirbyteLogMessage) -> Optional[HttpRequest]:
         # TODO: As a temporary stopgap, the CDK emits request data as a log message string. Ideally this should come in the

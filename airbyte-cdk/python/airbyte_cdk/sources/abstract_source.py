@@ -237,7 +237,6 @@ class AbstractSource(Source, ABC):
             has_slices = True
             if logger.isEnabledFor(logging.DEBUG):
                 yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"slice:{json.dumps(_slice)}"))
-            logger.debug("Processing stream slice", extra={"slice": _slice})
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
@@ -288,7 +287,6 @@ class AbstractSource(Source, ABC):
         for _slice in slices:
             if logger.isEnabledFor(logging.DEBUG):
                 yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"slice:{json.dumps(_slice)}"))
-            logger.debug("Processing stream slice", extra={"slice": _slice})
             record_data_or_messages = stream_instance.read_records(
                 stream_slice=_slice,
                 sync_mode=SyncMode.full_refresh,
