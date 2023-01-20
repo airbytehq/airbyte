@@ -3,6 +3,7 @@ import React, { useContext } from "react";
 interface Context {
   updatingAll: boolean;
   updatingDefinitionId?: string;
+  feedbackList: Record<string, string>;
 }
 
 export const useUpdatingState = (): Context => {

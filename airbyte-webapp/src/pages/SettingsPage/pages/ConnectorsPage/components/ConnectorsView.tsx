@@ -114,7 +114,6 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
                     version={cell.value || row.original.dockerImageTag}
                     id={Connector.id(row.original)}
                     onChange={onUpdateVersion}
-                    feedback={feedbackList[Connector.id(row.original)]}
                     currentVersion={row.original.dockerImageTag}
                   />
                 ) : null,
@@ -122,7 +121,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           ]
         : []),
     ],
-    [allowUpdateConnectors, allowUploadCustomImage, onUpdateVersion, feedbackList]
+    [allowUpdateConnectors, allowUploadCustomImage, onUpdateVersion]
   );
 
   const renderHeaderControls = (section: "used" | "available") =>
@@ -144,8 +143,9 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
     () => ({
       updatingAll: loading,
       updatingDefinitionId,
+      feedbackList,
     }),
-    [loading, updatingDefinitionId]
+    [feedbackList, loading, updatingDefinitionId]
   );
 
   const usedDefinitionColumns = useMemo(

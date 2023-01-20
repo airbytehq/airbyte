@@ -1,7 +1,6 @@
 import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
 import { FlexContainer, FlexItem } from "components/ui/Flex";
@@ -17,36 +16,11 @@ interface VersionCellProps {
   currentVersion: string;
   id: string;
   onChange: ({ version, id }: { version: string; id: string }) => void;
-  feedback?: "success" | string;
 }
 
-const VersionInput = styled(Input)`
-  max-width: 145px;
-  margin-right: 19px;
-`;
-
-const InputField = styled.div<{ showNote?: boolean }>`
-  display: inline-block;
-  position: relative;
-  background: ${({ theme }) => theme.whiteColor};
-
-  &:before {
-    position: absolute;
-    display: ${({ showNote }) => (showNote ? "block" : "none")};
-    content: attr(data-before);
-    color: ${({ theme }) => theme.greyColor40};
-    top: 10px;
-    right: 22px;
-    z-index: 3;
-  }
-
-  &:focus-within:before {
-    display: none;
-  }
-`;
-
-const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, feedback, currentVersion }) => {
-  const { updatingAll, updatingDefinitionId } = useUpdatingState();
+const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, currentVersion }) => {
+  const { updatingAll, updatingDefinitionId, feedbackList } = useUpdatingState();
+  const feedback = feedbackList[id];
   const updatingCurrent = id === updatingDefinitionId;
   const { formatMessage } = useIntl();
 
@@ -76,14 +50,14 @@ const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, feedba
             <FlexItem>{renderFeedback(dirty, feedback)}</FlexItem>
             <Field name="version">
               {({ field }: FieldProps<string>) => (
-                <InputField
-                  showNote={version === field.value}
+                <div
+                  className={styles.inputField}
                   data-before={formatMessage({
                     id: "admin.latestNote",
                   })}
                 >
-                  <VersionInput {...field} type="text" autoComplete="off" />
-                </InputField>
+                  <Input {...field} className={styles.versionInput} type="text" autoComplete="off" />
+                </div>
               )}
             </Field>
             <Button
