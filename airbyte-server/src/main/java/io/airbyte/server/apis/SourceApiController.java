@@ -7,12 +7,10 @@ package io.airbyte.server.apis;
 import io.airbyte.api.generated.SourceApi;
 import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.CheckConnectionRead;
-import io.airbyte.api.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.generated.SourceDiscoverSchemaWriteRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
@@ -105,12 +103,6 @@ public class SourceApiController implements SourceApi {
   @Override
   public SourceRead updateSource(final SourceUpdate sourceUpdate) {
     return ApiHelper.execute(() -> sourceHandler.updateSource(sourceUpdate));
-  }
-
-  @Post("/write_discover_catalog_result")
-  @Override
-  public DiscoverCatalogResult writeDiscoverCatalogResult(final SourceDiscoverSchemaWriteRequestBody request) {
-    return ApiHelper.execute(() -> sourceHandler.writeDiscoverCatalogResult(request));
   }
 
 }

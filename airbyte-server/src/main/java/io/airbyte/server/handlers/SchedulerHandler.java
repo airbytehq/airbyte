@@ -404,7 +404,7 @@ public class SchedulerHandler {
           connectionRead.getSyncCatalog();
       final CatalogDiff diff =
           connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-              CatalogConverter.toConfiguredProtocol(currentAirbyteCatalog));
+              CatalogConverter.toProtocol(currentAirbyteCatalog));
       final boolean containsBreakingChange = containsBreakingChange(diff);
       final ConnectionUpdate updateObject =
           new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(connectionRead.getConnectionId());

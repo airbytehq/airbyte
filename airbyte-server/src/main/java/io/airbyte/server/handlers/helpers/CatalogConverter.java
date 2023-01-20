@@ -48,7 +48,7 @@ public class CatalogConverter {
   }
 
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  private static io.airbyte.protocol.models.AirbyteStream toConfiguredProtocol(final AirbyteStream stream, AirbyteStreamConfiguration config)
+  private static io.airbyte.protocol.models.AirbyteStream toProtocol(final AirbyteStream stream, AirbyteStreamConfiguration config)
       throws JsonValidationException {
     if (config.getFieldSelectionEnabled() != null && config.getFieldSelectionEnabled()) {
       // Validate the selected field paths.
@@ -168,8 +168,7 @@ public class CatalogConverter {
   /**
    * Converts the API catalog model into a protocol catalog. Note: returns all streams, regardless of
    * selected status. See
-   * {@link CatalogConverter#toConfiguredProtocol(AirbyteStream, AirbyteStreamConfiguration)} for
-   * context.
+   * {@link CatalogConverter#toProtocol(AirbyteStream, AirbyteStreamConfiguration)} for context.
    *
    * @param catalog api catalog
    * @return protocol catalog
@@ -179,35 +178,7 @@ public class CatalogConverter {
       throws JsonValidationException {
     final AirbyteCatalog clone = Jsons.clone(catalog);
     clone.getStreams().forEach(stream -> stream.getConfig().setSelected(true));
-    return toConfiguredProtocol(clone);
-  }
-
-  /**
-   * To convert AirbyteCatalog from APIs to model. This is to differentiate between
-   * toConfiguredProtocol as the other one converts to ConfiguredAirbyteCatalog object instead.
-   */
-  public static io.airbyte.protocol.models.AirbyteCatalog toProtocol(
-                                                                     final io.airbyte.api.model.generated.AirbyteCatalog catalog)
-      throws JsonValidationException {
-    final ArrayList<JsonValidationException> errors = new ArrayList<>();
-
-    io.airbyte.protocol.models.AirbyteCatalog protoCatalog =
-        new io.airbyte.protocol.models.AirbyteCatalog();
-    var airbyteStream = catalog.getStreams().stream().map(stream -> {
-      try {
-        return toConfiguredProtocol(stream.getStream(), stream.getConfig());
-      } catch (JsonValidationException e) {
-        LOGGER.error("Error parsing catalog: {}", e);
-        errors.add(e);
-        return null;
-      }
-    }).collect(Collectors.toList());
-
-    if (!errors.isEmpty()) {
-      throw errors.get(0);
-    }
-    protoCatalog.withStreams(airbyteStream);
-    return protoCatalog;
+    return toProtocol(clone);
   }
 
   /**
@@ -220,7 +191,7 @@ public class CatalogConverter {
    * @param catalog api catalog
    * @return protocol catalog
    */
-  public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog toConfiguredProtocol(final io.airbyte.api.model.generated.AirbyteCatalog catalog)
+  public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog toProtocol(final io.airbyte.api.model.generated.AirbyteCatalog catalog)
       throws JsonValidationException {
     final ArrayList<JsonValidationException> errors = new ArrayList<>();
     final List<io.airbyte.protocol.models.ConfiguredAirbyteStream> streams = catalog.getStreams()
@@ -229,7 +200,7 @@ public class CatalogConverter {
         .map(s -> {
           try {
             return new io.airbyte.protocol.models.ConfiguredAirbyteStream()
-                .withStream(toConfiguredProtocol(s.getStream(), s.getConfig()))
+                .withStream(toProtocol(s.getStream(), s.getConfig()))
                 .withSyncMode(Enums.convertTo(s.getConfig().getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
                 .withCursorField(s.getConfig().getCursorField())
                 .withDestinationSyncMode(Enums.convertTo(s.getConfig().getDestinationSyncMode(),

@@ -546,7 +546,7 @@ public class WebBackendConnectionsHandler {
             Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
         final CatalogDiff catalogDiff =
             connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog),
-                CatalogConverter.toConfiguredProtocol(newAirbyteCatalog));
+                CatalogConverter.toProtocol(newAirbyteCatalog));
         breakingChange = containsBreakingChange(catalogDiff);
       }
     }
@@ -602,7 +602,7 @@ public class WebBackendConnectionsHandler {
           CatalogConverter.getFieldSelectionData(oldConnectionRead.getSyncCatalog()));
       final AirbyteCatalog upToDateAirbyteCatalog = updatedConnectionRead.getSyncCatalog();
       final CatalogDiff catalogDiff =
-          connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog, CatalogConverter.toConfiguredProtocol(upToDateAirbyteCatalog));
+          connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog, CatalogConverter.toProtocol(upToDateAirbyteCatalog));
       final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
       final Set<StreamDescriptor> changedConfigStreamDescriptors =
           connectionsHandler.getConfigurationDiff(apiExistingCatalog, upToDateAirbyteCatalog);
