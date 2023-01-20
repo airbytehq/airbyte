@@ -8,6 +8,14 @@ This page contains the setup guide and reference information for the google sear
 * Credentials to a Google Service Account \(or Google Service Account with delegated Domain Wide Authority\) or Google User Account
 * Enable Google Search Console API
 
+
+:::note
+
+Since Google has deprecated certain [OAuth workflows](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration), OAuth isn't supported for this connector at this time.
+
+:::
+
+
 ## Setup guide
 ### Step 1: Set up google search console
 
@@ -58,6 +66,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 
 ## Step 2: Set up the google search console connector in Airbyte
 
+<!-- env:cloud -->
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -68,7 +77,9 @@ At the end of this process, you should have JSON credentials to this Google Serv
 5. Fill in the `start date` field.
 6. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
 7. You should be ready to sync data.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 ### For Airbyte Open Source:
 
 1. Fill in the `service_account_info` and `email` fields for authentication. 
@@ -76,6 +87,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 3. Fill in the `start date` field.
 4. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
 5. You should be ready to sync data.
+<!-- /env:oss -->
 
 
 ## Supported sync modes
@@ -122,6 +134,8 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                     |
 | :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------- |
+| `0.1.18` | 2022-10-27 | [18568](https://github.com/airbytehq/airbyte/pull/18568)                                                      | Improved config validation: custom_reports.dimension        |
+| `0.1.17` | 2022-10-08 | [17751](https://github.com/airbytehq/airbyte/pull/17751)                                                      | Improved config validation: start_date, end_date, site_urls |
 | `0.1.16` | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304)                                                      | Migrate to per-stream state.                                |
 | `0.1.15` | 2022-09-16 | [16819](https://github.com/airbytehq/airbyte/pull/16819)                                                      | Check available site urls to avoid 403 error on sync        |
 | `0.1.14` | 2022-09-08 | [16433](https://github.com/airbytehq/airbyte/pull/16433)                                                      | Add custom analytics stream.                                |
