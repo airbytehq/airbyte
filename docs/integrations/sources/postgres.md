@@ -172,7 +172,7 @@ Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-re
 ### CDC Considerations
 
 - Incremental sync is only supported for tables with primary keys. For tables without primary keys, use [Full Refresh sync](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite).
-- Data must be in tables and not views. If you require data synchronization from a view, you would need to create a new connection.
+- Data must be in tables and not views. If you require data synchronization from a view, you would need to create a new standard connection.
 - The modifications you want to capture must be made using `DELETE`/`INSERT`/`UPDATE`. For example, changes made using `TRUNCATE`/`ALTER` will not appear in logs and therefore in your destination.
 - Schema changes are not supported automatically for CDC sources. Reset and resync data if you make a schema change.
 - The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
