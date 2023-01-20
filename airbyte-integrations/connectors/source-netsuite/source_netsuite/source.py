@@ -34,7 +34,7 @@ class SourceNetsuite(AbstractSource):
 
     def base_url(self, config: Mapping[str, Any]) -> str:
         # the subdomain should be in format of: 12345-sb1
-        subdomain = config['realm'].replace('_', '-').lower()
+        subdomain = config["realm"].replace("_", "-").lower()
         return f"https://{subdomain}.suitetalk.api.netsuite.com"
 
     def get_session(self, auth: OAuth1) -> requests.Session:
