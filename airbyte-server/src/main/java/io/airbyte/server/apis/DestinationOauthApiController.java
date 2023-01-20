@@ -12,11 +12,8 @@ import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsReque
 import io.airbyte.server.handlers.OAuthHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import io.micronaut.http.annotation.Status;
-
 import java.util.Map;
 
 @Controller("/api/v1/destination_oauths")
