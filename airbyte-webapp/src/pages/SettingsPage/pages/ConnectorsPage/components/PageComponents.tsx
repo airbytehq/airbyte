@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 import { H5 } from "components/base/Titles";
 
-const Title = styled(H5)`
+export const Title = styled(H5)`
   color: ${({ theme }) => theme.darkPrimaryColor};
   margin-bottom: 19px;
   display: flex;
@@ -10,18 +10,16 @@ const Title = styled(H5)`
   align-items: center;
 `;
 
-const Block = styled.div`
+export const Block = styled.div`
   margin-bottom: 56px;
 `;
 
-const FormContent = styled.div`
+export const FormContent = styled.div`
   width: 253px;
   margin: -10px 0 -10px 200px;
   position: relative;
 `;
 
-const FormContentTitle = styled(FormContent)`
+export const FormContentTitle = styled(FormContent)`
   margin: 0 0 0 200px;
 `;
-
-export { Title, Block, FormContent, FormContentTitle };

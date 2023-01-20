@@ -17,6 +17,6 @@
 .content {
   overflow-y: auto;
   height: 100%;
-  padding: 0 variables.$spacing-xl variables.$spacing-page-bottom;
+  padding: 0 variables.$spacing-xl variables.$spacing-xl;
   min-width: variables.$main-page-content-min-width;
 }
