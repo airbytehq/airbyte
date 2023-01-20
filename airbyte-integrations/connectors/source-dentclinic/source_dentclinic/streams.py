@@ -26,11 +26,13 @@ class DentclinicBookingStream(HttpStream, ABC):
 
         self.start_date = pendulum.parse(config.get("start_date"))
         if enable_days_back_limit:
-            self.start_date = max(self.start_date, pendulum.today().add(days = -int(config.get('days_back'))))
+            self.start_date = max(self.start_date, pendulum.today().add(
+                days=-int(config.get('days_back'))))
         self.stop_date = pendulum.today().add(days=self.days_forward)
 
         self.cursor_start_date = self.start_date
-        self.cursor_end_date = self.start_date.add(days=self.fetch_interval_days)
+        self.cursor_end_date = self.start_date.add(
+            days=self.fetch_interval_days)
 
         self.clinic_ids = self.get_clinic_ids()
         self.clinic_id = next(self.clinic_ids)
@@ -77,9 +79,11 @@ class DentclinicBookingStream(HttpStream, ABC):
             </soap12:Envelope>
         """
         headers = {'Content-Type': 'application/soap+xml; charset=utf-8'}
-        response = requests.post(f"{self.url_base}", data=payload_clinics, headers=headers)
+        response = requests.post(
+            f"{self.url_base}", data=payload_clinics, headers=headers)
 
-        clinics = xmltodict.parse(response.text)['soap:Envelope']['soap:Body']['GetClinicsResponse']['GetClinicsResult']['ClinicModel']
+        clinics = xmltodict.parse(response.text)[
+            'soap:Envelope']['soap:Body']['GetClinicsResponse']['GetClinicsResult']['ClinicModel']
         clinic_ids = [x.get('Id') for x in clinics]
         return iter(clinic_ids)
 
@@ -108,23 +112,26 @@ class DentclinicBookingStream(HttpStream, ABC):
                 return ""
 
             self.cursor_start_date = self.start_date
-            self.cursor_end_date = self.start_date.add(days=self.fetch_interval_days)
+            self.cursor_end_date = self.start_date.add(
+                days=self.fetch_interval_days)
         else:
-            self.cursor_start_date = self.cursor_start_date.add(days=self.fetch_interval_days)
-            self.cursor_end_date = self.cursor_end_date.add(days=self.fetch_interval_days)
+            self.cursor_start_date = self.cursor_start_date.add(
+                days=self.fetch_interval_days)
+            self.cursor_end_date = self.cursor_end_date.add(
+                days=self.fetch_interval_days)
 
         start_ts = self.cursor_start_date
         end_ts = self.cursor_end_date
 
-        clinic_state = stream_state.get(self.cursor_field, {}).get(self.clinic_id)
-        
+        clinic_state = stream_state.get(
+            self.cursor_field, {}).get(self.clinic_id)
+
         #print(f"days_back: {self.days_back}")
-        #print('*****************************************************')
+        # print('*****************************************************')
         if clinic_state:
             state_ts = pendulum.parse(clinic_state)
             start_ts = max(start_ts, state_ts)
             end_ts = start_ts.add(days=self.fetch_interval_days)
-
 
         return f"""<?xml version="1.0" encoding="utf-8"?>
         <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
@@ -143,7 +150,8 @@ class DentclinicBookingStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
-        path = ['soap:Envelope', 'soap:Body', 'GetBookingsResponse', 'GetBookingsResult', 'BookingModel']
+        path = ['soap:Envelope', 'soap:Body', 'GetBookingsResponse',
+                'GetBookingsResult', 'BookingModel']
         data = xmltodict.parse(response.text).copy()
         for key in path:
             data = data.get(key)
@@ -157,13 +165,14 @@ class DentclinicBookingStream(HttpStream, ABC):
         yield from data
 
 
+class DentclinicIncrementalStream(HttpStream, ABC):
 
-class DentclinicUtilizationStream(HttpStream, ABC):
-
-    
     primary_key = None
     state_checkpoint_interval = 1
     endpoint_data_path = None
+    static_endpoint = None
+    date_from_field = None
+    date_until_field = None
 
     url_base = "https://dcm-nhn.dentclinicmanager.com/API/DCMConnect.asmx?WSDL"
 
@@ -173,19 +182,20 @@ class DentclinicUtilizationStream(HttpStream, ABC):
 
         self.api_key = config.get("api_key")
         self.days_forward = int(config.get("days_forward"))
-
-        self.start_date = pendulum.parse(config.get("start_date"))
         self.enable_days_back_limit = enable_days_back_limit
-        self.days_back = int(config.get('days_back'))
+        self.start_date = pendulum.parse(config.get("start_date"))
+
+        if self.enable_days_back_limit:
+            # start date is the current date minus the days back limit
+            self.start_date = pendulum.today().add(days=-int(config.get('days_back')))
 
         self.stop_date = pendulum.today().add(days=self.days_forward)
         self.cursor_start_date = self.start_date
-        self.cursor_end_date = self.start_date.add(days=self.fetch_interval_days)
+        self.cursor_end_date = self.start_date.add(
+            days=self.fetch_interval_days)
 
         self.clinic_ids = self.get_clinic_ids()
         self.clinic_id = next(self.clinic_ids)
-
-        
 
     def request_headers(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -229,9 +239,11 @@ class DentclinicUtilizationStream(HttpStream, ABC):
             </soap12:Envelope>
         """
         headers = {'Content-Type': 'application/soap+xml; charset=utf-8'}
-        response = requests.post(f"{self.url_base}", data=payload_clinics, headers=headers)
+        response = requests.post(
+            f"{self.url_base}", data=payload_clinics, headers=headers)
 
-        clinics = xmltodict.parse(response.text)['soap:Envelope']['soap:Body']['GetClinicsResponse']['GetClinicsResult']['ClinicModel']
+        clinics = xmltodict.parse(response.text)[
+            'soap:Envelope']['soap:Body']['GetClinicsResponse']['GetClinicsResult']['ClinicModel']
         clinic_ids = [x.get('Id') for x in clinics]
         return iter(clinic_ids)
 
@@ -256,46 +268,39 @@ class DentclinicUtilizationStream(HttpStream, ABC):
                 return ""
 
             self.cursor_start_date = self.start_date
-            self.cursor_end_date = self.start_date.add(days=self.fetch_interval_days)
+            self.cursor_end_date = self.start_date.add(
+                days=self.fetch_interval_days)
         else:
-            self.cursor_start_date = self.cursor_start_date.add(days=self.fetch_interval_days)
-            self.cursor_end_date = self.cursor_end_date.add(days=self.fetch_interval_days)
+            self.cursor_start_date = self.cursor_start_date.add(
+                days=self.fetch_interval_days)
+            self.cursor_end_date = self.cursor_end_date.add(
+                days=self.fetch_interval_days)
 
         start_ts = self.cursor_start_date
         end_ts = self.cursor_end_date
 
+        clinic_state = stream_state.get(
+            self.cursor_field, {}).get(self.clinic_id)
 
-
-        clinic_state = stream_state.get(self.cursor_field, {}).get(self.clinic_id)
-
-        print('Stream State',stream_state)
-
-
+        print('Stream State', stream_state)
 
         if clinic_state:
-
-
             state_ts = pendulum.parse(clinic_state)
             start_ts = max(start_ts, state_ts)
             end_ts = start_ts.add(days=self.fetch_interval_days)
 
-
-            if self.enable_days_back_limit:
-                start_ts = start_ts.add(days = -int(self.days_back))
-
-
-            print(f'Fetching Interval - {self.clinic_id} : {start_ts} - {end_ts}')
-
+            print(
+                f'Fetching Interval - {self.clinic_id} : {start_ts} - {end_ts}')
 
         return f"""<?xml version="1.0" encoding="utf-8"?>
         <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
           <soap12:Body>
-            <GetUtilizationReport xmlns="http://tempuri.org/">
+            <{self.static_endpoint} xmlns="http://tempuri.org/">
               <key>{self.api_key}</key>
               <clinicId>{self.clinic_id}</clinicId>
-              <dateFrom>{start_ts}</dateFrom>
-              <dateUntil>{end_ts}</dateUntil>
-            </GetUtilizationReport>
+              <{self.date_from_field}>{start_ts}</{self.date_from_field}>
+              <{self.date_until_field}>{end_ts}</{self.date_until_field}>
+            </{self.static_endpoint}>
           </soap12:Body>
         </soap12:Envelope>"""
 
@@ -304,7 +309,6 @@ class DentclinicUtilizationStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
-        # path = ['soap:Envelope', 'soap:Body', 'GetUtilizationReportResponse', 'GetUtilizationReportResult','ProfessionalsAndShifts','ProfessionalShifts']
         path = self.endpoint_data_path
         data = xmltodict.parse(response.text).copy()
         for key in path:
@@ -404,7 +408,8 @@ class DentclinicClinicIdsStream(HttpStream, ABC):
             </soap12:Envelope>
         """
         headers = {'Content-Type': 'application/soap+xml; charset=utf-8'}
-        response = requests.post(f"{self.url_base}", data=payload_clinics, headers=headers)
+        response = requests.post(
+            f"{self.url_base}", data=payload_clinics, headers=headers)
 
         clinics = xmltodict.parse(response.text)[
             'soap:Envelope']['soap:Body']['GetClinicsResponse']['GetClinicsResult']['ClinicModel']
@@ -445,7 +450,8 @@ class DentclinicClinicIdsStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
-        path = ['soap:Envelope', 'soap:Body', 'GetResourcesResponse', 'GetResourcesResult', 'ResourceModel']
+        path = ['soap:Envelope', 'soap:Body', 'GetResourcesResponse',
+                'GetResourcesResult', 'ResourceModel']
 
         data = xmltodict.parse(response.text).copy()
         for key in path:
