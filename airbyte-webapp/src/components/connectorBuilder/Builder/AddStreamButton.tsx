@@ -72,12 +72,23 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({
             ]);
             setIsOpen(false);
             onAddStream(numStreams);
-            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_CREATE, {
-              actionDescription: "New stream created from the Add Stream button",
-              stream_id: id,
-              stream_name: values.streamName,
-              url_path: values.urlPath,
-            });
+            if (initialValues) {
+              analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_COPY, {
+                actionDescription: "Existing stream copied into a new stream",
+                existing_stream_id: initialValues.id,
+                existing_stream_name: initialValues.name,
+                new_stream_id: id,
+                new_stream_name: values.streamName,
+                new_stream_url_path: values.urlPath,
+              });
+            } else {
+              analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_CREATE, {
+                actionDescription: "New stream created from the Add Stream button",
+                stream_id: id,
+                stream_name: values.streamName,
+                url_path: values.urlPath,
+              });
+            }
           }}
           validationSchema={yup.object().shape({
             streamName: yup.string().required("form.empty.error"),
