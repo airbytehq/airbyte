@@ -6,6 +6,7 @@ export const enum Namespace {
   ONBOARDING = "Onboarding",
   USER = "User",
   CREDITS = "Credits",
+  CONNECTOR_BUILDER = "ConnectorBuilder",
 }
 
 export const enum Action {
@@ -28,6 +29,21 @@ export const enum Action {
   CHECKOUT_START = "CheckoutStart",
   LOAD_MORE_JOBS = "LoadMoreJobs",
   INVITE = "Invite",
+
+  // Connector Builder Actions
+  CONNECTOR_BUILDER_START = "ConnectorBuilderStart",
+  API_URL_CREATE = "ApiUrlCreated",
+  AUTHENTICATION_METHOD_SELECT = "AuthenticationMethodSelect",
+  USER_INPUT_SELECTE = "UserInputSelect",
+  USER_INPUT_CREATE = "UserInputCreate",
+  USER_INPUT_EDITE = "UserInputEdit",
+  USER_INPUT_DELETE = "UserInputDelete",
+  STREAM_SELECTE = "StreamSelect",
+  STREAM_CREATE = "StreamCreate",
+  STREAM_COPY = "StreamCopy",
+  STREAM_TEST = "StreamTest",
+  STREAM_TEST_SUCCESS = "StreamTestSuccess",
+  STREAM_TEST_FAILURE = "StreamTestFailure",
 }
 
 export type EventParams = Record<string, unknown>;
