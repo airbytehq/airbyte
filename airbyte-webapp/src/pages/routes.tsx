@@ -85,12 +85,12 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
   );
 };
 
-const RoutingWithWorkspace: React.FC = () => {
+const RoutingWithWorkspace: React.FC<{ element?: JSX.Element }> = ({ element }) => {
   const workspace = useCurrentWorkspace();
   useAddAnalyticsContextForWorkspace(workspace);
   useApiHealthPoll();
 
-  return workspace.initialSetupComplete ? <MainViewRoutes /> : <PreferencesRoutes />;
+  return workspace.initialSetupComplete ? element ?? <MainViewRoutes /> : <PreferencesRoutes />;
 };
 
 export const Routing: React.FC = () => {
@@ -110,7 +110,11 @@ export const Routing: React.FC = () => {
   );
   return (
     <Routes>
-      <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
+      <Route
+        path={`${RoutePaths.Workspaces}/:workspaceId/${RoutePaths.ConnectorBuilder}`}
+        element={<RoutingWithWorkspace element={<ConnectorBuilderPage />} />}
+      />
+      <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<AutoSelectFirstWorkspace includePath />} />
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
       <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />
