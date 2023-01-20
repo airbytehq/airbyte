@@ -190,7 +190,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       }
     }
 
-    // I substitute strings with ${} access, e.g. "The ${animal} jumped over the ${target}" with {animal: fox, target: fence}
+    // I substitute strings with ${} access, e.g. "The ${animal} jumped over the ${target}" with
+    // {animal: fox, target: fence}
     final StringSubstitutor sub = new StringSubstitutor(valuesMap);
     final List<String> hosts = allowedHosts.getHosts();
     for (String host : hosts) {
