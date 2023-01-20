@@ -549,6 +549,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                         >
                           <input
                             aria-checked="false"
+                            tabindex="0"
                             type="checkbox"
                           />
                         </label>
@@ -763,6 +764,8 @@ exports[`ConnectionReplicationPage should render 1`] = `
                           >
                             <input
                               aria-checked="false"
+                              class="<removed-for-snapshot-test>"
+                              tabindex="0"
                               type="checkbox"
                             />
                           </label>
