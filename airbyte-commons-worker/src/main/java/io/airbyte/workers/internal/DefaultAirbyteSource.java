@@ -22,7 +22,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.internal.exception.SourceException;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
 import java.time.Duration;

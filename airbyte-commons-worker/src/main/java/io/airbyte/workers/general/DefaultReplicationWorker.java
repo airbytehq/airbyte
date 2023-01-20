@@ -320,18 +320,18 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
-                                                           final AirbyteDestination destination,
-                                                           final ConfiguredAirbyteCatalog catalog,
-                                                           final AtomicBoolean cancelled,
-                                                           final AirbyteMapper mapper,
-                                                           final MessageTracker messageTracker,
-                                                           final ConnectorConfigUpdater connectorConfigUpdater,
-                                                           final Map<String, String> mdc,
-                                                           final RecordSchemaValidator recordSchemaValidator,
-                                                           final WorkerMetricReporter metricReporter,
-                                                           final ThreadedTimeTracker timeHolder,
-                                                           final UUID sourceId,
-                                                           final boolean fieldSelectionEnabled) {
+                                                    final AirbyteDestination destination,
+                                                    final ConfiguredAirbyteCatalog catalog,
+                                                    final AtomicBoolean cancelled,
+                                                    final AirbyteMapper mapper,
+                                                    final MessageTracker messageTracker,
+                                                    final ConnectorConfigUpdater connectorConfigUpdater,
+                                                    final Map<String, String> mdc,
+                                                    final RecordSchemaValidator recordSchemaValidator,
+                                                    final WorkerMetricReporter metricReporter,
+                                                    final ThreadedTimeTracker timeHolder,
+                                                    final UUID sourceId,
+                                                    final boolean fieldSelectionEnabled) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -342,7 +342,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         populatedStreamToSelectedFields(catalog, streamToSelectedFields);
       }
       try {
-        final Duration MAX_FETCH_SECONDS = Duration.ofSeconds(30);
+        final Duration MAX_FETCH_SECONDS = Duration.ofHours(30);
         long lastMessageRecieved = System.currentTimeMillis();
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
