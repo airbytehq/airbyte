@@ -16,10 +16,7 @@ export const LargeEnrollmentCallout: React.FC = () => {
   const { showEnrollmentModal } = useShowEnrollmentModal();
   const { userDidEnroll } = useFreeConnectorProgram();
 
-  return userDidEnroll ? (
-    // eslint-disable-next-line react/jsx-no-useless-fragment
-    <></>
-  ) : (
+  return userDidEnroll ? null : (
     <Callout variant="boldInfo" className={styles.container}>
       <FlexContainer direction="row" alignItems="center" className={styles.flexRow}>
         <FlexItem grow={false} alignSelf="center">

@@ -20,10 +20,7 @@ export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) =
 export const InlineEnrollmentCallout: React.FC = () => {
   const { userDidEnroll } = useFreeConnectorProgram();
 
-  return userDidEnroll ? (
-    // eslint-disable-next-line react/jsx-no-useless-fragment
-    <></>
-  ) : (
+  return userDidEnroll ? null : (
     <Callout variant="info" className={styles.container}>
       <Text size="sm">
         <FormattedMessage
