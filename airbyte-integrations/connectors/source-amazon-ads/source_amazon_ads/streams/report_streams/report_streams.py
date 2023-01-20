@@ -116,7 +116,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._session = requests.Session()
         self._model = self._generate_model()
         self._start_date: Optional[Date] = config.get("start_date")
-        self._look_back_window: int = config.get("look_back_window")
+        self._look_back_window: int = config["look_back_window"]
         # Timeout duration in minutes for Reports. Default is 180 minutes.
         self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
         # Maximum retries Airbyte will attempt for fetching report data. Default is 5.
