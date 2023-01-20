@@ -6,7 +6,7 @@ import json
 import logging
 import traceback
 from json import JSONDecodeError
-from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
+from typing import Any, Dict, Iterable, Iterator, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
@@ -21,17 +21,21 @@ from connector_builder.generated.models.stream_read_slices import StreamReadSlic
 from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
-from connector_builder.impl.adapter import CdkAdapter
+from connector_builder.impl.adapter import CdkAdapter, CdkAdapterFactory
 from fastapi import Body, HTTPException
 from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
+
     logger = logging.getLogger("airbyte.connector-builder")
 
-    def __init__(self, adapter_cls: Callable[[Dict[str, Any]], CdkAdapter], max_record_limit: int = 1000):
-        self.adapter_cls = adapter_cls
+    def __init__(self, adapter_factory: CdkAdapterFactory, max_pages_per_slice, max_slices, max_record_limit: int = 1000):
+        self.adapter_factory = adapter_factory
+        self._max_pages_per_slice = max_pages_per_slice
+        self._max_slices = max_slices
         self.max_record_limit = max_record_limit
+
         super().__init__()
 
     async def get_manifest_template(self) -> str:
@@ -144,8 +148,17 @@ spec:
                 detail=f"Could not perform read with with error: {error.args[0]}",
             )
 
-        return StreamRead(logs=log_messages, slices=slices,
+        return StreamRead(logs=log_messages, slices=slices, test_read_limit_reached=self._has_reached_limit(slices),
                           inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream))
+
+    def _has_reached_limit(self, slices):
+        if len(slices) >= self._max_slices:
+            return True
+
+        for slice in slices:
+            if len(slice.pages) >= self._max_pages_per_slice:
+                return True
+        return False
 
     def _get_message_groups(self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int) -> Iterable[
         Union[StreamReadPages, AirbyteLogMessage]]:
@@ -237,7 +250,7 @@ spec:
 
     def _create_low_code_adapter(self, manifest: Dict[str, Any]) -> CdkAdapter:
         try:
-            return self.adapter_cls(manifest=manifest)
+            return self.adapter_factory.create(manifest)
         except ValidationError as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
             self.logger.error(f"Invalid connector manifest with error: {error.message} - {DefaultApiImpl._get_stacktrace_as_string(error)}")
