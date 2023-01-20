@@ -8,12 +8,16 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
+import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
@@ -31,9 +35,13 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.commons.text.StringSubstitutor;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -114,7 +122,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withDockerImage(config.getSourceDockerImage())
           .withProtocolVersion(config.getSourceProtocolVersion())
           .withIsCustomConnector(config.getIsSourceCustomConnector())
-          .withAllowedHosts(sourceDefinition.getAllowedHosts());
+          .withAllowedHosts(replaceHostsWithConfigValues(sourceDefinition.getAllowedHosts(), config.getSourceConfiguration()));
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
@@ -125,7 +133,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
           .withSupportsDbt(destinationDefinition.getSupportsDbt())
           .withNormalizationIntegrationType(normalizationIntegrationType)
-          .withAllowedHosts(destinationDefinition.getAllowedHosts());
+          .withAllowedHosts(replaceHostsWithConfigValues(destinationDefinition.getAllowedHosts(), config.getDestinationConfiguration()));
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
@@ -158,6 +166,40 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
     return getSyncWorkflowInput(new SyncInput(
         input.getAttemptNumber(),
         input.getJobId()));
+  }
+
+  /*
+   * Note: This method does not interact with the secret manager. It is currently expected that all
+   * replacement values are not secret (e.g. host vs password). This also assumed that the JSON config
+   * for a connector has a single depth.
+   */
+  private AllowedHosts replaceHostsWithConfigValues(AllowedHosts allowedHosts, JsonNode config) throws IOException {
+    if (allowedHosts == null || allowedHosts.getHosts() == null) {
+      return null;
+    }
+
+    final List<String> resolvedHosts = new ArrayList<>();
+    final Map<String, String> valuesMap = new HashMap<>();
+    final JsonParser jsonParser = config.traverse();
+    while (!jsonParser.isClosed()) {
+      if (jsonParser.nextToken() == JsonToken.FIELD_NAME) {
+        final String key = jsonParser.getCurrentName();
+        if (config.get(key) != null) {
+          valuesMap.put(key, config.get(key).textValue());
+        }
+      }
+    }
+
+    // I substitute strings with ${} access, e.g. "The ${animal} jumped over the ${target}" with {animal: fox, target: fence}
+    final StringSubstitutor sub = new StringSubstitutor(valuesMap);
+    final List<String> hosts = allowedHosts.getHosts();
+    for (String host : hosts) {
+      resolvedHosts.add(sub.replace(host));
+    }
+
+    final AllowedHosts resolvedAllowedHosts = new AllowedHosts();
+    resolvedAllowedHosts.setHosts(resolvedHosts);
+    return resolvedAllowedHosts;
   }
 
 }
