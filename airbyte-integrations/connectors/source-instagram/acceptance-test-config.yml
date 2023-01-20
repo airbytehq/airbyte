@@ -21,6 +21,8 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         empty_streams:
+          - name: "media"
+            bypass_reason: "Floating data"
           - name: "stories"
             bypass_reason: "Stories only live for 24 hours"
           - name: "story_insights"
@@ -54,7 +56,7 @@ acceptance_tests:
         cursor_paths:
           user_insights: ["17841408147298757", "date"]
         # because state is complex and stores values for different accounts on one hand
-        # and there's no way we can set multiple cursor paths for a single stream,
+        # and there's no way we can set multiple cursor paths for a single stream on the other,
         # this test should be skipped as it is false negative.
         # (we can not restrict accounts via config as well)
         skip_comprehensive_incremental_tests: true
