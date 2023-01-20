@@ -51,7 +51,7 @@
         "order": 6,
         "type": "array",
         "items": {
-          "type": "string"
+          "type": "integer"
         }
       },
       "state_filter": {

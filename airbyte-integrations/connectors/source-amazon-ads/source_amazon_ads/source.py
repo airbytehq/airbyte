@@ -126,4 +126,4 @@ class SourceAmazonAds(AbstractSource):
     def _choose_profiles(config: Mapping[str, Any], profiles: List[Profile]):
         if not config.get("profiles"):
             return profiles
-        return list(filter(lambda profile: str(profile.profileId) in config["profiles"], profiles))
+        return list(filter(lambda profile: profile.profileId in config["profiles"], profiles))
