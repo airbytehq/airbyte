@@ -109,7 +109,7 @@ class DefaultDiscoverCatalogWorkerTest {
     connectorConfigUpdater = mock(ConnectorConfigUpdater.class);
 
     when(mAirbyteApiClient.getSourceApi()).thenReturn(mSourceApi);
-    when(mSourceApi.writeDiscoverFetchEvent(any())).thenReturn(DISCOVER_CATALOG_RESULT);
+    when(mSourceApi.writeDiscoverCatalogResult(any())).thenReturn(DISCOVER_CATALOG_RESULT);
 
     when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS))).thenReturn(process);
     final InputStream inputStream = mock(InputStream.class);
@@ -140,7 +140,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
     ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> argument =
         ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
-    verify(mSourceApi).writeDiscoverFetchEvent(argument.capture());
+    verify(mSourceApi).writeDiscoverCatalogResult(argument.capture());
     assertEquals(toClientApi(CATALOG), argument.getValue().getCatalog());
     assertEquals(SOURCE_ID, argument.getValue().getSourceId());
     assertFalse(output.getConnectorConfigurationUpdated());
@@ -174,7 +174,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
     ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> argument =
         ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
-    verify(mSourceApi).writeDiscoverFetchEvent(argument.capture());
+    verify(mSourceApi).writeDiscoverCatalogResult(argument.capture());
     assertEquals(toClientApi(CATALOG), argument.getValue().getCatalog());
     assertEquals(SOURCE_ID, argument.getValue().getSourceId());
     assertTrue(output.getConnectorConfigurationUpdated());
@@ -206,7 +206,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertFalse(output.getConnectorConfigurationUpdated());
     ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> argument =
         ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
-    verify(mSourceApi).writeDiscoverFetchEvent(argument.capture());
+    verify(mSourceApi).writeDiscoverCatalogResult(argument.capture());
     assertEquals(toClientApi(CATALOG), argument.getValue().getCatalog());
     assertEquals(SOURCE_ID, argument.getValue().getSourceId());
     verifyNoInteractions(connectorConfigUpdater);

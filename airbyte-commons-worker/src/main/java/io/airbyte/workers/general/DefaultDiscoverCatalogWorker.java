@@ -110,7 +110,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
       if (catalog.isPresent()) {
         final DiscoverCatalogResult result =
-            airbyteApiClient.getSourceApi().writeDiscoverFetchEvent(new SourceDiscoverSchemaWriteRequestBody().catalog(
+            airbyteApiClient.getSourceApi().writeDiscoverCatalogResult(new SourceDiscoverSchemaWriteRequestBody().catalog(
                 CatalogConverter.toClientApi(catalog.get())).sourceId(
                     // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
                     // it, so we check again here.
