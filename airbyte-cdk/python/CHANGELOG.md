@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.21.0
+Add AvailabilityStrategy concept and use check_availability within CheckStream
+
 ## 0.20.2
 Add missing package in previous patch release
 
