@@ -87,6 +87,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.temporal.client.WorkflowClient;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -153,6 +154,7 @@ class SchedulerHandlerTest {
   private JobConverter jobConverter;
   private ConnectionsHandler connectionsHandler;
   private EnvVariableFeatureFlags envVariableFeatureFlags;
+  private WorkflowClient workflowClient;
 
   @BeforeEach
   void setup() {
@@ -176,6 +178,7 @@ class SchedulerHandlerTest {
     eventRunner = mock(EventRunner.class);
     connectionsHandler = mock(ConnectionsHandler.class);
     envVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
+    workflowClient = mock(WorkflowClient.class);
 
     jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
 
@@ -189,7 +192,7 @@ class SchedulerHandlerTest {
         eventRunner,
         jobConverter,
         connectionsHandler,
-        envVariableFeatureFlags);
+        envVariableFeatureFlags, workflowClient);
   }
 
   @Test

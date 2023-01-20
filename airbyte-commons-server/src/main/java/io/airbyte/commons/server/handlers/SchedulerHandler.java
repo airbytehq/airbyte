@@ -9,6 +9,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.model.generated.AdvancedAuth;
 import io.airbyte.api.model.generated.AuthSpecification;
 import io.airbyte.api.model.generated.CatalogDiff;
@@ -55,6 +56,9 @@ import io.airbyte.commons.server.scheduler.SynchronousResponse;
 import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
+import io.airbyte.commons.temporal.TemporalJobType;
+import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -75,6 +79,7 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.temporal.client.WorkflowClient;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -100,6 +105,7 @@ public class SchedulerHandler {
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
   private final FeatureFlags envVariableFeatureFlags;
+  private final WorkflowClient workflowClient;
 
   // TODO: Convert to be fully using micronaut
   public SchedulerHandler(final ConfigRepository configRepository,
@@ -111,7 +117,8 @@ public class SchedulerHandler {
                           final LogConfigs logConfigs,
                           final EventRunner eventRunner,
                           final ConnectionsHandler connectionsHandler,
-                          final FeatureFlags envVariableFeatureFlags) {
+                          final FeatureFlags envVariableFeatureFlags,
+                          final WorkflowClient workflowClient) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -122,7 +129,8 @@ public class SchedulerHandler {
         eventRunner,
         new JobConverter(workerEnvironment, logConfigs),
         connectionsHandler,
-        envVariableFeatureFlags);
+        envVariableFeatureFlags,
+        workflowClient);
   }
 
   @VisibleForTesting
@@ -135,7 +143,8 @@ public class SchedulerHandler {
                    final EventRunner eventRunner,
                    final JobConverter jobConverter,
                    final ConnectionsHandler connectionsHandler,
-                   final FeatureFlags envVariableFeatureFlags) {
+                   final FeatureFlags envVariableFeatureFlags,
+                   final WorkflowClient workflowClient) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -146,6 +155,7 @@ public class SchedulerHandler {
     this.jobConverter = jobConverter;
     this.connectionsHandler = connectionsHandler;
     this.envVariableFeatureFlags = envVariableFeatureFlags;
+    this.workflowClient = workflowClient;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -393,10 +403,12 @@ public class SchedulerHandler {
   // determine whether 1. the source schema change resulted in a broken connection or 2. the user
   // wants the connection disabled when non-breaking changes are detected. If so, disable that
   // connection. Modify the current discoveredSchema object to add a CatalogDiff,
-  // containsBreakingChange paramter, and connectionStatus parameter.
+  // containsBreakingChange parameter, and connectionStatus parameter.
   private void generateCatalogDiffsAndDisableConnectionsIfNeeded(final SourceDiscoverSchemaRead discoveredSchema,
                                                                  final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
+      throws JsonValidationException, ConfigNotFoundException, IOException, InterruptedException, ApiException {
+    final ConnectionNotificationWorkflow notificationWorkflow =
+        workflowClient.newWorkflowStub(ConnectionNotificationWorkflow.class, TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.NOTIFY));
     final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
     for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
       final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
@@ -417,6 +429,9 @@ public class SchedulerHandler {
       }
       updateObject.status(connectionStatus);
       connectionsHandler.updateConnection(updateObject);
+      if (!diff.getTransforms().isEmpty()) {
+        notificationWorkflow.sendSchemaChangeNotification(connectionRead.getConnectionId());
+      }
       if (connectionRead.getConnectionId().equals(discoverSchemaRequestBody.getConnectionId())) {
         discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
       }
