@@ -212,8 +212,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         This method is overridden to handle GoogleAdsException with EXPIRED_PAGE_TOKEN error code,
         and update `start_date` key in the `stream_slice` with the latest read record's cursor value, then retry the sync.
         """
+        self.incremental_sieve_logger.bump()
         while True:
-            self.incremental_sieve_logger.bump()
             self.incremental_sieve_logger.info("Starting a while loop iteration")
             customer_id = stream_slice and stream_slice["customer_id"]
             try:
