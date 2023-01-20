@@ -191,5 +191,6 @@
   "freeConnectorProgram.enrollmentModal.cancelButtonText": "Cancel",
   "freeConnectorProgram.enrollmentModal.enrollButtonText": "Enroll now!",
   "freeConnectorProgram.enrollmentModal.unvalidatedEmailButtonText": "Resend email validation",
+  "freeConnectorProgram.releaseStageBadge.free": "Free",
   "freeConnectorProgram.youCanEnroll": "You can <enrollLink>enroll</enrollLink> in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <freeText>free</freeText>."
 }
