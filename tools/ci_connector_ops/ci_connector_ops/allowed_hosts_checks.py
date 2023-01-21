@@ -11,10 +11,6 @@ from ci_connector_ops import utils
 RELEASE_STAGES_TO_CHECK = ["generally_available", "beta"]
 
 def get_connectors_missing_allowed_hosts() -> List[str]:
-    """
-    Returns:
-        List[str]: List of changed connector names that are not matching test strictness level expectations.
-    """
     connectors_missing_allowed_hosts = []
     changed_connector_names = utils.get_changed_connector_names()
 
@@ -32,7 +28,7 @@ def connector_has_allowed_hosts(connector_name: str) -> bool:
   # print("----- " + connector_name  + " -----")
   # print(definition)
   try:
-    return definition["allowed_hosts"] != None
+    return definition["allowedHosts"] != None
   except KeyError:
     return False
 
@@ -41,7 +37,7 @@ def check_allowed_hosts():
     connectors_missing_allowed_hosts = get_connectors_missing_allowed_hosts()
     if connectors_missing_allowed_hosts:
         logging.error(
-            f"The following {RELEASE_STAGES_TO_CHECK} connectors must include allowed_hosts: {connectors_missing_allowed_hosts}"
+            f"The following {RELEASE_STAGES_TO_CHECK} connectors must include allowedHosts: {connectors_missing_allowed_hosts}"
         )
         sys.exit(1)
     else:
