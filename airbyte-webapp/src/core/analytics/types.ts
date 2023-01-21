@@ -51,6 +51,8 @@ export const enum Action {
   TOGGLE_UI_YAML = "ToggleUiYaml",
   YAML_TO_UI_CONVERSION_FAILURE = "YamlToUiConversionFailure",
   DISCARD_YAML_CHANGES = "DiscardYamlChanges",
+  OVERWRITE_SCHEMA = "OverwriteSchema",
+  MERGE_SCHEMA = "MergeSchema",
 }
 
 export type EventParams = Record<string, unknown>;

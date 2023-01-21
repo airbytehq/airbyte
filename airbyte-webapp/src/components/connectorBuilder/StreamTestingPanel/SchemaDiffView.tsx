@@ -13,7 +13,9 @@ import { Callout } from "components/ui/Callout";
 import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { Action, Namespace } from "core/analytics";
 import { StreamReadInferredSchema } from "core/request/ConnectorBuilderClient";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import {
   useConnectorBuilderFormState,
   useConnectorBuilderTestState,
@@ -62,6 +64,7 @@ function getDiff(existingSchema: string | undefined, detectedSchema: object): Di
 }
 
 export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }) => {
+  const analyticsService = useAnalyticsService();
   const { testStreamIndex } = useConnectorBuilderTestState();
   const { editorView } = useConnectorBuilderFormState();
   const [field, , helpers] = useField(`streams[${testStreamIndex}].schema`);
@@ -97,6 +100,11 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
                     disabled={field.value === formattedSchema}
                     onClick={() => {
                       helpers.setValue(formattedSchema);
+                      analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.OVERWRITE_SCHEMA, {
+                        actionDescription: "Declared schema ovewritten by detected schema",
+                        declared_schema: field.value,
+                        detected_schema: formattedSchema,
+                      });
                     }}
                   >
                     <FormattedMessage
@@ -117,6 +125,12 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
                           variant="dark"
                           onClick={() => {
                             helpers.setValue(schemaDiff.mergedSchema);
+                            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.MERGE_SCHEMA, {
+                              actionDescription: "Detected and Declared schemas merged to update declared schema",
+                              declared_schema: field.value,
+                              detected_schema: formattedSchema,
+                              merged_schema: schemaDiff.mergedSchema,
+                            });
                           }}
                         >
                           <FormattedMessage id="connectorBuilder.mergeSchemaButton" />
