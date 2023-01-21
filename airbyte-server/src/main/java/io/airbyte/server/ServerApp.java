@@ -49,6 +49,7 @@ import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.helper.ConnectionHelper;
+import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -215,9 +216,10 @@ public class ServerApp implements ServerRunnable {
     final ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
     final StreamResetRecordsHelper streamResetRecordsHelper = new StreamResetRecordsHelper(jobPersistence, streamResetPersistence);
 
+    final WorkflowClient workflowClient = TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace());
     final TemporalClient temporalClient = new TemporalClient(
         configs.getWorkspaceRoot(),
-        TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace()),
+        workflowClient,
         temporalService,
         streamResetPersistence,
         connectionManagerUtils,
@@ -265,7 +267,7 @@ public class ServerApp implements ServerRunnable {
         configs.getLogConfigs(),
         eventRunner,
         connectionsHandler,
-        envVariableFeatureFlags);
+        envVariableFeatureFlags, workflowClient);
 
     final AirbyteProtocolVersionRange airbyteProtocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(),
         configs.getAirbyteProtocolVersionMax());
