@@ -29,6 +29,20 @@
     },
     "send_billing_email": {
       "type": ["boolean", "null"]
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   }
 }
