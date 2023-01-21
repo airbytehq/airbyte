@@ -48,6 +48,9 @@ export const enum Action {
   STREAM_TEST_FAILURE = "StreamTestFailure",
   RESET_ALL = "ResetAll",
   DOWNLOAD_YAML = "DownloadYaml",
+  TOGGLE_UI_YAML = "ToggleUiYaml",
+  YAML_TO_UI_CONVERSION_FAILURE = "YamlToUiConversionFailure",
+  DISCARD_YAML_CHANGES = "DiscardYamlChanges",
 }
 
 export type EventParams = Record<string, unknown>;
