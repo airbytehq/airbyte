@@ -5,7 +5,12 @@ import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
-import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import {
+  useConnectorBuilderFormState,
+  useConnectorBuilderTestState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
@@ -20,8 +25,11 @@ export const StreamTester: React.FC<{
   const {
     streams,
     testStreamIndex,
-    streamRead: { data: streamReadData, refetch: readStream, isError, error, isFetching },
+    streamRead: { data: streamReadData, refetch: readStream, isError, error, isFetching, isFetchedAfterMount },
   } = useConnectorBuilderTestState();
+
+  const { jsonManifest } = useConnectorBuilderFormState();
+  const analyticsService = useAnalyticsService();
 
   const [logsFlex, setLogsFlex] = useState(0);
   const handleLogsTitleClick = () => {
@@ -43,6 +51,25 @@ export const StreamTester: React.FC<{
       setLogsFlex(0);
     }
   }, [isError]);
+
+  useEffect(() => {
+    // This will only be true if the data was manually refetched by the user clicking the Test button,
+    // so the analytics events won't fire just from the user switching between streams, as desired
+    if (isFetchedAfterMount) {
+      if (errorMessage) {
+        analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_TEST_FAILURE, {
+          actionDescription: "Stream test failed",
+          stream: jsonManifest.streams[testStreamIndex],
+          error_message: errorMessage,
+        });
+      } else {
+        analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_TEST_SUCCESS, {
+          actionDescription: "Stream test succeeded",
+          stream: jsonManifest.streams[testStreamIndex],
+        });
+      }
+    }
+  }, [analyticsService, errorMessage, isFetchedAfterMount, jsonManifest.streams, testStreamIndex]);
 
   return (
     <div className={styles.container}>
