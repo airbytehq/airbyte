@@ -1,0 +1,326 @@
+version: "0.1.0"
+
+definitions:
+  nested_selector:
+    type: RecordSelector
+    extractor:
+      type: CustomRecordExtractor
+      class_name: source_chargebee.components.NestedDpathExtractor
+      field_pointer: [ "list", '*', "{{ options.get('name') }}" ]
+#      json_structure: nested
+  custom_field_transformation:
+    type: CustomTransformation
+    class_name: source_chargebee.components.CustomFieldTransformation
+  requester:
+    type: HttpRequester
+    url_base: "https://{{ config['site'] }}.chargebee.com/api/v2"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['site_api_key'] }}"
+    error_handler:
+      type: "DefaultErrorHandler"
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+  date_stream_slicer:
+    type: DatetimeStreamSlicer
+    start_datetime:
+      datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+      datetime_format: "%s"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%s') }}"
+      datetime_format: "%s"
+    datetime_format: "%s"
+    cursor_granularity: PT1S
+    step: P100Y # set long interval to bypass slicing
+    start_time_option:
+      field_name: updated_at[after]
+      inject_into: request_parameter
+    cursor_field: "{{ options.get('stream_cursor_field', 'updated_at') }}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "*ref(definitions.nested_selector)"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.get('next_offset')|tojson() }}"
+        stop_condition: "{{ not response.next_offset }}"
+        page_size_option:
+          inject_into: request_parameter
+          field_name: limit
+          page_size: 100
+      page_token_option:
+        inject_into: request_parameter
+        field_name: offset
+      url_base:
+        $ref: "*ref(definitions.requester.url_base)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  base_incremental_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.retriever.requester)"
+        request_options_provider:
+          request_parameters:
+            sort_by[asc]: updated_at
+            include_deleted: "true"
+      stream_slicer:
+        $ref: "*ref(definitions.date_stream_slicer)"
+    transformations:
+      - "*ref(definitions.custom_field_transformation)"
+  addon_stream:
+    is_active: "{{ config['product_catalog_version'] == '1.0' }}"
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "addon"
+      primary_key: "id"
+      path: "/addons"
+      stream_cursor_field: "updated_at"
+  attached_item_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.item_stream)"
+            parent_key: id
+            stream_slice_field: id
+    $options:
+      name: "attached_item"
+      primary_key: "id"
+      path: "/items/{{ stream_slice.id }}/attached_items"
+  customer_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "customer"
+      primary_key: "id"
+      path: "/customers"
+      stream_cursor_field: "updated_at"
+  contact_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.customer_stream)"
+            parent_key: id
+            stream_slice_field: id
+    $options:
+      name: "contact"
+      primary_key: "id"
+      path: "/customers/{{ stream_slice.id }}/contacts"
+  coupon_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.base_incremental_stream.retriever.requester)"
+        request_options_provider:
+          request_parameters:
+            sort_by[asc]: created_at
+            include_deleted: "true"
+    $options:
+      name: "coupon"
+      primary_key: "id"
+      path: "/coupons"
+      stream_cursor_field: "updated_at"
+  credit_note_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.base_incremental_stream.retriever.requester)"
+        request_options_provider:
+          request_parameters:
+            sort_by[asc]: date
+            include_deleted: "true"
+    $options:
+      name: "credit_note"
+      primary_key: "id"
+      path: "/credit_notes"
+      stream_cursor_field: "updated_at"
+  event_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_stream.retriever)"
+      stream_slicer:
+        $ref: "*ref(definitions.date_stream_slicer)"
+        start_time_option:
+          field_name: occurred_at[after]
+          inject_into: request_parameter
+      requester:
+        $ref: "*ref(definitions.base_incremental_stream.retriever.requester)"
+        request_options_provider:
+          request_parameters:
+            sort_by[asc]: "occurred_at"
+            include_deleted: "true"
+    $options:
+      name: "event"
+      primary_key: "id"
+      path: "/events"
+      stream_cursor_field: "occurred_at"
+  gift_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "gift"
+      primary_key: "id"
+      path: "/gifts"
+      stream_cursor_field: "updated_at"
+  order_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "order"
+      primary_key: "id"
+      path: "/orders"
+      stream_cursor_field: "updated_at"
+  hosted_page_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "hosted_page"
+      primary_key: "id"
+      path: "/hosted_pages"
+      stream_cursor_field: "updated_at"
+  invoice_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "invoice"
+      primary_key: "id"
+      path: "/invoices"
+      stream_cursor_field: "updated_at"
+  item_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "item"
+      primary_key: "id"
+      path: "/items"
+      stream_cursor_field: "updated_at"
+  item_price_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "item_price"
+      primary_key: "id"
+      path: "/item_prices"
+      stream_cursor_field: "updated_at"
+  payment_source_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "payment_source"
+      primary_key: "id"
+      path: "/payment_sources"
+      stream_cursor_field: "updated_at"
+  plan_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "plan"
+      primary_key: "id"
+      path: "/plans"
+      stream_cursor_field: "updated_at"
+  promotional_credit_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_stream.retriever)"
+      stream_slicer:
+        $ref: "*ref(definitions.date_stream_slicer)"
+        start_time_option:
+          field_name: created_at[after]
+          inject_into: request_parameter
+    $options:
+      name: "promotional_credit"
+      primary_key: "id"
+      path: "/promotional_credits"
+      stream_cursor_field: "created_at"
+  subscription_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "subscription"
+      primary_key: "id"
+      path: "/subscriptions"
+      stream_cursor_field: "updated_at"
+  transaction_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "transaction"
+      primary_key: "id"
+      path: "/transactions"
+      stream_cursor_field: "updated_at"
+  unbilled_charge_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "unbilled_charge"
+      primary_key: "id"
+      path: "/unbilled_charges"
+      stream_cursor_field: "updated_at"
+  virtual_bank_account_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "virtual_bank_account"
+      primary_key: "id"
+      path: "/virtual_bank_accounts"
+      stream_cursor_field: "updated_at"
+  quote_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.base_incremental_stream.retriever.requester)"
+        request_options_provider:
+          request_parameters:
+            sort_by[asc]: date
+            include_deleted: "true"
+    $options:
+      name: "quote"
+      primary_key: "id"
+      path: "/quotes"
+      stream_cursor_field: "updated_at"
+  quote_line_group_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.quote_stream)"
+            parent_key: id
+            stream_slice_field: id
+    $options:
+      name: "quote_line_group"
+      primary_key: "id"
+      path: "/quotes/{{ stream_slice.id }}/quote_line_groups"
+
+streams:
+  - "*ref(definitions.addon_stream)"
+  - "*ref(definitions.attached_item_stream)"
+  - "*ref(definitions.customer_stream)"
+  - "*ref(definitions.coupon_stream)"
+  - "*ref(definitions.contact_stream)"
+  - "*ref(definitions.credit_note_stream)"
+  - "*ref(definitions.event_stream)"
+  - "*ref(definitions.gift_stream)"
+  - "*ref(definitions.order_stream)"
+  - "*ref(definitions.hosted_page_stream)"
+  - "*ref(definitions.invoice_stream)"
+  - "*ref(definitions.item_stream)"
+  - "*ref(definitions.item_price_stream)"
+  - "*ref(definitions.plan_stream)"
+  - "*ref(definitions.payment_source_stream)"
+  - "*ref(definitions.promotional_credit_stream)"
+  - "*ref(definitions.subscription_stream)"
+  - "*ref(definitions.transaction_stream)"
+  - "*ref(definitions.unbilled_charge_stream)"
+  - "*ref(definitions.virtual_bank_account_stream)"
+  - "*ref(definitions.quote_stream)"
+  - "*ref(definitions.quote_line_group_stream)"
+
+check:
+  stream_names:
+    - "event"

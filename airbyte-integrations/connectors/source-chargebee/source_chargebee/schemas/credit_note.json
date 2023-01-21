@@ -26,10 +26,9 @@
     "reason_code": {
       "type": ["string", "null"],
       "enum": [
-        "write_off",
-        "subscription_change",
-        "subscription_cancellation",
-        "subscription_pause"
+        "write_off", "subscription_change", "subscription_cancellation", "subscription_pause",
+        "chargeback", "product_unsatisfactory", "service_unsatisfactory", "order_change",
+        "order_cancellation", "waiver", "other", "fraudulent"
       ]
     },
     "status": {
@@ -191,11 +190,9 @@
             "type": ["string", "null"],
             "enum": [
               "adhoc",
-
               "plan_setup",
               "plan",
               "addon",
-
               "plan_item_price",
               "addon_item_price",
               "charge_item_price"
@@ -276,7 +273,6 @@
             "type": ["integer", "null"],
             "minimum": 0
           },
-
           "entity_id": {
             "type": ["string", "null"],
             "maxLength": 100

@@ -25,7 +25,11 @@
     },
     "payment_method": {
       "type": ["string", "null"],
-      "enum": ["card", "cash", "check"]
+      "enum": [
+        "card", "cash", "check", "chargeback", "bank_transfer", "amazon_payments", "paypal_express_checkout",
+        "direct_debit", "alipay", "unionpay", "apple_pay", "wechat_pay", "ach_credit", "sepa_credit", "ideal",
+        "google_pay", "sofort", "bancontact", "giropay", "dotpay", "other", "upi", "netbanking_emandates", "custom"
+      ]
     },
     "refrence_number": {
       "type": ["string", "null"],
@@ -93,7 +97,7 @@
       "type": ["string", "null"]
     },
     "amount": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "id_at_gateway": {
       "type": ["string", "null"],
@@ -147,7 +151,7 @@
       "max-length": 250
     },
     "amount_unused": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "masked_card_number": {
       "type": ["string", "null"],

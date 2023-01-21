@@ -5,9 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source-chargebee'
-}
-
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
+    moduleDirectory 'source_chargebee'
 }
