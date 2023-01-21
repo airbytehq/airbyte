@@ -476,7 +476,8 @@ class Stream(HttpStream, ABC):
             casted_value = target_type(field_value)
         except ValueError:
             logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
-            return field_value
+            #If I return the uncasted value, the stream will fail. Better to remove that value and still get the data.
+            return None
 
         return casted_value
 
@@ -1343,6 +1344,7 @@ class FormSubmissions(IncrementalStream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "updatedAt"
+    primary_key = ["email", "submittedAt", "formId"]
     scopes = {"forms"}
     _init_state = None
     _earliest_date = None

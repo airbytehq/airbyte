@@ -30,8 +30,6 @@ acceptance_tests:
         empty_streams:
           - name: "form_submissions"
             bypass_reason: "unable to populate"
-          - name: "form_submissions"
-            bypass_reason: "unable to populate"
           - name: "ticket_pipelines"
             bypass_reason: "unable to populate"
           - name: "engagements_meetings"
@@ -41,8 +39,6 @@ acceptance_tests:
           - name: "engagements"
             bypass_reason: "unable to populate"
           - name: "engagements_calls"
-            bypass_reason: "unable to populate"
-          - name: "quotes"
             bypass_reason: "unable to populate"
         # This test commented out, since it produces errors during active testing
         # expect_records:
