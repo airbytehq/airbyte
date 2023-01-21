@@ -11,7 +11,6 @@ from airbyte_cdk.sources.declarative.auth.token import (
     BasicHttpAuthenticator,
     BearerAuthenticator,
     SessionTokenAuthenticator,
-    ShortLivedTokenAuthenticator,
 )
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
@@ -99,7 +98,6 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "Spec": Spec,
     "SubstreamSlicer": SubstreamSlicer,
     "SessionTokenAuthenticator": SessionTokenAuthenticator,
-    "ShortLivedTokenAuthenticator": ShortLivedTokenAuthenticator,
     "WaitUntilTimeFromHeader": WaitUntilTimeFromHeaderBackoffStrategy,
     "WaitTimeFromHeader": WaitTimeFromHeaderBackoffStrategy,
 }

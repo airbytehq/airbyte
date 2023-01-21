@@ -14,7 +14,6 @@ from airbyte_cdk.sources.declarative.auth.token import (
     BasicHttpAuthenticator,
     BearerAuthenticator,
     SessionTokenAuthenticator,
-    ShortLivedTokenAuthenticator,
 )
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
@@ -75,9 +74,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RemoveFields as RemoveFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
-    ShortLivedTokenAuthenticator as ShortLivedTokenAuthenticatorModel,
-)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SingleSlice as SingleSliceModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
@@ -613,18 +609,6 @@ def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, co
     )
 
 
-def create_access_token_authenticator(model: ShortLivedTokenAuthenticatorModel, config: Config, **kwargs) -> ShortLivedTokenAuthenticator:
-    return ShortLivedTokenAuthenticator(
-        client_id=model.client_id,
-        secret_key=model.secret_key,
-        url=model.url,
-        token_key=model.token_key,
-        lifetime=model.lifetime,
-        config=config,
-        options=model.options,
-    )
-
-
 def create_simple_retriever(model: SimpleRetrieverModel, config: Config, **kwargs) -> SimpleRetriever:
     requester = _create_component_from_model(model=model.requester, config=config)
     record_selector = _create_component_from_model(model=model.record_selector, config=config)
@@ -728,7 +712,6 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     RemoveFieldsModel: create_remove_fields,
     RequestOptionModel: create_request_option,
     SessionTokenAuthenticatorModel: create_session_token_authenticator,
-    ShortLivedTokenAuthenticatorModel: create_access_token_authenticator,
     SimpleRetrieverModel: create_simple_retriever,
     SingleSliceModel: create_single_slice,
     SpecModel: create_spec,

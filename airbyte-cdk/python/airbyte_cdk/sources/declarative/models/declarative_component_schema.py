@@ -313,16 +313,6 @@ class SessionTokenAuthenticator(BaseModel):
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
-class ShortLivedTokenAuthenticator(BaseModel):
-    type: Literal["ShortLivedTokenAuthenticator"]
-    client_id: str
-    secret_key: str
-    url: str
-    token_key: Optional[str] = "access_token"
-    lifetime: Optional[str] = "PT3600S"
-    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
-
-
 class SingleSlice(BaseModel):
     type: Literal["SingleSlice"]
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
@@ -444,7 +434,6 @@ class HttpRequester(BaseModel):
             OAuthAuthenticator,
             NoAuth,
             SessionTokenAuthenticator,
-            ShortLivedTokenAuthenticator,
         ]
     ] = None
     error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = None
