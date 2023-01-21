@@ -11,6 +11,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.DestinationApi;
+import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
@@ -70,6 +71,11 @@ public class ApiClientBeanFactory {
   @Singleton
   public SourceApi sourceApi(@Named("apiClient") final ApiClient apiClient) {
     return new SourceApi(apiClient);
+  }
+
+  @Singleton
+  public JobsApi jobsApi(@Named("apiClient") final ApiClient apiClient) {
+    return new JobsApi(apiClient);
   }
 
   @Singleton
