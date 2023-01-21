@@ -542,7 +542,7 @@ class JobCreationAndStatusUpdateActivityTest {
     final List<ReleaseStage> expected = List.of(ReleaseStage.custom, ReleaseStage.alpha, ReleaseStage.beta, ReleaseStage.generally_available);
 
     Assertions.assertThat(JobCreationAndStatusUpdateActivityImpl.orderByReleaseStageAsc(input))
-            .containsExactlyElementsOf(expected);
+        .containsExactlyElementsOf(expected);
   }
 
 }

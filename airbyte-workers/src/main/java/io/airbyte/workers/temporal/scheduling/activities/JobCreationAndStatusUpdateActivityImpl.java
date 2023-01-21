@@ -66,7 +66,6 @@ import io.micronaut.core.util.CollectionUtils;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -78,8 +77,6 @@ import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -488,9 +485,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private static List<ReleaseStage> orderByReleaseStageAsc(final List<ReleaseStage> releaseStages) {
     // Using collector to get a mutable list
     return releaseStages.stream()
-            .filter(stage -> stage != null)
-            .sorted(RELEASE_STAGE_COMPARATOR)
-            .toList();
+        .filter(stage -> stage != null)
+        .sorted(RELEASE_STAGE_COMPARATOR)
+        .toList();
   }
 
   /**
