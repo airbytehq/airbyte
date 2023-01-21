@@ -9,7 +9,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 
 public interface StateAggregator {
 
-  void ingest(final AirbyteStateMessage stateMessage);
+  void ingest(AirbyteStateMessage stateMessage);
 
   State getAggregated();
 

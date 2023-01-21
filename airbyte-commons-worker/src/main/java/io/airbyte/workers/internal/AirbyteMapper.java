@@ -13,7 +13,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
  */
 public interface AirbyteMapper {
 
-  ConfiguredAirbyteCatalog mapCatalog(final ConfiguredAirbyteCatalog catalog);
+  ConfiguredAirbyteCatalog mapCatalog(ConfiguredAirbyteCatalog catalog);
 
   AirbyteMessage mapMessage(AirbyteMessage message);
 

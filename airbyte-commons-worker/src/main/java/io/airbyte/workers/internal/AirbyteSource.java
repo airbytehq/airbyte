@@ -23,7 +23,7 @@ public interface AirbyteSource extends AutoCloseable {
    * @param jobRoot - directory where the job can write data.
    * @throws Exception - throws if there is any failure in startup.
    */
-  void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception;
+  void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception;
 
   /**
    * Means no more data will be emitted by the Source. This may be because all data has already been

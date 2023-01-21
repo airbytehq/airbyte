@@ -9,7 +9,7 @@ import java.io.BufferedWriter;
 public class DefaultAirbyteMessageBufferedWriterFactory implements AirbyteMessageBufferedWriterFactory {
 
   @Override
-  public AirbyteMessageBufferedWriter createWriter(final BufferedWriter writer) {
+  public AirbyteMessageBufferedWriter createWriter(BufferedWriter writer) {
     return new DefaultAirbyteMessageBufferedWriter(writer);
   }
 

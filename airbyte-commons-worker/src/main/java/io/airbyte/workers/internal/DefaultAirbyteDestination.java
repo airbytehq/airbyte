@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultAirbyteDestination implements AirbyteDestination{
+public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestination.class);
   public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()

@@ -24,7 +24,7 @@ public interface MessageTracker {
    *
    * @param message message to derive metadata from.
    */
-  void acceptFromSource(final AirbyteMessage message);
+  void acceptFromSource(AirbyteMessage message);
 
   /**
    * Accepts an AirbyteMessage emitted from a destination and tracks any metadata about it that is
@@ -32,7 +32,7 @@ public interface MessageTracker {
    *
    * @param message message to derive metadata from.
    */
-  void acceptFromDestination(final AirbyteMessage message);
+  void acceptFromDestination(AirbyteMessage message);
 
   /**
    * Get the current source state of the stream.

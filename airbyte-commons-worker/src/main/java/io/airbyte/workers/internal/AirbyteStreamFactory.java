@@ -10,6 +10,6 @@ import java.util.stream.Stream;
 
 public interface AirbyteStreamFactory {
 
-  Stream<AirbyteMessage> create(final BufferedReader bufferedReader);
+  Stream<AirbyteMessage> create(BufferedReader bufferedReader);
 
 }
