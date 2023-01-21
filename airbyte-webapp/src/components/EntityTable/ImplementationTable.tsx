@@ -4,15 +4,15 @@ import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 
+import { ConnectorNameCell } from "components/EntityTable/components/ConnectorNameCell";
 import { Table, SortableTableHeader } from "components/ui/Table";
 
 import { useQuery } from "hooks/useQuery";
 
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
-import ConnectorCell from "./components/ConnectorCell";
-import LastSyncCell from "./components/LastSyncCell";
-import NameCell from "./components/NameCell";
+import { EntityNameCell } from "./components/EntityNameCell";
+import { LastSyncCell } from "./components/LastSyncCell";
 import styles from "./ImplementationTable.module.scss";
 import { EntityTableDataItem, SortOrderEnum } from "./types";
 
@@ -80,7 +80,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         accessor: "entityName",
         customWidth: 40,
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
-          <NameCell value={cell.value} enabled={row.original.enabled} />
+          <EntityNameCell value={cell.value} enabled={row.original.enabled} />
         ),
       },
       {
@@ -95,7 +95,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
-          <ConnectorCell value={cell.value} enabled={row.original.enabled} img={row.original.connectorIcon} />
+          <ConnectorNameCell value={cell.value} icon={row.original.connectorIcon} enabled={row.original.enabled} />
         ),
       },
       {

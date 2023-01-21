@@ -1,0 +1,14 @@
+@use "scss/variables";
+@use "scss/colors";
+
+$connector_icon_width: 20px;
+$connector_icon_margin: 10px;
+
+.content {
+  display: flex;
+  align-items: center;
+}
+
+.text {
+  width: calc(100% - #{$connector_icon_width + $connector_icon_margin});
+}

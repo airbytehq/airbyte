@@ -1,40 +1,20 @@
 import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
-import styled from "styled-components";
 
-import { ConnectorIcon } from "components/common/ConnectorIcon";
 import { StatusIcon } from "components/ui/StatusIcon";
 import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 
 import { Status } from "../types";
+import styles from "./ConnectionStatusCell.module.scss";
+import { EntityNameCell } from "./EntityNameCell";
 
-interface Props {
+interface ConnectionStatusCellProps {
+  status: string | null;
   value: string;
-  enabled?: boolean;
-  status?: string | null;
-  icon?: boolean;
-  img?: string;
+  enabled: boolean;
 }
 
-const Content = styled.div`
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-`;
-
-const Name = styled.div<{ enabled?: boolean }>`
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 500px;
-  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
-`;
-
-const Image = styled(ConnectorIcon)`
-  margin-right: 6px;
-`;
-
-const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
+export const ConnectionStatusCell: React.FC<ConnectionStatusCellProps> = ({ status, value, enabled }) => {
   const { formatMessage } = useIntl();
   const statusIconStatus = useMemo<StatusIconStatus | undefined>(
     () =>
@@ -73,12 +53,9 @@ const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
         });
 
   return (
-    <Content>
-      {status && <StatusIcon title={title} status={statusIconStatus} />}
-      {icon && <Image icon={img} />}
-      <Name enabled={enabled}>{value}</Name>
-    </Content>
+    <div className={styles.content}>
+      <StatusIcon title={title} status={statusIconStatus} />
+      <EntityNameCell className={styles.text} value={value} enabled={enabled} />
+    </div>
   );
 };
-
-export default NameCell;
