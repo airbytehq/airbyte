@@ -21,7 +21,7 @@ public class Deployment {
    *
    * This identifier tracks an install of Airbyte. Any time Airbyte is started up with new volumes or
    * persistence, it will be assigned a new deployment id. This is different from the lifecycle of the
-   * rest of the data layer which may be persisted across deployments.
+   * rest of the data layer, which may be persisted across deployments.
    */
   private final UUID deploymentId;
   /**
