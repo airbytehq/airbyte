@@ -3,10 +3,14 @@
 #
 import logging
 from typing import Dict, Optional, Set, Tuple
-
+import os
 import git
 import requests
 import yaml
+
+# ensure we are at the repository root
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir('../../..')
 
 AIRBYTE_REPO = git.Repo(".")
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"

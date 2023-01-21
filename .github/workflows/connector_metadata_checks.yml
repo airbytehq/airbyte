@@ -1,12 +1,12 @@
-name: Connector Ops CI - Check SAT strictness level
+name: Connector Ops CI - Connector Metadata Checks
 
 on:
   pull_request:
     paths:
       - "airbyte-integrations/connectors/source-**"
 jobs:
-  test-strictness-level:
-    name: "Check test strictness level"
+  connector-metadata-checks:
+    name: "Check Connector Metadata"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -21,3 +21,5 @@ jobs:
         run: pip install --quiet -e ./tools/ci_connector_ops
       - name: Check test strictness level
         run: check-test-strictness-level
+      - name: Check allowed hosts
+        run: allowed-hosts-checks
