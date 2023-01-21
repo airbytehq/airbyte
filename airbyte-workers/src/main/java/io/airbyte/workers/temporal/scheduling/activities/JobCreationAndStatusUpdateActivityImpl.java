@@ -78,6 +78,8 @@ import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -484,9 +486,11 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private static final Comparator<ReleaseStage> RELEASE_STAGE_COMPARATOR = Comparator.comparingInt(RELEASE_STAGE_ORDER::get);
 
   private static List<ReleaseStage> orderByReleaseStageAsc(final List<ReleaseStage> releaseStages) {
-    final List<ReleaseStage> copiedList = new ArrayList<>(releaseStages);
-    copiedList.sort(RELEASE_STAGE_COMPARATOR);
-    return copiedList;
+    // Using collector to get a mutable list
+    return releaseStages.stream()
+            .filter(stage -> stage != null)
+            .sorted(RELEASE_STAGE_COMPARATOR)
+            .toList();
   }
 
   /**
