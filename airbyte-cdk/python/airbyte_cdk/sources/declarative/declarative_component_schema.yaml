@@ -1031,10 +1031,8 @@ definitions:
         type: string
         default: "access_token"
       lifetime:
-        anyOf:
-          - type: integer
-          - type: string
-        default: 3600
+        type: string
+        default: "PT3600S"
       $options:
         type: object
         additionalProperties: true

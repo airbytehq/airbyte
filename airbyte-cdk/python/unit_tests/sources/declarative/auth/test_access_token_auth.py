@@ -20,7 +20,7 @@ def test_get_tokens(requests_mock):
         secret_key="secret_key",
         url=url,
         token_key="access_token",
-        lifetime=3600,
+        lifetime="PT3600S",
         config={},
         options={},
     )

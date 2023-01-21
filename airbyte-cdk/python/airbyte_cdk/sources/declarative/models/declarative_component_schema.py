@@ -319,7 +319,7 @@ class ShortLivedTokenAuthenticator(BaseModel):
     secret_key: str
     url: str
     token_key: Optional[str] = "access_token"
-    lifetime: Optional[Union[int, str]] = 3600
+    lifetime: Optional[str] = "PT3600S"
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
