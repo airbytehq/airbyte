@@ -8,7 +8,7 @@ from typing import List
 
 from ci_connector_ops import utils
 
-RELEASE_STAGES_TO_CHECK = ["generally_available"]
+RELEASE_STAGES_TO_CHECK = ["generally_available", "beta"]
 
 def get_connectors_missing_allowed_hosts() -> List[str]:
     """
