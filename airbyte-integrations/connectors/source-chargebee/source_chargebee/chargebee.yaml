@@ -7,7 +7,6 @@ definitions:
       type: CustomRecordExtractor
       class_name: source_chargebee.components.NestedDpathExtractor
       field_pointer: [ "list", '*', "{{ options.get('name') }}" ]
-#      json_structure: nested
   custom_field_transformation:
     type: CustomTransformation
     class_name: source_chargebee.components.CustomFieldTransformation
