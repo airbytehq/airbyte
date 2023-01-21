@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.declarative.auth.token import AccessTokenAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import ShortLivedTokenAuthenticator
 from freezegun import freeze_time
 
 
@@ -15,12 +15,12 @@ def test_get_tokens(requests_mock):
     ]
     requests_mock.get(url, json=lambda request, context: responses.pop(0))
 
-    authenticator = AccessTokenAuthenticator(
+    authenticator = ShortLivedTokenAuthenticator(
         client_id="client_id",
         secret_key="secret_key",
         url=url,
         token_key="access_token",
-        lifetime=3600,
+        lifetime="PT3600S",
         config={},
         options={},
     )

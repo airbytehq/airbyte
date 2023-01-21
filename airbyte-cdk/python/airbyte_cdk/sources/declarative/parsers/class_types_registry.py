@@ -7,11 +7,11 @@ from typing import Mapping, Type
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
-    AccessTokenAuthenticator,
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
     BearerAuthenticator,
     SessionTokenAuthenticator,
+    ShortLivedTokenAuthenticator,
 )
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
@@ -99,7 +99,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "Spec": Spec,
     "SubstreamSlicer": SubstreamSlicer,
     "SessionTokenAuthenticator": SessionTokenAuthenticator,
-    "AccessTokenAuthenticator": AccessTokenAuthenticator,
+    "ShortLivedTokenAuthenticator": ShortLivedTokenAuthenticator,
     "WaitUntilTimeFromHeader": WaitUntilTimeFromHeaderBackoffStrategy,
     "WaitTimeFromHeader": WaitTimeFromHeaderBackoffStrategy,
 }

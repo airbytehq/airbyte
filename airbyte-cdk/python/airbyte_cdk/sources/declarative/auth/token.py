@@ -3,6 +3,7 @@
 #
 
 import base64
+import datetime
 import logging
 import time
 from dataclasses import InitVar, dataclass
@@ -15,6 +16,7 @@ from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 from cachetools import TTLCache, cached
 from dataclasses_jsonschema import JsonSchemaMixin
+from isodate import Duration, parse_duration
 
 
 @dataclass
@@ -244,7 +246,7 @@ class SessionTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenti
 
 
 @dataclass
-class AccessTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
+class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
     """
     https://docs.railz.ai/reference/authentication
     """
@@ -255,14 +257,14 @@ class AccessTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthentic
     config: Config
     options: InitVar[Mapping[str, Any]]
     token_key: Union[InterpolatedString, str] = "access_token"
-    lifetime: Union[str, int] = 3600
+    lifetime: Union[InterpolatedString, str] = "PT3600S"
 
     def __post_init__(self, options: Mapping[str, Any]):
         self._client_id = InterpolatedString.create(self.client_id, options=options)
         self._secret_key = InterpolatedString.create(self.secret_key, options=options)
         self._url = InterpolatedString.create(self.url, options=options)
         self._token_key = InterpolatedString.create(self.token_key, options=options)
-        self._lifetime = InterpolatedString(str(self.lifetime), options=options)
+        self._lifetime = InterpolatedString.create(self.lifetime, options=options)
         self._basic_auth = BasicHttpAuthenticator(
             username=self._client_id,
             password=self._secret_key,
@@ -273,19 +275,21 @@ class AccessTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthentic
         self._token = None
         self._timestamp = None
 
-    def _get_lifetime(self) -> int:
-        lifetime = self._lifetime.eval(self.config)
-        try:
-            return int(lifetime)
-        except ValueError:
-            raise Exception(f"lifetime: '{lifetime}' is not integer")
+    @classmethod
+    def _parse_timedelta(cls, time_str) -> Union[datetime.timedelta, Duration]:
+        """
+        :return Parses an ISO 8601 durations into datetime.timedelta or Duration objects.
+        """
+        if not time_str:
+            return datetime.timedelta(0)
+        return parse_duration(time_str)
 
     def check_token(self):
         now = time.time()
         url = self._url.eval(self.config)
         token_key = self._token_key.eval(self.config)
-        lifetime = self._get_lifetime()
-        if not self._token or now - self._timestamp >= lifetime:
+        lifetime = self._parse_timedelta(self._lifetime.eval(self.config))
+        if not self._token or now - self._timestamp >= lifetime.seconds:
             response = self._session.get(url, headers=self._basic_auth.get_auth_header())
             response.raise_for_status()
             response_json = response.json()
