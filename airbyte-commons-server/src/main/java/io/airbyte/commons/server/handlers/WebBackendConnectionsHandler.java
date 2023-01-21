@@ -545,7 +545,7 @@ public class WebBackendConnectionsHandler {
       if (mostRecentActorCatalog.isPresent()) {
         final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
             Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
-        final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(originalConnectionRead.getSourceId());
+        final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(originalConnectionRead.getSourceId());
         final CatalogDiff catalogDiff =
             connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog, sourceDefinition),
                 CatalogConverter.toConfiguredProtocol(newAirbyteCatalog));
