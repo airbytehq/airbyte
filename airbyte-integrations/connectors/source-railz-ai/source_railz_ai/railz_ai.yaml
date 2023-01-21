@@ -21,7 +21,7 @@ definitions:
     url_base: "https://api.railz.ai/"
     http_method: "GET"
     authenticator:
-      type: "ShortLivedTokenAuthenticator"
+      class_name: source_railz_ai.components.ShortLivedTokenAuthenticator
       url: "https://auth.railz.ai/getAccess"
       client_id: "{{ config.client_id }}"
       secret_key: "{{ config.secret_key }}"
