@@ -424,6 +424,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       estimateFullRefreshSyncSize(database, airbyteStream);
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
           table, emittedAt);
+//      iterator = AutoCloseableIterators.transform(autoCloseableIterator -> new RodiIterator(autoCloseableIterator), iterator);
     } else if (airbyteStream.getSyncMode() == null) {
       throw new IllegalArgumentException(
           String.format("%s requires a source sync mode", this.getClass()));

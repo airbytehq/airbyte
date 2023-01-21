@@ -20,14 +20,23 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -57,6 +66,13 @@ public class IntegrationRunner {
   private final Source source;
   private static JsonSchemaValidator validator;
 
+  // private final ExecutorService messagesPool = Executors.newFixedThreadPool(4);
+  private final ExecutorService messagesPool = new ThreadPoolExecutor(1, 2, 100L, TimeUnit.MILLISECONDS,
+      new ArrayBlockingQueue<Runnable>(200000), new ThreadPoolExecutor.CallerRunsPolicy());
+  private final BlockingQueue<String> messageJsons = new ArrayBlockingQueue<>(300000);
+
+  private final ExecutorService writerPool = Executors.newSingleThreadExecutor();
+
   public IntegrationRunner(final Destination destination) {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
   }
@@ -78,7 +94,6 @@ public class IntegrationRunner {
     this.source = source;
     this.destination = destination;
     validator = new JsonSchemaValidator();
-
     Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
 
@@ -135,6 +150,62 @@ public class IntegrationRunner {
           validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
+          this.writerPool.submit(new Runnable() {
+
+            @Override
+            public void run() {
+              final BufferedWriter bwrite = new BufferedWriter(new OutputStreamWriter(System.out), 100000);
+              while (true) {
+                final String json;
+                try {
+                  if (Thread.currentThread().isInterrupted()) {
+                    LOGGER.debug("*** writer isInterrupted: true");
+                    final List<String> ll = new LinkedList<>();
+                    final int leftover = messageJsons.drainTo(ll);
+                    LOGGER.debug("*** writer leftover: {}", leftover);
+                    ll.forEach(str -> {
+                      LOGGER.debug("*** writer finishing: {}", str);
+                      try {
+                        bwrite.write(str);
+                        bwrite.newLine();
+                      } catch (final IOException e) {
+                        throw new RuntimeException(e);
+                      }
+                    });
+                    break;
+                  }
+
+                  // json = messageJsons.poll(1, TimeUnit.SECONDS);
+                  final List<String> ll = new LinkedList<>();
+                  final int drained = messageJsons.drainTo(ll);
+                  if (drained == 0) {
+                    Thread.sleep(100);
+                  }
+                  ll.forEach(str -> {
+                    LOGGER.debug("*** writer: {}", str);
+                    try {
+                      bwrite.write(str);
+                      bwrite.newLine();
+                    } catch (final IOException e) {
+                      throw new RuntimeException(e);
+                    }
+                  });
+
+                } catch (final InterruptedException e) {
+                  LOGGER.debug("*** writer interrupted");
+                  Thread.currentThread().interrupt();
+                  // break;
+                }
+              }
+              try {
+                bwrite.close();
+              } catch (final IOException e) {
+                throw new RuntimeException(e);
+              }
+              LOGGER.debug("*** writer break");
+            }
+
+          });
           try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
             produceMessages(messageIterator);
           }
@@ -184,12 +255,41 @@ public class IntegrationRunner {
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
     watchForOrphanThreads(
-        () -> messageIterator.forEachRemaining(outputRecordCollector),
+        () -> messageIterator.forEachRemaining(
+            message -> {
+              LOGGER.debug("*** incoming message type: {}", message.getType());
+              // System.out.println(Jsons.serialize(message));
+              try {
+
+                messagesPool.execute(new Runnable() {
+
+                  @Override
+                  public void run() {
+                    LOGGER.debug("*** adding to queue");
+                    // messageJsons.add(Jsons.serialize(message));
+                    final String json = Jsons.serialize(message);
+                    try {
+                      while (!messageJsons.offer(json, 10, TimeUnit.SECONDS)) {
+                        LOGGER.debug("*** attempting to insert");
+                      }
+                    } catch (final InterruptedException e) {
+                      throw new RuntimeException(e);
+                    }
+                  }
+
+                });
+              } catch (final RejectedExecutionException rej) {
+                LOGGER.info("*** rejected execution");
+              }
+
+            }),
         () -> System.exit(FORCED_EXIT_CODE),
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES,
-        TimeUnit.MINUTES);
+        TimeUnit.MINUTES,
+        this.writerPool,
+        this.messagesPool);
   }
 
   @VisibleForTesting
@@ -210,7 +310,7 @@ public class IntegrationRunner {
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES,
-        TimeUnit.MINUTES);
+        TimeUnit.MINUTES, null, null);
   }
 
   /**
@@ -230,12 +330,25 @@ public class IntegrationRunner {
                                     final int interruptTimeDelay,
                                     final TimeUnit interruptTimeUnit,
                                     final int exitTimeDelay,
-                                    final TimeUnit exitTimeUnit)
+                                    final TimeUnit exitTimeUnit,
+                                    final ExecutorService writerPool,
+                                    final ExecutorService messagesPool)
       throws Exception {
     final Thread currentThread = Thread.currentThread();
     try {
       runMethod.call();
     } finally {
+      if (messagesPool != null) {
+        messagesPool.shutdown();
+        messagesPool.awaitTermination(1, TimeUnit.MINUTES);
+      }
+
+      if (writerPool != null) {
+        // writerPool.shutdown();
+        // writerPool.awaitTermination(5, TimeUnit.SECONDS);
+        writerPool.shutdownNow();
+        writerPool.awaitTermination(5, TimeUnit.SECONDS);
+      }
       final List<Thread> runningThreads = ThreadUtils.getAllThreads()
           .stream()
           // daemon threads don't block the JVM if the main `currentThread` exits, so they are not problematic
