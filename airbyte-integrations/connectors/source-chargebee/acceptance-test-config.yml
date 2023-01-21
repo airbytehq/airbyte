@@ -27,6 +27,8 @@ acceptance_tests:
             bypass_reason: "Not permitted for this site"
           - name: "virtual_bank_account"
             bypass_reason: "Cannot populate with test data"
+          - name: "subscription"
+            bypass_reason: "Unstable data. Field current_term_start updated daily"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
