@@ -25,7 +25,7 @@ definitions:
       url: "https://auth.railz.ai/getAccess"
       client_id: "{{ config.client_id }}"
       secret_key: "{{ config.secret_key }}"
-      lifetime: 3600
+      lifetime: "PT3600S"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
