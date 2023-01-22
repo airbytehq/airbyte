@@ -66,7 +66,7 @@ definitions:
       record_selector:
         $ref: "*ref(definitions.selector)"
         record_filter:
-          condition: "{{ record.status in ['active', 'disconnected', 'expired'] }}"
+          condition: "{{ record.status in ['active', 'disconnected', 'expired'] and record.serviceName in options.serviceNames }}"
     $options:
       name: "connections_slice"
       path: "/connections"
@@ -99,51 +99,58 @@ definitions:
       - type: AddFields
         fields:
           - path: ["businessName"]
-            value: "{{ stream_slice.businessName }}"
+            value: "{{ stream_slice.slice_key.businessName }}"
           - path: ["serviceName"]
-            value: "{{ stream_slice.serviceName }}"
+            value: "{{ stream_slice.slice_key.serviceName }}"
 
   customers_stream:
     $ref: "*ref(definitions.base_service_stream)"
     $options:
       name: "customers"
       path: "/customers"
+      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
     primary_key: "id"
   accounts_stream:
     $ref: "*ref(definitions.base_service_stream)"
     $options:
       name: "accounts"
       path: "/accounts"
+      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
     primary_key: "id"
   inventory_stream:
     $ref: "*ref(definitions.base_service_stream)"
     $options:
       name: "inventory"
       path: "/inventory"
+      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
     primary_key: "id"
   tax_rates_stream:
     $ref: "*ref(definitions.base_service_stream)"
     $options:
       name: "tax_rates"
       path: "/taxRates"
+      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
     primary_key: "id"
   tracking_categories_stream:
     $ref: "*ref(definitions.base_service_stream)"
     $options:
       name: "tracking_categories"
       path: "/trackingCategories"
+      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageIntacct", "myob"]
     primary_key: "id"
   vendors_stream:
     $ref: "*ref(definitions.base_service_stream)"
     $options:
       name: "vendors"
       path: "/vendors"
+      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
     primary_key: "id"
   bank_accounts_stream:
     $ref: "*ref(definitions.base_service_stream)"
     $options:
       name: "bank_accounts"
       path: "/bankAccounts"
+      serviceNames: ["plaid"]
     primary_key: "accountId"
 
 streams:
