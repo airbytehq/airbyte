@@ -120,6 +120,7 @@ def test_check(mock_open, config, logger):
         ),
         ("int", True, {"type": ["null", "integer"]}),
         ("boolean", False, {"type": "integer"}),
+        ("ARRAY(ARRAY(INT NOT NULL))", False, {"type": "array", "items": {"type": "array", "items": {"type": ["null", "integer"]}}}),
     ],
 )
 def test_convert_type(type, nullable, result):
