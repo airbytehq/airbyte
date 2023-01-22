@@ -11,6 +11,7 @@
       },
       "sync_mode": "incremental",
       "cursor_field": ["create_time"],
+      "primary_key": [["id"]],
       "destination_sync_mode": "append"
     },
     {
@@ -24,6 +25,7 @@
       },
       "sync_mode": "incremental",
       "cursor_field": ["date_created"],
+      "primary_key": [["id"]],
       "destination_sync_mode": "append"
     }
   ]
