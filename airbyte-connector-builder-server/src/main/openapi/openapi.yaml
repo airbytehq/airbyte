@@ -77,7 +77,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ManifestResolveRequestBody"
+              $ref: "#/components/schemas/ResolveManifestRequestBody"
         required: true
       responses:
         "200":
@@ -85,7 +85,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ManifestResolve"
+                $ref: "#/components/schemas/ResolveManifest"
         "400":
           $ref: "#/components/responses/ExceptionResponse"
         "422":
@@ -258,7 +258,7 @@ components:
               #   description: list of slices that will be retrieved for this stream
               #   items:
               #     type: object
-    ManifestResolveRequestBody:
+    ResolveManifestRequestBody:
       type: object
       required:
         - manifest
@@ -266,7 +266,7 @@ components:
         manifest:
           type: object
           description: The config-based connector manifest contents
-    ManifestResolve:
+    ResolveManifest:
       type: object
       required:
         - manifest

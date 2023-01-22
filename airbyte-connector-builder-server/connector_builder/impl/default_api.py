@@ -15,8 +15,8 @@ from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
-from connector_builder.generated.models.manifest_resolve import ManifestResolve
-from connector_builder.generated.models.manifest_resolve_request_body import ManifestResolveRequestBody
+from connector_builder.generated.models.resolve_manifest import ResolveManifest
+from connector_builder.generated.models.resolve_manifest_request_body import ResolveManifestRequestBody
 from connector_builder.generated.models.stream_read import StreamRead
 from connector_builder.generated.models.stream_read_pages import StreamReadPages
 from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
@@ -153,24 +153,24 @@ spec:
         )
 
     async def resolve_manifest(
-        self, manifest_resolve_request_body: ManifestResolveRequestBody = Body(None, description="")
-    ) -> ManifestResolve:
+        self, resolve_manifest_request_body: ResolveManifestRequestBody = Body(None, description="")
+    ) -> ResolveManifest:
         """
         Using the provided manifest, resolves $refs and $options and returns the resulting manifest to the client.
         :param manifest_resolve_request_body: Input manifest whose $refs and $options will be resolved
         :return: Airbyte record messages produced by the sync grouped by slice and page
         """
         try:
-            return ManifestResolve(
+            return ResolveManifest(
                 manifest=ManifestDeclarativeSource(
-                    manifest_resolve_request_body.manifest, construct_using_pydantic_models=True
-                ).resolved_manifest()
+                    resolve_manifest_request_body.manifest, construct_using_pydantic_models=True
+                ).resolved_manifest
             )
         except Exception as error:
-            self.logger.error(f"Could not resolve manifest with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}")
+            self.logger.error(f"Could not resolve manifest with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Could not resolve manifest with with error: {error.args[0]}",
+                detail=f"Could not resolve manifest with error: {error.args[0]}",
             )
 
     def _get_message_groups(

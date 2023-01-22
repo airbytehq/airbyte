@@ -11,8 +11,8 @@ import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
-from connector_builder.generated.models.manifest_resolve import ManifestResolve
-from connector_builder.generated.models.manifest_resolve_request_body import ManifestResolveRequestBody
+from connector_builder.generated.models.resolve_manifest import ResolveManifest
+from connector_builder.generated.models.resolve_manifest_request_body import ResolveManifestRequestBody
 from connector_builder.generated.models.stream_read import StreamRead
 from connector_builder.generated.models.stream_read_pages import StreamReadPages
 from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
@@ -778,7 +778,7 @@ def test_resolve_manifest():
     api = DefaultApiImpl(LowCodeSourceAdapter)
 
     loop = asyncio.get_event_loop()
-    actual_response: ManifestResolve = loop.run_until_complete(api.resolve_manifest(ManifestResolveRequestBody(manifest=manifest)))
+    actual_response: ResolveManifest = loop.run_until_complete(api.resolve_manifest(ResolveManifestRequestBody(manifest=manifest)))
     assert actual_response.manifest == expected_resolved_manifest
 
 
@@ -797,8 +797,9 @@ def test_resolve_manifest_unresolvable_references():
     api = DefaultApiImpl(LowCodeSourceAdapter)
     loop = asyncio.get_event_loop()
     with pytest.raises(HTTPException) as actual_exception:
-        loop.run_until_complete(api.resolve_manifest(ManifestResolveRequestBody(manifest=invalid_manifest)))
+        loop.run_until_complete(api.resolve_manifest(ResolveManifestRequestBody(manifest=invalid_manifest)))
 
+    assert "Undefined reference *ref(definitions.retriever)" in actual_exception.value.detail
     assert actual_exception.value.status_code == expected_status_code
 
 
@@ -809,8 +810,9 @@ def test_resolve_manifest_invalid():
     api = DefaultApiImpl(LowCodeSourceAdapter)
     loop = asyncio.get_event_loop()
     with pytest.raises(HTTPException) as actual_exception:
-        loop.run_until_complete(api.resolve_manifest(ManifestResolveRequestBody(manifest=invalid_manifest)))
+        loop.run_until_complete(api.resolve_manifest(ResolveManifestRequestBody(manifest=invalid_manifest)))
 
+    assert "Could not resolve manifest with error" in actual_exception.value.detail
     assert actual_exception.value.status_code == expected_status_code
 
 
