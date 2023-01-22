@@ -88,8 +88,8 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
    * config that adjusts the fetch size dynamically according to sampled row size.
    */
   protected <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
-                                                final CheckedFunction<ResultSet, T, SQLException> mapper,
-                                                final JdbcStreamingQueryConfig streamingConfig) {
+                                         final CheckedFunction<ResultSet, T, SQLException> mapper,
+                                         final JdbcStreamingQueryConfig streamingConfig) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
@@ -107,7 +107,8 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
           LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
           streamException = e;
           isStreamFailed = true;
-          // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream will never close
+          // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
+          // will never close
           return false;
         }
       }
