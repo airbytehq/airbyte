@@ -285,7 +285,7 @@ jobs:
         if: always()
         with:
           junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
+          comment_mode: failures
           json_file: connectors_base_results.json
           json_test_case_results: true
           check_name: "Connectors Base Test Results"
@@ -318,6 +318,7 @@ jobs:
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:
@@ -806,7 +807,7 @@ jobs:
         if: always()
         with:
           junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
+          comment_mode: failures
           json_file: platform_results.json
           json_test_case_results: true
           check_name: "Platform Test Results"
@@ -839,6 +840,7 @@ jobs:
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
@@ -1026,7 +1028,7 @@ jobs:
         if: always()
         with:
           junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
+          comment_mode: failures
           json_file: kube_results.json
           json_test_case_results: true
           check_name: "Kube Test Results"
@@ -1058,6 +1060,7 @@ jobs:
           name: Platform Kubernetes E2E Test Report
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
@@ -1285,6 +1288,7 @@ jobs:
           name: Platform Helm E2E Test Report
           path: "./*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
       - uses: actions/upload-artifact@v2
         if: failure()
