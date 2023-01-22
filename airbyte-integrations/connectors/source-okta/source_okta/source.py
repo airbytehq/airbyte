@@ -138,17 +138,13 @@ class GroupMembers(IncrementalOktaStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super(IncrementalOktaStream, self).request_params(stream_state, stream_slice, next_page_token)
-
+        params = {"limit": self.page_size}
+        latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_id
         if next_page_token:
             latest_entry = next_page_token.get("after")
-        else:        
-            latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_id
-        
         if self.reset_token:
             latest_entry = self.min_id
             self.reset_token = False
-
         params["after"] = latest_entry
         return params
 

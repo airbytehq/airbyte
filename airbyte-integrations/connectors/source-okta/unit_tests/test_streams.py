@@ -264,11 +264,9 @@ class TestStreamGroupMembers:
         inputs = {
             "stream_slice": {"group_id": "some_group"},
             "stream_state": {"id": "some_test_id"},
-            "next_page_token": {"next_cursor": "123"},
         }
         assert stream.request_params(**inputs) == {
             "limit": 200,
-            "next_cursor": "123",
             "after": "some_test_id",
         }
 
