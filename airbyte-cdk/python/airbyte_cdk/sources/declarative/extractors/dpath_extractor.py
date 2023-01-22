@@ -39,7 +39,7 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
         type: DpathExtractor
         field_pointer:
           - "root"
-          - "{{ options['field'] }}"
+          - "{{ parameters['field'] }}"
     ```
 
     ```

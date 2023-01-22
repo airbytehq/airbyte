@@ -30,7 +30,7 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
         # page_size to be an interpolated string value
         pagination_strategy:
           type: OffsetIncrement
-          page_size: "{{ options['items_per_page'] }}"
+          page_size: "{{ parameters['items_per_page'] }}"
 
     Attributes:
         page_size (InterpolatedString): the number of records to request

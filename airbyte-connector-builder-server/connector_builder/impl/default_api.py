@@ -11,7 +11,6 @@ from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
-
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
@@ -39,15 +38,19 @@ class DefaultApiImpl(DefaultApi):
         return """version: "0.1.0"
 definitions:
   selector:
+    type: RecordSelector
     extractor:
+      type: DpathExtractor
       field_pointer: []
   requester:
+    type: HttpRequester
     url_base: "https://example.com"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
   retriever:
+    type: SimpleRetriever
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
@@ -55,11 +58,12 @@ definitions:
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
+    type: DeclarativeStream
     retriever:
       $ref: "*ref(definitions.retriever)"
   customers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "customers"
       primary_key: "id"
       path: "/example"
@@ -68,10 +72,12 @@ streams:
   - "*ref(definitions.customers_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "customers"
 
 spec:
+  type: Spec
   documentation_url: https://docsurl.com
   connection_specification:
     title: Source Name Spec # 'TODO: Replace this with the name of your source.'
@@ -127,9 +133,9 @@ spec:
         log_messages = []
         try:
             for message_group in self._get_message_groups(
-                    adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config),
-                    schema_inferrer,
-                    record_limit,
+                adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config),
+                schema_inferrer,
+                record_limit,
             ):
                 if isinstance(message_group, AirbyteLogMessage):
                     log_messages.append({"message": message_group.message})
@@ -142,9 +148,13 @@ spec:
                 detail=f"Could not perform read with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}",
             )
 
-        return StreamRead(logs=log_messages, slices=[single_slice], inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream))
+        return StreamRead(
+            logs=log_messages, slices=[single_slice], inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream)
+        )
 
-    def _get_message_groups(self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
+    def _get_message_groups(
+        self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int
+    ) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
         and record messages belong to the prior request log message and when we encounter another request, append the latest

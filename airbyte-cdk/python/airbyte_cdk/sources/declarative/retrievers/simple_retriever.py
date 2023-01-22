@@ -48,7 +48,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         record_selector (HttpSelector): The record selector
         paginator (Optional[Paginator]): The paginator
         stream_slicer (Optional[StreamSlicer]): The stream slicer
-        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
+        parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
     requester: Requester

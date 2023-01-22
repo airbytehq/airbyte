@@ -47,11 +47,11 @@ class MinMaxDatetime(JsonSchemaMixin):
 
         self._timezone = dt.timezone.utc
 
-    def get_datetime(self, config, **additional_options) -> dt.datetime:
+    def get_datetime(self, config, **additional_parameters) -> dt.datetime:
         """
         Evaluates and returns the datetime
         :param config: The user-provided configuration as specified by the source's spec
-        :param additional_options: Additional arguments to be passed to the strings for interpolation
+        :param additional_parameters: Additional arguments to be passed to the strings for interpolation
         :return: The evaluated datetime
         """
         # We apply a default datetime format here instead of at instantiation, so it can be set by the parent first
@@ -59,13 +59,13 @@ class MinMaxDatetime(JsonSchemaMixin):
         if not datetime_format:
             datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
-        time = self._parser.parse(str(self.datetime.eval(config, **additional_options)), datetime_format, self.timezone)
+        time = self._parser.parse(str(self.datetime.eval(config, **additional_parameters)), datetime_format, self.timezone)
 
         if self.min_datetime:
-            min_time = self._parser.parse(str(self.min_datetime.eval(config, **additional_options)), datetime_format, self.timezone)
+            min_time = self._parser.parse(str(self.min_datetime.eval(config, **additional_parameters)), datetime_format, self.timezone)
             time = max(time, min_time)
         if self.max_datetime:
-            max_time = self._parser.parse(str(self.max_datetime.eval(config, **additional_options)), datetime_format, self.timezone)
+            max_time = self._parser.parse(str(self.max_datetime.eval(config, **additional_parameters)), datetime_format, self.timezone)
             time = min(time, max_time)
         return time
 

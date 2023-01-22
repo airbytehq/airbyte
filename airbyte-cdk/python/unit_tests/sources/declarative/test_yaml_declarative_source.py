@@ -48,8 +48,8 @@ class TestYamlDeclarativeSource:
         version: "version"
         definitions:
           schema_loader:
-            name: "{{ options.stream_name }}"
-            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+            name: "{{ parameters.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
           retriever:
             paginator:
               type: "DefaultPaginator"
@@ -111,8 +111,8 @@ class TestYamlDeclarativeSource:
         version: "version"
         definitions:
           schema_loader:
-            name: "{{ options.stream_name }}"
-            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+            name: "{{ parameters.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
         streams:
           - type: DeclarativeStream
             $parameters:

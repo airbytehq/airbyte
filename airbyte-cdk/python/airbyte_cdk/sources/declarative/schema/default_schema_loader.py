@@ -19,7 +19,7 @@ class DefaultSchemaLoader(SchemaLoader, JsonSchemaMixin):
 
     Attributes:
         config (Config): The user-provided configuration as specified by the source's spec
-        options (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed
+        parameters (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed
     """
 
     config: Config
