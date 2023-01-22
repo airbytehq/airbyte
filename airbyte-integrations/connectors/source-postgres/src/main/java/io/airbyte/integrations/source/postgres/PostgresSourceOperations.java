@@ -534,6 +534,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       case JSONB -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY,
               JsonSchemaPrimitive.OBJECT,
               JsonSchemaPrimitive.STRING,
+              JsonSchemaPrimitive.BOOLEAN,
               JsonSchemaPrimitive.NUMBER)
               .build();
       case DATE -> JsonSchemaType.STRING_DATE;
