@@ -27,6 +27,25 @@ permissions: write-all
 
 jobs:
   # COMMON TASKS
+  find-valid-pat-for-ec2-instances:
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.find_valid_pat_via_script.outputs.PAT }}
+    name: "Find a valid PAT to start & stop ec2 instances"
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+
+      - name: Check PAT rate limits
+        id: find_valid_pat_via_script
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.SUPERTOPHER_PAT }} \
+#            ${{ secrets.DAVINCHIA_PAT }}
+
   ensure-images-exist:
     name: "Ensure all required Docker images exist on Dockerhub"
     timeout-minutes: 10
@@ -175,6 +194,7 @@ jobs:
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
     needs:
+      - find-valid-pat-for-ec2-instances
       - changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
@@ -360,6 +380,7 @@ jobs:
   start-frontend-runner:
     name: "Frontend: Start EC2 Runner"
     needs:
+      - find-valid-pat-for-ec2-instances
       - changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
@@ -483,6 +504,7 @@ jobs:
   start-frontend-e2e-runner:
     name: "Frontend E2E Tests: Start EC2 Runner"
     needs:
+      - find-valid-pat-for-ec2-instances
       - changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
@@ -617,6 +639,7 @@ jobs:
   start-platform-build-runner:
     name: "Platform: Start Build EC2 Runner"
     needs:
+      - find-valid-pat-for-ec2-instances
       - changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
@@ -893,6 +916,7 @@ jobs:
   start-kube-acceptance-test-runner:
     name: "Platform: Start Kube Acceptance Test Runner"
     needs:
+      - find-valid-pat-for-ec2-instances
       - changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
@@ -1119,6 +1143,7 @@ jobs:
   start-helm-acceptance-test-runner:
     name: "Platform: Start Helm Acceptance Test Runner"
     needs:
+      - find-valid-pat-for-ec2-instances
       - changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
