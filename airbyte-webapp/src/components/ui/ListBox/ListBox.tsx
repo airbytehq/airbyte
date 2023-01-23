@@ -24,19 +24,21 @@ export interface Option<T> {
   icon?: React.ReactNode;
 }
 
-interface ListBoxProps<T> {
+interface ListBoxProps<IsMultiple extends boolean, T extends IsMultiple extends true ? any[] : any> {
   className?: string;
+  multiple?: IsMultiple;
   optionClassName?: string;
   selectedOptionClassName?: string;
-  options: Array<Option<T>>;
+  options: Array<Option<IsMultiple extends true ? T[number] : T>>;
   selectedValue: T;
   onSelect: (selectedValue: T) => void;
   buttonClassName?: string;
   controlButton?: React.ComponentType<ListBoxControlButtonProps<T>>;
 }
 
-export const ListBox = <T,>({
+export const ListBox = <IsMultiple extends boolean, T extends IsMultiple extends true ? any[] : any>({
   className,
+  multiple,
   options,
   selectedValue,
   onSelect,
@@ -44,7 +46,7 @@ export const ListBox = <T,>({
   controlButton: ControlButton = DefaultControlButton,
   optionClassName,
   selectedOptionClassName,
-}: ListBoxProps<T>) => {
+}: ListBoxProps<IsMultiple, T>) => {
   const selectedOption = options.find((option) => option.value === selectedValue) ?? {
     label: String(selectedValue),
     value: selectedValue,
@@ -52,7 +54,7 @@ export const ListBox = <T,>({
 
   return (
     <div className={className}>
-      <Listbox value={selectedValue} onChange={onSelect}>
+      <Listbox value={selectedValue} onChange={onSelect} multiple={multiple}>
         <Listbox.Button className={classNames(buttonClassName, styles.button)}>
           <ControlButton selectedOption={selectedOption} />
         </Listbox.Button>

@@ -34,3 +34,9 @@ export const Primary = () => {
 
   return <ListBox options={listOptions} selectedValue={selectedOption} onSelect={setSelectedOption} />;
 };
+
+export const Multiple = () => {
+  const [selectedOption, setSelectedOption] = useState([1]);
+
+  return <ListBox options={listOptions} selectedValue={selectedOption} onSelect={setSelectedOption} multiple />;
+};
