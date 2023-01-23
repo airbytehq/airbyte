@@ -8,11 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
-import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
-import io.airbyte.integrations.debezium.internals.DebeziumRecordIterator;
-import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
+import io.airbyte.integrations.debezium.internals.*;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -20,12 +16,9 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,24 +112,13 @@ public class AirbyteDebeziumHandler {
             eventIterator,
             (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt));
 
-    // our goal is to get the state at the time this supplier is called (i.e. after all message records
-    // have been produced)
-    final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
-      final Map<String, String> offset = offsetManager.read();
-      final String dbHistory = trackSchemaHistory ? schemaHistoryManager
-          .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but manager is not initialised")).read() : null;
-
-      return cdcStateHandler.saveState(offset, dbHistory);
-    };
-
-    // wrap the supplier in an iterator so that we can concat it to the message iterator.
-    final Iterator<AirbyteMessage> stateMessageIterator = MoreIterators.singletonIteratorFromSupplier(stateMessageSupplier);
-
-    // this structure guarantees that the debezium engine will be closed, before we attempt to emit the
-    // state file. we want this so that we have a guarantee that the debezium offset file (which we use
-    // to produce the state file) is up-to-date.
-
-    return AutoCloseableIterators.concatWithEagerClose(messageIterator, AutoCloseableIterators.fromIterator(stateMessageIterator));
+    return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator(
+            messageIterator,
+            cdcStateHandler,
+            offsetManager,
+            trackSchemaHistory,
+            schemaHistoryManager
+            ));
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
