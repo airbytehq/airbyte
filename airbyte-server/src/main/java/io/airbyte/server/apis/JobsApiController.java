@@ -78,6 +78,7 @@ public class JobsApiController implements JobsApi {
   }
 
   @Post("/get_last_replication_job")
+  @Secured({READER})
   @Override
   public JobOptionalRead getLastReplicationJob(final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getLastReplicationJob(connectionIdRequestBody));
