@@ -1723,6 +1723,31 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/complete_oauth_return_secret:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecretId'
+        required: true
+      tags:
+        - source_oauth
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteOAuthResponse'
+          description: Successful operation
+        '404':
+          $ref: '#/components/responses/NotFoundResponse'
+        '422':
+          $ref: '#/components/responses/InvalidInputResponse'
+      operationId: completeSourceOAuthReturnSecret
+      summary: >-
+        Given a source def ID generate an access/refresh token and save as a secret. Return the secret
+        ID.
   /v1/destination_oauths/get_consent_url:
     post:
       tags:
@@ -4760,6 +4785,16 @@ components:
     CompleteOAuthResponse:
       type: object
       additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
+    SecretId:
+      description: >-
+        Secret ID returned when interacting with a service that stores a secret in Airbyte for later
+        use i.e. OAuth source creation.
+      type: object
+      properties:
+        secretId:
+          type: string
+      example:
+        secretId: uuid
     SetInstancewideSourceOauthParamsRequestBody:
       type: object
       required:
