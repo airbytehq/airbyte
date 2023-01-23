@@ -119,11 +119,6 @@ public class JsonSchemaType {
         schemaPrimitives.forEach(x -> typeList.add(ImmutableMap.builder().put(TYPE, x.name().toLowerCase()).build()));
         typeMapBuilder.put(TYPE, JsonSchemaPrimitive.OBJECT.name().toLowerCase());
         typeMapBuilder.put("oneOf", typeList);
-//        final List<ImmutableMap<Object, Object>> typeList = new ArrayList<>();
-//        schemaPrimitives.forEach(x -> typeList.add(ImmutableMap.builder().put(TYPE, x.name().toLowerCase()).build()));
-//        typeMapBuilder.put("oneOf", typeList);
-//        typeMapBuilder = ImmutableMap.builder();
-//        typeMapBuilder.put(TYPE, schemaPrimitives.stream().map(x->x.name().toLowerCase()).collect(Collectors.toList()));
       } else {
         final JsonSchemaPrimitive type = schemaPrimitives.get(0);
         typeMapBuilder = ImmutableMap.builder();
