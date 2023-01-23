@@ -220,6 +220,14 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["quickbooks", "xero", "oracleNetsuite", "sageIntacct", "myob"]
     stream_cursor_field: "postedDate"
+  bills_payments_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "bills_payments"
+      path: "/bills/payments"
+      cursor_field: "date"
+      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+    stream_cursor_field: "date"
 
 
 streams:
@@ -236,6 +244,7 @@ streams:
   - "*ref(definitions.bank_transfers_stream)"
   - "*ref(definitions.bills_stream)"
   - "*ref(definitions.bills_credit_notes_stream)"
+  - "*ref(definitions.bills_payments_stream)"
 
 check:
   stream_names:
