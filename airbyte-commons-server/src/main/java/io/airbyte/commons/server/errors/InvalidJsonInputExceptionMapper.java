@@ -2,11 +2,10 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.server.errors;
+package io.airbyte.commons.server.errors;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.server.errors.KnownException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;

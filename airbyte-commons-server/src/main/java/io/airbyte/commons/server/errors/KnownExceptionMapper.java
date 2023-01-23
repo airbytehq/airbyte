@@ -2,10 +2,9 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.server.errors;
+package io.airbyte.commons.server.errors;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.server.errors.KnownException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Produces;
 import jakarta.inject.Singleton;

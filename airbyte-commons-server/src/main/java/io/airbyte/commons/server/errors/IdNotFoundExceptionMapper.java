@@ -2,10 +2,8 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.server.errors;
+package io.airbyte.commons.server.errors;
 
-import io.airbyte.commons.server.errors.IdNotFoundKnownException;
-import io.airbyte.commons.server.errors.KnownException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
