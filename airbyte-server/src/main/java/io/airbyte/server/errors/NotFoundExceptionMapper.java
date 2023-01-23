@@ -2,9 +2,10 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.server.errors;
+package io.airbyte.server.errors;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.server.errors.IdNotFoundKnownException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;

@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.server.errors;
+package io.airbyte.server.errors;
 
 import io.airbyte.commons.json.Jsons;
 import javax.validation.ConstraintViolationException;
