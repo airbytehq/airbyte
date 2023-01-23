@@ -26,6 +26,12 @@ The Exasol destination supports the following features:
 | SSL connection | Yes | TLS |
 | SSH Tunnel Support | No |  |
 
+### Limitations
+
+#### Maximum data size two million characters
+
+Exasol does not have a special data type for storing data of arbitrary length or JSON. That's why this connector uses type `VARCHAR(2000000)` for storing Airbyte data.  
+
 ## Getting started
 
 ### Requirements
