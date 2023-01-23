@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.server;
+package io.airbyte.commons.server;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.server.RequestLogger;
