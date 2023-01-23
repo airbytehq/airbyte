@@ -164,7 +164,7 @@
   "connectionForm.modal.destinationNamespace.option.destination": "Destination default",
   "connectionForm.modal.destinationNamespace.option.customFormat": "Custom format",
   "connectionForm.modal.destinationNamespace.input.placeholder": "My namespace",
-  "connectionForm.modal.destinationNamespace.option.source.description": "Replicate to the destination with the stream's namespace.",
+  "connectionForm.modal.destinationNamespace.option.source.description": "Replicate the stream's source namespace in the destination.",
   "connectionForm.modal.destinationNamespace.option.destination.description": "Replicate and store in the default namespace defined in the destination settings.",
   "connectionForm.modal.destinationNamespace.option.customFormat.description": "Create a \"custom format\" to rename the namespace that your data will be replicated into.",
   "connectionForm.modal.destinationNamespace.description": "Below is an example of how your data will be replicated with this namespace setting. This example assumes a Postgres Source and a Snowflake Destination with the schema set to \"my_schema\".",
