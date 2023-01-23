@@ -8,6 +8,8 @@ import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
+import { useFreeConnectorProgram } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
+import { LargeEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/LargeEnrollmentCallout";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import CreditsUsage from "./components/CreditsUsage";
@@ -18,6 +20,9 @@ import styles from "./CreditsPage.module.scss";
 const CreditsPage: React.FC = () => {
   const { emailVerified } = useAuthService();
   useTrackPage(PageTrackingCodes.CREDITS);
+  const { enrollmentStatusQuery } = useFreeConnectorProgram();
+  const { showEnrollmentUi } = enrollmentStatusQuery.data || {};
+
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "credits.credits" }]} />}
@@ -26,6 +31,7 @@ const CreditsPage: React.FC = () => {
       <div className={styles.content}>
         {!emailVerified && <EmailVerificationHint className={styles.emailVerificationHint} />}
         <RemainingCredits selfServiceCheckoutEnabled={emailVerified} />
+        {showEnrollmentUi && <LargeEnrollmentCallout />}
         <React.Suspense
           fallback={
             <div className={styles.creditUsageLoading}>
