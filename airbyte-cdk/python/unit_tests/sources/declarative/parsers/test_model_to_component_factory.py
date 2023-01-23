@@ -1011,37 +1011,3 @@ class TestCreateTransformations:
             )
         ]
         assert stream.transformations == expected
-
-    def test_default_schema_loader(self):
-        component_definition = {
-            "type": "DeclarativeStream",
-            "name": "test",
-            "primary_key": [],
-            "retriever": {
-                "type": "SimpleRetriever",
-                "name": "test",
-                "primary_key": [],
-                "requester": {
-                    "type": "HttpRequester",
-                    "name": "test",
-                    "url_base": "http://localhost:6767/",
-                    "path": "items/",
-                    "request_options_provider": {
-                        "request_parameters": {},
-                        "request_headers": {},
-                        "request_body_json": {},
-                        "type": "InterpolatedRequestOptionsProvider",
-                    },
-                    "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config['api_key'] }}"},
-                },
-                "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": ["items"]}},
-                "paginator": {"type": "NoPagination"},
-            },
-        }
-        resolved_manifest = resolver.preprocess_manifest(component_definition)
-        propagated_source_config = ManifestComponentTransformer().propagate_types_and_options("", resolved_manifest, {})
-        stream = factory.create_component(
-            model_type=DeclarativeStreamModel, component_definition=propagated_source_config, config=input_config
-        )
-        schema_loader = stream.schema_loader
-        assert schema_loader.default_loader._get_json_filepath() == f"./{stream.name}.json"

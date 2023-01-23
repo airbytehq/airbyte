@@ -273,6 +273,7 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
                 type: ToastType.ERROR,
               });
           }
+          throw error;
         }
       },
       async verifyEmail(code: string): Promise<void> {
