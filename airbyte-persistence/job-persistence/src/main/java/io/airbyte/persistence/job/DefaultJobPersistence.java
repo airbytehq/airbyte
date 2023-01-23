@@ -35,6 +35,7 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobOutput.OutputType;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
@@ -929,9 +930,10 @@ public class DefaultJobPersistence implements JobPersistence {
   private static JobConfig parseJobConfigFromString(final String jobConfigString) {
     final JobConfig jobConfig = Jsons.deserialize(jobConfigString, JobConfig.class);
     // On-the-fly migration of persisted data types related objects (protocol v0->v1)
-    switch (jobConfig.getConfigType()) {
-      case SYNC -> CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
-      case RESET_CONNECTION -> CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
+    if (jobConfig.getConfigType() == ConfigType.SYNC) {
+      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
+    } else if (jobConfig.getConfigType() == ConfigType.RESET_CONNECTION) {
+      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
     }
     return jobConfig;
   }
@@ -957,9 +959,10 @@ public class DefaultJobPersistence implements JobPersistence {
   private static JobOutput parseJobOutputFromString(final String jobOutputString) {
     final JobOutput jobOutput = Jsons.deserialize(jobOutputString, JobOutput.class);
     // On-the-fly migration of persisted data types related objects (protocol v0->v1)
-    switch (jobOutput.getOutputType()) {
-      case DISCOVER_CATALOG -> CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
-      case SYNC -> CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
+    if (jobOutput.getOutputType() == OutputType.DISCOVER_CATALOG) {
+      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
+    } else if (jobOutput.getOutputType() == OutputType.SYNC) {
+      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
     }
     return jobOutput;
   }

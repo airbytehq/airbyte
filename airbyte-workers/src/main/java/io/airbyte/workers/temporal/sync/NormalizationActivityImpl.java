@@ -108,8 +108,10 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
       // This should only be useful for syncs that started before the release that contained v1 migration.
-      // However, we lack the effective way to detect those syncs so this code should remain until we phase v0 out.
-      // Performance impact should be low considering the nature of the check compared to the time to run normalization.
+      // However, we lack the effective way to detect those syncs so this code should remain until we
+      // phase v0 out.
+      // Performance impact should be low considering the nature of the check compared to the time to run
+      // normalization.
       CatalogMigrationV1Helper.upgradeSchemaIfNeeded(fullInput.getCatalog());
 
       final Supplier<NormalizationInput> inputSupplier = () -> {

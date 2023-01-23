@@ -22,6 +22,7 @@ public class CatalogMigrationV1Helper {
 
   /**
    * Performs an in-place migration of the schema from v0 to v1 if v0 data types are detected
+   *
    * @param configuredAirbyteCatalog to migrate
    */
   public static void upgradeSchemaIfNeeded(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
@@ -32,6 +33,7 @@ public class CatalogMigrationV1Helper {
 
   /**
    * Performs an in-place migration of the schema from v0 to v1 if v0 data types are detected
+   *
    * @param airbyteCatalog to migrate
    */
   public static void upgradeSchemaIfNeeded(final AirbyteCatalog airbyteCatalog) {
@@ -104,4 +106,5 @@ public class CatalogMigrationV1Helper {
     }
     return false;
   }
+
 }

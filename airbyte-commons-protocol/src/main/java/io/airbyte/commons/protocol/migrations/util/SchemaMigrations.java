@@ -61,6 +61,7 @@ public class SchemaMigrations {
 
   /**
    * Returns a list of all the direct children nodes to consider for subSchemas
+   *
    * @param schema The JsonSchema node to start
    * @return a list of the JsonNodes to be considered
    */
