@@ -1,5 +1,7 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Field, FieldProps, Formik, Form } from "formik";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
@@ -19,7 +21,7 @@ import CheckBoxControl from "../../components/CheckBoxControl";
 import { BottomBlock, FieldItem, RowFieldItem } from "../../components/FormComponents";
 import styles from "./SignupForm.module.scss";
 
-interface FormValues {
+interface SingupFormValues {
   name: string;
   companyName: string;
   email: string;
@@ -52,6 +54,30 @@ export const NameField: React.FC = () => {
   );
 };
 
+export const RHFNameField: React.FC = () => {
+  const { formatMessage } = useIntl();
+  const { control } = useFormContext<SingupFormValues>();
+
+  return (
+    <Controller
+      name="name"
+      control={control}
+      render={({ field, fieldState }) => (
+        <LabeledInput
+          {...field}
+          label={<FormattedMessage id="login.fullName" />}
+          placeholder={formatMessage({
+            id: "login.fullName.placeholder",
+          })}
+          type="text"
+          error={!!fieldState.error && fieldState.isTouched}
+          message={fieldState.isTouched && fieldState.error && formatMessage({ id: fieldState.error.message })}
+        />
+      )}
+    />
+  );
+};
+
 export const CompanyNameField: React.FC = () => {
   const { formatMessage } = useIntl();
 
@@ -70,6 +96,30 @@ export const CompanyNameField: React.FC = () => {
         />
       )}
     </Field>
+  );
+};
+
+export const RHFCompanyNameField: React.FC = () => {
+  const { formatMessage } = useIntl();
+  const { control } = useFormContext<SingupFormValues>();
+
+  return (
+    <Controller
+      name="companyName"
+      control={control}
+      render={({ field, fieldState }) => (
+        <LabeledInput
+          {...field}
+          label={<FormattedMessage id="login.companyName" />}
+          placeholder={formatMessage({
+            id: "login.companyName.placeholder",
+          })}
+          type="text"
+          error={!!fieldState.error && fieldState.isTouched}
+          message={fieldState.isTouched && fieldState.error && formatMessage({ id: fieldState.error.message })}
+        />
+      )}
+    />
   );
 };
 
@@ -94,6 +144,32 @@ export const EmailField: React.FC<{ label?: React.ReactNode }> = ({ label }) => 
   );
 };
 
+export const RHFEmailField: React.FC<{ label?: React.ReactNode }> = () => {
+  const { formatMessage } = useIntl();
+  const { control } = useFormContext<SingupFormValues>();
+
+  return (
+    <Controller
+      name="email"
+      control={control}
+      render={({ field, fieldState }) => {
+        return (
+          <LabeledInput
+            {...field}
+            label={<FormattedMessage id="login.yourEmail" />}
+            placeholder={formatMessage({
+              id: "login.yourEmail.placeholder",
+            })}
+            type="text"
+            error={!!fieldState.error && fieldState.isTouched}
+            message={fieldState.isTouched && fieldState.error && formatMessage({ id: fieldState.error.message })}
+          />
+        );
+      }}
+    />
+  );
+};
+
 export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) => {
   const { formatMessage } = useIntl();
 
@@ -115,6 +191,30 @@ export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) 
   );
 };
 
+export const RHFPasswordField: React.FC = () => {
+  const { formatMessage } = useIntl();
+  const { control } = useFormContext<SingupFormValues>();
+
+  return (
+    <Controller
+      name="password"
+      control={control}
+      render={({ field, fieldState }) => (
+        <LabeledInput
+          {...field}
+          label={<FormattedMessage id="login.password" />}
+          placeholder={formatMessage({
+            id: "login.password.placeholder",
+          })}
+          type="password"
+          error={!!fieldState.error && fieldState.isTouched}
+          message={fieldState.isTouched && !!fieldState.error && formatMessage({ id: fieldState.error.message })}
+        />
+      )}
+    />
+  );
+};
+
 export const NewsField: React.FC = () => (
   <Field name="news">
     {({ field }: FieldProps<string>) => (
@@ -124,6 +224,21 @@ export const NewsField: React.FC = () => (
     )}
   </Field>
 );
+
+export const RHFNewsField: React.FC = () => {
+  const { control } = useFormContext<SingupFormValues>();
+  return (
+    <Controller
+      name="news"
+      control={control}
+      render={({ field }) => (
+        <MarginBlock>
+          <input type="checkbox" {...field} value="true" />
+        </MarginBlock>
+      )}
+    />
+  );
+};
 
 export const Disclaimer: React.FC = () => {
   return (
@@ -169,7 +284,7 @@ export const SignupFormStatusMessage: React.FC<React.PropsWithChildren<unknown>>
 
 export const SignupForm: React.FC = () => {
   const { signUp } = useAuthService();
-
+  const [status, setStatus] = useState(null);
   const showName = !useExperiment("authPage.signup.hideName", false);
   const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
   const showSourceSelector = useExperiment("authPage.signup.sourceSelector", false);
@@ -180,6 +295,7 @@ export const SignupForm: React.FC = () => {
       password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
       name: yup.string(),
       companyName: yup.string(),
+      news: yup.boolean(),
     };
     if (showName) {
       shape.name = shape.name.required("form.empty.error");
@@ -200,8 +316,55 @@ export const SignupForm: React.FC = () => {
     password: "",
     news: !isGdprCountry(),
   };
+  const form = useForm<SingupFormValues>({
+    resolver: yupResolver(validationSchema),
+    reValidateMode: "onBlur",
+    mode: "onChange",
+    defaultValues: initialValues,
+  });
+
+  const onSubmit = form.handleSubmit(async (values) => {
+    console.log(values);
+    signUp(values).catch((err) => {
+      if (err instanceof FieldError) {
+        form.setError(err.field, { type: "string", message: err.message });
+      } else {
+        setStatus(err.message);
+      }
+    });
+  });
+
   return (
-    <Formik<FormValues>
+    <FormProvider {...form}>
+      <form onSubmit={onSubmit}>
+        {(showName || showCompanyName) && (
+          <RowFieldItem>
+            {showName && <RHFNameField />}
+            {showCompanyName && <RHFCompanyNameField />}
+          </RowFieldItem>
+        )}
+        <FieldItem>
+          <RHFEmailField />
+        </FieldItem>
+        <FieldItem>
+          <RHFPasswordField />
+        </FieldItem>
+        <FieldItem>
+          <RHFNewsField />
+        </FieldItem>
+        <BottomBlock>
+          <SignupButton isLoading={form.formState.isSubmitting} disabled={!form.formState.isValid} />
+          {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
+        </BottomBlock>
+        <h2>FormState</h2>
+        <pre>{JSON.stringify(form.formState.errors, null, 2)}</pre>
+        <button type="submit">Submit</button>
+      </form>
+    </FormProvider>
+  );
+
+  return (
+    <Formik<SingupFormValues>
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={async (values, { setFieldError, setStatus }) =>
@@ -224,7 +387,6 @@ export const SignupForm: React.FC = () => {
               {showCompanyName && <CompanyNameField />}
             </RowFieldItem>
           )}
-
           {/* exp-select-source-signup */}
           {showSourceSelector && (
             <FieldItem>

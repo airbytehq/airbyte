@@ -16,7 +16,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ light, error, containerClassName, adornment, ...props }, ref) => {
+  ({ light, error, containerClassName, adornment, value, ...props }, ref) => {
     const { formatMessage } = useIntl();
 
     const inputRef = useRef<HTMLInputElement | null>(null);
