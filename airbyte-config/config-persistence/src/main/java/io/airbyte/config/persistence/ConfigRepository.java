@@ -1361,7 +1361,8 @@ public class ConfigRepository {
           where actor_id in ({0})
           ) table_with_rank
         where creation_order_row_number = 1;
-        """, DSL.list(sourceIds.stream().map(DSL::value).collect(Collectors.toList()))))
+        """,
+        DSL.list(sourceIds.stream().map(DSL::value).collect(Collectors.toList()))))
         .stream().map(DbConverter::buildActorCatalogFetchEvent)
         .collect(Collectors.toMap(ActorCatalogFetchEvent::getActorId, record -> record));
   }
