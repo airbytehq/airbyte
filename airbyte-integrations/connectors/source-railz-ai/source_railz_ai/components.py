@@ -5,14 +5,16 @@
 import datetime
 import time
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 from dataclasses_jsonschema import JsonSchemaMixin
 from isodate import Duration, parse_duration
@@ -122,3 +124,58 @@ class RailzNestedExtractor(RecordExtractor, JsonSchemaMixin):
                 yield from self._extract_records(record, nested_fields[:], propagate_fields)
             else:
                 yield record
+
+
+@dataclass
+class RailzCartesianProductStreamSlicer(CartesianProductStreamSlicer):
+    """
+    Some streams require support of nested state:
+    {
+      "accounting_transactions": {
+        "Business1": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2022-12-28T00:00:00.000Z"
+          }
+        },
+        "Business2": {
+          "oracleNetsuite": {
+            "postedDate": "2022-12-28T00:00:00.000Z"
+          }
+        }
+      }
+    }
+    """
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        self._cursor = {}
+        self._options = options
+
+    def get_stream_state(self) -> Mapping[str, Any]:
+        return self._cursor
+
+    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        connections_slicer = self.stream_slicers[0]
+        datetime_slicer = self.stream_slicers[1]
+        for connection_slice in connections_slicer.stream_slices(sync_mode, stream_state):
+            businessName = connection_slice["slice_key"]["businessName"]
+            serviceName = connection_slice["slice_key"]["serviceName"]
+            for datetime_slice in datetime_slicer.stream_slices(sync_mode, stream_state.get(businessName, {}).get(serviceName, {})):
+                yield connection_slice | datetime_slice
+
+    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        if last_record:
+            businessName = stream_slice["slice_key"]["businessName"]
+            serviceName = stream_slice["slice_key"]["serviceName"]
+            self._cursor.setdefault(businessName, {}).setdefault(serviceName, {})["postedDate"] = self.safe_max(
+                self._cursor.get(businessName, {}).get(serviceName, {}).get("postedDate"), last_record["postedDate"]
+            )
+        else:
+            self._cursor = stream_slice
+
+    @staticmethod
+    def safe_max(arg1, arg2):
+        if arg1 is None:
+            return arg2
+        if arg2 is None:
+            return arg1
+        return max(arg1, arg2)

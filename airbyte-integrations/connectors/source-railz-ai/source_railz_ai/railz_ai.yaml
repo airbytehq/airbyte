@@ -153,6 +153,51 @@ definitions:
       serviceNames: ["plaid"]
     primary_key: "accountId"
 
+# Incremental Service
+  base_incremental_service_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            businessName: "{{ stream_slice.slice_key.businessName }}"
+            serviceName: "{{ stream_slice.slice_key.serviceName }}"
+            startDate: "{{ format_datetime(stream_slice.start_time, '%Y-%m-%d') }}"
+            endDate: "{{ format_datetime(stream_slice.end_time, '%Y-%m-%d') }}"
+      stream_slicer:
+        type: CustomStreamSlicer
+        class_name: source_railz_ai.components.RailzCartesianProductStreamSlicer
+        stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "*ref(definitions.connections_slice_stream)"
+                parent_key: "slice_key"
+                stream_slice_field: "slice_key"
+          - type: DatetimeStreamSlicer
+            start_datetime:
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%d"
+            end_datetime:
+              datetime: "{{ today_utc() }}"
+              datetime_format: "%Y-%m-%d"
+            step: "P1M"
+            datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+            cursor_granularity: "P1D"
+            cursor_field: "postedDate"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    stream_cursor_field: "postedDate"
+
+  accounting_transactions_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "accounting_transactions"
+      path: "/accountingTransactions"
+      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+
+
 streams:
   - "*ref(definitions.businesses_stream)"
   - "*ref(definitions.connections_stream)"
@@ -163,6 +208,7 @@ streams:
   - "*ref(definitions.tracking_categories_stream)"
   - "*ref(definitions.vendors_stream)"
   - "*ref(definitions.bank_accounts_stream)"
+  - "*ref(definitions.accounting_transactions_stream)"
 
 check:
   stream_names:
