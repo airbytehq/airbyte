@@ -10,6 +10,7 @@ import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.AttemptRead;
 import io.airbyte.api.model.generated.AttemptStats;
 import io.airbyte.api.model.generated.AttemptStreamStats;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -21,6 +22,7 @@ import io.airbyte.api.model.generated.JobIdRequestBody;
 import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobListRequestBody;
+import io.airbyte.api.model.generated.JobOptionalRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobReadList;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
@@ -192,6 +194,16 @@ public class JobHistoryHandler {
   public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     return jobConverter.getJobInfoLightRead(job);
+  }
+
+  public JobOptionalRead getLastReplicationJob(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
+    Optional<Job> job = jobPersistence.getLastReplicationJob(connectionIdRequestBody.getConnectionId());
+    if (job.isEmpty()) {
+      return new JobOptionalRead();
+    } else {
+      return jobConverter.getJobOptionalRead(job.get());
+    }
+
   }
 
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody)
