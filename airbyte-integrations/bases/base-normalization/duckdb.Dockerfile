@@ -28,10 +28,6 @@ WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
 RUN dbt deps
 
-# # Install JSON Extension: https://duckdb.org/docs/extensions/json
-# RUN INSTALL 'json';
-# RUN LOAD 'json';
-
 WORKDIR /airbyte
 ENV AIRBYTE_ENTRYPOINT "/airbyte/entrypoint.sh"
 ENTRYPOINT ["/airbyte/entrypoint.sh"]

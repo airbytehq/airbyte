@@ -71,7 +71,7 @@ class DestinationDuckdb(Destination):
             table_name = f"_airbyte_raw_{name}"
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 # delete the tables
-                logger.info(f"--- {streams}")
+                logger.info(f"Dropping tables for overwrite: {table_name}")
                 query = """
                 DROP TABLE IF EXISTS {}
                 """.format(
@@ -82,8 +82,8 @@ class DestinationDuckdb(Destination):
             query = f"""
             CREATE TABLE IF NOT EXISTS {table_name} (
                 _airbyte_ab_id TEXT PRIMARY KEY,
-                _airbyte_emitted_at TEXT,
-                _airbyte_data TEXT
+                _airbyte_emitted_at JSON,
+                _airbyte_data JSON
             )
             """
 
@@ -97,7 +97,7 @@ class DestinationDuckdb(Destination):
                 # flush the buffer
                 for stream_name in buffer.keys():
 
-                    logger.info(f"4---mesage: {message}")
+                    logger.info(f"flushing buffer for state: {message}")
                     query = """
                     INSERT INTO {table_name}
                     VALUES (?,?,?)
@@ -136,6 +136,7 @@ class DestinationDuckdb(Destination):
 
             con.executemany(query, buffer[stream_name])
             con.commit()
+            con.close()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """

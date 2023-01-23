@@ -9,7 +9,7 @@
     "title": "Destination Duckdb",
     "type": "object",
     "required": ["destination_path"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "destination_path": {
         "type": "string",
