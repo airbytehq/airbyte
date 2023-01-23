@@ -14,6 +14,8 @@ import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBod
 import io.airbyte.api.model.generated.SourceOauthConsentRequest;
 import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.OAuthHandler;
+import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
+import io.airbyte.server.handlers.OAuthHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -23,8 +25,7 @@ import io.micronaut.security.rules.SecurityRule;
 import java.util.Map;
 
 @Controller("/api/v1/source_oauths")
-@Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+@Requires(property = "airbyte.deployment-mode", value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class SourceOauthApiController implements SourceOauthApi {
 
@@ -42,6 +43,16 @@ public class SourceOauthApiController implements SourceOauthApi {
     return ApiHelper.execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
   }
 
+  @Post("/complete_oauth_return_secret")
+  @Override
+  public SecretId completeSourceOAuthReturnSecret(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
+    Map<String, Object> oAuthTokens = ApiHelper
+        .execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
+    SecretCoordinate secretCoordinate = oAuthHandler.writeOAuthSecret(completeSourceOauthRequest.getWorkspaceId(),
+        oAuthTokens);
+    return new SecretId().secretId(secretCoordinate.getFullCoordinate());
+  }
+
   @Post("/get_consent_url")
   @Secured({EDITOR})
   @SecuredWorkspace
@@ -51,9 +62,10 @@ public class SourceOauthApiController implements SourceOauthApi {
   }
 
   @Post("/oauth_params/create")
-  @Secured({ADMIN})
+  @Secured({ ADMIN })
   @Override
-  public void setInstancewideSourceOauthParams(@Body final SetInstancewideSourceOauthParamsRequestBody setInstancewideSourceOauthParamsRequestBody) {
+  public void setInstancewideSourceOauthParams(
+      @Body final SetInstancewideSourceOauthParamsRequestBody setInstancewideSourceOauthParamsRequestBody) {
     ApiHelper.execute(() -> {
       oAuthHandler.setSourceInstancewideOauthParams(setInstancewideSourceOauthParamsRequestBody);
       return null;

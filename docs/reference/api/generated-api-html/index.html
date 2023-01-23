@@ -349,6 +349,7 @@ font-style: italic;
   <h4><a href="#SourceOauth">SourceOauth</a></h4>
   <ul>
   <li><a href="#completeSourceOAuth"><code><span class="http-method">post</span> /v1/source_oauths/complete_oauth</code></a></li>
+  <li><a href="#completeSourceOAuthReturnSecret"><code><span class="http-method">post</span> /v1/source_oauths/complete_oauth_return_secret</code></a></li>
   <li><a href="#getSourceOAuthConsent"><code><span class="http-method">post</span> /v1/source_oauths/get_consent_url</code></a></li>
   <li><a href="#setInstancewideSourceOauthParams"><code><span class="http-method">post</span> /v1/source_oauths/oauth_params/create</code></a></li>
   </ul>
@@ -8297,6 +8298,64 @@ containing the updated stream needs to be sent.</div>
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="completeSourceOAuthReturnSecret"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/complete_oauth_return_secret</code></pre></div>
+    <div class="method-summary">Given a source def ID generate an access/refresh token and save as a secret. Return the secret ID. (<span class="nickname">completeSourceOAuthReturnSecret</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CompleteSourceOauthRequest <a href="#CompleteSourceOauthRequest">CompleteSourceOauthRequest</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SecretId">SecretId</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "secretId" : "uuid"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SecretId">SecretId</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="getSourceOAuthConsent"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -10525,6 +10584,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
     <li><a href="#SaveStatsRequestBody"><code>SaveStatsRequestBody</code> - </a></li>
     <li><a href="#SchemaChange"><code>SchemaChange</code> - </a></li>
+    <li><a href="#SecretId"><code>SecretId</code> - </a></li>
     <li><a href="#SelectedFieldInfo"><code>SelectedFieldInfo</code> - </a></li>
     <li><a href="#SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a></li>
@@ -11762,6 +11822,13 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SecretId"><code>SecretId</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>Secret ID returned when interacting with a service that stores a secret in Airbyte for later use i.e. OAuth source creation.</div>
+    <div class="field-items">
+      <div class="param">secretId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="SelectedFieldInfo"><code>SelectedFieldInfo</code> - </a> <a class="up" href="#__Models">Up</a></h3>

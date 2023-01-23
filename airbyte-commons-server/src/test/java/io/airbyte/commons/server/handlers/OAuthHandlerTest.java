@@ -17,6 +17,7 @@ import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -37,6 +38,7 @@ class OAuthHandlerTest {
   private TrackingClient trackingClient;
   private HttpClient httpClient;
   private SecretsRepositoryReader secretsRepositoryReader;
+  private SecretsRepositoryWriter secretsRepositoryWriter;
   private static final String CLIENT_ID = "123";
   private static final String CLIENT_ID_KEY = "client_id";
   private static final String CLIENT_SECRET_KEY = "client_secret";
@@ -48,7 +50,8 @@ class OAuthHandlerTest {
     trackingClient = mock(TrackingClient.class);
     httpClient = Mockito.mock(HttpClient.class);
     secretsRepositoryReader = mock(SecretsRepositoryReader.class);
-    handler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader);
+    secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
+    handler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader, secretsRepositoryWriter);
   }
 
   @Test

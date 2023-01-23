@@ -32,6 +32,8 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.oauth.OAuthImplementationFactory;
@@ -61,15 +63,18 @@ public class OAuthHandler {
   private final OAuthImplementationFactory oAuthImplementationFactory;
   private final TrackingClient trackingClient;
   private final SecretsRepositoryReader secretsRepositoryReader;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
 
   public OAuthHandler(final ConfigRepository configRepository,
                       final HttpClient httpClient,
                       final TrackingClient trackingClient,
-                      final SecretsRepositoryReader secretsRepositoryReader) {
+                      final SecretsRepositoryReader secretsRepositoryReader,
+                      final SecretsRepositoryWriter secretsRepositoryWriter) {
     this.configRepository = configRepository;
     this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository, httpClient);
     this.trackingClient = trackingClient;
     this.secretsRepositoryReader = secretsRepositoryReader;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
   }
 
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest)
@@ -359,6 +364,11 @@ public class OAuthHandler {
     });
 
     return Jsons.jsonNode(result);
+  }
+
+
+  public SecretCoordinate writeOAuthSecret(final UUID workspaceId, final Map<String, Object> payload){
+    return secretsRepositoryWriter.storeOAuthSecret(workspaceId, payload.toString());
   }
 
 }
