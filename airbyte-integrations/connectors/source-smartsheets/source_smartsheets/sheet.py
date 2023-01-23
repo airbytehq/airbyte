@@ -13,6 +13,7 @@ class SmartSheetAPIWrapper:
     def __init__(self, config: Mapping[str, Any]):
         self._spreadsheet_id = config["spreadsheet_id"]
         self._access_token = config["access_token"]
+        self._metadata = config["metadata_fields"]
         api_client = smartsheet.Smartsheet(self._access_token)
         api_client.errors_as_exceptions(True)
         # each call to `Sheets` makes a new instance, so we save it here to make no more new objects
@@ -38,6 +39,11 @@ class SmartSheetAPIWrapper:
         values_column_map = {cell.column_id: str(cell.value or "") for cell in row.cells}
         record = {column.title: values_column_map[column.id] for column in self.data.columns}
         record["modifiedAt"] = row.modified_at.isoformat()
+
+        if len(self._metadata):
+            metadata_schema = {i: self._column_to_property(i) for i in self._metadata}
+            record.update(metadata_schema)
+            
         return record
 
     @property
@@ -64,6 +70,11 @@ class SmartSheetAPIWrapper:
     def json_schema(self) -> Dict[str, Any]:
         column_info = {column.title: self._column_to_property(column.type.value) for column in self.data.columns}
         column_info["modifiedAt"] = {"type": "string", "format": "date-time"}  # add cursor field explicitly
+
+        if len(self._metadata):
+            metadata_schema = {i: self._column_to_property(i) for i in self._metadata}
+            column_info.update(metadata_schema)
+             
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
