@@ -18,7 +18,9 @@ from .stream_events import (
   BurnedNftsEvents,
   ChallengeBurnedNftsEvents,
   RewardsMintedEvents,
-  PanelsMintedEvents
+  PanelsMintedEvents,
+  PanelsStakedEvents,
+  PanelsUnstakedEvents
 )
 
 class SourceGraffle(AbstractSource):
@@ -50,5 +52,7 @@ class SourceGraffle(AbstractSource):
       BurnedNftsEvents(config, "A.30cf5dcf6ea8d379.AeraNFT.Burned"),
       ChallengeBurnedNftsEvents(config, "A.097bafa4e0b48eef.FindFurnace.Burned"),
       RewardsMintedEvents(config, "A.30cf5dcf6ea8d379.AeraRewards.Minted"),
-      PanelsMintedEvents(config, "A.30cf5dcf6ea8d379.AeraPanels.Minted")
+      PanelsMintedEvents(config, "A.30cf5dcf6ea8d379.AeraPanels.Minted"),
+      PanelsStakedEvents(config, "A.30cf5dcf6ea8d379.AeraPanels.PanelStaked"),
+      PanelsUnstakedEvents(config, "A.30cf5dcf6ea8d379.AeraPanels.PanelUnstaked")
     ]
