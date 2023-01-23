@@ -19,10 +19,7 @@ import styles from "./DestinationSettings.module.scss";
 export const DestinationSettingsPage: React.FC = () => {
   const params = useParams() as { "*": StepsTypes | ""; id: string };
   const destination = useGetDestination(params.id);
-  const { connections } = useConnectionList();
-  const connectionsWithDestination = connections.filter(
-    (connectionItem) => connectionItem.destinationId === destination.destinationId
-  );
+  const { connections: connectionsWithDestination } = useConnectionList({ destinationId: [destination.destinationId] });
   const destinationSpecification = useGetDestinationDefinitionSpecification(destination.destinationDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
   const { mutateAsync: updateDestination } = useUpdateDestination();
@@ -56,6 +53,7 @@ export const DestinationSettingsPage: React.FC = () => {
         formId={formId}
         availableConnectorDefinitions={[destinationDefinition]}
         selectedConnectorDefinitionSpecification={destinationSpecification}
+        selectedConnectorDefinitionId={destinationSpecification.destinationDefinitionId}
         connector={destination}
         onSubmit={onSubmitForm}
       />

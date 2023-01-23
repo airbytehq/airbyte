@@ -11,11 +11,8 @@
 
 # misc
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
+# Log files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -23,12 +20,20 @@ yarn-error.log*
 *.iml
 /.idea
 
-.npmrc
+# Environment overwrites
 .env.development
 .env.production
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Local overwrites
+.experiments.json
 
 storybook-static/
 
 # Ignore generated API clients, since they're automatically generated
 /src/core/request/AirbyteClient.ts
 /src/core/request/ConnectorBuilderClient.ts
+/src/core/request/ConnectorManifest.ts

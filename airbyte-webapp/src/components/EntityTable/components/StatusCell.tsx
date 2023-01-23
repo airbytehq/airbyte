@@ -1,6 +1,7 @@
 import React from "react";
 
 import { SchemaChange } from "core/request/AirbyteClient";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { ChangesStatusIcon } from "./ChangesStatusIcon";
 import styles from "./StatusCell.module.scss";
@@ -27,7 +28,7 @@ export const StatusCell: React.FC<StatusCellProps> = ({
   schemaChange,
   hasBreakingChange,
 }) => {
-  const isSchemaChangesFeatureEnabled = process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true";
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
 
   return (
     <div className={styles.container}>
@@ -40,7 +41,7 @@ export const StatusCell: React.FC<StatusCellProps> = ({
         hasBreakingChange={hasBreakingChange}
         allowSync={allowSync}
       />
-      {isSchemaChangesFeatureEnabled && <ChangesStatusIcon schemaChange={schemaChange} />}
+      {allowAutoDetectSchema && <ChangesStatusIcon schemaChange={schemaChange} />}
     </div>
   );
 };

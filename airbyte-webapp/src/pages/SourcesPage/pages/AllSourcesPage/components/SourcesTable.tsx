@@ -8,8 +8,6 @@ import { getEntityTableData } from "components/EntityTable/utils";
 import { SourceRead } from "core/request/AirbyteClient";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 
-import { useSourceDefinitionList } from "../../../../../services/connector/SourceDefinitionService";
-
 interface SourcesTableProps {
   sources: SourceRead[];
 }
@@ -17,10 +15,9 @@ interface SourcesTableProps {
 const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
   const navigate = useNavigate();
 
-  const { connections } = useConnectionList();
-  const { sourceDefinitions } = useSourceDefinitionList();
+  const { connections } = useConnectionList({ sourceId: sources.map(({ sourceId }) => sourceId) });
 
-  const data = getEntityTableData(sources, connections, sourceDefinitions, "source");
+  const data = getEntityTableData(sources, connections, "source");
 
   const clickRow = (source: EntityTableDataItem) => navigate(`${source.entityId}`);
 

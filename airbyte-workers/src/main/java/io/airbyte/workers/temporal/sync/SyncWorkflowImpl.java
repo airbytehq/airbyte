@@ -42,6 +42,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final int CURRENT_VERSION = 2;
   private static final String NORMALIZATION_SUMMARY_CHECK_TAG = "normalization_summary_check";
   private static final int NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION = 1;
+  private static final String AUTO_DETECT_SCHEMA_TAG = "auto_detect_schema";
+  private static final int AUTO_DETECT_SCHEMA_VERSION = 2;
 
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
@@ -55,6 +57,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
+  // @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  // private RefreshSchemaActivity refreshSchemaActivity;
+  // @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  // private ConfigFetchActivity configFetchActivity;
 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
@@ -72,6 +78,30 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     final String taskQueue = Workflow.getInfo().getTaskQueue();
+
+    // final int autoDetectSchemaVersion =
+    // Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION,
+    // AUTO_DETECT_SCHEMA_VERSION);
+    //
+    // if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
+    // final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
+    //
+    // if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
+    // LOGGER.info("Refreshing source schema...");
+    // refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+    // }
+    //
+    // final Optional<ConnectionStatus> status = configFetchActivity.getStatus(connectionId);
+    // if (!status.isEmpty() && ConnectionStatus.INACTIVE == status.get()) {
+    // LOGGER.info("Connection is disabled. Cancelling run.");
+    // final StandardSyncOutput output =
+    // new StandardSyncOutput()
+    // .withStandardSyncSummary(new
+    // StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
+    // return output;
+    // }
+    // }
+
     StandardSyncOutput syncOutput =
         replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);
 

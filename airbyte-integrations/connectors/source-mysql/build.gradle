@@ -26,7 +26,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
+    testImplementation libs.junit.jupiter.system.stubs
     testImplementation libs.connectors.testcontainers.mysql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')

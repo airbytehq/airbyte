@@ -7,10 +7,13 @@ The low-code framework involves editing a boilerplate [YAML file](../low-code-cd
 Streams define the schema of the data to sync, as well as how to read it from the underlying API source.
 A stream generally corresponds to a resource within the API. They are analogous to tables for a relational database source.
 
-A stream's schema will can defined as a [JSONSchema](https://json-schema.org/) file in `<source_connector_name>/schemas/<stream_name>.json`.
-More information on how to define a stream's schema can be found [here](../source_schema.yaml)
+By default, the schema of a stream's data is defined as a [JSONSchema](https://json-schema.org/) file in `<source_connector_name>/schemas/<stream_name>.json`. 
 
-The schema of a stream object is:
+Alternately, the stream's data schema can be stored in YAML format inline in the YAML file, by including the optional `schema_loader` key. If the data schema is provided inline, any schema on disk for that stream will be ignored.
+
+More information on how to define a stream's schema can be found [here](../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
+
+The stream object is represented in the YAML file as:
 
 ```yaml
   Stream:
@@ -34,6 +37,8 @@ The schema of a stream object is:
         "$ref": "#/definitions/RecordTransformation"
       checkpoint_interval:
         type: integer
+      schema_loader:
+        "$ref": "#/definitions/InlineSchemaLoader"
 ```
 
 More details on streams and sources can be found in the [basic concepts section](../../cdk-python/basic-concepts.md).

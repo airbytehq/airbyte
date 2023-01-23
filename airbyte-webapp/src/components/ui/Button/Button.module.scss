@@ -13,13 +13,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease-in;
+  white-space: nowrap;
 
   &.full {
     width: 100%;
-  }
-
-  &:disabled {
-    opacity: 0.25;
   }
 
   &:disabled,
@@ -35,6 +32,10 @@
 
   &:focus-visible {
     outline: 3px solid colors.$blue-50;
+  }
+
+  &:disabled:not(.isLoading) {
+    opacity: 0.25;
   }
 
   .buttonIcon {

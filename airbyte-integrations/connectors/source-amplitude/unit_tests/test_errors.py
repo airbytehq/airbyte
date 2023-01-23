@@ -14,7 +14,7 @@ class MockRequest:
 
 
 def test_incremental_http_error_handler(mocker):
-    stream = Events(start_date="2021-01-01T00:00:00Z")
+    stream = Events(start_date="2021-01-01T00:00:00Z", data_region="Standard Server")
     stream_slice = stream.stream_slices()[0]
 
     mock_response = MockRequest(404)

@@ -4,6 +4,7 @@
 
 package io.airbyte.commons.jackson;
 
+import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -20,6 +21,7 @@ public class MoreMappers {
   public static ObjectMapper initMapper() {
     final ObjectMapper result = new ObjectMapper().registerModule(new JavaTimeModule());
     result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    result.configure(Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
     return result;
   }
 

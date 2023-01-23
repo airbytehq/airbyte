@@ -19,6 +19,7 @@ import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobDebugRead;
 import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobOptionalRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
@@ -44,14 +45,14 @@ import io.airbyte.persistence.job.models.Job;
 import io.airbyte.server.scheduler.SynchronousJobMetadata;
 import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.workers.helper.ProtocolConverters;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Singleton
 public class JobConverter {
 
   private final WorkerEnvironment workerEnvironment;
@@ -70,6 +71,10 @@ public class JobConverter {
 
   public JobInfoLightRead getJobInfoLightRead(final Job job) {
     return new JobInfoLightRead().job(getJobRead(job));
+  }
+
+  public JobOptionalRead getJobOptionalRead(final Job job) {
+    return new JobOptionalRead().job(getJobRead(job));
   }
 
   public static JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
@@ -103,6 +108,7 @@ public class JobConverter {
         .resetConfig(extractResetConfigIfReset(job).orElse(null))
         .createdAt(job.getCreatedAtInSecond())
         .updatedAt(job.getUpdatedAtInSecond())
+        .startedAt(job.getStartedAtInSecond().isPresent() ? job.getStartedAtInSecond().get() : null)
         .status(Enums.convertTo(job.getStatus(), JobStatus.class));
   }
 
@@ -137,7 +143,7 @@ public class JobConverter {
 
   public static AttemptRead getAttemptRead(final Attempt attempt) {
     return new AttemptRead()
-        .id(attempt.getId())
+        .id((long) attempt.getAttemptNumber())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
         .bytesSynced(attempt.getOutput() // TODO (parker) remove after frontend switches to totalStats
             .map(JobOutput::getSync)
@@ -239,11 +245,12 @@ public class JobConverter {
         .createdAt(metadata.getCreatedAt())
         .endedAt(metadata.getEndedAt())
         .succeeded(metadata.isSucceeded())
+        .connectorConfigurationUpdated(metadata.isConnectorConfigurationUpdated())
         .logs(getLogRead(metadata.getLogPath()));
   }
 
   public static AttemptNormalizationStatusRead convertAttemptNormalizationStatus(
-                                                                                 AttemptNormalizationStatus databaseStatus) {
+                                                                                 final AttemptNormalizationStatus databaseStatus) {
     return new AttemptNormalizationStatusRead()
         .attemptNumber(databaseStatus.attemptNumber())
         .hasRecordsCommitted(!databaseStatus.recordsCommitted().isEmpty())

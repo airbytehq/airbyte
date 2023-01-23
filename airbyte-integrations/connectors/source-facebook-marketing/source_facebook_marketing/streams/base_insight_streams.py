@@ -196,6 +196,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return:
         """
 
+        self._next_cursor_value = self._get_start_date()
         for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
                 continue

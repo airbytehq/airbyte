@@ -1,10 +1,10 @@
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Row } from "components";
+import { MinusIcon } from "components/icons/MinusIcon";
+import { PlusIcon } from "components/icons/PlusIcon";
 import { CheckBox } from "components/ui/CheckBox";
 import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { Switch } from "components/ui/Switch";
@@ -43,6 +43,7 @@ export interface StreamHeaderProps {
   onExpand: () => void;
   changedSelected: boolean;
   hasError: boolean;
+  configErrors?: Record<string, string>;
   disabled?: boolean;
 }
 
@@ -100,25 +101,24 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     <Row className={styles.catalogSectionRow}>
       {!disabled && (
         <div className={checkboxCellCustomStyle}>
-          {changedSelected && (
-            <div>
-              {isStreamEnabled ? (
-                <FontAwesomeIcon icon={faPlus} size="2x" className={iconStyle} />
-              ) : (
-                <FontAwesomeIcon icon={faMinus} size="2x" className={iconStyle} />
-              )}
-            </div>
-          )}
+          <div className={iconStyle}>{changedSelected && (isStreamEnabled ? <PlusIcon /> : <MinusIcon />)}</div>
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
       <ArrowCell>
-        {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
+        {hasFields ? (
+          <ArrowBlock
+            onExpand={onExpand}
+            isItemHasChildren={hasFields}
+            isItemOpen={isRowExpanded}
+            data-testid={`${stream.stream?.name}_expandStreamDetails`}
+          />
+        ) : null}
       </ArrowCell>
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
           <Switch
-            small
+            size="sm"
             checked={stream.config?.selected}
             onChange={onSelectStream}
             disabled={disabled}
@@ -132,7 +132,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             </span>
           )}
         </HeaderCell>
-        <HeaderCell ellipsis title={stream.stream?.name || ""}>
+        <HeaderCell ellipsis title={stream.stream?.name || ""} data-testid="streamNameCell">
           {stream.stream?.name}
         </HeaderCell>
         <Cell flex={1.5}>
@@ -152,6 +152,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
               placeholder={<FormattedMessage id="connectionForm.cursor.searchPlaceholder" />}
               onPathChange={onCursorChange}
+              id={`${stream.stream?.name}_cursor`}
             />
           )}
         </HeaderCell>
@@ -164,6 +165,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               isMulti
               placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
               onPathChange={onPrimaryKeyChange}
+              id={`${stream.stream?.name}_primaryKey`}
             />
           )}
         </HeaderCell>

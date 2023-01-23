@@ -12,6 +12,7 @@ import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.FieldSelectionData;
 import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
@@ -78,9 +79,9 @@ public class MockData {
   public static final UUID SOURCE_ID_1 = UUID.randomUUID();
   public static final UUID SOURCE_ID_2 = UUID.randomUUID();
   private static final UUID SOURCE_ID_3 = UUID.randomUUID();
-  private static final UUID DESTINATION_ID_1 = UUID.randomUUID();
-  private static final UUID DESTINATION_ID_2 = UUID.randomUUID();
-  private static final UUID DESTINATION_ID_3 = UUID.randomUUID();
+  public static final UUID DESTINATION_ID_1 = UUID.randomUUID();
+  public static final UUID DESTINATION_ID_2 = UUID.randomUUID();
+  public static final UUID DESTINATION_ID_3 = UUID.randomUUID();
   private static final UUID OPERATION_ID_1 = UUID.randomUUID();
   private static final UUID OPERATION_ID_2 = UUID.randomUUID();
   private static final UUID OPERATION_ID_3 = UUID.randomUUID();
@@ -471,6 +472,7 @@ public class MockData {
         .withSourceId(SOURCE_ID_1)
         .withDestinationId(DESTINATION_ID_1)
         .withCatalog(getConfiguredCatalog())
+        .withFieldSelectionData(new FieldSelectionData().withAdditionalProperty("foo", true))
         .withName("standard-sync-1")
         .withManual(true)
         .withNamespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
