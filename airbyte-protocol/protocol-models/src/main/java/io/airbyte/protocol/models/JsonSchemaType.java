@@ -44,6 +44,7 @@ public class JsonSchemaType {
   public static final String BASE_64 = "base64";
   public static final String LEGACY_AIRBYTE_TYPE_PROPERTY = "airbyte_type";
   public static final String ITEMS = "items";
+  public static final String ONE_OF = "oneOf";
 
   public static final JsonSchemaType STRING_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.STRING_V1).build();
   public static final JsonSchemaType BINARY_DATA_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.BINARY_DATA_V1).build();
@@ -111,12 +112,12 @@ public class JsonSchemaType {
 
     private Builder(final JsonSchemaPrimitive... types) {
       final List<JsonSchemaPrimitive> schemaPrimitives = Arrays.asList(types);
-      if (schemaPrimitives.size() > 1) {
+      if (hasMultipleTypes(schemaPrimitives)) {
         typeMapBuilder = ImmutableMap.builder();
         final List<ImmutableMap<Object, Object>> typeList = new ArrayList<>();
         schemaPrimitives.forEach(x -> typeList.add(ImmutableMap.builder().put(TYPE, x.name().toLowerCase()).build()));
         typeMapBuilder.put(TYPE, JsonSchemaPrimitive.OBJECT.name().toLowerCase());
-        typeMapBuilder.put("oneOf", typeList);
+        typeMapBuilder.put(ONE_OF, typeList);
       } else {
         final JsonSchemaPrimitive type = schemaPrimitives.get(0);
         typeMapBuilder = ImmutableMap.builder();
@@ -126,6 +127,10 @@ public class JsonSchemaType {
           typeMapBuilder.put(REF, PRIMITIVE_TO_REFERENCE_BIMAP.get(type));
         }
       }
+    }
+
+    private boolean hasMultipleTypes(List<JsonSchemaPrimitive> schemaPrimitives) {
+      return schemaPrimitives.size() > 1;
     }
 
     public Builder withFormat(final String value) {
