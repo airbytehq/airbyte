@@ -5,13 +5,12 @@
 import datetime
 import time
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
@@ -81,49 +80,6 @@ class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthe
     def token(self) -> str:
         self.check_token()
         return f"Bearer {self._token}"
-
-
-@dataclass
-class RailzNestedExtractor(RecordExtractor, JsonSchemaMixin):
-    config: Config
-    options: InitVar[Mapping[str, Any]]
-    nested_fields: List[Union[InterpolatedString, str]]
-    propagate_fields: List[Union[InterpolatedString, str]]
-    prefix_key: Union[InterpolatedString, str] = None
-
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._nested_fields = [InterpolatedString.create(nested_field, options=options) for nested_field in self.nested_fields]
-        if not self._nested_fields:
-            ValueError("nested_fields cannot be empty")
-        self._propagate_fields = [InterpolatedString.create(propagate_field, options=options) for propagate_field in self.propagate_fields]
-        self._prefix_key = self.prefix_key
-        if self.prefix_key:
-            self._prefix_key = InterpolatedString.create(self.prefix_key, options=options)
-
-    def extract_records(self, response: requests.Response) -> List[Record]:
-        response_json = response.json()
-        nested_fields = [f.eval(self.config) for f in self._nested_fields]
-        propagate_fields = [f.eval(self.config) for f in self._propagate_fields]
-        prefix_key = self._prefix_key
-        if self._prefix_key:
-            prefix_key = self._prefix_key.eval(self.config)
-        records = []
-        for record in self._extract_records(response_json, nested_fields, propagate_fields):
-            if prefix_key:
-                record = {prefix_key: record}
-            records.append(record)
-        return records
-
-    def _extract_records(self, obj, nested_fields, propagate_fields=None):
-        field = nested_fields.pop(0)
-        for record in obj[field]:
-            for propagate_field in propagate_fields:
-                if propagate_field in obj:
-                    record[propagate_field] = obj[propagate_field]
-            if nested_fields:
-                yield from self._extract_records(record, nested_fields[:], propagate_fields)
-            else:
-                yield record
 
 
 @dataclass

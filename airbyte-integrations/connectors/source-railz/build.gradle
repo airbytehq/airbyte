@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_railz_ai'
+    moduleDirectory 'source_railz'
 }
 
 dependencies {
