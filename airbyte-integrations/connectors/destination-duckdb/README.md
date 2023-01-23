@@ -48,8 +48,8 @@ and place them into `secrets/config.json`.
 ### Locally running the connector
 ```
 python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
+python main.py check --config integration_tests/config.json
+python main.py discover --config integration_tests/config.json
 cat integration_tests/messages.jsonl| python main.py write --config integration_tests/config.json --catalog integration_tests/configured_catalog.json
 ```
 
