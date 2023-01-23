@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.protocol.migrations.v1.CatalogMigrationV1Helper;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
@@ -917,7 +918,7 @@ public class DefaultJobPersistence implements JobPersistence {
     return new Job(record.get(JOB_ID, Long.class),
         Enums.toEnum(record.get("config_type", String.class), ConfigType.class).orElseThrow(),
         record.get("scope", String.class),
-        Jsons.deserialize(record.get("config", String.class), JobConfig.class),
+        parseJobConfigFromString(record.get("config", String.class)),
         new ArrayList<Attempt>(),
         JobStatus.valueOf(record.get("job_status", String.class).toUpperCase()),
         Optional.ofNullable(record.get("job_started_at")).map(value -> getEpoch(record, "started_at")).orElse(null),
@@ -925,12 +926,23 @@ public class DefaultJobPersistence implements JobPersistence {
         getEpoch(record, "job_updated_at"));
   }
 
+  private static JobConfig parseJobConfigFromString(final String jobConfigString) {
+    final JobConfig jobConfig = Jsons.deserialize(jobConfigString, JobConfig.class);
+    // On-the-fly migration of persisted data types related objects (protocol v0->v1)
+    switch (jobConfig.getConfigType()) {
+      case SYNC -> CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
+      case RESET_CONNECTION -> CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
+    }
+    return jobConfig;
+  }
+
   private static Attempt getAttemptFromRecord(final Record record) {
+    final String attemptOutputString = record.get("attempt_output", String.class);
     return new Attempt(
         record.get(ATTEMPT_NUMBER, int.class),
         record.get(JOB_ID, Long.class),
         Path.of(record.get("log_path", String.class)),
-        record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
+        attemptOutputString == null ? null : parseJobOutputFromString(attemptOutputString),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
         record.get("processing_task_queue", String.class),
         record.get("attempt_failure_summary", String.class) == null ? null
@@ -940,6 +952,16 @@ public class DefaultJobPersistence implements JobPersistence {
         Optional.ofNullable(record.get("attempt_ended_at"))
             .map(value -> getEpoch(record, "attempt_ended_at"))
             .orElse(null));
+  }
+
+  private static JobOutput parseJobOutputFromString(final String jobOutputString) {
+    final JobOutput jobOutput = Jsons.deserialize(jobOutputString, JobOutput.class);
+    // On-the-fly migration of persisted data types related objects (protocol v0->v1)
+    switch (jobOutput.getOutputType()) {
+      case DISCOVER_CATALOG -> CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
+      case SYNC -> CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
+    }
+    return jobOutput;
   }
 
   private static List<AttemptWithJobInfo> getAttemptsWithJobsFromResult(final Result<Record> result) {

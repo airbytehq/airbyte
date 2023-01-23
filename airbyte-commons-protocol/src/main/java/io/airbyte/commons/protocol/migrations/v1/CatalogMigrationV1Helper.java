@@ -27,11 +27,21 @@ public class CatalogMigrationV1Helper {
   }
 
   /**
+   * Performs an in-place migration of the schema from v0 to v1 if v0 data types are detected
+   * @param airbyteCatalog to migrate
+   */
+  public static void upgradeSchemaIfNeeded(final AirbyteCatalog airbyteCatalog) {
+    if (containsV0DataTypes(airbyteCatalog)) {
+      upgradeSchema(airbyteCatalog);
+    }
+  }
+
+  /**
    * Performs an in-place migration of the schema from v0 to v1
    *
    * @param configuredAirbyteCatalog to migrate
    */
-  static void upgradeSchema(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+  private static void upgradeSchema(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
     for (final var stream : configuredAirbyteCatalog.getStreams()) {
       SchemaMigrationV1.upgradeSchema(stream.getStream().getJsonSchema());
     }
@@ -40,9 +50,27 @@ public class CatalogMigrationV1Helper {
   /**
    * Returns true if catalog contains v0 data types
    */
-  static boolean containsV0DataTypes(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+  private static boolean containsV0DataTypes(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
     // TODO VERSIONING implement
     return false;
   }
 
+  /**
+   * Performs an in-place migration of the schema from v0 to v1
+   *
+   * @param airbyteCatalog to migrate
+   */
+  private static void upgradeSchema(final AirbyteCatalog airbyteCatalog) {
+    for (final var stream : airbyteCatalog.getStreams()) {
+      SchemaMigrationV1.upgradeSchema(stream.getJsonSchema());
+    }
+  }
+
+  /**
+   * Returns true if catalog contains v0 data types
+   */
+  private static boolean containsV0DataTypes(final AirbyteCatalog airbyteCatalog) {
+    // TODO VERSIONING implement
+    return false;
+  }
 }
