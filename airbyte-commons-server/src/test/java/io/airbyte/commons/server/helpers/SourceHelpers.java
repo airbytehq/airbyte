@@ -46,7 +46,7 @@ public class SourceHelpers {
   }
 
   public static JsonNode getTestImplementationJson() throws IOException {
-    final Path path = Paths.get("../airbyte-commons-server/src/test/resources/json/TestImplementation.json");
+    final Path path = Paths.get(SourceHelpers.class.getClassLoader().getResource("json/TestImplementation.json").getPath());
     return Jsons.deserialize(Files.readString(path));
   }
 

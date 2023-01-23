@@ -17,7 +17,7 @@ public class ConnectorSpecificationHelpers {
 
   public static ConnectorSpecification generateConnectorSpecification() throws IOException {
 
-    final Path path = Paths.get("../airbyte-commons-server/src/test/resources/json/TestSpecification.json");
+    final Path path = Paths.get(ConnectorSpecificationHelpers.class.getClassLoader().getResource("json/TestSpecification.json").getPath());
 
     try {
       return new ConnectorSpecification()

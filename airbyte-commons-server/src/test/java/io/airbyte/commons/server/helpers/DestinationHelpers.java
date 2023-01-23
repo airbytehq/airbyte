@@ -20,7 +20,7 @@ public class DestinationHelpers {
 
   public static JsonNode getTestDestinationJson() throws IOException {
     final Path path =
-        Paths.get("../airbyte-commons-server/src/test/resources/json/TestImplementation.json");
+        Paths.get(DestinationHelpers.class.getClassLoader().getResource("json/TestImplementation.json").getPath());
 
     return Jsons.deserialize(Files.readString(path));
   }
