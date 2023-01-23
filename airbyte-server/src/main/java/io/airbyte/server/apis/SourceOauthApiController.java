@@ -8,11 +8,9 @@ import static io.airbyte.commons.auth.AuthRoleConstants.ADMIN;
 import static io.airbyte.commons.auth.AuthRoleConstants.EDITOR;
 
 import io.airbyte.api.generated.SourceOauthApi;
-import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
-import io.airbyte.api.model.generated.OAuthConsentRead;
-import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
-import io.airbyte.api.model.generated.SourceOauthConsentRequest;
-import io.airbyte.commons.server.handlers.OAuthHandler;
+import io.airbyte.api.model.generated.*;
+import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
+import io.airbyte.server.handlers.OAuthHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -22,8 +20,7 @@ import io.micronaut.security.rules.SecurityRule;
 import java.util.Map;
 
 @Controller("/api/v1/source_oauths")
-@Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+@Requires(property = "airbyte.deployment-mode", value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class SourceOauthApiController implements SourceOauthApi {
 
@@ -34,23 +31,34 @@ public class SourceOauthApiController implements SourceOauthApi {
   }
 
   @Post("/complete_oauth")
-  @Secured({EDITOR})
+  @Secured({ EDITOR })
   @Override
   public Map<String, Object> completeSourceOAuth(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
     return ApiHelper.execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
   }
 
+  @Post("/complete_oauth_return_secret")
+  @Override
+  public SecretId completeSourceOAuthReturnSecret(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
+    Map<String, Object> oAuthTokens = ApiHelper
+        .execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
+    SecretCoordinate secretCoordinate = oAuthHandler.writeOAuthSecret(completeSourceOauthRequest.getWorkspaceId(),
+        oAuthTokens);
+    return new SecretId().secretId(secretCoordinate.getFullCoordinate());
+  }
+
   @Post("/get_consent_url")
-  @Secured({EDITOR})
+  @Secured({ EDITOR })
   @Override
   public OAuthConsentRead getSourceOAuthConsent(@Body final SourceOauthConsentRequest sourceOauthConsentRequest) {
     return ApiHelper.execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
   }
 
   @Post("/oauth_params/create")
-  @Secured({ADMIN})
+  @Secured({ ADMIN })
   @Override
-  public void setInstancewideSourceOauthParams(@Body final SetInstancewideSourceOauthParamsRequestBody setInstancewideSourceOauthParamsRequestBody) {
+  public void setInstancewideSourceOauthParams(
+      @Body final SetInstancewideSourceOauthParamsRequestBody setInstancewideSourceOauthParamsRequestBody) {
     ApiHelper.execute(() -> {
       oAuthHandler.setSourceInstancewideOauthParams(setInstancewideSourceOauthParamsRequestBody);
       return null;

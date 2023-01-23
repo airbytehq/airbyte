@@ -7,18 +7,12 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.WorkspaceServiceAccount;
-import io.airbyte.config.persistence.split_secrets.SecretCoordinateToPayload;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
-import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
+import io.airbyte.config.*;
+import io.airbyte.config.persistence.split_secrets.*;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -279,5 +273,24 @@ public class SecretsRepositoryWriter {
       return Optional.empty();
     }
   }
+
+  /**
+   * No frills, given a coordinate, just store the payload
+   */
+  public SecretCoordinate storeOAuthSecret(final UUID workspaceId, final String payload) {
+    SecretCoordinate secretCoordinate = generateOAuthSecretCoordinate(workspaceId);
+    longLivedSecretPersistence.get().write(secretCoordinate, payload);
+    return secretCoordinate;
+  }
+
+  /**
+   * Generate our OAuthSecretCoordinate for storage
+   * For now we're treating these as always v1.
+   */
+  private SecretCoordinate generateOAuthSecretCoordinate(final UUID workspaceId) {
+    String coordinateBase = SecretsHelpers.getCoordinatorBase("airbyte_oauth_workspace_", workspaceId, UUID::randomUUID);
+    return new SecretCoordinate(coordinateBase, 1);
+  }
+
 
 }
