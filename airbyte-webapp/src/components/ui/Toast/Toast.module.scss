@@ -43,6 +43,7 @@ $toast-bottom-margin: 27px;
   position: fixed;
   box-sizing: border-box;
   bottom: $toast-bottom-margin;
+  margin-left: calc(vars.$width-size-menu / 2);
   left: 50%;
   transform: translate(-50%, 0);
   z-index: z-indices.$notification;
