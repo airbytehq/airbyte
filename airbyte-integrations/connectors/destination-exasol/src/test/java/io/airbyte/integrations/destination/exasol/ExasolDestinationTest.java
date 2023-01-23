@@ -39,6 +39,7 @@ class ExasolDestinationTest {
                 .put(JdbcUtils.HOST_KEY, "localhost")
                 .put(JdbcUtils.PORT_KEY, "8563")
                 .put(JdbcUtils.USERNAME_KEY, "sys")
+                .put(JdbcUtils.SCHEMA_KEY, "mySchema")
                 .build();
     }
 
@@ -46,9 +47,10 @@ class ExasolDestinationTest {
     void toJdbcConfigDefault() {
         var result = destination.toJdbcConfig(createConfig());
         assertAll(
-                () -> assertThat(result.size(), equalTo(2)),
+                () -> assertThat(result.size(), equalTo(3)),
                 () -> assertThat(result.get(JdbcUtils.USERNAME_KEY).asText(), equalTo("sys")),
-                () -> assertThat(result.get(JdbcUtils.JDBC_URL_KEY).asText(), equalTo("jdbc:exa:localhost:8563"))
+                () -> assertThat(result.get(JdbcUtils.JDBC_URL_KEY).asText(), equalTo("jdbc:exa:localhost:8563")),
+                () -> assertThat(result.get(JdbcUtils.SCHEMA_KEY).asText(), equalTo("mySchema"))
         );
     }
 
@@ -56,17 +58,8 @@ class ExasolDestinationTest {
     void toJdbcConfigWithPassword() {
         var result = destination.toJdbcConfig(createConfig(Map.of(JdbcUtils.PASSWORD_KEY, "exasol")));
         assertAll(
-                () -> assertThat(result.size(), equalTo(3)),
+                () -> assertThat(result.size(), equalTo(4)),
                 () -> assertThat(result.get(JdbcUtils.PASSWORD_KEY).asText(), equalTo("exasol"))
-        );
-    }
-
-    @Test
-    void toJdbcConfigWithSchema() {
-        var result = destination.toJdbcConfig(createConfig(Map.of(JdbcUtils.SCHEMA_KEY, "mySchema")));
-        assertAll(
-                () -> assertThat(result.size(), equalTo(3)),
-                () -> assertThat(result.get(JdbcUtils.SCHEMA_KEY).asText(), equalTo("mySchema"))
         );
     }
 
@@ -74,7 +67,7 @@ class ExasolDestinationTest {
     void toJdbcConfigWithJdbcUrlParameters() {
         var result = destination.toJdbcConfig(createConfig(Map.of(JdbcUtils.JDBC_URL_PARAMS_KEY, "param=value")));
         assertAll(
-                () -> assertThat(result.size(), equalTo(3)),
+                () -> assertThat(result.size(), equalTo(4)),
                 () -> assertThat(result.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), equalTo("param=value"))
         );
     }

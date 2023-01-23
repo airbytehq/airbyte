@@ -95,11 +95,6 @@ public class ExasolDestinationAcceptanceTest extends JdbcDestinationAcceptanceTe
   }
 
   @Override
-  protected boolean supportsDBT() {
-    return false;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
@@ -148,7 +143,7 @@ public class ExasolDestinationAcceptanceTest extends JdbcDestinationAcceptanceTe
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(TestDestinationEnv testEnv) {
     EXASOL.purgeDatabase();
   }
 }

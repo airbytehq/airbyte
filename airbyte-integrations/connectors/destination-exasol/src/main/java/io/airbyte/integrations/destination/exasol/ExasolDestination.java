@@ -34,14 +34,11 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
+        .put("schema", config.get(JdbcUtils.SCHEMA_KEY).asText());
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
-    }
-
-    if (config.has(JdbcUtils.SCHEMA_KEY)) {
-      configBuilder.put("schema", config.get(JdbcUtils.SCHEMA_KEY).asText());
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
