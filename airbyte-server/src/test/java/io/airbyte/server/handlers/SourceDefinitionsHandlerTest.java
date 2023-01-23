@@ -31,7 +31,6 @@ import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
@@ -335,7 +334,7 @@ class SourceDefinitionsHandlerTest {
     final String invalidProtocol = "131.1.2";
     final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
     sourceDefinition.getSpec().setProtocolVersion(invalidProtocol);
-    final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+    final String imageName = sourceDefinition.getDockerRepository() + ":" + sourceDefinition.getDockerImageTag();
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
@@ -370,7 +369,7 @@ class SourceDefinitionsHandlerTest {
   @DisplayName("createCustomSourceDefinition should correctly create a sourceDefinition")
   void testCreateCustomSourceDefinition() throws URISyntaxException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
-    final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+    final String imageName = sourceDefinition.getDockerRepository() + ":" + sourceDefinition.getDockerImageTag();
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
@@ -425,7 +424,7 @@ class SourceDefinitionsHandlerTest {
     final String invalidVersion = "130.0.0";
     final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
     sourceDefinition.getSpec().setProtocolVersion(invalidVersion);
-    final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+    final String imageName = sourceDefinition.getDockerRepository() + ":" + sourceDefinition.getDockerImageTag();
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
@@ -470,7 +469,7 @@ class SourceDefinitionsHandlerTest {
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
-    final String newImageName = DockerUtils.getTaggedImageName(this.sourceDefinition.getDockerRepository(), newDockerImageTag);
+    final String newImageName = this.sourceDefinition.getDockerRepository() + ":" + newDockerImageTag;
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);
@@ -506,7 +505,7 @@ class SourceDefinitionsHandlerTest {
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
-    final String newImageName = DockerUtils.getTaggedImageName(this.sourceDefinition.getDockerRepository(), newDockerImageTag);
+    final String newImageName = this.sourceDefinition.getDockerRepository() + ":" + newDockerImageTag;
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);
