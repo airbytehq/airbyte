@@ -19,9 +19,11 @@ import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
@@ -48,6 +50,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   @Post("/delete")
   @Secured({OWNER})
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void deleteWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     ApiHelper.execute(() -> {
       workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
