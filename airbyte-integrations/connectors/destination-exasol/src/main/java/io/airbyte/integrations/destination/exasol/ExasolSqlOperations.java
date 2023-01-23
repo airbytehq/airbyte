@@ -42,18 +42,7 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
-    try {
-      for (final String query : queries) {
-        LOGGER.info("Executing statement in transaction: {}", query);
-        database.execute(query);
-      }
-    } catch(Exception e) {
-      LOGGER.warn("Rolling back transaction after exception", e);
-      database.execute("ROLLBACK");
-      throw e;
-    }
-    LOGGER.info("Committing transaction after executing {} statements", queries.size());
-    database.execute("COMMIT");
+    database.executeWithinTransaction(queries);
   }
 
   @Override
