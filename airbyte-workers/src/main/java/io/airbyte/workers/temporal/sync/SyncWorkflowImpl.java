@@ -57,10 +57,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
-   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-   private RefreshSchemaActivity refreshSchemaActivity;
-   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-   private ConfigFetchActivity configFetchActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private RefreshSchemaActivity refreshSchemaActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private ConfigFetchActivity configFetchActivity;
 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
@@ -79,28 +79,27 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     final String taskQueue = Workflow.getInfo().getTaskQueue();
 
-     final int autoDetectSchemaVersion =
-     Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION,
-     AUTO_DETECT_SCHEMA_VERSION);
+    final int autoDetectSchemaVersion =
+        Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION,
+            AUTO_DETECT_SCHEMA_VERSION);
 
-     if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
-     final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
+    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
+      final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
 
-     if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
-     LOGGER.info("Refreshing source schema...");
-     refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
-     }
+      if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
+        LOGGER.info("Refreshing source schema...");
+        refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+      }
 
-     final Optional<ConnectionStatus> status = configFetchActivity.getStatus(connectionId);
-     if (!status.isEmpty() && ConnectionStatus.INACTIVE == status.get()) {
-     LOGGER.info("Connection is disabled. Cancelling run.");
-     final StandardSyncOutput output =
-     new StandardSyncOutput()
-     .withStandardSyncSummary(new
-     StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
-     return output;
-     }
-     }
+      final Optional<ConnectionStatus> status = configFetchActivity.getStatus(connectionId);
+      if (!status.isEmpty() && ConnectionStatus.INACTIVE == status.get()) {
+        LOGGER.info("Connection is disabled. Cancelling run.");
+        final StandardSyncOutput output =
+            new StandardSyncOutput()
+                .withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
+        return output;
+      }
+    }
 
     StandardSyncOutput syncOutput =
         replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);
