@@ -88,7 +88,7 @@ class TestSpec(BaseTest):
 
     @pytest.fixture(name="connection_specification", scope="class")
     def connection_specification_fixture(self, connector_spec_dict: dict) -> dict:
-        return connector_spec_dict["connectionSpecification"] 
+        return connector_spec_dict["connectionSpecification"]
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
