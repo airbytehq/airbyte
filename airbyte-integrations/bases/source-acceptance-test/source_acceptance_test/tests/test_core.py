@@ -294,10 +294,12 @@ class TestSpec(BaseTest):
             if isinstance(type_value, List):
                 number_of_types = len(type_value)
                 if number_of_types != 2 and number_of_types != 1:
-                    errors.append(f"{type_path} is not either a simple type or an array of a simple type plus null: {type_value} (for example: \"type\": [\"string\", \"null\"])")
+                    errors.append(
+                        f'***type_path*** is not either a simple type or an array of a simple type plus null: ***type_value*** (for example: "type": ["string", "null"])'
+                    )
                 if number_of_types == 2 and type_value[1] != "null":
                     errors.append(
-                        f"Second type of {type_path} is not null: {type_value}. Type can either be a simple type or an array of a simple type plus null (for example: \"type\": [\"string\", \"null\"])"
+                        f'Second type of ***type_path*** is not null: ***type_value***. Type can either be a simple type or an array of a simple type plus null (for example: "type": ["string", "null"])'
                     )
         self._fail_on_errors(errors)
 
