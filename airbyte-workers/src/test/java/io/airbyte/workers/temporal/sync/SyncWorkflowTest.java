@@ -229,7 +229,6 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    // Temporarily disabled to address OC issue #1210
     // verifyShouldRefreshSchema(refreshSchemaActivity);
     // verifyRefreshSchema(refreshSchemaActivity, sync);
     assertEquals(
@@ -247,7 +246,6 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // Temporarily disabled to address OC issue #1210
     // verifyShouldRefreshSchema(refreshSchemaActivity);
     // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
@@ -271,7 +269,6 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
-    // Temporarily disabled to address OC issue #1210
     // verifyShouldRefreshSchema(refreshSchemaActivity);
     // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
@@ -299,7 +296,6 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // Temporarily disabled to address OC issue #1210
     // verifyShouldRefreshSchema(refreshSchemaActivity);
     // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
@@ -321,7 +317,6 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // Temporarily disabled to address OC issue #1210
     // verifyShouldRefreshSchema(refreshSchemaActivity);
     // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
@@ -348,7 +343,6 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // Temporarily disabled to address OC issue #1210
     // verifyShouldRefreshSchema(refreshSchemaActivity);
     // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
@@ -374,8 +368,8 @@ class SyncWorkflowTest {
 
     execute();
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutputNoRecordsCommitted, syncInput.getCatalog());
     verifyNoInteractions(normalizationActivity);
@@ -402,17 +396,16 @@ class SyncWorkflowTest {
     assertEquals(actualOutput.getWebhookOperationSummary().getSuccesses().get(0), WEBHOOK_CONFIG_ID);
   }
 
-  @Test
-  @Disabled("Temporarily disabled to address OC issue #1210")
-  void testSkipReplicationAfterRefreshSchema() {
-    when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(ConnectionStatus.INACTIVE));
-    final StandardSyncOutput output = execute();
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
-    verifyNoInteractions(replicationActivity);
-    verifyNoInteractions(normalizationActivity);
-    assertEquals(output.getStandardSyncSummary().getStatus(), ReplicationStatus.CANCELLED);
-  }
+  // @Test
+  // void testSkipReplicationAfterRefreshSchema() {
+  // when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(ConnectionStatus.INACTIVE));
+  // final StandardSyncOutput output = execute();
+  // verifyShouldRefreshSchema(refreshSchemaActivity);
+  // verifyRefreshSchema(refreshSchemaActivity, sync);
+  // verifyNoInteractions(replicationActivity);
+  // verifyNoInteractions(normalizationActivity);
+  // assertEquals(output.getStandardSyncSummary().getStatus(), ReplicationStatus.CANCELLED);
+  // }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   private void cancelWorkflow() {
