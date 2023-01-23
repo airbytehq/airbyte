@@ -8,9 +8,9 @@ export const config: AirbyteWebappConfig = {
   apiUrl:
     window.API_URL ??
     process.env.REACT_APP_API_URL ??
-    `${window.location.protocol}//${window.location.hostname}:8001/api`,
+    `http://${window.location.hostname}:8001/api`,
   connectorBuilderApiUrl:
-    process.env.REACT_APP_CONNECTOR_BUILDER_API_URL ?? `${window.location.protocol}//${window.location.hostname}:8003`,
+    process.env.REACT_APP_CONNECTOR_BUILDER_API_URL ?? `http://${window.location.hostname}:8003`,
   healthCheckInterval: 20000,
   version: window.AIRBYTE_VERSION ?? "dev",
   integrationUrl: process.env.REACT_APP_INTEGRATION_DOCS_URLS ?? "/docs",
