@@ -163,11 +163,14 @@ class RailzCartesianProductStreamSlicer(CartesianProductStreamSlicer):
                 yield connection_slice | datetime_slice
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        datetime_slicer = self.stream_slicers[1]
+        cursor_field = datetime_slicer.cursor_field.eval(datetime_slicer.config)
+
         if last_record:
             businessName = stream_slice["slice_key"]["businessName"]
             serviceName = stream_slice["slice_key"]["serviceName"]
-            self._cursor.setdefault(businessName, {}).setdefault(serviceName, {})["postedDate"] = self.safe_max(
-                self._cursor.get(businessName, {}).get(serviceName, {}).get("postedDate"), last_record["postedDate"]
+            self._cursor.setdefault(businessName, {}).setdefault(serviceName, {})[cursor_field] = self.safe_max(
+                self._cursor.get(businessName, {}).get(serviceName, {}).get(cursor_field), last_record[cursor_field]
             )
         else:
             self._cursor = stream_slice

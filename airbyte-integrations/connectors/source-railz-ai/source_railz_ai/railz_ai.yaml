@@ -185,17 +185,25 @@ definitions:
             step: "P1M"
             datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
             cursor_granularity: "P1D"
-            cursor_field: "postedDate"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    stream_cursor_field: "postedDate"
 
   accounting_transactions_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
       name: "accounting_transactions"
       path: "/accountingTransactions"
+      cursor_field: "postedDate"
       serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+    stream_cursor_field: "postedDate"
+  bank_transfers_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "bank_transfers"
+      path: "/bankTransfers"
+      cursor_field: "date"
+      serviceNames: ["xero"]
+    stream_cursor_field: "date"
 
 
 streams:
@@ -209,6 +217,7 @@ streams:
   - "*ref(definitions.vendors_stream)"
   - "*ref(definitions.bank_accounts_stream)"
   - "*ref(definitions.accounting_transactions_stream)"
+  - "*ref(definitions.bank_transfers_stream)"
 
 check:
   stream_names:
