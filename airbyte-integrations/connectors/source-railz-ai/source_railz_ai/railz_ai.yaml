@@ -284,6 +284,46 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["quickbooks", "xero", "oracleNetsuite", "sageIntacct", "dynamicsBusinessCentral", "myob"]
     stream_cursor_field: "postedDate"
+  refunds_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "refunds"
+      path: "/refunds"
+      cursor_field: "date"
+      serviceNames: ["quickbooks", "xero", "myob"]
+    stream_cursor_field: "date"
+  commerce_disputes_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "commerce_disputes"
+      path: "/commerce/disputes"
+      cursor_field: "createdDate"
+      serviceNames: ["shopify", "square", "myob"]
+    stream_cursor_field: "createdDate"
+  commerce_orders_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "commerce_orders"
+      path: "/commerce/orders"
+      cursor_field: "createdDate"
+      serviceNames: ["shopify", "square", "myob"]
+    stream_cursor_field: "createdDate"
+  commerce_products_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "commerce_products"
+      path: "/commerce/products"
+      cursor_field: "createdDate"
+      serviceNames: ["shopify", "square", "myob"]
+    stream_cursor_field: "createdDate"
+  commerce_transactions_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "commerce_transactions"
+      path: "/commerce/transactions"
+      cursor_field: "createdDate"
+      serviceNames: ["shopify", "square", "myob"]
+    stream_cursor_field: "createdDate"
 
 
 streams:
@@ -308,6 +348,11 @@ streams:
   - "*ref(definitions.invoices_payments_stream)"
   - "*ref(definitions.journal_entries_stream)"
   - "*ref(definitions.purchase_orders_stream)"
+  - "*ref(definitions.refunds_stream)"
+  - "*ref(definitions.commerce_disputes_stream)"
+  - "*ref(definitions.commerce_orders_stream)"
+  - "*ref(definitions.commerce_products_stream)"
+  - "*ref(definitions.commerce_transactions_stream)"
 
 check:
   stream_names:
