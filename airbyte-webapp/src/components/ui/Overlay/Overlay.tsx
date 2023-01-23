@@ -15,5 +15,6 @@ export const Overlay: React.FC<OverlayProps> = ({ variant = "dark", onClick }) =
     role={onClick ? "button" : undefined}
     onClick={onClick}
     aria-hidden="true"
+    data-test-id="overlayContainer"
   />
 );

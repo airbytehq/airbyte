@@ -6,11 +6,13 @@ package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.JobsApi;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.JobDebugInfoRead;
 import io.airbyte.api.model.generated.JobIdRequestBody;
 import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobListRequestBody;
+import io.airbyte.api.model.generated.JobOptionalRead;
 import io.airbyte.api.model.generated.JobReadList;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
@@ -61,6 +63,12 @@ public class JobsApiController implements JobsApi {
   @Override
   public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getJobInfoLight(jobIdRequestBody));
+  }
+
+  @Post("/get_last_replication_job")
+  @Override
+  public JobOptionalRead getLastReplicationJob(final ConnectionIdRequestBody connectionIdRequestBody) {
+    return ApiHelper.execute(() -> jobHistoryHandler.getLastReplicationJob(connectionIdRequestBody));
   }
 
   @Post("/list")
