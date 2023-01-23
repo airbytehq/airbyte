@@ -84,6 +84,7 @@ exports[`SchemaChangesBackdrop renders if there are non-breaking changes and pre
       </div>
       <p
         class="text md text"
+        data-type="text"
       >
         Please review the schema updates before making changes to the connection
       </p>
@@ -181,6 +182,7 @@ exports[`SchemaChangesBackdrop renders with breaking changes and prevents backgr
       </div>
       <p
         class="text md text"
+        data-type="text"
       >
         Please review the schema updates before making changes to the connection
       </p>
