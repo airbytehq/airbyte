@@ -4,6 +4,10 @@ micronaut:
   security:
     authentication-provider-strategy: ALL
     enabled: ${API_AUTHORIZATION_ENABLED:false}
+  otel:
+    enabled: true
+    traces:
+      exporter: otlp
   server:
     port: 8001
     cors:
