@@ -155,7 +155,7 @@ definitions:
 
 # Incremental Service
   base_incremental_service_stream:
-    type: DeclarativeStream
+    $ref: "*ref(definitions.base_service_stream)"
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
