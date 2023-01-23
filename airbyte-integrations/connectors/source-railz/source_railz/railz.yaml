@@ -196,6 +196,7 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
     stream_cursor_field: "postedDate"
+    primary_key: "id"
   bank_transfers_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -204,6 +205,7 @@ definitions:
       cursor_field: "date"
       serviceNames: ["xero"]
     stream_cursor_field: "date"
+    primary_key: "id"
   bills_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -212,6 +214,7 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
     stream_cursor_field: "postedDate"
+    primary_key: "id"
   bills_credit_notes_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -220,6 +223,7 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["quickbooks", "xero", "oracleNetsuite", "sageIntacct", "myob"]
     stream_cursor_field: "postedDate"
+    primary_key: "id"
   bills_payments_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -228,6 +232,7 @@ definitions:
       cursor_field: "date"
       serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
     stream_cursor_field: "date"
+    primary_key: "id"
   deposits_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -236,6 +241,7 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["quickbooks", "xero", "myob"]
     stream_cursor_field: "postedDate"
+    primary_key: "id"
   estimates_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -244,6 +250,7 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["freshbooks", "quickbooks", "xero", "myob"]
     stream_cursor_field: "postedDate"
+    primary_key: "id"
   invoices_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -252,6 +259,7 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
     stream_cursor_field: "postedDate"
+    primary_key: "id"
   invoices_credit_notes_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -260,6 +268,7 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["freshbooks", "quickbooks", "xero", "oracleNetsuite", "sageIntacct", "dynamicsBusinessCentral", "myob"]
     stream_cursor_field: "postedDate"
+    primary_key: "id"
   invoices_payments_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -268,6 +277,7 @@ definitions:
       cursor_field: "date"
       serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "myob"]
     stream_cursor_field: "date"
+    primary_key: "id"
   journal_entries_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -276,6 +286,7 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "myob"]
     stream_cursor_field: "postedDate"
+    primary_key: "id"
   purchase_orders_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -284,6 +295,7 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["quickbooks", "xero", "oracleNetsuite", "sageIntacct", "dynamicsBusinessCentral", "myob"]
     stream_cursor_field: "postedDate"
+    primary_key: "id"
   refunds_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -292,6 +304,7 @@ definitions:
       cursor_field: "date"
       serviceNames: ["quickbooks", "xero", "myob"]
     stream_cursor_field: "date"
+    primary_key: "id"
   commerce_disputes_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -300,6 +313,7 @@ definitions:
       cursor_field: "createdDate"
       serviceNames: ["shopify", "square", "myob"]
     stream_cursor_field: "createdDate"
+    primary_key: "id"
   commerce_orders_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -308,6 +322,7 @@ definitions:
       cursor_field: "createdDate"
       serviceNames: ["shopify", "square", "myob"]
     stream_cursor_field: "createdDate"
+    primary_key: "id"
   commerce_products_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -316,6 +331,7 @@ definitions:
       cursor_field: "createdDate"
       serviceNames: ["shopify", "square", "myob"]
     stream_cursor_field: "createdDate"
+    primary_key: "id"
   commerce_transactions_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
     $options:
@@ -324,6 +340,7 @@ definitions:
       cursor_field: "createdDate"
       serviceNames: ["shopify", "square", "myob"]
     stream_cursor_field: "createdDate"
+    primary_key: "id"
 
 
 streams:
