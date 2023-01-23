@@ -691,10 +691,17 @@ public class MockData {
         .withActorId(SOURCE_ID_2)
         .withConfigHash("1394")
         .withConnectorVersion("1.2.0");
+    final ActorCatalogFetchEvent actorCatalogFetchEvent4 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_3)
+        .withActorCatalogId(ACTOR_CATALOG_ID_3)
+        .withActorId(SOURCE_ID_3)
+        .withConfigHash("1394")
+        .withConnectorVersion("1.2.0");
     return Arrays.asList(
         new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent1, now),
         new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent2, yesterday),
-        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent3, now));
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent3, now),
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent4, now));
   }
 
   public static List<WorkspaceServiceAccount> workspaceServiceAccounts() {

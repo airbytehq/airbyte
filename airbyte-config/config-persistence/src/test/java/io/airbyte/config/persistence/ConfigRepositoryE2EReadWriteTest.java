@@ -599,6 +599,39 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   }
 
   @Test
+  void testGetMostRecentActorCatalogFetchEventWithDuplicates() throws SQLException, IOException {
+    // Tests that we can handle two fetch events in the db with the same actor id, actor catalog id, and
+    // timestamp e.g., from duplicate discoveries.
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      writeActorCatalog(database, Collections.singletonList(actorCatalog));
+    }
+
+    database.transaction(ctx -> {
+      // Insert the fetch events twice.
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEvent -> {
+        insertCatalogFetchEvent(
+            ctx,
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+            actorCatalogFetchEvent.getCreatedAt());
+        insertCatalogFetchEvent(
+            ctx,
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+            actorCatalogFetchEvent.getCreatedAt());
+      });
+      return null;
+    });
+
+    final Map<UUID, ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
+            MockData.SOURCE_ID_2));
+
+    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+  }
+
+  @Test
   void testGetActorDefinitionsInUseToProtocolVersion() throws IOException {
     final Set<UUID> actorDefinitionIds = new HashSet<>();
     actorDefinitionIds.addAll(MockData.sourceConnections().stream().map(SourceConnection::getSourceDefinitionId).toList());
