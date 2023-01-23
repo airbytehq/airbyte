@@ -65,8 +65,10 @@ class S3File(StorageFile):
         try:
             result = smart_open.open(f"s3://{bucket}/{self.url}", transport_params=params, mode=mode)
         except OSError as e:
-            self.logger.warn(f"We don't have access to {self.url}. "
-                             f"Check whether key {self.url} exists in `{bucket}` bucket and/or has proper ACL permissions")
+            self.logger.warn(
+                f"We don't have access to {self.url}. "
+                f"Check whether key {self.url} exists in `{bucket}` bucket and/or has proper ACL permissions"
+            )
             raise e
         # see https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager for why we do this
         try:
