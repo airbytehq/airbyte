@@ -171,6 +171,7 @@ To view the sync summary:
 3. To view the full sync log, click the sync summary dropdown.
  
 ### Sync summary
+
 | Data                            | Description                                                                                                                                             |
 |--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | x GB (also measured in KB, MB) | Amount of data moved during the sync. If basic normalization is on, the amount of data would not change since normalization occurs in the destination.  |
@@ -195,7 +196,7 @@ The first section includes the following parameters:
 | Parameter                            | Description                                                                         |
 |--------------------------------------|-------------------------------------------------------------------------------------|
 | Replication frequency                | How often the data syncs                                                            |
-| Non-breaking schema updates detected | How Airbyte handles syncs when it detects non-breaking schema changes in the source |
+| [Non-breaking schema updates](#non-breaking-changes) detected | How Airbyte handles syncs when it detects non-breaking schema changes in the source |
 | Destination Namespace                | Where the replicated data is written                                                |
 | Destination Stream Prefix            | Helps you identify streams from different connectors                                |
 
@@ -277,39 +278,70 @@ To refresh the source schema:
 
 2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
 
-## Enable schema update notifications
-Get schema update notifications when your source schema changes.
+## Review schema changes
+Airbyte detects changes in your source schema and allows you to review the changes. 
 
-To get notified when your schema changes: 
+### Non-breaking changes
+
+To review non-breaking schema changes:
+1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and select the connection with non-breaking changes (indicated by a **yellow exclamation mark** icon).
+
+2. Click **Review changes**.
+
+3. The **Refreshed source schema** dialog displays the changes. 
+
+4. Click **OK** to close the dialog.
+
+5. Scroll to the bottom of the page and click **Save changes**.
+
+:::note 
+    
+ By default, Airbyte ignores non-breaking changes and continues syncing. You can configure how Airbyte handles syncs when it detects non-breaking changes by [editing the stream configuration](#edit-stream-configuration).
+    
+:::
+
+### Breaking changes
+
+To review breaking schema changes:
+1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and select the connection with breaking changes (indicated by a **red exclamation mark** icon).
+
+2. Click **Review changes**.
+
+3. The **Refreshed source schema** dialog displays the changes.
+
+4. Click **OK** to close the dialog.
+
+5. In the streams table, the stream with a breaking change is highlighted
+
+6. Fix the breaking change by selecting a new **Cursor** or **Primary key**.
+
+    :::note 
+    
+    Breaking changes can only occur in the **Cursor** or **Primary key** fields.
+    
+    :::
+
+7. Scroll to the bottom of the page and click **Save changes**.
+
+:::note 
+    
+If a connection’s source schema has breaking changes, it will stop syncing. You must review and fix the changes before editing the connection or resuming syncs.
+    
+:::
+
+### Enable schema update notifications
+
+To get notified when your source schema changes: 
 1. Make sure you have [webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud#manage-airbyte-cloud-notifications) set up.
 
-2. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and click the connection you want to change.
+2. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and select the connection you want to receive notifications for.
 
 3. Click the **Settings** tab on the Connection page.
 
 4. Toggle **Schema update notifications**.
 
-## Review schema changes
-Airbyte detects changes in your source schema and allows you to review the changes. 
-
-| Breaking changes                                                                                                                                                      | Non-breaking changes                                                                                                                                                                                                                  |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| If your connection’s source schema has breaking changes, the syncs will be stopped and you must review and fix the changes before continuing syncs or editing the connection. | If you choose to ignore non-breaking changes in your connection's source schema, the syncs will continue. You can change how Airbyte handles syncs when it detects non-breaking changes in the source schema by [editing the stream configuration](#edit-stream-configuration). |
-
-To review schema changes: 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and select the connection you want to review.
-
-2. Click the **Replication** tab.
-
-3. Click **Review changes**. 
-
-4. The **Refreshed source schema** dialog displays. Click the dropdowns to review the changes. 
-
-5. Click **Confirm** to close the dialog.
-
-6. Scroll to the bottom of the page and click **Save changes**.
-
 ## Display Connection State
+
 **Connection State** provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
 
 To display **Connection State**:
