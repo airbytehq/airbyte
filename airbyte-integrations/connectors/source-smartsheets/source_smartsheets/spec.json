@@ -29,6 +29,14 @@
         "default": "2020-01-01T00:00:00+00:00",
         "order": 2,
         "airbyte_hidden": true
+      },
+      "metadata_fields": {
+        "title": "Metadata Fields",
+        "type": "array",
+        "items": "strings",
+        "examples": ["id", "parentId", "sheetId", "rowNumber", "version", "expanded", "accessLevel", "createdAt", "modifiedAt"],
+        "description": "Columns which metadata should be pulled from.",
+        "order": 3
       }
     }
   }

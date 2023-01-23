@@ -1,4 +1,14 @@
 {
   "access_token": "access-token",
-  "spreadsheet_id": "spreadsheet-id"
+  "spreadsheet_id": "spreadsheet-id",
+  "metadata_fields": [
+    "id",
+    "parentId",
+    "sheetId",
+    "rowNumber",
+    "version",
+    "expanded",
+    "accessLevel",
+    "createdAt"
+  ]
 }
