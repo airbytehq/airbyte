@@ -8,7 +8,6 @@ import com.google.common.collect.AbstractIterator;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
@@ -132,7 +131,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
   private AirbyteMessage createStateMessage() {
     final Map<String, String> offset = offsetManager.read();
     final String dbHistory = trackSchemaHistory ? schemaHistoryManager
-      .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but manager is not initialised")).read() : null;
+        .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but manager is not initialised")).read() : null;
 
     return cdcStateHandler.saveState(offset, dbHistory);
   }
