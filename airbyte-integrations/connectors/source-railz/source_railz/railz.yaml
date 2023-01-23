@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_railz_ai/schemas/{{ options['schema_name'] or options['name'] }}.json"
+    file_path: "./source_railz/schemas/{{ options['schema_name'] or options['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -14,7 +14,7 @@ definitions:
     url_base: "https://api.railz.ai/"
     http_method: "GET"
     authenticator:
-      class_name: source_railz_ai.components.ShortLivedTokenAuthenticator
+      class_name: source_railz.components.ShortLivedTokenAuthenticator
       url: "https://auth.railz.ai/getAccess"
       client_id: "{{ config.client_id }}"
       secret_key: "{{ config.secret_key }}"
@@ -168,7 +168,7 @@ definitions:
             endDate: "{{ format_datetime(stream_slice.end_time, '%Y-%m-%d') }}"
       stream_slicer:
         type: CustomStreamSlicer
-        class_name: source_railz_ai.components.RailzCartesianProductStreamSlicer
+        class_name: source_railz.components.RailzCartesianProductStreamSlicer
         stream_slicers:
           - type: SubstreamSlicer
             parent_stream_configs:

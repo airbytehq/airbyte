@@ -18,8 +18,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_railz_ai",
-    description="Source implementation for Railz Ai.",
+    name="source_railz",
+    description="Source implementation for Railz.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

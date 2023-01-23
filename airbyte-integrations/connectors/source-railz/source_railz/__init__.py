@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceRailzAi
+from .source import SourceRailz
 
-__all__ = ["SourceRailzAi"]
+__all__ = ["SourceRailz"]
