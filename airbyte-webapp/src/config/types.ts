@@ -29,7 +29,6 @@ export interface AirbyteWebappConfig {
   segment: { token?: string; enabled: boolean };
   apiUrl: string;
   connectorBuilderApiUrl: string;
-  healthCheckInterval: number;
   version: string;
   integrationUrl: string;
   oauthRedirectUrl: string;
