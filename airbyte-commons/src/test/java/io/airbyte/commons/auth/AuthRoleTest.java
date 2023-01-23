@@ -16,31 +16,33 @@ class AuthRoleTest {
 
   @Test
   void testBuildingAuthRoleSet() {
-    final Set<AuthRole> ownerResult = AuthRole.buildAuthRolesSet(AuthRole.OWNER);
+    final Set<String> ownerResult = AuthRole.buildAuthRolesSet(AuthRole.OWNER);
     assertEquals(5, ownerResult.size());
-    assertEquals(Set.of(AuthRole.OWNER, AuthRole.ADMIN, AuthRole.EDITOR, AuthRole.READER, AuthRole.AUTHENTICATED_USER), ownerResult);
+    assertEquals(Set.of(AuthRole.OWNER.getLabel(), AuthRole.ADMIN.getLabel(), AuthRole.EDITOR.getLabel(), AuthRole.READER.getLabel(),
+        AuthRole.AUTHENTICATED_USER.getLabel()), ownerResult);
 
-    final Set<AuthRole> adminResult = AuthRole.buildAuthRolesSet(AuthRole.ADMIN);
+    final Set<String> adminResult = AuthRole.buildAuthRolesSet(AuthRole.ADMIN);
     assertEquals(4, adminResult.size());
-    assertEquals(Set.of(AuthRole.ADMIN, AuthRole.EDITOR, AuthRole.READER, AuthRole.AUTHENTICATED_USER), adminResult);
+    assertEquals(Set.of(AuthRole.ADMIN.getLabel(), AuthRole.EDITOR.getLabel(), AuthRole.READER.getLabel(), AuthRole.AUTHENTICATED_USER.getLabel()),
+        adminResult);
 
-    final Set<AuthRole> editorResult = AuthRole.buildAuthRolesSet(AuthRole.EDITOR);
+    final Set<String> editorResult = AuthRole.buildAuthRolesSet(AuthRole.EDITOR);
     assertEquals(3, editorResult.size());
-    assertEquals(Set.of(AuthRole.EDITOR, AuthRole.READER, AuthRole.AUTHENTICATED_USER), editorResult);
+    assertEquals(Set.of(AuthRole.EDITOR.getLabel(), AuthRole.READER.getLabel(), AuthRole.AUTHENTICATED_USER.getLabel()), editorResult);
 
-    final Set<AuthRole> readerResult = AuthRole.buildAuthRolesSet(AuthRole.READER);
+    final Set<String> readerResult = AuthRole.buildAuthRolesSet(AuthRole.READER);
     assertEquals(2, readerResult.size());
-    assertEquals(Set.of(AuthRole.READER, AuthRole.AUTHENTICATED_USER), readerResult);
+    assertEquals(Set.of(AuthRole.READER.getLabel(), AuthRole.AUTHENTICATED_USER.getLabel()), readerResult);
 
-    final Set<AuthRole> authenticatedUserResult = AuthRole.buildAuthRolesSet(AuthRole.AUTHENTICATED_USER);
+    final Set<String> authenticatedUserResult = AuthRole.buildAuthRolesSet(AuthRole.AUTHENTICATED_USER);
     assertEquals(1, authenticatedUserResult.size());
-    assertEquals(Set.of(AuthRole.AUTHENTICATED_USER), authenticatedUserResult);
+    assertEquals(Set.of(AuthRole.AUTHENTICATED_USER.getLabel()), authenticatedUserResult);
 
-    final Set<AuthRole> noneResult = AuthRole.buildAuthRolesSet(AuthRole.NONE);
+    final Set<String> noneResult = AuthRole.buildAuthRolesSet(AuthRole.NONE);
     assertEquals(1, noneResult.size());
-    assertEquals(Set.of(AuthRole.NONE), noneResult);
+    assertEquals(Set.of(AuthRole.NONE.getLabel()), noneResult);
 
-    final Set<AuthRole> nullResult = AuthRole.buildAuthRolesSet(null);
+    final Set<String> nullResult = AuthRole.buildAuthRolesSet(null);
     assertEquals(0, nullResult.size());
   }
 

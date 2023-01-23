@@ -70,9 +70,9 @@ public enum AuthRole {
    * </p>
    *
    * @param authRole An {@link AuthRole} (may be {@code null}).
-   * @return The set of {@link AuthRole}s based on the provided {@link AuthRole}.
+   * @return The set of {@link AuthRole} labels based on the provided {@link AuthRole}.
    */
-  public static Set<AuthRole> buildAuthRolesSet(final AuthRole authRole) {
+  public static Set<String> buildAuthRolesSet(final AuthRole authRole) {
     final Set<AuthRole> authRoles = new HashSet<>();
 
     if (authRole != null) {
@@ -86,6 +86,7 @@ public enum AuthRole {
     // Sort final set by descending authority order
     return authRoles.stream()
         .sorted(Comparator.comparingInt(AuthRole::getAuthority))
+        .map(role -> role.getLabel())
         .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
