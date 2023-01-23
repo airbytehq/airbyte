@@ -4,8 +4,12 @@
 
 package io.airbyte.commons.protocol.migrations.v1;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.protocol.migrations.util.SchemaMigrations;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 
 /**
  * For the v0 to v1 migration, it appears that we are persisting some protocol objects without
@@ -48,14 +52,6 @@ public class CatalogMigrationV1Helper {
   }
 
   /**
-   * Returns true if catalog contains v0 data types
-   */
-  private static boolean containsV0DataTypes(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
-    // TODO VERSIONING implement
-    return false;
-  }
-
-  /**
    * Performs an in-place migration of the schema from v0 to v1
    *
    * @param airbyteCatalog to migrate
@@ -69,8 +65,43 @@ public class CatalogMigrationV1Helper {
   /**
    * Returns true if catalog contains v0 data types
    */
+  private static boolean containsV0DataTypes(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+    return configuredAirbyteCatalog
+        .getStreams()
+        .stream().findFirst()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(CatalogMigrationV1Helper::streamContainsV0DataTypes)
+        .orElse(false);
+  }
+
+  /**
+   * Returns true if catalog contains v0 data types
+   */
   private static boolean containsV0DataTypes(final AirbyteCatalog airbyteCatalog) {
-    // TODO VERSIONING implement
+    return airbyteCatalog
+        .getStreams()
+        .stream().findFirst()
+        .map(CatalogMigrationV1Helper::streamContainsV0DataTypes)
+        .orElse(false);
+  }
+
+  private static boolean streamContainsV0DataTypes(final AirbyteStream airbyteStream) {
+    return hasV0DataType(airbyteStream.getJsonSchema());
+  }
+
+  /**
+   * Performs of search of a v0 data type node, returns true at the first node found.
+   */
+  private static boolean hasV0DataType(final JsonNode schema) {
+    if (SchemaMigrationV1.isPrimitiveTypeDeclaration(schema)) {
+      return true;
+    }
+
+    for (final JsonNode subSchema : SchemaMigrations.findSubschemas(schema)) {
+      if (hasV0DataType(subSchema)) {
+        return true;
+      }
+    }
     return false;
   }
 }
