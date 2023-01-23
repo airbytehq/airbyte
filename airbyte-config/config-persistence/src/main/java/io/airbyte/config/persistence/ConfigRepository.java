@@ -1184,8 +1184,7 @@ public class ConfigRepository {
 
     final Map<UUID, AirbyteCatalog> result = new HashMap<>();
     for (final Record record : records) {
-      final AirbyteCatalog catalog = Jsons.deserialize(
-          record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
+      final AirbyteCatalog catalog = DbConverter.parseAirbyteCatalog(record.get(ACTOR_CATALOG.CATALOG).toString());
       result.put(record.get(ACTOR_CATALOG.ID), catalog);
     }
     return result;

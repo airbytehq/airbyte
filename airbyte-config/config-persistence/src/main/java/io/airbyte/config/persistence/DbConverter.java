@@ -41,6 +41,7 @@ import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.time.LocalDateTime;
@@ -222,16 +223,23 @@ public class DbConverter {
   public static ActorCatalog buildActorCatalog(final Record record) {
     return new ActorCatalog()
         .withId(record.get(ACTOR_CATALOG.ID))
-        .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
+        .withCatalog(Jsons.jsonNode(parseAirbyteCatalog(record.get(ACTOR_CATALOG.CATALOG).toString())))
         .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
   }
 
   public static ActorCatalogWithUpdatedAt buildActorCatalogWithUpdatedAt(final Record record) {
     return new ActorCatalogWithUpdatedAt()
         .withId(record.get(ACTOR_CATALOG.ID))
-        .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
+        .withCatalog(Jsons.jsonNode(parseAirbyteCatalog(record.get(ACTOR_CATALOG.CATALOG).toString())))
         .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH))
         .withUpdatedAt(record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
+  }
+
+  public static AirbyteCatalog parseAirbyteCatalog(final String airbyteCatalogString) {
+    final AirbyteCatalog airbyteCatalog = Jsons.deserialize(airbyteCatalogString, AirbyteCatalog.class);
+    // On-the-fly migration of persisted data types related objects (protocol v0->v1)
+    CatalogMigrationV1Helper.upgradeSchemaIfNeeded(airbyteCatalog);
+    return airbyteCatalog;
   }
 
   public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {
