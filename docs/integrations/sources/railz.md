@@ -5,12 +5,12 @@ This page guides you through the process of setting up the Recharge source conne
 
 ## Prerequisites
 
-- A Railz.ai account with permission to access data from accounts you want to sync.
-- Railz.ai Client ID and Secret key
+- A Railz account with permission to access data from accounts you want to sync.
+- Railz Client ID and Secret key
 
 ## Setup guide
 
-### Step 1: Set up Railz.ai
+### Step 1: Set up Railz
 
 Generate API key [on the dashboard](https://dashboard.railz.ai/developers/api-keys) and take it's client_id and secret_key.
 
@@ -22,7 +22,7 @@ Generate API key [on the dashboard](https://dashboard.railz.ai/developers/api-ke
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account;
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**;
-3. On the source setup page, select **Railz.ai** from the Source type dropdown and enter a name for this connector;
+3. On the source setup page, select **Railz** from the Source type dropdown and enter a name for this connector;
 4. Enter `Client ID (client_id)`;
 5. Enter `Secret key (secret_key)`;
 6. Enter `Start date` (optional);
@@ -35,7 +35,7 @@ Generate API key [on the dashboard](https://dashboard.railz.ai/developers/api-ke
 
 1. Go to local Airbyte page;
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**;
-3. On the source setup page, select **Railz.ai** from the Source type dropdown and enter a name for this connector;
+3. On the source setup page, select **Railz** from the Source type dropdown and enter a name for this connector;
 4. Enter `Client ID (client_id)`;
 5. Enter `Secret key (secret_key)`;
 6. Enter `Start date`;
@@ -197,10 +197,10 @@ Also you can check supported services by endpoint or vise versa on this [dataTyp
 
 ### Performance considerations
 
-The Railz.ai connector should gracefully handle Railz.ai API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Railz connector should gracefully handle Railz API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
-| 0.1.0   | 2023-01-03 | [20960](https://github.com/airbytehq/airbyte/pull/20960) | DNew Source: Railz.ai                                                       |
+| 0.1.0   | 2023-01-23 | [20960](https://github.com/airbytehq/airbyte/pull/20960) | New Source: Railz                                                                         |
