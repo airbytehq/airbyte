@@ -113,12 +113,11 @@ public class AirbyteDebeziumHandler {
             (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt));
 
     return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator(
-            messageIterator,
-            cdcStateHandler,
-            offsetManager,
-            trackSchemaHistory,
-            schemaHistoryManager
-            ));
+        messageIterator,
+        cdcStateHandler,
+        offsetManager,
+        trackSchemaHistory,
+        schemaHistoryManager));
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
