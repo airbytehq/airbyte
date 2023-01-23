@@ -69,6 +69,11 @@ export default defineConfig(({ mode }) => {
     define: {
       ...processEnv,
     },
+    css: {
+      modules: {
+        generateScopedName: "[name]__[local]__[contenthash:6]",
+      },
+    },
     resolve: {
       alias: {
         // Allow @use "scss/" imports in SASS
