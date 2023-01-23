@@ -780,11 +780,7 @@ public class ConfigRepository {
         .on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
         .where(JOBS.UPDATED_AT.greaterOrEqual(OffsetDateTime.now().minusHours(timeWindowInHours)))
         .fetch());
-    final List<UUID> workSpaceIds = new ArrayList<>();
-    for (final Record record : records) {
-      workSpaceIds.add(record.get(ACTOR.WORKSPACE_ID));
-    }
-    return workSpaceIds;
+    return records.stream().map(record -> record.get(ACTOR.WORKSPACE_ID)).collect(Collectors.toList());
   }
 
   /**
