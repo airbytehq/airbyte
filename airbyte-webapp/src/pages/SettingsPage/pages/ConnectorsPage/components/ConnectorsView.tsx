@@ -3,6 +3,8 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
 import { HeadTitle } from "components/common/HeadTitle";
+import { FlexContainer } from "components/ui/Flex";
+import { Heading } from "components/ui/Heading";
 import { Table } from "components/ui/Table";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -12,10 +14,9 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import ConnectorCell from "./ConnectorCell";
-import styles from "./ConnectorsView.module.scss";
 import CreateConnector from "./CreateConnector";
 import ImageCell from "./ImageCell";
-import { Block, FormContentTitle, Title } from "./PageComponents";
+import { FormContentTitle } from "./PageComponents";
 import UpgradeAllButton from "./UpgradeAllButton";
 import VersionCell from "./VersionCell";
 
@@ -125,7 +126,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   const renderHeaderControls = (section: "used" | "available") =>
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
-      <div className={styles.buttonsContainer}>
+      <FlexContainer>
         {allowUploadCustomImage && <CreateConnector type={type} />}
         {(hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors && (
           <UpgradeAllButton
@@ -135,7 +136,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
             onUpdate={onUpdate}
           />
         )}
-      </div>
+      </FlexContainer>
     );
 
   return (
@@ -143,31 +144,37 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
       <HeadTitle
         titles={[{ id: "sidebar.settings" }, { id: type === "sources" ? "admin.sources" : "admin.destinations" }]}
       />
-      {usedConnectorsDefinitions.length > 0 && (
-        <Block>
-          <Title bold>
-            <FormattedMessage id={type === "sources" ? "admin.manageSource" : "admin.manageDestination"} />
-            {renderHeaderControls("used")}
-          </Title>
+      <FlexContainer direction="column" gap="2xl">
+        {usedConnectorsDefinitions.length > 0 && (
+          <FlexContainer direction="column" gap="xl">
+            <FlexContainer alignItems="center" justifyContent="space-between">
+              <Heading as="h2" size="sm">
+                <FormattedMessage id={type === "sources" ? "admin.manageSource" : "admin.manageDestination"} />
+              </Heading>
+              {renderHeaderControls("used")}
+            </FlexContainer>
+            <Table
+              columns={renderColumns(showVersionUpdateColumn(usedConnectorsDefinitions))}
+              data={usedConnectorsDefinitions}
+              sortBy={defaultSorting}
+            />
+          </FlexContainer>
+        )}
+
+        <FlexContainer direction="column" gap="xl">
+          <FlexContainer alignItems="center" justifyContent="space-between">
+            <Heading as="h2" size="sm">
+              <FormattedMessage id={type === "sources" ? "admin.availableSource" : "admin.availableDestinations"} />
+            </Heading>
+            {renderHeaderControls("available")}
+          </FlexContainer>
           <Table
-            columns={renderColumns(showVersionUpdateColumn(usedConnectorsDefinitions))}
-            data={usedConnectorsDefinitions}
+            columns={renderColumns(showVersionUpdateColumn(availableConnectorDefinitions))}
+            data={availableConnectorDefinitions}
             sortBy={defaultSorting}
           />
-        </Block>
-      )}
-
-      <Block>
-        <Title bold>
-          <FormattedMessage id={type === "sources" ? "admin.availableSource" : "admin.availableDestinations"} />
-          {renderHeaderControls("available")}
-        </Title>
-        <Table
-          columns={renderColumns(showVersionUpdateColumn(availableConnectorDefinitions))}
-          data={availableConnectorDefinitions}
-          sortBy={defaultSorting}
-        />
-      </Block>
+        </FlexContainer>
+      </FlexContainer>
     </>
   );
 };
