@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -34,9 +34,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -66,12 +64,14 @@ public class IntegrationRunner {
   private final Source source;
   private static JsonSchemaValidator validator;
 
-  // private final ExecutorService messagesPool = Executors.newFixedThreadPool(4);
-  private final ExecutorService messagesPool = new ThreadPoolExecutor(1, 2, 100L, TimeUnit.MILLISECONDS,
-      new ArrayBlockingQueue<Runnable>(200000), new ThreadPoolExecutor.CallerRunsPolicy());
-  private final BlockingQueue<String> messageJsons = new ArrayBlockingQueue<>(300000);
-
-  private final ExecutorService writerPool = Executors.newSingleThreadExecutor();
+  private final ExecutorService messagesPool = Executors.newFixedThreadPool(4);
+  // private final ExecutorService messagesPool = new ThreadPoolExecutor(1, 3, 100L,
+  // TimeUnit.MILLISECONDS,
+  // new ArrayBlockingQueue<Runnable>(200000), new ThreadPoolExecutor.CallerRunsPolicy());
+  // private final BlockingQueue<String> messageJsons = new ArrayBlockingQueue<>(300000);
+  private final BlockingQueue<AirbyteMessage> messages = new ArrayBlockingQueue<>(3_000_000);
+  // private final ExecutorService writerPool = Executors.newSingleThreadExecutor();
+  final BufferedWriter bwrite = new BufferedWriter(new OutputStreamWriter(System.out), 100_000);
 
   public IntegrationRunner(final Destination destination) {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
@@ -150,62 +150,74 @@ public class IntegrationRunner {
           validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-          this.writerPool.submit(new Runnable() {
+
+          final Runnable r = new Runnable() {
 
             @Override
             public void run() {
-              final BufferedWriter bwrite = new BufferedWriter(new OutputStreamWriter(System.out), 100000);
+              final int sz = 200;
+              final List<AirbyteMessage> ll = new ArrayList<>(sz);
               while (true) {
-                final String json;
-                try {
-                  if (Thread.currentThread().isInterrupted()) {
-                    LOGGER.debug("*** writer isInterrupted: true");
-                    final List<String> ll = new LinkedList<>();
-                    final int leftover = messageJsons.drainTo(ll);
-                    LOGGER.debug("*** writer leftover: {}", leftover);
-                    ll.forEach(str -> {
-                      LOGGER.debug("*** writer finishing: {}", str);
-                      try {
-                        bwrite.write(str);
-                        bwrite.newLine();
-                      } catch (final IOException e) {
-                        throw new RuntimeException(e);
-                      }
-                    });
-                    break;
-                  }
+                if (Thread.currentThread().isInterrupted() && messages.peek() == null) {
+                  LOGGER.debug("*** thread interrupted");
+                  break;
+                }
 
-                  // json = messageJsons.poll(1, TimeUnit.SECONDS);
-                  final List<String> ll = new LinkedList<>();
-                  final int drained = messageJsons.drainTo(ll);
-                  if (drained == 0) {
+                final int drained = messages.drainTo(ll, sz);
+                // LOGGER.debug("*** {} message drained", drained);
+                if (drained == 0) {
+                  try {
                     Thread.sleep(100);
+                  } catch (final InterruptedException e) {
+                    throw new RuntimeException(e);
                   }
-                  ll.forEach(str -> {
-                    LOGGER.debug("*** writer: {}", str);
+                }
+
+                for (int i = 0; i < drained; i++) {
+                  final String json = Jsons.serialize(ll.get(i));
+                  LOGGER.debug("*** msg from queue: {}", json);
+                  synchronized (bwrite) {
                     try {
-                      bwrite.write(str);
+                      bwrite.write(json);
                       bwrite.newLine();
                     } catch (final IOException e) {
                       throw new RuntimeException(e);
                     }
-                  });
+                  }
 
-                } catch (final InterruptedException e) {
-                  LOGGER.debug("*** writer interrupted");
-                  Thread.currentThread().interrupt();
-                  // break;
-                }
+                } ;
+
+                // ll.clear();
               }
-              try {
-                bwrite.close();
-              } catch (final IOException e) {
-                throw new RuntimeException(e);
-              }
-              LOGGER.debug("*** writer break");
             }
 
-          });
+          };
+          messagesPool.execute(r);
+          messagesPool.execute(r);
+//          messagesPool.execute(r);
+//          messagesPool.execute(r);
+          /*
+           * this.writerPool.submit(new Runnable() {
+           *
+           * @Override public void run() { final BufferedWriter bwrite = new BufferedWriter(new
+           * OutputStreamWriter(System.out), 100000); while (true) { final String json; try { if
+           * (Thread.currentThread().isInterrupted()) { LOGGER.debug("*** writer isInterrupted: true"); final
+           * List<String> ll = new LinkedList<>(); final int leftover = messageJsons.drainTo(ll);
+           * LOGGER.debug("*** writer leftover: {}", leftover); ll.forEach(str -> {
+           * LOGGER.debug("*** writer finishing: {}", str); try { bwrite.write(str); bwrite.newLine(); } catch
+           * (final IOException e) { throw new RuntimeException(e); } }); break; }
+           *
+           * // json = messageJsons.poll(1, TimeUnit.SECONDS); final List<String> ll = new LinkedList<>();
+           * final int drained = messageJsons.drainTo(ll); if (drained == 0) { Thread.sleep(100); }
+           * ll.forEach(str -> { LOGGER.debug("*** writer: {}", str); try { bwrite.write(str);
+           * bwrite.newLine(); } catch (final IOException e) { throw new RuntimeException(e); } });
+           *
+           * } catch (final InterruptedException e) { LOGGER.debug("*** writer interrupted");
+           * Thread.currentThread().interrupt(); // break; } } try { bwrite.close(); } catch (final
+           * IOException e) { throw new RuntimeException(e); } LOGGER.debug("*** writer break"); }
+           *
+           * });
+           */
           try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
             produceMessages(messageIterator);
           }
@@ -260,36 +272,21 @@ public class IntegrationRunner {
               LOGGER.debug("*** incoming message type: {}", message.getType());
               // System.out.println(Jsons.serialize(message));
               try {
-
-                messagesPool.execute(new Runnable() {
-
-                  @Override
-                  public void run() {
-                    LOGGER.debug("*** adding to queue");
-                    // messageJsons.add(Jsons.serialize(message));
-                    final String json = Jsons.serialize(message);
-                    try {
-                      while (!messageJsons.offer(json, 10, TimeUnit.SECONDS)) {
-                        LOGGER.debug("*** attempting to insert");
-                      }
-                    } catch (final InterruptedException e) {
-                      throw new RuntimeException(e);
-                    }
-                  }
-
-                });
-              } catch (final RejectedExecutionException rej) {
-                LOGGER.info("*** rejected execution");
+                while (!messages.offer(message, 1, TimeUnit.SECONDS)) {
+                  LOGGER.debug("*** attempting to insert");
+                }
+              } catch (final InterruptedException e) {
+                throw new RuntimeException(e);
               }
-
             }),
         () -> System.exit(FORCED_EXIT_CODE),
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
-        this.writerPool,
-        this.messagesPool);
+        /* this.writerPool */null,
+        this.messagesPool,
+        this.bwrite);
   }
 
   @VisibleForTesting
@@ -310,7 +307,7 @@ public class IntegrationRunner {
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES,
-        TimeUnit.MINUTES, null, null);
+        TimeUnit.MINUTES, null, null, null);
   }
 
   /**
@@ -332,14 +329,15 @@ public class IntegrationRunner {
                                     final int exitTimeDelay,
                                     final TimeUnit exitTimeUnit,
                                     final ExecutorService writerPool,
-                                    final ExecutorService messagesPool)
+                                    final ExecutorService messagesPool,
+                                    final BufferedWriter bufferedWriter)
       throws Exception {
     final Thread currentThread = Thread.currentThread();
     try {
       runMethod.call();
     } finally {
       if (messagesPool != null) {
-        messagesPool.shutdown();
+        messagesPool.shutdownNow();
         messagesPool.awaitTermination(1, TimeUnit.MINUTES);
       }
 
@@ -349,6 +347,16 @@ public class IntegrationRunner {
         writerPool.shutdownNow();
         writerPool.awaitTermination(5, TimeUnit.SECONDS);
       }
+      if (bufferedWriter != null) {
+        try {
+          synchronized (bufferedWriter) {
+            bufferedWriter.close();
+          }
+        } catch (final IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
       final List<Thread> runningThreads = ThreadUtils.getAllThreads()
           .stream()
           // daemon threads don't block the JVM if the main `currentThread` exits, so they are not problematic
