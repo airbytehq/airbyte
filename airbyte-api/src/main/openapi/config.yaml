@@ -2010,6 +2010,28 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_last_replication_job:
+    post:
+      tags:
+        - jobs
+      operationId: getLastReplicationJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobOptionalRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/get_light:
     post:
       tags:
@@ -3943,6 +3965,9 @@ components:
         updatedAt:
           type: integer
           format: int64
+        startedAt:
+          type: integer
+          format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
         resetConfig:
@@ -4175,6 +4200,11 @@ components:
       type: object
       required:
         - job
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
+    JobOptionalRead:
+      type: object
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
