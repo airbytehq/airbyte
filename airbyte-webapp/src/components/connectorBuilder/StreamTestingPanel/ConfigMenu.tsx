@@ -6,6 +6,7 @@ import { useLocalStorage } from "react-use";
 
 import { Button } from "components/ui/Button";
 import { Callout } from "components/ui/Callout";
+import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Modal, ModalBody } from "components/ui/Modal";
 import { NumberBadge } from "components/ui/NumberBadge";
 import { Tooltip } from "components/ui/Tooltip";
@@ -112,13 +113,35 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJson
                 <ConnectorForm
                   formType="source"
                   bodyClassName={styles.formContent}
-                  footerClassName={styles.inputFormModalFooter}
                   selectedConnectorDefinitionSpecification={connectorDefinitionSpecification}
                   formValues={{ connectionConfiguration: testInputJson }}
                   onSubmit={async (values) => {
                     setTestInputJson(values.connectionConfiguration as StreamReadRequestBodyConfig);
                     setIsOpen(false);
                   }}
+                  renderFooter={({ dirty, isSubmitting }) => (
+                    <div className={styles.inputFormModalFooter}>
+                      <FlexContainer>
+                        <FlexItem grow>
+                          <Button
+                            onClick={() => {
+                              setTestInputJson({});
+                            }}
+                            type="button"
+                            variant="danger"
+                          >
+                            <FormattedMessage id="form.reset" />
+                          </Button>
+                        </FlexItem>
+                        <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
+                          <FormattedMessage id="form.cancel" />
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting || !dirty}>
+                          <FormattedMessage id="connectorBuilder.saveInputsForm" />
+                        </Button>
+                      </FlexContainer>
+                    </div>
+                  )}
                   onCancel={() => {
                     setIsOpen(false);
                   }}

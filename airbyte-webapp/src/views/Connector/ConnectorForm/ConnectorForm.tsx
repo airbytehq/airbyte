@@ -1,5 +1,5 @@
 import { Formik } from "formik";
-import React, { useCallback } from "react";
+import React, { ReactNode, useCallback } from "react";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
@@ -24,17 +24,31 @@ export interface ConnectorFormProps {
    * Definition of the connector might not be available if it's not released but only exists in frontend heap
    */
   selectedConnectorDefinition?: ConnectorDefinition;
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft;
+  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft;
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
   connectionTestSuccess?: boolean;
   errorMessage?: React.ReactNode;
-  successMessage?: React.ReactNode;
   connectorId?: string;
   footerClassName?: string;
   bodyClassName?: string;
   submitLabel?: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  full?: boolean;
+  headerBlock?: ReactNode;
+  footerComponent?: React.FC;
+  renderFooter?: (formProps: {
+    dirty: boolean;
+    isSubmitting: boolean;
+    isValid: boolean;
+    resetConnectorForm: () => void;
+    isEditMode?: boolean;
+    formType: "source" | "destination";
+    getValues: () => ConnectorFormValues;
+  }) => ReactNode;
+  renderWithCard?: boolean;
   /**
    * Called in case the user cancels the form - if not provided, no cancel button is rendered
    */
@@ -62,7 +76,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     testConnector,
     selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
-    errorMessage,
     connectorId,
     onReset,
   } = props;
@@ -74,7 +87,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     formValues
   );
 
-  const getValues = useCallback(
+  const castValues = useCallback(
     (values: ConnectorFormValues) =>
       validationSchema.cast(values, {
         stripUnknown: true,
@@ -84,11 +97,11 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
 
   const onFormSubmit = useCallback(
     async (values: ConnectorFormValues) => {
-      const valuesToSend = getValues(values);
+      const valuesToSend = castValues(values);
       await onSubmit(valuesToSend);
       clearFormChange(formId);
     },
-    [clearFormChange, formId, getValues, onSubmit]
+    [clearFormChange, formId, castValues, onSubmit]
   );
 
   return (
@@ -103,7 +116,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
       {({ dirty, resetForm }) => (
         <ConnectorFormContextProvider
           formType={formType}
-          getValues={getValues}
+          getValues={castValues}
           selectedConnectorDefinition={selectedConnectorDefinition}
           selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
           isEditMode={isEditMode}
@@ -115,7 +128,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           <FormRoot
             {...props}
             formFields={formFields}
-            errorMessage={errorMessage}
+            castValues={castValues}
             onReset={
               onReset &&
               (() => {

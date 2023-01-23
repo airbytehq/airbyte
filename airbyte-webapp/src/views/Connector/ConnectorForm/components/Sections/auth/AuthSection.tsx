@@ -9,7 +9,10 @@ import { AuthButton } from "./AuthButton";
 
 export const AuthSection: React.FC = () => {
   const { selectedConnectorDefinitionSpecification } = useConnectorForm();
-  if (isSourceDefinitionSpecificationDraft(selectedConnectorDefinitionSpecification)) {
+  if (
+    !selectedConnectorDefinitionSpecification ||
+    isSourceDefinitionSpecificationDraft(selectedConnectorDefinitionSpecification)
+  ) {
     return null;
   }
   return (
