@@ -21,9 +21,9 @@ streams:
           request_parameters:
             mailbox: '{{ config[''mailbox''] }}'
             embed: '{{ config[''embed''] }}'
-            folder: '{{ config[''folder''] }}'
+            folder: '{{ config[''folders''] }}'
             status: '{{ config[''status''] }}'
-            tag: '{{ config[''tag''] }}'
+            tag: '{{ config[''tags''] }}'
             assigned_to: '{{ config[''assigned_to''] }}'
             modifiedSince: '{{ config[''modifiedsince''] }}'
             number: '{{ config[''number''] }}'
@@ -59,7 +59,8 @@ streams:
         url_base: https://api.helpscout.net/v2
   - type: DeclarativeStream
     name: Mailboxes
-    primary_key: &ref_1 []
+    primary_key: &ref_1
+      - id
     retriever:
       type: SimpleRetriever
       name: Mailboxes
@@ -85,7 +86,9 @@ streams:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_pointer:
+            - _embedded
+            - mailboxes
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -97,6 +100,109 @@ streams:
           page_size: 50
           start_from_page: 1
         url_base: https://api.helpscout.net/v2
+  - type: DeclarativeStream
+    name: Properties
+    primary_key: &ref_2 []
+    retriever:
+      type: SimpleRetriever
+      name: Properties
+      primary_key: *ref_2
+      requester:
+        type: HttpRequester
+        name: Properties
+        url_base: https://api.helpscout.net/v2
+        path: customer-properties
+        request_options_provider:
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: Ratings
+    primary_key: &ref_3 []
+    retriever:
+      type: SimpleRetriever
+      name: Ratings
+      primary_key: *ref_3
+      requester:
+        type: HttpRequester
+        name: Ratings
+        url_base: https://api.helpscout.net/v2
+        path: ratings/{{ config['ratingid'] }}
+        request_options_provider:
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer: []
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: Reports
+    primary_key: &ref_4 []
+    retriever:
+      type: SimpleRetriever
+      name: Reports
+      primary_key: *ref_4
+      requester:
+        type: HttpRequester
+        name: Reports
+        url_base: https://api.helpscout.net/v2
+        path: reports/{{ config['reporttype'] }}/{{ config['subreporttype'] }}
+        request_options_provider:
+          request_parameters:
+            start: '{{ config[''start''] }}'
+            end: '{{ config[''end''] }}'
+            previousStart: '{{ config[''previousstart''] }}'
+            previousEnd: '{{ config[''previousend''] }}'
+            mailboxes: '{{ config[''mailboxes''] }}'
+            tags: '{{ config[''tags''] }}'
+            folders: '{{ config[''folders''] }}'
+            types: '{{ config[''types''] }}'
+            sites: '{{ config[''sites''] }}'
+            officeHours: '{{ config[''officehours''] }}'
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer: []
+      paginator:
+        type: NoPagination
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -106,29 +212,29 @@ spec:
       - client_secret
       - refresh_token
     properties:
-      mailbox:
-        title: Mailbox
-        type: number
+      mailboxes:
+        title: mailboxes
+        type: string
         description: >-
           Filters conversations from a specific mailbox id. Use comma separated
           values for more mailboxes
       embed:
-        title: Embed
+        title: embed
         description: ' Allows embedding/loading of sub-entities, allowed values are: threads'
         type: string
         enum:
           - threads
-      folder:
-        title: Folder
+      folders:
+        title: folders
         description: Filters conversations from a specific folder id
         type: number
       status:
-        title: Status
+        title: status
         description: Filter conversation by status
         placeholder: all
         type: string
-      tag:
-        title: Tag
+      tags:
+        title: tags
         description: Filter conversation by tags. Use comma separated values for more tags.
         type: string
       assigned_to:
@@ -140,7 +246,7 @@ spec:
         title: modifiedSince
         type: string
       number:
-        title: Number
+        title: number
         description: Looks up conversation by conversation number
         type: number
       sortfield:
@@ -165,6 +271,60 @@ spec:
           - desc
         default: desc
         description: Sort order
+        type: string
+      conversationid:
+        title: conversationID
+        description: Numeric ID of the conversation
+        type: number
+      ratingid:
+        title: ratingId
+        type: number
+      reporttype:
+        title: reportType
+        description: The type of the overall report you want to retrieve
+        placeholder: company
+        type: string
+      start:
+        title: start
+        description: Start of the interval
+        placeholder: '2019-05-02T12:00:00Z'
+        type: string
+      end:
+        title: end
+        placeholder: '2019-06-02T12:00:00Z'
+        description: End of the interval
+        type: string
+      previousstart:
+        title: previousStart
+        description: Start of the previous interval
+        placeholder: '2019-04-02T12:00:00Z'
+        type: string
+      previousend:
+        title: previousEnd
+        description: End of the previous interval
+        placeholder: '2019-05-02T12:00:00Z'
+        type: string
+      types:
+        enum:
+          - email
+          - chat
+          - phone
+        title: types
+        description: List of comma separated conversation types to filter on
+        type: string
+      sites:
+        description: List of comma separated docs site IDs
+        title: sites
+        type: string
+      officehours:
+        title: officeHours
+        type: boolean
+        description: >-
+          Whether to take office hours into consideration in the report
+          (defaults to false); office hours must be enabled if true is passed,
+          otherwise the default of false will be used
+      subreporttype:
+        title: subReportType
         type: string
       client_id:
         type: string
