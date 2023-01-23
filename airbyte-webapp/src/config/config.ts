@@ -21,6 +21,13 @@ export const config: AirbyteWebappConfig = {
     appId: process.env.REACT_APP_INTERCOM_APP_ID,
   },
   launchDarkly: window.LAUNCHDARKLY_KEY ?? process.env.REACT_APP_LAUNCHDARKLY_KEY,
+  datadog: {
+    applicationId: window.REACT_APP_DATADOG_APPLICATION_ID ?? process.env.REACT_APP_DATADOG_APPLICATION_ID,
+    clientToken: window.REACT_APP_DATADOG_CLIENT_TOKEN ?? process.env.REACT_APP_DATADOG_CLIENT_TOKEN,
+    site: window.REACT_APP_DATADOG_SITE ?? process.env.REACT_APP_DATADOG_SITE,
+    service: window.REACT_APP_DATADOG_SERVICE ?? process.env.REACT_APP_DATADOG_SERVICE,
+  },
+  webappTag: window.REACT_APP_WEBAPP_TAG ?? process.env.REACT_APP_WEBAPP_TAG,
 };
 
 export class MissingConfigError extends Error {
