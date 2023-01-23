@@ -12,7 +12,7 @@ import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.SourceCoreConfig;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
-import io.airbyte.server.handlers.SchedulerHandler;
+import io.airbyte.commons.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;

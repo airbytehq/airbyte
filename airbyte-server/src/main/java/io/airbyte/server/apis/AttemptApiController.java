@@ -10,7 +10,7 @@ import io.airbyte.api.generated.AttemptApi;
 import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
-import io.airbyte.server.handlers.AttemptHandler;
+import io.airbyte.commons.server.handlers.AttemptHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;

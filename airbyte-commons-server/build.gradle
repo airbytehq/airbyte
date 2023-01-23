@@ -3,6 +3,30 @@ plugins {
 }
 
 dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+    annotationProcessor libs.micronaut.jaxrs.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+    implementation libs.micronaut.jaxrs.server
+
+    // Ensure that the versions defined in deps.toml are used
+    // instead of versions from transitive dependencies
+    implementation(libs.flyway.core) {
+        force = true
+    }
+    implementation(libs.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
+    implementation(libs.aws.java.sdk.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
+
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-docker')

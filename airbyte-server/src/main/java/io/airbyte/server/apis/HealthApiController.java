@@ -6,7 +6,7 @@ package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.HealthApi;
 import io.airbyte.api.model.generated.HealthCheckRead;
-import io.airbyte.server.handlers.HealthCheckHandler;
+import io.airbyte.commons.server.handlers.HealthCheckHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
