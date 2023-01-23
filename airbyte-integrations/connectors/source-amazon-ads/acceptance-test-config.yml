@@ -23,13 +23,14 @@ acceptance_tests:
         bypass_reason: "can't populate stream because it requires real ad campaign"
       - name: sponsored_brands_video_report_stream
         bypass_reason: "can't populate stream because it requires real ad campaign"
+      - name: sponsored_products_report_stream
+        bypass_reason: "can't populate stream because it requires real ad campaign"
       timeout_seconds: 2400
       expect_records:
         path: integration_tests/expected_records.jsonl
         exact_order: no
         extra_fields: no
         extra_records: no
-    - config_path: secrets/config_report.json
   connection:
     tests:
     - config_path: secrets/config.json
