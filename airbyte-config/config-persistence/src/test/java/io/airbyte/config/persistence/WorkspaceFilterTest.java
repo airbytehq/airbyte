@@ -6,7 +6,6 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.spy;
 
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
@@ -84,16 +83,16 @@ public class WorkspaceFilterTest extends BaseConfigDatabaseTest {
     // create jobs
     final OffsetDateTime currentTs = OffsetDateTime.now();
     database.transaction(ctx ->
-        ctx.insertInto(JOBS, JOBS.UPDATED_AT, JOBS.SCOPE)
-            .values(currentTs.minusHours(0), CONN_ID_0.toString())
-            .values(currentTs.minusHours(5), CONN_ID_0.toString())
-            .values(currentTs.minusHours(10), CONN_ID_1.toString())
-            .values(currentTs.minusHours(15), CONN_ID_1.toString())
-            .values(currentTs.minusHours(20), CONN_ID_2.toString())
-            .values(currentTs.minusHours(30), CONN_ID_3.toString())
-            .values(currentTs.minusHours(40), CONN_ID_4.toString())
-            .values(currentTs.minusHours(50), CONN_ID_4.toString())
-            .values(currentTs.minusHours(70), CONN_ID_5.toString())
+        ctx.insertInto(JOBS, JOBS.ID, JOBS.UPDATED_AT, JOBS.SCOPE)
+            .values(0L, currentTs.minusHours(0), CONN_ID_0.toString())
+            .values(1L, currentTs.minusHours(5), CONN_ID_0.toString())
+            .values(2L, currentTs.minusHours(10), CONN_ID_1.toString())
+            .values(3L, currentTs.minusHours(15), CONN_ID_1.toString())
+            .values(4L, currentTs.minusHours(20), CONN_ID_2.toString())
+            .values(5L, currentTs.minusHours(30), CONN_ID_3.toString())
+            .values(6L, currentTs.minusHours(40), CONN_ID_4.toString())
+            .values(7L, currentTs.minusHours(50), CONN_ID_4.toString())
+            .values(8L, currentTs.minusHours(70), CONN_ID_5.toString())
             .execute());
   }
 
@@ -104,22 +103,34 @@ public class WorkspaceFilterTest extends BaseConfigDatabaseTest {
   }
 
   void setup() {
-    configRepository = spy(new ConfigRepository(
+    configRepository = new ConfigRepository(
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
-        null));
+        null);
   }
 
-
   @Test
-  @DisplayName("should return the a list of workspace IDs with most recently running jobs")
+  @DisplayName("Should return a list of workspace IDs with most recently running jobs")
   void testListWorkspacesByMostRecentlyRunningJobs() throws IOException {
     final int timeWindowInHours = 48;
+    /*
+     * Following function is to filter workspace (IDs) with most recently running jobs within a given time window.
+     * step 1: filter on table JOBS where job's UPDATED_AT timestamp is within the given time window
+     * step 2: trace back via CONNECTION table and ACTOR table
+     * step 3: return workspace IDs from ACTOR table
+     * */
+    final List<UUID> actualResult = configRepository.listWorkspacesByMostRecentlyRunningJobs(timeWindowInHours);
+    /*
+     * With the test data provided above, expected outputs for each step:
+     * step 1: `jobs` (IDs) OL, 1L, 2L, 3L, 4L, 5L and 6L
+     * step 2: `connections` (IDs) CONN_ID_0, CONN_ID_1, CONN_ID_2, CONN_ID_3, and CONN_ID_4
+     *         `actors` (IDs) ACTOR_ID_0, ACTOR_ID_1, and ACTOR_ID_2
+     * step 3: `workspaces` (IDs) WORKSPACE_ID_0, WORKSPACE_ID_1 and WORKSPACE_ID_2
+     * */
     final List<UUID> expectedResult = new ArrayList<>();
     expectedResult.add(WORKSPACE_ID_0);
     expectedResult.add(WORKSPACE_ID_1);
     expectedResult.add(WORKSPACE_ID_2);
-    final List<UUID> actualResult = configRepository.listWorkspacesByMostRecentlyRunningJobs(timeWindowInHours);
     assertTrue(expectedResult.size() == actualResult.size() && expectedResult.containsAll(actualResult) && actualResult.containsAll(expectedResult));
   }
 
