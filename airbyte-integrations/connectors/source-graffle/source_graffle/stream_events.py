@@ -128,6 +128,16 @@ class ChallengeBurnedNftsEvents(EventsStream):
     return f"api/company/{self.company_id}/search"
 
 
+class PanelsStakedEvents(EventsStream):
+  def path(self, **_) -> str:
+    return f"api/company/{self.company_id}/search"
+
+
+class PanelsUnstakedEvents(EventsStream):
+  def path(self, **_) -> str:
+    return f"api/company/{self.company_id}/search"
+
+
 # Create this class to better manipulate marketplace related events
 class MarketplaceEvents(EventsStream):
   def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
