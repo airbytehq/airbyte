@@ -14,7 +14,7 @@ import { Text } from "components/ui/Text";
 
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { RoutePaths } from "pages/routePaths";
@@ -48,7 +48,7 @@ export const CloudSideBar: React.FC = () => {
   const handleChatUs = (data: DropdownMenuOptionType) => data.value === "chatUs" && show();
 
   return (
-    <SideBar additionalTopControls={cloudWorkspaces}>
+    <SideBar additionalTopItems={cloudWorkspaces}>
       <li className={styles.creditsButton}>
         <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
           {cloudWorkspace.remainingCredits <= LOW_BALANCE_CREDIT_TRESHOLD && (

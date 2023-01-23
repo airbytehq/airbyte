@@ -39,78 +39,72 @@ export const useCalculateSidebarStyles = () => {
 };
 
 interface SideBarProps {
-  additionalTopControls?: JSX.Element;
+  additionalTopItems?: JSX.Element;
+  bottomMenuItems?: JSX.Element[];
 }
 
-export const SideBar: React.FC<React.PropsWithChildren<SideBarProps>> = ({ additionalTopControls, children }) => {
+export const SideBar: React.FC<SideBarProps> = ({ additionalTopItems, bottomMenuItems }) => {
   const config = useConfig();
   const navLinkClassName = useCalculateSidebarStyles();
   const { formatMessage } = useIntl();
   const showBuilderNavigationLinks = useExperiment("connectorBuilder.showNavigationLinks", false);
 
-  const bottomMenuItems = () => (
-    <>
-      <li>
-        <a href={links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
-          <FontAwesomeIcon className={styles.helpIcon} icon={faRocket} />
+  const OSSBottomMenuItems = [
+    <a href={links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
+      <FontAwesomeIcon className={styles.helpIcon} icon={faRocket} />
+      <Text className={styles.text} size="sm">
+        <FormattedMessage id="sidebar.update" />
+      </Text>
+    </a>,
+    <DropdownMenu
+      placement="right"
+      displacement={10}
+      options={[
+        {
+          as: "a",
+          href: links.docsLink,
+          icon: <DocsIcon />,
+          displayName: formatMessage({ id: "sidebar.documentation" }),
+        },
+        {
+          as: "a",
+          href: links.slackLink,
+          icon: <FontAwesomeIcon icon={faSlack} />,
+          displayName: formatMessage({ id: "sidebar.joinSlack" }),
+        },
+        {
+          as: "a",
+          href: links.tutorialLink,
+          icon: <RecipesIcon />,
+          displayName: formatMessage({ id: "sidebar.recipes" }),
+        },
+      ]}
+    >
+      {({ open }) => (
+        <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
+          <DocsIcon />
           <Text className={styles.text} size="sm">
-            <FormattedMessage id="sidebar.update" />
+            <FormattedMessage id="sidebar.resources" />
           </Text>
-        </a>
-      </li>
-      <li>
-        <DropdownMenu
-          placement="right"
-          displacement={10}
-          options={[
-            {
-              as: "a",
-              href: links.docsLink,
-              icon: <DocsIcon />,
-              displayName: formatMessage({ id: "sidebar.documentation" }),
-            },
-            {
-              as: "a",
-              href: links.slackLink,
-              icon: <FontAwesomeIcon icon={faSlack} />,
-              displayName: formatMessage({ id: "sidebar.joinSlack" }),
-            },
-            {
-              as: "a",
-              href: links.tutorialLink,
-              icon: <RecipesIcon />,
-              displayName: formatMessage({ id: "sidebar.recipes" }),
-            },
-          ]}
-        >
-          {({ open }) => (
-            <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
-              <DocsIcon />
-              <Text className={styles.text} size="sm">
-                <FormattedMessage id="sidebar.resources" />
-              </Text>
-            </button>
-          )}
-        </DropdownMenu>
-      </li>
-      <li>
-        <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
-          <React.Suspense fallback={null}>
-            <NotificationIndicator />
-          </React.Suspense>
-          <SettingsIcon />
-          <Text className={styles.text} size="sm">
-            <FormattedMessage id="sidebar.settings" />
-          </Text>
-        </NavLink>
-      </li>
-      {config.version ? (
-        <li>
-          <Version primary />
-        </li>
-      ) : null}
-    </>
-  );
+        </button>
+      )}
+    </DropdownMenu>,
+    <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
+      <React.Suspense fallback={null}>
+        <NotificationIndicator />
+      </React.Suspense>
+      <SettingsIcon />
+      <Text className={styles.text} size="sm">
+        <FormattedMessage id="sidebar.settings" />
+      </Text>
+    </NavLink>,
+  ];
+
+  if (config.version) {
+    OSSBottomMenuItems.push(<Version primary />);
+  }
+
+  const bottomMenuArray = bottomMenuItems ?? OSSBottomMenuItems;
 
   return (
     <nav className={styles.nav}>
@@ -118,7 +112,7 @@ export const SideBar: React.FC<React.PropsWithChildren<SideBarProps>> = ({ addit
         <Link to={RoutePaths.Connections} aria-label={formatMessage({ id: "sidebar.homepage" })}>
           <AirbyteLogo height={33} width={33} />
         </Link>
-        {additionalTopControls}
+        {additionalTopItems}
         <ul className={styles.menu}>
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
@@ -156,7 +150,11 @@ export const SideBar: React.FC<React.PropsWithChildren<SideBarProps>> = ({ addit
           )}
         </ul>
       </div>
-      <ul className={styles.menu}>{children ?? bottomMenuItems}</ul>
+      <ul className={styles.menu}>
+        {bottomMenuArray.map((item) => {
+          return <li>{item}</li>;
+        })}
+      </ul>
     </nav>
   );
 };
