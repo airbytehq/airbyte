@@ -26,8 +26,8 @@ export const ConnectionPageTitle: React.FC = () => {
 
   const { connection } = useConnectionEditService();
 
-  const { data: freeConnectorProgramInfo } = useFreeConnectorProgram();
-  const displayEnrollmentCallout = freeConnectorProgramInfo?.showEnrollmentUi;
+  const { enrollmentStatusQuery } = useFreeConnectorProgram();
+  const { showEnrollmentUi } = enrollmentStatusQuery.data || {};
 
   const steps = useMemo(() => {
     const steps = [
@@ -80,7 +80,7 @@ export const ConnectionPageTitle: React.FC = () => {
       <div className={styles.statusContainer}>
         <FlexContainer direction="column" gap="none">
           <ConnectionInfoCard />
-          {displayEnrollmentCallout && <InlineEnrollmentCallout />}
+          {showEnrollmentUi && <InlineEnrollmentCallout />}
         </FlexContainer>
       </div>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />

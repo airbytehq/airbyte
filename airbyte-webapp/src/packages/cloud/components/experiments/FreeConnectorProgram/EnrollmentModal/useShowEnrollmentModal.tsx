@@ -1,4 +1,9 @@
+import { useIntl } from "react-intl";
+
+import { ToastType } from "components/ui/Toast";
+
 import { useModalService } from "hooks/services/Modal";
+import { useNotificationService } from "hooks/services/Notification";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
@@ -10,6 +15,19 @@ export const useShowEnrollmentModal = () => {
   const { mutateAsync: createCheckout } = useStripeCheckout();
   const workspaceId = useCurrentWorkspaceId();
   const { emailVerified, sendEmailVerification } = useAuthService();
+  const { formatMessage } = useIntl();
+  const { registerNotification } = useNotificationService();
+
+  const verifyEmail = () =>
+    sendEmailVerification()
+      .then(() => {
+        registerNotification({
+          id: "fcp/verify-email",
+          text: formatMessage({ id: "freeConnectorProgram.enrollmentModal.validationEmailConfirmation" }),
+          type: ToastType.INFO,
+        });
+      })
+      .catch(); // don't crash the page on error
 
   return {
     showEnrollmentModal: () => {
@@ -21,7 +39,7 @@ export const useShowEnrollmentModal = () => {
             createCheckout={createCheckout}
             closeModal={closeModal}
             emailVerified={emailVerified}
-            sendEmailVerification={sendEmailVerification}
+            sendEmailVerification={verifyEmail}
           />
         ),
       });
