@@ -1,16 +1,13 @@
 import classnames from "classnames";
-import { FormattedMessage } from "react-intl";
 
 import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { Heading } from "components/ui/Heading";
 
 import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { getIcon } from "utils/imageUtils";
 
 import styles from "./StreamConnectionHeader.module.scss";
-
-export const renderIcon = (icon?: string): JSX.Element => <div className={styles.icon}>{getIcon(icon)}</div>;
+import { ConnectorHeaderGroupIcon } from "./StreamDetailsPanel/StreamFieldsTable/ConnectorHeaderGroupIcon";
 
 export const StreamConnectionHeader: React.FC = () => {
   const {
@@ -22,9 +19,8 @@ export const StreamConnectionHeader: React.FC = () => {
   return (
     <div className={classnames(styles.container, { [styles.newTableContainer]: !!isNewTableDesignEnabled })}>
       <div className={sourceStyles}>
-        {renderIcon(source.icon)}{" "}
         <Heading as="h5" size="sm">
-          <FormattedMessage id="connectionForm.sourceTitle" />
+          <ConnectorHeaderGroupIcon type="source" icon={source.icon} />
         </Heading>
       </div>
       <div className={styles.destinationSection}>
@@ -32,9 +28,8 @@ export const StreamConnectionHeader: React.FC = () => {
           <ArrowRightIcon />
         </div>
         <div className={classnames(styles.connector, styles.destination)}>
-          {renderIcon(destination.icon)}{" "}
           <Heading as="h5" size="sm">
-            <FormattedMessage id="connectionForm.destinationTitle" />
+            <ConnectorHeaderGroupIcon type="destination" icon={destination.icon} />
           </Heading>
         </div>
       </div>
