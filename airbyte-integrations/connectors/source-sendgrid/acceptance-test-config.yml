@@ -3,7 +3,7 @@ tests:
   spec:
     - spec_path: "source_sendgrid/spec.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.2.16"
+        disable_for_version: "0.3.0"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
