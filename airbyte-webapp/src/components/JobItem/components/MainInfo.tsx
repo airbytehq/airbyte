@@ -9,10 +9,10 @@ import { Cell, Row } from "components/SimpleTableComponents";
 import { StatusIcon } from "components/ui/StatusIcon";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
-import { getJobStatus } from "../JobItem";
-import AttemptDetails from "./AttemptDetails";
+import { JobsWithJobs } from "../types";
+import { getJobStatus } from "../utils";
+import { AttemptDetails } from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
 import { ResetStreamsDetails } from "./ResetStreamDetails";
 
@@ -44,8 +44,10 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   const isPartialSuccess = partialSuccessCheck(attempts);
 
   const statusIcon = useMemo(() => {
-    if (jobStatus === JobStatus.cancelled || (!isPartialSuccess && isFailed)) {
+    if (!isPartialSuccess && isFailed) {
       return <StatusIcon status="error" />;
+    } else if (jobStatus === JobStatus.cancelled) {
+      return <StatusIcon status="cancelled" />;
     } else if (jobStatus === JobStatus.running) {
       return <StatusIcon status="loading" />;
     } else if (jobStatus === JobStatus.succeeded) {

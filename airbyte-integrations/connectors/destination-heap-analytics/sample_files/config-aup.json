@@ -1,0 +1,9 @@
+{
+  "app_id": "11",
+  "base_url": "https://heapanalytics.com",
+  "api": {
+    "api_type": "add_user_properties",
+    "property_columns": "identities_connection,identities_provider,created_at,updated_at,name",
+    "identity_column": "user_id"
+  }
+}
