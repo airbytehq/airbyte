@@ -78,15 +78,13 @@ QA_CHECKS = [
 
 def run_qa_checks():
     connector_name = sys.argv[1]
-    qa_check_results = []
     print(f"Running QA checks for {connector_name}")
-    for qa_check in QA_CHECKS:
-        successful_check = qa_check(connector_name)
-        check_result_prefix = "✅" if successful_check else "❌"
-        print(f"{check_result_prefix} - {qa_check.__name__}")
-        qa_check_results.append(successful_check)
-    if not all(qa_check_results):
+    qa_check_results = {qa_check.__name__: qa_check(connector_name) for qa_check in QA_CHECKS}
+    if not all(qa_check_results.values()):
         print(f"QA checks failed for {connector_name}")
+        for check_name, check_result in qa_check_results.items():
+            check_result_prefix = "✅" if check_result else "❌"
+            print(f"{check_result_prefix} - {check_name}")
         sys.exit(1)
     else:
         print(f"All QA checks succeeded for {connector_name}")
