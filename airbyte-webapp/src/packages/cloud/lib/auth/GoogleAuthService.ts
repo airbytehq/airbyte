@@ -20,6 +20,8 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   GithubAuthProvider,
+  getIdToken,
+  reload,
 } from "firebase/auth";
 
 import { Provider } from "config";
@@ -144,7 +146,13 @@ export class GoogleAuthService {
   }
 
   async confirmEmailVerify(code: string): Promise<void> {
-    return applyActionCode(this.auth, code);
+    await applyActionCode(this.auth, code);
+
+    // Reload the user and get a fresh token with email_verified: true
+    if (this.auth.currentUser) {
+      await reload(this.auth.currentUser);
+      await getIdToken(this.auth.currentUser, true);
+    }
   }
 
   async signInWithEmailLink(email: string): Promise<UserCredential> {
