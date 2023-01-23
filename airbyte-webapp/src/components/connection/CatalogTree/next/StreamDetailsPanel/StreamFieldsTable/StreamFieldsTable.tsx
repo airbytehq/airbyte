@@ -14,8 +14,6 @@ import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useExperiment } from "hooks/services/Experiment";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { getDataType } from "utils/useTranslateDataType";
 
 import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
@@ -98,8 +96,6 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   const {
     connection: { source, destination },
   } = useConnectionFormService();
-  const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
-  const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
   // prepare data for table
   const tableData: TableStream[] = useMemo(
@@ -248,7 +244,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     () => [
       columnHelper.group({
         id: "source",
-        header: () => <ConnectorHeaderGroupIcon type="source" icon={sourceDefinition.icon} />,
+        header: () => <ConnectorHeaderGroupIcon type="source" icon={source.icon} />,
         columns: sourceColumns,
         meta: {
           thClassName: styles.headerGroupCell,
@@ -273,7 +269,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       }),
       columnHelper.group({
         id: "destination",
-        header: () => <ConnectorHeaderGroupIcon type="destination" icon={destinationDefinition.icon} />,
+        header: () => <ConnectorHeaderGroupIcon type="destination" icon={destination.icon} />,
         columns: destinationColumns,
         meta: {
           thClassName: styles.headerGroupCell,
@@ -281,7 +277,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         },
       }),
     ],
-    [columnHelper, destinationColumns, destinationDefinition.icon, sourceColumns, sourceDefinition.icon]
+    [columnHelper, destination.icon, destinationColumns, source.icon, sourceColumns]
   );
 
   return <NextTable<TableStream> columns={columns} data={tableData} className={styles.customTableStyle} />;
