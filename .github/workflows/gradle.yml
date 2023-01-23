@@ -124,6 +124,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -229,6 +230,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
@@ -412,6 +414,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -535,6 +538,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Delete default old docker and replace it with a new one
         shell: bash
@@ -666,6 +670,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - uses: actions/setup-node@v3
         with:
@@ -800,6 +805,7 @@ jobs:
         if: always()
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Publish Platform Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -945,6 +951,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Install unzip
         shell: bash
@@ -1021,6 +1028,7 @@ jobs:
         if: always()
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Publish Kube Test Results
         id: kube-results
@@ -1191,6 +1199,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - uses: actions/setup-java@v1
         with:
