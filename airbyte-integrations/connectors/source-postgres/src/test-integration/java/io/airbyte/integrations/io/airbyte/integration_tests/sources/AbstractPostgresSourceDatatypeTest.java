@@ -254,11 +254,11 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("jsonb")
             .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY,
-                            JsonSchemaPrimitive.OBJECT,
-                            JsonSchemaPrimitive.STRING,
-                            JsonSchemaPrimitive.BOOLEAN,
-                            JsonSchemaPrimitive.NUMBER)
-                    .build())
+                JsonSchemaPrimitive.OBJECT,
+                JsonSchemaPrimitive.STRING,
+                JsonSchemaPrimitive.BOOLEAN,
+                JsonSchemaPrimitive.NUMBER)
+                .build())
             .addInsertValues("null", "'[1, 2, 3]'::jsonb")
             .addExpectedValues(null, "[1, 2, 3]")
             .build());

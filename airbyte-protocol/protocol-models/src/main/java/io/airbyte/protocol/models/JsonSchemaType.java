@@ -8,13 +8,11 @@ import static io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.PRIMITIVE_TO_RE
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Represents an Airbyte type. This corresponds to the data type that is present on the various
@@ -93,13 +91,13 @@ public class JsonSchemaType {
           .withLegacyAirbyteTypeProperty("big_integer")
           .build();
 
-    private final Map<String, Object> jsonSchemaTypeMap;
+  private final Map<String, Object> jsonSchemaTypeMap;
 
   private JsonSchemaType(final Map<String, Object> jsonSchemaTypeMap) {
     this.jsonSchemaTypeMap = jsonSchemaTypeMap;
   }
 
-  public static Builder builder(final JsonSchemaPrimitive ... types) {
+  public static Builder builder(final JsonSchemaPrimitive... types) {
     return new Builder(types);
   }
 
@@ -111,7 +109,7 @@ public class JsonSchemaType {
 
     private final ImmutableMap.Builder<String, Object> typeMapBuilder;
 
-    private Builder(final JsonSchemaPrimitive ... types) {
+    private Builder(final JsonSchemaPrimitive... types) {
       final List<JsonSchemaPrimitive> schemaPrimitives = Arrays.asList(types);
       if (schemaPrimitives.size() > 1) {
         typeMapBuilder = ImmutableMap.builder();
