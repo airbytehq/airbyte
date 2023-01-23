@@ -15,7 +15,6 @@ declare global {
     REACT_APP_INTEGRATION_DOCS_URLS?: string;
     SEGMENT_TOKEN?: string;
     LAUNCHDARKLY_KEY?: string;
-    analytics: SegmentAnalytics.AnalyticsJS;
     // Cloud specific properties
     FIREBASE_API_KEY?: string;
     FIREBASE_AUTH_DOMAIN?: string;
