@@ -190,11 +190,10 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-  #          ${{ secrets.AIRBYTEIO_PAT }} \
-  #          ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
-
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -344,8 +343,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
@@ -379,9 +378,8 @@ jobs:
           ./tools/bin/find_non_rate_limited_PAT \
 #            ${{ secrets.AIRBYTEIO_PAT }} \
 #            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
             ${{ secrets.SUPERTOPHER_PAT }} \
-
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -468,8 +466,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
@@ -505,7 +503,6 @@ jobs:
 #            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
-
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -601,8 +598,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
@@ -636,9 +633,8 @@ jobs:
           ./tools/bin/find_non_rate_limited_PAT \
 #            ${{ secrets.AIRBYTEIO_PAT }} \
 #            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
             ${{ secrets.SUPERTOPHER_PAT }} \
-
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -879,8 +875,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
@@ -915,7 +911,6 @@ jobs:
 #            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
-        
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -1106,8 +1101,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
@@ -1138,11 +1133,10 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
- #           ${{ secrets.AIRBYTEIO_PAT }} \
- #           ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
-
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -1341,8 +1335,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+#            ${{ secrets.AIRBYTEIO_PAT }} \
+#            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
