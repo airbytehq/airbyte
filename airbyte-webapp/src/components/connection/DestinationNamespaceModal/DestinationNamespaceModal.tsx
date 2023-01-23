@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
 import { LabeledRadioButton } from "components";
+import { FormikConnectionFormValues } from "components/connection/ConnectionForm/formConfig";
 import { Button } from "components/ui/Button";
 import { Input } from "components/ui/Input";
 import { ModalBody, ModalFooter } from "components/ui/Modal";
@@ -11,7 +12,6 @@ import { Text } from "components/ui/Text";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
 import { links } from "utils/links";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./DestinationNamespaceModal.module.scss";
 import { ExampleSettingsTable } from "./ExampleSettingsTable";

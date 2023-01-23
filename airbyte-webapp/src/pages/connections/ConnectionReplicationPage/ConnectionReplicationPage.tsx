@@ -3,7 +3,14 @@ import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 
-import { SchemaError } from "components/CreateConnection/SchemaError";
+import { ConnectionFormFields } from "components/connection/ConnectionForm/ConnectionFormFields";
+import EditControls from "components/connection/ConnectionForm/EditControls";
+import {
+  FormikConnectionFormValues,
+  useConnectionValidationSchema,
+} from "components/connection/ConnectionForm/formConfig";
+import { SchemaChangeBackdrop } from "components/connection/ConnectionForm/SchemaChangeBackdrop";
+import { SchemaError } from "components/connection/CreateConnectionForm/SchemaError";
 import LoadingSchema from "components/LoadingSchema";
 
 import { Action, Namespace } from "core/analytics";
@@ -20,10 +27,6 @@ import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { equal } from "utils/objects";
-import EditControls from "views/Connection/ConnectionForm/components/EditControls";
-import { SchemaChangeBackdrop } from "views/Connection/ConnectionForm/components/SchemaChangeBackdrop";
-import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
-import { useConnectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./ConnectionReplicationPage.module.scss";
 import { ResetWarningModal } from "./ResetWarningModal";
