@@ -6,6 +6,7 @@
 from functools import reduce
 from typing import Any, Dict, List, Mapping, Optional, Set, Text, Union
 
+import dpath.util
 import pendulum
 from jsonref import JsonRef
 
@@ -120,6 +121,16 @@ class JsonSchemaHelper:
                 node = self.get_ref(node["$ref"])
             node = node[segment]
         return node
+
+    def get_parent(self, path: str) -> Any:
+        """
+        Returns the parent dict of a given path within the `obj` dict
+        """
+        absolute_path = f"/{path}"
+        parent_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
+        if parent_path == "":
+            return self._schema
+        return dpath.util.get(self._schema, parent_path)
 
     def find_nodes(self, keys: List[str]) -> List[List[str]]:
         """Find all paths that lead to nodes with the specified keys.

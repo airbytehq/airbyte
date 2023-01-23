@@ -86,6 +86,10 @@ class TestSpec(BaseTest):
     spec_cache: ConnectorSpecification = None
     previous_spec_cache: ConnectorSpecification = None
 
+    @pytest.fixture(name="connection_specification", scope="class")
+    def connection_specification_fixture(self, connector_spec_dict: dict) -> dict:
+        return connector_spec_dict["connectionSpecification"] 
+
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
         self,
@@ -277,63 +281,54 @@ class TestSpec(BaseTest):
                     {properties}"""
             )
 
-    def test_property_type_is_not_array(self, connector_spec_dict: dict):
-        """
-        Each field has one or multiple types, but the UI only supports a single type and optionally "null" as a second type.
-        """
-        specification = connector_spec_dict["connectionSpecification"]
-        errors = []
-        for type_path, value in dpath.util.search(specification, "**/properties/*/type", yielded=True):
-            if isinstance(value, List):
-                if len(value) != 2:
-                    errors.append(f"{type_path} is not either a simple type or an array of a simple type plus null: {value}")
-                if value[1] != "null":
-                    errors.append(
-                        f"Second type of {type_path} is not null: {value}. Type can either be a simple type or an array of a simple type plus null"
-                    )
+    def _fail_on_errors(self, errors: List[str]):
         if len(errors) > 0:
             pytest.fail("\n".join(errors))
 
-    @staticmethod
-    def _get_parent(obj: dict, path: str) -> Any:
+    def test_property_type_is_not_array(self, connector_specification: dict):
         """
-        Returns the parent dict of a given path within the `obj` dict
+        Each field has one or multiple types, but the UI only supports a single type and optionally "null" as a second type.
         """
-        absolute_path = f"/{path}"
-        parent_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
-        if parent_path == "":
-            return obj
-        return dpath.util.get(obj, parent_path)
+        errors = []
+        for type_path, type_value in dpath.util.search(connector_specification, "**/properties/*/type", yielded=True):
+            if isinstance(type_value, List):
+                number_of_types = len(type_value)
+                if number_of_types != 2 and number_of_types != 1:
+                    errors.append(f"{type_path} is not either a simple type or an array of a simple type plus null: {type_value} (for example: \"type\": [\"string\", \"null\"])")
+                if number_of_types == 2 and type_value[1] != "null":
+                    errors.append(
+                        f"Second type of {type_path} is not null: {type_value}. Type can either be a simple type or an array of a simple type plus null (for example: \"type\": [\"string\", \"null\"])"
+                    )
+        self._fail_on_errors(errors)
 
-    def test_object_not_empty(self, connector_spec_dict: dict):
+    def test_object_not_empty(self, connector_specification: dict):
         """
         Each object field needs to have at least one property as the UI won't be able to show them otherwise.
         If the whole spec is empty, it's allowed to have a single empty object at the top level
         """
-        specification = connector_spec_dict["connectionSpecification"]
+        schema_helper = JsonSchemaHelper(connector_specification)
         errors = []
-        for type_path, value in dpath.util.search(specification, "**/type", yielded=True):
+        for type_path, type_value in dpath.util.search(connector_specification, "**/type", yielded=True):
             if type_path == "type":
                 # allow empty root object
                 continue
-            if value == "object":
-                property = self._get_parent(specification, type_path)
+            if type_value == "object":
+                property = schema_helper.get_parent(type_path)
                 if "oneOf" not in property and ("properties" not in property or len(property["properties"]) == 0):
                     errors.append(
                         f"{type_path} is an empty object which will not be represented correctly in the UI. Either remove or add specific properties"
                     )
-        if len(errors) > 0:
-            pytest.fail("\n".join(errors))
+        self._fail_on_errors(errors)
 
-    def test_array_type(self, connector_spec_dict: dict):
+    def test_array_type(self, connector_specification: dict):
         """
         Each array has one or multiple types for its items, but the UI only supports a single type which can either be object, string or an enum
         """
-        specification = connector_spec_dict["connectionSpecification"]
+        schema_helper = JsonSchemaHelper(connector_specification)
         errors = []
-        for type_path, type in dpath.util.search(specification, "**/type", yielded=True):
-            property_definition = self._get_parent(specification, type_path)
-            if type != "array":
+        for type_path, type_type in dpath.util.search(connector_specification, "**/type", yielded=True):
+            property_definition = schema_helper.get_parent(type_path)
+            if type_type != "array":
                 # unrelated "items", not an array definition
                 continue
             items_value = property_definition.get("items", None)
@@ -343,10 +338,9 @@ class TestSpec(BaseTest):
                 errors.append(f"{type_path} is not just a single item type: {items_value}")
             elif items_value.get("type") not in ["object", "string", "number", "integer"] and "enum" not in items_value:
                 errors.append(f"Items of {type_path} has to be either object or string or define an enum")
-        if len(errors) > 0:
-            pytest.fail("\n".join(errors))
+        self._fail_on_errors(errors)
 
-    def test_forbidden_complex_types(self, connector_spec_dict: dict):
+    def test_forbidden_complex_types(self, connector_specification: dict):
         """
         not, anyOf, patternProperties, prefixItems, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed
         """
@@ -362,32 +356,31 @@ class TestSpec(BaseTest):
             "dependentSchemas",
             "dependentRequired",
         ]
-        specification = connector_spec_dict["connectionSpecification"]
         found_keys = set()
         for forbidden_key in forbidden_keys:
-            for path, value in dpath.util.search(specification, f"**/{forbidden_key}", yielded=True):
+            for path, value in dpath.util.search(connector_specification, f"**/{forbidden_key}", yielded=True):
                 found_keys.add(path)
 
         for forbidden_key in forbidden_keys:
             # remove forbidden keys if they are used as properties directly
-            for path, _value in dpath.util.search(specification, f"**/properties/{forbidden_key}", yielded=True):
+            for path, _value in dpath.util.search(connector_specification, f"**/properties/{forbidden_key}", yielded=True):
                 found_keys.remove(path)
 
         if len(found_keys) > 0:
             key_list = ", ".join(found_keys)
             pytest.fail(f"Found the following disallowed JSON schema features: {key_list}")
 
-    def test_date_pattern(self, connector_spec_dict: dict, detailed_logger):
+    def test_date_pattern(self, connector_specification: dict, detailed_logger):
         """
         Properties with format date or date-time should always have a pattern defined how the date/date-time should be formatted
         that corresponds with the format the datepicker component is creating.
         """
-        specification = connector_spec_dict["connectionSpecification"]
-        for format_path, format in dpath.util.search(specification, "**/format", yielded=True):
+        schema_helper = JsonSchemaHelper(connector_specification)
+        for format_path, format in dpath.util.search(connector_specification, "**/format", yielded=True):
             if not isinstance(format, str):
                 # format is not a format definition here but a property named format
                 continue
-            property_definition = self._get_parent(specification, format_path)
+            property_definition = schema_helper.get_parent(format_path)
             pattern = property_definition.get("pattern")
             if format == "date" and not pattern == DATE_PATTERN:
                 detailed_logger.warning(
@@ -398,17 +391,17 @@ class TestSpec(BaseTest):
                     f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI."
                 )
 
-    def test_date_format(self, connector_spec_dict: dict, detailed_logger):
+    def test_date_format(self, connector_specification: dict, detailed_logger):
         """
         Properties with a pattern that looks like a date should have their format set to date or date-time.
         """
-        specification = connector_spec_dict["connectionSpecification"]
-        for pattern_path, pattern in dpath.util.search(specification, "**/pattern", yielded=True):
+        schema_helper = JsonSchemaHelper(connector_specification)
+        for pattern_path, pattern in dpath.util.search(connector_specification, "**/pattern", yielded=True):
             if not isinstance(pattern, str):
                 # pattern is not a pattern definition here but a property named pattern
                 continue
             if pattern == DATE_PATTERN or pattern == DATETIME_PATTERN:
-                property_definition = self._get_parent(specification, pattern_path)
+                property_definition = schema_helper.get_parent(pattern_path)
                 format = property_definition.get("format")
                 if not format == "date" and pattern == DATE_PATTERN:
                     detailed_logger.warning(

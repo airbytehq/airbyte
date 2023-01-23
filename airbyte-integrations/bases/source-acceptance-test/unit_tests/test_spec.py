@@ -691,6 +691,8 @@ def test_airbyte_secret(mocker, connector_spec, should_fail):
     "connector_spec, should_fail",
     (
         ({"type": "object", "properties": {"refresh_token": {"type": ["boolean", "string"]}}}, True),
+        ({"type": "object", "properties": {"refresh_token": {"type": []}}}, True),
+        ({"type": "object", "properties": {"refresh_token": {"type": ["string"]}}}, False),
         ({"type": "object", "properties": {"refresh_token": {"type": "string"}}}, False),
         ({"type": "object", "properties": {"refresh_token": {"type": ["boolean", "null"]}}}, False),
     ),
@@ -698,7 +700,7 @@ def test_airbyte_secret(mocker, connector_spec, should_fail):
 def test_property_type_is_not_array(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
-    t.test_property_type_is_not_array({"connectionSpecification": connector_spec})
+    t.test_property_type_is_not_array(connector_spec)
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:
@@ -748,7 +750,7 @@ def test_property_type_is_not_array(mocker, connector_spec, should_fail):
 def test_object_not_empty(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
-    t.test_object_not_empty({"connectionSpecification": connector_spec})
+    t.test_object_not_empty(connector_spec)
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:
@@ -779,7 +781,7 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
 def test_array_type(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
-    t.test_array_type({"connectionSpecification": connector_spec})
+    t.test_array_type(connector_spec)
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:
@@ -816,7 +818,7 @@ def test_array_type(mocker, connector_spec, should_fail):
 def test_forbidden_complex_types(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
-    t.test_forbidden_complex_types({"connectionSpecification": connector_spec})
+    t.test_forbidden_complex_types(connector_spec)
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:
@@ -860,7 +862,7 @@ def test_date_pattern(mocker, connector_spec, is_warning_logged):
     mocker.patch.object(conftest.pytest, "fail")
     logger = mocker.Mock()
     t = _TestSpec()
-    t.test_date_pattern({"connectionSpecification": connector_spec}, logger)
+    t.test_date_pattern(connector_spec, logger)
     conftest.pytest.fail.assert_not_called()
     if is_warning_logged:
         _, args, _ = logger.warning.mock_calls[0]
@@ -872,6 +874,7 @@ def test_date_pattern(mocker, connector_spec, is_warning_logged):
     "connector_spec, is_warning_logged",
     (
         ({"type": "object", "properties": {"date": {"type": "string"}}}, False),
+        ({"type": "object", "properties": {"format": {"type": "string"}}}, False),
         ({"type": "object", "properties": {"date": {"type": "string", "pattern": "[a-z]*"}}}, False),
         (
             {"type": "object", "properties": {"date": {"type": "string", "format": "date", "pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"}}},
@@ -904,7 +907,7 @@ def test_date_format(mocker, connector_spec, is_warning_logged):
     mocker.patch.object(conftest.pytest, "fail")
     logger = mocker.Mock()
     t = _TestSpec()
-    t.test_date_format({"connectionSpecification": connector_spec}, logger)
+    t.test_date_format(connector_spec, logger)
     conftest.pytest.fail.assert_not_called()
     if is_warning_logged:
         _, args, _ = logger.warning.mock_calls[0]
