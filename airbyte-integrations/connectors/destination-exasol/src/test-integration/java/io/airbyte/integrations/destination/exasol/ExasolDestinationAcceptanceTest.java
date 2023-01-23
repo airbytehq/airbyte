@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,6 @@ public class ExasolDestinationAcceptanceTest extends JdbcDestinationAcceptanceTe
   private static final Logger LOGGER = LoggerFactory.getLogger(ExasolDestinationAcceptanceTest.class);
 
   private static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>()
-          .withTemporaryCredentialsDirectory(Path.of("build/"))
           .withReuse(true);
 
   private final NamingConventionTransformer namingResolver = new ExasolSQLNameTransformer();

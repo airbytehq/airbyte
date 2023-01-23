@@ -16,7 +16,7 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
 
-    implementation 'com.exasol:exasol-jdbc:7.1.16'
+    implementation 'com.exasol:exasol-jdbc:7.1.17'
 
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
 
@@ -26,6 +26,6 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-exasol')
-    integrationTestJavaImplementation 'com.exasol:exasol-testcontainers:6.4.1'
+    integrationTestJavaImplementation 'com.exasol:exasol-testcontainers:6.5.0'
     integrationTestJavaImplementation 'org.testcontainers:testcontainers:1.17.6'
 }
