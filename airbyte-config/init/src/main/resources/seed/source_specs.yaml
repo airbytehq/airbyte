@@ -4732,7 +4732,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:1.0.0"
+- dockerImage: "airbyte/source-gitlab:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
