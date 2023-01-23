@@ -564,6 +564,13 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
           fetchEvent2.getActorId(),
           fetchEvent2.getActorCatalogId(),
           now);
+      // Insert a second identical copy to verify that the query can handle duplicates since the records
+      // are not guaranteed to be unique.
+      insertCatalogFetchEvent(
+          ctx,
+          fetchEvent2.getActorId(),
+          fetchEvent2.getActorCatalogId(),
+          now);
 
       return null;
     });
@@ -596,6 +603,7 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
 
     assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
     assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+    assertEquals(0, configRepository.getMostRecentActorCatalogFetchEventForSources(Collections.emptyList()).size());
   }
 
   @Test

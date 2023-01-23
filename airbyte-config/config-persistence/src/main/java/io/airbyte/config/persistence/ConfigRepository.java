@@ -1348,11 +1348,12 @@ public class ConfigRepository {
     return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 
-  // todo (cgardens) - following up on why this arg is not used in this comment:
-  // https://github.com/airbytehq/airbyte/pull/18125/files#r1027377700
   @SuppressWarnings({"unused", "SqlNoDataSourceInspection"})
   public Map<UUID, ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds) throws IOException {
     // noinspection SqlResolve
+    if (sourceIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
     return database.query(ctx -> ctx.fetch(
         """
         select distinct actor_catalog_id, actor_id, created_at from
