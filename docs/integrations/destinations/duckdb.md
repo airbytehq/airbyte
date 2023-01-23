@@ -9,7 +9,7 @@ This destination is meant to be used on a local workstation and won't work on Ku
 
 ## Overview
 
-[DuckDB](https://duckdb.org/) is an in-process SQL OLAP database management system and this destinatino is meant to use locally if you have multiple smaller sources such as GitHub repos, some social media and local CSVs or files you want to run analytics workloads on.
+[DuckDB](https://duckdb.org/) is an in-process SQL OLAP database management system and this destination is meant to use locally if you have multiple smaller sources such as GitHub repos, some social media and local CSVs or files you want to run analytics workloads on.
 
 This destination writes data to a file on the _local_ filesystem on the host running Airbyte. By default, data is written to `/tmp/airbyte_local`. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
 
@@ -17,7 +17,9 @@ This destination writes data to a file on the _local_ filesystem on the host run
 
 #### Output schema
 
-Each stream will be output into its own table `_airbyte_raw_{stream_name}`. Each table will contain 3 columns:
+If you set [Normalization](https://docs.airbyte.com/understanding-airbyte/basic-normalization/), source data will be normalized to a tabular form. Let's say you have a source such as GitHub with nested JSONs; the Normalization ensures you end up with tables and columns. Suppose you have a many-to-many relationship between the users and commits. Normalization will create separate tables for it. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
+
+If turn off the Normalization, each stream will be output into its own table `_airbyte_raw_{stream_name}`. Each table will contain 3 columns:
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
@@ -79,3 +81,4 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
 | 0.1.0 | 2022-10-14 | [17494](https://github.com/airbytehq/airbyte/pull/17494) | New DuckDB destination |
+

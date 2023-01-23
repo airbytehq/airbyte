@@ -15,6 +15,7 @@ import duckdb
 import pytest
 from airbyte_cdk.models import (
     AirbyteMessage,
+    AirbyteStateMessage,
     AirbyteRecordMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
@@ -118,7 +119,8 @@ def test_write(
     request,
     configured_catalogue: ConfiguredAirbyteCatalog,
     airbyte_message1: AirbyteMessage,
-    airbyte_message2: AirbyteMessage,
+    airbyte_message2: AirbyteStateMessage,
+    airbyte_message3: AirbyteMessage,
     test_table_name: str,
 ):
     config = request.getfixturevalue(config)
