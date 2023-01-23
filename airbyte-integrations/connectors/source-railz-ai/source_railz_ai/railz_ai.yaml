@@ -236,6 +236,30 @@ definitions:
       cursor_field: "postedDate"
       serviceNames: ["quickbooks", "xero", "myob"]
     stream_cursor_field: "postedDate"
+  estimates_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "estimates"
+      path: "/estimates"
+      cursor_field: "postedDate"
+      serviceNames: ["freshbooks", "quickbooks", "xero", "myob"]
+    stream_cursor_field: "postedDate"
+  invoices_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "invoices"
+      path: "/invoices"
+      cursor_field: "postedDate"
+      serviceNames: ["freshbooks", "quickbooks", "quickbooksDesktop", "xero", "oracleNetsuite", "sageBusinessCloud", "sageIntacct", "dynamicsBusinessCentral", "wave", "myob"]
+    stream_cursor_field: "postedDate"
+  invoices_credit_notes_stream:
+    $ref: "*ref(definitions.base_incremental_service_stream)"
+    $options:
+      name: "invoices_credit_notes"
+      path: "/invoices/creditNotes"
+      cursor_field: "postedDate"
+      serviceNames: ["freshbooks", "quickbooks", "xero", "oracleNetsuite", "sageIntacct", "dynamicsBusinessCentral", "myob"]
+    stream_cursor_field: "postedDate"
 
 
 streams:
@@ -254,6 +278,9 @@ streams:
   - "*ref(definitions.bills_credit_notes_stream)"
   - "*ref(definitions.bills_payments_stream)"
   - "*ref(definitions.deposits_stream)"
+  - "*ref(definitions.estimates_stream)"
+  - "*ref(definitions.invoices_stream)"
+  - "*ref(definitions.invoices_credit_notes_stream)"
 
 check:
   stream_names:
