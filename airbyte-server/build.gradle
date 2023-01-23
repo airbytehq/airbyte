@@ -65,6 +65,7 @@ dependencies {
     implementation("io.micronaut.tracing:micronaut-tracing-opentelemetry-http")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
     implementation("io.opentelemetry:opentelemetry-exporter-logging")
+    implementation("io.micronaut.tracing:micronaut-tracing-opentelemetry-http")
 
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.postgresql
