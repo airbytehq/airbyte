@@ -95,6 +95,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   // header group icons:
   const {
     connection: { source, destination },
+    mode,
   } = useConnectionFormService();
 
   // prepare data for table
@@ -126,6 +127,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
                     indeterminate={config?.fieldSelectionEnabled && !!config?.selectedFields?.length}
                     checked={!config?.fieldSelectionEnabled}
                     onChange={toggleAllFieldsSelected}
+                    disabled={mode === "readonly"}
                   />
                   <FormattedMessage id="form.field.sync" />
                 </FlexContainer>
