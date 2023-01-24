@@ -1,9 +1,23 @@
-import styled from "styled-components";
+import classNames from "classnames";
+import { PropsWithChildren } from "react";
 
-const FormPageContent = styled.div<{ big?: boolean }>`
-  width: 80%;
-  max-width: ${({ big }) => (big ? 1279 : 813)}px;
-  margin: 13px auto;
-`;
+import { isCloudApp } from "utils/app";
+
+import styles from "./FormPageContent.module.scss";
+
+interface FormPageContentProps {
+  big?: boolean;
+}
+
+const FormPageContent: React.FC<PropsWithChildren<FormPageContentProps>> = ({ big, children }) => (
+  <div
+    className={classNames(styles.container, {
+      [styles.big]: big,
+      [styles.cloud]: isCloudApp(),
+    })}
+  >
+    {children}
+  </div>
+);
 
 export default FormPageContent;

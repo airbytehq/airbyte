@@ -123,7 +123,6 @@ class WebBackendConnectionsHandlerTest {
   private SchedulerHandler schedulerHandler;
   private StateHandler stateHandler;
   private WebBackendConnectionsHandler wbHandler;
-
   private SourceRead sourceRead;
   private ConnectionRead connectionRead;
   private ConnectionRead brokenConnectionRead;
@@ -1017,7 +1016,7 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
 
     verify(connectionsHandler).getDiff(expected.getSyncCatalog(), expectedWithNewSchema.getSyncCatalog(),
-        CatalogConverter.toProtocol(result.getSyncCatalog()));
+        CatalogConverter.toConfiguredProtocol(result.getSyncCatalog()));
     verify(connectionsHandler).getConfigurationDiff(expected.getSyncCatalog(), expectedWithNewSchema.getSyncCatalog());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
@@ -1090,6 +1089,7 @@ class WebBackendConnectionsHandlerTest {
         new ConnectionRead().connectionId(expected.getConnectionId()).breakingChange(true).sourceId(sourceId));
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of());
+
     when(configRepository.getMostRecentActorCatalogForSource(sourceId)).thenReturn(Optional.of(new ActorCatalog().withCatalog(Jsons.deserialize(
         "{\"streams\": [{\"name\": \"cat_names\", \"namespace\": \"public\", \"json_schema\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"number\", \"airbyte_type\": \"integer\"}}}}]}"))));
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff, catalogDiff);

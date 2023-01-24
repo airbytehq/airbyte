@@ -5,14 +5,15 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
 import { Button } from "components/ui/Button";
-import { InfoBox } from "components/ui/InfoBox";
+import { Callout } from "components/ui/Callout";
 import { Modal, ModalBody } from "components/ui/Modal";
 import { NumberBadge } from "components/ui/NumberBadge";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { SourceDefinitionSpecificationDraft } from "core/domain/connector";
 import { StreamReadRequestBodyConfig } from "core/request/ConnectorBuilderClient";
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { ConnectorForm } from "views/Connector/ConnectorForm";
 
 import styles from "./ConfigMenu.module.scss";
@@ -20,14 +21,16 @@ import { ConfigMenuErrorBoundaryComponent } from "./ConfigMenuErrorBoundary";
 
 interface ConfigMenuProps {
   className?: string;
-  configJsonErrors: number;
+  testInputJsonErrors: number;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
 
-export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErrors, isOpen, setIsOpen }) => {
+export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJsonErrors, isOpen, setIsOpen }) => {
   const { formatMessage } = useIntl();
-  const { configJson, setConfigJson, jsonManifest, editorView, setEditorView } = useConnectorBuilderState();
+  const { jsonManifest, editorView, setEditorView } = useConnectorBuilderFormState();
+
+  const { testInputJson, setTestInputJson } = useConnectorBuilderTestState();
 
   const [showInputsWarning, setShowInputsWarning] = useLocalStorage<boolean>("connectorBuilderInputsWarning", true);
 
@@ -55,6 +58,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErr
             <Button
               size="sm"
               variant="secondary"
+              data-testid="test-inputs"
               onClick={() => setIsOpen(true)}
               disabled={
                 !jsonManifest.spec ||
@@ -64,8 +68,8 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErr
             >
               <FormattedMessage id="connectorBuilder.inputsButton" />
             </Button>
-            {configJsonErrors > 0 && (
-              <NumberBadge className={styles.inputsErrorBadge} value={configJsonErrors} color="red" />
+            {testInputJsonErrors > 0 && (
+              <NumberBadge className={styles.inputsErrorBadge} value={testInputJsonErrors} color="red" />
             )}
           </>
         }
@@ -90,7 +94,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErr
             <ConfigMenuErrorBoundaryComponent currentView={editorView} closeAndSwitchToYaml={switchToYaml}>
               <>
                 {showInputsWarning && (
-                  <InfoBox className={styles.warningBox}>
+                  <Callout className={styles.warningBox}>
                     <div className={styles.warningBoxContainer}>
                       <div>
                         <FormattedMessage id="connectorBuilder.inputsFormWarning" />
@@ -103,23 +107,23 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErr
                         icon={<FontAwesomeIcon icon={faClose} />}
                       />
                     </div>
-                  </InfoBox>
+                  </Callout>
                 )}
                 <ConnectorForm
                   formType="source"
                   bodyClassName={styles.formContent}
                   footerClassName={styles.inputFormModalFooter}
                   selectedConnectorDefinitionSpecification={connectorDefinitionSpecification}
-                  formValues={{ connectionConfiguration: configJson }}
+                  formValues={{ connectionConfiguration: testInputJson }}
                   onSubmit={async (values) => {
-                    setConfigJson(values.connectionConfiguration as StreamReadRequestBodyConfig);
+                    setTestInputJson(values.connectionConfiguration as StreamReadRequestBodyConfig);
                     setIsOpen(false);
                   }}
                   onCancel={() => {
                     setIsOpen(false);
                   }}
                   onReset={() => {
-                    setConfigJson({});
+                    setTestInputJson({});
                   }}
                   submitLabel={formatMessage({ id: "connectorBuilder.saveInputsForm" })}
                 />

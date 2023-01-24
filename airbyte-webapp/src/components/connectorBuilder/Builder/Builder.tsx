@@ -2,7 +2,7 @@ import { Form } from "formik";
 import debounce from "lodash/debounce";
 import { useEffect, useMemo } from "react";
 
-import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { builderFormValidationSchema, BuilderFormValues } from "../types";
 import styles from "./Builder.module.scss";
@@ -29,7 +29,7 @@ function getView(selectedView: BuilderView, hasMultipleStreams: boolean) {
 }
 
 export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor, validateForm }) => {
-  const { setBuilderFormValues, selectedView } = useConnectorBuilderState();
+  const { setBuilderFormValues, selectedView } = useConnectorBuilderFormState();
   const debouncedSetBuilderFormValues = useMemo(
     () =>
       debounce((values) => {

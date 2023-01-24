@@ -56,6 +56,7 @@ import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,6 +71,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class ConnectionsHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionsHandler.class);
@@ -96,6 +98,7 @@ public class ConnectionsHandler {
     this.connectionHelper = connectionHelper;
   }
 
+  @Deprecated(forRemoval = true)
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
@@ -157,7 +160,7 @@ public class ConnectionsHandler {
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
     if (connectionCreate.getSyncCatalog() != null) {
-      standardSync.withCatalog(CatalogConverter.toProtocol(connectionCreate.getSyncCatalog()));
+      standardSync.withCatalog(CatalogConverter.toConfiguredProtocol(connectionCreate.getSyncCatalog()));
       standardSync.withFieldSelectionData(CatalogConverter.getFieldSelectionData(connectionCreate.getSyncCatalog()));
     } else {
       standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
@@ -315,7 +318,7 @@ public class ConnectionsHandler {
     // in the patch. Otherwise, leave the field unchanged.
 
     if (patch.getSyncCatalog() != null) {
-      sync.setCatalog(CatalogConverter.toProtocol(patch.getSyncCatalog()));
+      sync.setCatalog(CatalogConverter.toConfiguredProtocol(patch.getSyncCatalog()));
       sync.withFieldSelectionData(CatalogConverter.getFieldSelectionData(patch.getSyncCatalog()));
     }
 
