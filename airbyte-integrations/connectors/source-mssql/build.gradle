@@ -23,6 +23,7 @@ dependencies {
 
     implementation 'io.debezium:debezium-connector-sqlserver:1.9.6.Final'
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
+    implementation group: 'com.microsoft.azure', name: 'com.microsoft.aad.msal4j', version: '1.13.2'
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-6'))
