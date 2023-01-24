@@ -8,10 +8,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.model.generated.SourceCloneConfiguration;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
 import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaWriteRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
@@ -27,8 +29,10 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import jakarta.inject.Inject;
@@ -259,6 +263,17 @@ public class SourceHandler {
         true,
         fullConfig,
         spec);
+  }
+
+  public DiscoverCatalogResult writeDiscoverCatalogResult(final SourceDiscoverSchemaWriteRequestBody request)
+      throws JsonValidationException, IOException {
+    final AirbyteCatalog persistenceCatalog = CatalogConverter.toProtocol(request.getCatalog());
+    UUID catalogId = configRepository.writeActorCatalogFetchEvent(
+        persistenceCatalog,
+        request.getSourceId(),
+        request.getConnectorVersion(),
+        request.getConfigurationHash());
+    return new DiscoverCatalogResult().catalogId(catalogId);
   }
 
   private SourceRead buildSourceRead(final UUID sourceId)
