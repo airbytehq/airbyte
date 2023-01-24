@@ -46,6 +46,10 @@ export const FeatureService: React.FC<React.PropsWithChildren<FeatureServiceProp
     }
     const featureSet: FeatureSet = {};
     for (const item of Object.values(FeatureItem)) {
+      // We can't access process.env with Vite usually with a dynamic value (see https://vitejs.dev/guide/env-and-mode.html)
+      // since Vite find and replace that during build, i.e. it will only work in development mode.
+      // Since this code is only used during development mode and anyway stripped in production with the above `if` guard,
+      // we can do this here. This would not work if we'd want to do the same also in production code!
       const envFeature = process.env[`REACT_APP_FEATURE_${item}`];
       // If a REACT_APP_FEATURE_{id} env variable is set it can overwrite that feature state
       if (envFeature) {
