@@ -64,6 +64,10 @@ dependencies {
     implementation 'io.sentry:sentry:6.3.1'
     implementation 'io.swagger:swagger-annotations:1.6.2'
 
+    testImplementation libs.bundles.micronaut.test
+    testAnnotationProcessor platform(libs.micronaut.bom)
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers.postgresql
