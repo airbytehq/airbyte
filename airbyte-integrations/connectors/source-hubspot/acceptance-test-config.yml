@@ -3,6 +3,8 @@ acceptance_tests:
     tests:
     - config_path: secrets/config.json
       empty_streams:
+      - name: companies
+        bypass_reason: hs_time_in_opportunity field changes after every read
       - name: form_submissions
         bypass_reason: unable to populate
       - name: ticket_pipelines
