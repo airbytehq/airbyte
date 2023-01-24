@@ -217,7 +217,7 @@ const StreamTab = ({
 const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string) => string }) => {
   const analyticsService = useAnalyticsService();
   const [field, meta, helpers] = useField<string | undefined>(streamFieldPath("schema"));
-  const { streamRead } = useConnectorBuilderTestState();
+  const { streamRead, streams, testStreamIndex } = useConnectorBuilderTestState();
 
   const showImportButton = !field.value && streamRead.data?.inferred_schema;
 
@@ -232,8 +232,7 @@ const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string
             helpers.setValue(formattedJson);
             analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.OVERWRITE_SCHEMA, {
               actionDescription: "Declared schema ovewritten by detected schema",
-              declared_schema: field.value,
-              detected_schema: formattedJson,
+              stream_name: streams[testStreamIndex]?.name,
             });
           }}
         >

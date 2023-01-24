@@ -65,7 +65,7 @@ function getDiff(existingSchema: string | undefined, detectedSchema: object): Di
 
 export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }) => {
   const analyticsService = useAnalyticsService();
-  const { testStreamIndex } = useConnectorBuilderTestState();
+  const { streams, testStreamIndex } = useConnectorBuilderTestState();
   const { editorView } = useConnectorBuilderFormState();
   const [field, , helpers] = useField(`streams[${testStreamIndex}].schema`);
   const formattedSchema = useMemo(() => inferredSchema && formatJson(inferredSchema, true), [inferredSchema]);
@@ -102,8 +102,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
                       helpers.setValue(formattedSchema);
                       analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.OVERWRITE_SCHEMA, {
                         actionDescription: "Declared schema ovewritten by detected schema",
-                        declared_schema: field.value,
-                        detected_schema: formattedSchema,
+                        stream_name: streams[testStreamIndex]?.name,
                       });
                     }}
                   >
@@ -127,9 +126,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
                             helpers.setValue(schemaDiff.mergedSchema);
                             analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.MERGE_SCHEMA, {
                               actionDescription: "Detected and Declared schemas merged to update declared schema",
-                              declared_schema: field.value,
-                              detected_schema: formattedSchema,
-                              merged_schema: schemaDiff.mergedSchema,
+                              stream_name: streams[testStreamIndex]?.name,
                             });
                           }}
                         >
@@ -152,6 +149,10 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
           variant="secondary"
           onClick={() => {
             helpers.setValue(formattedSchema);
+            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.OVERWRITE_SCHEMA, {
+              actionDescription: "Declared schema ovewritten by detected schema",
+              stream_name: streams[testStreamIndex]?.name,
+            });
           }}
         >
           <FormattedMessage id="connectorBuilder.useSchemaButton" />
