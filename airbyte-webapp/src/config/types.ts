@@ -52,14 +52,3 @@ export interface AirbyteWebappConfig {
   webappTag?: string;
   sentryDsn?: string;
 }
-
-export type DeepPartial<T> = {
-  [P in keyof T]+?: DeepPartial<T[P]>;
-};
-
-export type ProviderAsync<T> = () => Promise<T>;
-export type Provider<T> = () => T;
-
-export type ValueProvider<T> = Array<ProviderAsync<DeepPartial<T>>>;
-
-export type ConfigProvider<T extends AirbyteWebappConfig = AirbyteWebappConfig> = ProviderAsync<DeepPartial<T>>;
