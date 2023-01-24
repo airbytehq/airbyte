@@ -13,7 +13,8 @@ const jestConfig: Config = {
   moduleDirectories: ["node_modules", "src"],
   moduleNameMapper: {
     "\\.module\\.scss$": "test-utils/mock-data/mockIdentity.js",
-    "\\.(css|png|svg|scss)$": "test-utils/mock-data/mockEmpty.js",
+    "\\.(css|png|scss)$": "test-utils/mock-data/mockEmpty.js",
+    "\\.svg": "test-utils/mock-data/mockSvg.js",
   },
   setupFilesAfterEnv: ["./src/test-utils/setup-tests.ts"],
 };
