@@ -1,11 +1,15 @@
-FROM python:3.9-slim
+FROM airbyte/airbyte-cdk-connectors
 
 # Bash is installed for more convenient debugging.
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
+
 COPY setup.py ./
-RUN pip install .
+
+ARG USE_LOCAL_CDK
+RUN USE_LOCAL_CDK=$USE_LOCAL_CDK LOCAL_CDK_DIR=$LOCAL_CDK_DIR pip install .
+
 COPY source_greenhouse ./source_greenhouse
 COPY main.py ./
 

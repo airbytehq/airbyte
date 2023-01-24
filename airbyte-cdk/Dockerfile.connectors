@@ -1,0 +1,5 @@
+FROM python:3.9-slim
+
+WORKDIR /home/airbyte-cdk
+COPY python ./
+ENV LOCAL_CDK_DIR=/home/airbyte-cdk
