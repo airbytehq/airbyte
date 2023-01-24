@@ -164,12 +164,13 @@
   "connectionForm.modal.destinationNamespace.option.destination": "Destination default",
   "connectionForm.modal.destinationNamespace.option.customFormat": "Custom format",
   "connectionForm.modal.destinationNamespace.input.placeholder": "My namespace",
-  "connectionForm.modal.destinationNamespace.option.source.description": "Replicate to the default namespace in the destination, which will differ based on your destination.",
-  "connectionForm.modal.destinationNamespace.option.destination.description": "All stream will be replicated and store in the default namespace defined on the destination settings page.",
-  "connectionForm.modal.destinationNamespace.description": "The following table summarises how this works. We assume an example of replication configurations between a Postgres Source and Snowflake Destination (with settings of schema = \"my_schema\"):",
+  "connectionForm.modal.destinationNamespace.option.source.description": "Replicate the stream's source namespace in the destination.",
+  "connectionForm.modal.destinationNamespace.option.destination.description": "Replicate and store in the default namespace defined in the destination settings.",
+  "connectionForm.modal.destinationNamespace.option.customFormat.description": "Create a \"custom format\" to rename the namespace that your data will be replicated into.",
+  "connectionForm.modal.destinationNamespace.description": "Below is an example of how your data will be replicated with this namespace setting. This example assumes a Postgres Source and a Snowflake Destination with the schema set to \"my_schema\".",
   "connectionForm.modal.destinationNamespace.table.header.sourceNamespace": "Source namespace",
   "connectionForm.modal.destinationNamespace.table.header.destinationNamespace": "Destination namespace",
-  "connectionForm.modal.destinationNamespace.table.header.customFormat": "Custom format=",
+  "connectionForm.modal.destinationNamespace.table.header.customFormat": "Custom format",
   "connectionForm.modal.destinationNamespace.table.data.public": "public",
   "connectionForm.modal.destinationNamespace.table.data.mySchema": "my_schema",
   "connectionForm.modal.destinationNamespace.table.data.myPublicSchema": "my_public_schema",
@@ -745,12 +746,5 @@
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
-  "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again.",
-
-  "freeConnectorProgram.enrollmentModal.title": "Free connector program",
-  "freeConnectorProgram.enrollmentModal.free": "<p1>Alpha and Beta connectors are free while you're in the program.</p1><p2>The whole connection is free until both the source and destination connector have moved into General Availability (GA).</p2>",
-  "freeConnectorProgram.enrollmentModal.emailNotification": "We will email you before both connectors in a connection move to GA.",
-  "freeConnectorProgram.enrollmentModal.cardOnFile": "When both connectors are in GA, the connection will no longer be free. You'll need to have a credit card on file to enroll so Airbyte can handle a connection's transition to paid service.",
-  "freeConnectorProgram.enrollmentModal.cancelButtonText": "Cancel",
-  "freeConnectorProgram.enrollmentModal.enrollButtonText": "Enroll now!"
+  "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }

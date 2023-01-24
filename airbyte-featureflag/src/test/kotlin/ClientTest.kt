@@ -25,6 +25,7 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
+import kotlin.test.Ignore
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -48,7 +49,16 @@ class ConfigFileClient {
         }
     }
 
+    /**
+     * Ignore this test for now as it is unreliable in a unit-test scenario due to the
+     * unpredictable nature of knowing when the WatchService (inside the ConfigFileClient) will
+     * actually see the changed file.  Currently, this test sleeps for a few seconds, which works 90%
+     * of the time, however there has been instances where it has taken over 20 seconds.
+     *
+     * TODO: move this to a different test suite
+     */
     @Test
+    @Ignore
     fun `verify platform reload capabilities`() {
         val contents0 = """flags:
             |  - name: reload-test-true
