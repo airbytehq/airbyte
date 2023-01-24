@@ -224,6 +224,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       toggleAllFieldsSelected,
       config?.syncMode,
       config?.destinationSyncMode,
+      mode,
     ]
   );
 
