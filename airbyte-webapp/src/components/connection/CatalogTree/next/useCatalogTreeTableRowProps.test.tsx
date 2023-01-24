@@ -1,10 +1,11 @@
 import { renderHook } from "@testing-library/react-hooks";
 import * as formik from "formik";
 
+import { FormikConnectionFormValues } from "components/connection/ConnectionForm/formConfig";
+
 import { AirbyteStreamAndConfiguration } from "core/request/AirbyteClient";
 import * as bulkEditService from "hooks/services/BulkEdit/BulkEditService";
 import * as connectionFormService from "hooks/services/ConnectionForm/ConnectionFormService";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 // eslint-disable-next-line css-modules/no-unused-class
 import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
