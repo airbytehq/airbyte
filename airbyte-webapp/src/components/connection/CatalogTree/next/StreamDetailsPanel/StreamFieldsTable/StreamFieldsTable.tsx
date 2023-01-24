@@ -107,7 +107,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         ),
         meta: {
           thClassName: styles.headerCell,
-          tdClassName: styles.radioBtnCell,
+          tdClassName: styles.cursorCell,
         },
       }),
       columnHelper.accessor("primaryKeyDefined", {
@@ -124,7 +124,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
 
         meta: {
           thClassName: styles.headerCell,
-          tdClassName: styles.textCell,
+          tdClassName: styles.pkCell,
         },
       }),
     ],

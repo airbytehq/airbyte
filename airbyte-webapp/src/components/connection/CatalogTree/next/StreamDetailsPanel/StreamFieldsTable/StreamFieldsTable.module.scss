@@ -2,6 +2,7 @@
 @use "scss/variables";
 
 $cell-height: 28px;
+$cell-min-width: 100px;
 $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
 
 .customTableStyle {
@@ -63,12 +64,33 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   @extend %bodyCell;
 
   color: colors.$dark-blue;
+
+  // allow cell to grow
+  min-width: 200px;
+  max-width: 350px;
 }
 
 .dataTypeCell {
   @extend %bodyCell;
 
+  min-width: $cell-min-width;
   color: colors.$grey-400;
+}
+
+.cursorCell {
+  display: flex;
+  align-items: center;
+  height: $cell-height;
+  overflow: unset;
+  padding-left: 0;
+  width: 100px;
+  min-width: $cell-min-width;
+}
+
+.pkCell {
+  @extend %bodyCell;
+
+  min-width: $cell-min-width;
 }
 
 .arrowCell {
@@ -77,12 +99,4 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   svg {
     color: colors.$grey-200;
   }
-}
-
-.radioBtnCell {
-  display: flex;
-  align-items: center;
-  height: $cell-height;
-  overflow: unset;
-  padding-left: 0;
 }
