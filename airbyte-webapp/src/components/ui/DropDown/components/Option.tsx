@@ -65,6 +65,8 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
           // for cases where the Dropdown is a child of a clickable parent such as a table row.
           props.selectOption(props.data);
           event.stopPropagation();
+          // The checkbox does not work properly without this
+          event.preventDefault();
         }}
       >
         <DropDownText primary={props.data.primary} secondary={props.data.secondary} fullText={props.data.fullText}>
