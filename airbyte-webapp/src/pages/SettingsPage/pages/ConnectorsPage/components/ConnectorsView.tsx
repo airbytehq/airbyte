@@ -1,4 +1,4 @@
-import { CellContext, ColumnSort, createColumnHelper } from "@tanstack/react-table";
+import { ColumnSort, createColumnHelper } from "@tanstack/react-table";
 import { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -77,7 +77,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         meta: {
           thClassName: styles.thName,
         },
-        cell: (props: CellContext<ConnectorDefinition, string>) => (
+        cell: (props) => (
           <ConnectorCell
             connectorName={props.cell.getValue()}
             img={props.row.original.icon}
@@ -91,9 +91,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         meta: {
           thClassName: styles.thDockerRepository,
         },
-        cell: (props: CellContext<ConnectorDefinition, string>) => (
-          <ImageCell imageName={props.cell.getValue()} link={props.row.original.documentationUrl} />
-        ),
+        cell: (props) => <ImageCell imageName={props.cell.getValue()} link={props.row.original.documentationUrl} />,
       }),
       columnHelper.accessor("dockerImageTag", {
         header: () => <FormattedMessage id="admin.currentVersion" />,
@@ -109,7 +107,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
                   <FormattedMessage id="admin.changeTo" />
                 </FormContentTitle>
               ),
-              cell: (props: CellContext<ConnectorDefinition, string>) =>
+              cell: (props) =>
                 allowUpdateConnectors || (allowUploadCustomImage && props.row.original.releaseStage === "custom") ? (
                   <VersionCell
                     version={props.cell.getValue() || props.row.original.dockerImageTag}

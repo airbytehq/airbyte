@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
 
 interface FrequencyCellProps {
-  value: ConnectionScheduleData;
+  value?: ConnectionScheduleData;
   enabled?: boolean;
   scheduleType?: ConnectionScheduleType;
 }
@@ -27,7 +27,7 @@ const FrequencyCell: React.FC<FrequencyCellProps> = ({ value, enabled, scheduleT
     <Content enabled={enabled}>
       <FormattedMessage
         id={`frequency.${value ? value.basicSchedule?.timeUnit : "manual"}`}
-        values={{ value: value.basicSchedule?.units }}
+        values={{ value: value?.basicSchedule?.units }}
       />
     </Content>
   );

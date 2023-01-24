@@ -7,7 +7,7 @@ const Content = styled.div<{ enabled?: boolean }>`
 `;
 
 interface IProps {
-  timeInSecond: number;
+  timeInSecond?: number | null;
   enabled?: boolean;
 }
 

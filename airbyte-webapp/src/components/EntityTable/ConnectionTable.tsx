@@ -1,4 +1,4 @@
-import { CellContext, createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import { SortableTableHeader } from "components/ui/Table";
 
-import { ConnectionScheduleData, ConnectionScheduleType, SchemaChange } from "core/request/AirbyteClient";
+import { ConnectionScheduleType, SchemaChange } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useQuery } from "hooks/useQuery";
 
@@ -91,7 +91,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
           thClassName: styles.thName,
           headerHighlighted: true,
         },
-        cell: (props: CellContext<ITableDataItem, string>) => (
+        cell: (props) => (
           <NameCell
             value={props.cell.getValue()}
             enabled={props.row.original.enabled}
@@ -114,7 +114,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         meta: {
           headerHighlighted: true,
         },
-        cell: (props: CellContext<ITableDataItem, string>) => (
+        cell: (props) => (
           <NameCell
             value={props.cell.getValue()}
             enabled={props.row.original.enabled}
@@ -133,7 +133,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
             <FormattedMessage id={entity === "connection" ? "tables.sourceConnectionToName" : "tables.connector"} />
           </SortableTableHeader>
         ),
-        cell: (props: CellContext<ITableDataItem, string>) => (
+        cell: (props) => (
           <ConnectorCell
             value={props.cell.getValue()}
             enabled={props.row.original.enabled}
@@ -143,7 +143,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
       }),
       columnHelper.accessor("scheduleData", {
         header: () => <FormattedMessage id="tables.frequency" />,
-        cell: (props: CellContext<ITableDataItem, ConnectionScheduleData>) => (
+        cell: (props) => (
           <FrequencyCell
             value={props.cell.getValue()}
             enabled={props.row.original.enabled}
@@ -161,16 +161,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
             <FormattedMessage id="tables.lastSync" />
           </SortableTableHeader>
         ),
-        cell: (props: CellContext<ITableDataItem, number>) => (
-          <LastSyncCell timeInSecond={props.cell.getValue()} enabled={props.row.original.enabled} />
-        ),
+        cell: (props) => <LastSyncCell timeInSecond={props.cell.getValue()} enabled={props.row.original.enabled} />,
       }),
       columnHelper.accessor("enabled", {
         header: () => <FormattedMessage id="tables.enabled" />,
         meta: {
           thClassName: styles.thEnabled,
         },
-        cell: (props: CellContext<ITableDataItem, boolean>) => (
+        cell: (props) => (
           <StatusCell
             schemaChange={props.row.original.schemaChange}
             enabled={props.cell.getValue()}
@@ -188,7 +186,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         meta: {
           thClassName: styles.thConnectionId,
         },
-        cell: (props: CellContext<ITableDataItem, string>) => <ConnectionSettingsCell id={props.cell.getValue()} />,
+        cell: (props) => <ConnectionSettingsCell id={props.cell.getValue()} />,
       }),
     ],
     [columnHelper, sortBy, sortOrder, onSortClick, entity, onSync, allowAutoDetectSchema, allowSync]
