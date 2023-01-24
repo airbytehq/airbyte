@@ -272,7 +272,13 @@ jobs:
 
           echo "next_version=$nextversion" >> $GITHUB_OUTPUT
       
+      - uses: mukunku/tag-exists-action@v1.2.0
+        id: checkTag
+        with: 
+          tag: ${{ steps.version.outputs.next_version }}
+      
       - name: Publish version as a tag
+        if: ${{ steps.checkTag.outputs.exists != 'true' }}
         run: |
           git tag ${{ steps.version.outputs.next_version }}
           git push --tag
