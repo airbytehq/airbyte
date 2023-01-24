@@ -184,9 +184,9 @@ public class BigQueryUtils {
 
   public static Table createTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
     final TableId tableId = TableId.of(datasetName, tableName);
-    // Note: this will presume that createPartitionedTable will be successful in table creation thus
-    // always returned a table reference to delete since this is used only with `CHECK`
-    return createPartitionedTable(bigquery, tableId, schema).get();
+    final TableDefinition tableDefinition = StandardTableDefinition.of(schema);
+    final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+    return bigquery.create(tableInfo);
   }
 
   /**
@@ -202,8 +202,7 @@ public class BigQueryUtils {
    * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
    * was not successfully created
    */
-  static Optional<Table> createPartitionedTable(final BigQuery bigquery, final TableId tableId, final Schema schema) {
-    Optional<Table> bigQueryTable = Optional.empty();
+  static void createPartitionedTable(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
       final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
           .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
@@ -221,12 +220,11 @@ public class BigQueryUtils {
               .build();
       final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
-      bigQueryTable = Optional.of(bigquery.create(tableInfo));
+      bigquery.create(tableInfo);
       LOGGER.info("Partitioned table created successfully: {}", tableId);
     } catch (final BigQueryException e) {
       LOGGER.error("Partitioned table was not created: " + tableId, e);
     }
-    return bigQueryTable;
   }
 
   public static JsonNode getGcsJsonNodeConfig(final JsonNode config) {
