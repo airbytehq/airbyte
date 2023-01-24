@@ -215,7 +215,7 @@ allprojects {
 
 // Java projects common configurations
 subprojects { subproj ->
-    if (subproj.name = 'octavia-cli') {
+    if (subproj.name == 'octavia-cli') {
         return
     }
 
