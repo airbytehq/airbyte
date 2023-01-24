@@ -186,7 +186,7 @@
   "freeConnectorProgram.enroll.success": "Successfully enrolled in the Free Connector Program",
   "freeConnectorProgram.enrollmentModal.title": "Free connector program",
   "freeConnectorProgram.enrollmentModal.free": "<p1>Alpha and Beta Connectors are free while you're in the program.</p1><p2>The whole Connection is free until both Connectors have moved into General Availability (GA)</p2>",
-  "freeConnectorProgram.enrollmentModal.emailNotification": "We will email you before both connectors in a connection move to GA.",
+  "freeConnectorProgram.enrollmentModal.emailNotification": "We will email you before your connection will start being charged.",
   "freeConnectorProgram.enrollmentModal.cardOnFile": "When both Connectors are in GA, the Connection will no longer be free. You'll need to have a credit card on file to enroll so Airbyte can handle a Connection's transition to paid service.",
   "freeConnectorProgram.enrollmentModal.unvalidatedEmailWarning": "You need to <b>verify your email</b> address before you can enroll in the Free Connector Program. <resendEmail>Re-send verification email</resendEmail>.",
   "freeConnectorProgram.enrollmentModal.validationEmailConfirmation": "Verification email sent",
