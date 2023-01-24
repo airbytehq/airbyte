@@ -385,7 +385,6 @@ class DefaultErrorHandler(BaseModel):
 class DefaultPaginator(BaseModel):
     type: Literal["DefaultPaginator"]
     pagination_strategy: Union[CursorPagination, CustomPaginationStrategy, OffsetIncrement, PageIncrement]
-    url_base: str
     decoder: Optional[JsonDecoder] = None
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[RequestOption] = None

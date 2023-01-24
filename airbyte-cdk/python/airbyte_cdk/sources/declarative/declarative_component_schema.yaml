@@ -556,7 +556,6 @@ definitions:
     required:
       - type
       - pagination_strategy
-      - url_base
     properties:
       type:
         type: string
@@ -567,8 +566,6 @@ definitions:
           - "$ref": "#/definitions/CustomPaginationStrategy"
           - "$ref": "#/definitions/OffsetIncrement"
           - "$ref": "#/definitions/PageIncrement"
-      url_base:
-        type: string
       decoder:
         "$ref": "#/definitions/JsonDecoder"
       page_size_option:

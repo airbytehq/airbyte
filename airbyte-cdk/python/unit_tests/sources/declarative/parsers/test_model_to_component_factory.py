@@ -717,7 +717,6 @@ def test_create_default_paginator():
     content = """
       paginator:
         type: "DefaultPaginator"
-        url_base: "https://airbyte.io"
         page_size_option:
           inject_into: request_parameter
           field_name: page_size
@@ -732,7 +731,12 @@ def test_create_default_paginator():
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     paginator_manifest = transformer.propagate_types_and_options("", resolved_manifest["paginator"], {})
 
-    paginator = factory.create_component(model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config)
+    paginator = factory.create_component(
+        model_type=DefaultPaginatorModel,
+        component_definition=paginator_manifest,
+        config=input_config,
+        url_base="https://airbyte.io"
+    )
 
     assert isinstance(paginator, DefaultPaginator)
     assert paginator.url_base.string == "https://airbyte.io"
