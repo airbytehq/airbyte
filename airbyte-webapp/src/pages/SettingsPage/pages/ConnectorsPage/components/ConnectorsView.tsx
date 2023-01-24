@@ -3,6 +3,8 @@ import { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { HeadTitle } from "components/common/HeadTitle";
+import { FlexContainer } from "components/ui/Flex";
+import { Heading } from "components/ui/Heading";
 import { NextTable } from "components/ui/NextTable";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -15,7 +17,7 @@ import ConnectorCell from "./ConnectorCell";
 import styles from "./ConnectorsView.module.scss";
 import CreateConnector from "./CreateConnector";
 import ImageCell from "./ImageCell";
-import { Block, FormContentTitle, Title } from "./PageComponents";
+import { FormContentTitle } from "./PageComponents";
 import UpgradeAllButton from "./UpgradeAllButton";
 import VersionCell from "./VersionCell";
 
@@ -128,7 +130,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   const renderHeaderControls = (section: "used" | "available") =>
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
-      <div className={styles.buttonsContainer}>
+      <FlexContainer>
         {allowUploadCustomImage && <CreateConnector type={type} />}
         {(hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors && (
           <UpgradeAllButton
@@ -138,7 +140,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
             onUpdate={onUpdate}
           />
         )}
-      </div>
+      </FlexContainer>
     );
 
   return (
@@ -146,31 +148,37 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
       <HeadTitle
         titles={[{ id: "sidebar.settings" }, { id: type === "sources" ? "admin.sources" : "admin.destinations" }]}
       />
-      {usedConnectorsDefinitions.length > 0 && (
-        <Block>
-          <Title bold>
-            <FormattedMessage id={type === "sources" ? "admin.manageSource" : "admin.manageDestination"} />
-            {renderHeaderControls("used")}
-          </Title>
+      <FlexContainer direction="column" gap="2xl">
+        {usedConnectorsDefinitions.length > 0 && (
+          <FlexContainer direction="column" gap="xl">
+            <FlexContainer alignItems="center" justifyContent="space-between">
+              <Heading as="h2" size="sm">
+                <FormattedMessage id={type === "sources" ? "admin.manageSource" : "admin.manageDestination"} />
+              </Heading>
+              {renderHeaderControls("used")}
+            </FlexContainer>
+            <NextTable
+              columns={renderColumns(showVersionUpdateColumn(usedConnectorsDefinitions))}
+              data={usedConnectorsDefinitions}
+              columnSort={defaultSorting}
+            />
+          </FlexContainer>
+        )}
+
+        <FlexContainer direction="column" gap="xl">
+          <FlexContainer alignItems="center" justifyContent="space-between">
+            <Heading as="h2" size="sm">
+              <FormattedMessage id={type === "sources" ? "admin.availableSource" : "admin.availableDestinations"} />
+            </Heading>
+            {renderHeaderControls("available")}
+          </FlexContainer>
           <NextTable
-            columns={renderColumns(showVersionUpdateColumn(usedConnectorsDefinitions))}
-            data={usedConnectorsDefinitions}
+            columns={renderColumns(showVersionUpdateColumn(availableConnectorDefinitions))}
+            data={availableConnectorDefinitions}
             columnSort={defaultSorting}
           />
-        </Block>
-      )}
-
-      <Block>
-        <Title bold>
-          <FormattedMessage id={type === "sources" ? "admin.availableSource" : "admin.availableDestinations"} />
-          {renderHeaderControls("available")}
-        </Title>
-        <NextTable
-          columns={renderColumns(showVersionUpdateColumn(availableConnectorDefinitions))}
-          data={availableConnectorDefinitions}
-          columnSort={defaultSorting}
-        />
-      </Block>
+        </FlexContainer>
+      </FlexContainer>
     </>
   );
 };
