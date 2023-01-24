@@ -349,3 +349,36 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
     Credits expire after one year if they are not used.
     
     :::
+
+## Free Connector Program
+
+By joining the Free Connector Program, you can sync connections with [alpha](https://docs.airbyte.com/project-overview/product-release-stages#alpha) or [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta) connectors at no cost. 
+
+You must be enrolled in the program to use alpha and beta connectors for free. If either the source or destination is in alpha or beta, the whole connection is free to sync. 
+
+When both the source and destination of a connection become [generally available](https://docs.airbyte.com/project-overview/product-release-stages/#general-availability-ga) (GA), the connection will no longer be free. We will email you two weeks before both connectors in a connection move to GA. 
+
+To get started:
+1. [Set up](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-source) at least one alpha or beta connector.
+
+2. Click the **coin** icon in the navigation bar. 
+
+3. Click **Enroll now** in the **Free Connector Program** banner.
+
+4. Verify your email.
+
+5. Input your credit card information
+
+:::note 
+    
+Credit card information is required, even if you previously bought credits on Airbyte Cloud. This ensures uninterrupted syncs when both connectors move to GA.
+    
+:::
+
+6. Click **Enroll now**.
+
+:::note 
+    
+ Since alpha and beta connectors are still in development, support is not provided. For additional resources, check out our [Connector Catalog](https://docs.airbyte.com/integrations/), [Troubleshooting & FAQ](https://docs.airbyte.com/troubleshooting/), and our [Community Slack](https://slack.airbyte.io/). 
+
+:::
