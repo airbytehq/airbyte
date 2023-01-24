@@ -549,8 +549,6 @@ public class WebBackendConnectionsHandler {
         final CatalogDiff catalogDiff =
             connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog, sourceDefinition),
                 CatalogConverter.toConfiguredProtocol(newAirbyteCatalog));
-            connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog, sourceDefinition),
-                CatalogConverter.toProtocol(newAirbyteCatalog));
         breakingChange = containsBreakingChange(catalogDiff);
       }
     }
