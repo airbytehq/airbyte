@@ -8,7 +8,7 @@ import static io.airbyte.commons.auth.AuthRoleConstants.ADMIN;
 
 import io.airbyte.api.generated.LogsApi;
 import io.airbyte.api.model.generated.LogsRequestBody;
-import io.airbyte.server.handlers.LogsHandler;
+import io.airbyte.commons.server.handlers.LogsHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
