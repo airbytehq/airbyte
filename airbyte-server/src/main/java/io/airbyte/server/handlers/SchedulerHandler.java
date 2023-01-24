@@ -404,7 +404,7 @@ public class SchedulerHandler {
           connectionRead.getSyncCatalog();
       final CatalogDiff diff =
           connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-              CatalogConverter.toProtocol(currentAirbyteCatalog));
+              CatalogConverter.toConfiguredProtocol(currentAirbyteCatalog));
       final boolean containsBreakingChange = containsBreakingChange(diff);
       final ConnectionUpdate updateObject =
           new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(connectionRead.getConnectionId());
@@ -436,7 +436,7 @@ public class SchedulerHandler {
     final CheckConnectionRead checkConnectionRead = new CheckConnectionRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
-    if (response.isSuccess()) {
+    if (response.getOutput() != null) {
       checkConnectionRead
           .status(Enums.convertTo(response.getOutput().getStatus(), StatusEnum.class))
           .message(response.getOutput().getMessage());

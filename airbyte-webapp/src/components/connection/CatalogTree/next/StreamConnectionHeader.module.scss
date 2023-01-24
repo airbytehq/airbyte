@@ -32,16 +32,17 @@ $icon-size: 15px;
   flex: 2 1 547px;
 }
 
-.destination {
+.destinationSection {
   display: flex;
   flex: 1 1 120px;
+  align-items: center;
 }
 
-.icon {
-  width: $icon-size;
-  height: $icon-size;
+.destination {
+  display: flex;
+  flex: 2 1 217px;
 }
 
 .arrowContainer {
-  flex: 0 0 20px;
+  flex: 1 0 20px;
 }
