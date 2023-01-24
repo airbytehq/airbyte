@@ -18,7 +18,7 @@ class WaitUntilMidnightBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     Backoff strategy that waits until next midnight
     """
 
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     config: Config
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:

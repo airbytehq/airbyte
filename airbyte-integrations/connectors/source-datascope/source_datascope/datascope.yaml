@@ -24,7 +24,7 @@ definitions:
     # There is a discrepancy between the format of the cursor `created_at` and the granularity of the API hence "P1D"
     # here instead of "PT1M" if we were to check the datetime_format
     cursor_granularity: "P1D"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
     start_time_option:
       field_name: "start"
       inject_into: "request_parameter"
@@ -75,13 +75,13 @@ definitions:
   location_stream:
     retriever:
       $ref: "*ref(definitions.retriever_non_incremental)"
-    $options:
+    $parameters:
       name: "locations"
       primary_key: "id"
       path: "/locations"
   answers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "answers"
       primary_key: "form_answer_id"
       path: "/v2/answers"
@@ -89,13 +89,13 @@ definitions:
   lists_stream:
     retriever:
       $ref: "*ref(definitions.retriever_non_incremental)"
-    $options:
+    $parameters:
       name: "lists"
       primary_key: "id"
       path: "/metadata_objects"
   notifications_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "notifications"
       primary_key: "id"
       path: "/notifications"

@@ -53,7 +53,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector_features)"
-    $options:
+    $parameters:
       name: "features"
       path: "/features"
   products_stream:
@@ -62,7 +62,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector_products)"
-    $options:
+    $parameters:
       name: "products"
       path: "/products"
   ideas_stream:
@@ -71,7 +71,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector_ideas)"
-    $options:
+    $parameters:
       name: "ideas"
       path: "/ideas"
   users_stream:
@@ -80,7 +80,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector_users)"
-    $options:
+    $parameters:
       name: "users"
       path: "/users"
   goals_stream:
@@ -89,7 +89,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector_goals)"
-    $options:
+    $parameters:
       name: "goals"
       path: "/goals"
 

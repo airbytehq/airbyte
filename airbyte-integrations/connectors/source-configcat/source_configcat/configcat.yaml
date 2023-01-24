@@ -23,13 +23,13 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   organizations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "organizations"
       primary_key: "organizationId"
       path: "/organizations"
   products_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "products"
       primary_key: "productId"
       path: "/products"
@@ -41,7 +41,7 @@ definitions:
         stream_slice_field: productId
   tags_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "tags"
       primary_key: "tagId"
     retriever:
@@ -55,7 +55,7 @@ definitions:
         $ref: "*ref(definitions.selector)"
   environments_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "environments"
       primary_key: "environmentId"
     retriever:
@@ -75,7 +75,7 @@ definitions:
         stream_slice_field: organizationId
   organization_members_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "organization_members"
       primary_key: "userId"
     retriever:

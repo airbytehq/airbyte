@@ -5,11 +5,11 @@ definitions:
 
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
+    file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
 
   requester:
     type: HttpRequester
-    name: "{{ options['name'] }}"
+    name: "{{ parameters['name'] }}"
     url_base: "https://api.sendgrid.com"
     http_method: "GET"
     authenticator:
@@ -29,7 +29,7 @@ definitions:
       cursor_value: "{{ response._metadata.next }}"
   offset_paginator:
     type: DefaultPaginator
-    $options:
+    $parameters:
       url_base: "*ref(definitions.requester.url_base)"
       page_size: "*ref(definitions.page_size)"
     limit_option:
@@ -42,8 +42,8 @@ definitions:
       type: "OffsetIncrement"
   retriever:
     type: SimpleRetriever
-    name: "{{ options['name'] }}"
-    primary_key: "{{ options['primary_key'] }}"
+    name: "{{ parameters['name'] }}"
+    primary_key: "{{ parameters['primary_key'] }}"
   stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:
@@ -53,7 +53,7 @@ definitions:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
     step: "*ref(definitions.step)"
-    cursor_field: "{{ options.stream_cursor_field }}"
+    cursor_field: "{{ parameters.stream_cursor_field }}"
     start_time_option:
       field_name: "start_time"
       inject_into: "request_parameter"
@@ -71,7 +71,7 @@ definitions:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
     step: "*ref(definitions.step)"
-    cursor_field: "{{ options.stream_cursor_field }}"
+    cursor_field: "{{ parameters.stream_cursor_field }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     cursor_granularity: "PT0.000001S"
 
@@ -90,7 +90,7 @@ definitions:
         type: NoPagination
 streams:
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "lists"
       primary_key: "id"
       path: "/v3/marketing/lists"
@@ -100,7 +100,7 @@ streams:
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/v3/marketing/campaigns"
@@ -110,13 +110,13 @@ streams:
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "contacts"
       primary_key: "id"
       path: "/v3/marketing/contacts"
       field_pointer: ["result"]
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "stats_automations"
       primary_key: "id"
       path: "/v3/marketing/stats/automations"
@@ -126,13 +126,13 @@ streams:
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "segments"
       primary_key: "id"
       path: "/v3/marketing/segments"
       field_pointer: ["results"]
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "single_sends"
       primary_key: "id"
       path: "/v3/marketing/stats/singlesends"
@@ -142,7 +142,7 @@ streams:
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "templates"
       primary_key: "id"
       path: "/v3/templates"
@@ -156,7 +156,7 @@ streams:
       paginator:
         $ref: "*ref(definitions.cursor_paginator)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "bounces"
       primary_key: "email"
       stream_cursor_field: "created"
@@ -169,7 +169,7 @@ streams:
       stream_slicer:
         $ref: "*ref(definitions.stream_slicer)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "global_suppressions"
       primary_key: "email"
       stream_cursor_field: "created"
@@ -182,7 +182,7 @@ streams:
       stream_slicer:
         $ref: "*ref(definitions.stream_slicer)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "blocks"
       primary_key: "email"
       stream_cursor_field: "created"
@@ -195,13 +195,13 @@ streams:
       stream_slicer:
         $ref: "*ref(definitions.stream_slicer)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "suppression_groups"
       primary_key: "id"
       path: "/v3/asm/groups"
       field_pointer: []
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "suppression_group_members"
       primary_key: "group_id"
       path: "/v3/asm/suppressions"
@@ -211,7 +211,7 @@ streams:
       paginator:
         $ref: "*ref(definitions.offset_paginator)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "invalid_emails"
       primary_key: "email"
       stream_cursor_field: "created"
@@ -224,7 +224,7 @@ streams:
       stream_slicer:
         $ref: "*ref(definitions.stream_slicer)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "spam_reports"
       primary_key: "email"
       stream_cursor_field: "created"
@@ -237,7 +237,7 @@ streams:
       stream_slicer:
         $ref: "*ref(definitions.stream_slicer)"
   - $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "messages"
       primary_key: "msg_id"
       stream_cursor_field: "last_event_time"

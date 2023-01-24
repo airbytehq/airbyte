@@ -26,8 +26,8 @@ definitions:
       # present on the stream. This is because News API does not allow
       # these parameters if they're not required for the endpoint. Also,
       # these parameters cannot be mixed with the 'sources' parameter.
-      country: "{{ config['country'] if options['use_country'] is defined and not config.get('sources') else None }}"
-      category: "{{ config['category'] if options['use_category'] is defined and not config.get('sources') else None }}"
+      country: "{{ config['country'] if parameters['use_country'] is defined and not config.get('sources') else None }}"
+      category: "{{ config['category'] if parameters['use_category'] is defined and not config.get('sources') else None }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -50,13 +50,13 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   everything_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "everything"
       primary_key: "publishedAt"
       path: "/everything"
   top_headlines_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "top_headlines"
       primary_key: "publishedAt"
       path: "/top-headlines"

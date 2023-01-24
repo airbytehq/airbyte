@@ -58,7 +58,7 @@ definitions:
 
   tweets_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "tweets"
       path: "/search/recent"
 

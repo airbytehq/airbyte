@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_square/schemas/{{ options['name'] }}.json"
+    file_path: "./source_square/schemas/{{ parameters['name'] }}.json"
   oauth_authenticator:
     type: OAuthAuthenticator
     token_refresh_endpoint: https://connect.squareup.com/oauth2/token
@@ -17,7 +17,7 @@ definitions:
     api_token: "{{ config['api_key'] }}"
   selector:
     extractor:
-      field_pointer: ["{{ options['name'] }}"]
+      field_pointer: ["{{ parameters['name'] }}"]
 
   requester:
     url_base: "{{ 'https://connect.squareupsandbox.com/v2' if config['is_sandbox'] else 'https://connect.squareup.com/v2' }}"
@@ -57,7 +57,7 @@ definitions:
           $ref: "*ref(definitions.requester.url_base)"
 
   base_incremental_stream:
-    $options:
+    $parameters:
       stream_cursor_field: "created_at"
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -98,7 +98,7 @@ definitions:
   base_catalog_objects_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
     stream_cursor_field: "updated_at"
-    $options:
+    $parameters:
       primary_key: "id"
       path: "/catalog/search"
     retriever:
@@ -112,7 +112,7 @@ definitions:
         request_body_json:
           include_related_objects: "{{ False }}"
           include_deleted_objects: "{{ config['include_deleted_objects'] }}"
-          object_types: "{{ [options['object_type']] }}"
+          object_types: "{{ [parameters['object_type']] }}"
       paginator:
         type: DefaultPaginator
         url_base: "*ref(definitions.requester.url_base)"
@@ -151,7 +151,7 @@ definitions:
 
   customers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "customers"
       primary_key: "id"
       path: "/customers"
@@ -165,7 +165,7 @@ definitions:
 
   shifts_stream:
     $ref: "*ref(definitions.base_stream_page_json_limit)"
-    $options:
+    $parameters:
       name: "shifts"
       primary_key: "id"
       path: "labor/shifts/search"
@@ -180,14 +180,14 @@ definitions:
 
   team_members_stream:
     $ref: "*ref(definitions.base_stream_page_json_limit)"
-    $options:
+    $parameters:
       name: "team_members"
       primary_key: "id"
       path: "/team-members/search"
 
   team_member_wages_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "team_member_wages"
       primary_key: "id"
       path: "/labor/team-member-wages"
@@ -203,49 +203,49 @@ definitions:
           page_size: 200
   locations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "locations"
       primary_key: "id"
       path: "/locations"
 
   categories_stream:
     $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $parameters:
       name: "categories"
       object_type: "CATEGORY"
       path: "/catalog/search"
 
   items_stream:
     $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $parameters:
       name: "items"
       object_type: "ITEM"
       path: "/catalog/search"
 
   discounts_stream:
     $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $parameters:
       name: "discounts"
       object_type: "DISCOUNT"
       path: "/catalog/search"
 
   taxes_stream:
     $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $parameters:
       name: "taxes"
       object_type: "TAX"
       path: "/catalog/search"
 
   modifier_list_stream:
     $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $parameters:
       name: "modifier_list"
       object_type: "MODIFIER_LIST"
       path: "/catalog/search"
 
   refunds_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "refunds"
       primary_key: "id"
       path: "/refunds"
@@ -254,7 +254,7 @@ definitions:
 
   payments_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "payments"
       primary_key: "id"
       path: "/payments"
@@ -263,7 +263,7 @@ definitions:
 
   orders_stream:
     $ref: "*ref(definitions.base_stream_page_json_limit)"
-    $options:
+    $parameters:
       name: "orders"
       primary_key: "id"
       path: "/orders/search"

@@ -25,7 +25,7 @@ definitions:
   # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-Send%20SMS%20(GET)
   sms_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "sms"
       primary_key: "requestId"
       path: "/messaging/v1/sms?to={{ config['to'] }}&from={{ config['from']}}&message={{ config['message'] or ''}}"
@@ -38,7 +38,7 @@ definitions:
   # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-Read%20SMS%20status
   messages_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "messages"
       primary_key: "requestId"
     retriever:
@@ -53,19 +53,19 @@ definitions:
   # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20contacts
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "contacts"
       path: "/byon/contacts/v1"
   # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phone%20numbers
   phones_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "phones"
       path: "/byon/phonebook/v1/numbers"
   # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phones
   registrations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "registrations"
       path: "/byon/provisioning/v1"
 

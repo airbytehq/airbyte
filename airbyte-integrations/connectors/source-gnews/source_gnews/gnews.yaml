@@ -37,7 +37,7 @@ definitions:
       step: "P1W"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: "PT1S"
-      cursor_field: "{{ options['stream_cursor_field'] }}"
+      cursor_field: "{{ parameters['stream_cursor_field'] }}"
   common_parameters:
     token: "{{ config['api_key'] }}"
     lang: "{{ config['language'] }}"
@@ -51,7 +51,7 @@ definitions:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
       schema: "*ref(schemas.search_stream_schema)"
-    $options:
+    $parameters:
       name: "search"
       primary_key: "url"
       path: "/search"
@@ -69,7 +69,7 @@ definitions:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
       schema: "*ref(schemas.top_headlines_stream_schema)"
-    $options:
+    $parameters:
       name: "top_headlines"
       primary_key: "url"
       path: "/top-headlines"

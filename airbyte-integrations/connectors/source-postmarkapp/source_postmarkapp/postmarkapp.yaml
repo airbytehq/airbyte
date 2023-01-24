@@ -46,7 +46,7 @@ definitions:
       $ref: "*ref(definitions.selector)"
     paginator:
       type: DefaultPaginator
-      $options:
+      $parameters:
         url_base: "*ref(definitions.requester.url_base)"
       pagination_strategy:
         type: "OffsetIncrement"
@@ -64,7 +64,7 @@ definitions:
       $ref: "*ref(definitions.selector)"
     paginator:
       type: DefaultPaginator
-      $options:
+      $parameters:
         url_base: "*ref(definitions.requester.url_base)"
       pagination_strategy:
         type: "OffsetIncrement"
@@ -88,7 +88,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector_bounces)"
-    $options:
+    $parameters:
       name: "deliverystats"
       primary_key: "Name"
       path: "/deliverystats"
@@ -98,7 +98,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector_message_streams)"
-    $options:
+    $parameters:
       name: "message-streams"
       primary_key: "ID"
       path: "/message-streams"
@@ -108,7 +108,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector_bounces)"
-    $options:
+    $parameters:
       name: "bounces"
       primary_key: "ID"
       path: "/bounces"
@@ -119,7 +119,7 @@ definitions:
       $ref: "*ref(definitions.retriever_account)"
       record_selector:
         $ref: "*ref(definitions.selector_servers)"
-    $options:
+    $parameters:
       name: "servers"
       primary_key: "ID"
       path: "/servers"
@@ -129,13 +129,13 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         $ref: "*ref(definitions.selector_messages)"
-    $options:
+    $parameters:
       name: "messages"
       primary_key: "MessageID"
       path: "/messages/outbound"
   domains:
     $ref: "*ref(definitions.base_stream_account)"
-    $options:
+    $parameters:
       name: "domains"
       primary_key: "ID"
       path: "/domains"

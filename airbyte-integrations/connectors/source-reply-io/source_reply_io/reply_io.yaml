@@ -34,7 +34,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       record_selector:
         extractor:
-          field_pointer: ["{{ options.name }}"]
+          field_pointer: ["{{ parameters.name }}"]
       paginator:
         type: "DefaultPaginator"
         page_size_option:
@@ -51,19 +51,19 @@ definitions:
 
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns"
   email_accounts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "email_accounts"
       primary_key: "id"
       path: "/emailAccounts"
   people_stream:
     $ref: "*ref(definitions.paginated_stream)"
-    $options:
+    $parameters:
       name: "people"
       primary_key: "id"
       path: "/people"
@@ -73,7 +73,7 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["userTemplates"]
-    $options:
+    $parameters:
       name: "templates"
       primary_key: "id"
       path: "/templates"

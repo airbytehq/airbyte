@@ -4,7 +4,7 @@ definitions:
   selector:
     extractor:
       field_pointer:
-        - "{{ options['name'] }}"
+        - "{{ parameters['name'] }}"
   requester:
     url_base: "https://sonarcloud.io/api"
     http_method: "GET"
@@ -39,19 +39,19 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   components_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "components"
       primary_key: "key"
       path: "/components/search"
   issues_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "issues"
       primary_key: "key"
       path: "/issues/search?componentKeys={{ ','.join(config.get('component_keys', [])) }}"
   metrics_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "metrics"
       primary_key: "id"
       path: "/metrics/search"

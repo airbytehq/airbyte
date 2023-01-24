@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["{{ options['name'] }}"]
+      field_pointer: ["{{ parameters['name'] }}"]
   requester:
     url_base: "https://api.getlago.com/api/v1"
     http_method: "GET"
@@ -36,37 +36,37 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   billable_metrics_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "billable_metrics"
       primary_key: "lago_id"
       path: "/billable_metrics"
   plans_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "plans"
       primary_key: "lago_id"
       path: "/plans"
   coupons_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "coupons"
       primary_key: "lago_id"
       path: "/coupons"
   add_ons_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "add_ons"
       primary_key: "lago_id"
       path: "/add_ons"
   invoices_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "invoices"
       primary_key: "lago_id"
       path: "/invoices"
   customers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "customers"
       primary_key: "lago_id"
       path: "/customers"
@@ -78,7 +78,7 @@ definitions:
         stream_slice_field: customer_external_id
   subscriptions_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "subscriptions"
       primary_key: "lago_id"
     retriever:

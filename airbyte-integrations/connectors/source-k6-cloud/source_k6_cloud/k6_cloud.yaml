@@ -4,7 +4,7 @@ definitions:
   selector:
     extractor:
       field_pointer:
-        - "{{ options['name'] }}"
+        - "{{ parameters['name'] }}"
   requester:
     url_base: "https://api.k6.io"
     http_method: "GET"
@@ -43,7 +43,7 @@ definitions:
         type: NoPagination
       requester:
         $ref: "*ref(definitions.requester)"
-    $options:
+    $parameters:
       name: "organizations"
       primary_key: "id"
       path: "/v3/organizations"
@@ -56,7 +56,7 @@ definitions:
   projects_stream:
     $ref: "*ref(definitions.base_stream)"
     type: DeclarativeStream
-    $options:
+    $parameters:
       name: "projects"
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -76,7 +76,7 @@ definitions:
         $ref: "*ref(definitions.increment_paginator)"
       requester:
         $ref: "*ref(definitions.requester)"
-    $options:
+    $parameters:
       name: "k6-tests"
       primary_key: "id"
       path: "loadtests/v2/tests"

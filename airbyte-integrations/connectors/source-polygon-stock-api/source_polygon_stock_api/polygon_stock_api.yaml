@@ -29,7 +29,7 @@ definitions:
 
   stock_api_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "stock_api"
       primary_key: "t"
       path: "/v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ config['start_date'] }}/{{ config['end_date'] }}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit=120&apiKey={{ config['apiKey'] }}"

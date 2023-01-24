@@ -38,7 +38,7 @@ definitions:
   # stream definitions
   applications_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "applications"
       primary_key: "id"
       path: "/application.list"
@@ -50,43 +50,43 @@ definitions:
           createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
   archive_reasons_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "archive_reasons"
       primary_key: "id"
       path: "/archiveReason.list"
   candidate_tags_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "candidate_tags"
       primary_key: "id"
       path: "/candidateTag.list"
   candidates_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "candidates"
       primary_key: "id"
       path: "/candidate.list"
   custom_fields_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "custom_fields"
       primary_key: "id"
       path: "/customField.list"
   departments_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "departments"
       primary_key: "id"
       path: "/department.list"
   feedback_form_definitions_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "feedback_form_definitions"
       primary_key: "id"
       path: "/feedbackFormDefinition.list"
   interview_schedules_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "interview_schedules"
       primary_key: "id"
       path: "/interviewSchedule.list"
@@ -98,37 +98,37 @@ definitions:
           createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
   job_postings_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "job_postings"
       primary_key: "id"
       path: "/jobPosting.list"
   jobs_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "jobs"
       primary_key: "id"
       path: "/job.list"
   locations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "locations"
       primary_key: "id"
       path: "/location.list"
   offers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "offers"
       primary_key: "id"
       path: "/offer.list"
   sources_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "sources"
       primary_key: "id"
       path: "/source.list"
   users_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "users"
       primary_key: "id"
       path: "/user.list"

@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["{{ options['name'] }}"]
+      field_pointer: ["{{ parameters['name'] }}"]
   requester:
     url_base: "https://api.vantage.sh/v1"
     http_method: "GET"
@@ -34,25 +34,25 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   providers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "providers"
       primary_key: "id"
       path: "/providers"
   services_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "services"
       primary_key: "id"
       path: "/services"
   products_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "products"
       primary_key: "id"
       path: "/products"
   reports_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "reports"
       primary_key: "id"
       path: "/reports"

@@ -4,7 +4,7 @@ definitions:
   selector:
     extractor:
       field_pointer:
-        - "{{ options['name'] }}"
+        - "{{ parameters['name'] }}"
   requester:
     url_base: "https://taskrouter.twilio.com"
     http_method: "GET"
@@ -39,7 +39,7 @@ definitions:
         $ref: "*ref(definitions.default_paginator)"
   workspaces_stream:
     $ref: "*ref(definitions.base_stream_with_pagination)"
-    $options:
+    $parameters:
       name: "workspaces"
       path: "/v1/Workspaces"
       primary_key: "sid"
@@ -53,7 +53,7 @@ definitions:
 
   workers_stream:
     $ref: "*ref(definitions.base_stream_with_pagination)"
-    $options:
+    $parameters:
       name: "workers"
       primary_key: "sid"
       path: "/v1/Workspaces/{{ stream_slice.id }}/Workers"

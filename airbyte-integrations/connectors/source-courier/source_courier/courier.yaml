@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_courier/schemas/{{ options['name'] }}.json"
+    file_path: "./source_courier/schemas/{{ parameters['name'] }}.json"
 
   root_selector:
     type: RecordSelector
@@ -20,7 +20,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    name: "{{ options['name'] }}"
+    name: "{{ parameters['name'] }}"
     url_base: "https://api.courier.com"
     http_method: "GET"
     authenticator:
@@ -43,8 +43,8 @@ definitions:
 
   retriever:
     type: SimpleRetriever
-    name: "{{ options['name'] }}"
-    primary_key: "{{ options['primary_key'] }}"
+    name: "{{ parameters['name'] }}"
+    primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
       $ref: "*ref(definitions.results_selector)"
 
@@ -64,7 +64,7 @@ definitions:
   messages_stream:
     $ref: "*ref(definitions.base_stream)"
     primary_key: id
-    $options:
+    $parameters:
       name: "messages"
       path: "/messages"
     retriever:
@@ -94,7 +94,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     type: DeclarativeStream
     primary_key: id
-    $options:
+    $parameters:
       name: message_info
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -108,7 +108,7 @@ definitions:
 
   message_history_stream:
     type: DeclarativeStream
-    $options:
+    $parameters:
       name: message_history
     primary_key: message_id
     schema_loader:
@@ -127,7 +127,7 @@ definitions:
 
   message_output_stream:
     type: DeclarativeStream
-    $options:
+    $parameters:
       name: message_output
     primary_key: message_id
     schema_loader:

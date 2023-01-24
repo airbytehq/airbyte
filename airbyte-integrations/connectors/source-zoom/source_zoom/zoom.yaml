@@ -29,7 +29,7 @@ definitions:
 
   schema_loader:
     type: JsonSchema
-    file_path: "./source_zoom/schemas/{{ options['name'] }}.json"
+    file_path: "./source_zoom/schemas/{{ parameters['name'] }}.json"
 
   users_stream:
     schema_loader:
@@ -42,7 +42,7 @@ definitions:
           type: DpathExtractor
           field_pointer: ["users"]
       $ref: "*ref(definitions.retriever)"
-    $options:
+    $parameters:
       name: "users"
       primary_key: "id"
       path: "/users"
@@ -50,7 +50,7 @@ definitions:
   meetings_list_tmp_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "meetings_list_tmp"
       primary_key: "id"
     retriever:
@@ -74,7 +74,7 @@ definitions:
   meetings_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "meetings"
       primary_key: "id"
     retriever:
@@ -98,7 +98,7 @@ definitions:
   meeting_registrants_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "meeting_registrants"
       primary_key: "id"
     retriever:
@@ -136,7 +136,7 @@ definitions:
   meeting_polls_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "meeting_polls"
       primary_key: "id"
     retriever:
@@ -174,7 +174,7 @@ definitions:
   meeting_poll_results_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "meeting_poll_results"
     retriever:
       paginator:
@@ -212,7 +212,7 @@ definitions:
   meeting_registration_questions_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "meeting_registration_questions"
     retriever:
       paginator:
@@ -249,7 +249,7 @@ definitions:
   webinars_list_tmp_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinars_list_tmp"
       primary_key: "id"
     retriever:
@@ -282,7 +282,7 @@ definitions:
   webinars_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinars"
       primary_key: "id"
     retriever:
@@ -317,7 +317,7 @@ definitions:
   webinar_panelists_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinar_panelists"
     retriever:
       paginator:
@@ -355,7 +355,7 @@ definitions:
   webinar_registrants_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinar_registrants"
     retriever:
       paginator:
@@ -393,7 +393,7 @@ definitions:
   webinar_absentees_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinar_absentees"
       primary_key: "id"
     retriever:
@@ -432,7 +432,7 @@ definitions:
   webinar_polls_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinar_polls"
     retriever:
       paginator:
@@ -470,7 +470,7 @@ definitions:
   webinar_poll_results_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinar_poll_results"
     retriever:
       paginator:
@@ -506,7 +506,7 @@ definitions:
   webinar_registration_questions_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinar_registration_questions"
     retriever:
       paginator:
@@ -543,7 +543,7 @@ definitions:
   webinar_tracking_sources_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinar_tracking_sources"
       primary_key: "id"
     retriever:
@@ -580,7 +580,7 @@ definitions:
   webinar_qna_results_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "webinar_qna_results"
     retriever:
       paginator:
@@ -616,7 +616,7 @@ definitions:
   report_meetings_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "report_meetings"
       primary_key: "id"
     retriever:
@@ -653,7 +653,7 @@ definitions:
   report_meeting_participants_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "report_meeting_participants"
       primary_key: "id"
     retriever:
@@ -690,7 +690,7 @@ definitions:
   report_webinars_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "report_webinars"
     retriever:
       paginator:
@@ -726,7 +726,7 @@ definitions:
   report_webinar_participants_stream:
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
-    $options:
+    $parameters:
       name: "report_webinar_participants"
     retriever:
       paginator:

@@ -26,7 +26,7 @@ definitions:
 
   fonts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "fonts"
       path: "/webfonts?key={{ config['api_key'] }}&sort={{ config['sort'] or 'SORT_UNDEFINED'}}&prettyPrint={{ config['prettyPrint'] or 'true'}}&alt={{ config['alt'] or 'json'}}"
 

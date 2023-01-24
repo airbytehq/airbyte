@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   schema_loader:
     type: JsonSchema
-    file_path: "./source_secoda/schemas/{{ options.name }}.json"
+    file_path: "./source_secoda/schemas/{{ parameters.name }}.json"
   selector:
     extractor:
       field_pointer: ["results"]
@@ -42,19 +42,19 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   tables_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "tables"
       primary_key: "id"
       path: "/table/tables/"
   terms_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "terms"
       primary_key: "id"
       path: "/dictionary/terms/"
   collections_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "collections"
       primary_key: "id"
       path: "/collection/collections/"

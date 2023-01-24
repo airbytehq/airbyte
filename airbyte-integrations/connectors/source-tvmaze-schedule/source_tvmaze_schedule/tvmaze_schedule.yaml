@@ -11,9 +11,9 @@ definitions:
       country: |
         {{
           config['domestic_schedule_country_code']
-          if options['name'] == 'domestic' 
+          if parameters['name'] == 'domestic' 
           else config['web_schedule_country_code'].replace('global', '')
-          if options['name'] == 'web' 
+          if parameters['name'] == 'web' 
           else ''
         }}
   stream_slicer:
@@ -45,19 +45,19 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   domestic_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "domestic"
       primary_key: "id"
       path: "/schedule"
   web_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "web"
       primary_key: "id"
       path: "/schedule"
   future_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "future"
       primary_key: "id"
       path: "/schedule/full"

@@ -19,17 +19,17 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   auctions_data_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "auctions_data"
       path: "/auctions_data/?format=json"
   auctions_info_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "auctions_info"
       path: "/auctions_info?format=json"
   distilleries_info_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "distilleries_info"
       path: "/distilleries_info/?format=json"
 

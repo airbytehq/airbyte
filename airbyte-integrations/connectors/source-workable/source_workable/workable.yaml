@@ -4,7 +4,7 @@ definitions:
   page_size: 100
   schema_loader:
     type: JsonSchema
-    file_path: "./source_sentry/schemas/{{ options.name }}.json"
+    file_path: "./source_sentry/schemas/{{ parameters.name }}.json"
   selector:
     extractor:
       field_pointer: []
@@ -42,28 +42,28 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   jobs_stream: # https://workable.readme.io/reference/jobs
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "jobs"
       primary_key: "id"
       path: "/spi/v3/jobs"
       field_pointer: ["jobs"]
   candidates_stream: # https://workable.readme.io/reference/job-candidates-index
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "candidates"
       primary_key: "id"
       path: "/spi/v3/candidates"
       field_pointer: ["candidates"]
   stages_stream: # https://workable.readme.io/reference/stages
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "stages"
       primary_key: "slug"
       path: "/spi/v3/stages"
       field_pointer: ["stages"]
   recruiters_stream: # https://workable.readme.io/reference/recruiters
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "recruiters"
       primary_key: "id"
       path: "/spi/v3/recruiters"

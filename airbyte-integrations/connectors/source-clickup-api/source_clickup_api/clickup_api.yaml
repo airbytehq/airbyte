@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   schema_loader:
     type: JsonSchema
-    file_path: "./source_clickup_api/schemas/{{ options['name'] }}.json"
+    file_path: "./source_clickup_api/schemas/{{ parameters['name'] }}.json"
   singleSelector:
     type: RecordSelector
     extractor:
@@ -13,10 +13,10 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: ["{{ options['name']  }}s"]
+      field_pointer: ["{{ parameters['name']  }}s"]
   requester:
     type: HttpRequester
-    name: "{{ options['name'] }}"
+    name: "{{ parameters['name'] }}"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
@@ -26,14 +26,14 @@ definitions:
     type: NoPagination
   retriever:
     type: SimpleRetriever
-    $options:
+    $parameters:
       url_base: "https://api.clickup.com/api/v2"
-    name: "{{ options['name'] }}"
-    primary_key: "{{ options['primary_key'] }}"
+    name: "{{ parameters['name'] }}"
+    primary_key: "{{ parameters['primary_key'] }}"
 
 streams:
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "user"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -47,7 +47,7 @@ streams:
       record_selector:
         $ref: "*ref(definitions.singleSelector)"
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "team"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -61,7 +61,7 @@ streams:
       record_selector:
         $ref: "*ref(definitions.arraySelector)"
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "list"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -75,7 +75,7 @@ streams:
       record_selector:
         $ref: "*ref(definitions.arraySelector)"
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "space"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -89,7 +89,7 @@ streams:
       record_selector:
         $ref: "*ref(definitions.arraySelector)"
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "folder"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"
@@ -103,7 +103,7 @@ streams:
       record_selector:
         $ref: "*ref(definitions.arraySelector)"
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "task"
     schema_loader:
       $ref: "*ref(definitions.schema_loader)"

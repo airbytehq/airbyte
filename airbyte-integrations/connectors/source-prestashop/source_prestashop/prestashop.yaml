@@ -3,7 +3,7 @@ version: "0.3.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["{{ options['data_key'] }}"]
+      field_pointer: ["{{ parameters['data_key'] }}"]
   requester:
     url_base: "{{ config['url'] }}/api/"
     http_method: "GET"
@@ -53,11 +53,11 @@ definitions:
         request_parameters:
           $ref: "*ref(definitions.requester.request_parameters)"
           date: "1"
-          sort: "[{{ options['cursor_field'] }}_ASC,{{ options['primary_key'] }}_ASC]"
-          "filter[{{ options['cursor_field'] }}]": "[{{ stream_slice['start_time'] }},{{ stream_slice['end_time'] }}]"
+          sort: "[{{ parameters['cursor_field'] }}_ASC,{{ parameters['primary_key'] }}_ASC]"
+          "filter[{{ parameters['cursor_field'] }}]": "[{{ stream_slice['start_time'] }},{{ stream_slice['end_time'] }}]"
   addresses_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "addresses"
       path: "/addresses"
       data_key: "addresses"
@@ -65,14 +65,14 @@ definitions:
       cursor_field: "date_upd"
   carriers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "carriers"
       path: "/carriers"
       data_key: "carriers"
       primary_key: "id"
   cart_rules_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "cart_rules"
       path: "/cart_rules"
       data_key: "cart_rules"
@@ -80,7 +80,7 @@ definitions:
       cursor_field: "date_upd"
   carts_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "carts"
       path: "/carts"
       data_key: "carts"
@@ -88,7 +88,7 @@ definitions:
       cursor_field: "date_upd"
   categories_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "categories"
       path: "/categories"
       data_key: "categories"
@@ -96,14 +96,14 @@ definitions:
       cursor_field: "date_upd"
   combinations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "combinations"
       path: "/combinations"
       data_key: "combinations"
       primary_key: "id"
   configurations_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "configurations"
       path: "/configurations"
       data_key: "configurations"
@@ -111,35 +111,35 @@ definitions:
       cursor_field: "date_upd"
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "contacts"
       path: "/contacts"
       data_key: "contacts"
       primary_key: "id"
   content_management_system_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "content_management_system"
       path: "/content_management_system"
       data_key: "content_management_system"
       primary_key: "id"
   countries_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "countries"
       path: "/countries"
       data_key: "countries"
       primary_key: "id"
   currencies_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "currencies"
       path: "/currencies"
       data_key: "currencies"
       primary_key: "id"
   customer_messages_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "customer_messages"
       path: "/customer_messages"
       data_key: "customer_messages"
@@ -147,7 +147,7 @@ definitions:
       cursor_field: "date_upd"
   customers_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "customers"
       path: "/customers"
       data_key: "customers"
@@ -155,7 +155,7 @@ definitions:
       cursor_field: "date_upd"
   customer_threads_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "customer_threads"
       path: "/customer_threads"
       data_key: "customer_threads"
@@ -163,21 +163,21 @@ definitions:
       cursor_field: "date_upd"
   deliveries_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "deliveries"
       path: "/deliveries"
       data_key: "deliveries"
       primary_key: "id"
   employees_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "employees"
       path: "/employees"
       data_key: "employees"
       primary_key: "id"
   groups_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "groups"
       path: "/groups"
       data_key: "groups"
@@ -185,28 +185,28 @@ definitions:
       cursor_field: "date_upd"
   guests_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "guests"
       path: "/guests"
       data_key: "guests"
       primary_key: "id"
   image_types_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "image_types"
       path: "/image_types"
       data_key: "image_types"
       primary_key: "id"
   languages_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "languages"
       path: "/languages"
       data_key: "languages"
       primary_key: "id"
   manufacturers_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "manufacturers"
       path: "/manufacturers"
       data_key: "manufacturers"
@@ -215,7 +215,7 @@ definitions:
   messages_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
     stream_cursor_field: "date_add"
-    $options:
+    $parameters:
       name: "messages"
       path: "/messages"
       data_key: "messages"
@@ -224,7 +224,7 @@ definitions:
   order_carriers_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
     stream_cursor_field: "date_add"
-    $options:
+    $parameters:
       name: "order_carriers"
       path: "/order_carriers"
       data_key: "order_carriers"
@@ -232,7 +232,7 @@ definitions:
       cursor_field: "date_add"
   order_details_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "order_details"
       path: "/order_details"
       data_key: "order_details"
@@ -240,7 +240,7 @@ definitions:
   order_histories_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
     stream_cursor_field: "date_add"
-    $options:
+    $parameters:
       name: "order_histories"
       path: "/order_histories"
       data_key: "order_histories"
@@ -249,7 +249,7 @@ definitions:
   order_invoices_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
     stream_cursor_field: "date_add"
-    $options:
+    $parameters:
       name: "order_invoices"
       path: "/order_invoices"
       data_key: "order_invoices"
@@ -258,7 +258,7 @@ definitions:
   order_payments_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
     stream_cursor_field: "date_add"
-    $options:
+    $parameters:
       name: "order_payments"
       path: "/order_payments"
       data_key: "order_payments"
@@ -266,7 +266,7 @@ definitions:
       cursor_field: "date_add"
   orders_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "orders"
       path: "/orders"
       data_key: "orders"
@@ -274,7 +274,7 @@ definitions:
       cursor_field: "date_upd"
   order_slip_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "order_slip"
       path: "/order_slip"
       data_key: "order_slips"
@@ -282,56 +282,56 @@ definitions:
       cursor_field: "date_upd"
   order_states_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "order_states"
       path: "/order_states"
       data_key: "order_states"
       primary_key: "id"
   price_ranges_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "price_ranges"
       path: "/price_ranges"
       data_key: "price_ranges"
       primary_key: "id"
   product_customization_fields_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "product_customization_fields"
       path: "/product_customization_fields"
       data_key: "customization_fields"
       primary_key: "id"
   product_features_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "product_features"
       path: "/product_features"
       data_key: "product_features"
       primary_key: "id"
   product_feature_values_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "product_feature_values"
       path: "/product_feature_values"
       data_key: "product_feature_values"
       primary_key: "id"
   product_options_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "product_options"
       path: "/product_options"
       data_key: "product_options"
       primary_key: "id"
   product_option_values_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "product_option_values"
       path: "/product_option_values"
       data_key: "product_option_values"
       primary_key: "id"
   products_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "products"
       path: "/products"
       data_key: "products"
@@ -339,63 +339,63 @@ definitions:
       cursor_field: "date_upd"
   product_suppliers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "product_suppliers"
       path: "/product_suppliers"
       data_key: "product_suppliers"
       primary_key: "id"
   shop_groups_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "shop_groups"
       path: "/shop_groups"
       data_key: "shop_groups"
       primary_key: "id"
   shops_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "shops"
       path: "/shops"
       data_key: "shops"
       primary_key: "id"
   shop_urls_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "shop_urls"
       path: "/shop_urls"
       data_key: "shop_urls"
       primary_key: "id"
   specific_price_rules_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "specific_price_rules"
       path: "/specific_price_rules"
       data_key: "specific_price_rules"
       primary_key: "id"
   specific_prices_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "specific_prices"
       path: "/specific_prices"
       data_key: "specific_prices"
       primary_key: "id"
   states_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "states"
       path: "/states"
       data_key: "states"
       primary_key: "id"
   stock_availables_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "stock_availables"
       path: "/stock_availables"
       data_key: "stock_availables"
       primary_key: "id"
   stock_movement_reasons_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "stock_movement_reasons"
       path: "/stock_movement_reasons"
       data_key: "stock_movement_reasons"
@@ -404,7 +404,7 @@ definitions:
   stock_movements_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
     stream_cursor_field: "date_add"
-    $options:
+    $parameters:
       name: "stock_movements"
       path: "/stock_movements"
       data_key: "stock_mvts"
@@ -412,7 +412,7 @@ definitions:
       cursor_field: "date_add"
   stores_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "stores"
       path: "/stores"
       data_key: "stores"
@@ -420,7 +420,7 @@ definitions:
       cursor_field: "date_upd"
   suppliers_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "suppliers"
       path: "/suppliers"
       data_key: "suppliers"
@@ -428,21 +428,21 @@ definitions:
       cursor_field: "date_upd"
   tags_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "tags"
       path: "/tags"
       data_key: "tags"
       primary_key: "id"
   taxes_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "taxes"
       path: "/taxes"
       data_key: "taxes"
       primary_key: "id"
   tax_rule_groups_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $parameters:
       name: "tax_rule_groups"
       path: "/tax_rule_groups"
       data_key: "tax_rule_groups"
@@ -450,28 +450,28 @@ definitions:
       cursor_field: "date_upd"
   tax_rules_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "tax_rules"
       path: "/tax_rules"
       data_key: "tax_rules"
       primary_key: "id"
   translated_configurations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "translated_configurations"
       path: "/translated_configurations"
       data_key: "translated_configurations"
       primary_key: "id"
   weight_ranges_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "weight_ranges"
       path: "/weight_ranges"
       data_key: "weight_ranges"
       primary_key: "id"
   zones_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "zones"
       path: "/zones"
       data_key: "zones"

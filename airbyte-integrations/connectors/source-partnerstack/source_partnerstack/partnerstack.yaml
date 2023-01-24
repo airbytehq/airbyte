@@ -48,44 +48,44 @@ definitions:
   # stream definitions
   customers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "customers"
       primary_key: "key"
       path: "/customers"
       stream_cursor_field: "updated_at"
   deals_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "deals"
       primary_key: "key"
       path: "/deals"
   groups_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "groups"
       primary_key: "key"
       path: "/groups"
   leads_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "leads"
       primary_key: "key"
       path: "/leads"
   partnerships_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "partnerships"
       primary_key: "key"
       path: "/partnerships"
   rewards_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "rewards"
       primary_key: "key"
       path: "/rewards"
   transactions_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "transactions"
       primary_key: "key"
       path: "/transactions"

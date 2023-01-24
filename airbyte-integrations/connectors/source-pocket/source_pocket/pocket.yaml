@@ -54,7 +54,7 @@ definitions:
       type: "JsonSchema"
   retrieve_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "retrieve"
       primary_key: "item_id"
       path: "/get"

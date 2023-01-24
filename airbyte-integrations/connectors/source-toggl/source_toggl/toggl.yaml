@@ -41,43 +41,43 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   time_entries_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "time_entries"
       primary_key: "id"
       path: "/api/v9/me/time_entries"
   organizations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "organizations"
       primary_key: "id"
       path: "/api/v9/organizations/{{ config['organization_id'] }}"
   organizations_users_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "organizations_users"
       primary_key: "id"
       path: "/api/v9/organizations/{{ config['organization_id'] }}/users"
   organizations_groups_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "organizations_groups"
       primary_key: "group_id"
       path: "/api/v9/organizations/{{ config['organization_id'] }}/groups"
   workspace_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "workspace"
       primary_key: ""
       path: "/api/v9/workspaces/{{ config['workspace_id'] }}/statistics"
   workspace_clients_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "workspace_clients"
       primary_key: "id"
       path: "/api/v9/workspaces/{{ config['workspace_id'] }}/clients"
   workspace_projects_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "workspace_projects"
       primary_key: "id"
       path: "/api/v9/workspaces/{{ config['workspace_id'] }}/projects"
@@ -90,7 +90,7 @@ definitions:
       requester:
         $ref: "*ref(definitions.requester)"
         request_parameters: ""
-    $options:
+    $parameters:
       name: "workspace_tasks"
       primary_key: "id"
       path: "/api/v9/workspaces/{{ config['workspace_id'] }}/tasks"

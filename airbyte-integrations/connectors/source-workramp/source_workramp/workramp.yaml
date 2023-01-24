@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["data", "{{ options.name }}"]
+      field_pointer: ["data", "{{ parameters.name }}"]
   requester:
     url_base: "https://app.workramp.com/api/v1/academies/{{ config['academy_id'] }}"
     http_method: "GET"
@@ -35,37 +35,37 @@ definitions:
 
   awarded_certifications_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "awarded_certifications"
       primary_key: "id"
       path: "/awarded_certifications"
   certifications_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "certifications"
       primary_key: "id"
       path: "/certifications"
   paths_users_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "paths_users"
       primary_key: "id"
       path: "/paths_users"
   registrations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "registrations"
       primary_key: "id"
       path: "/registrations"
   trainings_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "trainings"
       primary_key: "id"
       path: "/trainings"
   users_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "users"
       primary_key: "id"
       path: "/users"

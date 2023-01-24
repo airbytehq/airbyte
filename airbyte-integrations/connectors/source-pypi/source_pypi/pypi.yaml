@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   schema_loader:
     type: JsonSchema
-    file_path: "./source_pypi/schemas/{{ options['name'] }}.json"
+    file_path: "./source_pypi/schemas/{{ parameters['name'] }}.json"
   selector:
     extractor:
       field_pointer: []
@@ -28,19 +28,19 @@ definitions:
 
   project_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "project"
       path: "/pypi/{{ config['project_name'] }}/json"
 
   release_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "release"
       path: "/pypi/{{ config['project_name'] }}/{{ config['version'] }}/json"
 
   stats_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "stats"
       path: "/stats"
 

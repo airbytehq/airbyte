@@ -34,7 +34,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   stats_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "stats"
       primary_key: "date"
       path: "/timeseries"

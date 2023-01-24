@@ -54,49 +54,49 @@ definitions:
       $ref: "*ref(definitions.datetime_retriever)"
   daily_activity_stream:
     $ref: "*ref(definitions.date_stream)"
-    $options:
+    $parameters:
       name: "daily_activity"
       primary_key: "timestamp"
       path: "/daily_activity"
   daily_readiness_stream:
     $ref: "*ref(definitions.date_stream)"
-    $options:
+    $parameters:
       name: "daily_readiness"
       primary_key: "timestamp"
       path: "/daily_readiness"
   daily_sleep_stream:
     $ref: "*ref(definitions.date_stream)"
-    $options:
+    $parameters:
       name: "daily_sleep"
       primary_key: "timestamp"
       path: "/daily_sleep"
   heart_rate_stream:
     $ref: "*ref(definitions.datetime_stream)"
-    $options:
+    $parameters:
       name: "heart_rate"
       primary_key: "timestamp"
       path: "/heartrate"
   sessions_stream:
     $ref: "*ref(definitions.date_stream)"
-    $options:
+    $parameters:
       name: "sessions"
       primary_key: "start_datetime"
       path: "/session"
   sleep_periods_stream:
     $ref: "*ref(definitions.date_stream)"
-    $options:
+    $parameters:
       name: "sleep_periods"
       primary_key: "bedtime_start"
       path: "/sleep"
   tags_stream:
     $ref: "*ref(definitions.date_stream)"
-    $options:
+    $parameters:
       name: "tags"
       primary_key: "timestamp"
       path: "/tag"
   workouts_stream:
     $ref: "*ref(definitions.date_stream)"
-    $options:
+    $parameters:
       name: "workouts"
       primary_key: "start_datetime"
       path: "/workout"

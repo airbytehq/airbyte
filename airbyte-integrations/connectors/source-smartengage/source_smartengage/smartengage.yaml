@@ -24,7 +24,7 @@ definitions:
   # API Docs: https://smartengage.com/docs/#list-all-avatars
   avatars_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "avatars"
       primary_key: "avatar_id"
       path: "/avatars/list"
@@ -37,7 +37,7 @@ definitions:
   # API Docs: https://smartengage.com/docs/#list-all-tags
   tags_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "tags"
       primary_key: "tag_id"
       path: "/tags/list"
@@ -52,7 +52,7 @@ definitions:
   # API Docs: https://smartengage.com/docs/#list-all-custom-fields
   custom_fields_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "custom_fields"
       primary_key: "custom_field_id"
       path: "/customfields/list"
@@ -67,7 +67,7 @@ definitions:
   # API Docs: https://smartengage.com/docs/#list-all-sequences
   sequences_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "sequences"
       primary_key: "sequence_id"
       path: "/sequences/list"

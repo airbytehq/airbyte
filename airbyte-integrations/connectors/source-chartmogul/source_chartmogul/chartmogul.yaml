@@ -31,7 +31,7 @@ definitions:
         page_token_option:
           inject_into: request_parameter
           field_name: page
-    $options:
+    $parameters:
       name: "customers"
       primary_key: "id"
       path: "/v1/customers"
@@ -56,7 +56,7 @@ definitions:
         page_token_option:
           inject_into: request_parameter
           field_name: start-after
-    $options:
+    $parameters:
       name: "activities"
       primary_key: "uuid"
       path: "/v1/activities"
@@ -71,7 +71,7 @@ definitions:
           interval: "{{ config['interval'] }}"
       paginator:
         type: NoPagination
-    $options:
+    $parameters:
       name: "customer_count"
       primary_key: "date"
       path: "/v1/metrics/customer-count"

@@ -2,7 +2,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["{{ options['name'] }}"]
+      field_pointer: ["{{ parameters['name'] }}"]
   requester:
     # API Docs: https://developers.convertkit.com/#overview
     url_base: "https://api.convertkit.com/v3"
@@ -35,7 +35,7 @@ definitions:
   # API Docs: https://developers.convertkit.com/#forms
   forms_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "forms"
       primary_key: "id"
       path: "/forms"
@@ -47,14 +47,14 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["courses"]
-    $options:
+    $parameters:
       name: "sequences"
       primary_key: "id"
       path: "/sequences"
   # API Docs: https://developers.convertkit.com/#tags
   tags_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "tags"
       primary_key: "id"
       path: "/tags"
@@ -65,14 +65,14 @@ definitions:
   # API Docs: https://developers.convertkit.com/#subscribers
   subscribers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "subscribers"
       primary_key: "id"
       path: "/subscribers"
   # API Docs: https://developers.convertkit.com/#broadcasts
   broadcasts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "broadcasts"
       primary_key: "id"
       path: "/broadcasts"

@@ -45,7 +45,7 @@ definitions:
           - path: ["strategy"]
             value: "{{ stream_slice.strategy }}"
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "pagespeed"
       path: "/runPagespeed"
 

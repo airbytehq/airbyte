@@ -8,7 +8,7 @@ definitions:
       field_pointer: ["results"]
   requester:
     type: HttpRequester
-    name: "{{ options['name'] }}"
+    name: "{{ parameters['name'] }}"
     url_base: "https://api.tempo.io/4/"
     http_method: "GET"
     error_handler:
@@ -25,7 +25,7 @@ definitions:
       api_token: "{{ config['api_token'] }}"
   retriever:
     type: SimpleRetriever
-    name: "{{ options['name'] }}"
+    name: "{{ parameters['name'] }}"
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
@@ -49,12 +49,12 @@ definitions:
         $ref: "*ref(definitions.requester)"
   accounts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "accounts"
       path: "accounts"
   customers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "customers"
       path: "customers"
   worklogs_stream:
@@ -81,13 +81,13 @@ definitions:
           field_name: "from"
           inject_into: "request_parameter"
         type: DatetimeStreamSlicer
-    $options:
+    $parameters:
       name: "worklogs"
       path: "worklogs"
     primary_key: "tempoWorklogId"
   workload_schemes_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "workload-schemes"
       path: "workload-schemes"
 

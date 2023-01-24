@@ -11,7 +11,7 @@ definitions:
       id: |
         {{
           config['id']
-          if options['name'] == 'beers_with_id'
+          if parameters['name'] == 'beers_with_id'
           else ''
         }}
 
@@ -47,14 +47,14 @@ definitions:
   base_stream:
     schema_loader:
       type: JsonSchema
-      file_path: "./source_punk_api/schemas/{{ options['name'] }}.json"
+      file_path: "./source_punk_api/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "*ref(definitions.retriever)"
 
   page_stream:
     schema_loader:
       type: JsonSchema
-      file_path: "./source_punk_api/schemas/{{ options['name'] }}.json"
+      file_path: "./source_punk_api/schemas/{{ parameters['name'] }}.json"
     retriever:
       record_selector:
         $ref: "*ref(definitions.selector)"
@@ -75,13 +75,13 @@ definitions:
 
   beers_stream:
     $ref: "*ref(definitions.page_stream)"
-    $options:
+    $parameters:
       name: "beers"
       path: "/beers"
 
   beers_with_id_stream:
     $ref: "*ref(definitions.page_stream)"
-    $options:
+    $parameters:
       name: "beers_with_id"
       path: "/beers?{{ config['brewed_after'] }}"
 

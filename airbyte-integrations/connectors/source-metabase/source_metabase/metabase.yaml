@@ -42,29 +42,29 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   activity_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "activity"
       path: "activity"
   cards_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "cards"
       path: "card"
   collections_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "collections"
       path: "collection"
   dashboards_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "dashboards"
       path: "dashboard"
   users_stream:
     primary_key: "id"
     retriever:
       $ref: "*ref(definitions.data_field_retriever)"
-    $options:
+    $parameters:
       name: "users"
       path: "user"
 streams:

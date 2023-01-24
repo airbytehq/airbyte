@@ -31,18 +31,18 @@ definitions:
   base_stream:
     schema_loader:
       type: JsonSchema
-      file_path: "./source_survey_sparrow/schemas/{{ options['name'] }}.json"
+      file_path: "./source_survey_sparrow/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "*ref(definitions.retriever)"
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "contacts"
       primary_key: "id"
       path: "/contacts"
   contact_lists_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "contact_lists"
       primary_key: "id"
       path: "/contact_lists"
@@ -50,7 +50,7 @@ definitions:
       type: "NoPagination"
   questions_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "questions"
       primary_key: "id"
       path: "/questions"
@@ -65,7 +65,7 @@ definitions:
           inject_into: "request_parameter"
   responses_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "responses"
       primary_key: "id"
       path: "/responses"
@@ -80,25 +80,25 @@ definitions:
           inject_into: "request_parameter"
   roles_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "roles"
       primary_key: "id"
       path: "/roles"
   surveys_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "surveys"
       primary_key: "id"
       path: "/surveys"
   survey_folders_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "survey_folders"
       primary_key: "id"
       path: "/survey_folders"
   users_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "users"
       primary_key: "id"
       path: "/users"

@@ -38,7 +38,7 @@ definitions:
   # stream definitions
   accounts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "accounts"
       primary_key: "id"
       path: "/accounts"
@@ -50,43 +50,43 @@ definitions:
           status: "{{ config['status'] }}"
   admins_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "admins"
       primary_key: "id"
       path: "/admins"
   conversations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "conversations"
       primary_key: "id"
       path: "/conversations"
   notes_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "notes"
       primary_key: "id"
       path: "/notes"
   nps_responses_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "nps_responses"
       primary_key: "id"
       path: "/npsResponses"
   organizations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "organizations"
       primary_key: "id"
       path: "/organizations"
   tasks_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "tasks"
       primary_key: "id"
       path: "/tasks"
   users_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "users"
       primary_key: "id"
       path: "/users"

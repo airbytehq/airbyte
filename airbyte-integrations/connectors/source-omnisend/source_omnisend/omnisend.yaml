@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["{{ options['name'] }}"]
+      field_pointer: ["{{ parameters['name'] }}"]
   requester:
     url_base: "https://api.omnisend.com/v3"
     http_method: "GET"
@@ -35,14 +35,14 @@ definitions:
   # API Docs: https://api-docs.omnisend.com/reference/list-contacts
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "contacts"
       primary_key: "contactID"
       path: "/contacts"
   # API Docs: https://api-docs.omnisend.com/reference/get_campaigns
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "campaigns"
       primary_key: "campaignID"
       path: "/campaigns"
@@ -54,21 +54,21 @@ definitions:
   # API Docs: https://api-docs.omnisend.com/reference/get_carts
   carts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "carts"
       primary_key: "cartID"
       path: "/carts"
   # API Docs: https://api-docs.omnisend.com/reference/get_orders
   orders_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "orders"
       primary_key: "orderID"
       path: "/orders"
   # API Docs: https://api-docs.omnisend.com/reference/get_products
   products_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "products"
       primary_key: "productID"
       path: "/products"

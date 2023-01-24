@@ -74,7 +74,7 @@ class UpdatesSubstreamSlicer(SubstreamSlicer):
     """
 
     parent_stream_configs: List[ParentStreamConfig]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
         if not self.parent_stream_configs:

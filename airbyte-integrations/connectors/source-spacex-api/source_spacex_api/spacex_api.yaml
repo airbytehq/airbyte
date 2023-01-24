@@ -20,97 +20,97 @@ definitions:
   base_stream:
     schema_loader:
       type: JsonSchema
-      file_path: "./source_spacex_api/schemas/{{ options['name'] }}.json"
+      file_path: "./source_spacex_api/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "*ref(definitions.retriever)"
 
   launches_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "launches"
       primary_key: "id"
       path: "/launches/{{config['options'] or config['id'] or latest}}"
 
   capsules_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "capsules"
       primary_key: "id"
       path: "/capsules"
 
   company_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "company"
       primary_key: "id"
       path: "/company"
 
   crew_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "crew"
       primary_key: "id"
       path: "/crew"
 
   cores_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "cores"
       primary_key: "id"
       path: "/cores"
 
   dragons_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "dragons"
       primary_key: "id"
       path: "/dragons"
 
   landpads_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "landpads"
       primary_key: "id"
       path: "/landpads"
 
   payloads_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "payloads"
       primary_key: "id"
       path: "/payloads"
 
   history_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "history"
       primary_key: "id"
       path: "/history"
 
   rockets_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "rockets"
       primary_key: "id"
       path: "/rockets"
 
   roadster_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "roadster"
       primary_key: "id"
       path: "/roadster"
 
   ships_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "ships"
       primary_key: "id"
       path: "/ships"
 
   starlink_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "starlink"
       primary_key: "id"
       path: "/starlink"

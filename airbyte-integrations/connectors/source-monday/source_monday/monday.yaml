@@ -3,14 +3,14 @@ version: "0.1.0"
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_monday/schemas/{{ options['name'] }}.json"
+    file_path: "./source_monday/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
       field_pointer:
         - "data"
-        - "{{ options['name'] }}"
+        - "{{ parameters['name'] }}"
   requester:
     type: CustomRequester
     class_name: "source_monday.MondayGraphqlRequester"
@@ -19,7 +19,7 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['credentials']['api_token'] if config['credentials']['auth_type'] == 'api_token' else config['credentials']['access_token'] if config['credentials']['auth_type'] == 'oauth2.0' else config.get('api_token', '') }}"
-    limit: "{{ options['items_per_page'] }}"
+    limit: "{{ parameters['items_per_page'] }}"
     error_handler:
       type: "DefaultErrorHandler"
       response_filters:
@@ -68,28 +68,28 @@ definitions:
         pagination_strategy:
           $ref: "*ref(definitions.default_paginator.pagination_strategy)"
           page_size: 1
-    $options:
+    $parameters:
       name: "items"
       path: ""
       items_per_page: 1
   boards_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "boards"
       path: ""
   teams_stream:
     $ref: "*ref(definitions.base_nopagination_stream)"
-    $options:
+    $parameters:
       name: "teams"
       path: ""
   updates_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "updates"
       path: ""
   users_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "users"
       path: ""
 

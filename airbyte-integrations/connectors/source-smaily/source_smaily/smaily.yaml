@@ -36,7 +36,7 @@ definitions:
   # API Docs: https://smaily.com/help/api/organizations/list-users-of-an-organization/
   users_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "users"
       primary_key: "id"
       path: "/organizations/users.php"
@@ -47,21 +47,21 @@ definitions:
   # API Docs: https://smaily.com/help/api/segments/list-segments/
   segments_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "segments"
       primary_key: "id"
       path: "/list.php"
   # API Docs: https://smaily.com/help/api/campaigns-3/list-campaigns/
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/campaign.php"
   # API Docs: https://smaily.com/help/api/templates-2/list-templates/
   templates_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "templates"
       primary_key: "id"
       path: "/templates.php"
@@ -75,14 +75,14 @@ definitions:
   # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
   automations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "automations"
       primary_key: "id"
       path: "/autoresponder.php"
   # API Docs: https://smaily.com/help/api/a-b-tests/list-a-b-tests/
   ab_tests_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "ab_tests"
       primary_key: "id"
       path: "/split.php"

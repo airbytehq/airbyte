@@ -4,7 +4,7 @@ definitions:
   selector:
     extractor:
       field_pointer:
-        - "{{ options['name'] }}"
+        - "{{ parameters['name'] }}"
   update_selector:
     extractor:
       field_pointer:
@@ -20,7 +20,7 @@ definitions:
       X-User-Id: "{{ config['user_id'] }}"
   offset_paginator:
     type: DefaultPaginator
-    $options:
+    $parameters:
       url_base: "*ref(definitions.requester.url_base)"
       page_size: 1
     page_size_option:
@@ -50,7 +50,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   teams_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "teams"
       primary_key: "_id"
       path: "/teams.list"
@@ -58,13 +58,13 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     retriever:
       $ref: "*ref(definitions.custom_retriever)"
-    $options:
+    $parameters:
       name: "rooms"
       primary_key: "_id"
       path: "/rooms.get"
   channels_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "channels"
       primary_key: "_id"
       path: "/channels.list"
@@ -77,7 +77,7 @@ definitions:
         type: NoPagination
       requester:
         $ref: "*ref(definitions.requester)"
-    $options:
+    $parameters:
       name: "roles"
       primary_key: "_id"
       path: "/roles.list"
@@ -85,13 +85,13 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     retriever:
       $ref: "*ref(definitions.custom_retriever)"
-    $options:
+    $parameters:
       name: "subscriptions"
       primary_key: "_id"
       path: "/subscriptions.get"
   users_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "users"
       primary_key: "_id"
       path: "/users.list"

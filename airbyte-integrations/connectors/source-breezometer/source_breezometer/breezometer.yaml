@@ -18,7 +18,7 @@ definitions:
           key: "{{ config['api_key'] }}"
           lat: "{{ config['latitude'] }}"
           lon: "{{ config['longitude'] }}"
-    $options:
+    $parameters:
       name: "air_quality_current"
       primary_key: "datetime"
       path: "/air-quality/v2/current-conditions"
@@ -37,7 +37,7 @@ definitions:
           lat: "{{ config['latitude'] }}"
           lon: "{{ config['longitude'] }}"
           hours: "{{ config['hours_to_forecast'] }}"
-    $options:
+    $parameters:
       name: "air_quality_forecast"
       primary_key: "datetime"
       path: "/air-quality/v2/forecast/hourly"
@@ -56,7 +56,7 @@ definitions:
           lat: "{{ config['latitude'] }}"
           lon: "{{ config['longitude'] }}"
           hours: "{{ config['historic_hours'] }}"
-    $options:
+    $parameters:
       name: "air_quality_historical"
       primary_key: "datetime"
       path: "/air-quality/v2/historical/hourly"
@@ -75,7 +75,7 @@ definitions:
           lat: "{{ config['latitude'] }}"
           lon: "{{ config['longitude'] }}"
           days: "{{ config['days_to_forecast'] }}"
-    $options:
+    $parameters:
       name: "pollen_forecast"
       primary_key: "index_id"
       path: "/pollen/v2/forecast/daily"
@@ -93,7 +93,7 @@ definitions:
           key: "{{ config['api_key'] }}"
           lat: "{{ config['latitude'] }}"
           lon: "{{ config['longitude'] }}"
-    $options:
+    $parameters:
       name: "weather_current"
       primary_key: "datetime"
       path: "/weather/v1/current-conditions"
@@ -112,7 +112,7 @@ definitions:
           lat: "{{ config['latitude'] }}"
           lon: "{{ config['longitude'] }}"
           days: "{{ config['days_to_forecast'] }}"
-    $options:
+    $parameters:
       name: "weather_forecast"
       path: "/weather/v1/forecast/daily"
 
@@ -130,7 +130,7 @@ definitions:
           lat: "{{ config['latitude'] }}"
           lon: "{{ config['longitude'] }}"
           radius: "{{ config['radius'] }}"
-    $options:
+    $parameters:
       name: "wildfire_burnt_area"
       path: "/fires/v1/burnt-area"
 
@@ -148,7 +148,7 @@ definitions:
           lat: "{{ config['latitude'] }}"
           lon: "{{ config['longitude'] }}"
           radius: "{{ config['radius'] }}"
-    $options:
+    $parameters:
       name: "wildfire_locate"
       path: "/fires/v1/locate-and-track"
 

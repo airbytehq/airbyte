@@ -13,7 +13,7 @@ definitions:
       password: "{{ config['api_key_secret'] }}"
   offset_paginator:
     type: DefaultPaginator
-    $options:
+    $parameters:
       url_base: "*ref(definitions.requester.url_base)"
     pagination_strategy:
       type: "OffsetIncrement"
@@ -43,7 +43,7 @@ definitions:
         $ref: "*ref(definitions.offset_paginator)"
       requester:
         $ref: "*ref(definitions.requester)"
-    $options:
+    $parameters:
       name: "contactslist"
       primary_key: "ID"
       path: "/contactslist"
@@ -56,19 +56,19 @@ definitions:
         $ref: "*ref(definitions.offset_paginator)"
       requester:
         $ref: "*ref(definitions.requester)"
-    $options:
+    $parameters:
       name: "contacts"
       primary_key: "ID"
       path: "/contact"
   stats_api_lifetime_message_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "stats_api_lifetime_message"
       primary_key: "APIKeyID"
       path: "/statcounters?CounterSource=APIKey&CounterResolution=Lifetime&CounterTiming=Message"
   campaign_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "campaign"
       primary_key: "ID"
       path: "/campaign"
@@ -81,7 +81,7 @@ definitions:
         $ref: "*ref(definitions.offset_paginator)"
       requester:
         $ref: "*ref(definitions.requester)"
-    $options:
+    $parameters:
       name: "message"
       primary_key: "ID"
       path: "/message"

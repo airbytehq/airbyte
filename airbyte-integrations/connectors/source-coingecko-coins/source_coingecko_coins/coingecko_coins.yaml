@@ -45,13 +45,13 @@ definitions:
       $ref: "*ref(definitions.sliced_retriever)"
   market_chart_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "market_chart"
       path: "/market_chart"
       primary_key: "prices"
   history_stream:
     $ref: "*ref(definitions.sliced_stream)"
-    $options:
+    $parameters:
       name: "history"
       path: "/history"
     transformations:

@@ -41,7 +41,7 @@ definitions:
   # API Docs: https://developers.mailerlite.com/docs/subscribers.html
   subscribers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "subscribers"
       primary_key: "id"
       path: "/subscribers"
@@ -53,7 +53,7 @@ definitions:
   # API Docs: https://developers.mailerlite.com/docs/segments.html
   segments_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "segments"
       primary_key: "id"
       path: "/segments"
@@ -68,7 +68,7 @@ definitions:
   # API Docs: https://developers.mailerlite.com/docs/automations.html
   automations_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "automations"
       primary_key: "id"
       path: "/automations"
@@ -83,7 +83,7 @@ definitions:
   # API Docs: https://developers.mailerlite.com/docs/campaigns.html
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns"
@@ -95,7 +95,7 @@ definitions:
   # API Docs: https://developers.mailerlite.com/docs/timezones.html
   timezones_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "timezones"
       primary_key: "id"
       path: "/timezones"
@@ -103,7 +103,7 @@ definitions:
   # API Docs: https://developers.mailerlite.com/docs/forms.html
   forms_popup_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "forms_popup"
       primary_key: "id"
       path: "/forms/popup"
@@ -115,7 +115,7 @@ definitions:
   # API Docs: https://developers.mailerlite.com/docs/forms.html
   forms_embedded_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "forms_embedded"
       primary_key: "id"
       path: "/forms/embedded"
@@ -127,7 +127,7 @@ definitions:
   # API Docs: https://developers.mailerlite.com/docs/forms.html
   forms_promotion_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "forms_promotion"
       primary_key: "id"
       path: "/forms/promotion"

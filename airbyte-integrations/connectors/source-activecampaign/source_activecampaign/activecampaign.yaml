@@ -4,7 +4,7 @@ definitions:
   selector:
     extractor:
       # API Docs: https://developers.activecampaign.com/reference/schema
-      field_pointer: ["{{ options['name'] }}"]
+      field_pointer: ["{{ parameters['name'] }}"]
 
   requester:
     # API Docs: https://developers.activecampaign.com/reference/url
@@ -43,7 +43,7 @@ definitions:
   # API Docs: https://developers.activecampaign.com/reference/list-all-campaigns
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns"
@@ -51,7 +51,7 @@ definitions:
   # API Docs: https://developers.activecampaign.com/reference/list-all-contacts
   contacts_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "contacts"
       primary_key: "id"
       path: "/contacts"
@@ -59,7 +59,7 @@ definitions:
   # API Docs: https://developers.activecampaign.com/reference/list-all-deals
   deals_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "deals"
       primary_key: "id"
       path: "/deals"
@@ -67,7 +67,7 @@ definitions:
   # API Docs: https://developers.activecampaign.com/reference/retrieve-all-lists
   lists_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "lists"
       primary_key: "id"
       path: "/lists"
@@ -75,7 +75,7 @@ definitions:
   # API Docs: https://developers.activecampaign.com/reference/list-all-segments
   segments_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "segments"
       primary_key: "id"
       path: "/segments"
@@ -83,7 +83,7 @@ definitions:
   # API Docs: https://developers.activecampaign.com/reference/forms-1
   forms_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "forms"
       primary_key: "id"
       path: "/forms"

@@ -10,31 +10,31 @@ definitions:
       query: |
         {{
           config['query']
-          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
           else ''
         }}
       orientation: |
         {{
           config['orientation']
-          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
           else ''
         }}
       size: |
         {{
           config['size']
-          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
           else ''
         }}
       locale: |
         {{
           config['locale']
-          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
           else ''
         }}
       color: |
         {{
           config['color']
-          if options['name'] == 'photos_search'
+          if parameters['name'] == 'photos_search'
           else ''
         }}
 
@@ -66,14 +66,14 @@ definitions:
   base_stream:
     schema_loader:
       type: JsonSchema
-      file_path: "./source_pexels_api/schemas/{{ options['name'] }}.json"
+      file_path: "./source_pexels_api/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "*ref(definitions.retriever)"
 
   page_stream:
     schema_loader:
       type: JsonSchema
-      file_path: "./source_pexels_api/schemas/{{ options['name'] }}.json"
+      file_path: "./source_pexels_api/schemas/{{ parameters['name'] }}.json"
     retriever:
       record_selector:
         $ref: "*ref(definitions.selector)"
@@ -94,31 +94,31 @@ definitions:
 
   photos_search_stream:
     $ref: "*ref(definitions.page_stream)"
-    $options:
+    $parameters:
       name: "photos_search"
       path: "/v1/search"
 
   photos_curated_stream:
     $ref: "*ref(definitions.page_stream)"
-    $options:
+    $parameters:
       name: "photos_curated"
       path: "/v1/curated"
 
   videos_search_stream:
     $ref: "*ref(definitions.page_stream)"
-    $options:
+    $parameters:
       name: "videos_search"
       path: "/videos/search"
 
   videos_popular_stream:
     $ref: "*ref(definitions.page_stream)"
-    $options:
+    $parameters:
       name: "videos_popular"
       path: "/videos/popular"
 
   collection_featured_stream:
     $ref: "*ref(definitions.page_stream)"
-    $options:
+    $parameters:
       name: "collection_featured"
       path: "/v1/collections/featured"
 

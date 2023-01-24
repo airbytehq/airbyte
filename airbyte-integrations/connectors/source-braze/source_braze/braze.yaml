@@ -7,7 +7,7 @@ definitions:
       field_pointer: ["data"]
   list_selector:
     extractor:
-      field_pointer: ["{{ options['name'] }}"]
+      field_pointer: ["{{ parameters['name'] }}"]
 
   # ----- Requester -----
   requester:
@@ -43,25 +43,25 @@ definitions:
   # ----- Parent streams -----
   campaigns_stream:
     $ref: "*ref(definitions.list_stream)"
-    $options:
+    $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns/list"
   canvases_stream:
     $ref: "*ref(definitions.list_stream)"
-    $options:
+    $parameters:
       name: "canvases"
       primary_key: "id"
       path: "/canvas/list"
   cards_stream:
     $ref: "*ref(definitions.list_stream)"
-    $options:
+    $parameters:
       name: "cards"
       primary_key: "id"
       path: "/feed/list"
   segments_stream:
     $ref: "*ref(definitions.list_stream)"
-    $options:
+    $parameters:
       name: "segments"
       primary_key: "id"
       path: "/segments/list"
@@ -72,7 +72,7 @@ definitions:
         fields:
           - path: ["event_name"]
             value: "{{ record }}"
-    $options:
+    $parameters:
       name: "events"
       path: "/events/list"
 
@@ -115,21 +115,21 @@ definitions:
     retriever:
       $ref: "*ref(definitions.sliced_retriever)"
     stream_cursor_field: "time"
-    $options:
+    $parameters:
       name: "kpi_daily_new_users"
       path: "/kpi/new_users/data_series"
   kpi_daily_active_users_stream:
     retriever:
       $ref: "*ref(definitions.sliced_retriever)"
     stream_cursor_field: "time"
-    $options:
+    $parameters:
       name: "kpi_daily_active_users"
       path: "/kpi/dau/data_series"
   kpi_daily_app_uninstalls_stream:
     retriever:
       $ref: "*ref(definitions.sliced_retriever)"
     stream_cursor_field: "time"
-    $options:
+    $parameters:
       name: "kpi_daily_app_uninstalls"
       path: "/kpi/uninstalls/data_series"
 
@@ -249,27 +249,27 @@ definitions:
 
   campaigns_analytics_stream:
     $ref: "*ref(definitions.campaigns_analytics_substream_config)"
-    $options:
+    $parameters:
       name: "campaigns_analytics"
       path: "/campaigns/data_series"
   canvases_analytics_stream:
     $ref: "*ref(definitions.canvases_analytics_substream_config)"
-    $options:
+    $parameters:
       name: "canvases_analytics"
       path: "/canvas/data_series"
   cards_analytics_stream:
     $ref: "*ref(definitions.cards_analytics_substream_config)"
-    $options:
+    $parameters:
       name: "cards_analytics"
       path: "/feed/data_series"
   segments_analytics_stream:
     $ref: "*ref(definitions.segments_analytics_substream_config)"
-    $options:
+    $parameters:
       name: "segments_analytics"
       path: "/segments/data_series"
   events_analytics_stream:
     $ref: "*ref(definitions.events_analytics_substream_config)"
-    $options:
+    $parameters:
       name: "events_analytics"
       path: "/events/data_series"
 

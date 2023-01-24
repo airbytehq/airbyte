@@ -34,7 +34,7 @@ definitions:
   # API Docs: https://emailoctopus.com/api-documentation/campaigns/get-all
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns"
@@ -51,7 +51,7 @@ definitions:
   # API Docs: https://emailoctopus.com/api-documentation/lists/get-all
   lists_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "lists"
       primary_key: "id"
       path: "/lists"

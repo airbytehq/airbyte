@@ -35,7 +35,7 @@ definitions:
     url_base: "*ref(definitions.base_requester.url_base)"
   latest_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "latest"
       primary_key: "link"
       path: "/news"
@@ -54,7 +54,7 @@ definitions:
         $ref: "*ref(definitions.cursor_paginator)"
   sources_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "sources"
       primary_key: "id"
       path: "/sources"

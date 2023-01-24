@@ -23,10 +23,10 @@ class DatetimeStreamSlicerComponent(DatetimeStreamSlicer):
     step_option: Optional[RequestOption] = None
     stream_state_field_step: Optional[str] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        super(DatetimeStreamSlicerComponent, self).__post_init__(options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        super(DatetimeStreamSlicerComponent, self).__post_init__(parameters=parameters)
 
-        self.stream_slice_field_step = InterpolatedString.create(self.stream_state_field_step or "step", options=options)
+        self.stream_slice_field_step = InterpolatedString.create(self.stream_state_field_step or "step", parameters=parameters)
 
         if self.step_option and self.step_option.inject_into == RequestOptionType.path:
             raise ValueError("Step cannot be passed by path")

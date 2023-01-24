@@ -22,9 +22,9 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
     page_id: Union[InterpolatedString, str]
     access_token: Union[InterpolatedString, str]
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._page_id = InterpolatedString.create(self.page_id, options=options).eval(self.config)
-        self._access_token = InterpolatedString.create(self.access_token, options=options).eval(self.config)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._page_id = InterpolatedString.create(self.page_id, parameters=parameters).eval(self.config)
+        self._access_token = InterpolatedString.create(self.access_token, parameters=parameters).eval(self.config)
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Attach the page access token to params to authenticate on the HTTP request"""

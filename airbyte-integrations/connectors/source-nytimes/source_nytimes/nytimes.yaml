@@ -28,8 +28,8 @@ definitions:
         step: "P1M"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: "PT1S"
-        cursor_field: "{{ options['stream_cursor_field'] }}"
-    $options:
+        cursor_field: "{{ parameters['stream_cursor_field'] }}"
+    $parameters:
       name: "archive"
       primary_key: "_id"
       path: "/archive/v1/{{ stream_slice['start_time'].split('-')[0] | int }}/{{ stream_slice['start_time'].split('-')[1] | int }}.json"
@@ -40,7 +40,7 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["results"]
-    $options:
+    $parameters:
       name: "most_popular_emailed"
       primary_key: "id"
       path: "/mostpopular/v2/emailed/{{ config['period'] }}.json"
@@ -50,7 +50,7 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["results"]
-    $options:
+    $parameters:
       name: "most_popular_shared"
       primary_key: "id"
       path: "/mostpopular/v2/shared/{{ config['period'] }}{% if 'share_type' in config %}/{{ config['share_type'] }}{% endif %}.json"
@@ -60,7 +60,7 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["results"]
-    $options:
+    $parameters:
       name: "most_popular_viewed"
       primary_key: "id"
       path: "/mostpopular/v2/viewed/{{ config['period'] }}.json"

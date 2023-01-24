@@ -21,7 +21,7 @@ definitions:
       datetime: "{{ now_utc().strftime('%s') }}"
       datetime_format: "%s"
     step: "P1D"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
     start_time_option:
       field_name: "date_from"
       inject_into: "request_parameter"
@@ -53,7 +53,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   activity_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "activity"
       primary_key: "id"
       path: "/activity/{{ config['domain_id'] }}"
