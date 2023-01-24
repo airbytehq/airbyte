@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.22.0
+Surface the resolved manifest in the CDK
+
+## 0.21.0
+Add AvailabilityStrategy concept and use check_availability within CheckStream
+
+## 0.20.2
+Add missing package in previous patch release
+
 ## 0.20.1
 Handle edge cases for CheckStream - checking connection to empty stream, and checking connection to substream with no parent records
 

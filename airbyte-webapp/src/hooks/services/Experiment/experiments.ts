@@ -28,4 +28,5 @@ export interface Experiments {
   "connection.autoDetectSchemaChanges": boolean;
   "connection.columnSelection": boolean;
   "connection.newTableDesign": boolean;
+  "workspace.freeConnectorsProgram.visible": boolean;
 }

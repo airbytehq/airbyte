@@ -170,18 +170,18 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @VisibleForTesting
-  <T, U> SynchronousResponse<T> execute(final ConfigType configType,
-                                        final ConnectorJobReportingContext jobContext,
-                                        @Nullable final UUID connectorDefinitionId,
-                                        final Supplier<TemporalResponse<U>> executor,
-                                        final Function<U, T> outputMapper,
-                                        final UUID workspaceId) {
+  <T> SynchronousResponse<T> execute(final ConfigType configType,
+                                     final ConnectorJobReportingContext jobContext,
+                                     @Nullable final UUID connectorDefinitionId,
+                                     final Supplier<TemporalResponse<ConnectorJobOutput>> executor,
+                                     final Function<ConnectorJobOutput, T> outputMapper,
+                                     final UUID workspaceId) {
     final long createdAt = Instant.now().toEpochMilli();
     final UUID jobId = jobContext.jobId();
     try {
       track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null);
-      final TemporalResponse<U> temporalResponse = executor.get();
-      final Optional<U> jobOutput = temporalResponse.getOutput();
+      final TemporalResponse<ConnectorJobOutput> temporalResponse = executor.get();
+      final Optional<ConnectorJobOutput> jobOutput = temporalResponse.getOutput();
       final T mappedOutput = jobOutput.map(outputMapper).orElse(null);
       final JobState outputState = temporalResponse.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
 
@@ -194,6 +194,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       final long endedAt = Instant.now().toEpochMilli();
       return SynchronousResponse.fromTemporalResponse(
           temporalResponse,
+          jobOutput.orElse(null),
           mappedOutput,
           jobId,
           configType,

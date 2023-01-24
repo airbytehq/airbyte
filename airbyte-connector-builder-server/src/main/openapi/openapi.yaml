@@ -69,6 +69,27 @@ paths:
               schema:
                 type: string
                 description: Connector manifest template string
+  /v1/manifest/resolve:
+    post:
+      summary: Given a JSON manifest, returns a JSON manifest with all of the $refs and $options resolved and flattened
+      operationId: resolveManifest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolveManifestRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResolveManifest"
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
 
 components:
   schemas:
@@ -237,6 +258,22 @@ components:
               #   description: list of slices that will be retrieved for this stream
               #   items:
               #     type: object
+    ResolveManifestRequestBody:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: object
+          description: The config-based connector manifest contents
+    ResolveManifest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: object
+          description: The config-based connector manifest contents with $refs and $options resolved
 
     # The following exception structs were copied from airbyte-api/src/main/openapi/config.yaml
     InvalidInputProperty:

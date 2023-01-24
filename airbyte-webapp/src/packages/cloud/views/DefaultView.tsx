@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import { useExperiment } from "hooks/services/Experiment";
 
 import { RoutePaths } from "../../../pages/routePaths";
-import { CloudRoutes } from "../cloudRoutes";
+import { CloudRoutes } from "../cloudRoutePaths";
 import { EXP_SOURCE_SIGNUP_SELECTOR } from "../components/experiments/constants";
 import { useListCloudWorkspaces } from "../services/workspaces/CloudWorkspacesService";
 

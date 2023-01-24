@@ -17,7 +17,7 @@ jest.doMock("hooks/services/ConnectionEdit/ConnectionEditService", () => ({
 
 const mockUseRefreshSourceSchemaWithConfirmationOnDirty = jest.fn();
 
-jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty", () => ({
+jest.doMock("components/connection/ConnectionForm/refreshSourceSchemaWithConfirmationOnDirty", () => ({
   useRefreshSourceSchemaWithConfirmationOnDirty: mockUseRefreshSourceSchemaWithConfirmationOnDirty,
 }));
 
