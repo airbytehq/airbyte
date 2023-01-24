@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public class TeradataDestinationSSLAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationAcceptanceTest.class);
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
@@ -55,14 +55,16 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   public JsonNode getStaticConfig() throws Exception {
-    final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
+    final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/sslconfig.json")));
+    ((ObjectNode) config).put("ssl", true);
+    ((ObjectNode) config).put("sslmode", "require");
     return config;
   }
 
   @Override
   protected JsonNode getFailCheckConfig() throws Exception {
     final JsonNode credentialsJsonString = Jsons
-        .deserialize(Files.readString(Paths.get("secrets/failureconfig.json")));
+        .deserialize(Files.readString(Paths.get("secrets/failuresslconfig.json")));
     final AirbyteConnectionStatus check = new TeradataDestination().check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
     return credentialsJsonString;
@@ -93,9 +95,9 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    final String schemaName = Strings.addRandomSuffix("integration_test_teradata", "_", 5);
+    final String schemaName = Strings.addRandomSuffix("ab_td_inttest", "_", 5);
     final String createSchemaQuery = String
-        .format(String.format("CREATE DATABASE \"%s\" AS PERMANENT = 60e6, SPOOL = 60e6 SKEW = 10 PERCENT", schemaName));
+        .format(String.format("CREATE DATABASE \"%s\" AS PERM = 60e6, SPOOL = 60e6 SKEW = 10 PERCENT", schemaName));
     try {
       this.configJson = Jsons.clone(getStaticConfig());
       ((ObjectNode) configJson).put("schema", schemaName);
