@@ -37,8 +37,6 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.ActorType;
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSourceDefinition;
