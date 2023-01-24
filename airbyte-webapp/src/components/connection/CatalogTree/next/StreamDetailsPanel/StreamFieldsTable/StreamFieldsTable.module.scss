@@ -24,7 +24,7 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
     border-radius: 0;
   }
 
-  &:last-child {
+  &:not(:first-child) {
     padding-left: 0;
   }
 }
@@ -43,7 +43,7 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
     border-radius: 0;
   }
 
-  &:last-child {
+  &:not(:first-child) {
     padding-left: 0;
     border-radius: 0;
   }

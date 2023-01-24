@@ -32,7 +32,7 @@
   line-height: 12px;
   font-weight: 600;
   width: auto;
-  padding: vars.$spacing-lg vars.$spacing-xl vars.$spacing-lg;
+  padding: vars.$spacing-md vars.$spacing-lg vars.$spacing-md;
 
   &.light {
     background: none;
@@ -84,7 +84,7 @@
 // --------- <td/> ---------
 
 .td {
-  padding: vars.$spacing-2xl vars.$spacing-xl;
+  padding: vars.$spacing-lg vars.$spacing-md;
   font-size: 12px;
   line-height: 15px;
   font-weight: normal;
