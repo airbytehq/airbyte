@@ -242,9 +242,7 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
         await authService.resetPassword(email);
       },
       async sendEmailVerification(): Promise<void> {
-        try {
-          await authService.sendEmailVerifiedLink();
-        } catch (error) {
+        return authService.sendEmailVerifiedLink().catch((error) => {
           switch (error.code) {
             case AuthErrorCodes.NETWORK_REQUEST_FAILED:
               registerNotification({
@@ -273,8 +271,7 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
                 type: ToastType.ERROR,
               });
           }
-          throw error;
-        }
+        });
       },
       async verifyEmail(code: string): Promise<void> {
         await authService.confirmEmailVerify(code);
