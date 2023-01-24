@@ -29,6 +29,8 @@ acceptance_tests:
             bypass_reason: "Cannot populate with test data"
           - name: "subscription"
             bypass_reason: "Unstable data. Field current_term_start updated daily"
+          - name: "event"
+            bypass_reason: "Unstable data. Depends on subscription"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
