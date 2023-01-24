@@ -627,6 +627,17 @@
   "ui.secretTextArea.hidden": "Contents hidden. Click to show.",
   "ui.stepIndicator.currentStep": "(current step)",
 
+  "airbyte.datatype.WellKnownTypes.json#/definitions/String": "String",
+  "airbyte.datatype.WellKnownTypes.json#/definitions/BinaryData": "Binary Data",
+  "airbyte.datatype.WellKnownTypes.json#/definitions/Number": "Number",
+  "airbyte.datatype.WellKnownTypes.json#/definitions/Integer": "Integer",
+  "airbyte.datatype.WellKnownTypes.json#/definitions/Boolean": "Boolean",
+  "airbyte.datatype.WellKnownTypes.json#/definitions/Date": "Date",
+  "airbyte.datatype.WellKnownTypes.json#/definitions/TimestampWithTimezone": "Timestamp with Timezone",
+  "airbyte.datatype.WellKnownTypes.json#/definitions/TimestampWithoutTimezone": "Timestamp without Timezone",
+  "airbyte.datatype.WellKnownTypes.json#/definitions/TimeWithTimezone": "Time with Timezone",
+  "airbyte.datatype.WellKnownTypes.json#/definitions/TimeWithoutTimezone": "Time without Timezone",
+
   "airbyte.datatype.string": "String",
   "airbyte.datatype.date": "Date",
   "airbyte.datatype.timestamp_with_timezone": "Timestamp with Timezone",

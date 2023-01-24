@@ -3,6 +3,7 @@ import { useIntl } from "react-intl";
 
 export interface AirbyteConnectorData {
   type: string;
+  $ref?: string;
   format?: string;
   airbyte_type?: string;
   anyOf?: unknown[];
@@ -13,10 +14,10 @@ const getType = (data: AirbyteConnectorData): string => {
   if (data.oneOf || data.anyOf) {
     return "union";
   }
-  if (!data.anyOf && !data.oneOf && !data.airbyte_type && !data.format && !data.type) {
+  if (!data.anyOf && !data.oneOf && !data.airbyte_type && !data.format && !data.type && !data.$ref) {
     return "unknown";
   }
-  return data.airbyte_type ?? data.format ?? data.type;
+  return data.$ref ?? data.airbyte_type ?? data.format ?? data.type;
 };
 
 export const useTranslateDataType = (props: AirbyteConnectorData) => {
