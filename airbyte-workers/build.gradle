@@ -91,6 +91,7 @@ dependencies {
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
     testImplementation project(':airbyte-test-utils')
+    testImplementation 'org.bouncycastle:bcprov-jdk15on:1.70'
 
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation libs.bundles.micronaut.test
