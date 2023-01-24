@@ -27,11 +27,11 @@
                 },
                 "published": {
                     "type": "string",
-                    "format": "date-time"
+                    "format": "string"
                 },
                 "lastModified": {
                     "type": "string",
-                    "format": "date-time"
+                    "format": "string"
                 },
                 "evaluatorComment": {
                     "type": "string"
@@ -281,7 +281,7 @@
                 },
                 "lastModified": {
                     "type": "string",
-                    "format": "date-time"
+                    "format": "string"
                 }
             },
             "required": [

@@ -60,11 +60,11 @@
                 },
                 "created": {
                     "type": "string",
-                    "format": "date-time"
+                    "format": "string"
                 },
                 "lastModified": {
                     "type": "string",
-                    "format": "date-time"
+                    "format": "string"
                 },
                 "titles": {
                     "type": "array",
