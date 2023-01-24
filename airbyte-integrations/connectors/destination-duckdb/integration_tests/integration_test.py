@@ -15,7 +15,6 @@ import duckdb
 import pytest
 from airbyte_cdk.models import (
     AirbyteMessage,
-    AirbyteStateMessage,
     AirbyteRecordMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,

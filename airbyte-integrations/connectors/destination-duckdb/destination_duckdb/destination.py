@@ -136,7 +136,6 @@ class DestinationDuckdb(Destination):
 
             con.executemany(query, buffer[stream_name])
             con.commit()
-            con.close()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """

@@ -31,7 +31,7 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.TIDB.value: 64,
     # According to the DuckDB team there no restriction: We don't enforce a maximum right now but I would not recommend having column names
     # longer than a few kilobytes. https://discord.com/channels/909674491309850675/1067042662827438122/1067043835768737893.
-    DestinationType.DUCKDB.value: 255,
+    DestinationType.DUCKDB.value: 64,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
