@@ -1,14 +1,13 @@
-import { useFormikContext, setIn, useField } from "formik";
 import clone from "lodash/clone";
 import get from "lodash/get";
 import React, { useCallback, useMemo } from "react";
+import { useFormContext } from "react-hook-form";
 
 import GroupControls from "components/GroupControls";
 import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { FormConditionItem } from "core/form/types";
 
-import { ConnectorFormValues } from "../../types";
 import { setDefaultValues } from "../../useBuildForm";
 import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
@@ -25,9 +24,10 @@ interface ConditionSectionProps {
  * ConditionSection is responsible for handling oneOf sections of form
  */
 export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
-  const { values, setValues } = useFormikContext<ConnectorFormValues>();
+  const { getFieldState, getValues, setValue } = useFormContext();
 
-  const [, meta] = useField(path);
+  const values = getValues();
+  const meta = getFieldState(path);
 
   // the value at selectionPath determines which condition is selected
   const currentSelectionValue = get(values, formField.selectionPath);
@@ -46,9 +46,9 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       conditionValues[formField.selectionKey] = formField.selectionConstValues[selectedItem.value];
       setDefaultValues(newSelectedFormBlock, conditionValues, { respectExistingValues: true });
 
-      setValues(setIn(values, path, conditionValues));
+      setValue(path, conditionValues);
     },
-    [formField.conditions, formField.selectionKey, formField.selectionConstValues, values, path, setValues]
+    [formField.conditions, formField.selectionKey, formField.selectionConstValues, values, path, setValue]
   );
 
   const options = useMemo(
@@ -72,7 +72,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
             value={currentlySelectedCondition}
             name={formField.path}
             isDisabled={disabled}
-            error={typeof meta.error === "string" && !!meta.error}
+            error={typeof meta.error?.message === "string" && !!meta.error}
           />
         }
         controlClassName={styles.dropdown}

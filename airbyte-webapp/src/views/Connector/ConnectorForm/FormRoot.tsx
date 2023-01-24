@@ -1,5 +1,5 @@
-import { Form, useFormikContext } from "formik";
 import React from "react";
+import { useFormContext } from "react-hook-form";
 
 import { FormBlock } from "core/form/types";
 
@@ -7,7 +7,6 @@ import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
 import { useConnectorForm } from "./connectorFormContext";
-import { ConnectorFormValues } from "./types";
 
 interface FormRootProps {
   formFields: FormBlock;
@@ -44,11 +43,17 @@ export const FormRoot: React.FC<FormRootProps> = ({
   onCancel,
   onReset,
 }) => {
-  const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
+  const {
+    formState: { isDirty, isSubmitting, isValid },
+    watch,
+  } = useFormContext();
   const { resetConnectorForm, isEditMode, formType } = useConnectorForm();
 
+  const vals = watch();
+  console.log("current form state", vals);
+
   return (
-    <Form>
+    <>
       <div className={bodyClassName}>
         <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       </div>
@@ -62,7 +67,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
             formType={formType}
             onRetestClick={onRetest}
             isValid={isValid}
-            dirty={dirty}
+            dirty={isDirty}
             onCancelClick={() => {
               resetConnectorForm();
             }}
@@ -82,6 +87,6 @@ export const FormRoot: React.FC<FormRootProps> = ({
           />
         )}
       </div>
-    </Form>
+    </>
   );
 };

@@ -1,5 +1,5 @@
-import { useField } from "formik";
 import React from "react";
+import { useFormContext } from "react-hook-form";
 import { FormattedMessage } from "react-intl";
 
 import { LabeledSwitch } from "components";
@@ -19,16 +19,18 @@ interface PropertySectionProps {
 
 export const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disabled }) => {
   const propertyPath = path ?? property.path;
-  const formikBag = useField(propertyPath);
-  const [field, meta] = formikBag;
+  const { register, watch, getFieldState } = useFormContext();
+
+  const meta = getFieldState(propertyPath);
+  const fieldValue = watch(propertyPath);
 
   const labelText = property.title || property.fieldKey;
 
   if (property.type === "boolean") {
-    const switchId = `switch-${field.name}`;
+    const switchId = `switch-${propertyPath}`;
     return (
       <LabeledSwitch
-        {...field}
+        {...register(propertyPath)}
         id={switchId}
         label={
           <PropertyLabel
@@ -39,16 +41,16 @@ export const PropertySection: React.FC<PropertySectionProps> = ({ property, path
             htmlFor={switchId}
           />
         }
-        value={field.value ?? property.default}
+        value={fieldValue ?? property.default}
         disabled={disabled}
       />
     );
   }
 
-  const hasError = !!meta.error && meta.touched;
+  const hasError = !!meta.error && meta.isTouched;
 
-  const errorValues = meta.error === "form.pattern.error" ? { pattern: property.pattern } : undefined;
-  const errorMessage = <FormattedMessage id={meta.error} values={errorValues} />;
+  const errorValues = meta.error?.message === "form.pattern.error" ? { pattern: property.pattern } : undefined;
+  const errorMessage = <FormattedMessage id={meta.error?.message} values={errorValues} />;
 
   return (
     <PropertyLabel className={styles.defaultLabel} property={property} label={labelText}>

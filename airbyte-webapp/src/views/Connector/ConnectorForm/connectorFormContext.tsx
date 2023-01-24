@@ -1,5 +1,5 @@
-import { useFormikContext } from "formik";
 import React, { useContext, useMemo } from "react";
+import { useFormContext } from "react-hook-form";
 import { AnySchema } from "yup";
 
 import {
@@ -51,7 +51,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
   isEditMode,
   connectorId,
 }) => {
-  const { resetForm } = useFormikContext<ConnectorFormValues>();
+  const { reset } = useFormContext();
 
   const ctx = useMemo<ConnectorFormContext>(() => {
     const context: ConnectorFormContext = {
@@ -63,7 +63,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
       isEditMode,
       connectorId,
       resetConnectorForm: () => {
-        resetForm();
+        reset();
       },
     };
     return context;
@@ -75,7 +75,7 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
     validationSchema,
     isEditMode,
     connectorId,
-    resetForm,
+    reset,
   ]);
 
   return <connectorFormContext.Provider value={ctx}>{children}</connectorFormContext.Provider>;

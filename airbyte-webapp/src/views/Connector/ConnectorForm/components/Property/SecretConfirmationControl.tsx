@@ -1,5 +1,5 @@
-import { useField, useFormikContext } from "formik";
 import React, { useEffect, useRef, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
@@ -25,20 +25,28 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
   error,
   onChange,
 }) => {
-  const [field, , helpers] = useField(name);
   const [previousValue, setPreviousValue] = useState<unknown>(undefined);
   const isEditInProgress = Boolean(previousValue);
   const controlRef = useRef<HTMLInputElement>(null);
 
-  const { dirty, touched } = useFormikContext();
+  const {
+    formState: { isDirty: dirty, touchedFields },
+    register,
+    setValue,
+    watch,
+  } = useFormContext();
+
+  const fieldValue = watch(name);
+
+  const touched = Object.keys(touchedFields).length;
 
   const component =
     multiline && (isEditInProgress || !showButtons) ? (
       <SecretTextArea
-        {...field}
+        {...register(name)}
         onChange={onChange}
         autoComplete="off"
-        value={field.value ?? ""}
+        value={fieldValue ?? ""}
         rows={3}
         error={error}
         // eslint-disable-next-line jsx-a11y/no-autofocus
@@ -47,10 +55,10 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
       />
     ) : (
       <Input
-        {...field}
+        {...register(name)}
         onChange={onChange}
         autoComplete="off"
-        value={field.value ?? ""}
+        value={fieldValue ?? ""}
         type="password"
         error={error}
         ref={controlRef}
@@ -62,7 +70,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
     if (!dirty && !touched && previousValue) {
       setPreviousValue(undefined);
     }
-  }, [dirty, helpers, previousValue, touched]);
+  }, [dirty, previousValue, touched]);
 
   if (!showButtons) {
     return <>{component}</>;
@@ -73,8 +81,8 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
       controlRef.current?.removeAttribute?.("disabled");
       controlRef.current?.focus?.();
     }
-    setPreviousValue(field.value);
-    helpers.setValue("");
+    setPreviousValue(fieldValue);
+    setValue(name, "");
   };
 
   const onDone = () => {
@@ -83,7 +91,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
 
   const onCancel = () => {
     if (previousValue) {
-      helpers.setValue(previousValue);
+      setValue(name, previousValue);
     }
     setPreviousValue(undefined);
   };

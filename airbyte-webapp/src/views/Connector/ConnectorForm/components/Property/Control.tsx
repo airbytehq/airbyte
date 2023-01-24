@@ -1,5 +1,5 @@
-import { Field, useField } from "formik";
 import React, { useCallback } from "react";
+import { useFormContext } from "react-hook-form";
 
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
@@ -9,7 +9,6 @@ import { TextArea } from "components/ui/TextArea";
 
 import { FormBaseItem } from "core/form/types";
 import { useExperiment } from "hooks/services/Experiment";
-import { isDefined } from "utils/common";
 
 import SecretConfirmationControl from "./SecretConfirmationControl";
 
@@ -23,35 +22,36 @@ interface ControlProps {
 }
 
 export const Control: React.FC<ControlProps> = ({ property, name, disabled, error }) => {
-  const [field, meta, helpers] = useField(name);
+  const { register, setValue, watch, formState, getFieldState } = useFormContext();
+  const fieldValue = watch(name);
+  console.log(name, fieldValue);
+  const fieldState = getFieldState("firstName", formState); // It is subscribed now and reactive to error state updated
+  // const [field, meta, helpers] = useField(name);
   const useDatepickerExperiment = useExperiment("connector.form.useDatepicker", true);
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      field.onChange(e);
       if (!property.default && e.target.value === "") {
         // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
         // an empty string which might fail connector validation.
         // Do not do this if there's a default value, formik will fill it in when casting.
-        helpers.setValue(undefined);
+        setValue(name, undefined);
+      } else {
+        setValue(name, e.target.value);
       }
     },
-    [field, helpers, property.default]
+    [name, property.default, setValue]
   );
 
   if (property.type === "array" && !property.enum) {
     return (
-      <Field name={name} defaultValue={property.default || []}>
-        {() => (
-          <TagInput
-            name={name}
-            fieldValue={field.value || []}
-            onChange={(tagLabels) => helpers.setValue(tagLabels)}
-            error={!!meta.error}
-            disabled={disabled}
-          />
-        )}
-      </Field>
+      <TagInput
+        name={name}
+        fieldValue={fieldValue || []}
+        onChange={(tagLabels) => setValue(name, tagLabels)}
+        error={!!fieldState.error}
+        disabled={disabled}
+      />
     );
   }
 
@@ -64,8 +64,8 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
       <Multiselect
         name={name}
         data={data}
-        onChange={(dataItems) => helpers.setValue(dataItems)}
-        value={field.value}
+        onChange={(dataItems) => setValue(name, dataItems)}
+        value={fieldValue}
         disabled={disabled}
       />
     );
@@ -81,33 +81,32 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         error={error}
         withTime={property.format === "date-time"}
         onChange={(value) => {
-          helpers.setTouched(true);
           if (!property.default && value === "") {
             // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
             // an empty string which might fail connector validation.
             // Do not do this if there's a default value, formik will fill it in when casting.
-            helpers.setValue(undefined);
+            setValue(name, undefined);
           } else {
-            helpers.setValue(value);
+            setValue(name, value);
           }
         }}
-        value={field.value}
+        value={fieldValue}
         disabled={disabled}
-        onBlur={() => helpers.setTouched(true)}
+        onBlur={() => setValue(name, fieldValue)}
       />
     );
   }
 
-  const value = field.value ?? property.default;
+  const value = fieldValue ?? property.default;
   if (property.enum) {
     return (
       <DropDown
-        {...field}
+        {...register(name)}
         options={property.enum.map((dataItem) => ({
           label: dataItem?.toString() ?? "",
           value: dataItem?.toString() ?? "",
         }))}
-        onChange={(selectedItem) => selectedItem && helpers.setValue(selectedItem.value)}
+        onChange={(selectedItem) => selectedItem && setValue(name, selectedItem.value)}
         value={value}
         isDisabled={disabled}
         error={error}
@@ -116,7 +115,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
   } else if (property.multiline && !property.isSecret) {
     return (
       <TextArea
-        {...field}
+        {...register(name)}
         onChange={onChange}
         autoComplete="off"
         value={value ?? ""}
@@ -126,7 +125,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
       />
     );
   } else if (property.isSecret) {
-    const isFormInEditMode = isDefined(meta.initialValue);
+    const isFormInEditMode = fieldState.isDirty;
     return (
       <SecretConfirmationControl
         name={name}
@@ -142,7 +141,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
 
   return (
     <Input
-      {...field}
+      {...register(name)}
       onChange={onChange}
       placeholder={inputType === "number" ? property.default?.toString() : undefined}
       autoComplete="off"

@@ -1,6 +1,7 @@
-import { getIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
+import get from "lodash/get";
 import { useCallback, useMemo } from "react";
+import { useFormContext } from "react-hook-form";
 
 import { ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecificationDraft } from "core/domain/connector/source";
@@ -52,7 +53,7 @@ const shouldShowButtonForAdvancedAuth = (
   return (
     !predicateKey ||
     predicateKey.length === 0 ||
-    predicateValue === getIn(values, makeConnectionConfigurationPath(predicateKey))
+    predicateValue === get(values, makeConnectionConfigurationPath(predicateKey))
   );
 };
 
@@ -82,7 +83,7 @@ const shouldShowButtonForLegacyAuth = (
     isNumerical(path) ? ["oneOf", String(path)] : ["properties", String(path)]
   );
   // Get the part of the spec that `rootPath` point to
-  const credentialsSpecRoot = getIn(spec, specPath) as JSONSchema7 | undefined;
+  const credentialsSpecRoot = get(spec, specPath) as JSONSchema7 | undefined;
 
   if (!credentialsSpecRoot?.properties) {
     // if the path doesn't exist in the spec (which should not happen) we just show the auth button always.
@@ -104,7 +105,7 @@ const shouldShowButtonForLegacyAuth = (
   // Check if the value in the form matches the found `const` value from the spec. If so we know the conditional
   // is on the right option.
   const [key, constValue] = constProperty;
-  const value = getIn(values, makeConnectionConfigurationPath(stripNumericalEntries([...rootPath, key])));
+  const value = get(values, makeConnectionConfigurationPath(stripNumericalEntries([...rootPath, key])));
   return value === constValue;
 };
 
@@ -134,7 +135,12 @@ interface AuthenticationHook {
 
 export const useAuthentication = (): AuthenticationHook => {
   const { trackError } = useAppMonitoringService();
-  const { values, getFieldMeta, submitCount } = useFormikContext<ConnectorFormValues>();
+  const {
+    formState: { submitCount },
+    watch: getHookFormValues,
+    getFieldState,
+  } = useFormContext();
+  const values = getHookFormValues() as ConnectorFormValues<unknown>;
   const { getValues, selectedConnectorDefinitionSpecification: connectorSpec } = useConnectorForm();
 
   const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
@@ -213,13 +219,13 @@ export const useAuthentication = (): AuthenticationHook => {
       return {};
     }
     return implicitAuthFieldPaths.reduce<Record<string, string>>((authErrors, fieldName) => {
-      const { error } = getFieldMeta(fieldName);
+      const { error } = getFieldState(fieldName);
       if (submitCount > 0 && error) {
-        authErrors[fieldName] = error;
+        authErrors[fieldName] = error.message || error.type;
       }
       return authErrors;
     }, {});
-  }, [getFieldMeta, implicitAuthFieldPaths, isAuthButtonVisible, submitCount]);
+  }, [getFieldState, implicitAuthFieldPaths, isAuthButtonVisible, submitCount]);
 
   const shouldShowAuthButton = useCallback(
     (fieldPath: string) => {
@@ -238,7 +244,7 @@ export const useAuthentication = (): AuthenticationHook => {
   );
 
   const hasAuthFieldValues: boolean = useMemo(() => {
-    return implicitAuthFieldPaths.some((path) => !!getIn(valuesWithDefaults, path));
+    return implicitAuthFieldPaths.some((path) => !!get(valuesWithDefaults, path));
   }, [implicitAuthFieldPaths, valuesWithDefaults]);
 
   return {

@@ -1,5 +1,7 @@
-import { Formik } from "formik";
-import React, { useCallback } from "react";
+import { yupResolver } from "@hookform/resolvers/yup";
+import React, { useCallback, useEffect } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { AnyObjectSchema } from "yup";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
@@ -8,7 +10,6 @@ import {
   ConnectorDefinitionSpecification,
   SourceDefinitionSpecificationDraft,
 } from "core/domain/connector";
-import { FormikPatch } from "core/form/FormikPatch";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 
@@ -91,16 +92,22 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     [clearFormChange, formId, getValues, onSubmit]
   );
 
+  const form = useForm({
+    mode: "all",
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    defaultValues: initialValues as ConnectorFormValues<{}>,
+    resolver: yupResolver(validationSchema as AnyObjectSchema),
+  });
+
+  const reset = form.reset;
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    reset(initialValues as ConnectorFormValues<{}>);
+  }, [initialValues, reset]);
+
   return (
-    <Formik
-      validateOnBlur
-      validateOnChange
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={onFormSubmit}
-      enableReinitialize
-    >
-      {({ dirty, resetForm }) => (
+    <FormProvider {...form}>
+      <form onSubmit={form.handleSubmit((data) => onFormSubmit(data))}>
         <ConnectorFormContextProvider
           formType={formType}
           getValues={getValues}
@@ -110,8 +117,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           validationSchema={validationSchema}
           connectorId={connectorId}
         >
-          <FormikPatch />
-          <FormChangeTracker changed={dirty} formId={formId} />
+          <FormChangeTracker changed={form.formState.isDirty} formId={formId} />
           <FormRoot
             {...props}
             formFields={formFields}
@@ -120,14 +126,14 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
               onReset &&
               (() => {
                 onReset?.();
-                resetForm();
+                reset();
               })
             }
             onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
             onRetest={testConnector ? async () => await testConnector() : undefined}
           />
         </ConnectorFormContextProvider>
-      )}
-    </Formik>
+      </form>
+    </FormProvider>
   );
 };
