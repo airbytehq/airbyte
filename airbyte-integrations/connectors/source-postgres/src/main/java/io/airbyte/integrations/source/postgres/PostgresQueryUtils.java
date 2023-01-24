@@ -26,7 +26,7 @@ public class PostgresQueryUtils {
 
   public static final String TABLE_ESTIMATE_QUERY =
       """
-            SELECT (SELECT COUNT(*) FROM %s) AS %s,
+            SELECT (select reltuples::int8 as count from pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace where nspname='%s' AND relname='%s') AS %s,
             pg_relation_size('%s') AS %s;
       """;
 
