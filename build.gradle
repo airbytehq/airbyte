@@ -409,7 +409,7 @@ subprojects { subproj ->
     }
 
     dependencies {
-        if (subproj.name != 'airbyte-commons') {
+        if (subproj.name != 'airbyte-commons' && subproj.name != 'octavia-cli') {
             implementation project(':airbyte-commons')
         }
 
