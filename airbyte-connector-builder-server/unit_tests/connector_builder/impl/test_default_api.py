@@ -11,6 +11,8 @@ import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
+from connector_builder.generated.models.resolve_manifest import ResolveManifest
+from connector_builder.generated.models.resolve_manifest_request_body import ResolveManifestRequestBody
 from connector_builder.generated.models.stream_read import StreamRead
 from connector_builder.generated.models.stream_read_pages import StreamReadPages
 from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
@@ -717,6 +719,197 @@ def test_read_stream_given_maximum_number_of_pages_then_test_read_limit_reached(
     )
 
     assert stream_read.test_read_limit_reached
+
+
+def test_resolve_manifest():
+    _stream_name = "stream_with_custom_requester"
+    _stream_primary_key = "id"
+    _stream_url_base = "https://api.sendgrid.com"
+    _stream_options = {"name": _stream_name, "primary_key": _stream_primary_key, "url_base": _stream_url_base}
+
+    manifest = {
+        "version": "version",
+        "definitions": {
+            "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+            "retriever": {
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "page_size": 10,
+                    "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                    "page_token_option": {"inject_into": "path"},
+                    "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
+                },
+                "requester": {
+                    "path": "/v3/marketing/lists",
+                    "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
+                    "request_parameters": {"page_size": 10},
+                },
+                "record_selector": {"extractor": {"field_pointer": ["result"]}},
+            },
+        },
+        "streams": [
+            {
+                "type": "DeclarativeStream",
+                "$options": _stream_options,
+                "schema_loader": {"$ref": "*ref(definitions.schema_loader)"},
+                "retriever": "*ref(definitions.retriever)",
+            },
+        ],
+        "check": {"type": "CheckStream", "stream_names": ["lists"]},
+    }
+
+    expected_resolved_manifest = {
+        "type": "DeclarativeSource",
+        "version": "version",
+        "definitions": {
+            "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+            "retriever": {
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "page_size": 10,
+                    "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                    "page_token_option": {"inject_into": "path"},
+                    "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
+                },
+                "requester": {
+                    "path": "/v3/marketing/lists",
+                    "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
+                    "request_parameters": {"page_size": 10},
+                },
+                "record_selector": {"extractor": {"field_pointer": ["result"]}},
+            },
+        },
+        "streams": [
+            {
+                "type": "DeclarativeStream",
+                "schema_loader": {
+                    "type": "JsonFileSchemaLoader",
+                    "name": "{{ options.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                    "primary_key": _stream_primary_key,
+                    "url_base": _stream_url_base,
+                    "$options": _stream_options,
+                },
+                "retriever": {
+                    "type": "SimpleRetriever",
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {
+                            "type": "RequestOption",
+                            "inject_into": "request_parameter",
+                            "field_name": "page_size",
+                            "name": _stream_name,
+                            "primary_key": _stream_primary_key,
+                            "url_base": _stream_url_base,
+                            "$options": _stream_options,
+                        },
+                        "page_token_option": {
+                            "type": "RequestOption",
+                            "inject_into": "path",
+                            "name": _stream_name,
+                            "primary_key": _stream_primary_key,
+                            "url_base": _stream_url_base,
+                            "$options": _stream_options,
+                        },
+                        "pagination_strategy": {
+                            "type": "CursorPagination",
+                            "cursor_value": "{{ response._metadata.next }}",
+                            "name": _stream_name,
+                            "primary_key": _stream_primary_key,
+                            "url_base": _stream_url_base,
+                            "$options": _stream_options,
+                        },
+                        "name": _stream_name,
+                        "primary_key": _stream_primary_key,
+                        "url_base": _stream_url_base,
+                        "$options": _stream_options,
+                    },
+                    "requester": {
+                        "type": "HttpRequester",
+                        "path": "/v3/marketing/lists",
+                        "authenticator": {
+                            "type": "BearerAuthenticator",
+                            "api_token": "{{ config.apikey }}",
+                            "name": _stream_name,
+                            "primary_key": _stream_primary_key,
+                            "url_base": _stream_url_base,
+                            "$options": _stream_options,
+                        },
+                        "request_parameters": {"page_size": 10},
+                        "name": _stream_name,
+                        "primary_key": _stream_primary_key,
+                        "url_base": _stream_url_base,
+                        "$options": _stream_options,
+                    },
+                    "record_selector": {
+                        "type": "RecordSelector",
+                        "extractor": {
+                            "type": "DpathExtractor",
+                            "field_pointer": ["result"],
+                            "name": _stream_name,
+                            "primary_key": _stream_primary_key,
+                            "url_base": _stream_url_base,
+                            "$options": _stream_options,
+                        },
+                        "name": _stream_name,
+                        "primary_key": _stream_primary_key,
+                        "url_base": _stream_url_base,
+                        "$options": _stream_options,
+                    },
+                    "name": _stream_name,
+                    "primary_key": _stream_primary_key,
+                    "url_base": _stream_url_base,
+                    "$options": _stream_options,
+                },
+                "name": _stream_name,
+                "primary_key": _stream_primary_key,
+                "url_base": _stream_url_base,
+                "$options": _stream_options,
+            },
+        ],
+        "check": {"type": "CheckStream", "stream_names": ["lists"]},
+    }
+
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
+
+    loop = asyncio.get_event_loop()
+    actual_response: ResolveManifest = loop.run_until_complete(api.resolve_manifest(ResolveManifestRequestBody(manifest=manifest)))
+    assert actual_response.manifest == expected_resolved_manifest
+
+
+def test_resolve_manifest_unresolvable_references():
+    expected_status_code = 400
+
+    invalid_manifest = {
+        "version": "version",
+        "definitions": {},
+        "streams": [
+            {"type": "DeclarativeStream", "retriever": "*ref(definitions.retriever)"},
+        ],
+        "check": {"type": "CheckStream", "stream_names": ["lists"]},
+    }
+
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
+    loop = asyncio.get_event_loop()
+    with pytest.raises(HTTPException) as actual_exception:
+        loop.run_until_complete(api.resolve_manifest(ResolveManifestRequestBody(manifest=invalid_manifest)))
+
+    assert "Undefined reference *ref(definitions.retriever)" in actual_exception.value.detail
+    assert actual_exception.value.status_code == expected_status_code
+
+
+def test_resolve_manifest_invalid():
+    expected_status_code = 400
+    invalid_manifest = {"version": "version"}
+
+    api = DefaultApiImpl(LowCodeSourceAdapterFactory(MAX_PAGES_PER_SLICE, MAX_SLICES), MAX_PAGES_PER_SLICE, MAX_SLICES)
+    loop = asyncio.get_event_loop()
+    with pytest.raises(HTTPException) as actual_exception:
+        loop.run_until_complete(api.resolve_manifest(ResolveManifestRequestBody(manifest=invalid_manifest)))
+
+    assert "Could not resolve manifest with error" in actual_exception.value.detail
+    assert actual_exception.value.status_code == expected_status_code
 
 
 def make_mock_adapter_factory(return_value: Iterator) -> MagicMock:
