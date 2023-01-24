@@ -163,8 +163,8 @@ spec:
         self, resolve_manifest_request_body: ResolveManifestRequestBody = Body(None, description="")
     ) -> ResolveManifest:
         """
-        Using the provided manifest, resolves $refs and $options and returns the resulting manifest to the client.
-        :param manifest_resolve_request_body: Input manifest whose $refs and $options will be resolved
+        Using the provided manifest, resolves $refs and $parameters and returns the resulting manifest to the client.
+        :param manifest_resolve_request_body: Input manifest whose $refs and $parameters will be resolved
         :return: Airbyte record messages produced by the sync grouped by slice and page
         """
         try:

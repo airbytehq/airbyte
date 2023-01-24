@@ -353,10 +353,10 @@ def create_declarative_stream(model: DeclarativeStreamModel, config: Config, **k
     if model.schema_loader:
         schema_loader = _create_component_from_model(model=model.schema_loader, config=config)
     else:
-        options = model.options or {}
-        if "name" not in options:
-            options["name"] = model.name
-        schema_loader = DefaultSchemaLoader(config=config, parameters=model.parameters)
+        parameters = model.parameters or {}
+        if "name" not in parameters:
+            parameters["name"] = model.name
+        schema_loader = DefaultSchemaLoader(config=config, parameters=parameters)
 
     transformations = []
     if model.transformations:

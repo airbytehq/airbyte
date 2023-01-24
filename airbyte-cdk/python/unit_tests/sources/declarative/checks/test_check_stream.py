@@ -68,7 +68,7 @@ def test_check_empty_stream():
     source = MagicMock()
     source.streams.return_value = [stream]
 
-    check_stream = CheckStream(["s1"], options={})
+    check_stream = CheckStream(["s1"], parameters={})
     stream_is_available, reason = check_stream.check_connection(source, logger, config)
     assert stream_is_available
 
@@ -82,7 +82,7 @@ def test_check_stream_with_no_stream_slices_aborts():
     source = MagicMock()
     source.streams.return_value = [stream]
 
-    check_stream = CheckStream(["s1"], options={})
+    check_stream = CheckStream(["s1"], parameters={})
     stream_is_available, reason = check_stream.check_connection(source, logger, config)
     assert not stream_is_available
     assert "no stream slices were found, likely because the parent stream is empty" in reason
@@ -138,7 +138,7 @@ def test_check_http_stream_via_availability_strategy(mocker, test_name, response
     source = MagicMock()
     source.streams.return_value = [http_stream]
 
-    check_stream = CheckStream(stream_names=["mock_http_stream"], options={})
+    check_stream = CheckStream(stream_names=["mock_http_stream"], parameters={})
 
     req = requests.Response()
     req.status_code = response_code

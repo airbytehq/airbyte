@@ -1043,7 +1043,8 @@ class TestCreateTransformations:
             },
         }
         resolved_manifest = resolver.preprocess_manifest(component_definition)
-        propagated_source_config = ManifestComponentTransformer().propagate_types_and_options("", resolved_manifest, {})
+        ws = ManifestComponentTransformer()
+        propagated_source_config = ws.propagate_types_and_parameters("", resolved_manifest, {})
         stream = factory.create_component(
             model_type=DeclarativeStreamModel, component_definition=propagated_source_config, config=input_config
         )
