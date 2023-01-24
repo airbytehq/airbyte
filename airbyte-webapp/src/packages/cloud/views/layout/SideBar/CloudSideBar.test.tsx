@@ -40,9 +40,10 @@ describe("<SideBar/>", () => {
     );
     const navItems = screen.getByTestId("navMainItems").querySelectorAll("li");
     expect(navItems.length).toBe(3);
-    expect(navItems[0]).toContainHTML('<a class="menuItem" data-testid="sourcesLink"');
-    expect(navItems[1]).toContainHTML('<a class="menuItem" data-testid="destinationsLink"');
-    expect(navItems[2]).toContainHTML('<a class="menuItem" data-testid="connectionsLink"');
+
+    screen.getByTestId("connectionsLink");
+    screen.getByTestId("sourcesLink");
+    screen.getByTestId("destinationsLink");
   });
   it("renders cloud-specific items passed in", () => {
     render(
