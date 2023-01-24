@@ -8,13 +8,13 @@
   },
   "scripts": {
     "prepare": "cd .. && husky install airbyte-webapp/.husky",
-    "prestart": "npm run generate-client",
-    "start": "node -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
-    "prestart:cloud": "npm run generate-client",
-    "start:cloud": "AB_ENV=${AB_ENV-frontend-dev} node -r ./scripts/environment.js -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
-    "prebuild": "npm run generate-client",
+    "prestart": "pnpm run generate-client",
+    "start": "NODE_OPTIONS='-r ./scripts/dev-overwrites.js' vite",
+    "prestart:cloud": "pnpm run generate-client",
+    "start:cloud": "AB_ENV=${AB_ENV-frontend-dev} NODE_OPTIONS='-r ./scripts/environment.js -r ./scripts/dev-overwrites.js' vite",
+    "prebuild": "pnpm run generate-client",
     "build": "vite build",
-    "pretest": "npm run generate-client",
+    "pretest": "pnpm run generate-client",
     "test": "jest --watch",
     "test:ci": "jest --watchAll=false --silent",
     "test:coverage": "jest --coverage --watchAll=false",
@@ -45,6 +45,7 @@
     "@types/segment-analytics": "^0.0.34",
     "@types/uuid": "^9.0.0",
     "classnames": "^2.3.1",
+    "date-fns": "^2.29.3",
     "dayjs": "^1.11.3",
     "diff": "^5.1.0",
     "firebase": "^9.8.2",
@@ -89,7 +90,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
-    "@airbyte/eslint-plugin": "file:./packages/eslint-plugin",
+    "@airbyte/eslint-plugin": "link:packages/eslint-plugin",
     "@babel/core": "^7.20.12",
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
@@ -129,6 +130,7 @@
     "@vitejs/plugin-react": "^3.0.1",
     "babel-jest": "^29.3.1",
     "dotenv": "^16.0.3",
+    "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-css-modules": "^2.11.0",
@@ -189,5 +191,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "react-virtualized@9.22.3": "patches/react-virtualized@9.22.3.patch"
+    }
   }
 }

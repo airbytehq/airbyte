@@ -25,6 +25,17 @@ node {
     pnpmVersion = pnpmVer
 }
 
+task validateLockFiles {
+    description "Validate only a pnpm-lock.yaml lock file exists"
+    doLast {
+        assert file("pnpm-lock.yaml").exists()
+        assert !file("package-lock.json").exists()
+        assert !file("yarn.lock").exists()
+    }
+}
+
+pnpmInstall.dependsOn validateLockFiles
+
 task pnpmBuild(type: PnpmTask) {
     dependsOn pnpmInstall
 
