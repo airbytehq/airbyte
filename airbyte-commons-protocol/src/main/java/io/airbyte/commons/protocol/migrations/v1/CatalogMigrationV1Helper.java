@@ -68,6 +68,10 @@ public class CatalogMigrationV1Helper {
    * Returns true if catalog contains v0 data types
    */
   private static boolean containsV0DataTypes(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+    if (configuredAirbyteCatalog == null) {
+      return false;
+    }
+
     return configuredAirbyteCatalog
         .getStreams()
         .stream().findFirst()
@@ -80,6 +84,10 @@ public class CatalogMigrationV1Helper {
    * Returns true if catalog contains v0 data types
    */
   private static boolean containsV0DataTypes(final AirbyteCatalog airbyteCatalog) {
+    if (airbyteCatalog == null) {
+      return false;
+    }
+
     return airbyteCatalog
         .getStreams()
         .stream().findFirst()
@@ -88,6 +96,9 @@ public class CatalogMigrationV1Helper {
   }
 
   private static boolean streamContainsV0DataTypes(final AirbyteStream airbyteStream) {
+    if (airbyteStream == null || airbyteStream.getJsonSchema() == null) {
+      return false;
+    }
     return hasV0DataType(airbyteStream.getJsonSchema());
   }
 
