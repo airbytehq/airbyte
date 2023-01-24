@@ -344,13 +344,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       try {
         final Duration MAX_FETCH_SECONDS = Duration.ofHours(30);
         long lastMessageRecieved = System.currentTimeMillis();
+        final Future<Optional<AirbyteMessage>> future = CompletableFuture.supplyAsync(() -> source.attemptRead());
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
-          final Callable<Optional<AirbyteMessage>> task = () -> source.attemptRead();
 
           final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved, System.currentTimeMillis());
-
-          final Future<Optional<AirbyteMessage>> future = executors.submit(task);
 
           try {
             messageOptional = future.get(MAX_FETCH_SECONDS.minus(durationSinceLast).getSeconds(), TimeUnit.SECONDS);
