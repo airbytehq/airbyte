@@ -5,7 +5,6 @@
 package io.airbyte.commons.server;
 
 import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.server.RequestLogger;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
