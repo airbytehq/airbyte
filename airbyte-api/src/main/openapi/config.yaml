@@ -3881,6 +3881,9 @@ components:
         selected:
           description: If this is true, the stream is selected with all of its properties. For new connections, this considered if the stream is suggested or not
           type: boolean
+        suggested:
+          description: Does the connector suggest that this stream be enabled by default?
+          type: boolean
         fieldSelectionEnabled:
           description: Whether field selection should be enabled. If this is true, only the properties in `selectedFields` will be included.
           type: boolean
