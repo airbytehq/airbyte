@@ -29,6 +29,12 @@ acceptance_tests:
             bypass_reason: "Cannot populate with test data"
           - name: "subscription"
             bypass_reason: "Unstable data. Field current_term_start updated daily"
+          - name: "customer"
+            bypass_reason: "Unstable data. Depends on subscription"
+          - name: "invoice"
+            bypass_reason: "Unstable data. Depends on subscription"
+          - name: "credit_note"
+            bypass_reason: "Unstable data. Depends on subscription"
           - name: "event"
             bypass_reason: "Unstable data. Depends on subscription"
         expect_records:
