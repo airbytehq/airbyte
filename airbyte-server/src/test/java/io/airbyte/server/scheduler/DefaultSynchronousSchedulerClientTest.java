@@ -39,6 +39,7 @@ import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.persistence.job.tracker.JobTracker.JobState;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.workers.temporal.scheduling.RouterService;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -62,6 +63,8 @@ class DefaultSynchronousSchedulerClientTest {
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
   private static final String UNCHECKED = "unchecked";
+  private static final String CHECK_TASK_QUEUE = "check";
+  private static final String DISCOVER_TASK_QUEUE = "discover";
   private static final JsonNode CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
       .put("username", "airbyte")
       .put("password", "abc")
@@ -80,6 +83,8 @@ class DefaultSynchronousSchedulerClientTest {
   private JobTracker jobTracker;
   private JobErrorReporter jobErrorReporter;
   private OAuthConfigSupplier oAuthConfigSupplier;
+
+  private RouterService routerService;
   private DefaultSynchronousSchedulerClient schedulerClient;
 
   @BeforeEach
@@ -88,10 +93,14 @@ class DefaultSynchronousSchedulerClientTest {
     jobTracker = mock(JobTracker.class);
     jobErrorReporter = mock(JobErrorReporter.class);
     oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
-    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier);
+    routerService = mock(RouterService.class);
+    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService);
 
     when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
+
+    when(routerService.getCheckTaskQueue(any())).thenReturn(CHECK_TASK_QUEUE);
+    when(routerService.getDiscoverTaskQueue(any())).thenReturn(DISCOVER_TASK_QUEUE);
   }
 
   private static JobMetadata createMetadata(final boolean succeeded) {
@@ -192,7 +201,7 @@ class DefaultSynchronousSchedulerClientTest {
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withCheckConnection(mockOutput);
-      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
+      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(CHECK_TASK_QUEUE), eq(jobCheckConnectionConfig)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
       final SynchronousResponse<StandardCheckConnectionOutput> response =
           schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE, PROTOCOL_VERSION, false);
@@ -211,7 +220,7 @@ class DefaultSynchronousSchedulerClientTest {
 
       final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withCheckConnection(mockOutput);
-      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(jobCheckConnectionConfig)))
+      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(CHECK_TASK_QUEUE), eq(jobCheckConnectionConfig)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
       final SynchronousResponse<StandardCheckConnectionOutput> response =
           schedulerClient.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DOCKER_IMAGE, PROTOCOL_VERSION, false);
@@ -222,7 +231,7 @@ class DefaultSynchronousSchedulerClientTest {
     void testCreateDiscoverSchemaJob() throws IOException {
       final UUID expectedCatalogId = UUID.randomUUID();
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withDiscoverCatalogId(expectedCatalogId);
-      when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), any(JobDiscoverCatalogConfig.class)))
+      when(temporalClient.submitDiscoverSchema(any(UUID.class), eq(0), eq(DISCOVER_TASK_QUEUE), any(JobDiscoverCatalogConfig.class)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
       final SynchronousResponse<UUID> response =
           schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE, DOCKER_IMAGE_TAG, PROTOCOL_VERSION, false);

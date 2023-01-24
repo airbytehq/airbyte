@@ -29,6 +29,7 @@ import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.persistence.job.tracker.JobTracker.JobState;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.workers.temporal.scheduling.RouterService;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
@@ -50,14 +51,18 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   private final JobErrorReporter jobErrorReporter;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
+  private final RouterService routerService;
+
   public DefaultSynchronousSchedulerClient(final TemporalClient temporalClient,
                                            final JobTracker jobTracker,
                                            final JobErrorReporter jobErrorReporter,
-                                           final OAuthConfigSupplier oAuthConfigSupplier) {
+                                           final OAuthConfigSupplier oAuthConfigSupplier,
+                                           final RouterService routerService) {
     this.temporalClient = temporalClient;
     this.jobTracker = jobTracker;
     this.jobErrorReporter = jobErrorReporter;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
+    this.routerService = routerService;
   }
 
   @Override
@@ -80,12 +85,13 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
+    String taskQueue = routerService.getCheckTaskQueue(source.getWorkspaceId());
 
     return execute(
         ConfigType.CHECK_CONNECTION_SOURCE,
         jobReportingContext,
         source.getSourceDefinitionId(),
-        () -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
+        () -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, taskQueue, jobCheckConnectionConfig),
         ConnectorJobOutput::getCheckConnection,
         source.getWorkspaceId());
   }
@@ -110,12 +116,13 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
+    String taskQueue = routerService.getCheckTaskQueue(destination.getWorkspaceId());
 
     return execute(
         ConfigType.CHECK_CONNECTION_DESTINATION,
         jobReportingContext,
         destination.getDestinationDefinitionId(),
-        () -> temporalClient.submitCheckConnection(jobId, 0, jobCheckConnectionConfig),
+        () -> temporalClient.submitCheckConnection(jobId, 0, taskQueue, jobCheckConnectionConfig),
         ConnectorJobOutput::getCheckConnection,
         destination.getWorkspaceId());
   }
@@ -144,11 +151,13 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
 
+    String taskQueue = routerService.getDiscoverTaskQueue(source.getWorkspaceId());
+
     return execute(
         ConfigType.DISCOVER_SCHEMA,
         jobReportingContext,
         source.getSourceDefinitionId(),
-        () -> temporalClient.submitDiscoverSchema(jobId, 0, jobDiscoverCatalogConfig),
+        () -> temporalClient.submitDiscoverSchema(jobId, 0, taskQueue, jobDiscoverCatalogConfig),
         ConnectorJobOutput::getDiscoverCatalogId,
         source.getWorkspaceId());
   }

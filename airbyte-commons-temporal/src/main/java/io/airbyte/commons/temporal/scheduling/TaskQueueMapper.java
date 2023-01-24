@@ -14,4 +14,8 @@ public interface TaskQueueMapper {
 
   String getTaskQueue(Geography geography);
 
+  String getDiscoverTaskQueue(Geography geography);
+
+  String getCheckTaskQueue(Geography geography);
+
 }
