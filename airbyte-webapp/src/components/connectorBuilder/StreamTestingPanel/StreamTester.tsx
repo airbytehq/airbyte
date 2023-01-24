@@ -7,10 +7,7 @@ import { Text } from "components/ui/Text";
 
 import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
-import {
-  useConnectorBuilderFormState,
-  useConnectorBuilderTestState,
-} from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
@@ -25,10 +22,20 @@ export const StreamTester: React.FC<{
   const {
     streams,
     testStreamIndex,
-    streamRead: { data: streamReadData, refetch: readStream, isError, error, isFetching, isFetchedAfterMount },
+    streamRead: {
+      data: streamReadData,
+      refetch: readStream,
+      isError,
+      error,
+      isFetching,
+      isFetchedAfterMount,
+      dataUpdatedAt,
+      errorUpdatedAt,
+    },
   } = useConnectorBuilderTestState();
 
-  const { jsonManifest } = useConnectorBuilderFormState();
+  const streamName = streams[testStreamIndex]?.name;
+
   const analyticsService = useAnalyticsService();
 
   const [logsFlex, setLogsFlex] = useState(0);
@@ -59,17 +66,17 @@ export const StreamTester: React.FC<{
       if (errorMessage) {
         analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_TEST_FAILURE, {
           actionDescription: "Stream test failed",
-          stream: jsonManifest.streams[testStreamIndex],
+          stream_name: streamName,
           error_message: errorMessage,
         });
       } else {
         analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_TEST_SUCCESS, {
           actionDescription: "Stream test succeeded",
-          stream: jsonManifest.streams[testStreamIndex],
+          stream_name: streamName,
         });
       }
     }
-  }, [analyticsService, errorMessage, isFetchedAfterMount, jsonManifest.streams, testStreamIndex]);
+  }, [analyticsService, errorMessage, isFetchedAfterMount, streamName, dataUpdatedAt, errorUpdatedAt]);
 
   return (
     <div className={styles.container}>
@@ -78,7 +85,13 @@ export const StreamTester: React.FC<{
       </Text>
 
       <StreamTestButton
-        readStream={readStream}
+        readStream={() => {
+          readStream();
+          analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_TEST, {
+            actionDescription: "Stream test initiated",
+            stream_name: streamName,
+          });
+        }}
         hasTestInputJsonErrors={hasTestInputJsonErrors}
         setTestInputOpen={setTestInputOpen}
       />
