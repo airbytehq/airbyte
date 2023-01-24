@@ -1,6 +1,6 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ColumnDef } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -66,31 +66,29 @@ const Header: React.VFC = () => {
   );
 };
 
-type ColumnDefs = [ColumnDef<User, string>, ColumnDef<User, string>, ColumnDef<User>];
-
 export const UsersTable: React.FC = () => {
   const { workspaceId } = useCurrentWorkspace();
   const users = useListUsers();
   const { user } = useAuthService();
 
-  const columns = useMemo<ColumnDefs>(
+  const columnHelper = createColumnHelper<User>();
+
+  const columns = useMemo(
     () => [
-      {
+      columnHelper.accessor("name", {
         header: () => <FormattedMessage id="userSettings.table.column.fullname" />,
         meta: {
           headerHighlighted: true,
         },
-        accessorKey: "name",
         cell: (props) => props.cell.getValue(),
-      },
-      {
+      }),
+      columnHelper.accessor("email", {
         header: () => <FormattedMessage id="userSettings.table.column.email" />,
         meta: {
           headerHighlighted: true,
         },
-        accessorKey: "email",
         cell: (props) => props.cell.getValue(),
-      },
+      }),
       // TEMP: Currently all cloud users are admins.
       // Remove when there is more than role
       // {
@@ -104,21 +102,20 @@ export const UsersTable: React.FC = () => {
       //   accessor: "userId",
       //   Cell: (_: CellProps<User>) => "Admin",
       // },
-      {
+      columnHelper.accessor("status", {
         header: () => <FormattedMessage id="userSettings.table.column.action" />,
         meta: {
           headerHighlighted: true,
         },
-        accessorKey: "status",
         cell: (props) =>
           [
             user?.userId !== props.row.original.userId ? (
               <RemoveUserSection workspaceId={workspaceId} email={props.row.original.email} />
             ) : null,
           ].filter(Boolean),
-      },
+      }),
     ],
-    [workspaceId, user]
+    [columnHelper, user?.userId, workspaceId]
   );
 
   return <NextTable data={users ?? []} columns={columns} />;

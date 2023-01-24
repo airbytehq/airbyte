@@ -4,29 +4,28 @@ import { PropsWithChildren } from "react";
 
 import styles from "./NextTable.module.scss";
 
-type TData<T> = T & {
-  error?: unknown;
-};
-
 export interface TableProps<T> {
   className?: string;
+  // We can leave type any here since useReactTable options.columns itself is waiting for Array<ColumnDef<T, any>>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  columns: Array<ColumnDef<TData<T>, any>>;
-  data: Array<TData<T>>;
+  columns: Array<ColumnDef<T, any>>;
+  data: T[];
   erroredRows?: boolean;
   light?: boolean;
-  onClickRow?: (data: TData<T>) => void;
+  onClickRow?: (data: T) => void;
   columnSort?: ColumnSort[];
+  testId?: string;
 }
 
 export const NextTable = <T,>({
+  testId,
   className,
   columns,
   data,
   erroredRows,
   light,
   onClickRow,
-}: PropsWithChildren<TableProps<TData<T>>>) => {
+}: PropsWithChildren<TableProps<T>>) => {
   const table = useReactTable({
     columns,
     data,
@@ -34,7 +33,7 @@ export const NextTable = <T,>({
   });
 
   return (
-    <table className={classNames(styles.table, className, { [styles.light]: light })}>
+    <table className={classNames(styles.table, className, { [styles.light]: light })} data-testid={testId}>
       <thead className={styles.thead}>
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={`table-header-${headerGroup.id}}`}>
@@ -46,7 +45,6 @@ export const NextTable = <T,>({
                   className={classNames(styles.th, meta?.thClassName, {
                     [styles.highlighted]: meta?.headerHighlighted,
                     [styles.light]: light,
-                    [styles.collapse]: meta?.collapse,
                   })}
                   key={`table-column-${headerGroup.id}-${header.id}`}
                 >
@@ -61,6 +59,8 @@ export const NextTable = <T,>({
         {table.getRowModel().rows.map((row) => (
           <tr
             className={classNames(styles.tr, {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
               [styles.withError]: erroredRows && !!row.original.error,
               [styles.clickable]: !!onClickRow,
             })}

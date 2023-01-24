@@ -32,7 +32,7 @@
   line-height: 12px;
   font-weight: 600;
   width: auto;
-  padding: 9px 13px 10px;
+  padding: vars.$spacing-lg vars.$spacing-xl vars.$spacing-lg;
 
   &.light {
     background: none;
@@ -44,14 +44,9 @@
     font-weight: 400;
   }
 
-  &.collapse {
-    /* stylelint-disable-next-line number-max-precision */
-    width: 0.0000000001%;
-  }
-
   &:first-child {
     padding-left: vars.$spacing-2xl;
-    border-radius: 10px 0 0;
+    border-radius: vars.$spacing-md 0 0;
 
     &.light {
       padding-left: vars.$spacing-lg;
@@ -59,8 +54,8 @@
   }
 
   &:last-child {
-    padding-left: 15px;
-    border-radius: 0 10px 0 0;
+    padding-left: vars.$spacing-lg;
+    border-radius: 0 vars.$spacing-md 0 0;
   }
 
   &.highlighted {
@@ -89,7 +84,7 @@
 // --------- <td/> ---------
 
 .td {
-  padding: 16px 13px;
+  padding: vars.$spacing-2xl vars.$spacing-xl;
   font-size: 12px;
   line-height: 15px;
   font-weight: normal;

@@ -1,4 +1,4 @@
-import { ColumnDef } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
@@ -22,21 +22,6 @@ interface IProps {
   entity: "source" | "destination";
   onClickRow?: (data: EntityTableDataItem) => void;
 }
-
-interface AllConnectionStatusConnectEntity {
-  name: string;
-  connector: string;
-  status: string;
-  lastSyncStatus: string;
-}
-
-type ColumnDefs = [
-  ColumnDef<EntityTableDataItem, string>,
-  ColumnDef<EntityTableDataItem, string>,
-  ColumnDef<EntityTableDataItem, AllConnectionStatusConnectEntity[]>,
-  ColumnDef<EntityTableDataItem, number | null>,
-  ColumnDef<EntityTableDataItem, AllConnectionStatusConnectEntity[]>
-];
 
 const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => {
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
@@ -80,9 +65,12 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
   );
 
   const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data]);
-  const columns = React.useMemo<ColumnDefs>(
+
+  const columnHelper = createColumnHelper<EntityTableDataItem>();
+
+  const columns = React.useMemo(
     () => [
-      {
+      columnHelper.accessor("entityName", {
         header: () => (
           <SortableTableHeader
             onClick={() => onSortClick("entity")}
@@ -96,10 +84,9 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
           thClassName: styles.thEntityName,
           headerHighlighted: true,
         },
-        accessorKey: "entityName",
         cell: (props) => <NameCell value={props.cell.getValue()} enabled={props.row.original.enabled} />,
-      },
-      {
+      }),
+      columnHelper.accessor("connectorName", {
         header: () => (
           <SortableTableHeader
             onClick={() => onSortClick("connector")}
@@ -109,7 +96,6 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
             <FormattedMessage id="tables.connector" />
           </SortableTableHeader>
         ),
-        accessorKey: "connectorName",
         cell: (props) => (
           <ConnectorCell
             value={props.cell.getValue()}
@@ -117,15 +103,14 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
             img={props.row.original.connectorIcon}
           />
         ),
-      },
-      {
+      }),
+      columnHelper.accessor("connectEntities", {
         header: () => <FormattedMessage id={`tables.${entity}ConnectWith`} />,
-        accessorKey: "connectEntities",
         cell: (props) => (
           <ConnectEntitiesCell values={props.cell.getValue()} entity={entity} enabled={props.row.original.enabled} />
         ),
-      },
-      {
+      }),
+      columnHelper.accessor("lastSync", {
         header: () => (
           <SortableTableHeader
             onClick={() => onSortClick("lastSync")}
@@ -135,19 +120,17 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
             <FormattedMessage id="tables.lastSync" />
           </SortableTableHeader>
         ),
-        accessorKey: "lastSync",
         cell: (props) => (
           <LastSyncCell timeInSecond={props.cell.getValue() || 0} enabled={props.row.original.enabled} />
         ),
-      },
-      {
+      }),
+      columnHelper.accessor("connectEntities", {
         header: () => <FormattedMessage id="sources.status" />,
         id: "status",
-        accessorKey: "connectEntities",
         cell: (props) => <AllConnectionsStatusCell connectEntities={props.cell.getValue()} />,
-      },
+      }),
     ],
-    [entity, onSortClick, sortBy, sortOrder]
+    [columnHelper, entity, onSortClick, sortBy, sortOrder]
   );
 
   return (

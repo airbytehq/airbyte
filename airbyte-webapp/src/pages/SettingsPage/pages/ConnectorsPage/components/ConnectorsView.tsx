@@ -1,4 +1,4 @@
-import { CellContext, ColumnDef, ColumnSort } from "@tanstack/react-table";
+import { CellContext, ColumnSort, createColumnHelper } from "@tanstack/react-table";
 import { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -66,13 +66,12 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
     [allowUpdateConnectors, allowUploadCustomImage]
   );
 
+  const columnHelper = createColumnHelper<ConnectorDefinition>();
+
   const renderColumns = useCallback(
-    (
-      showVersionUpdateColumn: boolean
-    ): Array<ColumnDef<ConnectorDefinition, string> | ColumnDef<ConnectorDefinition>> => [
-      {
+    (showVersionUpdateColumn: boolean) => [
+      columnHelper.accessor("name", {
         header: () => <FormattedMessage id="admin.connectors" />,
-        accessorKey: "name",
         meta: {
           thClassName: styles.thName,
         },
@@ -84,36 +83,30 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
             releaseStage={props.row.original.releaseStage}
           />
         ),
-      },
-      {
+      }),
+      columnHelper.accessor("dockerRepository", {
         header: () => <FormattedMessage id="admin.image" />,
-        accessorKey: "dockerRepository",
         meta: {
           thClassName: styles.thDockerRepository,
         },
         cell: (props: CellContext<ConnectorDefinition, string>) => (
           <ImageCell imageName={props.cell.getValue()} link={props.row.original.documentationUrl} />
         ),
-      },
-      {
+      }),
+      columnHelper.accessor("dockerImageTag", {
         header: () => <FormattedMessage id="admin.currentVersion" />,
-        accessorKey: "dockerImageTag",
         meta: {
           thClassName: styles.thDockerImageTag,
         },
-      },
+      }),
       ...(showVersionUpdateColumn
         ? [
-            {
+            columnHelper.accessor("latestDockerImageTag", {
               header: () => (
                 <FormContentTitle>
                   <FormattedMessage id="admin.changeTo" />
                 </FormContentTitle>
               ),
-              accessorKey: "latestDockerImageTag",
-              meta: {
-                collapse: true,
-              },
               cell: (props: CellContext<ConnectorDefinition, string>) =>
                 allowUpdateConnectors || (allowUploadCustomImage && props.row.original.releaseStage === "custom") ? (
                   <VersionCell
@@ -125,11 +118,11 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
                     updating={loading}
                   />
                 ) : null,
-            },
+            }),
           ]
         : []),
     ],
-    [allowUpdateConnectors, allowUploadCustomImage, onUpdateVersion, feedbackList, loading]
+    [columnHelper, allowUpdateConnectors, allowUploadCustomImage, onUpdateVersion, feedbackList, loading]
   );
 
   const renderHeaderControls = (section: "used" | "available") =>

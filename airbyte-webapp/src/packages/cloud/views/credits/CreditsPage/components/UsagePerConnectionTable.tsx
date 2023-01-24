@@ -1,4 +1,4 @@
-import { ColumnDef } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
@@ -39,13 +39,6 @@ type FullTableProps = CreditConsumptionByConnector & {
   sourceIcon?: string;
   destinationIcon?: string;
 };
-
-type ColumnDefs = [
-  ColumnDef<FullTableProps, string>,
-  ColumnDef<FullTableProps, string>,
-  ColumnDef<FullTableProps, number>,
-  ColumnDef<FullTableProps, string>
-];
 
 const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
@@ -116,9 +109,11 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     [sortData, creditConsumptionWithPercent]
   );
 
+  const columnHelper = createColumnHelper<FullTableProps>();
+
   const columns = React.useMemo(
-    (): ColumnDefs => [
-      {
+    () => [
+      columnHelper.accessor("sourceDefinitionName", {
         header: () => (
           <SortableTableHeader
             onClick={() => onSortClick("connection")}
@@ -131,7 +126,6 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         meta: {
           thClassName: styles.thConnection,
         },
-        accessorKey: "sourceDefinitionName",
         cell: (props) => (
           <ConnectionCell
             sourceDefinitionName={props.cell.getValue()}
@@ -140,8 +134,8 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
             destinationIcon={props.row.original.destinationIcon}
           />
         ),
-      },
-      {
+      }),
+      columnHelper.accessor("creditsConsumed", {
         header: () => (
           <SortableTableHeader
             onClick={() => onSortClick("usage")}
@@ -151,37 +145,33 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
             <FormattedMessage id="credits.usage" />
           </SortableTableHeader>
         ),
-        accessorKey: "creditsConsumed",
         meta: {
-          collapse: true,
           thClassName: styles.thCreditsConsumed,
         },
         cell: (props) => <UsageValue>{props.cell.getValue()}</UsageValue>,
-      },
-      {
+      }),
+      columnHelper.accessor("creditsConsumedPercent", {
         header: "",
-        accessorKey: "creditsConsumedPercent",
         meta: {
           thClassName: styles.thCreditsConsumedPercent,
         },
         cell: (props) => <UsageCell percent={props.cell.getValue()} />,
-      },
+      }),
       // TODO: Replace to Grow column
-      {
+      columnHelper.accessor("connectionId", {
         header: "",
-        accessorKey: "connectionId",
         cell: () => <div />,
         meta: {
           thClassName: styles.thConnectionId,
         },
-      },
+      }),
     ],
-    [onSortClick, sortBy, sortOrder]
+    [columnHelper, onSortClick, sortBy, sortOrder]
   );
 
   return (
     <Content>
-      <NextTable columns={columns} data={sortingData} light />
+      <NextTable<FullTableProps> columns={columns} data={sortingData} light />
     </Content>
   );
 };
