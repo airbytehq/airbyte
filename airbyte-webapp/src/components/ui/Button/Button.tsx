@@ -14,10 +14,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
     variant = "primary",
     children,
     className,
-    clickable,
     icon,
     isLoading,
-    wasActive,
     width,
     disabled,
     ...buttonProps

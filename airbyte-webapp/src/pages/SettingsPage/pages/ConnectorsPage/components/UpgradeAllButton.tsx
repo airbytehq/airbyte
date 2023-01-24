@@ -51,7 +51,6 @@ const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading,
         className={styles.updateButton}
         onClick={onUpdate}
         isLoading={isLoading}
-        wasActive={hasSuccess}
         disabled={disabled}
         icon={hasSuccess ? undefined : <TryArrow icon={faRedoAlt} />}
       >

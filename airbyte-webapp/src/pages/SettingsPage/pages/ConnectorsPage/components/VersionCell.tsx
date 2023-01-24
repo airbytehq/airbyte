@@ -25,10 +25,10 @@ const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, curren
   const { formatMessage } = useIntl();
 
   const renderFeedback = (dirty: boolean, feedback?: string) => {
-    if (feedback && !dirty) {
-      if (feedback === "success") {
-        return <FormattedMessage id="form.savedChange" />;
-      }
+    if (feedback === "success" && !dirty) {
+      return <FormattedMessage id="form.savedChange" />;
+    }
+    if (feedback && feedback !== "success") {
       return <span className={styles.errorMessage}>{feedback}</span>;
     }
 
@@ -52,9 +52,13 @@ const VersionCell: React.FC<VersionCellProps> = ({ id, version, onChange, curren
               {({ field }: FieldProps<string>) => (
                 <div
                   className={styles.inputField}
-                  data-before={formatMessage({
-                    id: "admin.latestNote",
-                  })}
+                  data-before={
+                    feedback !== "success"
+                      ? formatMessage({
+                          id: "admin.latestNote",
+                        })
+                      : undefined
+                  }
                 >
                   <Input {...field} className={styles.versionInput} type="text" autoComplete="off" />
                 </div>

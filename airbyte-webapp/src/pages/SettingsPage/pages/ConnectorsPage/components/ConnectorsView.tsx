@@ -127,7 +127,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   const renderHeaderControls = (section: "used" | "available") =>
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
-      <div className={styles.buttonsContainer}>
+      <FlexContainer>
         {allowUploadCustomImage && <CreateConnector type={type} />}
         <UpgradeAllButton
           disabled={!((hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors)}
@@ -136,7 +136,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           hasSuccess={isUpdateSuccess}
           onUpdate={onUpdate}
         />
-      </div>
+      </FlexContainer>
     );
 
   const ctx = useMemo(
