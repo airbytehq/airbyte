@@ -108,16 +108,18 @@ class DefaultSynchronousSchedulerClientTest {
     @Test
     void testExecuteJobSuccess() {
       final UUID sourceDefinitionId = UUID.randomUUID();
-      final Supplier<TemporalResponse<String>> function = mock(Supplier.class);
-      final Function<String, String> mapperFunction = output -> output;
-      when(function.get()).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
+      final UUID discoveredCatalogId = UUID.randomUUID();
+      final Supplier<TemporalResponse<ConnectorJobOutput>> function = mock(Supplier.class);
+      final Function<ConnectorJobOutput, UUID> mapperFunction = ConnectorJobOutput::getDiscoverCatalogId;
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withDiscoverCatalogId(discoveredCatalogId);
+      when(function.get()).thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
 
       final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), SOURCE_DOCKER_IMAGE);
-      final SynchronousResponse<String> response = schedulerClient
+      final SynchronousResponse<UUID> response = schedulerClient
           .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
-      assertEquals("hello", response.getOutput());
+      assertEquals(discoveredCatalogId, response.getOutput());
       assertEquals(ConfigType.DISCOVER_SCHEMA, response.getMetadata().getConfigType());
       assertTrue(response.getMetadata().getConfigId().isPresent());
       assertEquals(sourceDefinitionId, response.getMetadata().getConfigId().get());
@@ -131,35 +133,14 @@ class DefaultSynchronousSchedulerClientTest {
 
     @SuppressWarnings(UNCHECKED)
     @Test
-    void testExecuteMappedOutput() {
-      final UUID sourceDefinitionId = UUID.randomUUID();
-      final Supplier<TemporalResponse<Integer>> function = mock(Supplier.class);
-      final Function<Integer, String> mapperFunction = Object::toString;
-      when(function.get()).thenReturn(new TemporalResponse<>(42, createMetadata(true)));
-
-      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), SOURCE_DOCKER_IMAGE);
-      final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
-
-      assertNotNull(response);
-      assertEquals("42", response.getOutput());
-      assertEquals(ConfigType.DISCOVER_SCHEMA, response.getMetadata().getConfigType());
-      assertTrue(response.getMetadata().getConfigId().isPresent());
-      assertEquals(sourceDefinitionId, response.getMetadata().getConfigId().get());
-      assertTrue(response.getMetadata().isSucceeded());
-      assertEquals(LOG_PATH, response.getMetadata().getLogPath());
-    }
-
-    @SuppressWarnings(UNCHECKED)
-    @Test
     void testExecuteJobFailure() {
       final UUID sourceDefinitionId = UUID.randomUUID();
-      final Supplier<TemporalResponse<String>> function = mock(Supplier.class);
-      final Function<String, String> mapperFunction = output -> output;
+      final Supplier<TemporalResponse<ConnectorJobOutput>> function = mock(Supplier.class);
+      final Function<ConnectorJobOutput, UUID> mapperFunction = ConnectorJobOutput::getDiscoverCatalogId;
       when(function.get()).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
 
       final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), SOURCE_DOCKER_IMAGE);
-      final SynchronousResponse<String> response = schedulerClient
+      final SynchronousResponse<UUID> response = schedulerClient
           .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
@@ -179,8 +160,8 @@ class DefaultSynchronousSchedulerClientTest {
     @Test
     void testExecuteRuntimeException() {
       final UUID sourceDefinitionId = UUID.randomUUID();
-      final Supplier<TemporalResponse<String>> function = mock(Supplier.class);
-      final Function<String, String> mapperFunction = output -> output;
+      final Supplier<TemporalResponse<ConnectorJobOutput>> function = mock(Supplier.class);
+      final Function<ConnectorJobOutput, UUID> mapperFunction = ConnectorJobOutput::getDiscoverCatalogId;
       when(function.get()).thenThrow(new RuntimeException());
 
       final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), SOURCE_DOCKER_IMAGE);

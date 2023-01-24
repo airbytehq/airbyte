@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.0
+Surface the resolved manifest in the CDK
+
+## 0.21.0
+Add AvailabilityStrategy concept and use check_availability within CheckStream
+
 ## 0.20.2
 Add missing package in previous patch release
 

@@ -111,9 +111,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
     final List<AirbyteMessage> allMessages = runRead(catalog);
     final UUID catalogId = runDiscover();
     final Map<String, AirbyteStream> streams = getLastPersistedCatalog().getStreams().stream()
-        .collect(Collectors.toMap(
-            s -> "%s.%s".formatted(s.getNamespace(), s.getName()),
-            s -> s));
+        .collect(Collectors.toMap(AirbyteStream::getName, s -> s));
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).toList();
     final Map<String, List<String>> expectedValues = new HashMap<>();
     testDataHolders.forEach(testDataHolder -> {

@@ -31,7 +31,7 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
     () => (
       <Formik
         initialValues={initialFormValues.current}
-        validateOnBlur={false}
+        validateOnBlur
         validateOnChange={false}
         validateOnMount={false}
         onSubmit={noop}

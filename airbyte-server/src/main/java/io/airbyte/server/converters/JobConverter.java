@@ -19,6 +19,7 @@ import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobDebugRead;
 import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobOptionalRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
@@ -72,6 +73,10 @@ public class JobConverter {
     return new JobInfoLightRead().job(getJobRead(job));
   }
 
+  public JobOptionalRead getJobOptionalRead(final Job job) {
+    return new JobOptionalRead().job(getJobRead(job));
+  }
+
   public static JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
                                                  final SourceDefinitionRead sourceDefinitionRead,
                                                  final DestinationDefinitionRead destinationDefinitionRead,
@@ -103,6 +108,7 @@ public class JobConverter {
         .resetConfig(extractResetConfigIfReset(job).orElse(null))
         .createdAt(job.getCreatedAtInSecond())
         .updatedAt(job.getUpdatedAtInSecond())
+        .startedAt(job.getStartedAtInSecond().isPresent() ? job.getStartedAtInSecond().get() : null)
         .status(Enums.convertTo(job.getStatus(), JobStatus.class));
   }
 
@@ -239,6 +245,7 @@ public class JobConverter {
         .createdAt(metadata.getCreatedAt())
         .endedAt(metadata.getEndedAt())
         .succeeded(metadata.isSucceeded())
+        .connectorConfigurationUpdated(metadata.isConnectorConfigurationUpdated())
         .logs(getLogRead(metadata.getLogPath()));
   }
 
