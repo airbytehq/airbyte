@@ -411,6 +411,7 @@ public class SchedulerHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionNotificationWorkflow notificationWorkflow =
         workflowClient.newWorkflowStub(ConnectionNotificationWorkflow.class, TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.NOTIFY));
+    log.info("notification workflow: " + notificationWorkflow);
     final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
     for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
       final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
@@ -433,6 +434,7 @@ public class SchedulerHandler {
       connectionsHandler.updateConnection(updateObject);
       if (!diff.getTransforms().isEmpty()) {
         try {
+          log.info("sending schema change notification");
           notificationWorkflow.sendSchemaChangeNotification(connectionRead.getConnectionId());
         } catch (ApiException | InterruptedException e) {
           log.error("There was an error while sending a Schema Change Notification", e);
