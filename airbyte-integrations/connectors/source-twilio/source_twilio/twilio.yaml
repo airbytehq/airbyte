@@ -55,11 +55,17 @@ definitions:
     $options:
       name: "applications"
       primary_key: "sid"
+  incoming_phone_numbers_stream:
+    $ref: "*ref(definitions.base_nested_stream)"
+    $options:
+      name: "incoming_phone_numbers"
+      primary_key: "sid"
 
 streams:
   - "*ref(definitions.accounts_stream)"
   - "*ref(definitions.addresses_stream)"
   - "*ref(definitions.applications_stream)"
+  - "*ref(definitions.incoming_phone_numbers_stream)"
 
 check:
   stream_names:
