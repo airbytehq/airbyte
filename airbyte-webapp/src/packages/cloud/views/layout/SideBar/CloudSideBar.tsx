@@ -47,103 +47,97 @@ export const CloudSideBar: React.FC = () => {
   const navLinkClassName = useCalculateSidebarStyles();
   const handleChatUs = (data: DropdownMenuOptionType) => data.value === "chatUs" && show();
 
-  return (
-    <SideBar additionalTopItems={cloudWorkspaces}>
-      <li className={styles.creditsButton}>
-        <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
-          {cloudWorkspace.remainingCredits <= LOW_BALANCE_CREDIT_TRESHOLD && (
-            <Indicator className={styles.lowBalanceIndicator} />
-          )}
-          <CreditsIcon />
+  const bottomMenuItems = [
+    <div className={styles.creditsButton}>
+      <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
+        {cloudWorkspace.remainingCredits <= LOW_BALANCE_CREDIT_TRESHOLD && (
+          <Indicator className={styles.lowBalanceIndicator} />
+        )}
+        <CreditsIcon />
+        <Text className={styles.text} size="sm">
+          <FormattedMessage id="sidebar.credits" />
+        </Text>
+      </NavLink>
+    </div>,
+    <DropdownMenu
+      placement="right"
+      displacement={10}
+      options={[
+        {
+          as: "a",
+          href: links.docsLink,
+          icon: <DocsIcon />,
+          displayName: formatMessage({ id: "sidebar.documentation" }),
+        },
+        {
+          as: "a",
+          href: links.slackLink,
+          icon: <FontAwesomeIcon icon={faSlack} />,
+          displayName: formatMessage({ id: "sidebar.joinSlack" }),
+        },
+        {
+          as: "a",
+          href: links.statusLink,
+          icon: <StatusIcon />,
+          displayName: formatMessage({ id: "sidebar.status" }),
+        },
+        {
+          as: "a",
+          href: links.demoLink,
+          icon: <FontAwesomeIcon icon={faDesktop} />,
+          displayName: formatMessage({ id: "sidebar.demo" }),
+        },
+      ]}
+    >
+      {({ open }) => (
+        <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
+          <DocsIcon />
           <Text className={styles.text} size="sm">
-            <FormattedMessage id="sidebar.credits" />
+            <FormattedMessage id="sidebar.resources" />
           </Text>
-        </NavLink>
-      </li>
-      <li>
-        <DropdownMenu
-          placement="right"
-          displacement={10}
-          options={[
-            {
-              as: "a",
-              href: links.docsLink,
-              icon: <DocsIcon />,
-              displayName: formatMessage({ id: "sidebar.documentation" }),
-            },
-            {
-              as: "a",
-              href: links.slackLink,
-              icon: <FontAwesomeIcon icon={faSlack} />,
-              displayName: formatMessage({ id: "sidebar.joinSlack" }),
-            },
-            {
-              as: "a",
-              href: links.statusLink,
-              icon: <StatusIcon />,
-              displayName: formatMessage({ id: "sidebar.status" }),
-            },
-            {
-              as: "a",
-              href: links.demoLink,
-              icon: <FontAwesomeIcon icon={faDesktop} />,
-              displayName: formatMessage({ id: "sidebar.demo" }),
-            },
-          ]}
-        >
-          {({ open }) => (
-            <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
-              <DocsIcon />
-              <Text className={styles.text} size="sm">
-                <FormattedMessage id="sidebar.resources" />
-              </Text>
-            </button>
-          )}
-        </DropdownMenu>
-      </li>
-      <li>
-        <DropdownMenu
-          placement="right"
-          displacement={10}
-          options={[
-            {
-              as: "a",
-              href: links.supportTicketLink,
-              icon: <FontAwesomeIcon icon={faEnvelope} />,
-              displayName: formatMessage({ id: "sidebar.supportTicket" }),
-            },
-            {
-              as: "button",
-              icon: <ChatIcon />,
-              value: "chatUs",
-              displayName: formatMessage({ id: "sidebar.chat" }),
-            },
-          ]}
-          onChange={handleChatUs}
-        >
-          {({ open }) => (
-            <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
-              <FontAwesomeIcon icon={faCircleQuestion} size="2x" />
-              <Text className={styles.text} size="sm">
-                <FormattedMessage id="sidebar.support" />
-              </Text>
-            </button>
-          )}
-        </DropdownMenu>
-      </li>
-      <li>
-        <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
-          <IfFeatureEnabled feature={FeatureItem.AllowUpdateConnectors}>
-            <React.Suspense fallback={null}>
-              <NotificationIndicator />
-            </React.Suspense>
-          </IfFeatureEnabled>
-          <SettingsIcon />
+        </button>
+      )}
+    </DropdownMenu>,
+    <DropdownMenu
+      placement="right"
+      displacement={10}
+      options={[
+        {
+          as: "a",
+          href: links.supportTicketLink,
+          icon: <FontAwesomeIcon icon={faEnvelope} />,
+          displayName: formatMessage({ id: "sidebar.supportTicket" }),
+        },
+        {
+          as: "button",
+          icon: <ChatIcon />,
+          value: "chatUs",
+          displayName: formatMessage({ id: "sidebar.chat" }),
+        },
+      ]}
+      onChange={handleChatUs}
+    >
+      {({ open }) => (
+        <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
+          <FontAwesomeIcon icon={faCircleQuestion} size="2x" />
           <Text className={styles.text} size="sm">
-            <FormattedMessage id="sidebar.settings" />
+            <FormattedMessage id="sidebar.support" />
           </Text>
-        </NavLink>
-      </li>
-    </SideBar>
-  );
+        </button>
+      )}
+    </DropdownMenu>,
+    <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
+      <IfFeatureEnabled feature={FeatureItem.AllowUpdateConnectors}>
+        <React.Suspense fallback={null}>
+          <NotificationIndicator />
+        </React.Suspense>
+      </IfFeatureEnabled>
+      <SettingsIcon />
+      <Text className={styles.text} size="sm">
+        <FormattedMessage id="sidebar.settings" />
+      </Text>
+    </NavLink>,
+  ];
+
+  return <SideBar additionalTopItems={cloudWorkspaces} bottomMenuItems={bottomMenuItems} />;
 };

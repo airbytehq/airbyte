@@ -151,8 +151,9 @@ export const SideBar: React.FC<SideBarProps> = ({ additionalTopItems, bottomMenu
         </ul>
       </div>
       <ul className={styles.menu}>
-        {bottomMenuArray.map((item) => {
-          return <li>{item}</li>;
+        {bottomMenuArray.map((item, idx) => {
+          // todo: better key
+          return <li key={idx}>{item}</li>;
         })}
       </ul>
     </nav>
