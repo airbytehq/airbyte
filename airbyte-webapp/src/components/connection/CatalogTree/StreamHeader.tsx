@@ -106,7 +106,14 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         </div>
       )}
       <ArrowCell>
-        {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
+        {hasFields ? (
+          <ArrowBlock
+            onExpand={onExpand}
+            isItemHasChildren={hasFields}
+            isItemOpen={isRowExpanded}
+            data-testid={`${stream.stream?.name}_expandStreamDetails`}
+          />
+        ) : null}
       </ArrowCell>
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
@@ -125,7 +132,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             </span>
           )}
         </HeaderCell>
-        <HeaderCell ellipsis title={stream.stream?.name || ""}>
+        <HeaderCell ellipsis title={stream.stream?.name || ""} data-testid="streamNameCell">
           {stream.stream?.name}
         </HeaderCell>
         <Cell flex={1.5}>
@@ -145,6 +152,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
               placeholder={<FormattedMessage id="connectionForm.cursor.searchPlaceholder" />}
               onPathChange={onCursorChange}
+              id={`${stream.stream?.name}_cursor`}
             />
           )}
         </HeaderCell>
@@ -157,6 +165,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               isMulti
               placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
               onPathChange={onPrimaryKeyChange}
+              id={`${stream.stream?.name}_primaryKey`}
             />
           )}
         </HeaderCell>

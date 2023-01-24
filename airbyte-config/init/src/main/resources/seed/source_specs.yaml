@@ -280,7 +280,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.34"
+- dockerImage: "airbyte/source-alloydb:1.0.35"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -2185,7 +2185,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickhouse:0.1.14"
+- dockerImage: "airbyte/source-clickhouse:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -2476,7 +2476,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.18"
+- dockerImage: "airbyte/source-cockroachdb:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -4732,31 +4732,76 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:0.1.12"
+- dockerImage: "airbyte/source-gitlab:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Source GitLab Singer Spec"
+      title: "Source Gitlab Spec"
       type: "object"
       required:
       - "api_url"
-      - "private_token"
       - "start_date"
+      - "credentials"
       additionalProperties: true
       properties:
-        private_token:
-          type: "string"
-          title: "Private Token"
-          description: "Log into your GitLab account and then generate a personal\
-            \ [Access Token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)."
-          airbyte_secret: true
+        credentials:
+          title: "Authorization Method"
+          type: "object"
           order: 0
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            required:
+            - "client_id"
+            - "client_secret"
+            - "refresh_token"
+            - "access_token"
+            - "token_expiry_date"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth2.0"
+              client_id:
+                type: "string"
+                description: "The API ID of the Gitlab developer application."
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                description: "The API Secret the Gitlab developer application."
+                airbyte_secret: true
+              access_token:
+                type: "string"
+                description: "Access Token for making authenticated requests."
+                airbyte_secret: true
+              token_expiry_date:
+                type: "string"
+                description: "The date-time when the access token should be refreshed."
+                format: "date-time"
+              refresh_token:
+                type: "string"
+                description: "The key to refresh the expired access_token."
+                airbyte_secret: true
+          - title: "Private Token"
+            type: "object"
+            required:
+            - "access_token"
+            properties:
+              auth_type:
+                type: "string"
+                const: "access_token"
+              access_token:
+                type: "string"
+                title: "Private Token"
+                description: "Log into your Gitlab account and then generate a personal\
+                  \ Access Token."
+                airbyte_secret: true
         api_url:
           type: "string"
           examples:
           - "gitlab.com"
           title: "API URL"
+          default: "gitlab.com"
           description: "Please enter your basic URL from GitLab instance."
           order: 1
         start_date:
@@ -4787,6 +4832,59 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "credentials"
+      - "auth_type"
+      predicate_value: "oauth2.0"
+      oauth_config_specification:
+        oauth_user_input_from_connector_config_specification:
+          type: "object"
+          properties:
+            domain:
+              type: "string"
+              path_in_connector_config:
+              - "api_url"
+        complete_oauth_output_specification:
+          type: "object"
+          properties:
+            access_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "access_token"
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "refresh_token"
+            token_expiry_date:
+              type: "string"
+              format: "date-time"
+              path_in_connector_config:
+              - "credentials"
+              - "token_expiry_date"
+        complete_oauth_server_input_specification:
+          type: "object"
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_secret"
 - dockerImage: "airbyte/source-glassfrog:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/glassfrog"
@@ -5117,7 +5215,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.7"
+- dockerImage: "airbyte/source-google-ads:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -6428,7 +6526,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-db2:0.1.16"
+- dockerImage: "airbyte/source-db2:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/db2"
     connectionSpecification:
@@ -6492,9 +6590,6 @@
               encryption_method:
                 type: "string"
                 const: "unencrypted"
-                enum:
-                - "unencrypted"
-                default: "unencrypted"
           - title: "TLS Encrypted (verify certificate)"
             description: "Verify and use the cert provided by the server."
             required:
@@ -6504,9 +6599,6 @@
               encryption_method:
                 type: "string"
                 const: "encrypted_verify_certificate"
-                enum:
-                - "encrypted_verify_certificate"
-                default: "encrypted_verify_certificate"
               ssl_certificate:
                 title: "SSL PEM file"
                 description: "Privacy Enhanced Mail (PEM) files are concatenated certificate\
@@ -6556,7 +6648,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-instagram:1.0.0"
+- dockerImage: "airbyte/source-instagram:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/instagram"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/instagram"
@@ -8021,7 +8113,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.26"
+- dockerImage: "airbyte/source-mssql:0.4.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -8180,6 +8272,18 @@
                   \ the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\"\
                   >snapshot isolation mode</a> on the database."
                 order: 2
+              initial_waiting_seconds:
+                type: "integer"
+                title: "Initial Waiting Time in Seconds (Advanced)"
+                description: "The amount of time the connector will wait when it launches\
+                  \ to determine if there is new data to sync or not. Defaults to\
+                  \ 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about\
+                  \ <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"\
+                  >initial waiting time</a>."
+                default: 300
+                min: 120
+                max: 1200
+                order: 3
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -8884,7 +8988,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.18"
+- dockerImage: "airbyte/source-mysql:1.0.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -9282,7 +9386,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-netsuite:0.1.2"
+- dockerImage: "airbyte/source-netsuite:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -10135,7 +10239,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-oracle:0.3.21"
+- dockerImage: "airbyte/source-oracle:0.3.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/oracle"
     connectionSpecification:
@@ -10177,7 +10281,6 @@
               connection_type:
                 type: "string"
                 const: "service_name"
-                default: "service_name"
                 order: 0
               service_name:
                 title: "Service name"
@@ -10191,7 +10294,6 @@
               connection_type:
                 type: "string"
                 const: "sid"
-                default: "sid"
                 order: 0
               sid:
                 title: "System ID (SID)"
@@ -10239,9 +10341,6 @@
               encryption_method:
                 type: "string"
                 const: "unencrypted"
-                enum:
-                - "unencrypted"
-                default: "unencrypted"
           - title: "Native Network Encryption (NNE)"
             description: "The native network encryption gives you the ability to encrypt\
               \ database connections, without the configuration overhead of TCP/IP\
@@ -10252,9 +10351,6 @@
               encryption_method:
                 type: "string"
                 const: "client_nne"
-                enum:
-                - "client_nne"
-                default: "client_nne"
               encryption_algorithm:
                 type: "string"
                 description: "This parameter defines what encryption algorithm is\
@@ -10274,9 +10370,6 @@
               encryption_method:
                 type: "string"
                 const: "encrypted_verify_certificate"
-                enum:
-                - "encrypted_verify_certificate"
-                default: "encrypted_verify_certificate"
               ssl_certificate:
                 title: "SSL PEM File"
                 description: "Privacy Enhanced Mail (PEM) files are concatenated certificate\
@@ -11395,7 +11488,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.36"
+- dockerImage: "airbyte/source-postgres:1.0.39"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12233,7 +12326,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.15"
+- dockerImage: "airbyte/source-redshift:0.3.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/redshift"
     connectionSpecification:
@@ -12553,7 +12646,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.28"
+- dockerImage: "airbyte/source-s3:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -13259,7 +13352,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.3.0"
+- dockerImage: "airbyte/source-shopify:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -13709,7 +13802,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.28"
+- dockerImage: "airbyte/source-snowflake:0.1.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -14557,7 +14650,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tidb:0.2.1"
+- dockerImage: "airbyte/source-tidb:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tidb"
     connectionSpecification:

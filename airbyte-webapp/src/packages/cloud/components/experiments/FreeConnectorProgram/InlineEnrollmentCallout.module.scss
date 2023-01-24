@@ -1,0 +1,26 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  margin-top: variables.$spacing-lg;
+  width: 100%;
+}
+
+.enrollLink {
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  color: colors.$dark-blue;
+  border: none;
+  background-color: transparent;
+  font-size: inherit;
+
+  &:hover,
+  &:active {
+    color: colors.$blue;
+  }
+}
+
+.freeText {
+  color: colors.$blue;
+}
