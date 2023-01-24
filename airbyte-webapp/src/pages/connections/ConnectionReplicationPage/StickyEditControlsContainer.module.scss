@@ -1,0 +1,25 @@
+@use "scss/colors";
+@use "scss/variables";
+
+$spacing-side-margins: variables.$spacing-lg;
+$container-padding-top: variables.$spacing-lg + variables.$card-border-radius;
+$container-padding-bottom: 28px; // (intercom height + margins (88px) - button height (32px)) / 2
+
+.container {
+  position: sticky;
+  bottom: 0;
+  margin-top: -#{variables.$card-border-radius};
+  margin-left: -#{$spacing-side-margins};
+  padding: $container-padding-top $spacing-side-margins $container-padding-bottom;
+  width: calc(100% + $spacing-side-margins * 2);
+  background: colors.$grey-50;
+  overflow: hidden;
+}
+
+.halfCard {
+  width: calc(100% - $spacing-side-margins * 2);
+  min-height: variables.$card-border-radius * 2;
+  position: absolute;
+  top: -#{variables.$card-border-radius};
+  left: $spacing-side-margins;
+}

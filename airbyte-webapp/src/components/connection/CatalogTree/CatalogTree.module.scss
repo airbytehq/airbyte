@@ -2,9 +2,9 @@
 
 .catalogTreeTable {
   padding: variables.$spacing-lg variables.$spacing-xl 0;
-  overflow: auto;
-  border-radius: 10px;
-  margin-bottom: 29px;
+  overflow-x: scroll;
+  border-radius: variables.$border-radius-lg;
+  margin-bottom: variables.$card-border-radius;
 
   &.newCatalogTreeTable {
     padding: 0;

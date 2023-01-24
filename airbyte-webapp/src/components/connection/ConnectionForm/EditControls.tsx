@@ -1,8 +1,11 @@
+import classNames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
 import { FlexContainer } from "components/ui/Flex";
+
+import { isCloudApp } from "utils/app";
 
 import styles from "./EditControls.module.scss";
 import { ResponseMessage } from "./ResponseMessage";
@@ -27,7 +30,13 @@ const EditControls: React.FC<EditControlProps> = ({
   enableControls,
 }) => {
   return (
-    <FlexContainer justifyContent="flex-end" alignItems="center" direction="row" gap="lg" className={styles.container}>
+    <FlexContainer
+      justifyContent="flex-end"
+      alignItems="center"
+      direction="row"
+      gap="lg"
+      className={classNames(styles.container, { [styles.cloud]: isCloudApp() })}
+    >
       <ResponseMessage dirty={dirty} successMessage={successMessage} errorMessage={errorMessage} />
       <FlexContainer gap="md">
         <Button

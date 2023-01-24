@@ -2,4 +2,8 @@
 
 .container {
   margin-top: variables.$spacing-md;
+
+  &.cloud {
+    margin-right: 68px;
+  }
 }

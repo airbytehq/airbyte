@@ -43,7 +43,7 @@ export const ConnectionPage: React.FC = () => {
   return (
     <ConnectionEditServiceProvider connectionId={connectionId}>
       <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
-        <MainPageWithScroll headTitle={<ConnectionHeadTitle />} pageTitle={<ConnectionPageTitle />}>
+        <MainPageWithScroll headTitle={<ConnectionHeadTitle />} pageTitle={<ConnectionPageTitle />} noBottomPadding>
           <Suspense fallback={<LoadingPage />}>
             <Outlet />
           </Suspense>

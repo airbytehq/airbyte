@@ -944,29 +944,36 @@ exports[`ConnectionReplicationPage should render 1`] = `
         >
           <div
             class="<removed-for-snapshot-test>"
+          />
+          <div
+            class="<removed-for-snapshot-test>"
           >
-            <button
+            <div
               class="<removed-for-snapshot-test>"
-              disabled=""
-              type="button"
             >
-              <div
+              <button
                 class="<removed-for-snapshot-test>"
+                disabled=""
+                type="button"
               >
-                Cancel
-              </div>
-            </button>
-            <button
-              class="<removed-for-snapshot-test>"
-              disabled=""
-              type="submit"
-            >
-              <div
+                <div
+                  class="<removed-for-snapshot-test>"
+                >
+                  Cancel
+                </div>
+              </button>
+              <button
                 class="<removed-for-snapshot-test>"
+                disabled=""
+                type="submit"
               >
-                Save changes
-              </div>
-            </button>
+                <div
+                  class="<removed-for-snapshot-test>"
+                >
+                  Save changes
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </form>

@@ -24,4 +24,8 @@
   &.cloud {
     padding-bottom: variables.$spacing-page-bottom-cloud;
   }
+
+  &.noBottomPadding {
+    padding-bottom: 0;
+  }
 }

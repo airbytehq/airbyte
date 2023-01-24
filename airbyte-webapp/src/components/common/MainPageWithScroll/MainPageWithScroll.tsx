@@ -13,9 +13,15 @@ interface MainPageWithScrollProps {
   headTitle?: React.ReactNode;
   pageTitle?: React.ReactNode;
   children?: React.ReactNode;
+  noBottomPadding?: boolean;
 }
 
-export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitle, pageTitle, children }) => {
+export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({
+  headTitle,
+  pageTitle,
+  noBottomPadding,
+  children,
+}) => {
   return (
     <div className={styles.page}>
       <div>
@@ -23,7 +29,14 @@ export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitl
         {pageTitle}
       </div>
       <div className={styles.contentContainer}>
-        <div className={classNames(styles.content, { [styles.cloud]: isCloudApp() })}>{children}</div>
+        <div
+          className={classNames(styles.content, {
+            [styles.cloud]: isCloudApp(),
+            [styles.noBottomPadding]: noBottomPadding,
+          })}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );
