@@ -24,10 +24,10 @@ definitions:
     name: "{{ parameters['name'] }}"
     primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: "DefaultPaginator"
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "limit"
@@ -41,58 +41,58 @@ definitions:
   base_stream:
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
 
   projects_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "projects"
       path: "projects"
 
   base_slicing_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
-          - stream: "*ref(definitions.projects_stream)"
+          - stream: "#/definitions/projects_stream"
             parent_key: id
             stream_slice_field: id
 
   cohorts_stream:
-    $ref: "*ref(definitions.base_slicing_stream)"
+    $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "cohorts"
       path: "cohorts"
 
   feature_flags_stream:
-    $ref: "*ref(definitions.base_slicing_stream)"
+    $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "feature_flags"
       path: "feature_flags"
 
   persons_stream:
-    $ref: "*ref(definitions.base_slicing_stream)"
+    $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "persons"
       path: "persons"
 
   annotations_stream:
-    $ref: "*ref(definitions.base_slicing_stream)"
+    $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "annotations"
       path: "annotations"
 
   insights_stream:
-    $ref: "*ref(definitions.base_slicing_stream)"
+    $ref: "#/definitions/base_slicing_stream"
     $parameters:
       name: "insights"
       path: "insights"
@@ -104,15 +104,15 @@ definitions:
     primary_key: "id"
     stream_cursor_field: "timestamp"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
       class_name: source_posthog.components.EventsSimpleRetriever
       name: "{{ parameters['name'] }}"
       primary_key: "{{ parameters['primary_key'] }}"
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
       stream_slicer:
         type: CustomStreamSlicer
@@ -120,7 +120,7 @@ definitions:
         stream_slicers:
           - type: SubstreamSlicer
             parent_stream_configs:
-              - stream: "*ref(definitions.projects_stream)"
+              - stream: "#/definitions/projects_stream"
                 parent_key: "id"
                 stream_slice_field: "project_id"
           - type: DatetimeStreamSlicer
@@ -142,7 +142,7 @@ definitions:
               inject_into: request_parameter
       paginator:
         type: "DefaultPaginator"
-        url_base: "*ref(definitions.requester.url_base)"
+        url_base: "#/definitions/requester/url_base"
         page_size_option:
           inject_into: "request_parameter"
           field_name: "limit"
@@ -154,13 +154,13 @@ definitions:
           inject_into: "path"
 
 streams:
-  - "*ref(definitions.projects_stream)"
-  - "*ref(definitions.cohorts_stream)"
-  - "*ref(definitions.feature_flags_stream)"
-  - "*ref(definitions.persons_stream)"
-  - "*ref(definitions.events_stream)"
-  - "*ref(definitions.annotations_stream)"
-  - "*ref(definitions.insights_stream)"
+  - "#/definitions/projects_stream"
+  - "#/definitions/cohorts_stream"
+  - "#/definitions/feature_flags_stream"
+  - "#/definitions/persons_stream"
+  - "#/definitions/events_stream"
+  - "#/definitions/annotations_stream"
+  - "#/definitions/insights_stream"
 
 check:
   type: CheckStream

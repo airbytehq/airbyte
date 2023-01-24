@@ -11,22 +11,22 @@ definitions:
       secret: "{{ config['secret'] }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   zapier_supported_storage_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "zapier_supported_storage"
       path: "/records"
 
 streams:
-  - "*ref(definitions.zapier_supported_storage_stream)"
+  - "#/definitions/zapier_supported_storage_stream"
 
 check:
   stream_names:

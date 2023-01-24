@@ -37,10 +37,10 @@ definitions:
 
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "limit"
@@ -51,15 +51,15 @@ definitions:
         field_name: "offset"
         inject_into: "request_parameter"
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/stream_slicer"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
 
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   dataset_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "dataset"
       primary_key:
@@ -73,7 +73,7 @@ definitions:
             value: "{{ record['timestamp'] | int / 1000 }}"
 
 streams:
-  - "*ref(definitions.dataset_stream)"
+  - "#/definitions/dataset_stream"
 
 check:
   stream_names:

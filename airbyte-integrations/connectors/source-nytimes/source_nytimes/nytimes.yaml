@@ -10,10 +10,10 @@ definitions:
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   archive_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["response", "docs"]
@@ -36,7 +36,7 @@ definitions:
       stream_cursor_field: "pub_date"
   most_popular_emailed_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["results"]
@@ -46,7 +46,7 @@ definitions:
       path: "/mostpopular/v2/emailed/{{ config['period'] }}.json"
   most_popular_shared_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["results"]
@@ -56,7 +56,7 @@ definitions:
       path: "/mostpopular/v2/shared/{{ config['period'] }}{% if 'share_type' in config %}/{{ config['share_type'] }}{% endif %}.json"
   most_popular_viewed_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["results"]
@@ -66,10 +66,10 @@ definitions:
       path: "/mostpopular/v2/viewed/{{ config['period'] }}.json"
 
 streams:
-  - "*ref(definitions.archive_stream)"
-  - "*ref(definitions.most_popular_emailed_stream)"
-  - "*ref(definitions.most_popular_shared_stream)"
-  - "*ref(definitions.most_popular_viewed_stream)"
+  - "#/definitions/archive_stream"
+  - "#/definitions/most_popular_emailed_stream"
+  - "#/definitions/most_popular_shared_stream"
+  - "#/definitions/most_popular_viewed_stream"
 
 check:
   stream_names:

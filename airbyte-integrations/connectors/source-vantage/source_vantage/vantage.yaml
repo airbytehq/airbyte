@@ -12,7 +12,7 @@ definitions:
       api_token: "{{ config['access_token'] }}"
   increment_paginator:
     type: "DefaultPaginator"
-    url_base: "*ref(definitions.requester.url_base)"
+    url_base: "#/definitions/requester/url_base"
     page_size_option:
       inject_into: "request_parameter"
       field_name: "limit"
@@ -24,43 +24,43 @@ definitions:
       field_name: "page"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
-      $ref: "*ref(definitions.increment_paginator)"
+      $ref: "#/definitions/increment_paginator"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   providers_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "providers"
       primary_key: "id"
       path: "/providers"
   services_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "services"
       primary_key: "id"
       path: "/services"
   products_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "products"
       primary_key: "id"
       path: "/products"
   reports_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "reports"
       primary_key: "id"
       path: "/reports"
 streams:
-  - "*ref(definitions.providers_stream)"
-  - "*ref(definitions.services_stream)"
-  - "*ref(definitions.products_stream)"
-  - "*ref(definitions.reports_stream)"
+  - "#/definitions/providers_stream"
+  - "#/definitions/services_stream"
+  - "#/definitions/products_stream"
+  - "#/definitions/reports_stream"
 
 check:
   stream_names:

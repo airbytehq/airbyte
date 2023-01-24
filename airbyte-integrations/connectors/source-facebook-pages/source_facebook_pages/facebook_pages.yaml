@@ -33,34 +33,34 @@ definitions:
     page_token_option:
       field_name: "after"
       inject_into: "request_parameter"
-    url_base: "*ref(definitions.requester.url_base)"
+    url_base: "#/definitions/requester/url_base"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
 
   base_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
 
   page_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "page"
       primary_key: "id"
       path: "/{{ config['page_id'] }}"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: []
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         request_parameters:
           fields: |
             {{ 
@@ -213,17 +213,17 @@ definitions:
             }}
 
   post_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "post"
       primary_key: "id"
       path: "/{{ config['page_id'] }}/posts"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       paginator:
-        $ref: "*ref(definitions.facebook_post_paginator)"
+        $ref: "#/definitions/facebook_post_paginator"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         request_parameters:
           fields: |
             {{ 
@@ -289,22 +289,22 @@ definitions:
             }}
 
   post_insights_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "post_insights"
       primary_key: "id"
       path: "/{{ config['page_id'] }}/posts"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       paginator:
-        $ref: "*ref(definitions.facebook_post_paginator)"
+        $ref: "#/definitions/facebook_post_paginator"
       record_selector:
         type: RecordSelector
         extractor:
           class_name: source_facebook_pages.components.NestedDpathExtractor
           field_pointer: ["data", "insights", "data"]
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         request_parameters:
           fields: |
             {{ 
@@ -340,15 +340,15 @@ definitions:
             }}
 
   page_insights_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "page_insights"
       primary_key: "id"
       path: "/{{ config['page_id'] }}/insights"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         request_parameters:
           metric: |
             {{
@@ -421,10 +421,10 @@ definitions:
               ])
             }}
 streams:
-  - "*ref(definitions.page_stream)"
-  - "*ref(definitions.post_stream)"
-  - "*ref(definitions.post_insights_stream)"
-  - "*ref(definitions.page_insights_stream)"
+  - "#/definitions/page_stream"
+  - "#/definitions/post_stream"
+  - "#/definitions/post_insights_stream"
+  - "#/definitions/page_insights_stream"
 
 check:
   stream_names:

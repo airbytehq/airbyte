@@ -38,10 +38,10 @@ definitions:
 
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: "DefaultPaginator"
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
       pagination_strategy:
         class_name: "source_the_guardian_api.custom_page_strategy.CustomPageIncrement"
         page_size: 10
@@ -52,14 +52,14 @@ definitions:
         inject_into: "body_data"
         field_name: "page_size"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/stream_slicer"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   content_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "content"
       primary_key: "id"
@@ -67,7 +67,7 @@ definitions:
       stream_cursor_field: "webPublicationDate"
 
 streams:
-  - "*ref(definitions.content_stream)"
+  - "#/definitions/content_stream"
 
 check:
   stream_names:

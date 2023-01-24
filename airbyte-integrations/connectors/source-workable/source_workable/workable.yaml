@@ -18,12 +18,12 @@ definitions:
       created_after: "{{ config['start_date'] }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
     paginator:
       type: DefaultPaginator
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
       limit_option:
         inject_into: "request_parameter"
         field_name: ""
@@ -36,33 +36,33 @@ definitions:
         type: "CursorPagination"
         cursor_value: "{{ response.paging.next }}"
         stop_condition: "{{ 'next' not in response['paging'] }}"
-        page_size: "*ref(definitions.page_size)"
+        page_size: "#/definitions/page_size"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   jobs_stream: # https://workable.readme.io/reference/jobs
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "jobs"
       primary_key: "id"
       path: "/spi/v3/jobs"
       field_pointer: ["jobs"]
   candidates_stream: # https://workable.readme.io/reference/job-candidates-index
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "candidates"
       primary_key: "id"
       path: "/spi/v3/candidates"
       field_pointer: ["candidates"]
   stages_stream: # https://workable.readme.io/reference/stages
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "stages"
       primary_key: "slug"
       path: "/spi/v3/stages"
       field_pointer: ["stages"]
   recruiters_stream: # https://workable.readme.io/reference/recruiters
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "recruiters"
       primary_key: "id"
@@ -70,10 +70,10 @@ definitions:
       field_pointer: ["recruiters"]
 
 streams:
-  - "*ref(definitions.jobs_stream)"
-  - "*ref(definitions.candidates_stream)"
-  - "*ref(definitions.stages_stream)"
-  - "*ref(definitions.recruiters_stream)"
+  - "#/definitions/jobs_stream"
+  - "#/definitions/candidates_stream"
+  - "#/definitions/stages_stream"
+  - "#/definitions/recruiters_stream"
 
 check:
   stream_names:

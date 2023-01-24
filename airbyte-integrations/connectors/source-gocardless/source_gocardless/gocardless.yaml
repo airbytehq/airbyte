@@ -28,7 +28,7 @@ definitions:
     name: "{{ parameters['name'] }}"
     primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: "DefaultPaginator"
       pagination_strategy:
@@ -52,11 +52,11 @@ streams:
       stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/payments"
   - type: DeclarativeStream
     $parameters:
@@ -64,11 +64,11 @@ streams:
       stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/refunds"
   - type: DeclarativeStream
     $parameters:
@@ -76,11 +76,11 @@ streams:
       stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/mandates"
   - type: DeclarativeStream
     $parameters:
@@ -88,11 +88,11 @@ streams:
       stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/payouts"
 check:
   type: CheckStream

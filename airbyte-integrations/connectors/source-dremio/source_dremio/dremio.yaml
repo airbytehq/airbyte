@@ -16,22 +16,22 @@ definitions:
       api_token: "_dremio{{ config['api_key'] }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   catalogs_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "catalogs"
       path: "/catalog"
 
 streams:
-  - "*ref(definitions.catalogs_stream)"
+  - "#/definitions/catalogs_stream"
 
 check:
   type: CheckStream

@@ -19,7 +19,7 @@ definitions:
           action: FAIL
   cursor_paginator:
     type: DefaultPaginator
-    url_base: "*ref(definitions.requester.url_base)"
+    url_base: "#/definitions/requester/url_base"
     page_token_option:
       inject_into: path
     page_size_option:
@@ -32,37 +32,37 @@ definitions:
       page_size: 1
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
-      $ref: "*ref(definitions.cursor_paginator)"
+      $ref: "#/definitions/cursor_paginator"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   tables_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "tables"
       primary_key: "id"
       path: "/table/tables/"
   terms_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "terms"
       primary_key: "id"
       path: "/dictionary/terms/"
   collections_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "collections"
       primary_key: "id"
       path: "/collection/collections/"
 
 streams:
-  - "*ref(definitions.tables_stream)"
-  - "*ref(definitions.terms_stream)"
-  - "*ref(definitions.collections_stream)"
+  - "#/definitions/tables_stream"
+  - "#/definitions/terms_stream"
+  - "#/definitions/collections_stream"
 
 check:
   stream_names:

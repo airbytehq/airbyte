@@ -24,23 +24,23 @@ definitions:
       date: "{{ config['start_date'] or '2019-01-01' }},{{ today_utc() }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   stats_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "stats"
       primary_key: "date"
       path: "/timeseries"
 
 streams:
-  - "*ref(definitions.stats_stream)"
+  - "#/definitions/stats_stream"
 
 check:
   stream_names:

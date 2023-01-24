@@ -41,7 +41,7 @@ definitions:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -54,20 +54,20 @@ definitions:
       page_token_option:
         field_name: "page"
         inject_into: "request_parameter"
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/stream_slicer"
   base_stream:
     primary_key: "id"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   people:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     stream_cursor_field: "created_at"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -80,13 +80,13 @@ definitions:
           inject_into: "request_parameter"
         page_token_option:
           inject_into: "path"
-        url_base: "*ref(definitions.requester.url_base)"
+        url_base: "#/definitions/requester/url_base"
     $parameters:
       name: "people"
       path: "people.json"
       stream_cursor_field: "created_at"
   bounces:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     primary_key: "person_id"
     stream_cursor_field: "bounced_at"
     $parameters:
@@ -94,7 +94,7 @@ definitions:
       name: "bounces"
       path: "bounces.json"
   unsubscribes:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     primary_key: "person_id"
     stream_cursor_field: "unsubscribed_at"
     $parameters:
@@ -102,12 +102,12 @@ definitions:
       name: "unsubscribes"
       path: "unsubscribes.json"
   survey_responses:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     stream_cursor_field: "updated_at"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       stream_slicer:
-        $ref: "*ref(definitions.stream_slicer)"
+        $ref: "#/definitions/stream_slicer"
         end_time_option:
           field_name: "updated_until"
           inject_into: "request_parameter"
@@ -120,10 +120,10 @@ definitions:
       path: "survey_responses.json"
 
 streams:
-  - "*ref(definitions.people)"
-  - "*ref(definitions.unsubscribes)"
-  - "*ref(definitions.bounces)"
-  - "*ref(definitions.survey_responses)"
+  - "#/definitions/people"
+  - "#/definitions/unsubscribes"
+  - "#/definitions/bounces"
+  - "#/definitions/survey_responses"
 
 check:
   type: CheckStream
