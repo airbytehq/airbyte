@@ -51,7 +51,7 @@ public class WorkspaceFilterTest extends BaseConfigDatabaseTest {
   static void setUpAll() throws SQLException {
     // create actor_definition
     database.transaction(ctx -> ctx.insertInto(ACTOR_DEFINITION, ACTOR_DEFINITION.ID, ACTOR_DEFINITION.NAME, ACTOR_DEFINITION.DOCKER_REPOSITORY,
-            ACTOR_DEFINITION.DOCKER_IMAGE_TAG, ACTOR_DEFINITION.SPEC, ACTOR_DEFINITION.ACTOR_TYPE, ACTOR_DEFINITION.RELEASE_STAGE)
+        ACTOR_DEFINITION.DOCKER_IMAGE_TAG, ACTOR_DEFINITION.SPEC, ACTOR_DEFINITION.ACTOR_TYPE, ACTOR_DEFINITION.RELEASE_STAGE)
         .values(SRC_DEF_ID, "srcDef", "repository", "tag", JSONB.valueOf("{}"), ActorType.source, ReleaseStage.beta)
         .values(DST_DEF_ID, "dstDef", "repository", "tag", JSONB.valueOf("{}"), ActorType.destination, ReleaseStage.generally_available)
         .values(UUID.randomUUID(), "dstDef", "repository", "tag", JSONB.valueOf("{}"), ActorType.destination, ReleaseStage.alpha)
@@ -75,7 +75,7 @@ public class WorkspaceFilterTest extends BaseConfigDatabaseTest {
     // create connections
     database.transaction(
         ctx -> ctx.insertInto(CONNECTION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION,
-                CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL)
+            CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL)
             .values(ACTOR_ID_0, ACTOR_ID_1, CONN_ID_0, NamespaceDefinitionType.source, "CONN-0", JSONB.valueOf("{}"), true)
             .values(ACTOR_ID_0, ACTOR_ID_2, CONN_ID_1, NamespaceDefinitionType.source, "CONN-1", JSONB.valueOf("{}"), true)
             .values(ACTOR_ID_1, ACTOR_ID_2, CONN_ID_2, NamespaceDefinitionType.source, "CONN-2", JSONB.valueOf("{}"), true)
@@ -98,7 +98,6 @@ public class WorkspaceFilterTest extends BaseConfigDatabaseTest {
         .execute());
   }
 
-
   @BeforeEach
   void beforeEach() {
     setup();
@@ -113,18 +112,17 @@ public class WorkspaceFilterTest extends BaseConfigDatabaseTest {
   void testListWorkspacesByMostRecentlyRunningJobs() throws IOException {
     final int timeWindowInHours = 48;
     /*
-     * Following function is to filter workspace (IDs) with most recently running jobs within a given time window.
-     * Step 1: Filter on table JOBS where job's UPDATED_AT timestamp is within the given time window.
-     * Step 2: Trace back via CONNECTION table and ACTOR table.
-     * Step 3: Return workspace IDs from ACTOR table.
+     * Following function is to filter workspace (IDs) with most recently running jobs within a given
+     * time window. Step 1: Filter on table JOBS where job's UPDATED_AT timestamp is within the given
+     * time window. Step 2: Trace back via CONNECTION table and ACTOR table. Step 3: Return workspace
+     * IDs from ACTOR table.
      */
     final List<UUID> actualResult = configRepository.listWorkspacesByMostRecentlyRunningJobs(timeWindowInHours);
     /*
-     * With the test data provided above, expected outputs for each step:
-     * Step 1: `jobs` (IDs) OL, 1L, 2L, 3L, 4L, 5L and 6L.
-     * Step 2: `connections` (IDs) CONN_ID_0, CONN_ID_1, CONN_ID_2, CONN_ID_3, and CONN_ID_4
-     *         `actors` (IDs) ACTOR_ID_0, ACTOR_ID_1, and ACTOR_ID_2.
-     * Step 3: `workspaces` (IDs) WORKSPACE_ID_0, WORKSPACE_ID_1 and WORKSPACE_ID_2.
+     * With the test data provided above, expected outputs for each step: Step 1: `jobs` (IDs) OL, 1L,
+     * 2L, 3L, 4L, 5L and 6L. Step 2: `connections` (IDs) CONN_ID_0, CONN_ID_1, CONN_ID_2, CONN_ID_3,
+     * and CONN_ID_4 `actors` (IDs) ACTOR_ID_0, ACTOR_ID_1, and ACTOR_ID_2. Step 3: `workspaces` (IDs)
+     * WORKSPACE_ID_0, WORKSPACE_ID_1 and WORKSPACE_ID_2.
      */
     final List<UUID> expectedResult = new ArrayList<>();
     expectedResult.add(WORKSPACE_ID_0);
