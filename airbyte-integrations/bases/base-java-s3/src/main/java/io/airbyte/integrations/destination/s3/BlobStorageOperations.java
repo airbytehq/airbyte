@@ -22,9 +22,9 @@ public abstract class BlobStorageOperations {
   public abstract String getBucketObjectPath(String namespace, String streamName, DateTime writeDatetime, String customFormat);
 
   /**
-   * Create a storage object where to store data in the destination for a @param objectPath
+   * Ensure that the bucket specified in the config exists
    */
-  public abstract void createBucketObjectIfNotExists(String objectPath) throws Exception;
+  public abstract void createBucketIfNotExists() throws Exception;
 
   /**
    * Upload the data files into the storage area.

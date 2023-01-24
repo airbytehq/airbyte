@@ -1,3 +1,5 @@
+/// <reference types="@types/segment-analytics" />
+
 import { useEffect } from "react";
 
 // if token is undefined calls to segment will be a no-op.

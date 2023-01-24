@@ -1,12 +1,16 @@
-import { User as FirebaseUser } from "firebase/auth";
+import { User as FirebaseUser, AuthErrorCodes } from "firebase/auth";
 import React, { useCallback, useContext, useMemo, useRef } from "react";
+import { useIntl } from "react-intl";
 import { useQueryClient } from "react-query";
 import { useEffectOnce } from "react-use";
 import { Observable, Subject } from "rxjs";
 
+import { ToastType } from "components/ui/Toast";
+
 import { Action, Namespace } from "core/analytics";
 import { isCommonRequestError } from "core/request/CommonRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { useNotificationService } from "hooks/services/Notification";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
 import { AuthProviders, OAuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
@@ -44,6 +48,12 @@ export type AuthLogout = () => Promise<void>;
 
 type OAuthLoginState = "waiting" | "loading" | "done";
 
+enum FirebaseAuthMessageId {
+  NetworkFailure = "firebase.auth.error.networkRequestFailed",
+  TooManyRequests = "firebase.auth.error.tooManyRequests",
+  DefaultError = "firebase.auth.error.default",
+}
+
 interface AuthContextApi {
   user: User | null;
   inited: boolean;
@@ -78,6 +88,8 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
   const userService = useGetUserService();
   const analytics = useAnalyticsService();
   const authService = useInitService(() => new GoogleAuthService(() => auth), [auth]);
+  const { registerNotification } = useNotificationService();
+  const { formatMessage } = useIntl();
 
   /**
    * Create a user object in the Airbyte database from an existing Firebase user.
@@ -230,7 +242,39 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
         await authService.resetPassword(email);
       },
       async sendEmailVerification(): Promise<void> {
-        await authService.sendEmailVerifiedLink();
+        try {
+          await authService.sendEmailVerifiedLink();
+        } catch (error) {
+          switch (error.code) {
+            case AuthErrorCodes.NETWORK_REQUEST_FAILED:
+              registerNotification({
+                id: error.code,
+                text: formatMessage({
+                  id: FirebaseAuthMessageId.NetworkFailure,
+                }),
+                type: ToastType.ERROR,
+              });
+              break;
+            case AuthErrorCodes.TOO_MANY_ATTEMPTS_TRY_LATER:
+              registerNotification({
+                id: error.code,
+                text: formatMessage({
+                  id: FirebaseAuthMessageId.TooManyRequests,
+                }),
+                type: ToastType.WARNING,
+              });
+              break;
+            default:
+              registerNotification({
+                id: error.code,
+                text: formatMessage({
+                  id: FirebaseAuthMessageId.DefaultError,
+                }),
+                type: ToastType.ERROR,
+              });
+          }
+          throw error;
+        }
       },
       async verifyEmail(code: string): Promise<void> {
         await authService.confirmEmailVerify(code);
