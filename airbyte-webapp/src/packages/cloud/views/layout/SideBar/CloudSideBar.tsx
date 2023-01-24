@@ -32,7 +32,7 @@ import styles from "./SideBar.module.scss";
 const cloudWorkspaces = (
   <WorkspacePopout>
     {({ onOpen, value }) => (
-      <button className={styles.workspaceButton} onClick={onOpen}>
+      <button className={styles.workspaceButton} onClick={onOpen} data-testid="workspaceButton">
         {value}
       </button>
     )}
@@ -48,7 +48,7 @@ export const CloudSideBar: React.FC = () => {
   const handleChatUs = (data: DropdownMenuOptionType) => data.value === "chatUs" && show();
 
   const bottomMenuItems = [
-    <div className={styles.creditsButton}>
+    <div className={styles.creditsButton} data-testid="creditsButton">
       <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
         {cloudWorkspace.remainingCredits <= LOW_BALANCE_CREDIT_TRESHOLD && (
           <Indicator className={styles.lowBalanceIndicator} />
