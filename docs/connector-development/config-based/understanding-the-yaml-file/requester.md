@@ -25,8 +25,8 @@ The schema of a requester object is:
       - url_base
       - path
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       name:
         type: string
       url_base:

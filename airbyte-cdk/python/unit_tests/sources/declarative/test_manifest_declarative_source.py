@@ -55,7 +55,10 @@ class TestManifestDeclarativeSource:
         manifest = {
             "version": "version",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
@@ -75,10 +78,10 @@ class TestManifestDeclarativeSource:
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
@@ -102,10 +105,10 @@ class TestManifestDeclarativeSource:
                 },
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "stream_with_custom_requester", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "stream_with_custom_requester", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
@@ -146,7 +149,10 @@ class TestManifestDeclarativeSource:
         manifest = {
             "version": "version",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
@@ -166,10 +172,10 @@ class TestManifestDeclarativeSource:
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
@@ -223,7 +229,10 @@ class TestManifestDeclarativeSource:
         manifest = {
             "version": "version",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
@@ -243,10 +252,10 @@ class TestManifestDeclarativeSource:
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
@@ -279,7 +288,10 @@ class TestManifestDeclarativeSource:
         manifest = {
             "version": "version",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
@@ -299,10 +311,10 @@ class TestManifestDeclarativeSource:
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
@@ -332,7 +344,10 @@ class TestManifestDeclarativeSource:
         manifest = {
             "version": "version",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
@@ -352,10 +367,10 @@ class TestManifestDeclarativeSource:
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
@@ -389,7 +404,10 @@ class TestManifestDeclarativeSource:
     def test_source_with_missing_version_fails(self, construct_using_pydantic_models):
         manifest = {
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
@@ -409,10 +427,10 @@ class TestManifestDeclarativeSource:
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
@@ -441,15 +459,18 @@ class TestManifestDeclarativeSource:
         manifest = {
             "version": "version",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"}
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                }
             },
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                 }
             ],
@@ -463,7 +484,10 @@ class TestManifestDeclarativeSource:
         manifest = {
             "version": "version",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
@@ -483,10 +507,10 @@ class TestManifestDeclarativeSource:
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
@@ -518,7 +542,10 @@ class TestManifestDeclarativeSource:
         manifest = {
             "version": "version",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",

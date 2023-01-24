@@ -84,19 +84,19 @@ class DefaultPaginator(Paginator, JsonSchemaMixin):
     pagination_strategy: PaginationStrategy
     config: Config
     url_base: Union[InterpolatedString, str]
-    options: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(options={})
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(parameters={})
     _token: Optional[Any] = field(init=False, repr=False, default=None)
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[RequestOption] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if self.page_size_option and self.page_size_option.inject_into == RequestOptionType.path:
             raise ValueError("page_size_option cannot be set in as path")
         if self.page_size_option and not self.pagination_strategy.get_page_size():
             raise ValueError("page_size_option cannot be set if the pagination strategy does not have a page_size")
         if isinstance(self.url_base, str):
-            self.url_base = InterpolatedString(string=self.url_base, options=options)
+            self.url_base = InterpolatedString(string=self.url_base, parameters=parameters)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         self._token = self.pagination_strategy.next_page_token(response, last_records)

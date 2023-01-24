@@ -34,7 +34,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
 
     retriever: Retriever
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     name: str
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
     schema_loader: Optional[SchemaLoader] = None
@@ -45,10 +45,10 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
     transformations: List[RecordTransformation] = None
     checkpoint_interval: Optional[int] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self.stream_cursor_field = self.stream_cursor_field or []
         self.transformations = self.transformations or []
-        self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, options=options)
+        self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, parameters=parameters)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:

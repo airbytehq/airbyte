@@ -67,7 +67,7 @@ definitions:
   <...>
   rates_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
@@ -107,21 +107,21 @@ definitions:
     step: "P1D"
     datetime_format: "%Y-%m-%d"
     cursor_granularity: "P1D"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
 ```
 
 and refer to it in the stream's retriever.
 This will generate slices from the start time until the end time, where each slice is exactly one day.
 The start time is defined in the config file, while the end time is defined by the `now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
 
-Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
+Note that we're also setting the `stream_cursor_field` in the stream's `$parameters` so it can be accessed by the `StreamSlicer`:
 
 ```yaml
 definitions:
   <...>
   rates_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
@@ -149,7 +149,7 @@ definitions:
   <...>
   rates_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
@@ -186,7 +186,7 @@ definitions:
     step: "P1D"
     datetime_format: "%Y-%m-%d"
     cursor_granularity: "P1D"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -201,7 +201,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   rates_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"

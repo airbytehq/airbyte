@@ -18,7 +18,7 @@ class AddedFieldDefinition(JsonSchemaMixin):
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
 
 @dataclass(frozen=True)
@@ -27,7 +27,7 @@ class ParsedAddFieldDefinition(JsonSchemaMixin):
 
     path: FieldPointer
     value: InterpolatedString
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
 
 @dataclass
@@ -83,10 +83,10 @@ class AddFields(RecordTransformation, JsonSchemaMixin):
     """
 
     fields: List[AddedFieldDefinition]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     _parsed_fields: List[ParsedAddFieldDefinition] = field(init=False, repr=False, default_factory=list)
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         for add_field in self.fields:
             if len(add_field.path) < 1:
                 raise f"Expected a non-zero-length path for the AddFields transformation {add_field}"
@@ -97,11 +97,11 @@ class AddFields(RecordTransformation, JsonSchemaMixin):
                 else:
                     self._parsed_fields.append(
                         ParsedAddFieldDefinition(
-                            add_field.path, InterpolatedString.create(add_field.value, options=options), options=options
+                            add_field.path, InterpolatedString.create(add_field.value, parameters=parameters), parameters=parameters
                         )
                     )
             else:
-                self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, options={}))
+                self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, parameters={}))
 
     def transform(
         self,

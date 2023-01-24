@@ -27,7 +27,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
   customers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "customers"
       primary_key: "id"
       path: "/example"
@@ -36,10 +36,12 @@ streams:
   - "*ref(definitions.customers_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "customers"
 
 spec:
+  type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/{{dashCase name}}
   connection_specification:
     title: {{capitalCase name}} Spec

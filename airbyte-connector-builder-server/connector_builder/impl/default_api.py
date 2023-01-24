@@ -41,15 +41,19 @@ class DefaultApiImpl(DefaultApi):
         return """version: "0.1.0"
 definitions:
   selector:
+    type: RecordSelector
     extractor:
+      type: DpathExtractor
       field_pointer: []
   requester:
+    type: HttpRequester
     url_base: "https://example.com"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
   retriever:
+    type: SimpleRetriever
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
@@ -57,11 +61,12 @@ definitions:
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
+    type: DeclarativeStream
     retriever:
       $ref: "*ref(definitions.retriever)"
   customers_stream:
     $ref: "*ref(definitions.base_stream)"
-    $options:
+    $parameters:
       name: "customers"
       primary_key: "id"
       path: "/example"
@@ -70,10 +75,12 @@ streams:
   - "*ref(definitions.customers_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "customers"
 
 spec:
+  type: Spec
   documentation_url: https://docsurl.com
   connection_specification:
     title: Source Name Spec # 'TODO: Replace this with the name of your source.'
@@ -156,8 +163,8 @@ spec:
         self, resolve_manifest_request_body: ResolveManifestRequestBody = Body(None, description="")
     ) -> ResolveManifest:
         """
-        Using the provided manifest, resolves $refs and $options and returns the resulting manifest to the client.
-        :param manifest_resolve_request_body: Input manifest whose $refs and $options will be resolved
+        Using the provided manifest, resolves $refs and $parameters and returns the resulting manifest to the client.
+        :param manifest_resolve_request_body: Input manifest whose $refs and $parameters will be resolved
         :return: Airbyte record messages produced by the sync grouped by slice and page
         """
         try:

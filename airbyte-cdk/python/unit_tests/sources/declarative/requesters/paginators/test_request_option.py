@@ -23,7 +23,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 )
 def test_request_option(test_name, option_type, field_name, should_raise):
     try:
-        request_option = RequestOption(inject_into=option_type, field_name=field_name, options={})
+        request_option = RequestOption(inject_into=option_type, field_name=field_name, parameters={})
         if should_raise:
             assert False
         assert request_option.field_name == field_name

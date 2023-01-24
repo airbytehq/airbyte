@@ -20,7 +20,7 @@ class Spec(JsonSchemaMixin):
     """
 
     connection_specification: Mapping[str, Any]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     documentation_url: Optional[str] = None
 
     def generate_spec(self) -> ConnectorSpecification:

@@ -23,10 +23,10 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
     """
 
     stream_names: List[str]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._options = options
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._parameters = parameters
 
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         streams = source.streams(config)

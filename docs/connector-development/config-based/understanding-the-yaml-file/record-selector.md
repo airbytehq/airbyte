@@ -13,8 +13,8 @@ Schema:
     required:
       - extractor
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       extractor:
         "$ref": "#/definitions/RecordExtractor"
       record_filter:
@@ -31,8 +31,8 @@ Schema:
     required:
       - field_pointer
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       field_pointer:
         type: array
         items:
@@ -195,8 +195,8 @@ Schema:
       - fields
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       fields:
         type: array
         items:
@@ -208,8 +208,8 @@ Schema:
       - value
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       path:
         "$ref": "#/definitions/FieldPointer"
       value:
@@ -296,8 +296,8 @@ Schema:
       - field_pointers
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       field_pointers:
         type: array
         items:
