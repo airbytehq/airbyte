@@ -930,9 +930,9 @@ public class DefaultJobPersistence implements JobPersistence {
   private static JobConfig parseJobConfigFromString(final String jobConfigString) {
     final JobConfig jobConfig = Jsons.deserialize(jobConfigString, JobConfig.class);
     // On-the-fly migration of persisted data types related objects (protocol v0->v1)
-    if (jobConfig.getConfigType() == ConfigType.SYNC) {
+    if (jobConfig.getConfigType() == ConfigType.SYNC && jobConfig.getSync() != null) {
       CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
-    } else if (jobConfig.getConfigType() == ConfigType.RESET_CONNECTION) {
+    } else if (jobConfig.getConfigType() == ConfigType.RESET_CONNECTION && jobConfig.getResetConnection() != null) {
       CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
     }
     return jobConfig;
@@ -959,9 +959,9 @@ public class DefaultJobPersistence implements JobPersistence {
   private static JobOutput parseJobOutputFromString(final String jobOutputString) {
     final JobOutput jobOutput = Jsons.deserialize(jobOutputString, JobOutput.class);
     // On-the-fly migration of persisted data types related objects (protocol v0->v1)
-    if (jobOutput.getOutputType() == OutputType.DISCOVER_CATALOG) {
+    if (jobOutput.getOutputType() == OutputType.DISCOVER_CATALOG && jobOutput.getDiscoverCatalog() != null) {
       CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
-    } else if (jobOutput.getOutputType() == OutputType.SYNC) {
+    } else if (jobOutput.getOutputType() == OutputType.SYNC && jobOutput.getSync() != null) {
       CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
     }
     return jobOutput;
