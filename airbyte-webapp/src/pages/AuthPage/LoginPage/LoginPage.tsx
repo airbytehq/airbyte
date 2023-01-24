@@ -83,7 +83,7 @@ const LoginPage: React.FC = () => {
       >
         {({ isValid, dirty, isSubmitting }) => (
           <Form className={styles.form}>
-            <GoogleAuthBtn />
+            <GoogleAuthBtn buttonText="signin_with" />
             <Separator height="28px" />
             <AuthSeperatorContainer>
               <Line />
