@@ -3,7 +3,7 @@
 #
 
 from abc import ABC
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -14,7 +14,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
-TIME_FORMAT_LAST_MODIFIED_RECORD = TIME_FORMAT + ".%f"
+TIME_FORMAT_LAST_MODIFIED_RECORD_WITHOUT_TIMEZONE_INFORMATION = TIME_FORMAT + ".%f"
+TIME_FORMAT_LAST_MODIFIED_RECORD = TIME_FORMAT_LAST_MODIFIED_RECORD_WITHOUT_TIMEZONE_INFORMATION + "%z"
 
 
 class NvdAuthenticator(TokenAuthenticator):
@@ -58,8 +59,8 @@ class NvdStream(HttpStream, IncrementalMixin, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {}
-        params["lastModStartDate"] = stream_slice["start_date"].strftime(TIME_FORMAT)
-        params["lastModEndDate"] = stream_slice["end_date"].strftime(TIME_FORMAT)
+        params["lastModStartDate"] = stream_slice["start_date"].strftime(TIME_FORMAT_LAST_MODIFIED_RECORD_WITHOUT_TIMEZONE_INFORMATION)
+        params["lastModEndDate"] = stream_slice["end_date"].strftime(TIME_FORMAT_LAST_MODIFIED_RECORD_WITHOUT_TIMEZONE_INFORMATION)
 
         # Add pagination token to parameters
         if next_page_token is not None:
@@ -73,7 +74,7 @@ class NvdStream(HttpStream, IncrementalMixin, ABC):
         """
         dates = []
         span = timedelta(days=1)
-        while start_date < datetime.utcnow():
+        while start_date < datetime.now(timezone.utc):
             dates.append({"start_date": start_date, "end_date": start_date + span})
             start_date += span
         return dates
@@ -86,7 +87,7 @@ class NvdStream(HttpStream, IncrementalMixin, ABC):
         start_date = (
             datetime.strptime(stream_state[self.cursor_field], TIME_FORMAT_LAST_MODIFIED_RECORD)
             if stream_state and self.cursor_field in stream_state
-            else self.start_date
+            else self.start_date.astimezone(timezone.utc)
         )
         return self._chunk_date_range(start_date)
 
@@ -95,7 +96,7 @@ class NvdStream(HttpStream, IncrementalMixin, ABC):
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value.isoformat(timespec="milliseconds")}
         else:
-            return {self.cursor_field: self.start_date.isoformat(timespec="milliseconds")}
+            return {self.cursor_field: self.start_date.astimezone(timezone.utc).isoformat(timespec="milliseconds")}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -130,7 +131,11 @@ class Cves(NvdStream):
         # Add CVE ID and last modified date at root level
         for result in results:
             result["id"] = result["cve"]["id"]
-            result["last_modified"] = result["cve"]["lastModified"]
+            result["last_modified"] = (
+                datetime.strptime(result["cve"]["lastModified"], TIME_FORMAT_LAST_MODIFIED_RECORD_WITHOUT_TIMEZONE_INFORMATION)
+                .astimezone(timezone.utc)
+                .isoformat(timespec="milliseconds")
+            )
             yield result
 
 
@@ -153,7 +158,11 @@ class Cpes(NvdStream):
         # Add CPE ID and last modified date at root level
         for result in results:
             result["id"] = result["cpe"]["cpeNameId"]
-            result["last_modified"] = result["cpe"]["lastModified"]
+            result["last_modified"] = (
+                datetime.strptime(result["cpe"]["lastModified"], TIME_FORMAT_LAST_MODIFIED_RECORD_WITHOUT_TIMEZONE_INFORMATION)
+                .astimezone(timezone.utc)
+                .isoformat(timespec="milliseconds")
+            )
             yield result
 
 
@@ -175,7 +184,7 @@ class SourceNvd(AbstractSource):
                 auth = None
             stream = Cves(config=config, authenticator=auth)
             records = stream.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice={"start_date": datetime(2022, 1, 1), "end_date": datetime(2022, 1, 2)}
+                sync_mode=SyncMode.full_refresh, stream_slice={"start_date": datetime(2023, 1, 1), "end_date": datetime(2023, 1, 2)}
             )
             next(records)
             return True, None

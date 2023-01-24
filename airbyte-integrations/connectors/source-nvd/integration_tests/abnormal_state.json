@@ -6,12 +6,12 @@
         "name": "cves"
       },
       "stream_state": {
-        "last_modified": "2999-12-12T14:35:51.977"
+        "last_modified": "2999-12-12T14:35:51.977+00:00"
       }
     },
     "data": {
       "cves": {
-        "last_modified": "2999-12-12T14:35:51.977"
+        "last_modified": "2999-12-12T14:35:51.977+00:00"
       }
     }
   },
@@ -22,12 +22,12 @@
         "name": "cpes"
       },
       "stream_state": {
-        "last_modified": "2999-12-12T14:35:51.977"
+        "last_modified": "2999-12-12T14:35:51.977+00:00"
       }
     },
     "data": {
       "cpes": {
-        "last_modified": "2999-12-12T14:35:51.977"
+        "last_modified": "2999-12-12T14:35:51.977+00:00"
       }
     }
   }

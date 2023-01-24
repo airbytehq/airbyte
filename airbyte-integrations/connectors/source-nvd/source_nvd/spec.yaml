@@ -15,5 +15,5 @@ connectionSpecification:
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
       examples:
         - "2021-08-04T13:00:00"
-      default: "2022-01-01T01:00:00"
+      default: "2023-01-01T01:00:00"
       title: Start date
