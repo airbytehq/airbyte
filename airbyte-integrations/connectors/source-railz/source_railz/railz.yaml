@@ -1,9 +1,6 @@
 version: "0.1.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_railz/schemas/{{ options['schema_name'] or options['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -43,8 +40,6 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "*ref(definitions.retriever)"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
   businesses_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -185,8 +180,6 @@ definitions:
             step: "P1M"
             datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
             cursor_granularity: "P1D"
-    schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
 
   accounting_transactions_stream:
     $ref: "*ref(definitions.base_incremental_service_stream)"
