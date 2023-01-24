@@ -33,6 +33,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.persistence.job.JobCreator;
 import io.airbyte.persistence.job.JobNotifier;
 import io.airbyte.persistence.job.JobPersistence;
@@ -533,6 +534,15 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.verifyNoMoreInteractions(mJobPersistence, mJobNotifier, mJobtracker);
     }
 
+  }
+
+  @Test
+  void testReleaseStageOrdering() {
+    final List<ReleaseStage> input = List.of(ReleaseStage.alpha, ReleaseStage.custom, ReleaseStage.beta, ReleaseStage.generally_available);
+    final List<ReleaseStage> expected = List.of(ReleaseStage.custom, ReleaseStage.alpha, ReleaseStage.beta, ReleaseStage.generally_available);
+
+    Assertions.assertThat(JobCreationAndStatusUpdateActivityImpl.orderByReleaseStageAsc(input))
+        .containsExactlyElementsOf(expected);
   }
 
 }
