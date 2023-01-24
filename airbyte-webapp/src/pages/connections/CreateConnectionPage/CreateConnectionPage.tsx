@@ -6,8 +6,8 @@ import { LoadingPage } from "components";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
 import { HeadTitle } from "components/common/HeadTitle";
 import { ConnectionBlock } from "components/connection/ConnectionBlock";
+import { CreateConnectionForm } from "components/connection/CreateConnectionForm";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { CreateConnectionForm } from "components/CreateConnection/CreateConnectionForm";
 import { PageHeader } from "components/ui/PageHeader";
 import { StepsIndicator } from "components/ui/StepsIndicator";
 

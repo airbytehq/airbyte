@@ -5,6 +5,7 @@ import { useFormikContext } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
+import { FormikConnectionFormValues } from "components/connection/ConnectionForm/formConfig";
 import { Header } from "components/SimpleTableComponents";
 import { Button } from "components/ui/Button";
 import { CheckBox } from "components/ui/CheckBox";
@@ -17,7 +18,6 @@ import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useModalService } from "hooks/services/Modal";
 import { links } from "utils/links";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import {
   DestinationNamespaceFormValueType,
