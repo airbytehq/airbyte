@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceK6Cloud(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "k6_cloud.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

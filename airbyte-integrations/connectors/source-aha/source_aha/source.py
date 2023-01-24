@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceAha(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "aha.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
