@@ -8,7 +8,7 @@ definitions:
       field_pointer: ["{{ options.name }}"]
   requester:
     type: HttpRequester
-    url_base: "https://api.twilio.com/2010-04-01/"
+    url_base: "https://api.twilio.com/"
     http_method: "GET"
     authenticator:
       type: BasicHttpAuthenticator
@@ -30,11 +30,30 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "accounts"
+      path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
-      path: "/Accounts.json"
+  base_nested_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "{{ stream_slice.subresource_uris[options.name] }}"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.accounts_stream)"
+            parent_key: subresource_uris
+            stream_slice_field: subresource_uris
+  addresses_stream:
+    $ref: "*ref(definitions.base_nested_stream)"
+    $options:
+      name: "addresses"
+      primary_key: "sid"
 
 streams:
   - "*ref(definitions.accounts_stream)"
+  - "*ref(definitions.addresses_stream)"
 
 check:
   stream_names:
