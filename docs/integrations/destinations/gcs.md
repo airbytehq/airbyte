@@ -237,6 +237,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request                                                | Subject |
 |:--------| :--- |:------------------------------------------------------------| :--- |
+| 0.2.14  | 2023-11-23 | [\#21682](https://github.com/airbytehq/airbyte/pull/21682) | Add support for buckets with Customer-Managed Encryption Key                                                               |
 | 0.2.13  | 2023-01-18 | [#21087](https://github.com/airbytehq/airbyte/pull/21087)   | Wrap Authentication Errors as Config Exceptions                                                                          |
 | 0.2.12  | 2022-10-18 | [\#17901](https://github.com/airbytehq/airbyte/pull/17901)  | Fix logging to GCS |
 | 0.2.11  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243)  | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
