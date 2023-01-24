@@ -20,8 +20,6 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
-import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
-import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.workers.temporal.scheduling.DefaultTaskQueueMapper;
 import io.airbyte.workers.temporal.scheduling.RouterService;
 import io.micronaut.context.annotation.Factory;
