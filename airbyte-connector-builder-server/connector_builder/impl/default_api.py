@@ -55,24 +55,24 @@ definitions:
   retriever:
     type: SimpleRetriever
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     type: DeclarativeStream
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   customers_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "customers"
       primary_key: "id"
       path: "/example"
 
 streams:
-  - "*ref(definitions.customers_stream)"
+  - "#/definitions/customers_stream"
 
 check:
   type: CheckStream

@@ -15,10 +15,10 @@ definitions:
       limit: "250"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
       page_size_option:
         inject_into: "request_parameter"
         field_name: ""
@@ -30,19 +30,19 @@ definitions:
         field_name: "cursor"
         inject_into: "request_parameter"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   executions_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "executions"
       primary_key: "id"
       path: "/executions"
 
 streams:
-  - "*ref(definitions.executions_stream)"
+  - "#/definitions/executions_stream"
 
 check:
   stream_names:

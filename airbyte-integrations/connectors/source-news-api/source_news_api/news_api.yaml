@@ -30,10 +30,10 @@ definitions:
       category: "{{ config['category'] if parameters['use_category'] is defined and not config.get('sources') else None }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "pageSize"
@@ -44,18 +44,18 @@ definitions:
         inject_into: "request_parameter"
         field_name: "page"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   everything_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "everything"
       primary_key: "publishedAt"
       path: "/everything"
   top_headlines_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "top_headlines"
       primary_key: "publishedAt"
@@ -64,8 +64,8 @@ definitions:
       use_category: true
 
 streams:
-  - "*ref(definitions.everything_stream)"
-  - "*ref(definitions.top_headlines_stream)"
+  - "#/definitions/everything_stream"
+  - "#/definitions/top_headlines_stream"
 
 check:
   stream_names:

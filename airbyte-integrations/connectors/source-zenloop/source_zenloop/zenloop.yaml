@@ -19,7 +19,7 @@ definitions:
       url_base: "https://api.zenloop.com/v1/"
     name: "{{ parameters['name'] }}"
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -34,22 +34,22 @@ definitions:
   base_stream:
     type: DeclarativeStream
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
   incremental_base_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     stream_cursor_field: "inserted_at"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         request_parameters:
           order_type: "desc"
           order_by: "inserted_at"
           date_shortcut: "custom"
   surveys:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "surveys"
       path: "surveys"
@@ -59,11 +59,11 @@ definitions:
     $parameters:
       config_parent_field: "survey_id"
     parent_stream_configs:
-      - stream: "*ref(definitions.surveys)"
+      - stream: "#/definitions/surveys"
         parent_key: public_hash_id
         stream_slice_field: id
   survey_groups:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "survey_groups"
       path: "survey_groups"
@@ -73,7 +73,7 @@ definitions:
     $parameters:
       config_parent_field: "survey_group_id"
     parent_stream_configs:
-      - stream: "*ref(definitions.survey_groups)"
+      - stream: "#/definitions/survey_groups"
         parent_key: public_hash_id
         stream_slice_field: id
   date_slicer:
@@ -95,54 +95,54 @@ definitions:
       field_name: "date_from"
       inject_into: "request_parameter"
   properties:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "properties"
       data_field: "properties"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "{{ 'surveys/' + config['survey_id'] + '/properties' if config['survey_id'] else 'surveys/' + stream_slice.id + '/properties' }}"
       stream_slicer:
-        $ref: "*ref(definitions.surveys_slicer)"
+        $ref: "#/definitions/surveys_slicer"
   answers:
-    $ref: "*ref(definitions.incremental_base_stream)"
+    $ref: "#/definitions/incremental_base_stream"
     $parameters:
       name: "answers"
       data_field: "answers"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.incremental_base_stream.retriever.requester)"
+        $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
       stream_slicer:
         type: CartesianProductStreamSlicer
         stream_slicers:
-          - "*ref(definitions.surveys_slicer)"
-          - "*ref(definitions.date_slicer)"
+          - "#/definitions/surveys_slicer"
+          - "#/definitions/date_slicer"
   answers_survey_group:
-    $ref: "*ref(definitions.incremental_base_stream)"
+    $ref: "#/definitions/incremental_base_stream"
     $parameters:
       name: "answers_survey_group"
       data_field: "answers"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.incremental_base_stream.retriever.requester)"
+        $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
       stream_slicer:
         type: CartesianProductStreamSlicer
         stream_slicers:
-          - "*ref(definitions.survey_groups_slicer)"
-          - "*ref(definitions.date_slicer)"
+          - "#/definitions/survey_groups_slicer"
+          - "#/definitions/date_slicer"
 
 streams:
-  - "*ref(definitions.surveys)"
-  - "*ref(definitions.survey_groups)"
-  - "*ref(definitions.properties)"
-  - "*ref(definitions.answers)"
-  - "*ref(definitions.answers_survey_group)"
+  - "#/definitions/surveys"
+  - "#/definitions/survey_groups"
+  - "#/definitions/properties"
+  - "#/definitions/answers"
+  - "#/definitions/answers_survey_group"
 
 check:
   type: CheckStream

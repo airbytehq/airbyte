@@ -25,7 +25,7 @@ definitions:
     end_datetime:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
-    step: "*ref(definitions.step)"
+    step: "#/definitions/step"
     cursor_field: "{{ parameters.stream_cursor_field }}"
     start_time_option:
       field_name: "start_date"
@@ -56,7 +56,7 @@ definitions:
       page_token_option:
         inject_into: "path"
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/stream_slicer"
 
   calls_stream:
     $parameters:
@@ -64,11 +64,11 @@ definitions:
       stream_cursor_field: "start_time"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "{{ config['account_id'] }}/calls.json?"
         request_parameters:
           fields: "call_type,company_id,company_name,company_time_zone,created_at,device_type,first_call,formatted_call_type,formatted_customer_location,formatted_business_phone_number,formatted_customer_name,prior_calls,formatted_customer_name_or_phone_number,formatted_customer_phone_number,formatted_duration,formatted_tracking_phone_number,formatted_tracking_source,formatted_value,good_lead_call_id,good_lead_call_time,lead_status,note,source,source_name,tags,total_calls,value,waveforms,tracker_id,speaker_percent,keywords,medium,campaign,referring_url,landing_page_url,last_requested_url,referrer_domain,utm_source,utm_medium,utm_term,utm_content,utm_campaign,utma,utmb,utmc,utmv,utmz,ga,gclid,fbclid,msclkid,milestones,timeline_url,keywords_spotted,call_highlights,agent_email,keypad_entries"
@@ -79,11 +79,11 @@ definitions:
       stream_cursor_field: "last_message_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "{{ config['account_id'] }}/text-messages.json?"
         request_parameters:
           fields: "id,company_id,initial_tracker_id,current_tracker_id,customer_name,customer_phone_number,initial_tracking_number,current_tracking_number,last_message_at,state,company_time_zone,formatted_customer_phone_number,formatted_initial_tracking_number,formatted_current_tracking_number,formatted_customer_name,recent_messages"
@@ -94,11 +94,11 @@ definitions:
       stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "{{ config['account_id'] }}/users.json?"
 
   companies_stream:
@@ -107,18 +107,18 @@ definitions:
       stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "{{ config['account_id'] }}/companies.json?"
 
 streams:
-  - "*ref(definitions.calls_stream)"
-  - "*ref(definitions.conversations_stream)"
-  - "*ref(definitions.users_stream)"
-  - "*ref(definitions.companies_stream)"
+  - "#/definitions/calls_stream"
+  - "#/definitions/conversations_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/companies_stream"
 
 check:
   type: CheckStream

@@ -27,7 +27,7 @@ definitions:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -40,29 +40,29 @@ definitions:
         inject_into: "request_parameter"
       page_token_option:
         inject_into: "path"
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
   base_stream:
     primary_key: "id"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
   accounts_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "accounts"
       path: "accounts"
   customers_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "customers"
       path: "customers"
   worklogs_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     stream_cursor_field: "startDate"
     retriever:
-      $ref: "*ref(definitions.retriever)"
-      requester: "*ref(definitions.requester)"
+      $ref: "#/definitions/retriever"
+      requester: "#/definitions/requester"
       stream_slicer:
         cursor_field: "startDate"
         datetime_format: "%Y-%m-%d"
@@ -86,16 +86,16 @@ definitions:
       path: "worklogs"
     primary_key: "tempoWorklogId"
   workload_schemes_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "workload-schemes"
       path: "workload-schemes"
 
 streams:
-  - "*ref(definitions.accounts_stream)"
-  - "*ref(definitions.customers_stream)"
-  - "*ref(definitions.worklogs_stream)"
-  - "*ref(definitions.workload_schemes_stream)"
+  - "#/definitions/accounts_stream"
+  - "#/definitions/customers_stream"
+  - "#/definitions/worklogs_stream"
+  - "#/definitions/workload_schemes_stream"
 
 check:
   type: CheckStream

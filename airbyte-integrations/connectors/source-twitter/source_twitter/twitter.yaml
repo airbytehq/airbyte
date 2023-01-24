@@ -34,7 +34,7 @@ definitions:
       inject_into: request_parameter
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -48,22 +48,22 @@ definitions:
       page_token_option:
         field_name: "next_token"
         inject_into: "request_parameter"
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
 
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
 
   tweets_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "tweets"
       path: "/search/recent"
 
 streams:
-  - "*ref(definitions.tweets_stream)"
+  - "#/definitions/tweets_stream"
 
 check:
   stream_names:

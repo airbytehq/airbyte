@@ -36,84 +36,84 @@ streams:
     $parameters:
       name: "user"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/user"
       paginator:
-        $ref: "*ref(definitions.paginator)"
+        $ref: "#/definitions/paginator"
       record_selector:
-        $ref: "*ref(definitions.singleSelector)"
+        $ref: "#/definitions/singleSelector"
   - type: DeclarativeStream
     $parameters:
       name: "team"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/team"
       paginator:
-        $ref: "*ref(definitions.paginator)"
+        $ref: "#/definitions/paginator"
       record_selector:
-        $ref: "*ref(definitions.arraySelector)"
+        $ref: "#/definitions/arraySelector"
   - type: DeclarativeStream
     $parameters:
       name: "list"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "folder/{{ config['folder_id'] }}/list"
       paginator:
-        $ref: "*ref(definitions.paginator)"
+        $ref: "#/definitions/paginator"
       record_selector:
-        $ref: "*ref(definitions.arraySelector)"
+        $ref: "#/definitions/arraySelector"
   - type: DeclarativeStream
     $parameters:
       name: "space"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "team/{{ config['team_id'] }}/space"
       paginator:
-        $ref: "*ref(definitions.paginator)"
+        $ref: "#/definitions/paginator"
       record_selector:
-        $ref: "*ref(definitions.arraySelector)"
+        $ref: "#/definitions/arraySelector"
   - type: DeclarativeStream
     $parameters:
       name: "folder"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "space/{{ config['space_id'] }}/folder"
       paginator:
-        $ref: "*ref(definitions.paginator)"
+        $ref: "#/definitions/paginator"
       record_selector:
-        $ref: "*ref(definitions.arraySelector)"
+        $ref: "#/definitions/arraySelector"
   - type: DeclarativeStream
     $parameters:
       name: "task"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "list/{{ config['list_id'] }}/task"
       record_selector:
-        $ref: "*ref(definitions.arraySelector)"
+        $ref: "#/definitions/arraySelector"
       paginator:
         type: DefaultPaginator
         page_size_option:

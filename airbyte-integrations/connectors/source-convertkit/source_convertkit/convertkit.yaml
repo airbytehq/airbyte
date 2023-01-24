@@ -12,7 +12,7 @@ definitions:
       api_secret: "{{ config['api_secret'] }}"
   increment_paginator:
     type: DefaultPaginator
-    url_base: "*ref(definitions.requester.url_base)"
+    url_base: "#/definitions/requester/url_base"
     page_size_option:
       inject_into: "request_parameter"
       field_name: "limit"
@@ -24,26 +24,26 @@ definitions:
       field_name: "page"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   # API Docs: https://developers.convertkit.com/#forms
   forms_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "forms"
       primary_key: "id"
       path: "/forms"
   # API Docs: https://developers.convertkit.com/#sequences
   sequences_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["courses"]
@@ -53,34 +53,34 @@ definitions:
       path: "/sequences"
   # API Docs: https://developers.convertkit.com/#tags
   tags_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "tags"
       primary_key: "id"
       path: "/tags"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       paginator:
-        $ref: "*ref(definitions.increment_paginator)"
+        $ref: "#/definitions/increment_paginator"
   # API Docs: https://developers.convertkit.com/#subscribers
   subscribers_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "subscribers"
       primary_key: "id"
       path: "/subscribers"
   # API Docs: https://developers.convertkit.com/#broadcasts
   broadcasts_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "broadcasts"
       primary_key: "id"
       path: "/broadcasts"
 streams:
-  - "*ref(definitions.forms_stream)"
-  - "*ref(definitions.sequences_stream)"
-  - "*ref(definitions.tags_stream)"
-  - "*ref(definitions.subscribers_stream)"
-  - "*ref(definitions.broadcasts_stream)"
+  - "#/definitions/forms_stream"
+  - "#/definitions/sequences_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/subscribers_stream"
+  - "#/definitions/broadcasts_stream"
 check:
   stream_names: ["forms"]

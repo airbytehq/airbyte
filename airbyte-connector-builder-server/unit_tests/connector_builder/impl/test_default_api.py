@@ -655,8 +655,8 @@ def test_resolve_manifest():
             {
                 "type": "DeclarativeStream",
                 "$options": _stream_options,
-                "schema_loader": {"$ref": "*ref(definitions.schema_loader)"},
-                "retriever": "*ref(definitions.retriever)",
+                "schema_loader": {"$ref": "#/definitions/schema_loader"},
+                "retriever": "#/definitions/retriever",
             },
         ],
         "check": {"type": "CheckStream", "stream_names": ["lists"]},
@@ -789,7 +789,7 @@ def test_resolve_manifest_unresolvable_references():
         "version": "version",
         "definitions": {},
         "streams": [
-            {"type": "DeclarativeStream", "retriever": "*ref(definitions.retriever)"},
+            {"type": "DeclarativeStream", "retriever": "#/definitions/retriever"},
         ],
         "check": {"type": "CheckStream", "stream_names": ["lists"]},
     }
@@ -799,7 +799,7 @@ def test_resolve_manifest_unresolvable_references():
     with pytest.raises(HTTPException) as actual_exception:
         loop.run_until_complete(api.resolve_manifest(ResolveManifestRequestBody(manifest=invalid_manifest)))
 
-    assert "Undefined reference *ref(definitions.retriever)" in actual_exception.value.detail
+    assert "Undefined reference #/definitions/retriever" in actual_exception.value.detail
     assert actual_exception.value.status_code == expected_status_code
 
 

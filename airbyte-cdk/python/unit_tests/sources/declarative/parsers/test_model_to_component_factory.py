@@ -89,7 +89,7 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "*ref(decoder)"
+  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -131,22 +131,22 @@ partial_stream:
     file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
   cursor_field: [ ]
 list_stream:
-  $ref: "*ref(partial_stream)"
+  $ref: "#/partial_stream"
   $parameters:
     name: "lists"
     primary_key: "id"
     extractor:
-      $ref: "*ref(extractor)"
+      $ref: "#/extractor"
       field_pointer: ["{{ parameters['name'] }}"]
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "#/retriever"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "#/requester"
       path: "{{ next_page_token['next_page_url'] }}"
     paginator:
-      $ref: "*ref(metadata_paginator)"
+      $ref: "#/metadata_paginator"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "#/selector"
   transformations:
     - type: AddFields
       fields:
@@ -291,7 +291,7 @@ def test_list_based_stream_slicer_with_values_refd():
     repositories: ["airbyte", "airbyte-cloud"]
     stream_slicer:
       type: ListStreamSlicer
-      slice_values: "*ref(repositories)"
+      slice_values: "#/repositories"
       cursor_field: repository
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
@@ -344,27 +344,27 @@ def test_create_substream_slicer():
       $parameters:
         name: "A"
         primary_key: "id"
-        retriever: "*ref(retriever)"
+        retriever: "#/retriever"
         url_base: "https://airbyte.io"
-        schema_loader: "*ref(schema_loader)"
+        schema_loader: "#/schema_loader"
     stream_B:
       type: DeclarativeStream
       $parameters:
         name: "B"
         primary_key: "id"
-        retriever: "*ref(retriever)"
+        retriever: "#/retriever"
         url_base: "https://airbyte.io"
-        schema_loader: "*ref(schema_loader)"
+        schema_loader: "#/schema_loader"
     stream_slicer:
       type: SubstreamSlicer
       parent_stream_configs:
-        - stream: "*ref(stream_A)"
+        - stream: "#/stream_A"
           parent_key: id
           stream_slice_field: repository_id
           request_option:
             inject_into: request_parameter
             field_name: repository_id
-        - stream: "*ref(stream_B)"
+        - stream: "#/stream_B"
           parent_key: someid
           stream_slice_field: word_id
     """
@@ -405,8 +405,8 @@ def test_create_cartesian_stream_slicer():
     stream_slicer:
       type: CartesianProductStreamSlicer
       stream_slicers:
-        - "*ref(stream_slicer_A)"
-        - "*ref(stream_slicer_B)"
+        - "#/stream_slicer_A"
+        - "#/stream_slicer_B"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
@@ -500,7 +500,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         type: RecordFilter
         condition: "{{{{ record['id'] > stream_state['id'] }}}}"
       extractor:
-        $ref: "*ref(extractor)"
+        $ref: "#/extractor"
         field_pointer: ["{record_selector}"]
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
@@ -676,7 +676,7 @@ def test_config_with_defaults():
             extractor:
               field_pointer: ["result"]
     streams:
-      - "*ref(lists_stream)"
+      - "#/lists_stream"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
