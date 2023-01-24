@@ -1,7 +1,7 @@
-# Recharge
+# Railz
 
-This source can sync data for the [Recharge API](https://docs.railz.ai/).
-This page guides you through the process of setting up the Recharge source connector.
+This source can sync data for the [Railz API](https://docs.railz.ai/).
+This page guides you through the process of setting up the Railz source connector.
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ Generate API key [on the dashboard](https://dashboard.railz.ai/developers/api-ke
 
 ## Supported sync modes
 
-The Recharge supports full refresh and incremental sync.
+The Railz supports full refresh and incremental sync.
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
