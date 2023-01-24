@@ -50,10 +50,16 @@ definitions:
     $options:
       name: "addresses"
       primary_key: "sid"
+  applications_stream:
+    $ref: "*ref(definitions.base_nested_stream)"
+    $options:
+      name: "applications"
+      primary_key: "sid"
 
 streams:
   - "*ref(definitions.accounts_stream)"
   - "*ref(definitions.addresses_stream)"
+  - "*ref(definitions.applications_stream)"
 
 check:
   stream_names:
