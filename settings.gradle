@@ -75,33 +75,34 @@ if (!System.getenv().containsKey("SUB_BUILD")) {
         throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE, ALL_CONNECTORS or OCTAVIA_CLI", subBuild))
     }
 }
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM" || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE" || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
+    // shared
+    include ':airbyte-commons'
 
-// shared
-include ':airbyte-commons'
+    // shared by CONNECTORS_BASE and PLATFORM sub builds
+    include ':airbyte-api'
+    include ':airbyte-commons-cli'
+    include ':airbyte-commons-docker'
+    include ':airbyte-commons-protocol'
+    include ':airbyte-config:init'
+    include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
+    include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
+    include ':airbyte-json-validation'
+    include ':airbyte-metrics:metrics-lib'
+    include ':airbyte-oauth'
+    include ':airbyte-protocol:protocol-models'
+    include ':airbyte-test-utils'
 
-// shared by CONNECTORS_BASE and PLATFORM sub builds
-include ':airbyte-api'
-include ':airbyte-commons-cli'
-include ':airbyte-commons-docker'
-include ':airbyte-commons-protocol'
-include ':airbyte-config:init'
-include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
-include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
-include ':airbyte-json-validation'
-include ':airbyte-metrics:metrics-lib'
-include ':airbyte-oauth'
-include ':airbyte-protocol:protocol-models'
-include ':airbyte-test-utils'
-
-// airbyte-workers has a lot of dependencies.
-include ':airbyte-analytics' // transitively used by airbyte-workers.
-include ':airbyte-commons-temporal'
-include ':airbyte-commons-worker'
-include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
-include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
-include ':airbyte-db:jooq' // transitively used by airbyte-workers.
-include ':airbyte-notification' // transitively used by airbyte-workers.
-include ':airbyte-worker-models'
+    // airbyte-workers has a lot of dependencies.
+    include ':airbyte-analytics' // transitively used by airbyte-workers.
+    include ':airbyte-commons-temporal'
+    include ':airbyte-commons-worker'
+    include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
+    include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
+    include ':airbyte-db:jooq' // transitively used by airbyte-workers.
+    include ':airbyte-notification' // transitively used by airbyte-workers.
+    include ':airbyte-worker-models'
+}
 
 // platform
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
