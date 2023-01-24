@@ -1,1928 +1,543 @@
-{
-  "accounting_transactions": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "accounting_transactions"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "bank_transfers": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "date": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bank_transfers"
+      },
+      "stream_state": {
+        "b_xero": {
+          "xero": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "bills": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bills"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "bills_credit_notes": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bills_credit_notes"
+      },
+      "stream_state": {
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "bills_payments": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "date": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bills_payments"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "deposits": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "deposits"
+      },
+      "stream_state": {
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "estimates": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "estimates"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "invoices": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "invoices"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_wave": {
+          "wave": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "invoices_credit_notes": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "invoices_credit_notes"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "invoices_payments": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "date": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "invoices_payments"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "journal_entries": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "journal_entries"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "purchase_orders": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "postedDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "purchase_orders"
+      },
+      "stream_state": {
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "refunds": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "date": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "date": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "refunds"
+      },
+      "stream_state": {
+        "b_quickbooks": {
+          "quickbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "commerce_disputes": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "commerce_disputes"
+      },
+      "stream_state": {
+        "b_square": {
+          "square": {
+            "createdDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "commerce_orders": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "commerce_orders"
+      },
+      "stream_state": {
+        "b_square": {
+          "square": {
+            "createdDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "commerce_products": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "commerce_products"
+      },
+      "stream_state": {
+        "b_square": {
+          "square": {
+            "createdDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   },
-  "commerce_transactions": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "createdDate": "2999-12-31T00:00:00.000Z"
-      }
-    }
-  },
-
-  "portfolio_metrics_month": {
-    "endDate": "2999-12-31T00:00:00Z"
-  },
-  "bank_transactions": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "business_valuations": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "credit_ratings": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "credit_scores": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "probability_of_default": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "ap_aging_month": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "ar_aging_month": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "balance_sheets_month": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "cashflow_statements_month": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "income_statements_month": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "trial_balances_month": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "fraud_risk_metrics_month": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "financial_ratios_month": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    }
-  },
-  "financial_forecasts_month_balance_sheets": {
-    "b_quickbooksDesktop": {
-      "quickbooksDesktop": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_xero": {
-      "xero": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_freshbooks": {
-      "freshbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_dynamicsBusinessCentral": {
-      "dynamicsBusinessCentral": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_oracleNetsuite": {
-      "oracleNetsuite": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageBusinessCloud": {
-      "sageBusinessCloud": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_quickbooks": {
-      "quickbooks": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_sageIntacct": {
-      "sageIntacct": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_wave": {
-      "wave": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_shopify": {
-      "shopify": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_square": {
-      "square": {
-        "endDate": "2999-12-31T00:00:00Z"
-      }
-    },
-    "b_plaid": {
-      "plaid": {
-        "endDate": "2999-12-31T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "commerce_transactions"
+      },
+      "stream_state": {
+        "b_square": {
+          "square": {
+            "createdDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
       }
     }
   }
-}
+]
+
