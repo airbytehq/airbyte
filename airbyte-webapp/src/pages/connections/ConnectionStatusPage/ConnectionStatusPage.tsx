@@ -159,7 +159,6 @@ export const ConnectionStatusPage: React.FC = () => {
   return (
     <>
       <Card
-        className={styles.contentCard}
         title={
           <div className={styles.title}>
             <FormattedMessage id="sources.syncHistory" />
