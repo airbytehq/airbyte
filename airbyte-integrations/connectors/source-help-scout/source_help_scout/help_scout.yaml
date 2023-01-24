@@ -133,7 +133,8 @@ streams:
         type: NoPagination
   - type: DeclarativeStream
     name: Ratings
-    primary_key: &ref_3 []
+    primary_key: &ref_3
+      - id
     retriever:
       type: SimpleRetriever
       name: Ratings
@@ -159,33 +160,26 @@ streams:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_pointer:
+            - _embedded
+            - ratings
       paginator:
         type: NoPagination
   - type: DeclarativeStream
-    name: Reports
-    primary_key: &ref_4 []
+    name: Conversation Threads
+    primary_key: &ref_4
+      - id
     retriever:
       type: SimpleRetriever
-      name: Reports
+      name: Conversation Threads
       primary_key: *ref_4
       requester:
         type: HttpRequester
-        name: Reports
+        name: Conversation Threads
         url_base: https://api.helpscout.net/v2
-        path: reports/{{ config['reporttype'] }}/{{ config['subreporttype'] }}
+        path: conversations/{{ config['conversationid'] }}/threads
         request_options_provider:
-          request_parameters:
-            start: '{{ config[''start''] }}'
-            end: '{{ config[''end''] }}'
-            previousStart: '{{ config[''previousstart''] }}'
-            previousEnd: '{{ config[''previousend''] }}'
-            mailboxes: '{{ config[''mailboxes''] }}'
-            tags: '{{ config[''tags''] }}'
-            folders: '{{ config[''folders''] }}'
-            types: '{{ config[''types''] }}'
-            sites: '{{ config[''sites''] }}'
-            officeHours: '{{ config[''officehours''] }}'
+          request_parameters: {}
           request_headers: {}
           request_body_json: {}
         authenticator:
@@ -200,9 +194,200 @@ streams:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_pointer:
+            - _embedded
+            - threads
       paginator:
         type: NoPagination
+  - type: DeclarativeStream
+    name: Customers
+    primary_key: &ref_5
+      - id
+    retriever:
+      type: SimpleRetriever
+      name: Customers
+      primary_key: *ref_5
+      requester:
+        type: HttpRequester
+        name: Customers
+        url_base: https://api.helpscout.net/v2
+        path: customers
+        request_options_provider:
+          request_parameters:
+            mailbox: '{{ config[''mailbox''] }}'
+            firstName: '{{ config[''firstname''] }}'
+            lastName: '{{ config[''lastname''] }}'
+            modifiedSince: '{{ config[''modifiedsince''] }}'
+            sortField: '{{ config[''sortfield''] }}'
+            sortOrder: '{{ config[''sortorder''] }}'
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - _embedded
+            - customers
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: Mailbox Fields
+    primary_key: &ref_6
+      - id
+    retriever:
+      type: SimpleRetriever
+      name: Mailbox Fields
+      primary_key: *ref_6
+      requester:
+        type: HttpRequester
+        name: Mailbox Fields
+        url_base: https://api.helpscout.net/v2
+        path: mailboxes/{{ config['mailbox'] }}/fields
+        request_options_provider:
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - _embedded
+            - fields
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: Mailbox Folders
+    primary_key: &ref_7
+      - id
+    retriever:
+      type: SimpleRetriever
+      name: Mailbox Folders
+      primary_key: *ref_7
+      requester:
+        type: HttpRequester
+        name: Mailbox Folders
+        url_base: https://api.helpscout.net/v2
+        path: mailboxes/{{ config['mailbox'] }}/folders
+        request_options_provider:
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - _embedded
+            - folders
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: Users
+    primary_key: &ref_8
+      - id
+    retriever:
+      type: SimpleRetriever
+      name: Users
+      primary_key: *ref_8
+      requester:
+        type: HttpRequester
+        name: Users
+        url_base: https://api.helpscout.net/v2
+        path: users
+        request_options_provider:
+          request_parameters:
+            email: '{{ config[''email''] }}'
+            mailbox: '{{ config[''mailbox''] }}'
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - _embedded
+            - users
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: Workflows
+    primary_key: &ref_9
+      - id
+    retriever:
+      type: SimpleRetriever
+      name: Workflows
+      primary_key: *ref_9
+      requester:
+        type: HttpRequester
+        name: Workflows
+        url_base: https://api.helpscout.net/v2
+        path: workflows
+        request_options_provider:
+          request_parameters:
+            mailboxId: '{{ config[''mailbox''] }}'
+            type: '{{ config[''type''] }}'
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_refresh_token''] }}'
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - _embedded
+            - workflows
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 50
+          start_from_page: 1
+        url_base: https://api.helpscout.net/v2
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -252,17 +437,6 @@ spec:
       sortfield:
         title: sortField
         description: Sorts the result by specified field
-        enum:
-          - createdAt
-          - customerEmail
-          - customerName
-          - mailboxid
-          - modifiedAt
-          - number
-          - score
-          - status
-          - subject
-          - waitingSince
         type: string
       sortorder:
         title: sortOrder
@@ -279,52 +453,28 @@ spec:
       ratingid:
         title: ratingId
         type: number
-      reporttype:
-        title: reportType
-        description: The type of the overall report you want to retrieve
-        placeholder: company
+      mailbox:
+        title: mailbox
+        description: Filters customers from a specific mailbox
+        type: number
+      firstname:
+        title: firstName
+        description: Filters customers by first name
         type: string
-      start:
-        title: start
-        description: Start of the interval
-        placeholder: '2019-05-02T12:00:00Z'
+      lastname:
+        title: lastName
+        description: Filters customers by last name
         type: string
-      end:
-        title: end
-        placeholder: '2019-06-02T12:00:00Z'
-        description: End of the interval
+      email:
+        title: email
+        description: Optional filter param for looking up users by email using exact match.
         type: string
-      previousstart:
-        title: previousStart
-        description: Start of the previous interval
-        placeholder: '2019-04-02T12:00:00Z'
-        type: string
-      previousend:
-        title: previousEnd
-        description: End of the previous interval
-        placeholder: '2019-05-02T12:00:00Z'
-        type: string
-      types:
+      type:
+        title: type
         enum:
-          - email
-          - chat
-          - phone
-        title: types
-        description: List of comma separated conversation types to filter on
-        type: string
-      sites:
-        description: List of comma separated docs site IDs
-        title: sites
-        type: string
-      officehours:
-        title: officeHours
-        type: boolean
-        description: >-
-          Whether to take office hours into consideration in the report
-          (defaults to false); office hours must be enabled if true is passed,
-          otherwise the default of false will be used
-      subreporttype:
-        title: subReportType
+          - manual
+          - automatic
+        description: List workflows by type - manual or automatic
         type: string
       client_id:
         type: string
