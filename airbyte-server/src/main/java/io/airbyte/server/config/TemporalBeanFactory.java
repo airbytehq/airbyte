@@ -7,6 +7,8 @@ package io.airbyte.server.config;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.server.scheduler.DefaultSynchronousSchedulerClient;
+import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
 import io.airbyte.commons.version.AirbyteVersion;
