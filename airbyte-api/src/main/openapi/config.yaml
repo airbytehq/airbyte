@@ -3879,7 +3879,7 @@ components:
           description: Alias name to the stream to be used in the destination
           type: string
         selected:
-          description: If this is true, the stream is selected with all of its properties. For new connections, this considered if the stream is suggested or not
+          description: If this is true, the stream is selected with all of its properties. For new connections, this considers if the stream is suggested or not
           type: boolean
         suggested:
           description: Does the connector suggest that this stream be enabled by default?
