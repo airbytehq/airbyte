@@ -82,6 +82,10 @@ class ManifestDeclarativeSource(DeclarativeSource):
             raise InvalidConnectorDefinitionException(f"Found unknown top-level fields: {unknown_fields}")
 
     @property
+    def resolved_manifest(self) -> Mapping[str, Any]:
+        return self._new_source_config
+
+    @property
     def connection_checker(self) -> ConnectionChecker:
         check = self._new_source_config["check"] if self.construct_using_pydantic_models else self._legacy_source_config["check"]
         if "type" not in check:

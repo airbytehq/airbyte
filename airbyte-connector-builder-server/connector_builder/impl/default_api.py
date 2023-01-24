@@ -10,10 +10,13 @@ from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
+from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
+from connector_builder.generated.models.resolve_manifest import ResolveManifest
+from connector_builder.generated.models.resolve_manifest_request_body import ResolveManifestRequestBody
 from connector_builder.generated.models.stream_read import StreamRead
 from connector_builder.generated.models.stream_read_pages import StreamReadPages
 from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
@@ -110,6 +113,9 @@ spec:
                     )
                 )
         except Exception as error:
+            self.logger.error(
+                f"Could not list streams with with error: {error.args[0]} - {DefaultApiImpl._get_stacktrace_as_string(error)}"
+            )
             raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {error.args[0]}")
         return StreamsListRead(streams=stream_list_read)
 
@@ -143,14 +149,36 @@ spec:
                     single_slice.pages.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
+            self.logger.error(f"Could not perform read with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Could not perform read with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}",
+                detail=f"Could not perform read with with error: {error.args[0]}",
             )
 
         return StreamRead(
             logs=log_messages, slices=[single_slice], inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream)
         )
+
+    async def resolve_manifest(
+        self, resolve_manifest_request_body: ResolveManifestRequestBody = Body(None, description="")
+    ) -> ResolveManifest:
+        """
+        Using the provided manifest, resolves $refs and $options and returns the resulting manifest to the client.
+        :param manifest_resolve_request_body: Input manifest whose $refs and $options will be resolved
+        :return: Airbyte record messages produced by the sync grouped by slice and page
+        """
+        try:
+            return ResolveManifest(
+                manifest=ManifestDeclarativeSource(
+                    resolve_manifest_request_body.manifest, construct_using_pydantic_models=True
+                ).resolved_manifest
+            )
+        except Exception as error:
+            self.logger.error(f"Could not resolve manifest with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Could not resolve manifest with error: {error.args[0]}",
+            )
 
     def _get_message_groups(
         self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int
@@ -237,9 +265,10 @@ spec:
             return self.adapter_cls(manifest=manifest)
         except ValidationError as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
+            self.logger.error(f"Invalid connector manifest with error: {error.message} - {DefaultApiImpl._get_stacktrace_as_string(error)}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid connector manifest with error: {error.message} - {DefaultApiImpl._get_stacktrace_as_string(error)}",
+                detail=f"Invalid connector manifest with error: {error.message}",
             )
 
     @staticmethod
