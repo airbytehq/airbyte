@@ -100,10 +100,6 @@ public class WorkspaceFilterTest extends BaseConfigDatabaseTest {
 
   @BeforeEach
   void beforeEach() {
-    setup();
-  }
-
-  void setup() {
     configRepository = new ConfigRepository(database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)), null);
   }
 
