@@ -65,11 +65,9 @@ public class OAuthHandler {
   private final SecretsRepositoryReader secretsRepositoryReader;
   private final SecretsRepositoryWriter secretsRepositoryWriter;
 
-  public OAuthHandler(final ConfigRepository configRepository,
-                      final HttpClient httpClient,
-                      final TrackingClient trackingClient,
-                      final SecretsRepositoryReader secretsRepositoryReader,
-                      final SecretsRepositoryWriter secretsRepositoryWriter) {
+  public OAuthHandler(final ConfigRepository configRepository, final HttpClient httpClient,
+      final TrackingClient trackingClient, final SecretsRepositoryReader secretsRepositoryReader,
+      final SecretsRepositoryWriter secretsRepositoryWriter) {
     this.configRepository = configRepository;
     this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository, httpClient);
     this.trackingClient = trackingClient;
@@ -79,12 +77,12 @@ public class OAuthHandler {
 
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, sourceOauthConsentRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
-        sourceOauthConsentRequest.getSourceDefinitionId());
+    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, sourceOauthConsentRequest.getWorkspaceId(),
+        SOURCE_DEFINITION_ID_KEY, sourceOauthConsentRequest.getSourceDefinitionId());
     ApmTraceUtils.addTagsToTrace(traceTags);
     ApmTraceUtils.addTagsToRootSpan(traceTags);
-    final StandardSourceDefinition sourceDefinition =
-        configRepository.getStandardSourceDefinition(sourceOauthConsentRequest.getSourceDefinitionId());
+    final StandardSourceDefinition sourceDefinition = configRepository
+        .getStandardSourceDefinition(sourceOauthConsentRequest.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
     final Map<String, Object> metadata = generateSourceMetadata(sourceOauthConsentRequest.getSourceDefinitionId());
@@ -95,24 +93,20 @@ public class OAuthHandler {
       if (sourceOauthConsentRequest.getSourceId() == null) {
         oAuthInputConfigurationForConsent = sourceOauthConsentRequest.getoAuthInputConfiguration();
       } else {
-        final SourceConnection hydratedSourceConnection =
-            secretsRepositoryReader.getSourceConnectionWithSecrets(sourceOauthConsentRequest.getSourceId());
+        final SourceConnection hydratedSourceConnection = secretsRepositoryReader
+            .getSourceConnectionWithSecrets(sourceOauthConsentRequest.getSourceId());
 
         oAuthInputConfigurationForConsent = getOAuthInputConfigurationForConsent(spec,
-            hydratedSourceConnection.getConfiguration(),
-            sourceOauthConsentRequest.getoAuthInputConfiguration());
+            hydratedSourceConnection.getConfiguration(), sourceOauthConsentRequest.getoAuthInputConfiguration());
       }
 
-      result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
-          sourceOauthConsentRequest.getWorkspaceId(),
-          sourceOauthConsentRequest.getSourceDefinitionId(),
-          sourceOauthConsentRequest.getRedirectUrl(),
-          oAuthInputConfigurationForConsent,
-          spec.getAdvancedAuth().getOauthConfigSpecification()));
+      result = new OAuthConsentRead()
+          .consentUrl(oAuthFlowImplementation.getSourceConsentUrl(sourceOauthConsentRequest.getWorkspaceId(),
+              sourceOauthConsentRequest.getSourceDefinitionId(), sourceOauthConsentRequest.getRedirectUrl(),
+              oAuthInputConfigurationForConsent, spec.getAdvancedAuth().getOauthConfigSpecification()));
     } else {
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
-          sourceOauthConsentRequest.getWorkspaceId(),
-          sourceOauthConsentRequest.getSourceDefinitionId(),
+          sourceOauthConsentRequest.getWorkspaceId(), sourceOauthConsentRequest.getSourceDefinitionId(),
           sourceOauthConsentRequest.getRedirectUrl(), Jsons.emptyObject(), null));
     }
     try {
@@ -123,18 +117,20 @@ public class OAuthHandler {
     return result;
   }
 
-  public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest)
+  public OAuthConsentRead getDestinationOAuthConsent(
+      final DestinationOauthConsentRequest destinationOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, destinationOauthConsentRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
-        destinationOauthConsentRequest.getDestinationDefinitionId());
+    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, destinationOauthConsentRequest.getWorkspaceId(),
+        DESTINATION_DEFINITION_ID_KEY, destinationOauthConsentRequest.getDestinationDefinitionId());
     ApmTraceUtils.addTagsToTrace(traceTags);
     ApmTraceUtils.addTagsToRootSpan(traceTags);
 
-    final StandardDestinationDefinition destinationDefinition =
-        configRepository.getStandardDestinationDefinition(destinationOauthConsentRequest.getDestinationDefinitionId());
+    final StandardDestinationDefinition destinationDefinition = configRepository
+        .getStandardDestinationDefinition(destinationOauthConsentRequest.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = destinationDefinition.getSpec();
-    final Map<String, Object> metadata = generateDestinationMetadata(destinationOauthConsentRequest.getDestinationDefinitionId());
+    final Map<String, Object> metadata = generateDestinationMetadata(
+        destinationOauthConsentRequest.getDestinationDefinitionId());
     final OAuthConsentRead result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       final JsonNode oAuthInputConfigurationForConsent;
@@ -142,29 +138,26 @@ public class OAuthHandler {
       if (destinationOauthConsentRequest.getDestinationId() == null) {
         oAuthInputConfigurationForConsent = destinationOauthConsentRequest.getoAuthInputConfiguration();
       } else {
-        final DestinationConnection hydratedSourceConnection =
-            secretsRepositoryReader.getDestinationConnectionWithSecrets(destinationOauthConsentRequest.getDestinationId());
+        final DestinationConnection hydratedSourceConnection = secretsRepositoryReader
+            .getDestinationConnectionWithSecrets(destinationOauthConsentRequest.getDestinationId());
 
         oAuthInputConfigurationForConsent = getOAuthInputConfigurationForConsent(spec,
-            hydratedSourceConnection.getConfiguration(),
-            destinationOauthConsentRequest.getoAuthInputConfiguration());
+            hydratedSourceConnection.getConfiguration(), destinationOauthConsentRequest.getoAuthInputConfiguration());
 
       }
 
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
-          destinationOauthConsentRequest.getWorkspaceId(),
-          destinationOauthConsentRequest.getDestinationDefinitionId(),
-          destinationOauthConsentRequest.getRedirectUrl(),
-          oAuthInputConfigurationForConsent,
+          destinationOauthConsentRequest.getWorkspaceId(), destinationOauthConsentRequest.getDestinationDefinitionId(),
+          destinationOauthConsentRequest.getRedirectUrl(), oAuthInputConfigurationForConsent,
           spec.getAdvancedAuth().getOauthConfigSpecification()));
     } else {
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
-          destinationOauthConsentRequest.getWorkspaceId(),
-          destinationOauthConsentRequest.getDestinationDefinitionId(),
+          destinationOauthConsentRequest.getWorkspaceId(), destinationOauthConsentRequest.getDestinationDefinitionId(),
           destinationOauthConsentRequest.getRedirectUrl(), Jsons.emptyObject(), null));
     }
     try {
-      trackingClient.track(destinationOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
+      trackingClient.track(destinationOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend",
+          metadata);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
     }
@@ -173,13 +166,13 @@ public class OAuthHandler {
 
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeSourceOauthRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
-        completeSourceOauthRequest.getSourceDefinitionId());
+    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeSourceOauthRequest.getWorkspaceId(),
+        SOURCE_DEFINITION_ID_KEY, completeSourceOauthRequest.getSourceDefinitionId());
     ApmTraceUtils.addTagsToTrace(traceTags);
     ApmTraceUtils.addTagsToRootSpan(traceTags);
 
-    final StandardSourceDefinition sourceDefinition =
-        configRepository.getStandardSourceDefinition(completeSourceOauthRequest.getSourceDefinitionId());
+    final StandardSourceDefinition sourceDefinition = configRepository
+        .getStandardSourceDefinition(completeSourceOauthRequest.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
     final Map<String, Object> metadata = generateSourceMetadata(completeSourceOauthRequest.getSourceDefinitionId());
@@ -190,27 +183,22 @@ public class OAuthHandler {
       if (completeSourceOauthRequest.getSourceId() == null) {
         oAuthInputConfigurationForConsent = completeSourceOauthRequest.getoAuthInputConfiguration();
       } else {
-        final SourceConnection hydratedSourceConnection =
-            secretsRepositoryReader.getSourceConnectionWithSecrets(completeSourceOauthRequest.getSourceId());
+        final SourceConnection hydratedSourceConnection = secretsRepositoryReader
+            .getSourceConnectionWithSecrets(completeSourceOauthRequest.getSourceId());
 
         oAuthInputConfigurationForConsent = getOAuthInputConfigurationForConsent(spec,
-            hydratedSourceConnection.getConfiguration(),
-            completeSourceOauthRequest.getoAuthInputConfiguration());
+            hydratedSourceConnection.getConfiguration(), completeSourceOauthRequest.getoAuthInputConfiguration());
       }
 
-      result = oAuthFlowImplementation.completeSourceOAuth(
-          completeSourceOauthRequest.getWorkspaceId(),
-          completeSourceOauthRequest.getSourceDefinitionId(),
-          completeSourceOauthRequest.getQueryParams(),
-          completeSourceOauthRequest.getRedirectUrl(),
-          oAuthInputConfigurationForConsent,
+      result = oAuthFlowImplementation.completeSourceOAuth(completeSourceOauthRequest.getWorkspaceId(),
+          completeSourceOauthRequest.getSourceDefinitionId(), completeSourceOauthRequest.getQueryParams(),
+          completeSourceOauthRequest.getRedirectUrl(), oAuthInputConfigurationForConsent,
           spec.getAdvancedAuth().getOauthConfigSpecification());
     } else {
-      // deprecated but this path is kept for connectors that don't define OAuth Spec yet
-      result = oAuthFlowImplementation.completeSourceOAuth(
-          completeSourceOauthRequest.getWorkspaceId(),
-          completeSourceOauthRequest.getSourceDefinitionId(),
-          completeSourceOauthRequest.getQueryParams(),
+      // deprecated but this path is kept for connectors that don't define OAuth Spec
+      // yet
+      result = oAuthFlowImplementation.completeSourceOAuth(completeSourceOauthRequest.getWorkspaceId(),
+          completeSourceOauthRequest.getSourceDefinitionId(), completeSourceOauthRequest.getQueryParams(),
           completeSourceOauthRequest.getRedirectUrl());
     }
     try {
@@ -221,18 +209,20 @@ public class OAuthHandler {
     return result;
   }
 
-  public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest completeDestinationOAuthRequest)
+  public Map<String, Object> completeDestinationOAuth(
+      final CompleteDestinationOAuthRequest completeDestinationOAuthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeDestinationOAuthRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
-        completeDestinationOAuthRequest.getDestinationDefinitionId());
+    final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeDestinationOAuthRequest.getWorkspaceId(),
+        DESTINATION_DEFINITION_ID_KEY, completeDestinationOAuthRequest.getDestinationDefinitionId());
     ApmTraceUtils.addTagsToTrace(traceTags);
     ApmTraceUtils.addTagsToRootSpan(traceTags);
 
-    final StandardDestinationDefinition destinationDefinition =
-        configRepository.getStandardDestinationDefinition(completeDestinationOAuthRequest.getDestinationDefinitionId());
+    final StandardDestinationDefinition destinationDefinition = configRepository
+        .getStandardDestinationDefinition(completeDestinationOAuthRequest.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = destinationDefinition.getSpec();
-    final Map<String, Object> metadata = generateDestinationMetadata(completeDestinationOAuthRequest.getDestinationDefinitionId());
+    final Map<String, Object> metadata = generateDestinationMetadata(
+        completeDestinationOAuthRequest.getDestinationDefinitionId());
     final Map<String, Object> result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       final JsonNode oAuthInputConfigurationForConsent;
@@ -240,29 +230,24 @@ public class OAuthHandler {
       if (completeDestinationOAuthRequest.getDestinationId() == null) {
         oAuthInputConfigurationForConsent = completeDestinationOAuthRequest.getoAuthInputConfiguration();
       } else {
-        final DestinationConnection hydratedSourceConnection =
-            secretsRepositoryReader.getDestinationConnectionWithSecrets(completeDestinationOAuthRequest.getDestinationId());
+        final DestinationConnection hydratedSourceConnection = secretsRepositoryReader
+            .getDestinationConnectionWithSecrets(completeDestinationOAuthRequest.getDestinationId());
 
         oAuthInputConfigurationForConsent = getOAuthInputConfigurationForConsent(spec,
-            hydratedSourceConnection.getConfiguration(),
-            completeDestinationOAuthRequest.getoAuthInputConfiguration());
+            hydratedSourceConnection.getConfiguration(), completeDestinationOAuthRequest.getoAuthInputConfiguration());
 
       }
 
-      result = oAuthFlowImplementation.completeDestinationOAuth(
-          completeDestinationOAuthRequest.getWorkspaceId(),
+      result = oAuthFlowImplementation.completeDestinationOAuth(completeDestinationOAuthRequest.getWorkspaceId(),
           completeDestinationOAuthRequest.getDestinationDefinitionId(),
-          completeDestinationOAuthRequest.getQueryParams(),
-          completeDestinationOAuthRequest.getRedirectUrl(),
-          oAuthInputConfigurationForConsent,
-          spec.getAdvancedAuth().getOauthConfigSpecification());
+          completeDestinationOAuthRequest.getQueryParams(), completeDestinationOAuthRequest.getRedirectUrl(),
+          oAuthInputConfigurationForConsent, spec.getAdvancedAuth().getOauthConfigSpecification());
     } else {
-      // deprecated but this path is kept for connectors that don't define OAuth Spec yet
-      result = oAuthFlowImplementation.completeDestinationOAuth(
-          completeDestinationOAuthRequest.getWorkspaceId(),
+      // deprecated but this path is kept for connectors that don't define OAuth Spec
+      // yet
+      result = oAuthFlowImplementation.completeDestinationOAuth(completeDestinationOAuthRequest.getWorkspaceId(),
           completeDestinationOAuthRequest.getDestinationDefinitionId(),
-          completeDestinationOAuthRequest.getQueryParams(),
-          completeDestinationOAuthRequest.getRedirectUrl());
+          completeDestinationOAuthRequest.getQueryParams(), completeDestinationOAuthRequest.getRedirectUrl());
     }
     try {
       trackingClient.track(completeDestinationOAuthRequest.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
@@ -297,16 +282,15 @@ public class OAuthHandler {
   }
 
   private JsonNode getOAuthInputConfigurationForConsent(final ConnectorSpecification spec,
-                                                        final JsonNode hydratedSourceConnectionConfiguration,
-                                                        final JsonNode oAuthInputConfiguration) {
-    final Map<String, String> fieldsToGet =
-        buildJsonPathFromOAuthFlowInitParameters(OAuthPathExtractor.extractOauthConfigurationPaths(
+      final JsonNode hydratedSourceConnectionConfiguration, final JsonNode oAuthInputConfiguration) {
+    final Map<String, String> fieldsToGet = buildJsonPathFromOAuthFlowInitParameters(
+        OAuthPathExtractor.extractOauthConfigurationPaths(
             spec.getAdvancedAuth().getOauthConfigSpecification().getOauthUserInputFromConnectorConfigSpecification()));
 
-    final JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnectionConfiguration, fieldsToGet);
+    final JsonNode oAuthInputConfigurationFromDB = getOAuthInputConfiguration(hydratedSourceConnectionConfiguration,
+        fieldsToGet);
 
-    return getOauthFromDBIfNeeded(oAuthInputConfigurationFromDB,
-        oAuthInputConfiguration);
+    return getOauthFromDBIfNeeded(oAuthInputConfigurationFromDB, oAuthInputConfiguration);
   }
 
   private Map<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)
@@ -317,26 +301,30 @@ public class OAuthHandler {
 
   private Map<String, Object> generateDestinationMetadata(final UUID destinationDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+    final StandardDestinationDefinition destinationDefinition = configRepository
+        .getStandardDestinationDefinition(destinationDefinitionId);
     return TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
   }
 
   @VisibleForTesting
-  Map<String, String> buildJsonPathFromOAuthFlowInitParameters(final Map<String, List<String>> oAuthFlowInitParameters) {
+  Map<String, String> buildJsonPathFromOAuthFlowInitParameters(
+      final Map<String, List<String>> oAuthFlowInitParameters) {
     return oAuthFlowInitParameters.entrySet().stream()
         .map(entry -> Map.entry(entry.getKey(), "$." + String.join(".", entry.getValue())))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   @VisibleForTesting
-  JsonNode getOauthFromDBIfNeeded(final JsonNode oAuthInputConfigurationFromDB, final JsonNode oAuthInputConfigurationFromInput) {
+  JsonNode getOauthFromDBIfNeeded(final JsonNode oAuthInputConfigurationFromDB,
+      final JsonNode oAuthInputConfigurationFromInput) {
     final ObjectNode result = (ObjectNode) Jsons.emptyObject();
 
     oAuthInputConfigurationFromInput.fields().forEachRemaining(entry -> {
       final String k = entry.getKey();
       final JsonNode v = entry.getValue();
 
-      // Note: This does not currently handle replacing masked secrets within nested objects.
+      // Note: This does not currently handle replacing masked secrets within nested
+      // objects.
       if (AirbyteSecretConstants.SECRETS_MASK.equals(v.textValue())) {
         if (oAuthInputConfigurationFromDB.has(k)) {
           result.set(k, oAuthInputConfigurationFromDB.get(k));
@@ -352,7 +340,8 @@ public class OAuthHandler {
   }
 
   @VisibleForTesting
-  JsonNode getOAuthInputConfiguration(final JsonNode hydratedSourceConnectionConfiguration, final Map<String, String> pathsToGet) {
+  JsonNode getOAuthInputConfiguration(final JsonNode hydratedSourceConnectionConfiguration,
+      final Map<String, String> pathsToGet) {
     final Map<String, JsonNode> result = new HashMap<>();
     pathsToGet.forEach((k, v) -> {
       final Optional<JsonNode> configValue = JsonPaths.getSingleValue(hydratedSourceConnectionConfiguration, v);
@@ -366,9 +355,8 @@ public class OAuthHandler {
     return Jsons.jsonNode(result);
   }
 
-
-  public SecretCoordinate writeOAuthSecret(final UUID workspaceId, final Map<String, Object> payload){
-    return secretsRepositoryWriter.storeOAuthSecret(workspaceId, payload.toString());
+  public SecretCoordinate writeOAuthSecret(final UUID workspaceId, final String payload) {
+    return secretsRepositoryWriter.storeOAuthSecret(workspaceId, payload);
   }
 
 }
