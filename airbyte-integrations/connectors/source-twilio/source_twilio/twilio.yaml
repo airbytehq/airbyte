@@ -5,7 +5,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: ["accounts"]
+      field_pointer: ["{{ options.name }}"]
   requester:
     type: HttpRequester
     url_base: "https://api.twilio.com/2010-04-01/"
