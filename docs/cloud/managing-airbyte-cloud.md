@@ -191,12 +191,12 @@ In a successful sync, the number of emitted records and committed records should
 
 2. Click the **Replication** tab.
 
-The first section includes the following parameters:
+The **Transfer** and **Streams** settings include the following parameters:
 
 | Parameter                            | Description                                                                         |
 |--------------------------------------|-------------------------------------------------------------------------------------|
 | Replication frequency                | How often the data syncs                                                            |
-| [Non-breaking schema updates](#non-breaking-changes) detected | How Airbyte handles syncs when it detects non-breaking schema changes in the source |
+| [Non-breaking schema updates](#review-non-breaking-schema-changes) detected | How Airbyte handles syncs when it detects non-breaking schema changes in the source |
 | Destination Namespace                | Where the replicated data is written                                                |
 | Destination Stream Prefix            | Helps you identify streams from different connectors                                |
 
@@ -276,21 +276,30 @@ Airbyte recommends that you reset streams. A reset will delete data in the desti
 To refresh the source schema:
 1. Click **Refresh source schema** to fetch the schema of your data source.
 
-2. If there are changes to the schema, the **Refreshed source schema** dialog displays them.
+2. If the schema has changed, the **Refreshed source schema** dialog displays them.
 
-## Review schema changes
-Airbyte detects changes in your source schema and allows you to review the changes. 
+## Manage schema changes
 
-### Non-breaking changes
+Airbyte detects changes in your source schema and allows you to review the changes.
+
+:::note 
+
+* Schema changes are flagged in your connection, but they will not affect your destination. 
+* Airbyte updates the source schema before syncs, but only once a day.
+* [Breaking changes](#fix-breaking-schema-changes) can only occur in the **Cursor** or **Primary key** fields.
+    
+:::
+
+### Review non-breaking schema changes
 
 To review non-breaking schema changes:
-1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and select the connection with non-breaking changes (indicated by a **yellow exclamation mark** icon).
+1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection with non-breaking changes (indicated by a **yellow exclamation mark** icon).
 
 2. Click **Review changes**.
 
 3. The **Refreshed source schema** dialog displays the changes. 
 
-4. Click **OK** to close the dialog.
+4. Review the changes and click **OK** to close the dialog.
 
 5. Scroll to the bottom of the page and click **Save changes**.
 
@@ -300,26 +309,20 @@ To review non-breaking schema changes:
     
 :::
 
-### Breaking changes
+### Fix breaking schema changes
 
-To review breaking schema changes:
-1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and select the connection with breaking changes (indicated by a **red exclamation mark** icon).
+To review and fix breaking schema changes:
+1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection with breaking changes (indicated by a **red exclamation mark** icon).
 
 2. Click **Review changes**.
 
 3. The **Refreshed source schema** dialog displays the changes.
 
-4. Click **OK** to close the dialog.
+4. Review the changes and click **OK** to close the dialog.
 
-5. In the streams table, the stream with a breaking change is highlighted
+5. In the streams table, the stream with a breaking change is highlighted.
 
 6. Fix the breaking change by selecting a new **Cursor** or **Primary key**.
-
-    :::note 
-    
-    Breaking changes can only occur in the **Cursor** or **Primary key** fields.
-    
-    :::
 
 7. Scroll to the bottom of the page and click **Save changes**.
 
@@ -334,7 +337,7 @@ If a connection’s source schema has breaking changes, it will stop syncing. Yo
 To get notified when your source schema changes: 
 1. Make sure you have [webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud#manage-airbyte-cloud-notifications) set up.
 
-2. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections** and select the connection you want to receive notifications for.
+2. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection you want to receive notifications for.
 
 3. Click the **Settings** tab on the Connection page.
 
