@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { pathDisplayName } from "components/connection/CatalogTree/PathPopout";
 import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { NextTable } from "components/ui/NextTable";
+import { Text } from "components/ui/Text";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
@@ -12,6 +13,7 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { equal } from "utils/objects";
 import { getDataType } from "utils/useTranslateDataType";
 
+import { CatalogTreeTableCell } from "../../CatalogTreeTableCell";
 import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
 import { CursorCell } from "./CursorCell";
 import { PKCell } from "./PKCell";
@@ -77,7 +79,11 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       columnHelper.accessor("path", {
         id: "sourcePath",
         header: () => <FormattedMessage id="form.field.name" />,
-        cell: ({ getValue }) => pathDisplayName(getValue()),
+        cell: ({ getValue }) => (
+          <CatalogTreeTableCell size="small" withTooltip>
+            <Text size="sm">{pathDisplayName(getValue())}</Text>
+          </CatalogTreeTableCell>
+        ),
         meta: {
           thClassName: styles.headerCell,
           tdClassName: styles.textCell,
@@ -145,7 +151,11 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       columnHelper.accessor("path", {
         id: "destinationPath",
         header: () => <FormattedMessage id="form.field.name" />,
-        cell: ({ getValue }) => pathDisplayName(getValue()),
+        cell: ({ getValue }) => (
+          <CatalogTreeTableCell size="small" withTooltip>
+            <Text size="sm">{pathDisplayName(getValue())}</Text>
+          </CatalogTreeTableCell>
+        ),
         meta: {
           thClassName: styles.headerCell,
           tdClassName: styles.textCell,
