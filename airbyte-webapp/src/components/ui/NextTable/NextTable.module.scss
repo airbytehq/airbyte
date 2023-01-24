@@ -47,10 +47,6 @@
   &:first-child {
     padding-left: vars.$spacing-2xl;
     border-radius: vars.$spacing-md 0 0;
-
-    &.light {
-      padding-left: vars.$spacing-lg;
-    }
   }
 
   &:last-child {
