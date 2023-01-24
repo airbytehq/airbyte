@@ -337,7 +337,8 @@ class BasicAcceptanceTests {
         .destinationSyncMode(DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
         .aliasName(STREAM_NAME.replace(".", "_"))
-        .selected(true);
+        .selected(true)
+        .suggested(true);
     final AirbyteCatalog expected = new AirbyteCatalog()
         .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
             .stream(stream)
