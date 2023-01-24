@@ -4,12 +4,6 @@
   dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/destinations/azureblobstorage
   icon: azureblobstorage.svg
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: "1Gi"
-          memory_request: "1Gi"
   releaseStage: alpha
 - name: Amazon SQS
   destinationDefinitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
@@ -48,12 +42,6 @@
     normalizationTag: 0.2.25
     normalizationIntegrationType: bigquery
   supportsDbt: true
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: "1Gi"
-          memory_request: "1Gi"
   releaseStage: generally_available
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
@@ -61,12 +49,6 @@
   dockerImageTag: 1.2.11
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: "1Gi"
-          memory_request: "1Gi"
   releaseStage: beta
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
@@ -142,12 +124,6 @@
   dockerImageTag: 0.2.13
   documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs
   icon: googlecloudstorage.svg
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: "1Gi"
-          memory_request: "1Gi"
   releaseStage: beta
 - name: Google Firestore
   destinationDefinitionId: 27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4
@@ -298,12 +274,6 @@
     normalizationTag: 0.2.25
     normalizationIntegrationType: redshift
   supportsDbt: true
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: "1Gi"
-          memory_request: "1Gi"
   releaseStage: beta
 - name: Redpanda
   destinationDefinitionId: 825c5ee3-ed9a-4dd1-a2b6-79ed722f7b13
@@ -324,12 +294,6 @@
   dockerImageTag: 0.3.19
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   icon: s3.svg
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: "1Gi"
-          memory_request: "1Gi"
   releaseStage: generally_available
 - name: S3 Glue
   destinationDefinitionId: 471e5cab-8ed1-49f3-ba11-79c687784737
@@ -356,12 +320,6 @@
     normalizationTag: 0.2.25
     normalizationIntegrationType: snowflake
   supportsDbt: true
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: "1Gi"
-          memory_request: "1Gi"
   releaseStage: generally_available
 - name: MariaDB ColumnStore
   destinationDefinitionId: 294a4790-429b-40ae-9516-49826b9702e1
