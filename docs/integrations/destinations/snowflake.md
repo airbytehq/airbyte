@@ -272,6 +272,16 @@ Now that you have set up the Snowflake destination connector, check out the foll
 - [Migrate your data from Redshift to Snowflake](https://airbyte.com/tutorials/redshift-to-snowflake)
 - [Orchestrate ELT pipelines with Prefect, Airbyte and dbt](https://airbyte.com/tutorials/elt-pipeline-prefect-airbyte-dbt)
 
+## Troubleshooting
+
+### 'Current role does not have permissions on the target schema'
+If you receive an error stating `Current role does not have permissions on the target schema` make sure that the 
+Snowflake destination `SCHEMA` is one that the role you've provided has permissions on. When creating a connection,
+it may allow you to select `Mirror source structure` for the `Destination namespace`, which if you have followed
+some of our default examples and tutorials may result in the connection trying to right to a `PUBLIC` schema.
+
+A quick fix could be to edit your connection's 'Replication' settings from `Mirror source structure` to `Destination Default`.
+Otherwise, make sure to grant the role the required permissions in the desired namespace.
 
 ## Changelog
 
