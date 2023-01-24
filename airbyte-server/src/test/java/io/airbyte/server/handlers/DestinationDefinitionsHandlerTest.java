@@ -79,6 +79,7 @@ class DestinationDefinitionsHandlerTest {
   private AirbyteGithubStore githubStore;
   private DestinationHandler destinationHandler;
   private UUID workspaceId;
+  private AirbyteProtocolVersionRange protocolVersionRange;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -91,6 +92,7 @@ class DestinationDefinitionsHandlerTest {
     githubStore = mock(AirbyteGithubStore.class);
     destinationHandler = mock(DestinationHandler.class);
     workspaceId = UUID.randomUUID();
+    protocolVersionRange = new AirbyteProtocolVersionRange(new Version("0.0.0"), new Version("0.3.0"));
 
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(
         configRepository,
@@ -98,7 +100,7 @@ class DestinationDefinitionsHandlerTest {
         schedulerSynchronousClient,
         githubStore,
         destinationHandler,
-        new AirbyteProtocolVersionRange(new Version("0.0.0"), new Version("0.3.0")));
+        protocolVersionRange);
   }
 
   private StandardDestinationDefinition generateDestinationDefinition() {
@@ -540,9 +542,6 @@ class DestinationDefinitionsHandlerTest {
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName, false);
     verify(configRepository).writeStandardDestinationDefinition(updatedDestination);
 
-    final Configs configs = new EnvConfigs();
-    final AirbyteProtocolVersionRange protocolVersionRange =
-        new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
     verify(configRepository).clearUnsupportedProtocolVersionFlag(updatedDestination.getDestinationDefinitionId(), ActorType.DESTINATION,
         protocolVersionRange);
   }

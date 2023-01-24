@@ -489,9 +489,6 @@ class SourceDefinitionsHandlerTest {
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName, false);
     verify(configRepository).writeStandardSourceDefinition(updatedSource);
 
-    final Configs configs = new EnvConfigs();
-    final AirbyteProtocolVersionRange protocolVersionRange =
-        new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
     verify(configRepository).clearUnsupportedProtocolVersionFlag(updatedSource.getSourceDefinitionId(), ActorType.SOURCE, protocolVersionRange);
   }
 
