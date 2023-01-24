@@ -221,20 +221,8 @@ class ConnectionsHandlerTest {
     @Nested
     class CreateConnection {
 
-      @Test
-      void testCreateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
-
-        final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
-
-        // set a defaultGeography on the workspace as EU, but expect connection to be
-        // created AUTO because the ConnectionCreate geography takes precedence over the workspace
-        // defaultGeography.
-        final StandardWorkspace workspace = new StandardWorkspace()
-            .withWorkspaceId(workspaceId)
-            .withDefaultGeography(Geography.EU);
-        when(configRepository.getStandardWorkspaceNoSecrets(workspaceId, true)).thenReturn(workspace);
-
-        final ConnectionCreate connectionCreate = new ConnectionCreate()
+      private ConnectionCreate buildConnectionCreateRequest(final StandardSync standardSync, final AirbyteCatalog catalog) {
+        return new ConnectionCreate()
             .sourceId(standardSync.getSourceId())
             .destinationId(standardSync.getDestinationId())
             .operationIds(standardSync.getOperationIds())
@@ -252,6 +240,22 @@ class ConnectionsHandlerTest {
                 .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()))
             .sourceCatalogId(standardSync.getSourceCatalogId())
             .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()));
+      }
+
+      @Test
+      void testCreateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
+
+        final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
+
+        // set a defaultGeography on the workspace as EU, but expect connection to be
+        // created AUTO because the ConnectionCreate geography takes precedence over the workspace
+        // defaultGeography.
+        final StandardWorkspace workspace = new StandardWorkspace()
+            .withWorkspaceId(workspaceId)
+            .withDefaultGeography(Geography.EU);
+        when(configRepository.getStandardWorkspaceNoSecrets(workspaceId, true)).thenReturn(workspace);
+
+        final ConnectionCreate connectionCreate = buildConnectionCreateRequest(standardSync, catalog);
 
         final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
@@ -277,23 +281,7 @@ class ConnectionsHandlerTest {
         final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
 
         // don't set a geography on the ConnectionCreate to force inheritance from workspace default
-        final ConnectionCreate connectionCreate = new ConnectionCreate()
-            .sourceId(standardSync.getSourceId())
-            .destinationId(standardSync.getDestinationId())
-            .operationIds(standardSync.getOperationIds())
-            .name(PRESTO_TO_HUDI)
-            .namespaceDefinition(NamespaceDefinitionType.SOURCE)
-            .namespaceFormat(null)
-            .prefix(PRESTO_TO_HUDI_PREFIX)
-            .status(ConnectionStatus.ACTIVE)
-            .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
-            .syncCatalog(catalog)
-            .resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
-                .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
-                .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
-                .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()))
-            .sourceCatalogId(standardSync.getSourceCatalogId());
+        final ConnectionCreate connectionCreate = buildConnectionCreateRequest(standardSync, catalog).geography(null);
 
         // set the workspace default to EU
         final StandardWorkspace workspace = new StandardWorkspace()
@@ -319,29 +307,12 @@ class ConnectionsHandlerTest {
             .withDefaultGeography(Geography.AUTO);
         when(configRepository.getStandardWorkspaceNoSecrets(workspaceId, true)).thenReturn(workspace);
 
-        final AirbyteCatalog catalog = ConnectionHelpers.generateApiCatalogWithTwoFields();
+        final AirbyteCatalog catalogWithSelectedFields = ConnectionHelpers.generateApiCatalogWithTwoFields();
         // Only select one of the two fields.
-        catalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true)
+        catalogWithSelectedFields.getStreams().get(0).getConfig().fieldSelectionEnabled(true)
             .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)));
 
-        final ConnectionCreate connectionCreate = new ConnectionCreate()
-            .sourceId(standardSync.getSourceId())
-            .destinationId(standardSync.getDestinationId())
-            .operationIds(standardSync.getOperationIds())
-            .name(PRESTO_TO_HUDI)
-            .namespaceDefinition(NamespaceDefinitionType.SOURCE)
-            .namespaceFormat(null)
-            .prefix(PRESTO_TO_HUDI_PREFIX)
-            .status(ConnectionStatus.ACTIVE)
-            .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
-            .syncCatalog(catalog)
-            .resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
-                .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
-                .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
-                .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()))
-            .sourceCatalogId(standardSync.getSourceCatalogId())
-            .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()));
+        final ConnectionCreate connectionCreate = buildConnectionCreateRequest(standardSync, catalogWithSelectedFields);
 
         final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
@@ -350,6 +321,35 @@ class ConnectionsHandlerTest {
         assertEquals(expectedConnectionRead, actualConnectionRead);
 
         standardSync.withFieldSelectionData(new FieldSelectionData().withAdditionalProperty("null/users-data0", true));
+
+        verify(configRepository).writeStandardSync(standardSync);
+      }
+
+      @Test
+      void testCreateFullRefreshConnectionWithSelectedFields() throws IOException, JsonValidationException, ConfigNotFoundException {
+        final StandardWorkspace workspace = new StandardWorkspace()
+            .withWorkspaceId(workspaceId)
+            .withDefaultGeography(Geography.AUTO);
+        when(configRepository.getStandardWorkspaceNoSecrets(workspaceId, true)).thenReturn(workspace);
+
+        final AirbyteCatalog fullRefreshCatalogWithSelectedFields = ConnectionHelpers.generateApiCatalogWithTwoFields();
+        fullRefreshCatalogWithSelectedFields.getStreams().get(0).getConfig()
+            .fieldSelectionEnabled(true)
+            .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)))
+            .cursorField(null)
+            .syncMode(SyncMode.FULL_REFRESH);
+
+        final ConnectionCreate connectionCreate = buildConnectionCreateRequest(standardSync, fullRefreshCatalogWithSelectedFields);
+
+        final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
+
+        final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+
+        assertEquals(expectedConnectionRead, actualConnectionRead);
+
+        standardSync
+            .withFieldSelectionData(new FieldSelectionData().withAdditionalProperty("null/users-data0", true))
+            .getCatalog().getStreams().get(0).withSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH).withCursorField(null);
 
         verify(configRepository).writeStandardSync(standardSync);
       }
@@ -365,7 +365,8 @@ class ConnectionsHandlerTest {
         catalogForUpdate.getStreams().get(0).getConfig()
             .fieldSelectionEnabled(true)
             .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(FIELD_NAME)))
-            .cursorField(List.of(SECOND_FIELD_NAME));
+            .cursorField(List.of(SECOND_FIELD_NAME))
+            .syncMode(SyncMode.INCREMENTAL);
 
         final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
             .connectionId(standardSync.getConnectionId())

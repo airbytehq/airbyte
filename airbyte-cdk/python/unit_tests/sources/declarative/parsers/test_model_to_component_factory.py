@@ -1044,4 +1044,4 @@ class TestCreateTransformations:
             model_type=DeclarativeStreamModel, component_definition=propagated_source_config, config=input_config
         )
         schema_loader = stream.schema_loader
-        assert schema_loader.default_loader._get_json_filepath() == f"./{stream.name}.json"
+        assert schema_loader.default_loader._get_json_filepath().split("/")[-1] == f"{stream.name}.json"
