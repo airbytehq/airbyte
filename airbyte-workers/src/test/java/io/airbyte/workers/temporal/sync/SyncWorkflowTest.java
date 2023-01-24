@@ -229,8 +229,8 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     assertEquals(
         replicationSuccessOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
         actualOutput.getStandardSyncSummary());
@@ -246,8 +246,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -269,8 +269,8 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationFailOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -296,8 +296,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -317,8 +317,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -343,8 +343,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -368,8 +368,8 @@ class SyncWorkflowTest {
 
     execute();
 
-    // verifyShouldRefreshSchema(refreshSchemaActivity);
-    // verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutputNoRecordsCommitted, syncInput.getCatalog());
     verifyNoInteractions(normalizationActivity);
@@ -396,16 +396,16 @@ class SyncWorkflowTest {
     assertEquals(actualOutput.getWebhookOperationSummary().getSuccesses().get(0), WEBHOOK_CONFIG_ID);
   }
 
-  // @Test
-  // void testSkipReplicationAfterRefreshSchema() {
-  // when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(ConnectionStatus.INACTIVE));
-  // final StandardSyncOutput output = execute();
-  // verifyShouldRefreshSchema(refreshSchemaActivity);
-  // verifyRefreshSchema(refreshSchemaActivity, sync);
-  // verifyNoInteractions(replicationActivity);
-  // verifyNoInteractions(normalizationActivity);
-  // assertEquals(output.getStandardSyncSummary().getStatus(), ReplicationStatus.CANCELLED);
-  // }
+  @Test
+  void testSkipReplicationAfterRefreshSchema() {
+    when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(ConnectionStatus.INACTIVE));
+    final StandardSyncOutput output = execute();
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyNoInteractions(replicationActivity);
+    verifyNoInteractions(normalizationActivity);
+    assertEquals(output.getStandardSyncSummary().getStatus(), ReplicationStatus.CANCELLED);
+  }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   private void cancelWorkflow() {

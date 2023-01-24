@@ -19,11 +19,13 @@ import io.airbyte.api.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.server.handlers.DestinationDefinitionsHandler;
+import io.airbyte.commons.server.handlers.DestinationDefinitionsHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
@@ -50,6 +52,7 @@ public class DestinationDefinitionApiController implements DestinationDefinition
   @Post(uri = "/delete")
   @Secured({ADMIN})
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     ApiHelper.execute(() -> {
       destinationDefinitionsHandler.deleteDestinationDefinition(destinationDefinitionIdRequestBody);
