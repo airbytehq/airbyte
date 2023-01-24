@@ -7,13 +7,14 @@ import styles from "./Section.module.scss";
 
 interface SectionProps {
   title?: React.ReactNode;
+  flush?: boolean;
   className?: string;
 }
 
-export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({ title, children, className }) => {
+export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({ title, flush, children, className }) => {
   return (
     <Card>
-      <div className={classNames(styles.section, className)}>
+      <div className={classNames(styles.section, { [styles.flush]: flush }, className)}>
         {title && (
           <Heading as="h2" size="sm">
             {title}
