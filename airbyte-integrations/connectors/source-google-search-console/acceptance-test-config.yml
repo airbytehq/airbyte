@@ -22,15 +22,10 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
+          extra_fields: yes
+          exact_order: yes
+          extra_records: no
         timeout_seconds: 1800
-        empty_streams:
-          - name: search_analytics_all_fields
-            bypass_reason: "Stream has PII data."
-          - name: search_analytics_by_page
-            bypass_reason: "Stream has PII data."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
