@@ -19,7 +19,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
-from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
+from source_hubspot.constants import API_KEY_CREDENTIALS, OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
@@ -54,6 +54,7 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
+TOKEN_EXPIRED_ERROR = "oauth-token is expired"
 
 def retry_connection_handler(**kwargs):
     """Retry helper, log each attempt"""
@@ -64,6 +65,8 @@ def retry_connection_handler(**kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def giveup_handler(exc):
+        if isinstance(exc, HubspotInvalidAuth) and TOKEN_EXPIRED_ERROR in exc.response:
+            return False
         if isinstance(exc, (HubspotInvalidAuth, HubspotAccessDenied)):
             return True
         return exc.response is not None and HTTPStatus.BAD_REQUEST <= exc.response.status_code < HTTPStatus.INTERNAL_SERVER_ERROR
@@ -135,9 +138,12 @@ class API:
     def __init__(self, credentials: Mapping[str, Any]):
         self._session = requests.Session()
         self.credentials = credentials
+        credentials_title = credentials.get("credentials_title")
 
         if self.is_oauth2() or self.is_private_app():
             self._session.auth = self.get_authenticator()
+        elif credentials_title == API_KEY_CREDENTIALS:
+            self._session.params["hapikey"] = credentials.get("api_key")
         else:
             raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
 
@@ -178,6 +184,9 @@ class API:
         self, url: str, params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
         response = self._session.get(self.BASE_URL + url, params=params)
+        if TOKEN_EXPIRED_ERROR in response.json():
+            logger.info("Oauth token expired. Re-fetching token")
+            self._session.auth = self.get_authenticator()
         return self._parse_and_handle_errors(response), response
 
     def post(
@@ -255,7 +264,9 @@ class Stream(HttpStream, ABC):
         if isinstance(self._start_date, str):
             self._start_date = pendulum.parse(self._start_date)
         creds_title = self._credentials["credentials_title"]
-        if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
+        if creds_title == API_KEY_CREDENTIALS:
+            self._session.params["hapikey"] = credentials.get("api_key")
+        elif creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -1084,7 +1095,7 @@ class Campaigns(Stream):
     limit = 500
     updated_at_field = "lastUpdatedTime"
     primary_key = "id"
-    scopes = {"crm.lists.read"}
+    scopes = {"content"}
 
     def read_records(
         self,
@@ -1164,7 +1175,7 @@ class Deals(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
-    scopes = {"contacts", "crm.objects.deals.read"}
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.deals.read"}
 
 
 class DealPipelines(Stream):
@@ -1173,11 +1184,20 @@ class DealPipelines(Stream):
     Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
     """
 
-    url = "/crm-pipelines/v1/pipelines/deals"
+    url = "/crm/v3/pipelines/deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
-    primary_key = "pipelineId"
-    scopes = {"contacts", "tickets"}
+    primary_key = "id"
+    scopes = {
+        "crm.schemas.contacts.read",
+        "crm.objects.contacts.read",
+        "crm.objects.deals.read",
+        "crm.schemas.deals.read",
+        "crm.schemas.quotes.read",
+        "crm.objects.companies.read",
+        "crm.schemas.companies.read",
+        "crm.schemas.line_items.read",
+    }
 
 
 class TicketPipelines(Stream):
@@ -1191,23 +1211,14 @@ class TicketPipelines(Stream):
     created_at_field = "createdAt"
     primary_key = "id"
     scopes = {
-        "media_bridge.read",
-        "tickets",
-        "crm.schemas.custom.read",
-        "e-commerce",
-        "timeline",
-        "contacts",
         "crm.schemas.contacts.read",
         "crm.objects.contacts.read",
-        "crm.objects.contacts.write",
         "crm.objects.deals.read",
+        "crm.schemas.deals.read",
         "crm.schemas.quotes.read",
-        "crm.objects.deals.write",
         "crm.objects.companies.read",
         "crm.schemas.companies.read",
-        "crm.schemas.deals.read",
         "crm.schemas.line_items.read",
-        "crm.objects.companies.write",
     }
 
 
@@ -1500,7 +1511,7 @@ class Contacts(CRMSearchStream):
     last_modified_field = "lastmodifieddate"
     associations = ["contacts", "companies"]
     primary_key = "id"
-    scopes = {"crm.objects.contacts.read"}
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
 
 class EngagementsCalls(CRMSearchStream):
@@ -1554,7 +1565,7 @@ class FeedbackSubmissions(CRMObjectIncrementalStream):
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
-    scopes = {"e-commerce"}
+    scopes = {"crm.objects.line_items.read"}
 
 
 class Products(CRMObjectIncrementalStream):
@@ -1569,3 +1580,10 @@ class Tickets(CRMSearchStream):
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
+
+
+class Quotes(CRMObjectIncrementalStream):
+    entity = "quote"
+    associations = ["deals"]
+    primary_key = "id"
+    scopes = {"crm.objects.quotes.read", "crm.objects.deals.read"}

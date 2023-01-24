@@ -41,8 +41,7 @@ connectionSpecification:
       description: >-
         When set, the connector will always re-export data from the past N days,
         where N is the value set here. This is useful if your data is frequently updated
-        after creation. More info <a
-        href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
+        after creation.
       order: 3
     slice_range:
       type: integer

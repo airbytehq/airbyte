@@ -95,7 +95,7 @@ class SourceSalesforce(AbstractSource):
                 raise Exception(f"Stream {stream_name} cannot be processed by REST or BULK API.")
 
             json_schema = stream_properties.get(stream_name, {})
-            pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
+            pk, replication_key = sf_object.get_pk_and_replication_key(stream_name, json_schema)
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
                 streams.append(incremental(**streams_kwargs, replication_key=replication_key, start_date=config.get("start_date")))

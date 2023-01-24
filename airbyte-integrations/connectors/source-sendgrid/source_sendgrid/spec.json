@@ -11,18 +11,13 @@
         "title": "Sendgrid API key",
         "airbyte_secret": true,
         "type": "string",
-        "description": "API Key, use <a href=\"https://app.sendgrid.com/settings/api_keys/\">admin</a> to generate this key.",
         "order": 0
       },
       "start_time": {
         "title": "Start time",
-        "type": ["integer", "string"],
-        "description": "Start time in ISO8601 format. Any data before this time point will not be replicated.",
+        "type": "integer",
         "examples": [
-          "2021-12-12",
-          "2021-02-01 13:30:00",
-          "2020-07-18T13:30:00.000Z",
-          "2020-07-18 13:30:00+02:00"
+          1558359837
         ],
         "order": 1
       }

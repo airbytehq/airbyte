@@ -11,10 +11,10 @@
         "type": "string",
         "title": "API Key",
         "airbyte_secret": true,
-        "description": "Recurly API Key. See the  <a href=\"https://docs.airbyte.com/integrations/sources/recurly\">docs</a> for more information on how to generate this key.",
+        "description": "Recurly API Key.",
         "order": 1
       },
-      "begin_time": {
+      "start_date": {
         "type": "string",
         "description": "ISO8601 timestamp from which the replication from Recurly API will start from.",
         "examples": ["2021-12-01T00:00:00"],

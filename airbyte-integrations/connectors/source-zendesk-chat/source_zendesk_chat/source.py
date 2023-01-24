@@ -10,7 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-from .streams import Accounts, Agents, AgentTimelines, Bans, Chats, Departments, Goals, Roles, RoutingSettings, Shortcuts, Skills, Triggers
+from .streams import Accounts, Agents, AgentTimelines, Bans, Chats, Conversions, Departments, DepartmentEvents, Goals, Roles, RoutingSettings, Shortcuts, Skills, Triggers
 
 
 class ZendeskAuthentication:
@@ -49,7 +49,9 @@ class SourceZendeskChat(AbstractSource):
             Agents(authenticator=authenticator),
             Bans(authenticator=authenticator),
             Chats(authenticator=authenticator, start_date=config["start_date"]),
+            Conversions(authenticator=authenticator, start_date=config["start_date"]),
             Departments(authenticator=authenticator),
+            DepartmentEvents(authenticator=authenticator, start_date=config["start_date"]),
             Goals(authenticator=authenticator),
             Roles(authenticator=authenticator),
             RoutingSettings(authenticator=authenticator),

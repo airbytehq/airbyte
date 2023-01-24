@@ -1,0 +1,291 @@
+name: Build Source Container
+on:
+  workflow_dispatch:
+    inputs:
+      connector:
+        description: 'Connector to build'
+        required: true
+        type: choice
+        options:
+        - source-activecampaign
+        - source-adjust
+        - source-airtable
+        - source-alloydb
+        - source-alloydb-strict-encrypt
+        - source-amazon-ads
+        - source-amazon-seller-partner
+        - source-amazon-sqs
+        - source-amplitude
+        - source-apify-dataset
+        - source-appfollow
+        - source-appsflyer
+        - source-appstore-singer
+        - source-asana
+        - source-ashby
+        - source-auth0
+        - source-aws-cloudtrail
+        - source-azure-table
+        - source-bamboo-hr
+        - source-bigcommerce
+        - source-bigquery
+        - source-bing-ads
+        - source-braintree
+        - source-cart
+        - source-chargebee
+        - source-chargify
+        - source-chartmogul
+        - source-clickhouse
+        - source-clickhouse-strict-encrypt
+        - source-clockify
+        - source-close-com
+        - source-cockroachdb
+        - source-cockroachdb-strict-encrypt
+        - source-coin-api
+        - source-coinmarketcap
+        - source-commercetools
+        - source-confluence
+        - source-convertkit
+        - source-courier
+        - source-db2
+        - source-db2-strict-encrypt
+        - source-delighted
+        - source-dixa
+        - source-dockerhub
+        - source-drift
+        - source-dv-360
+        - source-e2e-test
+        - source-e2e-test-cloud
+        - source-elasticsearch
+        - source-exchange-rates
+        - source-facebook-marketing
+        - source-facebook-pages
+        - source-faker
+        - source-fauna
+        - source-file
+        - source-file-secure
+        - source-firebolt
+        - source-flexport
+        - source-freshcaller
+        - source-freshdesk
+        - source-freshsales
+        - source-freshservice
+        - source-github
+        - source-gitlab
+        - source-glassfrog
+        - source-gocardless
+        - source-google-ads
+        - source-google-analytics-data-api
+        - source-google-analytics-v4
+        - source-google-directory
+        - source-google-search-console
+        - source-google-sheets
+        - source-google-webfonts
+        - source-google-workspace-admin-reports
+        - source-greenhouse
+        - source-gutendex
+        - source-harvest
+        - source-hellobaton
+        - source-hubplanner
+        - source-hubspot
+        - source-insightly
+        - source-instagram
+        - source-intercom
+        - source-iterable
+        - source-jdbc
+        - source-jira
+        - source-kafka
+        - source-klaviyo
+        - source-kustomer-singer
+        - source-kyriba
+        - source-lemlist
+        - source-lever-hiring
+        - source-linkedin-ads
+        - source-linkedin-pages
+        - source-linnworks
+        - source-lokalise
+        - source-looker
+        - source-mailchimp
+        - source-mailerlite
+        - source-mailgun
+        - source-mailjet-mail
+        - source-mailjet-sms
+        - source-marketo
+        - source-metabase
+        - source-microsoft-teams
+        - source-mixpanel
+        - source-monday
+        - source-mongodb
+        - source-mongodb-strict-encrypt
+        - source-mongodb-v2
+        - source-mssql
+        - source-mssql-strict-encrypt
+        - source-my-hours
+        - source-mysql
+        - source-mysql-strict-encrypt
+        - source-nasa
+        - source-netsuite
+        - source-news-api
+        - source-notion
+        - source-okta
+        - source-omnisend
+        - source-onesignal
+        - source-openweather
+        - source-oracle
+        - source-oracle-strict-encrypt
+        - source-orb
+        - source-orbit
+        - source-oura
+        - source-outreach
+        - source-pardot
+        - source-paypal-transaction
+        - source-paystack
+        - source-persistiq
+        - source-pinterest
+        - source-pipedrive
+        - source-pivotal-tracker
+        - source-plaid
+        - source-pokeapi
+        - source-postgres
+        - source-postgres-strict-encrypt
+        - source-posthog
+        - source-prestashop
+        - source-primetric
+        - source-public-apis
+        - source-python-http-tutorial
+        - source-qualaroo
+        - source-quickbooks-singer
+        - source-rd-station-marketing
+        - source-recharge
+        - source-recurly
+        - source-redshift
+        - source-relational-db
+        - source-retently
+        - source-rki-covid
+        - source-s3
+        - source-salesforce
+        - source-salesloft
+        - source-scaffold-java-jdbc
+        - source-scaffold-- source-http
+        - source-scaffold-- source-python
+        - source-search-metrics
+        - source-sendgrid
+        - source-sentry
+        - source-sftp
+        - source-sftp-bulk
+        - source-shopify
+        - source-shortio
+        - source-slack
+        - source-smartsheets
+        - source-snapchat-marketing
+        - source-snowflake
+        - source-sonar-cloud
+        - source-square
+        - source-stock-ticker-api-tutorial
+        - source-strava
+        - source-stripe
+        - source-surveymonkey
+        - source-talkdesk-explore
+        - source-tempo
+        - source-tidb
+        - source-tiktok-marketing
+        - source-timely
+        - source-tplcentral
+        - source-trello
+        - source-tvmaze-schedule
+        - source-twilio
+        - source-typeform
+        - source-us-census
+        - source-waiteraid
+        - source-webflow
+        - source-whisky-hunter
+        - source-woocommerce
+        - source-workable
+        - source-wrike
+        - source-xkcd
+        - source-yahoo-finance-price
+        - source-yandex-metrica
+        - source-youtube-analytics
+        - source-zendesk-chat
+        - source-zendesk-sell
+        - source-zendesk-sunshine
+        - source-zendesk-support
+        - source-zendesk-talk
+        - source-zenefits
+        - source-zenloop
+        - source-zoho-crm
+        - source-zoom
+        - source-zuora
+
+      basetag:
+        description: 'Custom tag if you want the versioning to be based on a different tag than the latest'
+      
+      change_type:
+        description: 'Choose between minor and patch (Major will be changed during upstream sync)'
+        required: true 
+        type: choice 
+        default: "minor"
+        options:
+        - minor
+        - patch
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Get previous tag
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      
+      - name: Get Next Version
+        id: nextversion
+        uses: "WyriHaximus/github-action-next-semvers@v1"
+        with:
+          version: ${{ github.event.inputs.basetag || steps.previoustag.outputs.tag }}
+      
+      - name: Generate Next Version according to change_type
+        id: version
+        run: |
+          if [ "${{ github.event.inputs.change_type }}" = "minor" ]; then 
+            nextversion=${{ steps.nextversion.outputs.v_minor }}  
+          else
+            nextversion=${{ steps.nextversion.outputs.v_patch }}  
+          fi;
+          source_branch_name="${GITHUB_REF##*/}"
+          git_hash=$(git rev-parse --short "$GITHUB_SHA")
+
+          # for dev branches, prefix "-alpha.<commit-hash>"
+          if [ $source_branch_name != "main" ]; then 
+            nextversion=$nextversion"-alpha."$git_hash
+          fi;
+
+          echo "next_version=$nextversion" >> $GITHUB_OUTPUT
+      
+      - name: Publish version as a tag
+        run: |
+          git tag ${{ steps.version.outputs.next_version }}
+          git push --tag
+
+      - name: Build and Push 
+        uses: docker/build-push-action@v3
+        with:
+          context: ./airbyte-integrations/connectors/${{ github.event.inputs.connector }}
+          file: ./airbyte-integrations/connectors/${{ github.event.inputs.connector }}/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: rudderstack/${{ github.event.inputs.connector }}:${{ steps.version.outputs.next_version }}
+
+
+
+

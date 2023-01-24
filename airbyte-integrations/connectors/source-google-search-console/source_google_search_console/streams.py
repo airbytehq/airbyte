@@ -310,6 +310,10 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
         self.dimensions = dimensions
 
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return super().cursor_field if "date" in self.dimensions else []
+
     def get_json_schema(self) -> Mapping[str, Any]:
         try:
             return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()

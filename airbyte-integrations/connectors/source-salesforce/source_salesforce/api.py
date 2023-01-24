@@ -201,6 +201,16 @@ UNSUPPORTED_FILTERING_STREAMS = [
     "UriEvent",
 ]
 
+RESOURCE_PRIMARY_KEY_MAP = {
+    "PlatformEventUsageMetric": None, # PlatformEventUsageMetric does not have a primary key
+    "FormulaFunctionAllowedType": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_formulafunctionallowedtype.htm
+    "FormulaFunction": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.sfFieldRef.meta/sfFieldRef/salesforce_field_reference_FormulaFunction.htm
+    "TabDefinition": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_tabdefinition.htm
+    "AppDefinition": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_appdefinition.htm
+    "Publisher": "DurableId", # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_publisher.htm
+    "ApexPageInfo": "DurableId" # https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_apexpageinfo.htm
+}
+
 
 class Salesforce:
     logger = logging.getLogger("airbyte")
@@ -357,10 +367,14 @@ class Salesforce:
         return stream_schemas
 
     @staticmethod
-    def get_pk_and_replication_key(json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+    def get_pk_and_replication_key(source_name, json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:
         fields_list = json_schema.get("properties", {}).keys()
 
         pk = "Id" if "Id" in fields_list else None
+        # for some resources, primary key is not Id
+        # still salesforce sends Id field in response
+        # We are overriding it with the correct primary key, defined in the mapping
+        pk = RESOURCE_PRIMARY_KEY_MAP.get(source_name, pk)
         replication_key = None
         if "SystemModstamp" in fields_list:
             replication_key = "SystemModstamp"

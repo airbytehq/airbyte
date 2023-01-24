@@ -321,7 +321,7 @@ class Lists(IterableStream):
 
 
 class ListUsers(IterableStream):
-    primary_key = "listId"
+    primary_key = ["listId", "email"]
     data_field = "getUsers"
     name = "list_users"
 

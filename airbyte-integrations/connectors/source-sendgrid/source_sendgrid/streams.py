@@ -260,7 +260,7 @@ class SuppressionGroups(SendgridStream):
 
 
 class SuppressionGroupMembers(SendgridStreamOffsetPagination):
-    primary_key = "group_id"
+    primary_key = ["group_id", "email"]
 
     def path(self, **kwargs) -> str:
         return "asm/suppressions"

@@ -8,18 +8,11 @@ connectionSpecification:
     - credentials
   additionalProperties: true
   properties:
-    spreadsheet_id:
-      type: string
-      title: Spreadsheet Link
-      description: >-
-        Enter the link to the Google spreadsheet you want to sync
-      examples:
-        - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
     row_batch_size:
       type: integer
       title: Row Batch Size
       description: Number of rows fetched when making a Google Sheet API call. Defaults to 200.
-      default: 200
+      const: 1000
     credentials:
       type: object
       title: Authentication
@@ -68,6 +61,13 @@ connectionSpecification:
               airbyte_secret: true
               examples:
                 - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
+    spreadsheet_id:
+      type: string
+      title: Spreadsheet Link
+      description: >-
+        Enter the link to the Google spreadsheet you want to sync
+      examples:
+        - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
 authSpecification:
   auth_type: oauth2.0
   oauth2Specification:
