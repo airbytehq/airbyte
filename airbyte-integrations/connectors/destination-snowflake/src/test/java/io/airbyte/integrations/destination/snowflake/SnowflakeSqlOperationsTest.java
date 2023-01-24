@@ -66,14 +66,16 @@ class SnowflakeSqlOperationsTest {
     final var schemaName = "foo";
     try {
       Mockito.doThrow(new SnowflakeSQLException(message)).when(db).execute(Mockito.anyString());
-      snowflakeSqlOperations.createSchemaIfNotExists(db, schemaName);
     } catch (Exception e) {
-      if (shouldCapture) {
-        Assertions.assertInstanceOf(ConfigErrorException.class, e);
-      } else {
-        Assertions.assertInstanceOf(SnowflakeSQLException.class, e);
-        Assertions.assertEquals(e.getMessage(), message);
-      }
+      // This would not be expected, but the `execute` method above will flag as an unhandled exception
+      assert false;
+    }
+    Exception exception = Assertions.assertThrows(Exception.class, () -> snowflakeSqlOperations.createSchemaIfNotExists(db, schemaName));
+    if (shouldCapture) {
+      Assertions.assertInstanceOf(ConfigErrorException.class, exception);
+    } else {
+      Assertions.assertInstanceOf(SnowflakeSQLException.class, exception);
+      Assertions.assertEquals(exception.getMessage(), message);
     }
   }
 

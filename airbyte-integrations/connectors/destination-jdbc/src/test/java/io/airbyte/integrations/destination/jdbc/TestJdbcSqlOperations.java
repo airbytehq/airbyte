@@ -30,11 +30,12 @@ public class TestJdbcSqlOperations extends JdbcSqlOperations {
     final var schemaName = "foo";
     try {
       Mockito.doThrow(new SQLException("TEST")).when(db).execute(Mockito.anyString());
-      createSchemaIfNotExists(db, schemaName);
     } catch (Exception e) {
-      Assertions.assertInstanceOf(SQLException.class, e);
-      Assertions.assertEquals(e.getMessage(), "TEST");
+      // This would not be expected, but the `execute` method above will flag as an unhandled exception
+      assert false;
     }
+    SQLException exception = Assertions.assertThrows(SQLException.class, () -> createSchemaIfNotExists(db, schemaName));
+    Assertions.assertEquals(exception.getMessage(), "TEST");
   }
 
 }
