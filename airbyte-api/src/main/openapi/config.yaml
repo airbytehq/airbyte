@@ -1729,21 +1729,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CompleteSourceOauthRequest'
+              $ref: "#/components/schemas/CompleteSourceOauthRequest"
         required: true
       tags:
         - source_oauth
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecretId'
+                $ref: "#/components/schemas/SecretId"
           description: Successful operation
-        '404':
-          $ref: '#/components/responses/NotFoundResponse'
-        '422':
-          $ref: '#/components/responses/InvalidInputResponse'
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
       operationId: completeSourceOAuthReturnSecret
       summary: >-
         Given a source def ID generate an access/refresh token and save as a secret. Return the secret
