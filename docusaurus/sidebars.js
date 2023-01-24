@@ -31,12 +31,11 @@ module.exports = {
     {
       type: 'category',
       label: 'Connector Catalog',
+      link: {
+        type: 'doc',
+        id: 'integrations/README',
+      },
       items: [
-          {
-            type: 'doc',
-            label: 'Overview',
-            id: 'integrations/README',
-          },
           {
             type: 'category',
             label: 'Sources',
@@ -255,6 +254,7 @@ module.exports = {
                 'connector-development/config-based/understanding-the-yaml-file/pagination',
                 'connector-development/config-based/understanding-the-yaml-file/record-selector',
                 'connector-development/config-based/understanding-the-yaml-file/stream-slicers',
+                'connector-development/config-based/understanding-the-yaml-file/reference',
               ]
             },
             'connector-development/config-based/advanced-topics',    
@@ -424,6 +424,7 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        'release_notes/december_2022',
         'release_notes/november_2022',
         'release_notes/october_2022',
         'release_notes/september_2022',

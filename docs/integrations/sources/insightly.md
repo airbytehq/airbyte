@@ -69,6 +69,7 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                       |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| 0.1.0   | 2021-07-19 |    | Release Insightly CDK Connector                                                                |
+| Version | Date       | Pull Request                                             | Subject                                                                           |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| 0.1.1   | 2022-11-11 |    | Fix state date parse bug                            |
+| 0.1.0   | 2022-10-19 |    | Release Insightly CDK Connector                     |

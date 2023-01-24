@@ -46,6 +46,8 @@ const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
         ? "inactive"
         : status === Status.PENDING
         ? "loading"
+        : status === Status.CANCELLED
+        ? "cancelled"
         : undefined,
     [status]
   );

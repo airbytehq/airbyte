@@ -61,7 +61,7 @@ def ga_connector_file_change_expected_team(tmp_path, ga_connector_file):
 
 @pytest.fixture
 def ga_connector_backward_compatibility_file_change(tmp_path, ga_connector_file):
-    expected_teams = list(sat_config_checks.GA_CONNECTOR_REVIEWERS) + [{"any-of": list(sat_config_checks.BACKWARD_COMPATIBILITY_REVIEWERS)}]
+    expected_teams = [{"any-of": list(sat_config_checks.BACKWARD_COMPATIBILITY_REVIEWERS)}]
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:
@@ -71,7 +71,7 @@ def ga_connector_backward_compatibility_file_change(tmp_path, ga_connector_file)
 
 @pytest.fixture
 def ga_connector_test_strictness_level_file_change(tmp_path, ga_connector_file):
-    expected_teams = list(sat_config_checks.GA_CONNECTOR_REVIEWERS) + [{"any-of": list(sat_config_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)}]
+    expected_teams = [{"any-of": list(sat_config_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)}]
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:

@@ -20,6 +20,18 @@ if [ -n "$CI" ]; then
   wait
 fi
 
+if [ -n "$CI" ]; then
+echo "Deploying fluentbit"
+helm repo add fluent https://fluent.github.io/helm-charts
+helm repo update fluent
+sed -i "s/PLACEHOLDER/${WORKFLOW_RUN_ID}/" tools/bin/fluent_values.yaml  
+helm install --values tools/bin/fluent_values.yaml --set env[1].name="AWS_ACCESS_KEY_ID" --set env[1].value=$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_access_key_id) \
+ --set env[2].name="AWS_SECRET_ACCESS_KEY" --set env[2].value=$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_secret_access_key) \
+ --set env[3].name="AWS_S3_BUCKET" --set env[3].value=${AWS_S3_BUCKET} \
+ --set env[4].name="SUITE_TYPE" --set env[4].value="kustomize-logs" \
+ --generate-name fluent/fluent-bit
+fi
+
 echo "Starting app..."
 
 echo "Applying dev-integration-test manifests to kubernetes..."

@@ -4,7 +4,7 @@ import { useAsyncFn } from "react-use";
 
 import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import useConnector from "hooks/services/useConnector";
+import { useGetConnectorsOutOfDate, useUpdateDestinationDefinitions } from "hooks/services/useConnector";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
@@ -25,7 +25,7 @@ const DestinationsPage: React.FC = () => {
 
   const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
 
-  const { hasNewDestinationVersion } = useConnector();
+  const { hasNewDestinationVersion } = useGetConnectorsOutOfDate();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
@@ -61,7 +61,7 @@ const DestinationsPage: React.FC = () => {
     return Array.from(destinationDefinitionMap.values());
   }, [destinations, destinationDefinitions]);
 
-  const { updateAllDestinationVersions } = useConnector();
+  const { updateAllDestinationVersions } = useUpdateDestinationDefinitions();
 
   const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
     setIsUpdateSuccess(false);

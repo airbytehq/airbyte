@@ -106,6 +106,10 @@ class AbstractSource(Source, ABC):
                         f"The requested stream {configured_stream.stream.name} was not found in the source."
                         f" Available streams: {stream_instances.keys()}"
                     )
+                stream_is_available, error = stream_instance.check_availability(logger, self)
+                if not stream_is_available:
+                    logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. Error: {error}")
+                    continue
                 try:
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
                     yield from self._read_stream(
@@ -187,7 +191,7 @@ class AbstractSource(Source, ABC):
     @staticmethod
     def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:
         """
-        Check if record count reached liimt set by internal config.
+        Check if record count reached limit set by internal config.
         :param internal_config - internal CDK configuration separated from user defined config
         :records_counter - number of records already red
         :return True if limit reached, False otherwise

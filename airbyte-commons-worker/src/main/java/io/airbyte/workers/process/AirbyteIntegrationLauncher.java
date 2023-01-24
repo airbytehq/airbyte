@@ -8,6 +8,14 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+import static io.airbyte.workers.process.Metadata.CHECK_JOB;
+import static io.airbyte.workers.process.Metadata.DISCOVER_JOB;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
+import static io.airbyte.workers.process.Metadata.READ_STEP;
+import static io.airbyte.workers.process.Metadata.SPEC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
+import static io.airbyte.workers.process.Metadata.WRITE_STEP;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -27,28 +35,7 @@ import java.util.Map;
 
 public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
-  /**
-   * The following variables help, either via names or labels, add metadata to processes actually
-   * running operations. These are more readable forms of
-   * {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
-   */
-  public static final String JOB_TYPE = "job_type";
-  public static final String SYNC_JOB = "sync";
-  public static final String SPEC_JOB = "spec";
-  public static final String CHECK_JOB = "check";
-  public static final String DISCOVER_JOB = "discover";
-
   private static final String CONFIG = "--config";
-
-  /**
-   * A sync job can actually be broken down into the following steps. Try to be as precise as possible
-   * with naming/labels to help operations.
-   */
-  public static final String SYNC_STEP = "sync_step";
-  public static final String READ_STEP = "read";
-  public static final String WRITE_STEP = "write";
-  public static final String NORMALIZE_STEP = "normalize";
-  public static final String CUSTOM_STEP = "custom";
 
   private final String jobId;
   private final int attempt;
@@ -59,7 +46,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   /**
    * If true, launcher will use a separated isolated pool to run the job.
-   *
+   * <p>
    * At this moment, we put custom connector jobs into an isolated pool.
    */
   private final boolean useIsolatedPool;
@@ -69,13 +56,14 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
                                     final String imageName,
                                     final ProcessFactory processFactory,
                                     final ResourceRequirements resourceRequirement,
-                                    final boolean useIsolatedPool) {
+                                    final boolean useIsolatedPool,
+                                    final FeatureFlags featureFlags) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
-    this.featureFlags = new EnvVariableFeatureFlags();
+    this.featureFlags = featureFlags;
     this.useIsolatedPool = useIsolatedPool;
   }
 
@@ -94,7 +82,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, SPEC_JOB),
+        Map.of(JOB_TYPE_KEY, SPEC_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "spec");
@@ -115,7 +103,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, CHECK_JOB),
+        Map.of(JOB_TYPE_KEY, CHECK_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "check",
@@ -137,7 +125,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, DISCOVER_JOB),
+        Map.of(JOB_TYPE_KEY, DISCOVER_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "discover",
@@ -183,7 +171,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, READ_STEP),
+        Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, READ_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         arguments.toArray(new String[arguments.size()]));
@@ -213,7 +201,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, WRITE_STEP),
+        Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, WRITE_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "write",
@@ -227,7 +215,9 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         WorkerEnvConstants.WORKER_JOB_ID, jobId,
         WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt),
         EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()),
-        EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()));
+        EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()),
+        EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()),
+        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
   }
 
 }

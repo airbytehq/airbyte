@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
 
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 
 import styles from "./Header.module.scss";
 

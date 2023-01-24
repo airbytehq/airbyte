@@ -109,13 +109,6 @@
         "supported_sync_modes": ["full_refresh"]
       },
       {
-        "name": "advertisers_audience_reports_hourly",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["stat_time_hour"]
-      },
-      {
         "name": "advertisers_audience_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -128,13 +121,6 @@
         "supported_sync_modes": ["full_refresh"]
       },
       {
-        "name": "ads_audience_reports_hourly",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["stat_time_hour"]
-      },
-      {
         "name": "ads_audience_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -142,25 +128,11 @@
         "default_cursor_field": ["stat_time_day"]
       },
       {
-        "name": "ad_group_audience_reports_hourly",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["stat_time_hour"]
-      },
-      {
         "name": "ad_group_audience_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"]
-      },
-      {
-        "name": "campaigns_audience_reports_by_country_hourly",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["stat_time_hour"]
       },
       {
         "name": "campaigns_audience_reports_by_country_daily",

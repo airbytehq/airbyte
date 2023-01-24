@@ -14,6 +14,7 @@ interface SecretConfirmationControlProps {
   multiline: boolean;
   disabled?: boolean;
   error?: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
@@ -22,6 +23,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
   multiline,
   name,
   error,
+  onChange,
 }) => {
   const [field, , helpers] = useField(name);
   const [previousValue, setPreviousValue] = useState<unknown>(undefined);
@@ -34,6 +36,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
     multiline && (isEditInProgress || !showButtons) ? (
       <SecretTextArea
         {...field}
+        onChange={onChange}
         autoComplete="off"
         value={field.value ?? ""}
         rows={3}
@@ -45,6 +48,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
     ) : (
       <Input
         {...field}
+        onChange={onChange}
         autoComplete="off"
         value={field.value ?? ""}
         type="password"
@@ -89,15 +93,15 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
       {component}
       {isEditInProgress ? (
         <>
-          <Button size="xs" onClick={onDone} type="button" disabled={disabled}>
-            <FormattedMessage id="form.done" />
-          </Button>
-          <Button size="xs" onClick={onCancel} type="button" variant="secondary" disabled={disabled}>
+          <Button size="sm" onClick={onCancel} type="button" variant="secondary" disabled={disabled}>
             <FormattedMessage id="form.cancel" />
+          </Button>
+          <Button size="sm" onClick={onDone} type="button" disabled={disabled}>
+            <FormattedMessage id="form.done" />
           </Button>
         </>
       ) : (
-        <Button size="xs" onClick={handleStartEdit} type="button" disabled={disabled}>
+        <Button size="sm" onClick={handleStartEdit} type="button" variant="secondary" disabled={disabled}>
           <FormattedMessage id="form.edit" />
         </Button>
       )}

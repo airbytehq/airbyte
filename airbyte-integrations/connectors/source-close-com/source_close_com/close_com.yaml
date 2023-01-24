@@ -55,9 +55,10 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z" # ISO8601
-    step: "365d"
+    step: "P365D"
     cursor_field: "date_updated"
     datetime_format: "%Y-%m-%d"
+    cursor_granularity: "P1D"
 
   stream_slicer__cursor_date_created:
     #    type: DatetimeStreamSlicer
@@ -74,9 +75,10 @@ definitions:
     end_time_option:
       field_name: "date_created__lte"
       inject_into: "request_parameter"
-    step: "365d"
+    step: "P365D"
     cursor_field: "date_created"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    cursor_granularity: "PT0.000001S"
 
   stream_slicer__cursor_date_updated:
     #    type: DatetimeStreamSlicer
@@ -93,9 +95,10 @@ definitions:
     end_time_option:
       field_name: "date_updated__lte"
       inject_into: "request_parameter"
-    step: "365d"
+    step: "P365D"
     cursor_field: "date_updated"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    cursor_granularity: "PT0.000001S"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"

@@ -1,6 +1,5 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
 
@@ -11,6 +10,15 @@ import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
 interface CreateControlProps {
   formType: "source" | "destination";
+  /**
+   * Called in case the user cancels the form - if not provided, no cancel button is rendered
+   */
+  onCancel?: () => void;
+  /**
+   * Called in case the user reset the form - if not provided, no reset button is rendered
+   */
+  onReset?: () => void;
+  submitLabel?: string;
   isSubmitting: boolean;
   errorMessage?: React.ReactNode;
   connectionTestSuccess?: boolean;
@@ -19,13 +27,6 @@ interface CreateControlProps {
   onCancelTesting?: () => void;
 }
 
-const ButtonContainer = styled.div`
-  margin-top: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
 const CreateControls: React.FC<CreateControlProps> = ({
   isTestConnectionInProgress,
   isSubmitting,
@@ -33,6 +34,9 @@ const CreateControls: React.FC<CreateControlProps> = ({
   connectionTestSuccess,
   errorMessage,
   onCancelTesting,
+  onCancel,
+  onReset,
+  submitLabel,
 }) => {
   if (isSubmitting) {
     return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
@@ -43,12 +47,26 @@ const CreateControls: React.FC<CreateControlProps> = ({
   }
 
   return (
-    <ButtonContainer>
+    <div className={styles.controlContainer}>
       {errorMessage && <TestingConnectionError errorMessage={errorMessage} />}
-      <Button className={styles.submitButton} type="submit">
-        <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
-      </Button>
-    </ButtonContainer>
+      {onReset && (
+        <div className={styles.deleteButtonContainer}>
+          <Button onClick={onReset} type="button" variant="danger">
+            <FormattedMessage id="form.reset" />
+          </Button>
+        </div>
+      )}
+      <div className={styles.buttonContainer}>
+        {onCancel && (
+          <Button onClick={onCancel} type="button" variant="secondary">
+            <FormattedMessage id="form.cancel" />
+          </Button>
+        )}
+        <Button type="submit">
+          {submitLabel || <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />}
+        </Button>
+      </div>
+    </div>
   );
 };
 

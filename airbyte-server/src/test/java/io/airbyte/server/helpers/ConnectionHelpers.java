@@ -20,11 +20,13 @@ import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.DestinationSnippetRead;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SchemaChange;
 import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceSnippetRead;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
 import io.airbyte.commons.enums.Enums;
@@ -264,10 +266,18 @@ public class ConnectionHelpers {
     final WebBackendConnectionListItem connectionListItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
         .name(standardSync.getName())
-        .sourceId(standardSync.getSourceId())
-        .destinationId(standardSync.getDestinationId())
-        .source(source)
-        .destination(destination)
+        .source(new SourceSnippetRead()
+            .icon(source.getIcon())
+            .name(source.getName())
+            .sourceName(source.getSourceName())
+            .sourceDefinitionId(source.getSourceDefinitionId())
+            .sourceId(source.getSourceId()))
+        .destination(new DestinationSnippetRead()
+            .icon(destination.getIcon())
+            .name(destination.getName())
+            .destinationName(destination.getDestinationName())
+            .destinationDefinitionId(destination.getDestinationDefinitionId())
+            .destinationId(destination.getDestinationId()))
         .status(ApiPojoConverters.toApiStatus(standardSync.getStatus()))
         .isSyncing(isSyncing)
         .latestSyncJobCreatedAt(latestSyncJobCreatedAt)

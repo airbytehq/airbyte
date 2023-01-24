@@ -13,7 +13,6 @@ export const theme = {
   blue800: scss.blue800,
   blue900: scss.blue900,
   blue: scss.blue,
-  blueTransparent: scss.blueTransparent,
 
   darkBlue50: scss.darkBlue50,
   darkBlue100: scss.darkBlue100,
@@ -116,8 +115,6 @@ export const theme = {
 
   textColor: scss.darkBlue,
   lightTextColor: scss.grey,
-  textColor90: scss.textColor90,
-  darkBlue90: scss.darkBlue90,
   greyColor70: scss.grey600,
   greyColor60: scss.grey500,
   greyColor55: scss.grey400,

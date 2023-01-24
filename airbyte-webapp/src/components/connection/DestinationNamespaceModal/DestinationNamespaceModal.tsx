@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
 import { LabeledRadioButton } from "components";
+import { FormikConnectionFormValues } from "components/connection/ConnectionForm/formConfig";
 import { Button } from "components/ui/Button";
 import { Input } from "components/ui/Input";
 import { ModalBody, ModalFooter } from "components/ui/Modal";
@@ -11,7 +12,6 @@ import { Text } from "components/ui/Text";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
 import { links } from "utils/links";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./DestinationNamespaceModal.module.scss";
 import { ExampleSettingsTable } from "./ExampleSettingsTable";
@@ -19,7 +19,7 @@ import { ExampleSettingsTable } from "./ExampleSettingsTable";
 const destinationNamespaceValidationSchema = yup.object().shape({
   namespaceDefinition: yup
     .string()
-    .oneOf([NamespaceDefinitionType.source, NamespaceDefinitionType.destination, NamespaceDefinitionType.customformat])
+    .oneOf([NamespaceDefinitionType.destination, NamespaceDefinitionType.source, NamespaceDefinitionType.customformat])
     .required("form.empty.error"),
   namespaceFormat: yup.string().when("namespaceDefinition", {
     is: NamespaceDefinitionType.customformat,
@@ -48,7 +48,7 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
   return (
     <Formik
       initialValues={{
-        namespaceDefinition: initialValues?.namespaceDefinition ?? NamespaceDefinitionType.source,
+        namespaceDefinition: initialValues?.namespaceDefinition ?? NamespaceDefinitionType.destination,
         namespaceFormat: initialValues.namespaceFormat,
       }}
       enableReinitialize
@@ -69,22 +69,6 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
                   <LabeledRadioButton
                     {...field}
                     className={styles.radioButton}
-                    id="destinationNamespace.source"
-                    label={
-                      <Text as="span">
-                        <FormattedMessage id="connectionForm.modal.destinationNamespace.option.source" />
-                      </Text>
-                    }
-                    value={NamespaceDefinitionType.source}
-                    checked={field.value === NamespaceDefinitionType.source}
-                  />
-                )}
-              </Field>
-              <Field name="namespaceDefinition">
-                {({ field }: FieldProps<string>) => (
-                  <LabeledRadioButton
-                    {...field}
-                    className={styles.radioButton}
                     id="destinationNamespace.destination"
                     label={
                       <Text as="span">
@@ -93,6 +77,22 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
                     }
                     value={NamespaceDefinitionType.destination}
                     checked={field.value === NamespaceDefinitionType.destination}
+                  />
+                )}
+              </Field>
+              <Field name="namespaceDefinition">
+                {({ field }: FieldProps<string>) => (
+                  <LabeledRadioButton
+                    {...field}
+                    className={styles.radioButton}
+                    id="destinationNamespace.source"
+                    label={
+                      <Text as="span">
+                        <FormattedMessage id="connectionForm.modal.destinationNamespace.option.source" />
+                      </Text>
+                    }
+                    value={NamespaceDefinitionType.source}
+                    checked={field.value === NamespaceDefinitionType.source}
                   />
                 )}
               </Field>

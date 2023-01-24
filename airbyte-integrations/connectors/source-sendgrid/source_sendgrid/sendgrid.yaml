@@ -1,7 +1,7 @@
 version: "0.1.0"
 definitions:
   page_size: 50
-  step: "30d"
+  step: "P30D"
 
   schema_loader:
     type: JsonFileSchemaLoader
@@ -61,6 +61,7 @@ definitions:
       field_name: "end_time"
       inject_into: "request_parameter"
     datetime_format: "%s"
+    cursor_granularity: "PT1S"
   messages_stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:
@@ -72,6 +73,7 @@ definitions:
     step: "*ref(definitions.step)"
     cursor_field: "{{ options.stream_cursor_field }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    cursor_granularity: "PT0.000001S"
 
   base_stream:
     type: DeclarativeStream

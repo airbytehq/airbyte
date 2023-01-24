@@ -41,6 +41,13 @@ By default, the `LOCAL_ROOT` env variable in the `.env` file is set `/tmp/airbyt
 
 The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` is substituted by `/tmp/airbyte_local` by default.
 
+:::caution
+
+Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
+
+:::
+
+
 ### Example:
 
 * If `destination_path` is set to `/local/cars/models`

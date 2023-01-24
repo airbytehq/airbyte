@@ -25,11 +25,6 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
-  private static final String JOB_LABEL_KEY = "job_id";
-  private static final String ATTEMPT_LABEL_KEY = "attempt_id";
-  private static final String WORKER_POD_LABEL_KEY = "airbyte";
-  private static final String WORKER_POD_LABEL_VALUE = "worker-pod";
-
   private final WorkerConfigs workerConfigs;
   private final String namespace;
   private final KubernetesClient fabricClient;
@@ -146,13 +141,17 @@ public class KubeProcessFactory implements ProcessFactory {
     }
   }
 
+  /**
+   * Returns general labels to be applied to all Kubernetes pods. All general labels should be added
+   * here.
+   */
   public static Map<String, String> getLabels(final String jobId, final int attemptId, final Map<String, String> customLabels) {
     final var allLabels = new HashMap<>(customLabels);
 
     final var generalKubeLabels = Map.of(
-        JOB_LABEL_KEY, jobId,
-        ATTEMPT_LABEL_KEY, String.valueOf(attemptId),
-        WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
+        Metadata.JOB_LABEL_KEY, jobId,
+        Metadata.ATTEMPT_LABEL_KEY, String.valueOf(attemptId),
+        Metadata.WORKER_POD_LABEL_KEY, Metadata.WORKER_POD_LABEL_VALUE);
 
     allLabels.putAll(generalKubeLabels);
 

@@ -1,1 +1,3 @@
-export { SpeakeasyRedirectPage } from "./SpeakeasyRedirectPage";
+import { SpeakeasyRedirectPage } from "./SpeakeasyRedirectPage";
+
+export default SpeakeasyRedirectPage;

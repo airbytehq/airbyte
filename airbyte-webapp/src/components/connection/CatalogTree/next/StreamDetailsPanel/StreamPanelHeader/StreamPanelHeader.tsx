@@ -51,7 +51,7 @@ export const StreamPanelHeader: React.FC<StreamPanelHeaderProps> = ({
   return (
     <div className={styles.container}>
       <div>
-        <Switch small checked={config?.selected} onChange={onSelectedChange} disabled={disabled} />
+        <Switch size="sm" checked={config?.selected} onChange={onSelectedChange} disabled={disabled} />
       </div>
       <div className={styles.properties}>
         <StreamProperty

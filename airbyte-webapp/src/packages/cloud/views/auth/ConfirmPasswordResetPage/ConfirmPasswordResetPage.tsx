@@ -11,7 +11,7 @@ import { ToastType } from "components/ui/Toast";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useQuery } from "hooks/useQuery";
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";

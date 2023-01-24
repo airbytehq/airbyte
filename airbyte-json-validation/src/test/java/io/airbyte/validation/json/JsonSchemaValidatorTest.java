@@ -17,9 +17,9 @@ import io.airbyte.commons.json.Jsons;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.Set;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
@@ -106,9 +106,8 @@ class JsonSchemaValidatorTest {
     assertNull(JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject"));
   }
 
-  @SneakyThrows
   @Test
-  void testResolveReferences() throws IOException {
+  void testResolveReferences() throws IOException, URISyntaxException {
     String referencableSchemas = """
                                  {
                                    "definitions": {

@@ -104,59 +104,67 @@ public class JsonSecretsProcessor {
       if (!isValidJsonSchema(schema)) {
         return dst;
       }
+
       Preconditions.checkArgument(dst.isObject());
       Preconditions.checkArgument(src.isObject());
 
       final ObjectNode dstCopy = dst.deepCopy();
+      return copySecretsRecursive(src, dstCopy, schema);
+    }
 
+    return src;
+  }
+
+  // This function is modifying dstCopy in place.
+  private JsonNode copySecretsRecursive(final JsonNode src, JsonNode dstCopy, final JsonNode schema) {
+    // todo (cgardens) this is not safe. should throw.
+    if (!isValidJsonSchema(schema)) {
+      return dstCopy;
+    }
+
+    Preconditions.checkArgument(dstCopy.isObject());
+    Preconditions.checkArgument(src.isObject());
+
+    final Optional<String> combinationKey = findJsonCombinationNode(schema);
+    if (combinationKey.isPresent()) {
+      final var arrayNode = (ArrayNode) schema.get(combinationKey.get());
+      for (int i = 0; i < arrayNode.size(); i++) {
+        final JsonNode childSchema = arrayNode.get(i);
+        /*
+         * when traversing a oneOf or anyOf if multiple schema in the oneOf or anyOf have the SAME key, but
+         * a different type, then, without this test, we can try to apply the wrong schema to the object
+         * resulting in errors because of type mismatches.
+         */
+        if (VALIDATOR.test(childSchema, dstCopy)) {
+          // Absorb field values if any of the combination option is declaring it as secrets
+          copySecretsRecursive(src, dstCopy, childSchema);
+        }
+      }
+    } else {
       final ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
       for (final String key : Jsons.keys(properties)) {
-        // If the source object doesn't have this key then we have nothing to copy, so we should skip to the
-        // next key.
-        if (!src.has(key)) {
+        // If the source or destination doesn't have this key then we have nothing to copy, so we should
+        // skip to the next key.
+        if (!src.has(key) || !dstCopy.has(key)) {
           continue;
         }
 
         final JsonNode fieldSchema = properties.get(key);
         // We only copy the original secret if the destination object isn't attempting to overwrite it
         // I.e. if the destination object's value is set to the mask, then we can copy the original secret
-        if (JsonSecretsProcessor.isSecret(fieldSchema) && dst.has(key) && AirbyteSecretConstants.SECRETS_MASK.equals(dst.get(key).asText())) {
-          dstCopy.set(key, src.get(key));
-        } else if (dstCopy.has(key)) {
-          // If the destination has this key, then we should consider copying it
+        if (JsonSecretsProcessor.isSecret(fieldSchema) && AirbyteSecretConstants.SECRETS_MASK.equals(dstCopy.get(key).asText())) {
+          ((ObjectNode) dstCopy).set(key, src.get(key));
 
-          // Check if this schema is a combination node; if it is, find a matching sub-schema and copy based
-          // on that sub-schema
-          final var combinationKey = findJsonCombinationNode(fieldSchema);
-          if (combinationKey.isPresent()) {
-            var combinationCopy = dstCopy.get(key);
-            final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
-            for (int i = 0; i < arrayNode.size(); i++) {
-              final JsonNode childSchema = arrayNode.get(i);
-              /*
-               * when traversing a oneOf or anyOf if multiple schema in the oneOf or anyOf have the SAME key, but
-               * a different type, then, without this test, we can try to apply the wrong schema to the object
-               * resulting in errors because of type mismatches.
-               */
-              if (VALIDATOR.test(childSchema, combinationCopy)) {
-                // Absorb field values if any of the combination option is declaring it as secrets
-                combinationCopy = copySecrets(src.get(key), combinationCopy, childSchema);
-              }
-            }
-            dstCopy.set(key, combinationCopy);
-          } else {
-            // Otherwise, this is just a plain old json node; recurse into it. If it's not actually an object,
-            // the recursive call will exit immediately.
-            final JsonNode copiedField = copySecrets(src.get(key), dstCopy.get(key), fieldSchema);
-            dstCopy.set(key, copiedField);
-          }
+        } else {
+          // Otherwise, this is just a plain old json node; recurse into it. If it's not actually an object,
+          // the recursive call will exit immediately.
+          final JsonNode copiedField = copySecretsRecursive(src.get(key), dstCopy.get(key), fieldSchema);
+          ((ObjectNode) dstCopy).set(key, copiedField);
         }
       }
-
-      return dstCopy;
     }
 
-    return src;
+    return dstCopy;
   }
 
   static boolean isSecret(final JsonNode obj) {

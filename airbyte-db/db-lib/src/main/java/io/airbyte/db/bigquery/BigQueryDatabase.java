@@ -79,7 +79,7 @@ public class BigQueryDatabase extends SqlDatabase {
     }
   }
 
-  private String getUserAgentHeader(String connectorVersion) {
+  private String getUserAgentHeader(final String connectorVersion) {
     return String.format(AGENT_TEMPLATE, connectorVersion);
   }
 

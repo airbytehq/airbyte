@@ -18,4 +18,5 @@
 .form {
   flex: 1;
   padding: variables.$spacing-xl;
+  overflow: auto;
 }

@@ -24,6 +24,7 @@ extend-exclude = [
     "models",
     ".eggs",
     "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
+    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/__init__.py",
     ".tox",
     "airbyte_api_client",
     "**/generated/*",

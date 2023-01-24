@@ -34,8 +34,9 @@ definitions:
       end_datetime:
         datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
         datetime_format: "%Y-%m-%d %H:%M:%S"
-      step: 1w
+      step: "P1W"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: "PT1S"
       cursor_field: "{{ options['stream_cursor_field'] }}"
   common_parameters:
     token: "{{ config['api_key'] }}"
@@ -44,7 +45,12 @@ definitions:
     nullable: "{{ ','.join(config['nullable']) }}"
     from: "{{ stream_slice['start_time'] }}"
     to: "{{ stream_slice['end_time'] }}"
+  schema_loader:
+    type: InlineSchemaLoader
   search_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+      schema: "*ref(schemas.search_stream_schema)"
     $options:
       name: "search"
       primary_key: "url"
@@ -61,6 +67,9 @@ definitions:
             in: "{{ ','.join(config['in']) }}"
             sortby: "{{ config['sortby'] }}"
   top_headlines_stream:
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+      schema: "*ref(schemas.top_headlines_stream_schema)"
     $options:
       name: "top_headlines"
       primary_key: "url"
@@ -84,3 +93,105 @@ check:
   stream_names:
     - "search"
     - "top_headlines"
+
+schemas:
+  search_stream_schema:
+    type: object
+    properties:
+      title:
+        type:
+          - "null"
+          - string
+        description: The main title of the article.
+      description:
+        type:
+          - "null"
+          - string
+        description: The small paragraph under the title.
+      content:
+        type:
+          - "null"
+          - string
+        description: All the content of the article.
+      url:
+        type:
+          - "null"
+          - string
+        description: The URL of the article.
+      image:
+        type:
+          - "null"
+          - string
+        description: The main image of the article.
+      publishedAt:
+        type:
+          - "null"
+          - string
+        description:
+          The date of publication of the article. The date is always in the
+          UTC time zone.
+      source:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the source.
+          url:
+            type:
+              - "null"
+              - string
+            description: The home page of the source.
+  top_headlines_stream_schema:
+    type: object
+    properties:
+      title:
+        type:
+          - "null"
+          - string
+        description: The main title of the article.
+      description:
+        type:
+          - "null"
+          - string
+        description: The small paragraph under the title.
+      content:
+        type:
+          - "null"
+          - string
+        description: All the content of the article.
+      url:
+        type:
+          - "null"
+          - string
+        description: The URL of the article.
+      image:
+        type:
+          - "null"
+          - string
+        description: The main image of the article.
+      publishedAt:
+        type:
+          - "null"
+          - string
+        description:
+          The date of publication of the article. The date is always in the
+          UTC time zone.
+      source:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the source.
+          url:
+            type:
+              - "null"
+              - string
+            description: The home page of the source.

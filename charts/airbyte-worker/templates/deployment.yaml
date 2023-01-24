@@ -5,15 +5,24 @@ metadata:
   name: {{ include "common.names.fullname" . }}
   labels:
     {{- include "airbyte.labels" . | nindent 4 }}
+    {{- if .Values.extraLabels }}
+    {{ toYaml (mergeOverwrite .Values.extraLabels .Values.global.extraLabels) | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "airbyte.selectorLabels" . | nindent 6 }}
+      {{- if .Values.extraSelectorLabels }}
+      {{ toYaml (mergeOverwrite .Values.extraSelectorLabels .Values.global.extraSelectorLabels) | nindent 6 }}
+      {{- end }}
   template:
     metadata:
       labels:
         {{- include "airbyte.selectorLabels" . | nindent 8 }}
+        {{- if .Values.extraSelectorLabels }}
+        {{ toYaml (mergeOverwrite .Values.extraSelectorLabels .Values.global.extraSelectorLabels) | nindent 8 }}
+        {{- end }}
         {{- if .Values.podLabels }}
           {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
         {{- end }}

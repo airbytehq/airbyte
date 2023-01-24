@@ -10,9 +10,7 @@ import { useGetDestinationDefinitionSpecificationAsync } from "services/connecto
 import { ConnectorIds } from "utils/connectors";
 import { FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorCardValues, FrequentlyUsedConnectors, StartWithDestination } from "views/Connector/ConnectorForm";
-
-import styles from "./DestinationForm.module.scss";
+import { ConnectorCardValues, FrequentlyUsedConnectors } from "views/Connector/ConnectorForm";
 
 interface DestinationFormProps {
   onSubmit: (values: {
@@ -69,29 +67,21 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({ onSubmit, dest
       connectorIds={frequentlyUsedDestinationIds}
     />
   );
-  const startWithDestinationComponent = !isLoading && !destinationDefinitionId && (
-    <div className={styles.startWithDestinationContainer}>
-      <StartWithDestination onDestinationSelect={onDropDownSelect} availableServices={destinationDefinitions} />
-    </div>
-  );
 
   return (
-    <>
-      <ConnectorCard
-        formType="destination"
-        title={<FormattedMessage id="onboarding.destinationSetUp" />}
-        description={<FormattedMessage id="destinations.description" />}
-        isLoading={isLoading}
-        fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
-        availableConnectorDefinitions={destinationDefinitions}
-        onConnectorDefinitionSelect={onDropDownSelect}
-        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
-        selectedConnectorDefinitionId={destinationDefinitionId}
-        onSubmit={onSubmitForm}
-        jobInfo={LogsRequestError.extractJobInfo(error)}
-        additionalSelectorComponent={frequentlyUsedDestinationsComponent}
-      />
-      {startWithDestinationComponent}
-    </>
+    <ConnectorCard
+      formType="destination"
+      title={<FormattedMessage id="onboarding.destinationSetUp" />}
+      description={<FormattedMessage id="destinations.description" />}
+      isLoading={isLoading}
+      fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
+      availableConnectorDefinitions={destinationDefinitions}
+      onConnectorDefinitionSelect={onDropDownSelect}
+      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+      selectedConnectorDefinitionId={destinationDefinitionId}
+      onSubmit={onSubmitForm}
+      jobInfo={LogsRequestError.extractJobInfo(error)}
+      additionalSelectorComponent={frequentlyUsedDestinationsComponent}
+    />
   );
 };
