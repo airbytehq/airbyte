@@ -252,7 +252,7 @@
           },
           {
             "title": "JSON Lines: Newline-delimited JSON",
-            "required": ["format_type"],
+            "required": ["format_type", "flattening"],
             "properties": {
               "format_type": {
                 "title": "Format Type",

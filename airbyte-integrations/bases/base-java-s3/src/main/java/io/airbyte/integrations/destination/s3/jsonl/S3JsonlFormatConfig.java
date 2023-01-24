@@ -11,10 +11,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.CompressionTypeHelper;
-import org.apache.avro.data.Json;
 
 import java.util.Objects;
 
@@ -24,7 +22,7 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
 
   public enum Flattening {
 
-    // These values must match the format / csv_flattening enum values in spec.json.
+    // These values must match the format / jsonl_flattening enum values in spec.json.
     NO("No flattening"),
     ROOT_LEVEL("Root level flattening");
 
@@ -39,8 +37,6 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
       for (final S3JsonlFormatConfig.Flattening f : S3JsonlFormatConfig.Flattening.values()) {
         if (f.value.equalsIgnoreCase(value)) {
           return f;
-        } else {
-          return Flattening.NO;
         }
       }
       throw new IllegalArgumentException("Unexpected value: " + value);
