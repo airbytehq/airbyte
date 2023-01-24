@@ -12,7 +12,6 @@ import io.airbyte.config.persistence.split_secrets.*;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -284,13 +283,11 @@ public class SecretsRepositoryWriter {
   }
 
   /**
-   * Generate our OAuthSecretCoordinate for storage
-   * For now we're treating these as always v1.
+   * Generate our OAuthSecretCoordinate for storage For now we're treating these as always v1.
    */
   private SecretCoordinate generateOAuthSecretCoordinate(final UUID workspaceId) {
     String coordinateBase = SecretsHelpers.getCoordinatorBase("airbyte_oauth_workspace_", workspaceId, UUID::randomUUID);
     return new SecretCoordinate(coordinateBase, 1);
   }
-
 
 }

@@ -277,7 +277,8 @@ public class ServerApp implements ServerRunnable {
 
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
 
-    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader, secretsRepositoryWriter);
+    final OAuthHandler oAuthHandler =
+        new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader, secretsRepositoryWriter);
 
     final SourceHandler sourceHandler = new SourceHandler(
         configRepository,
