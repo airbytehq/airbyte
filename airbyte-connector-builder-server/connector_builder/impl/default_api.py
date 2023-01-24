@@ -187,6 +187,8 @@ spec:
         while records_count < limit and (message := next(messages, None)):
             if self._need_to_close_page(at_least_one_page_in_group, message):
                 self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
+                current_page_request = None
+                current_page_response = None
 
             if at_least_one_page_in_group and message.type == Type.LOG and message.log.message.startswith("slice:"):
                 yield StreamReadSlices(pages=current_slice_pages)
@@ -196,7 +198,6 @@ spec:
                 if not at_least_one_page_in_group:
                     at_least_one_page_in_group = True
                 current_page_request = self._create_request_from_log_message(message.log)
-                current_page_response = None
             elif message.type == Type.LOG and message.log.message.startswith("response:"):
                 current_page_response = self._create_response_from_log_message(message.log)
             elif message.type == Type.LOG:
@@ -209,14 +210,16 @@ spec:
             self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
             yield StreamReadSlices(pages=current_slice_pages)
 
-    def _need_to_close_page(self, at_least_one_page_in_group, message):
+    @staticmethod
+    def _need_to_close_page(at_least_one_page_in_group, message):
         return (
             at_least_one_page_in_group
             and message.type == Type.LOG
             and (message.log.message.startswith("request:") or message.log.message.startswith("slice:"))
         )
 
-    def _close_page(self, current_page_request, current_page_response, current_slice_pages, current_page_records):
+    @staticmethod
+    def _close_page(current_page_request, current_page_response, current_slice_pages, current_page_records):
         if not current_page_request or not current_page_response:
             raise ValueError("Every message grouping should have at least one request and response")
 

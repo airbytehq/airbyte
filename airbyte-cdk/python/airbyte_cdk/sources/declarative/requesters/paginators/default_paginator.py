@@ -169,12 +169,11 @@ class PaginatorTestReadDecorator(Paginator):
     """
 
     _PAGE_COUNT_BEFORE_FIRST_NEXT_CALL = 1
-    _DEFAULT_PAGINATION_LIMIT = 5
 
-    def __init__(self, decorated, maximum_number_of_pages: int = None):
+    def __init__(self, decorated, maximum_number_of_pages: int = 5):
         if maximum_number_of_pages and maximum_number_of_pages < 1:
             raise ValueError(f"The maximum number of pages on a test read needs to be strictly positive. Got {maximum_number_of_pages}")
-        self._maximum_number_of_pages = maximum_number_of_pages if maximum_number_of_pages else self._DEFAULT_PAGINATION_LIMIT
+        self._maximum_number_of_pages = maximum_number_of_pages
         self._decorated = decorated
         self._page_count = self._PAGE_COUNT_BEFORE_FIRST_NEXT_CALL
 
