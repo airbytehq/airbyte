@@ -50,7 +50,13 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "type", "version"}
 
-    def __init__(self, source_config: ConnectionDefinition, debug: bool = False, construct_using_pydantic_models: bool = False):
+    def __init__(
+        self,
+        source_config: ConnectionDefinition,
+        debug: bool = False,
+        component_factory: ModelToComponentFactory = None,
+        construct_using_pydantic_models: bool = False,
+    ):
         """
         :param source_config(Mapping[str, Any]): The manifest of low-code components that describe the source connector
         :param debug(bool): True if debug mode is enabled
@@ -71,7 +77,12 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._legacy_source_config = resolved_source_config
         self._debug = debug
         self._legacy_factory = DeclarativeComponentFactory()  # Legacy factory used to instantiate declarative components from the manifest
-        self._constructor = ModelToComponentFactory()  # New factory which converts the manifest to Pydantic models to construct components
+        if component_factory:
+            self._constructor = component_factory
+        else:
+            self._constructor = (
+                ModelToComponentFactory()
+            )  # New factory which converts the manifest to Pydantic models to construct components
 
         self._validate_source()
 
