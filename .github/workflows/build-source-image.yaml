@@ -216,17 +216,27 @@ on:
         - source-zoom
         - source-zuora
 
-      basetag:
-        description: 'Custom tag if you want the versioning to be based on a different tag than the latest'
+      customtag:
+        description: 'Custom tag (If entered, the image will be build using this tag)'
       
       change_type:
-        description: 'Choose between minor and patch (Major will be changed during upstream sync)'
+        description: 'Change type (only applicable when image build from main, choose n/a for resuing latest tag)'
         required: true 
         type: choice 
         default: "minor"
         options:
         - minor
         - patch
+        - n/a
+      
+      sort_by:
+        description: 'Latest tag by'
+        required: true 
+        type: choice 
+        default: "version"
+        options:
+        - date
+        - version
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -243,44 +253,95 @@ jobs:
           fetch-depth: 0
       
       - name: Get previous tag
-        id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        if: ${{ github.event.inputs.customtag == '' }}
+        id: current_tag
+        uses: "debanjan97/github-action-get-previous-tag@v1.0.0"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          sort: ${{ github.event.inputs.sort_by }}
+          stable: true # ignores alpha builds
       
-      - name: Get Next Version
-        id: nextversion
+      - name: Check if version bump is required
+        if: ${{ github.ref_name == 'main' }}
+        id: bump
+        run: |
+          if [ "${{ github.event.inputs.customtag }}" != "" ]; then
+            # custom tag exists, no version bump required
+            echo "required=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi;
+            
+          if [ "${{ github.event.inputs.change_type }}"="n/a" ]; then 
+            echo "change type is marked n/a, assuming no version bump is required"
+            echo "required=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi;
+          
+          last_commit=${git rev-list -n 1 ${{ steps.current_tag.outputs.tag }}}
+          current_commit=${{ github.sha }}
+          if [ $last_commit = $current_commit ]; then 
+            echo "no new commits from the last tag, no version bump is required"
+            required=false
+          else
+            required=true
+          fi;
+          echo "required=$required" >> $GITHUB_OUTPUT
+      
+      - name: Calculate Next Versions
+        if: ${{ steps.bump.outputs.required == 'true' }}
+        id: calculatenextversion
         uses: "WyriHaximus/github-action-next-semvers@v1"
         with:
-          version: ${{ github.event.inputs.basetag || steps.previoustag.outputs.tag }}
+          version: ${{ steps.current_tag.outputs.tag }}
       
-      - name: Generate Next Version according to change_type
-        id: version
+      - name: Generate New Version according to change_type
+        if: ${{ steps.bump.outputs.required == 'true' }}
+        id: newversion
         run: |
           if [ "${{ github.event.inputs.change_type }}" = "minor" ]; then 
-            nextversion=${{ steps.nextversion.outputs.v_minor }}  
+            newversion=${{ steps.calculatenextversion.outputs.v_minor }}  
           else
-            nextversion=${{ steps.nextversion.outputs.v_patch }}  
+            newversion=${{ steps.calculatenextversion.outputs.v_patch }}  
           fi;
+          echo "version=$newversion" >> $GITHUB_OUTPUT
+      
+      - name: Get Build Tag
+        id: buildtag
+        run: |
+          # if custom tag is present, return it
+          if [ "${{ github.event.inputs.customtag }}" != "" ]; then
+            tag="${{ github.event.inputs.customtag }}"
+            echo "tag=$tag" >> $GITHUB_OUTPUT
+            exit 0
+          fi;
+          
           source_branch_name="${GITHUB_REF##*/}"
-          git_hash=$(git rev-parse --short "$GITHUB_SHA")
-
-          # for dev branches, prefix "-alpha.<commit-hash>"
-          if [ $source_branch_name != "main" ]; then 
-            nextversion=$nextversion"-alpha."$git_hash
+          if [ $source_branch_name = "main" ]; then 
+            if [ "${{ steps.bump.outputs.required }}"="false" ]; then
+              # return current tag, if no new commits
+              echo "no version bump required, proceeding with current version"
+              tag=${{ steps.current_tag.outputs.tag }}
+            else
+              tag=${{ steps.newversion.outputs.version }}
+            fi;
+          else
+            # if branch is feature branch, append alpha.<commit_hash> to the latest tag
+            git_hash=$(git rev-parse --short "$GITHUB_SHA")
+            tag=${{ steps.current_tag.outputs.tag }}"-alpha."$git_hash
           fi;
-
-          echo "next_version=$nextversion" >> $GITHUB_OUTPUT
+          echo "tag=$tag" >> $GITHUB_OUTPUT
       
       - uses: mukunku/tag-exists-action@v1.2.0
+        name: Check if the generated tag exists
         id: checkTag
         with: 
-          tag: ${{ steps.version.outputs.next_version }}
+          tag: ${{ steps.buildtag.outputs.tag }}
       
       - name: Publish version as a tag
         if: ${{ steps.checkTag.outputs.exists != 'true' }}
         run: |
-          git tag ${{ steps.version.outputs.next_version }}
+          git tag ${{ steps.buildtag.outputs.tag }}
           git push --tag
 
       - name: Build and Push 
@@ -290,7 +351,7 @@ jobs:
           file: ./airbyte-integrations/connectors/${{ github.event.inputs.connector }}/Dockerfile
           push: true
           platforms: linux/amd64
-          tags: rudderstack/${{ github.event.inputs.connector }}:${{ steps.version.outputs.next_version }}
+          tags: rudderstack/${{ github.event.inputs.connector }}:${{ steps.buildtag.outputs.tag }}
 
 
 
