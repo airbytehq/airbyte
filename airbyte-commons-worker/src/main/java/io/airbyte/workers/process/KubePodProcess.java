@@ -240,7 +240,7 @@ public class KubePodProcess implements KubePod {
   }
 
   private static boolean isConnectorNeedDatadogSupport(String image, Map.Entry<String, String> entry) {
-    if (entry.getKey().equals("DD_CONNECTOR_JAVA_OPTS_ENV_VAR")) {
+    if ("DD_CONNECTOR_JAVA_OPTS_ENV_VAR".equals(entry.getKey())) {
       return CONNECTOR_IMAGE_NAMES_WITH_DD_SUPPORT.contains(image);
     }
     return true;
