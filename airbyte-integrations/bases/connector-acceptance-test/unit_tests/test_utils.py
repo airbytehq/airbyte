@@ -16,11 +16,11 @@ import docker
 import pytest
 import yaml
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-from docker.errors import ContainerError, NotFound
 from connector_acceptance_test.config import EmptyStreamConfiguration
 from connector_acceptance_test.utils import common
 from connector_acceptance_test.utils.compare import make_hashable
 from connector_acceptance_test.utils.connector_runner import ConnectorRunner
+from docker.errors import ContainerError, NotFound
 
 
 def not_sorted_data():

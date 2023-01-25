@@ -7,10 +7,10 @@ from enum import Enum
 
 import jsonschema
 from airbyte_cdk.models import ConnectorSpecification
+from connector_acceptance_test.utils import SecretDict
 from deepdiff import DeepDiff
 from hypothesis import HealthCheck, Verbosity, given, settings
 from hypothesis_jsonschema import from_schema
-from connector_acceptance_test.utils import SecretDict
 
 
 class BackwardIncompatibilityContext(Enum):

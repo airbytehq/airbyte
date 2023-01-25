@@ -16,9 +16,9 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from pydantic import BaseModel
 from connector_acceptance_test.tests.test_incremental import records_with_state
 from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
+from pydantic import BaseModel
 
 
 @pytest.fixture(name="simple_state")

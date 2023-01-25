@@ -15,7 +15,6 @@ from typing import Any, List, MutableMapping, Optional, Set
 
 import pytest
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
-from docker import errors
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig
 from connector_acceptance_test.tests import TestBasicRead
@@ -28,6 +27,7 @@ from connector_acceptance_test.utils import (
     load_config,
     load_yaml_or_json_path,
 )
+from docker import errors
 
 
 @pytest.fixture(name="acceptance_test_config", scope="session")

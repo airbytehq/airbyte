@@ -25,8 +25,6 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from docker.errors import ContainerError
-from jsonschema._utils import flatten
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
     BasicReadTestConfig,
@@ -46,6 +44,8 @@ from connector_acceptance_test.utils.common import (
     find_keyword_schema,
 )
 from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
+from docker.errors import ContainerError
+from jsonschema._utils import flatten
 
 
 @pytest.fixture(name="connector_spec_dict")

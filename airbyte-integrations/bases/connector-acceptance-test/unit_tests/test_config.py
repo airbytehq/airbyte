@@ -3,8 +3,8 @@
 #
 
 import pytest
-from pydantic import ValidationError
 from connector_acceptance_test import config
+from pydantic import ValidationError
 
 from .conftest import does_not_raise
 
