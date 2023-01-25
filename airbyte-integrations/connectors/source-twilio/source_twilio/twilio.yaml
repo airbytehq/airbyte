@@ -92,6 +92,11 @@ definitions:
       name: "available_phone_number_countries"
       data_field: "countries"
       subresource_uri_key: "available_phone_numbers"
+  queues_stream:
+    $ref: "*ref(definitions.base_nested_stream)"
+    $options:
+      name: "queues"
+      primary_key: "sid"
 
 streams:
   - "*ref(definitions.accounts_stream)"
@@ -102,6 +107,7 @@ streams:
   - "*ref(definitions.outgoing_caller_ids_stream)"
   - "*ref(definitions.transcriptions_stream)"
   - "*ref(definitions.available_phone_number_countries_stream)"
+  - "*ref(definitions.queues_stream)"
 
 check:
   stream_names:
