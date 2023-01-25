@@ -4,6 +4,9 @@
 
 package io.airbyte.server.apis;
 
+import static io.airbyte.commons.auth.AuthRoleConstants.EDITOR;
+import static io.airbyte.commons.auth.AuthRoleConstants.READER;
+
 import io.airbyte.api.generated.SourceApi;
 import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.CheckConnectionRead;
@@ -19,15 +22,20 @@ import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.server.handlers.SchedulerHandler;
-import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.commons.server.handlers.SchedulerHandler;
+import io.airbyte.commons.server.handlers.SourceHandler;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/sources")
 @Requires(property = "airbyte.deployment-mode",
           value = "OSS")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class SourceApiController implements SourceApi {
 
   private final SchedulerHandler schedulerHandler;
@@ -39,12 +47,14 @@ public class SourceApiController implements SourceApi {
   }
 
   @Post("/check_connection")
+  @Secured({EDITOR})
   @Override
   public CheckConnectionRead checkConnectionToSource(final SourceIdRequestBody sourceIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
   }
 
   @Post("/check_connection_for_update")
+  @Secured({EDITOR})
   @Override
   public CheckConnectionRead checkConnectionToSourceForUpdate(final SourceUpdate sourceUpdate) {
     return ApiHelper.execute(() -> schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate));
@@ -57,13 +67,16 @@ public class SourceApiController implements SourceApi {
   }
 
   @Post("/create")
+  @Secured({EDITOR})
   @Override
   public SourceRead createSource(final SourceCreate sourceCreate) {
     return ApiHelper.execute(() -> sourceHandler.createSource(sourceCreate));
   }
 
   @Post("/delete")
+  @Secured({EDITOR})
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void deleteSource(final SourceIdRequestBody sourceIdRequestBody) {
     ApiHelper.execute(() -> {
       sourceHandler.deleteSource(sourceIdRequestBody);
@@ -72,24 +85,28 @@ public class SourceApiController implements SourceApi {
   }
 
   @Post("/discover_schema")
+  @Secured({EDITOR})
   @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceDiscoverSchemaRequestBody sourceDiscoverSchemaRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchemaRequestBody));
   }
 
   @Post("/get")
+  @Secured({READER})
   @Override
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody) {
     return ApiHelper.execute(() -> sourceHandler.getSource(sourceIdRequestBody));
   }
 
   @Post("/most_recent_source_actor_catalog")
+  @Secured({READER})
   @Override
   public ActorCatalogWithUpdatedAt getMostRecentSourceActorCatalog(final SourceIdRequestBody sourceIdRequestBody) {
     return ApiHelper.execute(() -> sourceHandler.getMostRecentSourceActorCatalogWithUpdatedAt(sourceIdRequestBody));
   }
 
   @Post("/list")
+  @Secured({READER})
   @Override
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody));
@@ -102,6 +119,7 @@ public class SourceApiController implements SourceApi {
   }
 
   @Post("/update")
+  @Secured({EDITOR})
   @Override
   public SourceRead updateSource(final SourceUpdate sourceUpdate) {
     return ApiHelper.execute(() -> sourceHandler.updateSource(sourceUpdate));

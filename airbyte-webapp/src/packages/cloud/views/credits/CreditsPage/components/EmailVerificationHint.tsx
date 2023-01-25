@@ -30,7 +30,8 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
   const [isEmailResend, setIsEmailResend] = useState(false);
 
   const onResendVerificationMail = async () => {
-    await sendEmailVerification();
+    // the shared error handling inside `sendEmailVerification` suffices
+    await sendEmailVerification().catch();
     setIsEmailResend(true);
   };
 
