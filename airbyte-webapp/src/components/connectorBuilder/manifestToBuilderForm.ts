@@ -316,6 +316,8 @@ function manifestAuthenticatorToBuilder(
     builderAuthenticator = {
       type: "NoAuth",
     };
+  } else if (manifestAuthenticator.type === undefined) {
+    throw new ManifestCompatibilityError(streamName, "authenticator has no type");
   } else if (manifestAuthenticator.type === "CustomAuthenticator") {
     throw new ManifestCompatibilityError(streamName, "uses a CustomAuthenticator");
   } else if (manifestAuthenticator.type === "OAuthAuthenticator") {
