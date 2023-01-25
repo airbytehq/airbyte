@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.debezium.internals;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -22,6 +23,8 @@ import org.slf4j.LoggerFactory;
  * able to recover for any acknowledged checkpoint in the following syncs.
  */
 public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+  public final static Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(10);
+  public final static int SYNC_CHECKPOINT_RECORDS = 1000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
 
@@ -44,10 +47,12 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    * at {@code SYNC_CHECKPOINT_SECONDS}.
    * <p/>
    */
-  private final static Duration SYNC_CHECKPOINT_SECONDS = Duration.ofMinutes(10);
-  private final static int SYNC_CHECKPOINT_RECORDS = 1000;
+  private Duration syncCheckpointDuration;
+  private Integer syncCheckpointRecords;
   private OffsetDateTime dateTimeLastSync;
   private Integer recordsLastSync;
+  private Map<String, String> checkpointOffset;
+  private boolean sendCheckpointMessage;
 
   /**
    * @param messageIterator Base iterator that we want to enrich with checkpoint messages
@@ -55,19 +60,25 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    * @param offsetManager Handler to read and write debezium offset file
    * @param trackSchemaHistory Set true if the schema needs to be tracked
    * @param schemaHistoryManager Handler to write schema. Needs to be initialized if
-   *        trackSchemaHistory is set to true
+   *                             trackSchemaHistory is set to true
+   * @param checkpointDuration Duration between syncs
+   * @param checkpointRecords Number of records between syncs
    */
   public DebeziumStateDecoratingIterator(final Iterator<AirbyteMessage> messageIterator,
                                          final CdcStateHandler cdcStateHandler,
                                          final AirbyteFileOffsetBackingStore offsetManager,
                                          final boolean trackSchemaHistory,
-                                         final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+                                         final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager,
+                                         final Duration checkpointDuration,
+                                         final Integer checkpointRecords) {
     this.messageIterator = messageIterator;
     this.cdcStateHandler = cdcStateHandler;
     this.offsetManager = offsetManager;
     this.trackSchemaHistory = trackSchemaHistory;
     this.schemaHistoryManager = schemaHistoryManager;
 
+    this.syncCheckpointDuration = checkpointDuration;
+    this.syncCheckpointRecords = checkpointRecords;
     this.isSyncFinished = false;
     initializeCheckpointValues();
   }
@@ -90,36 +101,48 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
       return endOfData();
     }
 
-    if (messageIterator.hasNext()) {
-      if (recordsLastSync >= SYNC_CHECKPOINT_RECORDS ||
-          Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(SYNC_CHECKPOINT_SECONDS) > 0) {
-        AirbyteMessage stateMessage = createStateMessage();
-        initializeCheckpointValues();
-        return stateMessage;
-      }
+    if (sendCheckpointMessage){
+      AirbyteMessage stateMessage = createStateMessage(checkpointOffset);
+      initializeCheckpointValues();
+      return stateMessage;
+    }
 
-      recordsLastSync++;
-      // Use try-catch to catch Exception that could occur when connection to the database fails
+    if (messageIterator.hasNext()) {
       try {
-        return messageIterator.next();
+        AirbyteMessage message = messageIterator.next();
+        recordsLastSync++;
+
+        if (checkpointOffset == null &&
+            (recordsLastSync >= syncCheckpointRecords ||
+                Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
+           checkpointOffset = offsetManager.read();
+        }
+
+        // TODO: Review this ugly if statement.
+        String offsetString = (String) checkpointOffset.values().toArray()[0];
+        if (checkpointOffset != null &&
+            Integer.parseInt(message.getRecord().getData().get("_ab_cdc_lsn").toString()) >= Integer.parseInt(Splitter.on(",").withKeyValueSeparator(":").split(offsetString).get("\"lsn_commit\""))) {
+          sendCheckpointMessage = true;
+        }
+
+        return message;
       } catch (final Exception e) {
         LOGGER.error("Message iterator failed to read next record. {}", e.getMessage());
-        // TODO: Check that the record that fails is not missed on next execution!
-        isSyncFinished = true;
-        return createStateMessage();
       }
-    } else {
-      isSyncFinished = true;
-      return createStateMessage();
     }
+
+    isSyncFinished = true;
+    return createStateMessage(null);
   }
 
   /**
    * Initialize or reset the checkpoint variables.
    */
   private void initializeCheckpointValues() {
-    this.recordsLastSync = 0;
-    this.dateTimeLastSync = OffsetDateTime.now();
+    sendCheckpointMessage = false;
+    checkpointOffset = null;
+    recordsLastSync = 0;
+    dateTimeLastSync = OffsetDateTime.now();
   }
 
   /**
@@ -128,12 +151,10 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    *
    * @return {@link AirbyteStateMessage} which includes offset and schema history if used.
    */
-  private AirbyteMessage createStateMessage() {
-    final Map<String, String> offset = offsetManager.read();
+  private AirbyteMessage createStateMessage(Map<String, String> offset) {
     final String dbHistory = trackSchemaHistory ? schemaHistoryManager
         .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but manager is not initialised")).read() : null;
-
-    return cdcStateHandler.saveState(offset, dbHistory);
+    return cdcStateHandler.saveState(offset != null ? offset : offsetManager.read() , dbHistory);
   }
 
 }

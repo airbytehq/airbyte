@@ -117,7 +117,9 @@ public class AirbyteDebeziumHandler {
         cdcStateHandler,
         offsetManager,
         trackSchemaHistory,
-        schemaHistoryManager));
+        schemaHistoryManager,
+        Duration.ofMinutes(1), //DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_DURATION;
+        2)); //DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS;
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
