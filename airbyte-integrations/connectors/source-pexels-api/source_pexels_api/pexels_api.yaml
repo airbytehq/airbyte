@@ -65,14 +65,14 @@ definitions:
 
   base_stream:
     schema_loader:
-      type: JsonSchema
+      type: JsonFileSchemaLoader
       file_path: "./source_pexels_api/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "#/definitions/retriever"
 
   page_stream:
     schema_loader:
-      type: JsonSchema
+      type: JsonFileSchemaLoader
       file_path: "./source_pexels_api/schemas/{{ parameters['name'] }}.json"
     retriever:
       record_selector:

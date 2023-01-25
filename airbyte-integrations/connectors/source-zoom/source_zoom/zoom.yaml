@@ -28,7 +28,7 @@ definitions:
       $ref: "#/definitions/requester"
 
   schema_loader:
-    type: JsonSchema
+    type: JsonFileSchemaLoader
     file_path: "./source_zoom/schemas/{{ parameters['name'] }}.json"
 
   users_stream:

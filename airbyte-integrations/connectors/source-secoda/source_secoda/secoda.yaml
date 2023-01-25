@@ -2,7 +2,7 @@ version: "0.1.0"
 
 definitions:
   schema_loader:
-    type: JsonSchema
+    type: JsonFileSchemaLoader
     file_path: "./source_secoda/schemas/{{ parameters.name }}.json"
   selector:
     extractor:

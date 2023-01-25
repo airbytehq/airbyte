@@ -59,7 +59,7 @@ definitions:
       $ref: "#/definitions/top_stream_slicer"
   per_article_stream:
     schema_loader:
-      type: JsonSchema
+      type: JsonFileSchemaLoader
       file_path: "./source_wikipedia_pageviews/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "#/definitions/per_article_retriever"
@@ -67,7 +67,7 @@ definitions:
       name: "per-article"
   top_stream:
     schema_loader:
-      type: JsonSchema
+      type: JsonFileSchemaLoader
       file_path: "./source_wikipedia_pageviews/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "#/definitions/top_retriever"

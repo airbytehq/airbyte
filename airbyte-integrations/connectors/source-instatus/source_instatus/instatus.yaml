@@ -50,7 +50,7 @@ definitions:
       $ref: "#/definitions/user_field_selector"
 
   schema_loader:
-    type: JsonSchema
+    type: JsonFileSchemaLoader
     file_path: "./source_instatus/schemas/{{ parameters['name'] }}.json"
 
   base_stream:

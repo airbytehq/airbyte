@@ -19,7 +19,7 @@ definitions:
 
   base_stream:
     schema_loader:
-      type: JsonSchema
+      type: JsonFileSchemaLoader
       file_path: "./source_spacex_api/schemas/{{ parameters['name'] }}.json"
     retriever:
       $ref: "#/definitions/retriever"

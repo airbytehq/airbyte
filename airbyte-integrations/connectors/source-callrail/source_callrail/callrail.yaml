@@ -5,7 +5,7 @@ definitions:
   step: "P100D"
 
   schema_loader:
-    type: JsonSchema
+    type: JsonFileSchemaLoader
     file_path: "./source_callrail/schemas/{{ parameters['name'] }}.json"
 
   requester:

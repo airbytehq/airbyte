@@ -197,13 +197,8 @@ class InlineSchemaLoader(BaseModel):
     schema_: Optional[Dict[str, Any]] = Field(None, alias="schema")
 
 
-class Type(Enum):
-    JsonFileSchemaLoader = "JsonFileSchemaLoader"
-    JsonSchema = "JsonSchema"
-
-
 class JsonFileSchemaLoader(BaseModel):
-    type: Type
+    type: Literal["JsonFileSchemaLoader"]
     file_path: Optional[str] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
