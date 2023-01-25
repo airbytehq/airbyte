@@ -13,11 +13,14 @@ import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.LoadJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
+import com.google.common.collect.ImmutableList;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashSet;
 import java.util.List;
@@ -84,7 +87,15 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public void createSchemaIfNotExists(final String datasetId, final String datasetLocation) {
     if (!existingSchemas.contains(datasetId)) {
       LOGGER.info("Creating dataset {}", datasetId);
-      BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
+      try {
+        BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
+      } catch (BigQueryException e) {
+        if (ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.getCode())) {
+          throw new ConfigErrorException(e.getMessage(), e);
+        } else {
+          throw e;
+        }
+      }
       existingSchemas.add(datasetId);
     }
   }
@@ -99,7 +110,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public void createStageIfNotExists(final String datasetId, final String stream) {
     final String objectPath = getStagingFullPath(datasetId, stream);
     LOGGER.info("Creating staging path for stream {} (dataset {}): {}", stream, datasetId, objectPath);
-    gcsStorageOperations.createBucketObjectIfNotExists(objectPath);
+    gcsStorageOperations.createBucketIfNotExists();
   }
 
   @Override
