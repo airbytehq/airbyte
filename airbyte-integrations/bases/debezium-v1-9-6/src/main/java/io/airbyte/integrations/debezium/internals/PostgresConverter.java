@@ -138,14 +138,11 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     });
   }
 
-  private Object convertArray(Object x, RelationalColumn field) {
-    final String fieldType = field.typeName().toUpperCase();
-    Object[] values = new Object[0];
-    try {
-      values = (Object[]) ((PgArray) x).getArray();
-    } catch (SQLException e) {
-      LOGGER.error("Failed to convert PgArray:" + e);
+  private Object convertArray(final Object x, final RelationalColumn field) {
+    if (x == null) {
+      return DebeziumConverterUtils.convertDefaultValue(field);
     }
+    final String fieldType = field.typeName().toUpperCase();
     switch (fieldType) {
       // debezium currently cannot handle MONEY[] datatype and it's not implemented
       case "_MONEY":
@@ -167,15 +164,15 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
             .map(Double::valueOf)
             .collect(Collectors.toList());
       case "_NUMERIC":
-        return Arrays.stream(values).map(value -> value == null ? null : Double.valueOf(value.toString())).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : Double.valueOf(value.toString())).collect(Collectors.toList());
       case "_TIME":
-        return Arrays.stream(values).map(value -> value == null ? null : convertToTime(value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToTime(value)).collect(Collectors.toList());
       case "_DATE":
-        return Arrays.stream(values).map(value -> value == null ? null : convertToDate(value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToDate(value)).collect(Collectors.toList());
       case "_TIMESTAMP":
-        return Arrays.stream(values).map(value -> value == null ? null : convertToTimestamp(value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToTimestamp(value)).collect(Collectors.toList());
       case "_TIMESTAMPTZ":
-        return Arrays.stream(values).map(value -> value == null ? null : convertToTimestampWithTimezone(value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToTimestampWithTimezone(value)).collect(Collectors.toList());
       case "_TIMETZ":
 
         final List<String> timetzArr = new ArrayList<>();
@@ -194,13 +191,22 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         });
         return timetzArr;
       case "_BYTEA":
-        return Arrays.stream(values).map(value -> Base64.getEncoder().encodeToString((byte[]) value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> Base64.getEncoder().encodeToString((byte[]) value)).collect(Collectors.toList());
       case "_BIT":
-        return Arrays.stream(values).map(value -> (Boolean) value).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> (Boolean) value).collect(Collectors.toList());
       case "_NAME":
-        return Arrays.stream(values).map(value -> (String) value).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> (String) value).collect(Collectors.toList());
       default:
-        return new ArrayList<>();
+        throw new RuntimeException("Unknown array type detected " + fieldType);
+    }
+  }
+
+  private Object[] getArray(final Object x) {
+    try {
+      return (Object[]) ((PgArray) x).getArray();
+    } catch (final SQLException e) {
+      LOGGER.error("Failed to convert PgArray:" + e);
+      throw new RuntimeException(e);
     }
   }
 

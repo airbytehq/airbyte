@@ -13,7 +13,7 @@ These instructions have been tested on MacOS, Windows 10 and Ubuntu 20.04.
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+docker compose up
 ```
 
 - In your browser, just visit [http://localhost:8000](http://localhost:8000)
@@ -53,7 +53,7 @@ Make sure to select the options:
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+docker compose up
 ```
 
 - In your browser, just visit [http://localhost:8000](http://localhost:8000)

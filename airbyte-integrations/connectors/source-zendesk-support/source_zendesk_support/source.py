@@ -101,6 +101,7 @@ class SourceZendeskSupport(AbstractSource):
             "subdomain": config["subdomain"],
             "start_date": config["start_date"],
             "authenticator": cls.get_authenticator(config),
+            "ignore_pagination": config.get("ignore_pagination", False),
         }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

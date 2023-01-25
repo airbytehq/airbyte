@@ -1,0 +1,53 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.header {
+  overflow: hidden;
+  position: relative;
+  background: colors.$blue-100;
+  height: 120px;
+  border-top-left-radius: variables.$border-radius-lg;
+  border-top-right-radius: variables.$border-radius-lg;
+}
+
+.headerBackgroundImageContainer {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.pill {
+  z-index: 2;
+
+  // HACK: the hardcoded top margin is to vertically center the image, which was exported
+  // from Figma with an off-center vertical alignment
+  margin-top: 2em;
+}
+
+.contentWrapper {
+  width: variables.$width-modal-sm;
+  padding: 0 variables.$spacing-xl variables.$spacing-2xl;
+}
+
+.contentHeader {
+  margin: variables.$spacing-xl 0;
+}
+
+.iconContainer {
+  flex: 0 0 82px;
+}
+
+.resendEmailLink {
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  color: colors.$dark-blue;
+  border: none;
+  background-color: transparent;
+  font-size: inherit;
+
+  &:hover,
+  &:active {
+    color: colors.$blue;
+  }
+}

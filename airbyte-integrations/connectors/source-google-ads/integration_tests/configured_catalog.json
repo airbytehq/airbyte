@@ -171,6 +171,39 @@
     },
     {
       "stream": {
+        "name": "campaign_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["campaign_label.resource_name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["campaign_label.resource_name"]]
+    },
+    {
+      "stream": {
+        "name": "ad_group_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["ad_group_label.resource_name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["ad_group_label.resource_name"]]
+    },
+    {
+      "stream": {
+        "name": "ad_group_ad_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["ad_group_ad_label.resource_name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["ad_group_ad_label.resource_name"]]
+    },
+    {
+      "stream": {
         "name": "user_location_report",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -193,6 +226,15 @@
     {
       "stream": {
         "name": "unhappytable",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ad_group_custom",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

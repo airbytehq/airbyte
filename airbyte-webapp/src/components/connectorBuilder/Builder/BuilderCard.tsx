@@ -44,6 +44,7 @@ export const BuilderCard: React.FC<React.PropsWithChildren<BuilderCardProps>> = 
       {toggleConfig && (
         <div className={styles.toggleContainer}>
           <CheckBox
+            data-testid="toggle"
             checked={toggleConfig.toggledOn}
             onChange={(event) => {
               toggleConfig.onToggle(event.target.checked);

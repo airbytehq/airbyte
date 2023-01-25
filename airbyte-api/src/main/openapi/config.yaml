@@ -754,6 +754,27 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+
+  /v1/sources/write_discover_catalog_result:
+    post:
+      tags:
+        - source
+        - internal
+      summary: Should only called from worker, to write result from discover activity back to DB.
+      operationId: writeDiscoverCatalogResult
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDiscoverSchemaWriteRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoverCatalogResult"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -1989,6 +2010,28 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_last_replication_job:
+    post:
+      tags:
+        - jobs
+      operationId: getLastReplicationJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobOptionalRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/get_light:
     post:
       tags:
@@ -2690,6 +2733,8 @@ components:
         - connectionConfiguration
         - workspaceId
       properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         connectionConfiguration:
@@ -2788,6 +2833,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceRead"
+    SourceDiscoverSchemaWriteRequestBody:
+      description: to write this requested object to database.
+      type: object
+      required:
+        - catalog
+      properties:
+        catalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        connectorVersion:
+          type: string
+        configurationHash:
+          type: string
+
     SourceDiscoverSchemaRead:
       description: Returns the results of a discover catalog job. If the job was not successful, the catalog field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object
@@ -2876,6 +2936,8 @@ components:
         - dockerRepository
         - dockerImageTag
         - documentationUrl
+        - supportsDbt
+        - normalizationConfig
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
@@ -2901,6 +2963,12 @@ components:
           format: date
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
+        supportsDbt:
+          type: boolean
+          description: an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used.
+        normalizationConfig:
+          $ref: "#/components/schemas/NormalizationDestinationDefinitionConfig"
+
     DestinationDefinitionReadList:
       type: object
       required:
@@ -2975,10 +3043,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationSyncMode"
-        supportsDbt:
-          type: boolean
-        supportsNormalization:
-          type: boolean
     # DESTINATION
     DestinationId:
       type: string
@@ -3000,6 +3064,8 @@ components:
         - destinationDefinitionId
         - connectionConfiguration
       properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
@@ -3899,6 +3965,9 @@ components:
         updatedAt:
           type: integer
           format: int64
+        startedAt:
+          type: integer
+          format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
         resetConfig:
@@ -4134,6 +4203,11 @@ components:
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
+    JobOptionalRead:
+      type: object
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
     JobDebugInfoRead:
       type: object
       required:
@@ -4192,6 +4266,9 @@ components:
           format: int64
         succeeded:
           type: boolean
+        connectorConfigurationUpdated:
+          type: boolean
+          default: false
         logs:
           $ref: "#/components/schemas/LogRead"
     Pagination:
@@ -4366,6 +4443,27 @@ components:
           type: array
           items:
             "$ref": "#/components/schemas/JobTypeResourceLimit"
+    NormalizationDestinationDefinitionConfig:
+      description: describes a normalization config for destination definition
+      type: object
+      required:
+        - supported
+      additionalProperties: false
+      properties:
+        supported:
+          type: boolean
+          description: whether the destination definition supports normalization.
+          default: false
+        normalizationRepository:
+          type: string
+          description: a field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.
+        normalizationTag:
+          type: string
+          description: a field indicating the tag of the docker repository to be used for normalization.
+        normalizationIntegrationType:
+          type: string
+          description: a field indicating the type of integration dialect to use for normalization.
+
     JobTypeResourceLimit:
       description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
       type: object
@@ -4701,9 +4799,13 @@ components:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
         sourceId:
-          $ref: "#/components/schemas/SourceId"
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceId"
         destinationId:
-          $ref: "#/components/schemas/DestinationId"
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationId"
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.
@@ -4927,6 +5029,14 @@ components:
       properties:
         succeeded:
           type: boolean
+    DiscoverCatalogResult:
+      type: object
+      required:
+        - catalogId
+      properties:
+        catalogId:
+          type: string
+          format: uuid
     AttemptNormalizationStatusReadList:
       type: object
       properties:
