@@ -12660,7 +12660,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.29"
+- dockerImage: "airbyte/source-s3:0.1.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12869,14 +12869,10 @@
                 - "infer"
                 - "error"
                 order: 1
-                allOf:
-                - title: "UnexpectedFieldBehaviorEnum"
-                  description: "An enumeration."
-                  enum:
-                  - "ignore"
-                  - "infer"
-                  - "error"
-                  type: "string"
+                enum:
+                - "ignore"
+                - "infer"
+                - "error"
               block_size:
                 title: "Block Size"
                 description: "The chunk size in bytes to process at a time in memory\
@@ -13236,7 +13232,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.16"
+- dockerImage: "airbyte/source-sendgrid:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sendgrid"
     connectionSpecification:
@@ -13256,9 +13252,7 @@
           order: 0
         start_time:
           title: "Start time"
-          type:
-          - "integer"
-          - "string"
+          type: "string"
           description: "Start time in ISO8601 format. Any data before this time point\
             \ will not be replicated."
           examples:
