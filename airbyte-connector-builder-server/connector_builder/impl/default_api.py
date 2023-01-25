@@ -6,7 +6,7 @@ import json
 import logging
 import traceback
 from json import JSONDecodeError
-from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Union
+from typing import Any, Dict, Iterable, Iterator, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
@@ -24,17 +24,21 @@ from connector_builder.generated.models.stream_read_slices import StreamReadSlic
 from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
-from connector_builder.impl.adapter import CdkAdapter
+from connector_builder.impl.adapter import CdkAdapter, CdkAdapterFactory
 from fastapi import Body, HTTPException
 from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
+
     logger = logging.getLogger("airbyte.connector-builder")
 
-    def __init__(self, adapter_cls: Callable[[Dict[str, Any]], CdkAdapter], max_record_limit: int = 1000):
-        self.adapter_cls = adapter_cls
+    def __init__(self, adapter_factory: CdkAdapterFactory, max_pages_per_slice, max_slices, max_record_limit: int = 1000):
+        self.adapter_factory = adapter_factory
+        self._max_pages_per_slice = max_pages_per_slice
+        self._max_slices = max_slices
         self.max_record_limit = max_record_limit
+
         super().__init__()
 
     async def get_manifest_template(self) -> str:
@@ -128,7 +132,7 @@ spec:
         else:
             record_limit = min(stream_read_request_body.record_limit, self.max_record_limit)
 
-        single_slice = StreamReadSlices(pages=[])
+        slices = []
         log_messages = []
         try:
             for message_group in self._get_message_groups(
@@ -139,7 +143,7 @@ spec:
                 if isinstance(message_group, AirbyteLogMessage):
                     log_messages.append({"message": message_group.message})
                 else:
-                    single_slice.pages.append(message_group)
+                    slices.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
             self.logger.error(f"Could not perform read with with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}")
@@ -149,8 +153,20 @@ spec:
             )
 
         return StreamRead(
-            logs=log_messages, slices=[single_slice], inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream)
+            logs=log_messages,
+            slices=slices,
+            test_read_limit_reached=self._has_reached_limit(slices),
+            inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream)
         )
+
+    def _has_reached_limit(self, slices):
+        if len(slices) >= self._max_slices:
+            return True
+
+        for slice in slices:
+            if len(slice.pages) >= self._max_pages_per_slice:
+                return True
+        return False
 
     async def resolve_manifest(
         self, resolve_manifest_request_body: ResolveManifestRequestBody = Body(None, description="")
@@ -191,33 +207,56 @@ spec:
 
         Note: The exception is that normal log messages can be received at any time which are not incorporated into grouping
         """
-        first_page = True
-        current_records = []
+        records_count = 0
+        at_least_one_page_in_group = False
+        current_page_records = []
+        current_slice_pages = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
 
-        while len(current_records) < limit and (message := next(messages, None)):
-            if first_page and message.type == Type.LOG and message.log.message.startswith("request:"):
-                first_page = False
-                request = self._create_request_from_log_message(message.log)
-                current_page_request = request
+        while records_count < limit and (message := next(messages, None)):
+            if self._need_to_close_page(at_least_one_page_in_group, message):
+                self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
+                current_page_request = None
+                current_page_response = None
+
+            if at_least_one_page_in_group and message.type == Type.LOG and message.log.message.startswith("slice:"):
+                yield StreamReadSlices(pages=current_slice_pages)
+                current_slice_pages = []
+                at_least_one_page_in_group = False
             elif message.type == Type.LOG and message.log.message.startswith("request:"):
-                if not current_page_request or not current_page_response:
-                    raise ValueError("Every message grouping should have at least one request and response")
-                yield StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
+                if not at_least_one_page_in_group:
+                    at_least_one_page_in_group = True
                 current_page_request = self._create_request_from_log_message(message.log)
-                current_records = []
             elif message.type == Type.LOG and message.log.message.startswith("response:"):
                 current_page_response = self._create_response_from_log_message(message.log)
             elif message.type == Type.LOG:
                 yield message.log
             elif message.type == Type.RECORD:
-                current_records.append(message.record.data)
+                current_page_records.append(message.record.data)
+                records_count += 1
                 schema_inferrer.accumulate(message.record)
         else:
-            if not current_page_request or not current_page_response:
-                raise ValueError("Every message grouping should have at least one request and response")
-            yield StreamReadPages(request=current_page_request, response=current_page_response, records=current_records)
+            self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records)
+            yield StreamReadSlices(pages=current_slice_pages)
+
+    @staticmethod
+    def _need_to_close_page(at_least_one_page_in_group, message):
+        return (
+            at_least_one_page_in_group
+            and message.type == Type.LOG
+            and (message.log.message.startswith("request:") or message.log.message.startswith("slice:"))
+        )
+
+    @staticmethod
+    def _close_page(current_page_request, current_page_response, current_slice_pages, current_page_records):
+        if not current_page_request or not current_page_response:
+            raise ValueError("Every message grouping should have at least one request and response")
+
+        current_slice_pages.append(
+            StreamReadPages(request=current_page_request, response=current_page_response, records=current_page_records)
+        )
+        current_page_records.clear()
 
     def _create_request_from_log_message(self, log_message: AirbyteLogMessage) -> Optional[HttpRequest]:
         # TODO: As a temporary stopgap, the CDK emits request data as a log message string. Ideally this should come in the
@@ -255,7 +294,7 @@ spec:
 
     def _create_low_code_adapter(self, manifest: Dict[str, Any]) -> CdkAdapter:
         try:
-            return self.adapter_cls(manifest=manifest)
+            return self.adapter_factory.create(manifest)
         except ValidationError as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
             self.logger.error(f"Invalid connector manifest with error: {error.message} - {DefaultApiImpl._get_stacktrace_as_string(error)}")
