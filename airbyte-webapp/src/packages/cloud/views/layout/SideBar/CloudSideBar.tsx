@@ -27,7 +27,7 @@ import { SideBar, useCalculateSidebarStyles } from "views/layout/SideBar/SideBar
 
 import { LOW_BALANCE_CREDIT_TRESHOLD } from "../../credits/CreditsPage/components/LowCreditBalanceHint/LowCreditBalanceHint";
 import { WorkspacePopout } from "../../workspaces/WorkspacePopout";
-import styles from "./SideBar.module.scss";
+import styles from "./CloudSideBar.module.scss";
 
 const cloudWorkspaces = (
   <WorkspacePopout>
