@@ -39,9 +39,7 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
         Workflow.getVersion(GET_BREAKING_CHANGE_TAG, Workflow.DEFAULT_VERSION, GET_BREAKING_CHANGE_VERSION);
     if (getBreakingChangeVersion >= GET_BREAKING_CHANGE_VERSION) {
       final Optional<Boolean> breakingChange = configFetchActivity.getBreakingChange(connectionId);
-      log.info("breaking change is: " + breakingChange);
       final Optional<SlackNotificationConfiguration> slackConfig = slackConfigActivity.fetchSlackConfiguration(connectionId);
-      log.info("slack config is: " + slackConfig);
       if (slackConfig.isPresent() && breakingChange.isPresent()) {
         return notifySchemaChangeActivity.notifySchemaChange(connectionId, breakingChange.get(), slackConfig.get());
       } else {
