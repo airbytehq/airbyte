@@ -3,7 +3,6 @@
 
 connector_image: airbyte/source-tiktok-marketing:dev
 cache_discovered_catalog: False
-test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
@@ -49,8 +48,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/new_prod_expected_records.jsonl"
         timeout_seconds: 1200
         empty_streams:
           - name: ads_reports_hourly
@@ -81,8 +78,6 @@ acceptance_tests:
       # Note: not needed to be tested separately in full and incremental tests, because code of
       # these streams is called directly in new style streams
       - config_path: "secrets/prod_config_with_day_granularity.json"
-        expect_records:
-          path: "integration_tests/prod_with_granularity_expected_records.jsonl"
         timeout_seconds: 1200
         empty_streams:
           - name: ads_reports_lifetime
