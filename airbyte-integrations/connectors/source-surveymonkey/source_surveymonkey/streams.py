@@ -6,6 +6,8 @@ import tempfile
 import urllib.parse
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from airbyte_cdk.sources.streams import AvailabilityStrategy
+
 
 import pendulum
 import requests
@@ -26,6 +28,10 @@ class SurveymonkeyStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self._start_date = start_date
         self._survey_ids = survey_ids
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
