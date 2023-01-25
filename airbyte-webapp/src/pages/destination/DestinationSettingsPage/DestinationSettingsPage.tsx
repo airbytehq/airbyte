@@ -54,7 +54,9 @@ export const DestinationSettingsPage: React.FC = () => {
           id="tables.affectedConnectionsOnDeletion"
           values={{ count: connectionsWithDestination.length }}
         />
-        {connectionsWithDestination.map((connection) => `- ${connection.name}\n`)}
+        {connectionsWithDestination.map((connection) => (
+          <b>- {`${connection.name}\n`}</b>
+        ))}
       </p>
     );
   }, [connectionsWithDestination]);
