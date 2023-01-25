@@ -8,23 +8,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceRunner'
-    applicationDefaultJvmArgs = [
-            '-XX:+ExitOnOutOfMemoryError',
-            '-XX:MaxRAMPercentage=75.0',
-
-            // add the following JVM arguments to enable JMX:
-            '-XX:NativeMemoryTracking=detail',
-            '-XX:+UsePerfData',
-            '-Djava.rmi.server.hostname=localhost',
-            '-Dcom.sun.management.jmxremote=true',
-            '-Dcom.sun.management.jmxremote.port=6000',
-            "-Dcom.sun.management.jmxremote.rmi.port=6000",
-            '-Dcom.sun.management.jmxremote.local.only=false',
-            '-Dcom.sun.management.jmxremote.authenticate=false',
-            '-Dcom.sun.management.jmxremote.ssl=false',
-
-            // optionally, add a max heap size to limit the memory usage
-            '-Xmx2000m']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {

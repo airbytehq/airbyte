@@ -66,8 +66,6 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -83,9 +81,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -489,26 +484,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   public static void main(final String[] args) throws Exception {
-    final int mb = 1024 * 1024;
-    final MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-    final long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
-    final long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
-    LOGGER.info("Initial Memory (xms) : {} mb", xms);
-    LOGGER.info("Max Memory (xmx) : {} mb", xmx);
-
-    final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-    service.scheduleAtFixedRate(() -> LOGGER.info(
-        "Used heap memory: {} mb, Used non-heap memory: {} mb",
-        memoryBean.getHeapMemoryUsage().getUsed() / mb,
-        memoryBean.getNonHeapMemoryUsage().getUsed() / mb), 0, 20, TimeUnit.SECONDS);
-
-
     final Source source = PostgresSource.sshWrappedSource();
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
-
-    service.shutdown();
   }
 
   @Override
