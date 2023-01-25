@@ -287,7 +287,8 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.44  | 2023-01-20 | [#21087](https://github.com/airbytehq/airbyte/pull/21087)  | Wrap Authentication Errors as Config Exceptions                                                                                                    |
+| 0.4.45  | 2023-01-25 | [#21087](https://github.com/airbytehq/airbyte/pull/21764)  | Catch Known Permissions and rethrow as ConfigExceptions                                                                                             |
+| 0.4.44  | 2023-01-20 | [#21087](https://github.com/airbytehq/airbyte/pull/21087)  | Wrap Authentication Errors as Config Exceptions                                                                                                     |
 | 0.4.43  | 2023-01-20 | [\#21450](https://github.com/airbytehq/airbyte/pull/21450) | Updated Check methods to handle more possible s3 and gcs stagings issues                                                                            |
 | 0.4.42  | 2023-01-12 | [\#21342](https://github.com/airbytehq/airbyte/pull/21342) | Better handling for conflicting destination streams                                                                                                 |
 | 0.4.41  | 2022-12-16 | [\#20566](https://github.com/airbytehq/airbyte/pull/20566) | Improve spec to adhere to standards                                                                                                                 |
