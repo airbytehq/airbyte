@@ -153,7 +153,7 @@ The selected records will be
 ]
 ```
 
-### Selecting nested field
+### Selecting fields nested in arrays
 
 Given a response body of the form
 
