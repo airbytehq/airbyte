@@ -1,6 +1,6 @@
 import queryString from "query-string";
 import React, { useCallback } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 import styled from "styled-components";
@@ -142,7 +142,11 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         accessor: "creditsConsumed",
         collapse: true,
         customPadding: { right: 0 },
-        Cell: ({ cell }: CellProps<FullTableProps>) => <UsageValue>{cell.value}</UsageValue>,
+        Cell: ({ cell }: CellProps<FullTableProps>) => (
+          <UsageValue>
+            <FormattedNumber value={cell.value} />
+          </UsageValue>
+        ),
       },
       {
         Header: "",
