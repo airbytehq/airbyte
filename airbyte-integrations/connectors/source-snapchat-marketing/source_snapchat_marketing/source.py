@@ -19,6 +19,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.streams import AvailabilityStrategy
 
 # https://marketingapi.snapchat.com/docs/#core-metrics
 # https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
@@ -182,6 +183,10 @@ class SnapchatMarketingStream(HttpStream, ABC):
     def response_root_name(self):
         """Using the class name in lower to set the root node for response parsing"""
         return self.name
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     @property
     def response_item_name(self):
