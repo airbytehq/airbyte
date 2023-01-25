@@ -182,8 +182,8 @@ public abstract class AbstractSourceConnectorTest {
         mAirbyteApiClient,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), null, false,
             new EnvVariableFeatureFlags()),
-            mConnectorConfigUpdater)
-        .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
+        mConnectorConfigUpdater)
+            .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
             .getDiscoverCatalogId();
     verify(mSourceApi).writeActorCatalogFetchEvent(discoverWriteRequest.capture());
     return toReturn;

@@ -746,12 +746,5 @@
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
-  "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again.",
-
-  "freeConnectorProgram.enrollmentModal.title": "Free connector program",
-  "freeConnectorProgram.enrollmentModal.free": "<p1>Alpha and Beta connectors are free while you're in the program.</p1><p2>The whole connection is free until both the source and destination connector have moved into General Availability (GA).</p2>",
-  "freeConnectorProgram.enrollmentModal.emailNotification": "We will let you know through email before a connector you use moves to GA.",
-  "freeConnectorProgram.enrollmentModal.cardOnFile": "When both connectors are in GA, the connection will no longer be free. You'll need to have a credit card on file to enroll so Airbyte can handle a connection's transition to paid service.",
-  "freeConnectorProgram.enrollmentModal.cancelButtonText": "Cancel",
-  "freeConnectorProgram.enrollmentModal.enrollButtonText": "Enroll now!"
+  "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }
