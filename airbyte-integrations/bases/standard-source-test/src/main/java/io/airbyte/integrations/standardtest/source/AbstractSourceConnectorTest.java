@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -131,6 +132,7 @@ public abstract class AbstractSourceConnectorTest {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
     mAirbyteApiClient = mock(AirbyteApiClient.class);
     mSourceApi = mock(SourceApi.class);
+    when(mAirbyteApiClient.getSourceApi()).thenReturn(mSourceApi);
     mConnectorConfigUpdater = mock(ConnectorConfigUpdater.class);
     processFactory = new DockerProcessFactory(
         workerConfigs,
