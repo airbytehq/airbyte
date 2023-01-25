@@ -6,6 +6,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
+import re
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -175,6 +176,171 @@ class Subscriptions(IncrementalOrbStream):
         subscription_record["plan_id"] = nested_plan_id
 
         return subscription_record
+
+class SubscriptionUsage(IncrementalOrbStream):
+    """
+    API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-subscription-usage
+    """
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # use a regex capture group to extract the subscription ID from the request URL
+        # so that we can include it in the returned record
+        subscription_id = re.search('/subscriptions/(.*)/usage',response.request.url).group(1)
+        self.logger.debug("parsed subscription id from url: %s", subscription_id)
+
+        # Records are in a container array called data
+        response_json = response.json()
+        records = response_json.get("data", [])
+        for record in records:
+            # for each top level record, there can be multiple sub-records depending
+            # on granularity and other input params. Oftentimes there will just
+            # be a single subrecord, but this approach creates one resulting
+            # record for each regardless of how many subrecords exist.
+            subrecords = record.get("usage", [])
+            del record["usage"]
+            for subrecord in subrecords:
+                yield self.transform_record(record, subrecord, subscription_id)
+
+
+    def transform_record(self, parent_record, sub_record, subscription_id):
+        self.logger.debug("incoming subscription usage record: %s", parent_record)
+
+        # Merge the parent record with the sub record
+        record = {**parent_record, **sub_record}
+
+        # Add the subscription ID to the record
+        record["subscription_id"] = subscription_id
+
+        # Un-nest billable_metric -> name,id into billable_metric_name and billable_metric_id
+        nested_billable_metric_name = record["billable_metric"]["name"]
+        nested_billable_metric_id = record["billable_metric"]["id"]
+        del record["billable_metric"]
+        record["billable_metric_name"] = nested_billable_metric_name
+        record["billable_metric_id"] = nested_billable_metric_id
+
+        self.logger.debug("transformed subscription usage record: %s", record)
+        return record
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, **kwargs) -> MutableMapping[str, Any]:
+        """
+        This is a non-paginated API that operates on specified timeframe_start/timeframe_end
+        windows. This function handles incremental fetching by applying a new
+        timeframe_start based on the timeframe_end of the previous state.
+
+        Request params are based on the specific slice (i.e. subscription_id) we are requesting for,
+        and so we need to pull out relevant slice state from the stream state.
+
+        """
+
+        current_subscription_state = stream_state.get(stream_slice["subscription_id"], {})
+        self.logger.debug("current subscription state is: %s", current_subscription_state)
+
+        params = {}
+
+        last_timeframe_end = current_subscription_state.get("timeframe_end")
+
+        if last_timeframe_end is None and self.start_date is None:
+            # if no start_date is specified and no previous timeframe_end exists,
+            # do not specify a timeframe in params at all, the API will default to
+            # the current billing window of the subscription.
+            return params
+
+        # use the state's timeframe_end as the new request's timeframe_start, or default to the original start_date.
+        params["timeframe_start"] = last_timeframe_end or self.start_date.isoformat()
+
+        # use the current time as the new request's timeframe_end
+        params["timeframe_end"] = pendulum.now()
+
+
+
+        self.logger.debug("new request_params are: %s", params)
+
+        return params
+
+    # @property
+    # def cursor_field(self) -> str:
+    #     """
+    #     SubscriptionUsage response entries don't contain a 'created_at', but rather a
+    #     'timeframe_start' and 'timeframe_end' property that signify the timeframe
+    #     during which usage occurred. For this incremental stream, we want to
+
+    #     """
+    #     return "timeframe_start"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        TODO write description
+        """
+
+        current_subscription_id = latest_record["subscription_id"]
+        self.logger.debug("in get_updated_state, latest_record is %s", latest_record)
+
+        latest_record_timeframe_start_dt = pendulum.parse(latest_record.get("timeframe_start"))
+        latest_record_timeframe_end_dt = pendulum.parse(latest_record.get("timeframe_end"))
+
+        current_state = current_stream_state.get(current_subscription_id, {})
+        current_state_timeframe_start = current_stream_state.get("timeframe_start")
+        current_state_timeframe_end = current_stream_state.get("timeframe_end")
+
+        # Default existing state timeframe_start and timeframe_end to DateTime.min.
+        # This means the latest record will always exceed the existing state.
+        current_timeframe_start_dt = pendulum.DateTime.min
+        current_timeframe_end_dt = pendulum.DateTime.min
+
+        if current_state_timeframe_start is not None:
+            current_timeframe_start_dt = pendulum.parse(current_state_timeframe_start)
+
+        if current_state_timeframe_end is not None:
+            current_timeframe_end_dt = pendulum.parse(current_state_timeframe_end)
+
+        current_subscription_updated_state = {
+            "timeframe_start": max(latest_record_timeframe_start_dt, current_timeframe_start_dt).isoformat(),
+            "timeframe_end": max(latest_record_timeframe_end_dt, current_timeframe_end_dt).isoformat()
+        }
+
+        return {
+            # We need to keep the other slices as is, and only override the dictionary entry
+            # corresponding to the current slice customer id.
+            **current_stream_state,
+            current_subscription_id: current_subscription_updated_state,
+        }
+
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        """
+        Orb does not support querying for all subscription usage in an unscoped
+        way, so the path here is dependent on the stream_slice, which determines
+        the `subscription_id`.
+        """
+        subscription_id = stream_slice["subscription_id"]
+        return f"subscriptions/{subscription_id}/usage"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        This stream is sliced per `subscription_id`. This has two implications:
+        (1) State can be checkpointed after processing each slice
+        (2) The other parameters (e.g. request_params, path) can be dependent on this slice.
+
+        This allows us to pull data on a per subscription_id basis, since that's what Orb exposes.
+
+        Furthermore, each stream slice includes the 'prices' associated with the
+        subscription. This allows the subscription usage stream to request
+        usage grouped by a custom attribute (since grouping by custom attribute
+        also requires an explicit billing_metric_id to be specified.)
+        """
+        # TODO: self.authenticator should optionally pull from self._session.auth
+        subscriptions_stream = Subscriptions(authenticator=self._session.auth)
+        plans_stream = Plans(authenticator=self._session.auth)
+
+        prices_by_plan_id = {}
+        for plan in plans_stream.read_records(sync_mode=SyncMode.full_refresh):
+            prices_by_plan_id[plan["id"]] = plan["prices"]
+
+        for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {
+                "subscription_id": subscription["id"],
+                "prices": prices_by_plan_id[subscription["plan_id"]]
+                }
 
 
 class Plans(IncrementalOrbStream):
@@ -447,4 +613,5 @@ class SourceOrb(AbstractSource):
                 string_event_properties_keys=string_event_properties_keys,
                 numeric_event_properties_keys=numeric_event_properties_keys,
             ),
+            SubscriptionUsage(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date)
         ]
