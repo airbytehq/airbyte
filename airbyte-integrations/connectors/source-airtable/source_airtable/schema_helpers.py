@@ -3,10 +3,9 @@
 #
 
 
-from typing import Any, Dict
-
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from typing import Any, Dict
 
 
 class SchemaHelpers:
@@ -18,13 +17,13 @@ class SchemaHelpers:
     def get_json_schema(table: Dict[str, Any]) -> Dict[str, str]:
         fields = table.get("fields", {})
         properties = {
-            "_airtable_id": {"type": ["null", "string"]},
-            "_airtable_created_time": {"type": ["null", "string"]},
+            "_airtable_id": {"type": ["string", "null"]},
+            "_airtable_created_time": {"type": ["string", "null"]},
         }
 
         for field in fields:
             field_name = SchemaHelpers.clean_name(field.get("name"))
-            properties[field_name] = {"type": ["null", "string"]}
+            properties[field_name] = {"type": ["string", "null"]}
 
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
