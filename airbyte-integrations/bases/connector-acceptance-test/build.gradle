@@ -4,6 +4,6 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_acceptance_test'
+    moduleDirectory 'connector_acceptance_test'
 }
 
