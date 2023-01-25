@@ -454,4 +454,43 @@ describe("Conversion successfully results in", () => {
       },
     });
   });
+
+  it("OAuth authenticator refresh_request_body converted to array", () => {
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        merge({}, stream1, {
+          retriever: {
+            requester: {
+              authenticator: {
+                type: "OAuthAuthenticator",
+                client_id: "{{ config['client_id'] }}",
+                client_secret: "{{ config['client_secret'] }}",
+                refresh_token: "{{ config['client_refresh_token'] }}",
+                refresh_request_body: {
+                  key1: "val1",
+                  key2: "val2",
+                },
+                token_refresh_endpoint: "https://api.com/refresh_token",
+                grant_type: "client_credentials",
+              },
+            },
+          },
+        }),
+      ],
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    expect(formValues.global.authenticator).toEqual({
+      type: "OAuthAuthenticator",
+      client_id: "{{ config['client_id'] }}",
+      client_secret: "{{ config['client_secret'] }}",
+      refresh_token: "{{ config['client_refresh_token'] }}",
+      refresh_request_body: [
+        ["key1", "val1"],
+        ["key2", "val2"],
+      ],
+      token_refresh_endpoint: "https://api.com/refresh_token",
+      grant_type: "client_credentials",
+    });
+  });
 });
