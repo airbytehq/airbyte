@@ -101,7 +101,7 @@ class ManifestReferenceResolver:
         :param manifest: incoming manifest that could have references to previously defined components
         :return:
         """
-        return self._evaluate_node(manifest, manifest, set())
+        raise NotImplementedError
 
     def _evaluate_node(self, node: Any, manifest: Mapping[str, Any], visited: Set):
         if isinstance(node, dict):
