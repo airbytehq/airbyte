@@ -316,13 +316,17 @@ Changes to data residency will not affect any sync in progress.
 
 ### Enroll in the Free Connector Program
 
-By enrolling the Free Connector Program, you can sync connections with [alpha](https://docs.airbyte.com/project-overview/product-release-stages#alpha) or [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta) connectors at no cost.
+The Free Connector Program allows you to sync connections with [alpha](https://docs.airbyte.com/project-overview/product-release-stages#alpha) or [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta) connectors at no cost.
 
-Before enrolling in the program, [set up](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-source) at least one alpha or beta connector and verify your email, if prompted.
+:::note 
+    
+You must be enrolled in the program to use alpha and beta connectors for free. If either the source or destination is in alpha or beta, the whole connection is free to sync. When both the source and destination of a connection become [generally available](https://docs.airbyte.com/project-overview/product-release-stages/#general-availability-ga) (GA), the connection will no longer be free. We will email you two weeks before both connectors in a connection move to GA.
+    
+:::
 
-You must be enrolled in the program to use alpha and beta connectors for free. If either the source or destination is in alpha or beta, the whole connection is free to sync.
+Before enrolling in the program, [set up](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-source) at least one alpha or beta connector and verify your email if you haven't already.
 
-To get started:
+To enroll in the program:
 1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Credits** in the navigation bar.
 
 2. Click **Enroll now** in the **Free Connector Program** banner.
@@ -337,15 +341,13 @@ Credit card information is required, even if you previously bought credits on Ai
     
 :::
 
-When both the source and destination of a connection become [generally available](https://docs.airbyte.com/project-overview/product-release-stages/#general-availability-ga) (GA), the connection will no longer be free. We will email you two weeks before both connectors in a connection move to GA. 
-
 Since alpha and beta connectors are still in development, support is not provided. For additional resources, check out our [Connector Catalog](https://docs.airbyte.com/integrations/), [Troubleshooting & FAQ](https://docs.airbyte.com/troubleshooting/), and our [Community Slack](https://slack.airbyte.io/).
 
 ### Buy credits
 
 This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://airbyte.com/pricing) is a unit of measure used to pay for Airbyte resources when you run a sync. 
 
- To buy credits:
+To buy credits:
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Credits** in the navigation bar.
 
