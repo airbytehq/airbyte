@@ -1,102 +1,233 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.apis;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.server.handlers.*;
+import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
+import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.db.Database;
+import io.micronaut.context.annotation.Replaces;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.annotation.MockBean;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import io.temporal.client.WorkflowClient;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.sql.DataSource;
 
+@MicronautTest
 public abstract class BaseControllerTest {
 
+  AttemptHandler attemptHandler = Mockito.mock(AttemptHandler.class);
 
-    @Mock
-    private AttemptHandler attemptHandler;
+  @MockBean(AttemptHandler.class)
+  @Replaces(AttemptHandler.class)
+  AttemptHandler mAttemptHandler() {
+    return attemptHandler;
+  }
 
-    @MockBean(AttemptHandler.class)
-    AttemptHandler mAttemptHandler() {
-        return attemptHandler;
-    }
+  ConnectionsHandler connectionsHandler = Mockito.mock(ConnectionsHandler.class);
 
-    @Mock
-    private ConnectionsHandler connectionsHandler;
+  @MockBean(ConnectionsHandler.class)
+  @Replaces(ConnectionsHandler.class)
+  ConnectionsHandler mConnectionsHandler() {
+    return connectionsHandler;
+  }
 
-    @MockBean(ConnectionsHandler.class)
-    ConnectionsHandler mConnectionsHandler() {
-        return connectionsHandler;
-    }
+  DestinationHandler destinationHandler = Mockito.mock(DestinationHandler.class);
 
-    @Mock
-    private DestinationHandler destinationHandler;
+  @MockBean(DestinationHandler.class)
+  @Replaces(DestinationHandler.class)
+  DestinationHandler mDestinationHandler() {
+    return destinationHandler;
+  }
 
-    @MockBean(DestinationHandler.class)
-    DestinationHandler mDestinationHandler() {
-        return destinationHandler;
-    }
+  DestinationDefinitionsHandler destinationDefinitionsHandler = Mockito.mock(DestinationDefinitionsHandler.class);
 
-    @Mock
-    private DestinationDefinitionsHandler destinationDefinitionsHandler;
+  @MockBean(DestinationDefinitionsHandler.class)
+  @Replaces(DestinationDefinitionsHandler.class)
+  DestinationDefinitionsHandler mDestinationDefinitionsHandler() {
+    return destinationDefinitionsHandler;
+  }
 
-    @MockBean(DestinationDefinitionsHandler.class)
-    DestinationDefinitionsHandler mDestinationDefinitionsHandler() {
-        return destinationDefinitionsHandler;
-    }
+  HealthCheckHandler healthCheckHandler = Mockito.mock(HealthCheckHandler.class);
 
-    @Mock
-    private HealthCheckHandler healthCheckHandler;
+  @MockBean(HealthCheckHandler.class)
+  @Replaces(HealthCheckHandler.class)
+  HealthCheckHandler mHealthCheckHandler() {
+    return healthCheckHandler;
+  }
 
-    @Mock
-    private JobHistoryHandler jobHistoryHandler;
+  JobHistoryHandler jobHistoryHandler = Mockito.mock(JobHistoryHandler.class);
 
-    @Mock
-    private LogsHandler logsHandler;
+  @MockBean(JobHistoryHandler.class)
+  @Replaces(JobHistoryHandler.class)
+  JobHistoryHandler mJobHistoryHandler() {
+    return jobHistoryHandler;
+  }
 
-    @Mock
-    private OAuthHandler oAuthHandler;
+  LogsHandler logsHandler = Mockito.mock(LogsHandler.class);
 
-    @Mock
-    private OpenApiConfigHandler openApiConfigHandler;
+  @MockBean(LogsHandler.class)
+  @Replaces(LogsHandler.class)
+  LogsHandler mLogsHandler() {
+    return logsHandler;
+  }
 
-    @Mock
-    private OperationsHandler operationsHandler;
+  OAuthHandler oAuthHandler = Mockito.mock(OAuthHandler.class);
 
-    @Mock
-    private SchedulerHandler schedulerHandler;
+  @MockBean(OAuthHandler.class)
+  @Replaces(OAuthHandler.class)
+  OAuthHandler mOAuthHandler() {
+    return oAuthHandler;
+  }
 
-    @Mock
-    private SourceDefinitionsHandler sourceDefinitionsHandler;
+  OpenApiConfigHandler openApiConfigHandler = Mockito.mock(OpenApiConfigHandler.class);
 
-    @Mock
-    private SourceHandler sourceHandler;
+  @MockBean(OpenApiConfigHandler.class)
+  @Replaces(OpenApiConfigHandler.class)
+  OpenApiConfigHandler mOpenApiConfigHandler() {
+    return openApiConfigHandler;
+  }
 
-    @Mock
-    private StateHandler stateHandler;
+  OperationsHandler operationsHandler = Mockito.mock(OperationsHandler.class);
 
-    @Mock
-    private WebBackendConnectionsHandler webBackendConnectionsHandler;
+  @MockBean(OperationsHandler.class)
+  @Replaces(OperationsHandler.class)
+  OperationsHandler mOperationsHandler() {
+    return operationsHandler;
+  }
 
-    @Mock
-    private WebBackendGeographiesHandler webBackendGeographiesHandler;
+  SchedulerHandler schedulerHandler = Mockito.mock(SchedulerHandler.class);
 
-    @Mock
-    private WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler;
+  @MockBean(SchedulerHandler.class)
+  @Replaces(SchedulerHandler.class)
+  SchedulerHandler mSchedulerHandler() {
+    return schedulerHandler;
+  }
 
-    @Mock
-    private WorkspacesHandler workspacesHandler;
+  SourceDefinitionsHandler sourceDefinitionsHandler = Mockito.mock(SourceDefinitionsHandler.class);
 
-    @Inject
-    EmbeddedServer embeddedServer;
+  @MockBean(SourceDefinitionsHandler.class)
+  @Replaces(SourceDefinitionsHandler.class)
+  SourceDefinitionsHandler mSourceDefinitionsHandler() {
+    return sourceDefinitionsHandler;
+  }
 
-    @Inject
-    @Client("/")
-    HttpClient client;
+  SourceHandler sourceHandler = Mockito.mock(SourceHandler.class);
 
-    void testEndpointStatus(HttpRequest request, HttpStatus expectedStatus) {
-        assertEquals(expectedStatus, client.toBlocking().exchange(request).getStatus());
-    }
+  @MockBean(SourceHandler.class)
+  @Replaces(SourceHandler.class)
+  SourceHandler mSourceHandler() {
+    return sourceHandler;
+  }
+
+  StateHandler stateHandler = Mockito.mock(StateHandler.class);
+
+  @MockBean(StateHandler.class)
+  @Replaces(StateHandler.class)
+  StateHandler mStateHandler() {
+    return stateHandler;
+  }
+
+  WebBackendConnectionsHandler webBackendConnectionsHandler = Mockito.mock(WebBackendConnectionsHandler.class);
+
+  @MockBean(WebBackendConnectionsHandler.class)
+  @Replaces(WebBackendConnectionsHandler.class)
+  WebBackendConnectionsHandler mWebBackendConnectionsHandler() {
+    return webBackendConnectionsHandler;
+  }
+
+  WebBackendGeographiesHandler webBackendGeographiesHandler = Mockito.mock(WebBackendGeographiesHandler.class);
+
+  @MockBean(WebBackendGeographiesHandler.class)
+  @Replaces(WebBackendGeographiesHandler.class)
+  WebBackendGeographiesHandler mWebBackendGeographiesHandler() {
+    return webBackendGeographiesHandler;
+  }
+
+  WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler = Mockito.mock(WebBackendCheckUpdatesHandler.class);
+
+  @MockBean(WebBackendCheckUpdatesHandler.class)
+  @Replaces(WebBackendCheckUpdatesHandler.class)
+  WebBackendCheckUpdatesHandler mWebBackendCheckUpdatesHandler() {
+    return webBackendCheckUpdatesHandler;
+  }
+
+  WorkspacesHandler workspacesHandler = Mockito.mock(WorkspacesHandler.class);
+
+  @MockBean(WorkspacesHandler.class)
+  @Replaces(WorkspacesHandler.class)
+  WorkspacesHandler mWorkspacesHandler() {
+    return workspacesHandler;
+  }
+
+  @MockBean(SynchronousSchedulerClient.class)
+  @Replaces(SynchronousSchedulerClient.class)
+  SynchronousSchedulerClient mSynchronousSchedulerClient() {
+    return Mockito.mock(SynchronousSchedulerClient.class);
+  }
+
+  @MockBean(Database.class)
+  @Replaces(Database.class)
+  @Named("configDatabase")
+  Database mDatabase() {
+    return Mockito.mock(Database.class);
+  }
+
+  @MockBean(DataSource.class)
+  @Replaces(DataSource.class)
+  DataSource mDataSource() {
+    return Mockito.mock(DataSource.class);
+  }
+
+  @MockBean(TrackingClient.class)
+  @Replaces(TrackingClient.class)
+  TrackingClient mTrackingClient() {
+    return Mockito.mock(TrackingClient.class);
+  }
+
+
+  @MockBean(WorkflowClient.class)
+  @Replaces(WorkflowClient.class)
+  WorkflowClient mWorkflowClient() {
+    return Mockito.mock(WorkflowClient.class);
+  }
+
+  @MockBean(WorkflowServiceStubs.class)
+  @Replaces(WorkflowServiceStubs.class)
+  WorkflowServiceStubs mWorkflowServiceStubs() {
+    return Mockito.mock(WorkflowServiceStubs.class);
+  }
+
+  @MockBean(TemporalClient.class)
+  @Replaces(TemporalClient.class)
+  TemporalClient mTemporalClient() {
+    return Mockito.mock(TemporalClient.class);
+  }
+
+  @Inject
+  EmbeddedServer embeddedServer;
+
+  @Inject
+  @Client("/")
+  HttpClient client;
+
+  void testEndpointStatus(HttpRequest request, HttpStatus expectedStatus) {
+    assertEquals(expectedStatus, client.toBlocking().exchange(request).getStatus());
+  }
+
 }
