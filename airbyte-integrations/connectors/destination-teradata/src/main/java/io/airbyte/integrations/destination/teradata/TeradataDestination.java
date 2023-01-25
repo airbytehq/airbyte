@@ -53,7 +53,6 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
     @Override
     protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
         final Map<String, String> additionalParameters = new HashMap<>();
-        LOGGER.info("teradata config obj : " + config);
         if (config.has(PARAM_SSL) && config.get(PARAM_SSL).asBoolean()) {
             LOGGER.debug("SSL Enabled");
             if (config.has(PARAM_SSL_MODE)) {
