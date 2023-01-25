@@ -54,13 +54,13 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
     await deleteSource({ connectionsWithSource, source: currentSource });
   };
 
-  const extraModal = useMemo<React.ReactNode>(() => {
+  const modalAdditionalContent = useMemo<React.ReactNode>(() => {
     if (connectionsWithSource.length === 0) {
       return null;
     }
     return (
       <p>
-        <FormattedMessage id="tables.affectedConnectionsOnSourceDeletion" />
+        <FormattedMessage id="tables.affectedConnectionsOnDeletion" values={{ count: connectionsWithSource.length }} />
         {connectionsWithSource.map((connection) => `- ${connection.name}\n`)}
       </p>
     );
@@ -79,7 +79,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         connector={currentSource}
         onSubmit={onSubmit}
       />
-      <DeleteBlock extraModal={extraModal} type="source" onDelete={onDelete} />
+      <DeleteBlock modalAdditionalContent={modalAdditionalContent} type="source" onDelete={onDelete} />
     </div>
   );
 };

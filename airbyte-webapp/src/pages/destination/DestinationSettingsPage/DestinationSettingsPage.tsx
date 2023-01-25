@@ -44,13 +44,16 @@ export const DestinationSettingsPage: React.FC = () => {
     });
   };
 
-  const extraModal = useMemo<React.ReactNode>(() => {
+  const modalAdditionalContent = useMemo<React.ReactNode>(() => {
     if (connectionsWithDestination.length === 0) {
       return null;
     }
     return (
       <p>
-        <FormattedMessage id="tables.affectedConnectionsOnDestinationDeletion" />
+        <FormattedMessage
+          id="tables.affectedConnectionsOnDeletion"
+          values={{ count: connectionsWithDestination.length }}
+        />
         {connectionsWithDestination.map((connection) => `- ${connection.name}\n`)}
       </p>
     );
@@ -69,7 +72,7 @@ export const DestinationSettingsPage: React.FC = () => {
         connector={destination}
         onSubmit={onSubmitForm}
       />
-      <DeleteBlock extraModal={extraModal} type="destination" onDelete={onDelete} />
+      <DeleteBlock modalAdditionalContent={modalAdditionalContent} type="destination" onDelete={onDelete} />
     </div>
   );
 };
