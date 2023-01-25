@@ -1,7 +1,11 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
+
+from dataclasses import dataclass
 import logging
+from pathlib import Path
 from typing import Dict, Optional, Set, Tuple
 
 import git
@@ -130,3 +134,48 @@ def get_acceptance_test_config(connector_name: str) -> Tuple[str, Dict]:
     except FileNotFoundError:
         logging.warning(f"No {ACCEPTANCE_TEST_CONFIG_FILE_NAME} file found for {connector_name}")
         return None, None
+
+@dataclass
+class Connector:
+    # TODO a couple of functions defined at the root level of this module can be moved into this class.
+    """Utility class to gather metadata about a connector."""
+    connector_technical_name: str
+
+    def _get_type_and_name_from_technical_name(self) -> Tuple[str, str]:
+        _type = self.connector_technical_name.split("-")[0]
+        name = self.connector_technical_name[len(_type) + 1 :]
+        return _type, name
+
+    @property
+    def name(self):
+        return self._get_type_and_name_from_technical_name()[1]
+
+    @property
+    def connector_type(self) -> str:
+        return self._get_type_and_name_from_technical_name()[0]
+
+    @property
+    def documentation_file_path(self) -> Path:
+        return Path(f"./docs/integrations/{self.connector_type}s/{self.name}.md")
+
+    @property
+    def icon_path(self) -> Path:
+        if self.definition.get("icon"):
+            return Path(f"./airbyte-config/init/src/main/resources/icons/{self.definition['icon']}")
+        return Path(f"./airbyte-config/init/src/main/resources/icons/{self.name}.svg")
+
+    @property
+    def code_directory(self) -> Path:
+        return Path(f"./airbyte-integrations/connectors/{self.connector_technical_name}")
+    
+    @property
+    def version(self) -> str:
+        with open(self.code_directory / "Dockerfile") as f:
+            for line in f:
+                if "io.airbyte.version" in line:
+                    return line.split("=")[1].strip()
+        raise Exception("Could not find the connector version from its Dockerfile")
+
+    @property
+    def definition(self) -> Optional[dict]:
+        return get_connector_definition(self.connector_technical_name)
