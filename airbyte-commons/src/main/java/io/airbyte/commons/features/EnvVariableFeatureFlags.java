@@ -70,7 +70,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      log.info("Using default value for environment variable {}: '{}'", key, defaultValue);
+      log.debug("Using default value for environment variable {}: '{}'", key, defaultValue);
       return defaultValue;
     }
   }

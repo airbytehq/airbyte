@@ -5,11 +5,7 @@ import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
-import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
-import {
-  useConnectorBuilderTestState,
-  useConnectorBuilderFormState,
-} from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
@@ -21,19 +17,11 @@ export const StreamTester: React.FC<{
   setTestInputOpen: (open: boolean) => void;
 }> = ({ hasTestInputJsonErrors, setTestInputOpen }) => {
   const { formatMessage } = useIntl();
-  const { jsonManifest } = useConnectorBuilderFormState();
-  const { streams, testInputJson, testStreamIndex } = useConnectorBuilderTestState();
   const {
-    data: streamReadData,
-    refetch: readStream,
-    isError,
-    error,
-    isFetching,
-  } = useReadStream({
-    manifest: jsonManifest,
-    stream: streams[testStreamIndex]?.name,
-    config: testInputJson,
-  });
+    streams,
+    testStreamIndex,
+    streamRead: { data: streamReadData, refetch: readStream, isError, error, isFetching },
+  } = useConnectorBuilderTestState();
 
   const [logsFlex, setLogsFlex] = useState(0);
   const handleLogsTitleClick = () => {
@@ -79,7 +67,11 @@ export const StreamTester: React.FC<{
           orientation="horizontal"
           firstPanel={{
             children: (
-              <>{streamReadData !== undefined && !isError && <ResultDisplay slices={streamReadData.slices} />}</>
+              <>
+                {streamReadData !== undefined && !isError && (
+                  <ResultDisplay slices={streamReadData.slices} inferredSchema={streamReadData.inferred_schema} />
+                )}
+              </>
             ),
             minWidth: 80,
           }}

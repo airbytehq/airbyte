@@ -115,6 +115,7 @@ definitions:
         $ref: "*ref(definitions.requester)"
         path: "/projects/{{ stream_slice.project_id }}/{{ options['name'] }}/"
       stream_slicer:
+        type: CustomStreamSlicer
         class_name: source_posthog.components.EventsCartesianProductStreamSlicer
         stream_slicers:
           - type: SubstreamSlicer

@@ -105,6 +105,8 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
                 standardSourceDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
+            .set(Tables.ACTOR_DEFINITION.ALLOWED_HOSTS, standardSourceDefinition.getAllowedHosts() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getAllowedHosts())))
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardSourceDefinition.getSourceDefinitionId()))
             .execute();
@@ -136,6 +138,8 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
                 standardSourceDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
+            .set(ACTOR_DEFINITION.ALLOWED_HOSTS, standardSourceDefinition.getAllowedHosts() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getAllowedHosts())))
             .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .execute();
@@ -172,7 +176,6 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
                 standardDestinationDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
-            .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY,
                 Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
                     ? standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository()
@@ -186,6 +189,9 @@ public class ConfigWriter {
                 Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
                     ? standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()
                     : null)
+            .set(ACTOR_DEFINITION.ALLOWED_HOSTS, standardDestinationDefinition.getAllowedHosts() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getAllowedHosts())))
+            .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
             .execute();
 
@@ -213,8 +219,6 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
                 standardDestinationDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
-            .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
-            .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY,
                 Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
                     ? standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository()
@@ -228,6 +232,10 @@ public class ConfigWriter {
                 Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
                     ? standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()
                     : null)
+            .set(ACTOR_DEFINITION.ALLOWED_HOSTS, standardDestinationDefinition.getAllowedHosts() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getAllowedHosts())))
+            .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
+            .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .execute();
       }
     });

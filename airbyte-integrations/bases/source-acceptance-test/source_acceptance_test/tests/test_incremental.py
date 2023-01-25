@@ -9,7 +9,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Un
 
 import pendulum
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, SyncMode, Type
 from source_acceptance_test import BaseTest
 from source_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
 from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, filter_output, incremental_only_catalog
@@ -40,7 +40,9 @@ def future_state_fixture(future_state_configuration, test_strictness_level, conf
     if test_strictness_level is Config.TestStrictnessLevel.high:
         if not all([missing_stream.bypass_reason is not None for missing_stream in missing_streams]):
             pytest.fail("High test strictness level error: all missing_streams must have a bypass reason specified.")
-        all_stream_names = set([stream.stream.name for stream in configured_catalog.streams])
+        all_stream_names = {
+            stream.stream.name for stream in configured_catalog.streams if SyncMode.incremental in stream.stream.supported_sync_modes
+        }
         streams_in_states = set([state["stream"]["stream_descriptor"]["name"] for state in states])
         declared_missing_streams_names = set([missing_stream.name for missing_stream in missing_streams])
         undeclared_missing_streams_names = all_stream_names - declared_missing_streams_names - streams_in_states

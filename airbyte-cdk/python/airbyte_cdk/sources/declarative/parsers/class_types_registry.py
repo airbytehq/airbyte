@@ -15,6 +15,7 @@ from airbyte_cdk.sources.declarative.auth.token import (
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.extractors import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
@@ -50,12 +51,13 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig, SubstreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
-from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition, AddFields
 
 """
 CLASS_TYPES_REGISTRY contains a mapping of developer-friendly string -> class to abstract the specific class referred to
 """
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
+    "AddedFieldDefinition": AddedFieldDefinition,
     "AddFields": AddFields,
     "ApiKeyAuthenticator": ApiKeyAuthenticator,
     "BasicHttpAuthenticator": BasicHttpAuthenticator,
@@ -87,6 +89,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "OffsetIncrement": OffsetIncrement,
     "PageIncrement": PageIncrement,
     "ParentStreamConfig": ParentStreamConfig,
+    "RecordFilter": RecordFilter,
     "RecordSelector": RecordSelector,
     "RequestOption": RequestOption,
     "RemoveFields": RemoveFields,

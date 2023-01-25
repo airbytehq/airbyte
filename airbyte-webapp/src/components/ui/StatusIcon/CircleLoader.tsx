@@ -16,8 +16,8 @@ export const CircleLoader = ({ title }: CircleLoaderProps): JSX.Element => (
         spreadMethod="pad"
         gradientUnits="userSpaceOnUse"
       >
-        <stop offset="0%" stopColor={styles.gradientStart} />
-        <stop offset="100%" stopColor={styles.gradientStop} />
+        <stop offset="0%" stopColor={styles.gradientColor} />
+        <stop offset="100%" stopColor={styles.gradientColor} stopOpacity=".1" />
       </linearGradient>
     </defs>
     {title && <title>{title}</title>}

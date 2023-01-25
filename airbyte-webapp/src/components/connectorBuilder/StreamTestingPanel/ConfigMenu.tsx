@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
 import { Button } from "components/ui/Button";
-import { InfoBox } from "components/ui/InfoBox";
+import { Callout } from "components/ui/Callout";
 import { Modal, ModalBody } from "components/ui/Modal";
 import { NumberBadge } from "components/ui/NumberBadge";
 import { Tooltip } from "components/ui/Tooltip";
@@ -94,7 +94,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJson
             <ConfigMenuErrorBoundaryComponent currentView={editorView} closeAndSwitchToYaml={switchToYaml}>
               <>
                 {showInputsWarning && (
-                  <InfoBox className={styles.warningBox}>
+                  <Callout className={styles.warningBox}>
                     <div className={styles.warningBoxContainer}>
                       <div>
                         <FormattedMessage id="connectorBuilder.inputsFormWarning" />
@@ -107,7 +107,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJson
                         icon={<FontAwesomeIcon icon={faClose} />}
                       />
                     </div>
-                  </InfoBox>
+                  </Callout>
                 )}
                 <ConnectorForm
                   formType="source"

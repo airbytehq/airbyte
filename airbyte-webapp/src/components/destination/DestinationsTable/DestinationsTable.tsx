@@ -14,7 +14,7 @@ interface DestinationsTableProps {
 
 export const DestinationsTable: React.FC<DestinationsTableProps> = ({ destinations }) => {
   const navigate = useNavigate();
-  const { connections } = useConnectionList();
+  const { connections } = useConnectionList({ destinationId: destinations.map(({ destinationId }) => destinationId) });
 
   const data = getEntityTableData(destinations, connections, "destination");
 

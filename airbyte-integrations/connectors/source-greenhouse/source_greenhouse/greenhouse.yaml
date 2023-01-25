@@ -46,6 +46,7 @@ definitions:
         inject_into: "path"
       url_base: "*ref(definitions.requester.url_base)"
   base_stream:
+    type: DeclarativeStream
     $options:
       name: "applications"
     primary_key: "id"

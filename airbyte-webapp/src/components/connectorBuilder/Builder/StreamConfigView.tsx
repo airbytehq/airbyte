@@ -2,18 +2,25 @@ import { faTrashCan, faCopy } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useField } from "formik";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import Indicator from "components/Indicator";
+import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  BuilderView,
+  useConnectorBuilderFormState,
+  useConnectorBuilderTestState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
 import { BuilderStream } from "../types";
+import { formatJson } from "../utils";
 import { AddStreamButton } from "./AddStreamButton";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderConfigView } from "./BuilderConfigView";
@@ -124,7 +131,12 @@ const StreamControls = ({
   const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { setSelectedView } = useConnectorBuilderFormState();
-  const [, meta] = useField<string | undefined>(streamFieldPath("schema"));
+  const { streamRead: readStream } = useConnectorBuilderTestState();
+  const [schema, meta] = useField<string | undefined>(streamFieldPath("schema"));
+  const formattedDetectedSchema = useMemo(
+    () => readStream.data?.inferred_schema && formatJson(readStream.data?.inferred_schema, true),
+    [readStream.data?.inferred_schema]
+  );
   const hasSchemaErrors = Boolean(meta.error);
 
   const handleDelete = () => {
@@ -154,6 +166,7 @@ const StreamControls = ({
         selected={selectedTab === "schema"}
         onSelect={() => setSelectedTab("schema")}
         showErrorIndicator={hasSchemaErrors}
+        showSchemaConflictIndicator={Boolean(formattedDetectedSchema && schema.value !== formattedDetectedSchema)}
       />
       <AddStreamButton
         onAddStream={(addedStreamNum) => {
@@ -178,32 +191,55 @@ const StreamTab = ({
   label,
   onSelect,
   showErrorIndicator,
+  showSchemaConflictIndicator,
 }: {
   selected: boolean;
   label: string;
   onSelect: () => void;
   showErrorIndicator?: boolean;
+  showSchemaConflictIndicator?: boolean;
 }) => (
   <button type="button" className={classNames(styles.tab, { [styles.selectedTab]: selected })} onClick={onSelect}>
     {label}
     {showErrorIndicator && <Indicator />}
+    {showSchemaConflictIndicator && <SchemaConflictIndicator />}
   </button>
 );
 
 const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string) => string }) => {
   const [field, meta, helpers] = useField<string | undefined>(streamFieldPath("schema"));
+  const { streamRead } = useConnectorBuilderTestState();
+
+  const showImportButton = !field.value && streamRead.data?.inferred_schema;
 
   return (
     <>
-      <CodeEditor
-        value={field.value || ""}
-        language="json"
-        theme="airbyte-light"
-        onChange={(val: string | undefined) => {
-          helpers.setValue(val);
-        }}
-      />
-      <Text className={styles.errorMessage}>{meta.error && <FormattedMessage id={meta.error} />}</Text>
+      {showImportButton && (
+        <Button
+          full
+          variant="secondary"
+          onClick={() => {
+            helpers.setValue(formatJson(streamRead.data?.inferred_schema, true));
+          }}
+        >
+          <FormattedMessage id="connectorBuilder.useSchemaButton" />
+        </Button>
+      )}
+      <div className={styles.editorContainer}>
+        <CodeEditor
+          value={field.value || ""}
+          language="json"
+          theme="airbyte-light"
+          onChange={(val: string | undefined) => {
+            helpers.setValue(val);
+          }}
+        />
+      </div>
+      {meta.error && (
+        <Text className={styles.errorMessage}>
+          <FormattedMessage id={meta.error} />
+        </Text>
+      )}
     </>
   );
 };

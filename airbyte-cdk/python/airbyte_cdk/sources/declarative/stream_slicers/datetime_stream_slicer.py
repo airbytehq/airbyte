@@ -75,6 +75,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self._step = self._parse_timedelta(self.step)
         self._cursor_granularity = self._parse_timedelta(self.cursor_granularity)
         self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
+        self.lookback_window = InterpolatedString.create(self.lookback_window, options=options)
         self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", options=options)
         self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", options=options)
         self._parser = DatetimeParser()
@@ -123,7 +124,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         """
         Partition the daterange into slices of size = step.
 
-        The start of the window is the minimum datetime between start_datetime - looback_window and the stream_state's datetime
+        The start of the window is the minimum datetime between start_datetime - lookback_window and the stream_state's datetime
         The end of the window is the minimum datetime between the start of the window and end_datetime.
 
         :param sync_mode:
