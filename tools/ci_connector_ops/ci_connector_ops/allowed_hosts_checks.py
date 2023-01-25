@@ -24,9 +24,7 @@ def get_connectors_missing_allowed_hosts() -> List[str]:
     return connectors_missing_allowed_hosts
 
 def connector_has_allowed_hosts(connector_name: str) -> bool:
-  definition = utils.get_connector_definition(connector_name)
-  # print("----- " + connector_name  + " -----")
-  # print(definition)
+    definition = utils.get_connector_definition(connector_name)
     return definition.get("allowedHosts") is not None
 
 
