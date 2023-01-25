@@ -8,7 +8,12 @@ import { StepsTypes } from "components/ConnectorBlocks";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import { useDeleteDestination, useGetDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
+import {
+  useDeleteDestination,
+  useGetDestination,
+  useInvalidateDestination,
+  useUpdateDestination,
+} from "hooks/services/useDestinationHook";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
@@ -22,6 +27,7 @@ export const DestinationSettingsPage: React.FC = () => {
   const { connections: connectionsWithDestination } = useConnectionList({ destinationId: [destination.destinationId] });
   const destinationSpecification = useGetDestinationDefinitionSpecification(destination.destinationDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
+  const reloadDestination = useInvalidateDestination(destination.destinationId);
   const { mutateAsync: updateDestination } = useUpdateDestination();
   const { mutateAsync: deleteDestination } = useDeleteDestination();
   const formId = useUniqueFormId();
@@ -55,6 +61,7 @@ export const DestinationSettingsPage: React.FC = () => {
         selectedConnectorDefinitionSpecification={destinationSpecification}
         selectedConnectorDefinitionId={destinationSpecification.destinationDefinitionId}
         connector={destination}
+        reloadConfig={reloadDestination}
         onSubmit={onSubmitForm}
       />
       <DeleteBlock type="destination" onDelete={onDelete} />

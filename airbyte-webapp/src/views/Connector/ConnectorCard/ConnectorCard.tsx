@@ -43,6 +43,7 @@ interface ConnectorCardBaseProps {
   jobInfo?: SynchronousJobRead | null;
   additionalSelectorComponent?: React.ReactNode;
   onSubmit: (values: ConnectorCardValues) => Promise<void> | void;
+  reloadConfig?: () => void;
   onConnectorDefinitionSelect?: (id: string) => void;
   availableConnectorDefinitions: ConnectorDefinition[];
 
@@ -83,6 +84,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   additionalSelectorComponent,
   selectedConnectorDefinitionId,
   fetchingConnectorError,
+  reloadConfig,
   ...props
 }) => {
   const [saved, setSaved] = useState(false);
@@ -160,8 +162,9 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     const testConnectorWithTracking = async () => {
       trackTestConnectorStarted(selectedConnectorDefinition);
       try {
-        await testConnector(connectorCardValues);
+        const response = await testConnector(connectorCardValues);
         trackTestConnectorSuccess(selectedConnectorDefinition);
+        return response.jobInfo.connectorConfigurationUpdated;
       } catch (e) {
         trackTestConnectorFailure(selectedConnectorDefinition);
         throw e;
@@ -169,8 +172,12 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     };
 
     try {
-      await testConnectorWithTracking();
-      onSubmit(connectorCardValues);
+      const didUpdate = await testConnectorWithTracking();
+      if (didUpdate && reloadConfig) {
+        reloadConfig();
+      } else {
+        onSubmit(connectorCardValues);
+      }
       setSaved(true);
     } catch (e) {
       setErrorStatusRequest(e);
