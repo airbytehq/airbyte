@@ -9,7 +9,7 @@ import static io.airbyte.commons.auth.AuthRoleConstants.AUTHENTICATED_USER;
 import io.airbyte.api.generated.DestinationDefinitionSpecificationApi;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
-import io.airbyte.server.handlers.SchedulerHandler;
+import io.airbyte.commons.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
