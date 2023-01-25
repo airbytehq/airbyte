@@ -2,6 +2,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import { IntlProvider } from "react-intl";
 import { mockDestinationsData } from "test-utils/mock-data/mockFrequentlyUsedDestinations";
 
+import { defaultOssFeatures, FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
 
 import { FrequentlyUsedConnectorsCard, FrequentlyUsedConnectorsCardProps } from "./FrequentlyUsedConnectorsCard";
@@ -9,7 +10,9 @@ import { FrequentlyUsedConnectorsCard, FrequentlyUsedConnectorsCardProps } from 
 const renderFrequentlyUsedConnectorsComponent = (props: FrequentlyUsedConnectorsCardProps) =>
   render(
     <IntlProvider locale="en" messages={en}>
-      <FrequentlyUsedConnectorsCard {...props} />
+      <FeatureService features={defaultOssFeatures}>
+        <FrequentlyUsedConnectorsCard {...props} />
+      </FeatureService>
     </IntlProvider>
   );
 
