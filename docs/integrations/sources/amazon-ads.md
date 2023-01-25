@@ -94,6 +94,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 1.0.28  | TODO       | [21888](https://github.com/airbytehq/airbyte/pull/21888) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.27  | 2023-01-05 | [21082](https://github.com/airbytehq/airbyte/pull/21082) | Fix bug with handling: "Report date is too far in the past." - partial revert of #20662                         |
 | 0.1.26  | 2022-12-19 | [20662](https://github.com/airbytehq/airbyte/pull/20662) | Fix bug with handling: "Report date is too far in the past."                                                    |
 | 0.1.25  | 2022-11-08 | [18985](https://github.com/airbytehq/airbyte/pull/18985) | Remove "report_wait_timeout", "report_generation_max_retries" from config                                       |

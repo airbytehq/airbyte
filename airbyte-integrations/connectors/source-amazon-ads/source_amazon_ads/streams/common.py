@@ -5,6 +5,7 @@
 from abc import ABC, abstractmethod
 from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from airbyte_cdk.sources.streams import AvailabilityStrategy
 
 import requests
 from airbyte_cdk.sources.streams.core import Stream
@@ -89,6 +90,10 @@ class BasicAmazonAdsStream(Stream, ABC):
         schema = self.model.schema()
         expand_refs(schema)
         return schema
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
 
 # Basic full refresh stream
