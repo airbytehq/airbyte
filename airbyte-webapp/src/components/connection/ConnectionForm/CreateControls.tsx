@@ -3,33 +3,16 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
-import { Spinner } from "components/ui/Spinner";
+import { FlexContainer } from "components/ui/Flex";
 import { StatusIcon } from "components/ui/StatusIcon";
+
+import styles from "./CreateControls.module.scss";
 
 interface CreateControlsProps {
   isSubmitting: boolean;
   isValid: boolean;
   errorMessage?: React.ReactNode;
 }
-
-const ButtonContainer = styled.div`
-  padding: 15px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const LoadingContainer = styled(ButtonContainer)`
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 17px;
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  justify-content: center;
-`;
-
-const Loader = styled.div`
-  margin-right: 10px;
-`;
 
 const Success = styled(StatusIcon)`
   width: 26px;
@@ -61,19 +44,8 @@ const ErrorText = styled.div`
 `;
 
 const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMessage, isValid }) => {
-  if (isSubmitting) {
-    return (
-      <LoadingContainer>
-        <Loader>
-          <Spinner />
-        </Loader>
-        <FormattedMessage id="form.testingConnection" />
-      </LoadingContainer>
-    );
-  }
-
   return (
-    <ButtonContainer>
+    <FlexContainer alignItems="center" justifyContent="space-between" className={styles.container}>
       {errorMessage ? (
         <ErrorBlock>
           <Error />
@@ -86,11 +58,11 @@ const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMess
         <div />
       )}
       <div>
-        <Button type="submit" disabled={isSubmitting || !isValid}>
+        <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting || !isValid}>
           <FormattedMessage id="onboarding.setUpConnection" />
         </Button>
       </div>
-    </ButtonContainer>
+    </FlexContainer>
   );
 };
 

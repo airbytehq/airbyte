@@ -266,13 +266,6 @@ const InputModal = ({
                   label={formatMessage({ id: "connectorBuilder.inputModal.default" })}
                 />
               )}
-              <BuilderField
-                path="definition.placeholder"
-                type="string"
-                optional
-                label={formatMessage({ id: "connectorBuilder.inputModal.placeholder" })}
-                tooltip={formatMessage({ id: "connectorBuilder.inputModal.placeholderTooltip" })}
-              />
             </>
           ) : (
             <Callout className={styles.calloutContainer}>

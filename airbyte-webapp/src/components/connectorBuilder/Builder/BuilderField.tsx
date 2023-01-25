@@ -152,7 +152,8 @@ const InnerBuilderField: React.FC<BuilderFieldProps & FastFieldProps<unknown>> =
 
 export const BuilderField: React.FC<BuilderFieldProps> = (props) => {
   return (
-    <FastField name={props.path}>
+    // The key is set to enforce a re-render of the component if the type change, otherwise changes in props might not be reflected correctly
+    <FastField name={props.path} key={props.type}>
       {({ field, form, meta }: FastFieldProps<unknown>) => (
         <InnerBuilderField {...props} field={field} form={form} meta={meta} />
       )}

@@ -14,6 +14,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.persistence.job.models.AttemptStatus.FAILED;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.docker.DockerUtils;
@@ -66,7 +67,6 @@ import io.micronaut.core.util.CollectionUtils;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -483,10 +483,13 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       ReleaseStage.generally_available, 4);
   private static final Comparator<ReleaseStage> RELEASE_STAGE_COMPARATOR = Comparator.comparingInt(RELEASE_STAGE_ORDER::get);
 
-  private static List<ReleaseStage> orderByReleaseStageAsc(final List<ReleaseStage> releaseStages) {
-    final List<ReleaseStage> copiedList = new ArrayList<>(releaseStages);
-    copiedList.sort(RELEASE_STAGE_COMPARATOR);
-    return copiedList;
+  @VisibleForTesting
+  static List<ReleaseStage> orderByReleaseStageAsc(final List<ReleaseStage> releaseStages) {
+    // Using collector to get a mutable list
+    return releaseStages.stream()
+        .filter(stage -> stage != null)
+        .sorted(RELEASE_STAGE_COMPARATOR)
+        .toList();
   }
 
   /**
