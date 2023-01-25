@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.23.0
-Use dpath.util.values method to parse response with nested lists
+Limiting the number of HTTP requests during a test read
 
 ## 0.22.0
 Surface the resolved manifest in the CDK
