@@ -28,6 +28,8 @@ from airbyte_cdk.sources.streams.http.rate_limiting import TRANSIENT_EXCEPTIONS
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from requests_futures.sessions import PICKLE_ERROR, FuturesSession
+from airbyte_cdk.sources.streams import AvailabilityStrategy
+
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -115,6 +117,10 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         self._start_date = start_date
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
