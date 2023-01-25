@@ -19,15 +19,15 @@ class DefaultSchemaLoader(SchemaLoader, JsonSchemaMixin):
 
     Attributes:
         config (Config): The user-provided configuration as specified by the source's spec
-        options (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed
+        parameters (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed
     """
 
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._options = options
-        self.default_loader = JsonFileSchemaLoader(options=options, config=self.config)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._parameters = parameters
+        self.default_loader = JsonFileSchemaLoader(parameters=parameters, config=self.config)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
@@ -41,6 +41,6 @@ class DefaultSchemaLoader(SchemaLoader, JsonSchemaMixin):
         except OSError:
             # A slight hack since we don't directly have the stream name. However, when building the default filepath we assume the
             # runtime options stores stream name 'name' so we'll do the same here
-            stream_name = self._options.get("name", "")
+            stream_name = self._parameters.get("name", "")
             logging.info(f"Could not find schema for stream {stream_name}, defaulting to the empty schema")
             return {}

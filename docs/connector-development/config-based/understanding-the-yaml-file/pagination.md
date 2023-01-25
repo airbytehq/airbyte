@@ -38,8 +38,8 @@ Schema:
       - pagination_strategy
       - url_base
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       page_size:
         type: integer
       page_size_option:
@@ -84,8 +84,8 @@ Schema:
     required:
       - page_size
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       page_size:
         type: integer
 ```
@@ -128,8 +128,8 @@ Schema:
     required:
       - page_size
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       page_size:
         type: integer
 ```
@@ -175,8 +175,8 @@ Schema:
     required:
       - cursor_value
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       cursor_value:
         type: string
       stop_condition:

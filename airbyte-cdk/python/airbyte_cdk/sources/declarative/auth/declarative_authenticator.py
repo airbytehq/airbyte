@@ -18,7 +18,7 @@ class DeclarativeAuthenticator(JsonSchemaMixin):
 
 @dataclass
 class NoAuth(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
     @property
     def auth_header(self) -> str:

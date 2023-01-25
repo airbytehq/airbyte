@@ -15,7 +15,7 @@ from dataclasses_jsonschema import JsonSchemaMixin
 class SingleSlice(StreamSlicer, JsonSchemaMixin):
     """Stream slicer returning only a single stream slice"""
 
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         pass

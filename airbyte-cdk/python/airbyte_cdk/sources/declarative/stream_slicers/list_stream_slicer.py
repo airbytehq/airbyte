@@ -29,14 +29,14 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
     slice_values: Union[str, List[str]]
     cursor_field: Union[InterpolatedString, str]
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if isinstance(self.slice_values, str):
-            self.slice_values = InterpolatedString.create(self.slice_values, options=options).eval(self.config)
+            self.slice_values = InterpolatedString.create(self.slice_values, parameters=parameters).eval(self.config)
         if isinstance(self.cursor_field, str):
-            self.cursor_field = InterpolatedString(string=self.cursor_field, options=options)
+            self.cursor_field = InterpolatedString(string=self.cursor_field, parameters=parameters)
 
         if self.request_option and self.request_option.inject_into == RequestOptionType.path:
             raise ValueError("Slice value cannot be injected in the path")

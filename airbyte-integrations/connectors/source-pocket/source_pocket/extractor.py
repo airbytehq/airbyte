@@ -20,13 +20,13 @@ class PocketExtractor(RecordExtractor):
     { "list": { "ID_1": record_1, "ID_2": record_2, ... } }
 
     Attributes:
-        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
+        parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
         decoder (Decoder): The decoder responsible to transfom the response in a Mapping
         field_pointer (str): The field defining record Mapping
     """
 
-    options: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(options={})
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(parameters={})
     field_pointer: str = "list"
 
     def extract_records(self, response: requests.Response) -> List[Record]:

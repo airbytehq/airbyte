@@ -72,7 +72,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
             manifest["type"] = "DeclarativeSource"
 
         resolved_source_config = ManifestReferenceResolver().preprocess_manifest(manifest)
-        propagated_source_config = ManifestComponentTransformer().propagate_types_and_options("", resolved_source_config, {})
+        propagated_source_config = ManifestComponentTransformer().propagate_types_and_parameters("", resolved_source_config, {})
         self._new_source_config = propagated_source_config
         self._legacy_source_config = resolved_source_config
         self._debug = debug

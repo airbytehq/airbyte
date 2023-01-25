@@ -676,19 +676,12 @@ def test_read_stream_with_many_slices():
     assert len(stream_read.slices[1].pages[2].records) == 0
 
 
-
 def test_read_stream_given_maximum_number_of_slices_then_test_read_limit_reached():
     maximum_number_of_slices = 5
     request = {}
     response = {"status_code": 200}
     mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [
-                slice_message(),
-                request_log_message(request),
-                response_log_message(response)
-            ] * maximum_number_of_slices
-        )
+        iter([slice_message(), request_log_message(request), response_log_message(response)] * maximum_number_of_slices)
     )
 
     api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
@@ -706,9 +699,7 @@ def test_read_stream_given_maximum_number_of_pages_then_test_read_limit_reached(
     request = {}
     response = {"status_code": 200}
     mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [slice_message()] + [request_log_message(request), response_log_message(response)] * maximum_number_of_pages_per_slice
-        )
+        iter([slice_message()] + [request_log_message(request), response_log_message(response)] * maximum_number_of_pages_per_slice)
     )
 
     api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
@@ -751,8 +742,8 @@ def test_resolve_manifest():
             {
                 "type": "DeclarativeStream",
                 "$options": _stream_options,
-                "schema_loader": {"$ref": "*ref(definitions.schema_loader)"},
-                "retriever": "*ref(definitions.retriever)",
+                "schema_loader": {"$ref": "#/definitions/schema_loader"},
+                "retriever": "#/definitions/retriever",
             },
         ],
         "check": {"type": "CheckStream", "stream_names": ["lists"]},
@@ -885,7 +876,7 @@ def test_resolve_manifest_unresolvable_references():
         "version": "version",
         "definitions": {},
         "streams": [
-            {"type": "DeclarativeStream", "retriever": "*ref(definitions.retriever)"},
+            {"type": "DeclarativeStream", "retriever": "#/definitions/retriever"},
         ],
         "check": {"type": "CheckStream", "stream_names": ["lists"]},
     }
@@ -895,7 +886,7 @@ def test_resolve_manifest_unresolvable_references():
     with pytest.raises(HTTPException) as actual_exception:
         loop.run_until_complete(api.resolve_manifest(ResolveManifestRequestBody(manifest=invalid_manifest)))
 
-    assert "Undefined reference *ref(definitions.retriever)" in actual_exception.value.detail
+    assert "Undefined reference #/definitions/retriever" in actual_exception.value.detail
     assert actual_exception.value.status_code == expected_status_code
 
 

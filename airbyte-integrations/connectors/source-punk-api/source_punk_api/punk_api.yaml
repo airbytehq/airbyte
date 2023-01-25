@@ -7,14 +7,13 @@ definitions:
   requester:
     url_base: "https://api.punkapi.com/v2/"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        id: |
-          {{
-            config['id']
-            if options['name'] == 'beers_with_id'
-            else ''
-          }}
+    request_parameters:
+      id: |
+        {{
+          config['id']
+          if parameters['name'] == 'beers_with_id'
+          else ''
+        }}
 
   stream_slicer:
     type: DatetimeStreamSlicer
@@ -37,31 +36,31 @@ definitions:
 
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
     # stream_slicer:
-    #   $ref: "*ref(definitions.stream_slicer)"
+    #   $ref: "#/definitions/stream_slicer"
 
   base_stream:
     schema_loader:
       type: JsonSchema
-      file_path: "./source_punk_api/schemas/{{ options['name'] }}.json"
+      file_path: "./source_punk_api/schemas/{{ parameters['name'] }}.json"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
 
   page_stream:
     schema_loader:
       type: JsonSchema
-      file_path: "./source_punk_api/schemas/{{ options['name'] }}.json"
+      file_path: "./source_punk_api/schemas/{{ parameters['name'] }}.json"
     retriever:
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
       paginator:
         type: "DefaultPaginator"
-        url_base: "*ref(definitions.requester.url_base)"
+        url_base: "#/definitions/requester/url_base"
         pagination_strategy:
           type: "PageIncrement"
           page_size: 25
@@ -72,23 +71,23 @@ definitions:
           inject_into: "request_parameter"
           field_name: "per_page"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
 
   beers_stream:
-    $ref: "*ref(definitions.page_stream)"
-    $options:
+    $ref: "#/definitions/page_stream"
+    $parameters:
       name: "beers"
       path: "/beers"
 
   beers_with_id_stream:
-    $ref: "*ref(definitions.page_stream)"
-    $options:
+    $ref: "#/definitions/page_stream"
+    $parameters:
       name: "beers_with_id"
       path: "/beers?{{ config['brewed_after'] }}"
 
 streams:
-  - "*ref(definitions.beers_stream)"
-  - "*ref(definitions.beers_with_id_stream)"
+  - "#/definitions/beers_stream"
+  - "#/definitions/beers_with_id_stream"
 
 check:
   stream_names:

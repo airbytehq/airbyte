@@ -53,7 +53,7 @@ def test_declarative_stream():
         config=config,
         transformations=transformations,
         checkpoint_interval=checkpoint_interval,
-        options={},
+        parameters={},
     )
 
     assert stream.name == name

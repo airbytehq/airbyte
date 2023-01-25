@@ -58,8 +58,8 @@ Schema:
       - cursor_granularity
     additional_properties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       start_datetime:
         "$ref": "#/definitions/MinMaxDatetime"
       end_datetime:
@@ -88,8 +88,8 @@ Schema:
       - datetime
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       datetime:
         type: string
       datetime_format:
@@ -181,8 +181,8 @@ Schema:
       - cursor_field
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       slice_values:
         type: array
         items:
@@ -220,8 +220,8 @@ Schema:
       - stream_slicers
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       stream_slicers:
         type: array
         items:
@@ -267,8 +267,8 @@ Schema:
       - parent_stream_configs
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       parent_stream_configs:
         type: array
         items:
@@ -281,8 +281,8 @@ Schema:
       - stream_slice_field
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       stream:
         "$ref": "#/definitions/Stream"
       parent_key:
@@ -299,7 +299,7 @@ Example:
 stream_slicer:
   type: "SubstreamSlicer"
   parent_streams_configs:
-    - stream: "*ref(repositories_stream)"
+    - stream: "#/repositories_stream"
       parent_key: "id"
       stream_slice_field: "repository"
       request_option:
@@ -321,7 +321,7 @@ retriever:
   stream_slicer:
     type: "SubstreamSlicer"
 parent_streams_configs:
-  - stream: "*ref(repositories_stream)"
+  - stream: "#/repositories_stream"
     parent_key: "id"
     stream_slice_field: "repository"
 ```

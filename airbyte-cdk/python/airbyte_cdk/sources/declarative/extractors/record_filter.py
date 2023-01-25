@@ -19,12 +19,12 @@ class RecordFilter(JsonSchemaMixin):
     condition (str): The string representing the predicate to filter a record. Records will be removed if evaluated to False
     """
 
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     config: Config
     condition: str = ""
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._filter_interpolator = InterpolatedBoolean(condition=self.condition, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._filter_interpolator = InterpolatedBoolean(condition=self.condition, parameters=parameters)
 
     def filter_records(
         self,

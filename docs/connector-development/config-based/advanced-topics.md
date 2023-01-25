@@ -49,15 +49,15 @@ TopLevel(param=ParamType(k="v"))
 
 More details on object instantiation can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=factory#airbyte_cdk.sources.declarative.parsers.factory.DeclarativeComponentFactory).
 
-## $options
+## $parameters
 
-Parameters can be passed down from a parent component to its subcomponents using the $options key.
+Parameters can be passed down from a parent component to its subcomponents using the $parameters key.
 This can be used to avoid repetitions.
 
 Schema:
 
 ```yaml
-  "$options":
+  "$parameters":
     type: object
     additionalProperties: true
 ```
@@ -66,7 +66,7 @@ Example:
 
 ```yaml
 outer:
-  $options:
+  $parameters:
     MyKey: MyValue
   inner:
     k2: v2
@@ -78,10 +78,10 @@ These parameters can be overwritten by subcomponents as a form of specialization
 
 ```yaml
 outer:
-  $options:
+  $parameters:
     MyKey: MyValue
   inner:
-    $options:
+    $parameters:
       MyKey: YourValue
     k2: v2
 ```
@@ -92,10 +92,10 @@ The value can also be used for string interpolation:
 
 ```yaml
 outer:
-  $options:
+  $parameters:
     MyKey: MyValue
   inner:
-    k2: "MyKey is {{ options['MyKey'] }}"
+    k2: "MyKey is {{ parameters['MyKey'] }}"
 ```
 
 In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
@@ -105,11 +105,11 @@ In this example, outer.inner.k2 will evaluate to "MyKey is MyValue"
 Strings can contain references to previously defined values.
 The parser will dereference these values to produce a complete object definition.
 
-References can be defined using a "*ref({arg})" string.
+References can be defined using a "#/{arg}" string.
 
 ```yaml
 key: 1234
-reference: "*ref(key)"
+reference: "#/key"
 ```
 
 will produce the following definition:
@@ -125,7 +125,7 @@ This also works with objects:
 key_value_pairs:
   k1: v1
   k2: v2
-same_key_value_pairs: "*ref(key_value_pairs)"
+same_key_value_pairs: "#/key_value_pairs"
 ```
 
 will produce the following definition:
@@ -146,7 +146,7 @@ key_value_pairs:
   k1: v1
   k2: v2
 same_key_value_pairs:
-  $ref: "*ref(key_value_pairs)"
+  $ref: "#/key_value_pairs"
   k3: v3
 ```
 
@@ -163,13 +163,13 @@ same_key_value_pairs:
 ```
 
 References can also point to nested values.
-Nested references are ambiguous because one could define a key containing with `.`
+Nested references are ambiguous because one could define a key containing with `/`
 in this example, we want to refer to the limit key in the dict object:
 
 ```yaml
 dict:
   limit: 50
-limit_ref: "*ref(dict.limit)"
+limit_ref: "#/dict/limit"
 ```
 
 will produce the following definition:
@@ -180,7 +180,7 @@ limit: 50
 limit-ref: 50
 ```
 
-whereas here we want to access the `nested.path` value.
+whereas here we want to access the `nested/path` value.
 
 ```yaml
 nested:
@@ -194,7 +194,7 @@ will produce the following definition:
 ```yaml
 nested:
   path: "first one"
-nested.path: "uh oh"
+nested/path: "uh oh"
 value: "uh oh"
 ```
 
@@ -211,16 +211,16 @@ If the input string is a raw string, the interpolated string will be the same.
 `"hello world" -> "hello world"`
 
 The engine will evaluate the content passed within `{{...}}`, interpolating the keys from context-specific arguments.
-The "options" keyword [see ($options)](#options) can be referenced.
+The "parameters" keyword [see ($parameters)](#parameters) can be referenced.
 
 For example, some_object.inner_object.key will evaluate to "Hello airbyte" at runtime.
 
 ```yaml
 some_object:
-  $options:
+  $parameters:
     name: "airbyte"
   inner_object:
-    key: "Hello {{ options.name }}"
+    key: "Hello {{ parameters.name }}"
 ```
 
 Some components also pass in additional arguments to the context.
@@ -229,10 +229,10 @@ This is the case for the [record selector](./understanding-the-yaml-file/record-
 Both dot notation and bracket notations (with single quotes ( `'`)) are interchangeable.
 This means that both these string templates will evaluate to the same string:
 
-1. `"{{ options.name }}"`
-2. `"{{ options['name'] }}"`
+1. `"{{ parameters.name }}"`
+2. `"{{ parameters['name'] }}"`
 
-In addition to passing additional values through the $options argument, macros can be called from within the string interpolation.
+In addition to passing additional values through the $parameters argument, macros can be called from within the string interpolation.
 For example,
 `"{{ max(2, 3) }}" -> 3`
 
@@ -255,7 +255,7 @@ If an issue already exist for the missing feature you need, please upvote or com
 Any built-in components can be overloaded by a custom Python class.
 To create a custom component, define a new class in a new file in the connector's module.
 The class must implement the interface of the component it is replacing. For instance, a pagination strategy must implement `airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy.PaginationStrategy`.
-The class must also be a dataclass where each field represents an argument to configure from the yaml file, and an `InitVar` named options.
+The class must also be a dataclass where each field represents an argument to configure from the yaml file, and an `InitVar` named parameters.
 
 For example:
 
@@ -263,9 +263,9 @@ For example:
 @dataclass
 class MyPaginationStrategy(PaginationStrategy):
   my_field: Union[InterpolatedString, str]
-  options: InitVar[Mapping[str, Any]]
+  parameters: InitVar[Mapping[str, Any]]
 
-  def __post_init__(self, options: Mapping[str, Any]):
+  def __post_init__(self, parameters: Mapping[str, Any]):
     pass
 
   def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:

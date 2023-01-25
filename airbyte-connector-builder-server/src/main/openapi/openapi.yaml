@@ -71,7 +71,7 @@ paths:
                 description: Connector manifest template string
   /v1/manifest/resolve:
     post:
-      summary: Given a JSON manifest, returns a JSON manifest with all of the $refs and $options resolved and flattened
+      summary: Given a JSON manifest, returns a JSON manifest with all of the $refs and $parameters resolved and flattened
       operationId: resolveManifest
       requestBody:
         content:
@@ -277,7 +277,7 @@ components:
       properties:
         manifest:
           type: object
-          description: The config-based connector manifest contents with $refs and $options resolved
+          description: The config-based connector manifest contents with $refs and $parameters resolved
 
     # The following exception structs were copied from airbyte-api/src/main/openapi/config.yaml
     InvalidInputProperty:

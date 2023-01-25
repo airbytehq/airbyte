@@ -4,17 +4,16 @@ definitions:
   requester:
     url_base: "https://api.nytimes.com/svc"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        api-key: "{{ config['api_key'] }}"
+    request_parameters:
+      api-key: "{{ config['api_key'] }}"
   retriever:
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   archive_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["response", "docs"]
@@ -29,48 +28,48 @@ definitions:
         step: "P1M"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: "PT1S"
-        cursor_field: "{{ options['stream_cursor_field'] }}"
-    $options:
+        cursor_field: "{{ parameters['stream_cursor_field'] }}"
+    $parameters:
       name: "archive"
       primary_key: "_id"
       path: "/archive/v1/{{ stream_slice['start_time'].split('-')[0] | int }}/{{ stream_slice['start_time'].split('-')[1] | int }}.json"
       stream_cursor_field: "pub_date"
   most_popular_emailed_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["results"]
-    $options:
+    $parameters:
       name: "most_popular_emailed"
       primary_key: "id"
       path: "/mostpopular/v2/emailed/{{ config['period'] }}.json"
   most_popular_shared_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["results"]
-    $options:
+    $parameters:
       name: "most_popular_shared"
       primary_key: "id"
       path: "/mostpopular/v2/shared/{{ config['period'] }}{% if 'share_type' in config %}/{{ config['share_type'] }}{% endif %}.json"
   most_popular_viewed_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["results"]
-    $options:
+    $parameters:
       name: "most_popular_viewed"
       primary_key: "id"
       path: "/mostpopular/v2/viewed/{{ config['period'] }}.json"
 
 streams:
-  - "*ref(definitions.archive_stream)"
-  - "*ref(definitions.most_popular_emailed_stream)"
-  - "*ref(definitions.most_popular_shared_stream)"
-  - "*ref(definitions.most_popular_viewed_stream)"
+  - "#/definitions/archive_stream"
+  - "#/definitions/most_popular_emailed_stream"
+  - "#/definitions/most_popular_shared_stream"
+  - "#/definitions/most_popular_viewed_stream"
 
 check:
   stream_names:

@@ -10,9 +10,8 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_token'] }}"
-    request_options_provider:
-      request_parameters:
-        limit: "100"
+    request_parameters:
+      limit: "100"
   stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:
@@ -22,7 +21,7 @@ definitions:
       datetime: "{{ now_utc().strftime('%s') }}"
       datetime_format: "%s"
     step: "P1D"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
     start_time_option:
       field_name: "date_from"
       inject_into: "request_parameter"
@@ -39,29 +38,29 @@ definitions:
     page_token_option:
       inject_into: "request_parameter"
       field_name: "page"
-    url_base: "*ref(definitions.requester.url_base)"
+    url_base: "#/definitions/requester/url_base"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
-      $ref: "*ref(definitions.paginator)"
+      $ref: "#/definitions/paginator"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/stream_slicer"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   activity_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "activity"
       primary_key: "id"
       path: "/activity/{{ config['domain_id'] }}"
       stream_cursor_field: "created_at"
 
 streams:
-  - "*ref(definitions.activity_stream)"
+  - "#/definitions/activity_stream"
 
 check:
   stream_names:

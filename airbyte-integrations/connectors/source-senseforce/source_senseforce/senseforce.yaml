@@ -9,16 +9,15 @@ definitions:
     # url_base: "http://localhost:8080"
     url_base: "{{ config['backend_url'] }}"
     http_method: "POST"
-    request_options_provider:
-      request_body_data: |
-        [{"clause": {"type": "timestamp", "operator": 10, "parameters": 
-            [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
-             {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
-            ]
-            
-          }, "orderBy": 1, "columnName": "Timestamp"}]/
-      request_headers:
-        Content-Type: application/json
+    request_body_data: |
+      [{"clause": {"type": "timestamp", "operator": 10, "parameters": 
+          [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
+           {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
+          ]
+          
+        }, "orderBy": 1, "columnName": "Timestamp"}]/
+    request_headers:
+      Content-Type: application/json
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
@@ -34,14 +33,14 @@ definitions:
     step: "P100D" #TODO: Add {{ config['slice_range'] ~ d }} here, once it's possible to use config-values for step definition
     datetime_format: "%s"
     cursor_granularity: "PT1S"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
 
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "limit"
@@ -52,16 +51,16 @@ definitions:
         field_name: "offset"
         inject_into: "request_parameter"
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/stream_slicer"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
 
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   dataset_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "dataset"
       primary_key:
         - "id"
@@ -74,7 +73,7 @@ definitions:
             value: "{{ record['timestamp'] | int / 1000 }}"
 
 streams:
-  - "*ref(definitions.dataset_stream)"
+  - "#/definitions/dataset_stream"
 
 check:
   stream_names:

@@ -55,12 +55,12 @@ def test_factory():
     limit: "50"
     offset_request_parameters:
       offset: "{{ next_page_token['offset'] }}"
-      limit: "*ref(limit)"
+      limit: "#/limit"
     request_options:
-      $options:
+      $parameters:
         here: "iam"
       class_name: airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider
-      request_parameters: "*ref(offset_request_parameters)"
+      request_parameters: "#/offset_request_parameters"
       request_body_json:
         body_offset: "{{ next_page_token['offset'] }}"
     """
@@ -108,7 +108,7 @@ def test_list_based_stream_slicer_with_values_refd():
     repositories: ["airbyte", "airbyte-cloud"]
     stream_slicer:
       class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
-      slice_values: "*ref(repositories)"
+      slice_values: "#/repositories"
       cursor_field: repository
     """
     config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content))
@@ -142,11 +142,11 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
 def test_create_substream_slicer():
     content = """
     schema_loader:
-      file_path: "./source_sendgrid/schemas/{{ options['name'] }}.yaml"
-      name: "{{ options['stream_name'] }}"
+      file_path: "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml"
+      name: "{{ parameters['stream_name'] }}"
     retriever:
       requester:
-        name: "{{ options['name'] }}"
+        name: "{{ parameters['name'] }}"
         type: "HttpRequester"
         path: "kek"
       record_selector:
@@ -154,30 +154,30 @@ def test_create_substream_slicer():
           field_pointer: []
     stream_A:
       type: DeclarativeStream
-      $options:
+      $parameters:
         name: "A"
         primary_key: "id"
-        retriever: "*ref(retriever)"
+        retriever: "#/retriever"
         url_base: "https://airbyte.io"
-        schema_loader: "*ref(schema_loader)"
+        schema_loader: "#/schema_loader"
     stream_B:
       type: DeclarativeStream
-      $options:
+      $parameters:
         name: "B"
         primary_key: "id"
-        retriever: "*ref(retriever)"
+        retriever: "#/retriever"
         url_base: "https://airbyte.io"
-        schema_loader: "*ref(schema_loader)"
+        schema_loader: "#/schema_loader"
     stream_slicer:
       type: SubstreamSlicer
       parent_stream_configs:
-        - stream: "*ref(stream_A)"
+        - stream: "#/stream_A"
           parent_key: id
           stream_slice_field: repository_id
           request_option:
             inject_into: request_parameter
             field_name: repository_id
-        - stream: "*ref(stream_B)"
+        - stream: "#/stream_B"
           parent_key: someid
           stream_slice_field: word_id
     """
@@ -213,8 +213,8 @@ def test_create_cartesian_stream_slicer():
     stream_slicer:
       type: CartesianProductStreamSlicer
       stream_slicers:
-        - "*ref(stream_slicer_A)"
-        - "*ref(stream_slicer_B)"
+        - "#/stream_slicer_A"
+        - "#/stream_slicer_B"
     """
     config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content))
 
@@ -233,7 +233,7 @@ def test_datetime_stream_slicer():
     content = """
     stream_slicer:
         type: DatetimeStreamSlicer
-        $options:
+        $parameters:
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
           cursor_granularity: "PT0.000001S"
         start_datetime:
@@ -277,7 +277,7 @@ decoder:
   class_name: "airbyte_cdk.sources.declarative.decoders.json_decoder.JsonDecoder"
 extractor:
   class_name: airbyte_cdk.sources.declarative.extractors.dpath_extractor.DpathExtractor
-  decoder: "*ref(decoder)"
+  decoder: "#/decoder"
 selector:
   class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
   record_filter:
@@ -302,48 +302,48 @@ request_options_provider:
   class_name: airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider
 requester:
   class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
-  name: "{{ options['name'] }}"
+  name: "{{ parameters['name'] }}"
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['apikey'] }}"
-  request_parameters_provider: "*ref(request_options_provider)"
+  request_parameters_provider: "#/request_options_provider"
   error_handler:
     type: NoPagination
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
-  name: "{{ options['name'] }}"
+  name: "{{ parameters['name'] }}"
   stream_slicer:
     class_name: airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice
   paginator:
     class_name: airbyte_cdk.sources.declarative.requesters.paginators.no_pagination.NoPagination
-  primary_key: "{{ options['primary_key'] }}"
+  primary_key: "{{ parameters['primary_key'] }}"
 partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
     class_name: airbyte_cdk.sources.declarative.schema.json_file_schema_loader.JsonFileSchemaLoader
-    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
+    file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
   cursor_field: [ ]
 list_stream:
-  $ref: "*ref(partial_stream)"
-  $options:
+  $ref: "#/partial_stream"
+  $parameters:
     name: "lists"
     primary_key: "id"
     extractor:
-      $ref: "*ref(extractor)"
-      field_pointer: ["{{ options['name'] }}"]
+      $ref: "#/extractor"
+      field_pointer: ["{{ parameters['name'] }}"]
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "#/retriever"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "#/requester"
       path:
-        $ref: "*ref(next_page_url_from_token_partial)"
+        $ref: "#/next_page_url_from_token_partial"
         default: "marketing/lists"
     paginator:
-      $ref: "*ref(metadata_paginator)"
+      $ref: "#/metadata_paginator"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "#/selector"
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
@@ -414,21 +414,21 @@ spec:
 
 @pytest.mark.parametrize(
     "test_name, record_selector, expected_runtime_selector",
-    [("test_static_record_selector", "result", "result"), ("test_options_record_selector", "{{ options['name'] }}", "lists")],
+    [("test_static_record_selector", "result", "result"), ("test_options_record_selector", "{{ parameters['name'] }}", "lists")],
 )
 def test_create_record_selector(test_name, record_selector, expected_runtime_selector):
     content = f"""
     extractor:
       type: DpathExtractor
     selector:
-      $options:
+      $parameters:
         name: "lists"
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
       record_filter:
         class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
-        $ref: "*ref(extractor)"
+        $ref: "#/extractor"
         field_pointer: ["{record_selector}"]
     """
     config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content))
@@ -450,12 +450,12 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
             """
                       extractor:
                         type: DpathExtractor
-                        field_pointer: ["{{ options['name'] }}"]
+                        field_pointer: ["{{ parameters['name'] }}"]
                       selector:
                         class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-                        $options:
+                        $parameters:
                           name: "selector"
-                        extractor: "*ref(extractor)"
+                        extractor: "#/extractor"
                     """,
             "selector",
         ),
@@ -464,14 +464,14 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
             """
                       extractor:
                         type: DpathExtractor
-                        $options:
+                        $parameters:
                           name: "extractor"
-                        field_pointer: ["{{ options['name'] }}"]
+                        field_pointer: ["{{ parameters['name'] }}"]
                       selector:
                         class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-                        $options:
+                        $parameters:
                           name: "selector"
-                        extractor: "*ref(extractor)"
+                        extractor: "#/extractor"
                     """,
             "extractor",
         ),
@@ -534,12 +534,12 @@ def test_create_requester(test_name, error_handler):
   requester:
     type: HttpRequester
     path: "/v3/marketing/lists"
-    $options:
+    $parameters:
         name: 'lists'
     url_base: "https://api.sendgrid.com"
     authenticator:
       type: "BasicHttpAuthenticator"
-      username: "{{{{ options.name}}}}"
+      username: "{{{{ parameters.name }}}}"
       password: "{{{{ config.apikey }}}}"
     request_options_provider:
       request_parameters:
@@ -595,13 +595,13 @@ def test_config_with_defaults():
     content = """
     lists_stream:
       type: "DeclarativeStream"
-      $options:
+      $parameters:
         name: "lists"
         primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
-          name: "{{ options.stream_name }}"
-          file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          name: "{{ parameters.stream_name }}"
+          file_path: "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
         retriever:
           paginator:
             type: "DefaultPaginator"
@@ -619,13 +619,13 @@ def test_config_with_defaults():
             authenticator:
               type: "BearerAuthenticator"
               api_token: "{{ config.apikey }}"
-            request_parameters:
+            request_options:
               page_size: 10
           record_selector:
             extractor:
               field_pointer: ["result"]
     streams:
-      - "*ref(lists_stream)"
+      - "#/lists_stream"
     """
     config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content))
 
@@ -678,18 +678,18 @@ def test_create_default_paginator():
 
 class TestCreateTransformations:
     # the tabbing matters
-    base_options = """
+    base_parameters = """
                 name: "lists"
                 primary_key: id
                 url_base: "https://api.sendgrid.com"
                 schema_loader:
-                  name: "{{ options.name }}"
-                  file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+                  name: "{{ parameters.name }}"
+                  file_path: "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
                 retriever:
                   requester:
-                    name: "{{ options.name }}"
+                    name: "{{ parameters.name }}"
                     path: "/v3/marketing/lists"
-                    request_parameters:
+                    request_options:
                       page_size: 10
                   record_selector:
                     extractor:
@@ -700,8 +700,8 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            $options:
-                {self.base_options}
+            $parameters:
+                {self.base_parameters}
         """
         config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content))
 
@@ -715,8 +715,8 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            $options:
-                {self.base_options}
+            $parameters:
+                {self.base_parameters}
                 transformations:
                     - type: RemoveFields
                       field_pointers:
@@ -729,15 +729,15 @@ class TestCreateTransformations:
 
         component = factory.create_component(config["the_stream"], input_config)()
         assert isinstance(component, DeclarativeStream)
-        expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], options={})]
+        expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], parameters={})]
         assert expected == component.transformations
 
     def test_add_fields(self):
         content = f"""
         the_stream:
             class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
-            $options:
-                {self.base_options}
+            $parameters:
+                {self.base_parameters}
                 transformations:
                     - type: AddFields
                       fields:
@@ -754,10 +754,12 @@ class TestCreateTransformations:
             AddFields(
                 fields=[
                     AddedFieldDefinition(
-                        path=["field1"], value=InterpolatedString(string="static_value", default="static_value", options={}), options={}
+                        path=["field1"],
+                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
+                        parameters={},
                     )
                 ],
-                options={},
+                parameters={},
             )
         ]
         assert expected == component.transformations
@@ -766,13 +768,18 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            $options:
-                {self.base_options}
+            $parameters:
+                {self.base_parameters}
             schema_loader:
                 type: InlineSchemaLoader
-                schema: "*ref(schemas.the_stream_schema)"
+                schema: "#/schemas/the_stream_schema"
         schemas:
             the_stream_schema:
+                type: object
+                properties:
+                    title:
+                        type: string
+            the_stream_schema2:
                 type: object
                 properties:
                     title:
@@ -798,7 +805,7 @@ def test_validation_wrong_input_type():
         class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
-        $ref: "*ref(extractor)"
+        $ref: "#/extractor"
         field_pointer: 408
     """
     config = resolver.preprocess_manifest(YamlDeclarativeSource._parse(content))
@@ -810,7 +817,7 @@ def test_validation_type_missing_required_fields():
     content = """
     stream_slicer:
       type: DatetimeStreamSlicer
-      $options:
+      $parameters:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       start_datetime:
         type: MinMaxDatetime

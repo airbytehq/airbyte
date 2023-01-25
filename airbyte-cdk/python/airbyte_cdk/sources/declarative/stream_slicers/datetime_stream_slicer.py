@@ -54,7 +54,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     datetime_format: str
     cursor_granularity: str
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     _cursor: dict = field(repr=False, default=None)  # tracks current datetime
     _cursor_end: dict = field(repr=False, default=None)  # tracks end of current stream slice
     start_time_option: Optional[RequestOption] = None
@@ -63,21 +63,21 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     stream_state_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if not isinstance(self.start_datetime, MinMaxDatetime):
-            self.start_datetime = MinMaxDatetime(self.start_datetime, options)
+            self.start_datetime = MinMaxDatetime(self.start_datetime, parameters)
         if not isinstance(self.end_datetime, MinMaxDatetime):
-            self.end_datetime = MinMaxDatetime(self.end_datetime, options)
+            self.end_datetime = MinMaxDatetime(self.end_datetime, parameters)
 
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
         self._step = self._parse_timedelta(self.step)
         self._cursor_granularity = self._parse_timedelta(self.cursor_granularity)
-        self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
-        self.lookback_window = InterpolatedString.create(self.lookback_window, options=options)
-        self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", options=options)
-        self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", options=options)
+        self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
+        self.lookback_window = InterpolatedString.create(self.lookback_window, parameters=parameters)
+        self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", parameters=parameters)
+        self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", parameters=parameters)
         self._parser = DatetimeParser()
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer

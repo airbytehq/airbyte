@@ -13,14 +13,14 @@ definitions:
     api_token: "{{ config['access_key'] }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
 
   stream_slicer:
     start_datetime: "{{ config['start_date'] }}T00:00:00.000000+0000"
@@ -28,13 +28,13 @@ definitions:
     step: "1d"
 
   stock_api_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "stock_api"
       primary_key: "t"
       path: "/v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ config['start_date'] }}/{{ config['end_date'] }}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit=120&apiKey={{ config['apiKey'] }}"
 streams:
-  - "*ref(definitions.stock_api_stream)"
+  - "#/definitions/stock_api_stream"
 
 check:
   stream_names:

@@ -66,8 +66,8 @@ Note that we are setting a default value because the `check` operation does not 
 definitions:
   <...>
   rates_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
@@ -107,21 +107,21 @@ definitions:
     step: "P1D"
     datetime_format: "%Y-%m-%d"
     cursor_granularity: "P1D"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
 ```
 
 and refer to it in the stream's retriever.
 This will generate slices from the start time until the end time, where each slice is exactly one day.
 The start time is defined in the config file, while the end time is defined by the `now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
 
-Note that we're also setting the `stream_cursor_field` in the stream's `$options` so it can be accessed by the `StreamSlicer`:
+Note that we're also setting the `stream_cursor_field` in the stream's `$parameters` so it can be accessed by the `StreamSlicer`:
 
 ```yaml
 definitions:
   <...>
   rates_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{config['start_date'] or 'latest'}}"
@@ -136,7 +136,7 @@ definitions:
   retriever:
     <...>
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/stream_slicer"
 ```
 
 This will generate slices from the start time until the end time, where each slice is exactly one day.
@@ -148,8 +148,8 @@ Finally, we'll update the path to point to the `stream_slice`'s start_time
 definitions:
   <...>
   rates_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
@@ -186,28 +186,28 @@ definitions:
     step: "P1D"
     datetime_format: "%Y-%m-%d"
     cursor_granularity: "P1D"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/stream_slicer"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   rates_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
       stream_cursor_field: "date"
 streams:
-  - "*ref(definitions.rates_stream)"
+  - "#/definitions/rates_stream"
 check:
   stream_names:
     - "rates"

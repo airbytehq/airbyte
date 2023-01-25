@@ -13,7 +13,7 @@ import warnings
 from dataclasses import fields
 from typing import Any, List, Literal, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
-from airbyte_cdk.sources.declarative.create_partial import OPTIONS_STR, create
+from airbyte_cdk.sources.declarative.create_partial import PARAMETERS_STR, create
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.parsers.class_types_registry import CLASS_TYPES_REGISTRY
 from airbyte_cdk.sources.declarative.parsers.default_implementation_registry import DEFAULT_IMPLEMENTATIONS_REGISTRY
@@ -79,11 +79,11 @@ class DeclarativeComponentFactory:
     TopLevel(param=ParamType(k="v"))
     ```
 
-    Parameters can be passed down from a parent component to its subcomponents using the $options key.
+    Parameters can be passed down from a parent component to its subcomponents using the $parameters key.
     This can be used to avoid repetitions.
     ```
     outer:
-      $options:
+      $parameters:
         MyKey: MyValue
       inner:
        k2: v2
@@ -93,10 +93,10 @@ class DeclarativeComponentFactory:
     The value can also be used for string interpolation:
     ```
     outer:
-      $options:
+      $parameters:
         MyKey: MyValue
       inner:
-       k2: "MyKey is {{ options.MyKey }}"
+       k2: "MyKey is {{ parameters.MyKey }}"
     ```
     In this example, outer.inner.k2 will evaluate to "MyValue"
 
@@ -138,10 +138,10 @@ class DeclarativeComponentFactory:
             class_ = self._get_class_from_fully_qualified_class_name(class_or_class_name)
         else:
             class_ = class_or_class_name
-        # create components in options before propagating them
-        if OPTIONS_STR in kwargs:
-            kwargs[OPTIONS_STR] = {
-                k: self._create_subcomponent(k, v, kwargs, config, class_, instantiate) for k, v in kwargs[OPTIONS_STR].items()
+        # create components in parameters before propagating them
+        if PARAMETERS_STR in kwargs:
+            kwargs[PARAMETERS_STR] = {
+                k: self._create_subcomponent(k, v, kwargs, config, class_, instantiate) for k, v in kwargs[PARAMETERS_STR].items()
             }
         updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_, instantiate) for k, v in kwargs.items()}
 
@@ -161,7 +161,7 @@ class DeclarativeComponentFactory:
 
             component_definition = {
                 **updated_kwargs,
-                **{k: v for k, v in updated_kwargs.get(OPTIONS_STR, {}).items() if k not in updated_kwargs},
+                **{k: v for k, v in updated_kwargs.get(PARAMETERS_STR, {}).items() if k not in updated_kwargs},
                 "config": config,
             }
             validate(component_definition, schema)
@@ -189,11 +189,11 @@ class DeclarativeComponentFactory:
         """
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
-            definition[OPTIONS_STR] = self._merge_dicts(kwargs.get(OPTIONS_STR, dict()), definition.get(OPTIONS_STR, dict()))
+            definition[PARAMETERS_STR] = self._merge_dicts(kwargs.get(PARAMETERS_STR, dict()), definition.get(PARAMETERS_STR, dict()))
             return self.create_component(definition, config, instantiate)()
         elif self.is_object_definition_with_type(definition):
             # If type is set instead of class_name, get the class_name from the CLASS_TYPES_REGISTRY
-            definition[OPTIONS_STR] = self._merge_dicts(kwargs.get(OPTIONS_STR, dict()), definition.get(OPTIONS_STR, dict()))
+            definition[PARAMETERS_STR] = self._merge_dicts(kwargs.get(PARAMETERS_STR, dict()), definition.get(PARAMETERS_STR, dict()))
             object_type = definition.pop("type")
             class_name = CLASS_TYPES_REGISTRY[object_type]
             definition["class_name"] = class_name
@@ -205,7 +205,7 @@ class DeclarativeComponentFactory:
             # We don't have to instantiate builtin types (eg string and dict) because definition is already going to be of that type
             if expected_type and not self._is_builtin_type(expected_type):
                 definition["class_name"] = expected_type
-                definition[OPTIONS_STR] = self._merge_dicts(kwargs.get(OPTIONS_STR, dict()), definition.get(OPTIONS_STR, dict()))
+                definition[PARAMETERS_STR] = self._merge_dicts(kwargs.get(PARAMETERS_STR, dict()), definition.get(PARAMETERS_STR, dict()))
                 return self.create_component(definition, config, instantiate)()
             else:
                 return definition
@@ -226,13 +226,13 @@ class DeclarativeComponentFactory:
             if expected_type and not isinstance(definition, expected_type):
                 # call __init__(definition) if definition is not a dict and is not of the expected type
                 # for instance, to turn a string into an InterpolatedString
-                options = kwargs.get(OPTIONS_STR, {})
+                parameters = kwargs.get(PARAMETERS_STR, {})
                 try:
-                    # enums can't accept options
+                    # enums can't accept parameters
                     if issubclass(expected_type, enum.Enum) or self.is_primitive(definition):
                         return expected_type(definition)
                     else:
-                        return expected_type(definition, options=options)
+                        return expected_type(definition, parameters=parameters)
                 except Exception as e:
                     raise Exception(f"failed to instantiate type {expected_type}. {e}")
         return definition
@@ -275,9 +275,9 @@ class DeclarativeComponentFactory:
             return interface
 
     @staticmethod
-    def _get_subcomponent_options(sub: Any):
+    def _get_subcomponent_parameters(sub: Any):
         if isinstance(sub, dict):
-            return sub.get(OPTIONS_STR, {})
+            return sub.get(PARAMETERS_STR, {})
         else:
             return {}
 

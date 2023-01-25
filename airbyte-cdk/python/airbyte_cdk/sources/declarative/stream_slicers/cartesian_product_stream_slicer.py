@@ -35,7 +35,7 @@ class CartesianProductStreamSlicer(StreamSlicer, JsonSchemaMixin):
     """
 
     stream_slicers: List[StreamSlicer]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         for slicer in self.stream_slicers:

@@ -22,13 +22,13 @@ class ConstantBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     """
 
     backoff_time_in_seconds: Union[float, InterpolatedString, str]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     config: Config
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if not isinstance(self.backoff_time_in_seconds, InterpolatedString):
             self.backoff_time_in_seconds = str(self.backoff_time_in_seconds)
-        self.backoff_time_in_seconds = InterpolatedString.create(self.backoff_time_in_seconds, options=options)
+        self.backoff_time_in_seconds = InterpolatedString.create(self.backoff_time_in_seconds, parameters=parameters)
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         return self.backoff_time_in_seconds.eval(self.config)

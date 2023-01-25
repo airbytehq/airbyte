@@ -61,11 +61,11 @@ class ObjectDpathExtractor(DpathExtractor):
 
     inject_key_as_field: Union[str, InterpolatedString] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.inject_key_as_field = InterpolatedString.create(self.inject_key_as_field, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.inject_key_as_field = InterpolatedString.create(self.inject_key_as_field, parameters=parameters)
         for pointer_index in range(len(self.field_pointer)):
             if isinstance(self.field_pointer[pointer_index], str):
-                self.field_pointer[pointer_index] = InterpolatedString.create(self.field_pointer[pointer_index], options=options)
+                self.field_pointer[pointer_index] = InterpolatedString.create(self.field_pointer[pointer_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> list[Record]:
         response_body = self.decoder.decode(response)

@@ -48,8 +48,8 @@ class TestYamlDeclarativeSource:
         version: "version"
         definitions:
           schema_loader:
-            name: "{{ options.stream_name }}"
-            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+            name: "{{ parameters.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
           retriever:
             paginator:
               type: "DefaultPaginator"
@@ -68,18 +68,18 @@ class TestYamlDeclarativeSource:
                 type: "BearerAuthenticator"
                 api_token: "{{ config.apikey }}"
               request_parameters:
-                page_size: 10
+                page_size: "{{ 10 }}"
             record_selector:
               extractor:
                 field_pointer: ["result"]
         streams:
           - type: DeclarativeStream
-            $options:
+            $parameters:
               name: "lists"
               primary_key: id
               url_base: "https://api.sendgrid.com"
-            schema_loader: "*ref(definitions.schema_loader)"
-            retriever: "*ref(definitions.retriever)"
+            schema_loader: "#/definitions/schema_loader"
+            retriever: "#/definitions/retriever"
         check:
           type: CheckStream
           stream_names: ["lists"]
@@ -94,7 +94,7 @@ class TestYamlDeclarativeSource:
           this is not parsable yaml: " at all
         streams:
           - type: DeclarativeStream
-            $options:
+            $parameters:
               name: "lists"
               primary_key: id
               url_base: "https://api.sendgrid.com"
@@ -111,16 +111,16 @@ class TestYamlDeclarativeSource:
         version: "version"
         definitions:
           schema_loader:
-            name: "{{ options.stream_name }}"
-            file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+            name: "{{ parameters.stream_name }}"
+            file_path: "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
         streams:
           - type: DeclarativeStream
-            $options:
+            $parameters:
               name: "lists"
               primary_key: id
               url_base: "https://api.sendgrid.com"
-            schema_loader: "*ref(definitions.schema_loader)"
-            retriever: "*ref(definitions.retriever)"
+            schema_loader: "#/definitions/schema_loader"
+            retriever: "#/definitions/retriever"
         check:
           type: CheckStream
           stream_names: ["lists"]

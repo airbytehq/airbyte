@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_square/schemas/{{ options['name'] }}.json"
+    file_path: "./source_square/schemas/{{ parameters['name'] }}.json"
   oauth_authenticator:
     type: OAuthAuthenticator
     token_refresh_endpoint: https://connect.squareup.com/oauth2/token
@@ -17,30 +17,29 @@ definitions:
     api_token: "{{ config['api_key'] }}"
   selector:
     extractor:
-      field_pointer: ["{{ options['name'] }}"]
+      field_pointer: ["{{ parameters['name'] }}"]
 
   requester:
     url_base: "{{ 'https://connect.squareupsandbox.com/v2' if config['is_sandbox'] else 'https://connect.squareup.com/v2' }}"
     http_method: "GET"
     authenticator:
       class_name: source_square.components.AuthenticatorSquare
-      bearer: "*ref(definitions.bearer_authenticator)"
-      oauth: "*ref(definitions.oauth_authenticator)"
+      bearer: "#/definitions/bearer_authenticator"
+      oauth: "#/definitions/oauth_authenticator"
 
-    request_options_provider:
-      request_headers:
-        Square-Version: "2022-10-19"
-        Content-Type: "application/json"
+    request_headers:
+      Square-Version: "2022-10-19"
+      Content-Type: "application/json"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
 
   base_stream:
     type: DeclarativeStream
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -55,22 +54,21 @@ definitions:
           inject_into: "request_parameter"
           field_name: "cursor"
         url_base:
-          $ref: "*ref(definitions.requester.url_base)"
+          $ref: "#/definitions/requester/url_base"
 
   base_incremental_stream:
-    $options:
+    $parameters:
       stream_cursor_field: "created_at"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_body_json:
-            sort_order: "ASC"
-            sort_field: "CREATED_AT"
+        $ref: "#/definitions/requester"
+        request_body_json:
+          sort_order: "ASC"
+          sort_field: "CREATED_AT"
       paginator:
         type: DefaultPaginator
-        url_base: "*ref(definitions.requester.url_base)"
+        url_base: "#/definitions/requester/url_base"
         pagination_strategy:
           page_size: 100
           type: "CursorPagination"
@@ -98,27 +96,26 @@ definitions:
           field_name: begin_time
           inject_into: body_json
   base_catalog_objects_stream:
-    $ref: "*ref(definitions.base_incremental_stream)"
+    $ref: "#/definitions/base_incremental_stream"
     stream_cursor_field: "updated_at"
-    $options:
+    $parameters:
       primary_key: "id"
       path: "/catalog/search"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_pointer: ["objects"]
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         http_method: "POST"
-        request_options_provider:
-          request_body_json:
-            include_related_objects: "{{ False }}"
-            include_deleted_objects: "{{ config['include_deleted_objects'] }}"
-            object_types: "{{ [options['object_type']] }}"
+        request_body_json:
+          include_related_objects: "{{ False }}"
+          include_deleted_objects: "{{ config['include_deleted_objects'] }}"
+          object_types: "{{ [parameters['object_type']] }}"
       paginator:
         type: DefaultPaginator
-        url_base: "*ref(definitions.requester.url_base)"
+        url_base: "#/definitions/requester/url_base"
         pagination_strategy:
           page_size: 1000
           type: "CursorPagination"
@@ -147,34 +144,33 @@ definitions:
           inject_into: body_json
   base_stream_page_json_limit:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         http_method: "POST"
 
   customers_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "customers"
       primary_key: "id"
       path: "/customers"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            sort_order: ASC
-            sort_field: CREATED_AT
+        $ref: "#/definitions/requester"
+        request_parameters:
+          sort_order: ASC
+          sort_field: CREATED_AT
 
   shifts_stream:
-    $ref: "*ref(definitions.base_stream_page_json_limit)"
-    $options:
+    $ref: "#/definitions/base_stream_page_json_limit"
+    $parameters:
       name: "shifts"
       primary_key: "id"
       path: "labor/shifts/search"
     retriever:
-      $ref: "*ref(definitions.base_stream_page_json_limit.retriever)"
+      $ref: "#/definitions/base_stream_page_json_limit/retriever"
       paginator:
         pagination_strategy:
           page_size: 200
@@ -183,103 +179,101 @@ definitions:
           field_name: "limit"
 
   team_members_stream:
-    $ref: "*ref(definitions.base_stream_page_json_limit)"
-    $options:
+    $ref: "#/definitions/base_stream_page_json_limit"
+    $parameters:
       name: "team_members"
       primary_key: "id"
       path: "/team-members/search"
 
   team_member_wages_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "team_member_wages"
       primary_key: "id"
       path: "/labor/team-member-wages"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
-        request_options_provider:
-          request_parameters:
-            sort_order: ASC
-            sort_field: CREATED_AT
+        $ref: "#/definitions/requester"
+        request_parameters:
+          sort_order: ASC
+          sort_field: CREATED_AT
       paginator:
         pagination_strategy:
           page_size: 200
   locations_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "locations"
       primary_key: "id"
       path: "/locations"
 
   categories_stream:
-    $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $ref: "#/definitions/base_catalog_objects_stream"
+    $parameters:
       name: "categories"
       object_type: "CATEGORY"
       path: "/catalog/search"
 
   items_stream:
-    $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $ref: "#/definitions/base_catalog_objects_stream"
+    $parameters:
       name: "items"
       object_type: "ITEM"
       path: "/catalog/search"
 
   discounts_stream:
-    $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $ref: "#/definitions/base_catalog_objects_stream"
+    $parameters:
       name: "discounts"
       object_type: "DISCOUNT"
       path: "/catalog/search"
 
   taxes_stream:
-    $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $ref: "#/definitions/base_catalog_objects_stream"
+    $parameters:
       name: "taxes"
       object_type: "TAX"
       path: "/catalog/search"
 
   modifier_list_stream:
-    $ref: "*ref(definitions.base_catalog_objects_stream)"
-    $options:
+    $ref: "#/definitions/base_catalog_objects_stream"
+    $parameters:
       name: "modifier_list"
       object_type: "MODIFIER_LIST"
       path: "/catalog/search"
 
   refunds_stream:
-    $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
       name: "refunds"
       primary_key: "id"
       path: "/refunds"
     retriever:
-      $ref: "*ref(definitions.base_incremental_stream.retriever)"
+      $ref: "#/definitions/base_incremental_stream/retriever"
 
   payments_stream:
-    $ref: "*ref(definitions.base_incremental_stream)"
-    $options:
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
       name: "payments"
       primary_key: "id"
       path: "/payments"
     retriever:
-      $ref: "*ref(definitions.base_incremental_stream.retriever)"
+      $ref: "#/definitions/base_incremental_stream/retriever"
 
   orders_stream:
-    $ref: "*ref(definitions.base_stream_page_json_limit)"
-    $options:
+    $ref: "#/definitions/base_stream_page_json_limit"
+    $parameters:
       name: "orders"
       primary_key: "id"
       path: "/orders/search"
     retriever:
-      $ref: "*ref(definitions.base_stream_page_json_limit.retriever)"
+      $ref: "#/definitions/base_stream_page_json_limit/retriever"
       requester:
-        $ref: "*ref(definitions.base_stream_page_json_limit.retriever.requester)"
+        $ref: "#/definitions/base_stream_page_json_limit/retriever/requester"
         http_method: "POST"
-        request_options_provider:
-          request_body_json:
-            limit: "{{ 500 }}"
+        request_body_json:
+          limit: "{{ 500 }}"
       stream_slicer:
         class_name: source_square.components.SquareSubstreamSlicer
         start_datetime:
@@ -291,24 +285,24 @@ definitions:
         step: P30D
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_granularity: "PT0.000001S"
-        parent_stream: "*ref(definitions.locations_stream)"
+        parent_stream: "#/definitions/locations_stream"
         cursor_field: "updated_at"
         parent_key: "id"
 
 streams:
-  - "*ref(definitions.customers_stream)"
-  - "*ref(definitions.locations_stream)"
-  - "*ref(definitions.shifts_stream)"
-  - "*ref(definitions.team_members_stream)"
-  - "*ref(definitions.team_member_wages_stream)"
-  - "*ref(definitions.items_stream)"
-  - "*ref(definitions.categories_stream)"
-  - "*ref(definitions.discounts_stream)"
-  - "*ref(definitions.taxes_stream)"
-  - "*ref(definitions.modifier_list_stream)"
-  - "*ref(definitions.refunds_stream)"
-  - "*ref(definitions.payments_stream)"
-  - "*ref(definitions.orders_stream)"
+  - "#/definitions/customers_stream"
+  - "#/definitions/locations_stream"
+  - "#/definitions/shifts_stream"
+  - "#/definitions/team_members_stream"
+  - "#/definitions/team_member_wages_stream"
+  - "#/definitions/items_stream"
+  - "#/definitions/categories_stream"
+  - "#/definitions/discounts_stream"
+  - "#/definitions/taxes_stream"
+  - "#/definitions/modifier_list_stream"
+  - "#/definitions/refunds_stream"
+  - "#/definitions/payments_stream"
+  - "#/definitions/orders_stream"
 
 check:
   stream_names:

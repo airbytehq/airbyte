@@ -17,14 +17,16 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
     [
         (
             "test_single_stream_slicer",
-            [ListStreamSlicer(slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, options={})],
+            [ListStreamSlicer(slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={})],
             [{"owner_resource": "customer"}, {"owner_resource": "store"}, {"owner_resource": "subscription"}],
         ),
         (
             "test_two_stream_slicers",
             [
-                ListStreamSlicer(slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, options={}),
-                ListStreamSlicer(slice_values=["A", "B"], cursor_field="letter", config={}, options={}),
+                ListStreamSlicer(
+                    slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
+                ),
+                ListStreamSlicer(slice_values=["A", "B"], cursor_field="letter", config={}, parameters={}),
             ],
             [
                 {"owner_resource": "customer", "letter": "A"},
@@ -38,16 +40,18 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
         (
             "test_list_and_datetime",
             [
-                ListStreamSlicer(slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, options={}),
+                ListStreamSlicer(
+                    slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
+                ),
                 DatetimeStreamSlicer(
-                    start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", options={}),
-                    end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", options={}),
+                    start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
+                    end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),
                     step="P1D",
-                    cursor_field=InterpolatedString.create("", options={}),
+                    cursor_field=InterpolatedString.create("", parameters={}),
                     datetime_format="%Y-%m-%d",
                     cursor_granularity="P1D",
                     config={},
-                    options={},
+                    parameters={},
                 ),
             ],
             [
@@ -65,7 +69,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
     ],
 )
 def test_substream_slicer(test_name, stream_slicers, expected_slices):
-    slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
+    slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
     slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices
 
@@ -84,19 +88,19 @@ def test_substream_slicer(test_name, stream_slicers, expected_slices):
 )
 def test_update_cursor(test_name, stream_slice, expected_state):
     stream_slicers = [
-        ListStreamSlicer(slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, options={}),
+        ListStreamSlicer(slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}),
         DatetimeStreamSlicer(
-            start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", options={}),
-            end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", options={}),
+            start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
+            end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),
             step="P1D",
-            cursor_field=InterpolatedString(string="date", options={}),
+            cursor_field=InterpolatedString(string="date", parameters={}),
             datetime_format="%Y-%m-%d",
             cursor_granularity="P1D",
             config={},
-            options={},
+            parameters={},
         ),
     ]
-    slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
+    slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
 
     if expected_state:
         slicer.update_cursor(stream_slice, None)
@@ -112,8 +116,8 @@ def test_update_cursor(test_name, stream_slice, expected_state):
     [
         (
             "test_param_header",
-            RequestOption(inject_into=RequestOptionType.request_parameter, options={}, field_name="owner"),
-            RequestOption(inject_into=RequestOptionType.header, options={}, field_name="repo"),
+            RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="owner"),
+            RequestOption(inject_into=RequestOptionType.header, parameters={}, field_name="repo"),
             {"owner": "customer"},
             {"repo": "airbyte"},
             {},
@@ -121,8 +125,8 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_header_header",
-            RequestOption(inject_into=RequestOptionType.header, options={}, field_name="owner"),
-            RequestOption(inject_into=RequestOptionType.header, options={}, field_name="repo"),
+            RequestOption(inject_into=RequestOptionType.header, parameters={}, field_name="owner"),
+            RequestOption(inject_into=RequestOptionType.header, parameters={}, field_name="repo"),
             {},
             {"owner": "customer", "repo": "airbyte"},
             {},
@@ -130,8 +134,8 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_body_data",
-            RequestOption(inject_into=RequestOptionType.body_data, options={}, field_name="owner"),
-            RequestOption(inject_into=RequestOptionType.body_data, options={}, field_name="repo"),
+            RequestOption(inject_into=RequestOptionType.body_data, parameters={}, field_name="owner"),
+            RequestOption(inject_into=RequestOptionType.body_data, parameters={}, field_name="repo"),
             {},
             {},
             {},
@@ -139,8 +143,8 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_body_json",
-            RequestOption(inject_into=RequestOptionType.body_json, options={}, field_name="owner"),
-            RequestOption(inject_into=RequestOptionType.body_json, options={}, field_name="repo"),
+            RequestOption(inject_into=RequestOptionType.body_json, parameters={}, field_name="owner"),
+            RequestOption(inject_into=RequestOptionType.body_json, parameters={}, field_name="repo"),
             {},
             {},
             {"owner": "customer", "repo": "airbyte"},
@@ -164,17 +168,17 @@ def test_request_option(
                 cursor_field="owner_resource",
                 config={},
                 request_option=stream_1_request_option,
-                options={},
+                parameters={},
             ),
             ListStreamSlicer(
                 slice_values=["airbyte", "airbyte-cloud"],
                 cursor_field="repository",
                 config={},
                 request_option=stream_2_request_option,
-                options={},
+                parameters={},
             ),
         ],
-        options={},
+        parameters={},
     )
     stream_slice = {"owner_resource": "customer", "repository": "airbyte"}
 
@@ -185,8 +189,8 @@ def test_request_option(
 
 
 def test_request_option_before_updating_cursor():
-    stream_1_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, options={}, field_name="owner")
-    stream_2_request_option = RequestOption(inject_into=RequestOptionType.header, options={}, field_name="repo")
+    stream_1_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="owner")
+    stream_2_request_option = RequestOption(inject_into=RequestOptionType.header, parameters={}, field_name="repo")
     slicer = CartesianProductStreamSlicer(
         stream_slicers=[
             ListStreamSlicer(
@@ -194,17 +198,17 @@ def test_request_option_before_updating_cursor():
                 cursor_field="owner_resource",
                 config={},
                 request_option=stream_1_request_option,
-                options={},
+                parameters={},
             ),
             ListStreamSlicer(
                 slice_values=["airbyte", "airbyte-cloud"],
                 cursor_field="repository",
                 config={},
                 request_option=stream_2_request_option,
-                options={},
+                parameters={},
             ),
         ],
-        options={},
+        parameters={},
     )
     assert {} == slicer.get_request_params()
     assert {} == slicer.get_request_headers()

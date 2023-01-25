@@ -30,7 +30,7 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
         # page_size to be an interpolated string value
         pagination_strategy:
           type: OffsetIncrement
-          page_size: "{{ options['items_per_page'] }}"
+          page_size: "{{ parameters['items_per_page'] }}"
 
     Attributes:
         page_size (InterpolatedString): the number of records to request
@@ -38,12 +38,12 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
 
     config: Config
     page_size: Union[str, int]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self._offset = 0
         page_size = str(self.page_size) if isinstance(self.page_size, int) else self.page_size
-        self._page_size = InterpolatedString(page_size, options=options)
+        self._page_size = InterpolatedString(page_size, parameters=parameters)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         if len(last_records) < self._page_size.eval(self.config):

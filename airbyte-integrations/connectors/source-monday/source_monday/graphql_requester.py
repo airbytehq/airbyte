@@ -6,20 +6,20 @@ from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional, Type, Union
 
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass
-class GraphQLRequestOptionsProvider(InterpolatedRequestOptionsProvider):
+class MondayGraphqlRequester(HttpRequester):
     NEXT_PAGE_TOKEN_FIELD_NAME = "next_page_token"
     NESTED_OBJECTS_LIMIT_MAX_VALUE = 100
 
     limit: Union[InterpolatedString, str, int] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
-        super(GraphQLRequestOptionsProvider, self).__post_init__(options)
+        super(MondayGraphqlRequester, self).__post_init__(options)
 
         self.limit = InterpolatedString.create(self.limit, options=options)
         self.name = options.get("name", "").lower()
@@ -109,3 +109,9 @@ class GraphQLRequestOptionsProvider(InterpolatedRequestOptionsProvider):
             page=next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME],
         )
         return {"query": f"query{{{query}}}"}
+
+    # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
+    # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
+    # but this has a cascading effect where all dataclass fields must also be set to frozen.
+    def __hash__(self):
+        return hash(tuple(self.__dict__))

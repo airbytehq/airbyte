@@ -89,7 +89,7 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "*ref(decoder)"
+  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -106,49 +106,46 @@ metadata_paginator:
       type: "CursorPagination"
       cursor_value: "{{ response._metadata.next }}"
       page_size: 10
-request_options_provider:
-  type: InterpolatedRequestOptionsProvider
-  request_parameters:
-    unit: "day"
 requester:
   type: HttpRequester
-  name: "{{ options['name'] }}"
+  name: "{{ parameters['name'] }}"
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['apikey'] }}"
-  request_options_provider: "*ref(request_options_provider)"
+  request_parameters:
+    unit: "day"
 retriever:
-  name: "{{ options['name'] }}"
+  name: "{{ parameters['name'] }}"
   stream_slicer:
     type: SingleSlice
   paginator:
     type: NoPagination
-  primary_key: "{{ options['primary_key'] }}"
+  primary_key: "{{ parameters['primary_key'] }}"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
+    file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
   cursor_field: [ ]
 list_stream:
-  $ref: "*ref(partial_stream)"
-  $options:
+  $ref: "#/partial_stream"
+  $parameters:
     name: "lists"
     primary_key: "id"
     extractor:
-      $ref: "*ref(extractor)"
-      field_pointer: ["{{ options['name'] }}"]
+      $ref: "#/extractor"
+      field_pointer: ["{{ parameters['name'] }}"]
   retriever:
-    $ref: "*ref(retriever)"
+    $ref: "#/retriever"
     requester:
-      $ref: "*ref(requester)"
+      $ref: "#/requester"
       path: "{{ next_page_token['next_page_url'] }}"
     paginator:
-      $ref: "*ref(metadata_paginator)"
+      $ref: "#/metadata_paginator"
     record_selector:
-      $ref: "*ref(selector)"
+      $ref: "#/selector"
   transformations:
     - type: AddFields
       fields:
@@ -177,7 +174,7 @@ spec:
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     resolved_manifest["type"] = "DeclarativeSource"
-    manifest = transformer.propagate_types_and_options("", resolved_manifest, {})
+    manifest = transformer.propagate_types_and_parameters("", resolved_manifest, {})
 
     stream_manifest = manifest["list_stream"]
     assert stream_manifest["type"] == "DeclarativeStream"
@@ -198,7 +195,7 @@ spec:
     assert add_fields.fields[0].value.string == "{{ response.to_add }}"
 
     assert isinstance(stream.retriever, SimpleRetriever)
-    assert stream.retriever.primary_key == "{{ options['primary_key'] }}"
+    assert stream.retriever.primary_key == "{{ parameters['primary_key'] }}"
     assert stream.retriever.name == "lists"
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
@@ -273,7 +270,7 @@ def test_interpolate_config():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    authenticator_manifest = transformer.propagate_types_and_options("", resolved_manifest["authenticator"], {})
+    authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
 
     authenticator = factory.create_component(
         model_type=OAuthAuthenticatorModel, component_definition=authenticator_manifest, config=input_config
@@ -293,12 +290,12 @@ def test_list_based_stream_slicer_with_values_refd():
     repositories: ["airbyte", "airbyte-cloud"]
     stream_slicer:
       type: ListStreamSlicer
-      slice_values: "*ref(repositories)"
+      slice_values: "#/repositories"
       cursor_field: repository
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
@@ -318,7 +315,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
@@ -331,11 +328,11 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
 def test_create_substream_slicer():
     content = """
     schema_loader:
-      file_path: "./source_sendgrid/schemas/{{ options['name'] }}.yaml"
-      name: "{{ options['stream_name'] }}"
+      file_path: "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml"
+      name: "{{ parameters['stream_name'] }}"
     retriever:
       requester:
-        name: "{{ options['name'] }}"
+        name: "{{ parameters['name'] }}"
         type: "HttpRequester"
         path: "kek"
       record_selector:
@@ -343,36 +340,36 @@ def test_create_substream_slicer():
           field_pointer: []
     stream_A:
       type: DeclarativeStream
-      $options:
+      $parameters:
         name: "A"
         primary_key: "id"
-        retriever: "*ref(retriever)"
+        retriever: "#/retriever"
         url_base: "https://airbyte.io"
-        schema_loader: "*ref(schema_loader)"
+        schema_loader: "#/schema_loader"
     stream_B:
       type: DeclarativeStream
-      $options:
+      $parameters:
         name: "B"
         primary_key: "id"
-        retriever: "*ref(retriever)"
+        retriever: "#/retriever"
         url_base: "https://airbyte.io"
-        schema_loader: "*ref(schema_loader)"
+        schema_loader: "#/schema_loader"
     stream_slicer:
       type: SubstreamSlicer
       parent_stream_configs:
-        - stream: "*ref(stream_A)"
+        - stream: "#/stream_A"
           parent_key: id
           stream_slice_field: repository_id
           request_option:
             inject_into: request_parameter
             field_name: repository_id
-        - stream: "*ref(stream_B)"
+        - stream: "#/stream_B"
           parent_key: someid
           stream_slice_field: word_id
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(model_type=SubstreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
@@ -407,12 +404,12 @@ def test_create_cartesian_stream_slicer():
     stream_slicer:
       type: CartesianProductStreamSlicer
       stream_slicers:
-        - "*ref(stream_slicer_A)"
-        - "*ref(stream_slicer_B)"
+        - "#/stream_slicer_A"
+        - "#/stream_slicer_B"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(
         model_type=CartesianProductStreamSlicerModel, component_definition=slicer_manifest, config=input_config
@@ -435,7 +432,7 @@ def test_datetime_stream_slicer():
     content = """
     stream_slicer:
         type: DatetimeStreamSlicer
-        $options:
+        $parameters:
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -457,7 +454,7 @@ def test_datetime_stream_slicer():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_options("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
 
     stream_slicer = factory.create_component(
         model_type=DatetimeStreamSlicerModel, component_definition=slicer_manifest, config=input_config
@@ -488,26 +485,26 @@ def test_datetime_stream_slicer():
 
 @pytest.mark.parametrize(
     "test_name, record_selector, expected_runtime_selector",
-    [("test_static_record_selector", "result", "result"), ("test_options_record_selector", "{{ options['name'] }}", "lists")],
+    [("test_static_record_selector", "result", "result"), ("test_options_record_selector", "{{ parameters['name'] }}", "lists")],
 )
 def test_create_record_selector(test_name, record_selector, expected_runtime_selector):
     content = f"""
     extractor:
       type: DpathExtractor
     selector:
-      $options:
+      $parameters:
         name: "lists"
       type: RecordSelector
       record_filter:
         type: RecordFilter
         condition: "{{{{ record['id'] > stream_state['id'] }}}}"
       extractor:
-        $ref: "*ref(extractor)"
+        $ref: "#/extractor"
         field_pointer: ["{record_selector}"]
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    selector_manifest = transformer.propagate_types_and_options("", resolved_manifest["selector"], {})
+    selector_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["selector"], {})
 
     selector = factory.create_component(model_type=RecordSelectorModel, component_definition=selector_manifest, config=input_config)
 
@@ -569,23 +566,22 @@ def test_create_requester(test_name, error_handler, expected_backoff_strategy_ty
 requester:
   type: HttpRequester
   path: "/v3/marketing/lists"
-  $options:
+  $parameters:
     name: 'lists'
   url_base: "https://api.sendgrid.com"
   authenticator:
     type: "BasicHttpAuthenticator"
-    username: "{{{{ options.name}}}}"
+    username: "{{{{ parameters.name}}}}"
     password: "{{{{ config.apikey }}}}"
-  request_options_provider:
-    request_parameters:
-      a_parameter: "something_here"
-    request_headers:
-      header: header_value
+  request_parameters:
+    a_parameter: "something_here"
+  request_headers:
+    header: header_value
   {error_handler}
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    requester_manifest = transformer.propagate_types_and_options("", resolved_manifest["requester"], {})
+    requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
     selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config)
 
@@ -622,7 +618,7 @@ def test_create_composite_error_handler():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    error_handler_manifest = transformer.propagate_types_and_options("", resolved_manifest["error_handler"], {})
+    error_handler_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["error_handler"], {})
 
     error_handler = factory.create_component(
         model_type=CompositeErrorHandlerModel, component_definition=error_handler_manifest, config=input_config
@@ -649,13 +645,13 @@ def test_config_with_defaults():
     content = """
     lists_stream:
       type: "DeclarativeStream"
-      $options:
+      $parameters:
         name: "lists"
         primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
-          name: "{{ options.stream_name }}"
-          file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+          name: "{{ parameters.stream_name }}"
+          file_path: "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
         retriever:
           paginator:
             type: "DefaultPaginator"
@@ -679,12 +675,12 @@ def test_config_with_defaults():
             extractor:
               field_pointer: ["result"]
     streams:
-      - "*ref(lists_stream)"
+      - "#/lists_stream"
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     resolved_manifest["type"] = "DeclarativeSource"
-    stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["lists_stream"], {})
+    stream_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["lists_stream"], {})
 
     stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
@@ -694,8 +690,8 @@ def test_config_with_defaults():
     assert isinstance(stream.retriever, SimpleRetriever)
 
     assert isinstance(stream.schema_loader, JsonFileSchemaLoader)
-    assert stream.schema_loader.file_path.string == "./source_sendgrid/schemas/{{ options.name }}.yaml"
-    assert stream.schema_loader.file_path.default == "./source_sendgrid/schemas/{{ options.name }}.yaml"
+    assert stream.schema_loader.file_path.string == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
+    assert stream.schema_loader.file_path.default == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
 
     assert isinstance(stream.retriever.requester, HttpRequester)
     assert stream.retriever.requester.http_method == HttpMethod.GET
@@ -728,7 +724,7 @@ def test_create_default_paginator():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    paginator_manifest = transformer.propagate_types_and_options("", resolved_manifest["paginator"], {})
+    paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
 
     paginator = factory.create_component(
         model_type=DefaultPaginatorModel,
@@ -762,7 +758,7 @@ def test_create_default_paginator():
                 "subcomponent_field_with_hint": {"type": "DpathExtractor", "field_pointer": []},
             },
             "subcomponent_field_with_hint",
-            DpathExtractor(field_pointer=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, options={}),
+            DpathExtractor(field_pointer=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}),
             id="test_create_custom_component_with_subcomponent_that_must_be_parsed",
         ),
         pytest.param(
@@ -772,7 +768,7 @@ def test_create_default_paginator():
                 "subcomponent_field_with_hint": {"field_pointer": []},
             },
             "subcomponent_field_with_hint",
-            DpathExtractor(field_pointer=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, options={}),
+            DpathExtractor(field_pointer=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}),
             id="test_create_custom_component_with_subcomponent_that_must_infer_type_from_explicit_hints",
         ),
         pytest.param(
@@ -792,7 +788,7 @@ def test_create_default_paginator():
                 "optional_subcomponent_field": {"inject_into": "path"},
             },
             "optional_subcomponent_field",
-            RequestOption(inject_into=RequestOptionType.path, options={}),
+            RequestOption(inject_into=RequestOptionType.path, parameters={}),
             id="test_create_custom_component_with_subcomponent_wrapped_in_optional",
         ),
         pytest.param(
@@ -806,8 +802,8 @@ def test_create_default_paginator():
             },
             "list_of_subcomponents",
             [
-                RequestOption(inject_into=RequestOptionType.header, field_name="store_me", options={}),
-                RequestOption(inject_into=RequestOptionType.request_parameter, field_name="destination", options={}),
+                RequestOption(inject_into=RequestOptionType.header, field_name="store_me", parameters={}),
+                RequestOption(inject_into=RequestOptionType.request_parameter, field_name="destination", parameters={}),
             ],
             id="test_create_custom_component_with_subcomponent_wrapped_in_list",
         ),
@@ -855,7 +851,10 @@ def test_custom_components_do_not_contain_extra_fields():
                         },
                         "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
                     },
-                    "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": "./source_sendgrid/schemas/{{ options['name'] }}.yaml"},
+                    "schema_loader": {
+                        "type": "JsonFileSchemaLoader",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml",
+                    },
                 },
                 "parent_key": "id",
                 "stream_slice_field": "repository_id",
@@ -900,7 +899,10 @@ def test_parse_custom_component_fields_if_subcomponent():
                         },
                         "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
                     },
-                    "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": "./source_sendgrid/schemas/{{ options['name'] }}.yaml"},
+                    "schema_loader": {
+                        "type": "JsonFileSchemaLoader",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml",
+                    },
                 },
                 "parent_key": "id",
                 "stream_slice_field": "repository_id",
@@ -925,16 +927,16 @@ def test_parse_custom_component_fields_if_subcomponent():
 
 class TestCreateTransformations:
     # the tabbing matters
-    base_options = """
+    base_parameters = """
                 name: "lists"
                 primary_key: id
                 url_base: "https://api.sendgrid.com"
                 schema_loader:
-                  name: "{{ options.name }}"
-                  file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
+                  name: "{{ parameters.name }}"
+                  file_path: "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
                 retriever:
                   requester:
-                    name: "{{ options.name }}"
+                    name: "{{ parameters.name }}"
                     path: "/v3/marketing/lists"
                     request_parameters:
                       page_size: 10
@@ -947,13 +949,13 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            $options:
-                {self.base_options}
+            $parameters:
+                {self.base_parameters}
         """
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
         resolved_manifest["type"] = "DeclarativeSource"
-        stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
+        stream_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["the_stream"], {})
 
         stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
@@ -964,8 +966,8 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            $options:
-                {self.base_options}
+            $parameters:
+                {self.base_parameters}
                 transformations:
                     - type: RemoveFields
                       field_pointers:
@@ -975,20 +977,20 @@ class TestCreateTransformations:
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
         resolved_manifest["type"] = "DeclarativeSource"
-        stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
+        stream_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["the_stream"], {})
 
         stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
         assert isinstance(stream, DeclarativeStream)
-        expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], options={})]
+        expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], parameters={})]
         assert stream.transformations == expected
 
     def test_add_fields(self):
         content = f"""
         the_stream:
             type: DeclarativeStream
-            $options:
-                {self.base_options}
+            $parameters:
+                {self.base_parameters}
                 transformations:
                     - type: AddFields
                       fields:
@@ -998,7 +1000,7 @@ class TestCreateTransformations:
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
         resolved_manifest["type"] = "DeclarativeSource"
-        stream_manifest = transformer.propagate_types_and_options("", resolved_manifest["the_stream"], {})
+        stream_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["the_stream"], {})
 
         stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
@@ -1007,10 +1009,12 @@ class TestCreateTransformations:
             AddFields(
                 fields=[
                     AddedFieldDefinition(
-                        path=["field1"], value=InterpolatedString(string="static_value", default="static_value", options={}), options={}
+                        path=["field1"],
+                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
+                        parameters={},
                     )
                 ],
-                options={},
+                parameters={},
             )
         ]
         assert stream.transformations == expected
@@ -1042,7 +1046,8 @@ class TestCreateTransformations:
             },
         }
         resolved_manifest = resolver.preprocess_manifest(component_definition)
-        propagated_source_config = ManifestComponentTransformer().propagate_types_and_options("", resolved_manifest, {})
+        ws = ManifestComponentTransformer()
+        propagated_source_config = ws.propagate_types_and_parameters("", resolved_manifest, {})
         stream = factory.create_component(
             model_type=DeclarativeStreamModel, component_definition=propagated_source_config, config=input_config
         )

@@ -24,7 +24,7 @@ definitions:
     # There is a discrepancy between the format of the cursor `created_at` and the granularity of the API hence "P1D"
     # here instead of "PT1M" if we were to check the datetime_format
     cursor_granularity: "P1D"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
     start_time_option:
       field_name: "start"
       inject_into: "request_parameter"
@@ -34,13 +34,10 @@ definitions:
 
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
-    request_options_provider:
-      request_parameters:
-        start: "{{stream_slice['start_time'] or 'latest'}}"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "limit"
@@ -51,16 +48,16 @@ definitions:
         inject_into: "request_parameter"
         field_name: "offset"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
     stream_slicer:
-      $ref: "*ref(definitions.stream_slicer)"
+      $ref: "#/definitions/stream_slicer"
 
   retriever_non_incremental:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
-      url_base: "*ref(definitions.requester.url_base)"
+      url_base: "#/definitions/requester/url_base"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "limit"
@@ -71,43 +68,43 @@ definitions:
         inject_into: "request_parameter"
         field_name: "offset"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   location_stream:
     retriever:
-      $ref: "*ref(definitions.retriever_non_incremental)"
-    $options:
+      $ref: "#/definitions/retriever_non_incremental"
+    $parameters:
       name: "locations"
       primary_key: "id"
       path: "/locations"
   answers_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "answers"
       primary_key: "form_answer_id"
       path: "/v2/answers"
       stream_cursor_field: "created_at"
   lists_stream:
     retriever:
-      $ref: "*ref(definitions.retriever_non_incremental)"
-    $options:
+      $ref: "#/definitions/retriever_non_incremental"
+    $parameters:
       name: "lists"
       primary_key: "id"
       path: "/metadata_objects"
   notifications_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "notifications"
       primary_key: "id"
       path: "/notifications"
       stream_cursor_field: "created_at"
 streams:
-  - "*ref(definitions.location_stream)"
-  - "*ref(definitions.answers_stream)"
-  - "*ref(definitions.lists_stream)"
-  - "*ref(definitions.notifications_stream)"
+  - "#/definitions/location_stream"
+  - "#/definitions/answers_stream"
+  - "#/definitions/lists_stream"
+  - "#/definitions/notifications_stream"
 
 check:
   stream_names:

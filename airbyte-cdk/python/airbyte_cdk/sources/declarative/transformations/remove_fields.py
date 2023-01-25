@@ -40,7 +40,7 @@ class RemoveFields(RecordTransformation, JsonSchemaMixin):
     """
 
     field_pointers: List[FieldPointer]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
     def transform(self, record: Record, **kwargs) -> Record:
         """

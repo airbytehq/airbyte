@@ -23,8 +23,8 @@ The stream object is represented in the YAML file as:
       - name
       - retriever
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       name:
         type: string
       primary_key:
@@ -74,8 +74,8 @@ The schema of a retriever object is:
       - requester
       - record_selector
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       name:
         type: string
       primary_key:

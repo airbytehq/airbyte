@@ -17,7 +17,7 @@ class NoPagination(Paginator, JsonSchemaMixin):
     Pagination implementation that never returns a next page.
     """
 
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
     def path(self) -> Optional[str]:
         return None

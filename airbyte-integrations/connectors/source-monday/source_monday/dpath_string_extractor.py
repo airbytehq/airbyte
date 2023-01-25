@@ -41,11 +41,11 @@ class DpathStringExtractor(RecordExtractor, JsonSchemaMixin):
 
     field_pointer: Union[InterpolatedString, str]
     config: Config
-    options: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(options={})
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(parameters={})
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.field_pointer = InterpolatedString.create(self.field_pointer, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.field_pointer = InterpolatedString.create(self.field_pointer, parameters=parameters)
         self.field_pointer = self.field_pointer.eval(self.config)
 
     def extract_records(self, response: requests.Response) -> List[Record]:

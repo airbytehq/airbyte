@@ -49,27 +49,27 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         record_selector (HttpSelector): The record selector
         paginator (Optional[Paginator]): The paginator
         stream_slicer (Optional[StreamSlicer]): The stream slicer
-        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
+        parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
     requester: Requester
     record_selector: HttpSelector
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     name: str
     _name: Union[InterpolatedString, str] = field(init=False, repr=False, default="")
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
-    stream_slicer: Optional[StreamSlicer] = SingleSlice(options={})
+    stream_slicer: Optional[StreamSlicer] = SingleSlice(parameters={})
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.paginator = self.paginator or NoPagination(options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.paginator = self.paginator or NoPagination(parameters=parameters)
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
         self._last_records = None
-        self._options = options
-        self.name = InterpolatedString(self._name, options=options)
+        self._parameters = parameters
+        self.name = InterpolatedString(self._name, parameters=parameters)
 
     @property
     def name(self) -> str:
