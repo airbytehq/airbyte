@@ -7,6 +7,7 @@ $container-padding-bottom: 28px; // (intercom height + margins (88px) - button h
 
 .container {
   position: sticky;
+  z-index: 1;
   bottom: 0;
   margin-top: -#{variables.$card-border-radius};
   margin-left: -#{$spacing-side-margins};

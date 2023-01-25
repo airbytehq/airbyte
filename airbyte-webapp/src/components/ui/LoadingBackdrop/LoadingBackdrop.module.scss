@@ -1,4 +1,4 @@
-@use "../../../scss/colors";
+@use "scss/colors";
 
 %cover {
   width: 100%;
@@ -9,6 +9,9 @@
   @extend %cover;
 
   position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 
   .backdrop {
     @extend %cover;
