@@ -2,7 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
+from importlib.resources import files
+import json
 
+from google.oauth2 import service_account
 import requests
 import pandas as pd
 
@@ -33,18 +37,21 @@ def fetch_adoption_metrics_per_connector_version() -> pd.DataFrame:
     """Retrieve adoptions metrics for each connector version from our data warehouse.
 
     Returns:
-        pd.DataFrame: A Dataframe with adoption metrics per connector version.
+        pd.DataFrame: A dataframe with adoption metrics per connector version.
     """
-    # TODO: directly query BigQuery
-    # use query in https://airbyte.metabaseapp.com/question/1642-adoption-and-success-rate-per-connector-version-oss-cloud
-    return pd.DataFrame(columns=[
+    connector_adoption_sql = files("ci_connector_ops.qa_engine").joinpath("connector_adoption.sql").read_text()
+    bq_credentials = service_account.Credentials.from_service_account_info(json.loads(os.environ["QA_ENGINE_AIRBYTE_DATA_PROD_SA"]))
+    adoption_metrics = pd.read_gbq(connector_adoption_sql, project_id="airbyte-data-prod", credentials=bq_credentials)
+    return adoption_metrics[[
         "connector_definition_id",
         "connector_version",
         "number_of_connections",
         "number_of_users",
+        "succeeded_syncs_count",
+        "failed_syncs_count",
+        "total_syncs_count",
         "sync_success_rate",
-    ])
+    ]]
 
 CLOUD_CATALOG = fetch_remote_catalog(CLOUD_CATALOG_URL)
 OSS_CATALOG = fetch_remote_catalog(OSS_CATALOG_URL)
-ADOPTION_METRICS_PER_CONNECTOR_VERSION = fetch_adoption_metrics_per_connector_version()
