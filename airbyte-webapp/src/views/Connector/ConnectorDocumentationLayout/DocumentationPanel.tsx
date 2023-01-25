@@ -14,6 +14,8 @@ import { Markdown } from "components/ui/Markdown";
 import { StepsMenu } from "components/ui/StepsMenu";
 
 import { useConfig } from "config";
+import { SourceDefinitionRead } from "core/request/AirbyteClient";
+import { useExperiment } from "hooks/services/Experiment";
 import { useDocumentation } from "hooks/services/useDocumentation";
 import { isCloudApp } from "utils/app";
 import { links } from "utils/links";
@@ -21,6 +23,7 @@ import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumenta
 
 import styles from "./DocumentationPanel.module.scss";
 import { ResourceNotAvailable } from "./ResourceNotAvailable";
+import { SchemaViewer } from "./SchemaViewer";
 
 const OSS_ENV_MARKERS = /<!-- env:oss -->([\s\S]*?)<!-- \/env:oss -->/gm;
 const CLOUD_ENV_MARKERS = /<!-- env:cloud -->([\s\S]*?)<!-- \/env:cloud -->/gm;
@@ -34,10 +37,9 @@ export const DocumentationPanel: React.FC = () => {
   const config = useConfig();
   const { setDocumentationPanelOpen, documentationUrl, selectedConnectorDefinition } = useDocumentationPanelContext();
   const isSource = Object.hasOwn(selectedConnectorDefinition, "sourceDefinitionId");
-
+  const showSchemaExperiment = useExperiment("connector.sources.showSchema", false);
   const [isSchemaRequested, setIsSchemaRequested] = useState(false);
   const [isERDRequested, setIsERDRequested] = useState(false);
-
   const { data: docs, isLoading, error } = useDocumentation(documentationUrl);
 
   const urlReplacerPlugin: PluggableList = useMemo<PluggableList>(() => {
@@ -102,13 +104,17 @@ export const DocumentationPanel: React.FC = () => {
             rehypePlugins={urlReplacerPlugin}
           />
         ))
-        .with("schema", () => (
-          <ResourceNotAvailable
-            activeTab="schema"
-            setRequested={setIsSchemaRequested}
-            isRequested={isSchemaRequested}
-          />
-        ))
+        .with("schema", () =>
+          showSchemaExperiment ? (
+            <SchemaViewer sourceDefinition={selectedConnectorDefinition as SourceDefinitionRead} />
+          ) : (
+            <ResourceNotAvailable
+              activeTab="schema"
+              setRequested={setIsSchemaRequested}
+              isRequested={isSchemaRequested}
+            />
+          )
+        )
         .with("erd", () => (
           <ResourceNotAvailable activeTab="erd" setRequested={setIsERDRequested} isRequested={isERDRequested} />
         ))

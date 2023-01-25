@@ -32,6 +32,7 @@ export const config: AirbyteWebappConfig = {
   },
   sentryDsn: window.REACT_APP_SENTRY_DSN ?? process.env.REACT_APP_SENTRY_DSN,
   webappTag: window.REACT_APP_WEBAPP_TAG ?? process.env.REACT_APP_WEBAPP_TAG ?? "dev",
+  cloudNodeApiUrl: window.REACT_APP_NODE_API_URL ?? process.env.REACT_APP_NODE_API_URL,
 };
 
 export class MissingConfigError extends Error {

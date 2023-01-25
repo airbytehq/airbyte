@@ -21,6 +21,7 @@ declare global {
     CLOUD_API_URL?: string;
     CLOUD_PUBLIC_API_URL?: string;
     REACT_APP_SENTRY_DSN?: string;
+    REACT_APP_NODE_API_URL?: string;
   }
 }
 
@@ -51,4 +52,5 @@ export interface AirbyteWebappConfig {
   };
   webappTag?: string;
   sentryDsn?: string;
+  cloudNodeApiUrl?: string;
 }

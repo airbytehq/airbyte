@@ -1,0 +1,40 @@
+@use "scss/variables";
+@use "scss/colors";
+@use "scss/fonts";
+
+.loadingContainer {
+  height: 80vh;
+}
+
+.propertyContainer {
+  padding-left: variables.$spacing-md;
+  padding-bottom: variables.$spacing-xl;
+  border-left: 1px solid colors.$grey-200;
+
+  .propertyHeaderSeparator {
+    width: variables.$spacing-md;
+    margin-left: -1 * variables.$spacing-md;
+    margin-right: variables.$spacing-xs;
+    border-top: 1px solid colors.$grey-200;
+  }
+
+  .propertyText {
+    font-weight: 600;
+    margin-right: variables.$spacing-md;
+  }
+}
+
+.propertyExample {
+  padding: variables.$spacing-xs variables.$spacing-sm;
+  max-width: 80%;
+  overflow-wrap: break-word;
+}
+
+code {
+  font-size: 11px;
+  white-space: break-spaces;
+  background: colors.$grey-50;
+  font-family: fonts.$monospace;
+  padding-left: variables.$spacing-xs;
+  padding-right: variables.$spacing-xs;
+}

@@ -8,8 +8,8 @@ import { Text } from "components/ui/Text";
 import { SourceDefinitionRead } from "core/request/AirbyteClient";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
+import octaviaWorker from "./octavia-worker.png";
 import styles from "./ResourceNotAvailable.module.scss";
-import octaviaWorker from "../octavia-worker.png";
 import { useAnalyticsTrackFunctions } from "../useAnalyticsTrackFunctions";
 
 export const ResourceNotAvailable: React.FC<
