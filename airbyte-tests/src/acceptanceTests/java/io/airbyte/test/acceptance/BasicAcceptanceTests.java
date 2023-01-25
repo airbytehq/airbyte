@@ -360,6 +360,7 @@ class BasicAcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode).setFieldSelectionEnabled(false));
     final ConnectionRead createdConnection =
         testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.BASIC, BASIC_SCHEDULE_DATA);
+    createdConnection.getSyncCatalog().getStreams().forEach(s -> s.getConfig().setSuggested(true));
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
@@ -1450,7 +1451,7 @@ class BasicAcceptanceTests {
 
     testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
 
-    // Update the catalog, so we only select the id column.
+    // Update the catalog, so we only select the id column.evan/suggested-streams-actor-def
     catalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true).addSelectedFieldsItem(new SelectedFieldInfo().addFieldPathItem("id"));
     testHarness.updateConnectionCatalog(connectionId, catalog);
 
