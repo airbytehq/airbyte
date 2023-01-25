@@ -79,6 +79,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
+| 0.1.25  | TODO       | [21888](https://github.com/airbytehq/airbyte/pull/21888) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     ||         |            |                                                          |                                                                                    |
 | 0.1.14  | 2023-01-09 | [21151](https://github.com/airbytehq/airbyte/pull/21151) | Skip 403 FORBIDDEN for all stream                                                  |
 | 0.1.13  | 2022-12-22 | [20810](https://github.com/airbytehq/airbyte/pull/20810) | Skip 403 FORBIDDEN for `EstimateItemCategories` stream                             |
 | 0.1.12  | 2022-12-16 | [20572](https://github.com/airbytehq/airbyte/pull/20572) | Introduce replication end date                                                     |

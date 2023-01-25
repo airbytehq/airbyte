@@ -10,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams import AvailabilityStrategy
 
 
 class HarvestStream(HttpStream, ABC):
@@ -24,6 +25,10 @@ class HarvestStream(HttpStream, ABC):
         :return: Default field name to get data from response
         """
         return self.name
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def backoff_time(self, response: requests.Response):
         if "Retry-After" in response.headers:
