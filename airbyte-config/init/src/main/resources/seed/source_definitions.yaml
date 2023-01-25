@@ -602,6 +602,9 @@
   icon: github.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.github.com
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
@@ -1343,6 +1346,9 @@
   icon: postgresql.svg
   sourceType: database
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Postmark App
   sourceDefinitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
   dockerRepository: airbyte/source-postmarkapp
