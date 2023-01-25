@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   page_size: 100
   schema_loader:
-    type: JsonSchema
+    type: JsonFileSchemaLoader
     file_path: "./source_sentry/schemas/{{ parameters.name }}.json"
   selector:
     extractor:

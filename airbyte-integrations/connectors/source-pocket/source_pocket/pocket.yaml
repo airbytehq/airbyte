@@ -51,7 +51,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
     schema_loader:
-      type: "JsonSchema"
+      type: "JsonFileSchemaLoader"
   retrieve_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
