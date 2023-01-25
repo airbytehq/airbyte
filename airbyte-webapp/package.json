@@ -85,6 +85,7 @@
     "sanitize-html": "^2.7.1",
     "sass": "^1.52.2",
     "styled-components": "^5.3.5",
+    "ts-pattern": "^4.0.6",
     "typesafe-actions": "^5.1.0",
     "unified": "^10.1.2",
     "unist-util-visit": "^4.1.0",

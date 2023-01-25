@@ -1,10 +1,15 @@
 import { createContext, useCallback, useContext, useState } from "react";
 
+import { ConnectorDefinition } from "core/domain/connector";
+
 export type DocumentationPanelContext = ReturnType<typeof useDocumentationPanelState>;
 
 export const useDocumentationPanelState = () => {
   const [documentationPanelOpen, setDocumentationPanelOpen] = useState(false);
   const [documentationUrl, setDocumentationUrlState] = useState("");
+  const [selectedConnectorDefinition, setSelectedConnectorDefinition] = useState<ConnectorDefinition>(
+    {} as ConnectorDefinition
+  );
 
   /* Ad blockers prevent the Google Ads docs .md file from rendering.  Because these URLs are
    * standardized, we work around this without changing the main file URL by:
@@ -23,6 +28,8 @@ export const useDocumentationPanelState = () => {
     setDocumentationPanelOpen,
     documentationUrl,
     setDocumentationUrl,
+    selectedConnectorDefinition,
+    setSelectedConnectorDefinition,
   };
 };
 

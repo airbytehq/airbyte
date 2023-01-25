@@ -1,0 +1,10 @@
+@use "scss/variables" as vars;
+
+.requestContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: vars.$spacing-lg;
+  justify-content: center;
+  height: 80vh;
+}

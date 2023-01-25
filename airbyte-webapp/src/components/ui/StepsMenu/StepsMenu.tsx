@@ -15,6 +15,7 @@ interface StepMenuProps {
   data: StepMenuItem[];
   activeStep?: string;
   onSelect?: (id: string) => void;
+  className?: string;
 }
 
 const Content = styled.div`
@@ -24,9 +25,9 @@ const Content = styled.div`
   font-family: ${({ theme }) => theme.regularFont};
 `;
 
-export const StepsMenu: React.FC<StepMenuProps> = ({ data, onSelect, activeStep, lightMode }) => {
+export const StepsMenu: React.FC<StepMenuProps> = ({ data, onSelect, activeStep, lightMode, className }) => {
   return (
-    <Content>
+    <Content className={className}>
       {data.map((item, key) => (
         <Step
           icon={item.icon}

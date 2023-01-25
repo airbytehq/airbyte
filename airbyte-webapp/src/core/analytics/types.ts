@@ -7,6 +7,8 @@ export const enum Namespace {
   USER = "User",
   CREDITS = "Credits",
   CONNECTOR_BUILDER = "ConnectorBuilder",
+  SCHEMA = "Schema",
+  ERD = "ERD",
 }
 
 export const enum Action {
