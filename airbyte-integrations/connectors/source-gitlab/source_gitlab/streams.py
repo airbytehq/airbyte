@@ -10,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams import AvailabilityStrategy
 
 
 class GitlabStream(HttpStream, ABC):
@@ -40,6 +41,10 @@ class GitlabStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"https://{self.api_url}/api/v4/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).
