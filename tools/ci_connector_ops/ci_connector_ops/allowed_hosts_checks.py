@@ -27,10 +27,7 @@ def connector_has_allowed_hosts(connector_name: str) -> bool:
   definition = utils.get_connector_definition(connector_name)
   # print("----- " + connector_name  + " -----")
   # print(definition)
-  try:
-    return definition["allowedHosts"] != None
-  except KeyError:
-    return False
+    return definition.get("allowedHosts") is not None
 
 
 def check_allowed_hosts():
