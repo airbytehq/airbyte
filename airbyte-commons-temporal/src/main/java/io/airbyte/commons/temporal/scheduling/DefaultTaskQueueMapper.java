@@ -6,7 +6,6 @@ package io.airbyte.commons.temporal.scheduling;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.temporal.TemporalJobType;
-import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
 import io.airbyte.config.Geography;
 import jakarta.inject.Singleton;
 import java.util.Map;

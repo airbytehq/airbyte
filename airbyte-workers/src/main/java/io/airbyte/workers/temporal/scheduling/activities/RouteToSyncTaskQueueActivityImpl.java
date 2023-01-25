@@ -9,8 +9,8 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.exception.RetryableException;
-import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.commons.temporal.scheduling.RouterService;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Map;
