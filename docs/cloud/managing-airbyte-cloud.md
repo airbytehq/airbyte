@@ -280,13 +280,11 @@ To refresh the source schema:
 
 ## Manage schema changes
 
-Airbyte detects changes in your source schema and allows you to review the changes.
+Once every 24 hours, Airbyte checks for changes in your source schema and allows you to review the changes and fix breaking changes.
 
 :::note 
 
-* Schema changes are flagged in your connection, but they will not affect your destination. 
-* Airbyte updates the source schema before syncs, but only once a day.
-* [Breaking changes](#fix-breaking-schema-changes) can only occur in the **Cursor** or **Primary key** fields.
+Schema changes are flagged in your connection but are not propagated to your destination.
     
 :::
 
@@ -310,6 +308,12 @@ To review non-breaking schema changes:
 :::
 
 ### Fix breaking schema changes
+
+:::note 
+
+Breaking changes can only occur in the **Cursor** or **Primary key** fields.
+    
+:::
 
 To review and fix breaking schema changes:
 1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection with breaking changes (indicated by a **red exclamation mark** icon).
@@ -359,7 +363,7 @@ To display **Connection State**:
 
 5. Click the **Settings** tab on the Connection page.
 
-    The **Connection State** displays. 
+    The **Connection State** displays.
 
 ## Choose the data residency for a connection
 You can choose the data residency for your connection in the connection settings. You can also choose data residency when creating a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection), or you can set the [default data residency](#choose-your-default-data-residency) for your workspace.
