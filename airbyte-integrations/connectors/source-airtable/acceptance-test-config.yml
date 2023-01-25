@@ -21,7 +21,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
       # bypassed this check, because discovery mechanism was changed
         backward_compatibility_tests_config:
-          disable_for_version: "1.0.2"
+          disable_for_version: "1.0.1"
   basic_read:
     tests:
       - config_path: "secrets/config.json"

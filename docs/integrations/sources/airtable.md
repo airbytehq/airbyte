@@ -54,10 +54,46 @@ The `Enterprise` level accounts are not supported yet.
 
 ## Data type map
 
-| Integration Type       | Airbyte Type |
-| :--------------------- | :----------- |
-| `Any`                  | `string`     |
+| Integration Type       | Airbyte Type                                            |
+| :--------------------- | :------------------------------------------------------ |
+| `multipleAttachments`  | `string`                                                |
+| `autoNumber`           | `string`                                                |
+| `barcode`              | `string`                                                |
+| `button`               | `string`                                                |
+| `checkbox`             | `boolean`                                               |
+| `singleCollaborator`   | `string`                                                |
+| `count`                | `number`                                                |
+| `createdBy`            | `string`                                                |
+| `createdTime`          | `datetime`, `format: date-time`                         |
+| `currency`             | `number`                                                |
+| `email`                | `string`                                                |
+| `date`                 | `string`, `format: date`                                |
+| `duration`             | `number`                                                |
+| `lastModifiedBy`       | `string`                                                |
+| `lastModifiedTime`     | `datetime`, `format: date-time`                         |
+| `multipleRecordLinks`  | `array with strings`                                    |
+| `multilineText`        | `string`                                                |
+| `multipleCollaborators`| `array with strings`                                    |
+| `multipleSelects`      | `array with strings`                                    |
+| `number`               | `number`                                                |
+| `percent`              | `number`                                                |
+| `phoneNumber`          | `string`                                                |
+| `rating`               | `number`                                                |
+| `richText`             | `string`                                                |
+| `singleLineText`       | `string`                                                |
+| `externalSyncSource`   | `string`                                                |
+| `url`                  | `string`                                                |
+| `formula`              | `array with any`                                        |
+| `lookup`               | `array with any`                                        |
+| `multipleLookupValues` | `array with any`                                        |
+| `rollup`               | `array with any`                                        |
 
+
+* `array with any` - represents the classic array with one of the other Airtable data types inside, such as:
+    - string
+    - number/integer
+    - nested lists/objects
+    - etc
 
 ### Performance Considerations (Airbyte Open-Source)
 
@@ -67,7 +103,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------|
-| 2.0.0   | 2023-__-__ | [___](___) | Added casting of native Airtable data types to JsonSchema types
+| 2.0.0   | 2023-01-26 | [21851](https://github.com/airbytehq/airbyte/pull/21851) | Added casting of native Airtable data types to JsonSchema types
 | 1.0.2   | 2023-01-25 | [20934](https://github.com/airbytehq/airbyte/pull/20934) | Added `OAuth2.0` authentication support 
 | 1.0.1   | 2023-01-10 | [21215](https://github.com/airbytehq/airbyte/pull/21215) | Fix field names                                        |
 | 1.0.0   | 2022-12-22 | [20846](https://github.com/airbytehq/airbyte/pull/20846) | Migrated to Metadata API for dynamic schema generation |
