@@ -28,7 +28,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.helper.CatalogConverter;
+import io.airbyte.workers.helper.CatalogClientConverters;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
@@ -112,7 +112,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         final DiscoverCatalogResult result =
             AirbyteApiClient.retryWithJitter(() -> airbyteApiClient.getSourceApi()
                 .writeDiscoverCatalogResult(new SourceDiscoverSchemaWriteRequestBody().catalog(
-                    CatalogConverter.toClientApi(catalog.get())).sourceId(
+                    CatalogClientConverters.toAirbyteCatalogClientApi(catalog.get())).sourceId(
                         // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
                         // it, so we check again here.
                         discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()))
