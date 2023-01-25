@@ -44,7 +44,6 @@ export const Controls: React.FC<IProps> = ({
           formType={formType}
           isTestConnectionInProgress={isTestConnectionInProgress}
           isEditMode={isEditMode}
-          dirty={dirty}
         />
       )}
       <FlexContainer>
@@ -60,7 +59,7 @@ export const Controls: React.FC<IProps> = ({
             <FormattedMessage id="form.cancel" />
           </Button>
         )}
-        <Button type="submit" disabled={isSubmitting || !dirty}>
+        <Button type="submit" disabled={isSubmitting || (isEditMode && !dirty)}>
           {isEditMode ? (
             <FormattedMessage id="form.saveChangesAndTest" />
           ) : (

@@ -19,7 +19,6 @@ import TestingConnectionSuccess from "./TestingConnectionSuccess";
 interface IProps {
   formType: "source" | "destination";
   isValid: boolean;
-  dirty: boolean;
   onRetestClick: () => void;
   onCancelTesting: () => void;
   isTestConnectionInProgress?: boolean;
@@ -41,7 +40,6 @@ export const TestCard: React.FC<IProps> = ({
   errorMessage,
   onCancelTesting,
   job,
-  dirty,
   isEditMode,
 }) => {
   const [logsVisible, setLogsVisible] = useState(false);
@@ -100,7 +98,7 @@ export const TestCard: React.FC<IProps> = ({
               onClick={onRetestClick}
               variant="secondary"
               icon={<FontAwesomeIcon icon={faRefresh} />}
-              disabled={!isValid || (!isEditMode && !dirty)}
+              disabled={!isValid}
             >
               <FormattedMessage id={!isEditMode ? "form.test" : `form.${formType}Retest`} />
             </Button>

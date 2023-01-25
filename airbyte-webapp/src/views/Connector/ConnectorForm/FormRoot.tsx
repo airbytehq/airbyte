@@ -11,17 +11,10 @@ import { useConnectorForm } from "./connectorFormContext";
 import styles from "./FormRoot.module.scss";
 import { ConnectorFormValues } from "./types";
 
-interface FormRootProps {
-  title?: React.ReactNode;
-  description?: React.ReactNode;
-  full?: boolean;
+export interface BaseFormRootProps {
   formFields: FormBlock;
   connectionTestSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
-  onRetest?: () => void;
-  onStopTestingConnector?: () => void;
-  submitLabel?: string;
-  footerClassName?: string;
   bodyClassName?: string;
   headerBlock?: ReactNode;
   castValues: (values: ConnectorFormValues) => ConnectorFormValues;
@@ -34,28 +27,27 @@ interface FormRootProps {
     formType: "source" | "destination";
     getValues: () => ConnectorFormValues;
   }) => ReactNode;
-  renderWithCard?: boolean;
-  /**
-   * Called in case the user cancels the form - if not provided, no cancel button is rendered
-   */
-  onCancel?: () => void;
-  /**
-   * Called in case the user reset the form - if not provided, no reset button is rendered
-   */
-  onReset?: () => void;
 }
 
-export const FormRoot: React.FC<FormRootProps> = ({
+interface CardFormRootProps extends BaseFormRootProps {
+  renderWithCard: true;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  full?: boolean;
+}
+
+interface BareFormRootProps extends BaseFormRootProps {
+  renderWithCard?: false;
+}
+
+export const FormRoot: React.FC<CardFormRootProps | BareFormRootProps> = ({
   isTestConnectionInProgress = false,
   formFields,
   bodyClassName,
   headerBlock,
   renderFooter,
-  title,
-  description,
-  renderWithCard,
   castValues,
-  full,
+  ...props
 }) => {
   const { dirty, isSubmitting, isValid, values } = useFormikContext<ConnectorFormValues>();
   const { resetConnectorForm, isEditMode, formType } = useConnectorForm();
@@ -72,8 +64,8 @@ export const FormRoot: React.FC<FormRootProps> = ({
   return (
     <Form>
       <FlexContainer direction="column" gap="xl">
-        {renderWithCard ? (
-          <Card title={title} description={description} fullWidth={full}>
+        {props.renderWithCard ? (
+          <Card title={props.title} description={props.description} fullWidth={props.full}>
             <div className={styles.cardForm}>{formBody}</div>
           </Card>
         ) : (

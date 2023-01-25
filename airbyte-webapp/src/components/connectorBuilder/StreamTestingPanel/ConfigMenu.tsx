@@ -1,7 +1,7 @@
 import { faClose, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import { useLocalStorage } from "react-use";
 
 import { Button } from "components/ui/Button";
@@ -28,7 +28,6 @@ interface ConfigMenuProps {
 }
 
 export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJsonErrors, isOpen, setIsOpen }) => {
-  const { formatMessage } = useIntl();
   const { jsonManifest, editorView, setEditorView } = useConnectorBuilderFormState();
 
   const { testInputJson, setTestInputJson } = useConnectorBuilderTestState();
@@ -119,12 +118,13 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJson
                     setTestInputJson(values.connectionConfiguration as StreamReadRequestBodyConfig);
                     setIsOpen(false);
                   }}
-                  renderFooter={({ dirty, isSubmitting }) => (
+                  renderFooter={({ dirty, isSubmitting, resetConnectorForm }) => (
                     <div className={styles.inputFormModalFooter}>
                       <FlexContainer>
                         <FlexItem grow>
                           <Button
                             onClick={() => {
+                              resetConnectorForm();
                               setTestInputJson({});
                             }}
                             type="button"
@@ -142,13 +142,6 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJson
                       </FlexContainer>
                     </div>
                   )}
-                  onCancel={() => {
-                    setIsOpen(false);
-                  }}
-                  onReset={() => {
-                    setTestInputJson({});
-                  }}
-                  submitLabel={formatMessage({ id: "connectorBuilder.saveInputsForm" })}
                 />
               </>
             </ConfigMenuErrorBoundaryComponent>

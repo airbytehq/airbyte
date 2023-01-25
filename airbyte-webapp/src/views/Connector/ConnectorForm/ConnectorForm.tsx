@@ -1,5 +1,5 @@
 import { Formik } from "formik";
-import React, { ReactNode, useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
@@ -9,15 +9,14 @@ import {
   SourceDefinitionSpecificationDraft,
 } from "core/domain/connector";
 import { FormikPatch } from "core/form/FormikPatch";
-import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 
 import { ConnectorFormContextProvider } from "./connectorFormContext";
-import { FormRoot } from "./FormRoot";
-import { ConnectorCardValues, ConnectorFormValues } from "./types";
+import { BaseFormRootProps, FormRoot } from "./FormRoot";
+import { ConnectorFormValues } from "./types";
 import { useBuildForm } from "./useBuildForm";
 
-export interface ConnectorFormProps {
+interface BaseConnectorFormProps extends Omit<BaseFormRootProps, "formFields" | "castValues"> {
   formType: "source" | "destination";
   formId?: string;
   /**
@@ -28,40 +27,21 @@ export interface ConnectorFormProps {
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
-  connectionTestSuccess?: boolean;
-  errorMessage?: React.ReactNode;
   connectorId?: string;
-  footerClassName?: string;
-  bodyClassName?: string;
-  submitLabel?: string;
+}
+
+interface CardConnectorFormProps extends BaseConnectorFormProps {
+  renderWithCard: true;
   title?: React.ReactNode;
   description?: React.ReactNode;
   full?: boolean;
-  headerBlock?: ReactNode;
-  footerComponent?: React.FC;
-  renderFooter?: (formProps: {
-    dirty: boolean;
-    isSubmitting: boolean;
-    isValid: boolean;
-    resetConnectorForm: () => void;
-    isEditMode?: boolean;
-    formType: "source" | "destination";
-    getValues: () => ConnectorFormValues;
-  }) => ReactNode;
-  renderWithCard?: boolean;
-  /**
-   * Called in case the user cancels the form - if not provided, no cancel button is rendered
-   */
-  onCancel?: () => void;
-  /**
-   * Called in case the user reset the form - if not provided, no reset button is rendered
-   */
-  onReset?: () => void;
-
-  isTestConnectionInProgress?: boolean;
-  onStopTesting?: () => void;
-  testConnector?: (v?: ConnectorCardValues) => Promise<CheckConnectionRead>;
 }
+
+interface BareConnectorFormProps extends BaseConnectorFormProps {
+  renderWithCard?: false;
+}
+
+export type ConnectorFormProps = CardConnectorFormProps | BareConnectorFormProps;
 
 export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
   const formId = useUniqueFormId(props.formId);
@@ -72,12 +52,9 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     formValues,
     onSubmit,
     isEditMode,
-    onStopTesting,
-    testConnector,
     selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
     connectorId,
-    onReset,
   } = props;
 
   const { formFields, initialValues, validationSchema } = useBuildForm(
@@ -104,16 +81,22 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     [clearFormChange, formId, castValues, onSubmit]
   );
 
+  const isInitialValid = useMemo(
+    () => Boolean(validationSchema.isValidSync(initialValues)),
+    [initialValues, validationSchema]
+  );
+
   return (
     <Formik
       validateOnBlur
       validateOnChange
       initialValues={initialValues}
+      isInitialValid={isInitialValid}
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}
       enableReinitialize
     >
-      {({ dirty, resetForm }) => (
+      {({ dirty }) => (
         <ConnectorFormContextProvider
           formType={formType}
           getValues={castValues}
@@ -125,20 +108,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
         >
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
-          <FormRoot
-            {...props}
-            formFields={formFields}
-            castValues={castValues}
-            onReset={
-              onReset &&
-              (() => {
-                onReset?.();
-                resetForm();
-              })
-            }
-            onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
-            onRetest={testConnector ? async () => await testConnector() : undefined}
-          />
+          <FormRoot {...props} formFields={formFields} castValues={castValues} />
         </ConnectorFormContextProvider>
       )}
     </Formik>

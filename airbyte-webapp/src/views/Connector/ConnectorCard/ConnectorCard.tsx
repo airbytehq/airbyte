@@ -12,12 +12,7 @@ import {
 import { DestinationRead, SourceRead, SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { generateMessageFromError } from "utils/errorStatusMessage";
-import {
-  ConnectorCardValues,
-  ConnectorForm,
-  ConnectorFormProps,
-  ConnectorFormValues,
-} from "views/Connector/ConnectorForm";
+import { ConnectorCardValues, ConnectorForm, ConnectorFormValues } from "views/Connector/ConnectorForm";
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
@@ -131,9 +126,25 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     setDocumentationUrl,
   ]);
 
-  const handleTestConnector: ConnectorFormProps["testConnector"] = (v) => {
+  const testConnectorWithTracking = async (connectorCardValues: ConnectorCardValues) => {
+    trackTestConnectorStarted(selectedConnectorDefinition);
+    try {
+      await testConnector(connectorCardValues);
+      trackTestConnectorSuccess(selectedConnectorDefinition);
+    } catch (e) {
+      trackTestConnectorFailure(selectedConnectorDefinition);
+      throw e;
+    }
+  };
+
+  const handleTestConnector = async (values: ConnectorCardValues) => {
     setErrorStatusRequest(null);
-    return testConnector(v);
+    try {
+      await testConnectorWithTracking(values);
+    } catch (e) {
+      setErrorStatusRequest(e);
+      throw e;
+    }
   };
 
   const onHandleSubmit = async (values: ConnectorFormValues) => {
@@ -149,19 +160,8 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
       serviceType: Connector.id(selectedConnectorDefinition),
     };
 
-    const testConnectorWithTracking = async () => {
-      trackTestConnectorStarted(selectedConnectorDefinition);
-      try {
-        await testConnector(connectorCardValues);
-        trackTestConnectorSuccess(selectedConnectorDefinition);
-      } catch (e) {
-        trackTestConnectorFailure(selectedConnectorDefinition);
-        throw e;
-      }
-    };
-
     try {
-      await testConnectorWithTracking();
+      await testConnectorWithTracking(connectorCardValues);
       onSubmit(connectorCardValues);
     } catch (e) {
       setErrorStatusRequest(e);
@@ -217,8 +217,6 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
       selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
       isTestConnectionInProgress={isTestConnectionInProgress}
       connectionTestSuccess={connectionTestSuccess}
-      onStopTesting={onStopTesting}
-      testConnector={handleTestConnector}
       onSubmit={onHandleSubmit}
       formValues={formValues}
       connectorId={isEditMode ? getConnectorId(props.connector) : undefined}
