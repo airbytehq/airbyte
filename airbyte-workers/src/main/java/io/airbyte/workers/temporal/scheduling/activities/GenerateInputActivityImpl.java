@@ -87,7 +87,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .jobId(jobId)
             .attemptNumber(attemptNumber)
             .syncConfig(ApiPojoConverters.attemptSyncConfigToClient(attemptSyncConfig, connectionId, featureFlags.useStreamCapableState()))),
-        "update attempt sync config");
+        "set attempt sync config");
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
