@@ -1,5 +1,5 @@
-import React, { Suspense } from "react";
-import { Outlet, useParams } from "react-router-dom";
+import React, { Suspense, useMemo } from "react";
+import { Outlet, useLocation, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
 import { HeadTitle } from "components/common/HeadTitle";
@@ -12,6 +12,7 @@ import {
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
+import { ConnectionRoutePaths } from "../types";
 import { ConnectionPageTitle } from "./ConnectionPageTitle";
 
 const ConnectionHeadTitle: React.FC = () => {
@@ -37,13 +38,22 @@ export const ConnectionPage: React.FC = () => {
   const { connectionId = "" } = useParams<{
     connectionId: string;
   }>();
+  const location = useLocation();
+  const isReplicationPage = useMemo(
+    () => location.pathname.includes(`/${ConnectionRoutePaths.Replication}`),
+    [location.pathname]
+  );
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM);
 
   return (
     <ConnectionEditServiceProvider connectionId={connectionId}>
       <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
-        <MainPageWithScroll headTitle={<ConnectionHeadTitle />} pageTitle={<ConnectionPageTitle />} noBottomPadding>
+        <MainPageWithScroll
+          headTitle={<ConnectionHeadTitle />}
+          pageTitle={<ConnectionPageTitle />}
+          noBottomPadding={isReplicationPage}
+        >
           <Suspense fallback={<LoadingPage />}>
             <Outlet />
           </Suspense>
