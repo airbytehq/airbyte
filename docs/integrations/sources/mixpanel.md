@@ -49,7 +49,8 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+|:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| 0.1.30  | 2022-11-02 | [21837](https://github.com/airbytehq/airbyte/pull/21837) | Add "insert_id" field to "export" stream schema                                                      |
 | 0.1.29  | 2022-11-02 | [18846](https://github.com/airbytehq/airbyte/pull/18846) | For "export" stream make line parsing more robust                                                    |
 | 0.1.28  | 2022-10-06 | [17699](https://github.com/airbytehq/airbyte/pull/17699) | Fix discover step issue cursor field None                                                            |
 | 0.1.27  | 2022-09-29 | [17415](https://github.com/airbytehq/airbyte/pull/17415) | Disable stream "cohort_members" on discover if not access                                            |
