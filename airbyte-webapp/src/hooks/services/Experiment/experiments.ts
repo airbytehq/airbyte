@@ -29,4 +29,5 @@ export interface Experiments {
   "connection.columnSelection": boolean;
   "connection.newTableDesign": boolean;
   "workspace.freeConnectorsProgram.visible": boolean;
+  "connector.sources.showSchema": boolean;
 }

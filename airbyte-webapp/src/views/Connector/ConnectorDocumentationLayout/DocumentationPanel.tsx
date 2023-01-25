@@ -1,7 +1,5 @@
 import type { Url } from "url";
 
-import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PluggableList } from "react-markdown/lib/react-markdown";
@@ -12,11 +10,9 @@ import urls from "rehype-urls";
 import { match } from "ts-pattern";
 
 import { LoadingPage } from "components";
-import { Button } from "components/ui/Button";
 import { Markdown } from "components/ui/Markdown";
 import { PageHeader } from "components/ui/PageHeader";
 import { StepsMenu } from "components/ui/StepsMenu";
-import { Text } from "components/ui/Text";
 
 import { useConfig } from "config";
 import { SourceDefinitionRead } from "core/request/AirbyteClient";
@@ -26,8 +22,8 @@ import { links } from "utils/links";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 import styles from "./DocumentationPanel.module.scss";
-import octaviaWorker from "./octavia-worker.png";
-import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
+import { ResourceNotAvailable } from "./ResourceNotAvailable";
+import { SchemaViewer } from "./SchemaViewer";
 
 const OSS_ENV_MARKERS = /<!-- env:oss -->([\s\S]*?)<!-- \/env:oss -->/gm;
 const CLOUD_ENV_MARKERS = /<!-- env:cloud -->([\s\S]*?)<!-- \/env:cloud -->/gm;
@@ -36,41 +32,12 @@ export const prepareMarkdown = (markdown: string, env: "oss" | "cloud"): string 
   return env === "oss" ? markdown.replaceAll(CLOUD_ENV_MARKERS, "") : markdown.replaceAll(OSS_ENV_MARKERS, "");
 };
 
-const ResourceNotAvailable: React.FC<
-  React.PropsWithChildren<{ activeTab: "erd" | "schema"; setRequested: (val: boolean) => void }>
-> = ({ activeTab, setRequested }) => {
-  const { selectedConnectorDefinition } = useDocumentationPanelContext();
-  const { trackRequest } = useAnalyticsTrackFunctions();
-  return (
-    <>
-      <Text size="lg">
-        <FormattedMessage id="sources.request.prioritize" />
-      </Text>
-      <FontAwesomeIcon icon={faArrowDown} />
-      <Button
-        variant="primary"
-        onClick={() => {
-          trackRequest({
-            sourceDefinitionId: (selectedConnectorDefinition as SourceDefinitionRead).sourceDefinitionId,
-            connectorName: selectedConnectorDefinition.name,
-            requestType: activeTab,
-          });
-          setRequested(true);
-        }}
-      >
-        <FormattedMessage id={`sources.request.button.${activeTab}`} />
-      </Button>
-    </>
-  );
-};
-
 export const DocumentationPanel: React.FC = () => {
   const { formatMessage } = useIntl();
   const config = useConfig();
   const { setDocumentationPanelOpen, documentationUrl, selectedConnectorDefinition } = useDocumentationPanelContext();
   const isSource = Object.hasOwn(selectedConnectorDefinition, "sourceDefinitionId");
 
-  const [isSchemaRequested, setIsSchemaRequested] = useState(false);
   const [isERDRequested, setIsERDRequested] = useState(false);
 
   const { data: docs, isLoading, error } = useDocumentation(documentationUrl);
@@ -135,30 +102,10 @@ export const DocumentationPanel: React.FC = () => {
             rehypePlugins={urlReplacerPlugin}
           />
         ))
-        .with("schema", () => (
-          <div className={styles.requestContainer}>
-            <img src={octaviaWorker} alt="" className={styles.emptyListImage} />
-            {isSchemaRequested ? (
-              <Text size="lg">
-                <FormattedMessage id="sources.request.thankYou" />{" "}
-              </Text>
-            ) : (
-              <ResourceNotAvailable activeTab="schema" setRequested={setIsSchemaRequested} />
-            )}
-          </div>
+        .with("schema", () => <SchemaViewer sourceDefinition={selectedConnectorDefinition as SourceDefinitionRead} />)
+        .with("erd", () => (
+          <ResourceNotAvailable activeTab="erd" setRequested={setIsERDRequested} isRequested={isERDRequested} />
         ))
-        .with("erd", () => {
-          <div className={styles.requestContainer}>
-            <img src={octaviaWorker} alt="" className={styles.emptyListImage} />
-            {isERDRequested ? (
-              <Text size="lg">
-                <FormattedMessage id="sources.request.thankYou" />
-              </Text>
-            ) : (
-              <ResourceNotAvailable activeTab="erd" setRequested={setIsERDRequested} />
-            )}
-          </div>;
-        })
         .otherwise(() => null)}
     </div>
   );

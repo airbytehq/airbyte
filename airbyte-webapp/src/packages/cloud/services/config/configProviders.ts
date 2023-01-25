@@ -33,6 +33,7 @@ const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
     },
     cloudApiUrl: window.CLOUD_API_URL,
     launchDarkly: window.LAUNCHDARKLY_KEY,
+    cloudNodeApiUrl: window.CLOUD_NODE_API_URL,
   };
 };
 
@@ -40,6 +41,7 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {
     cloudApiUrl: process.env.REACT_APP_CLOUD_API_URL,
     cloudPublicApiUrl: process.env.REACT_APP_CLOUD_PUBLIC_API_URL,
+    cloudNodeApiUrl: process.env.REACT_APP_NODE_API_URL,
     firebase: {
       apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
       authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,

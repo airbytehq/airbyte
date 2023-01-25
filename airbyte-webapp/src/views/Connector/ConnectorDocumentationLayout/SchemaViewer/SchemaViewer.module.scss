@@ -1,0 +1,64 @@
+@use "scss/variables" as vars;
+@use "scss/colors" as colors;
+@use "scss/fonts" as fonts;
+
+.loadingContainer {
+  height: 80vh;
+}
+
+.dropdownContainer {
+  display: flex;
+  gap: vars.$spacing-xl;
+  align-items: center;
+
+  .streamDropdown {
+    flex-grow: 1;
+  }
+}
+
+.propertyContainer {
+  padding-left: vars.$spacing-md;
+  padding-bottom: vars.$spacing-xl;
+  gap: vars.$spacing-md;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid colors.$grey-200;
+
+  .propertyHeader {
+    display: flex;
+    align-items: center;
+
+    .separator {
+      width: vars.$spacing-md;
+      margin-left: -1 * vars.$spacing-md;
+      margin-right: vars.$spacing-xs;
+      border-top: 1px solid colors.$grey-200;
+    }
+
+    .propertyText {
+      font-weight: 600;
+      margin-right: vars.$spacing-md;
+    }
+  }
+}
+
+.exampleContainer {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-md;
+}
+
+.propertyExample {
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  max-width: 80%;
+  overflow-wrap: break-word;
+}
+
+code {
+  font-size: 11px;
+  white-space: break-spaces;
+  background: colors.$grey-50;
+  font-family: fonts.$monospace;
+  padding-left: vars.$spacing-xs;
+  padding-right: vars.$spacing-xs;
+}

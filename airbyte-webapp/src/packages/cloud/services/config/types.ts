@@ -8,12 +8,14 @@ declare global {
     FIREBASE_AUTH_EMULATOR_HOST?: string;
     CLOUD_API_URL?: string;
     CLOUD_PUBLIC_API_URL?: string;
+    CLOUD_NODE_API_URL?: string;
   }
 }
 
 export interface CloudConfigExtension {
   cloudApiUrl: string;
   cloudPublicApiUrl: string;
+  cloudNodeApiUrl: string;
   firebase: {
     apiKey: string;
     authDomain: string;
