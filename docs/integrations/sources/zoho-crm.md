@@ -132,5 +132,5 @@ Make sure to complete the auth flow quickly, as the initial token granted by Zoh
 
 | Version | Date       | Pull Request                                             | Subject         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------|
-| 0.1.1   | 2023-01-25 | [](https://github.com/airbytehq/airbyte/pull/) | Improve error return for auth step |
+| 0.1.1   | 2023-01-25 | [21852](https://github.com/airbytehq/airbyte/pull/21852) | Improve error return for auth step |
 | 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release |
