@@ -11,6 +11,7 @@ import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams import AvailabilityStrategy
 from pendulum import Date
 
 
@@ -54,6 +55,10 @@ class MixpanelStream(HttpStream, ABC):
         self.project_id = project_id
 
         super().__init__(authenticator=authenticator)
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Define abstract method"""
