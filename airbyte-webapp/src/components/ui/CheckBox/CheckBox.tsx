@@ -29,7 +29,13 @@ export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, checkboxSize 
         className
       )}
     >
-      <input type="checkbox" aria-checked={indeterminate ? "mixed" : checked} {...inputProps} tabIndex={0} />
+      <input
+        type="checkbox"
+        aria-checked={indeterminate ? "mixed" : checked}
+        {...inputProps}
+        onClick={(e) => e.stopPropagation()}
+        tabIndex={0}
+      />
       {indeterminate ? (
         <FontAwesomeIcon size={checkboxSize} icon={faMinus} />
       ) : (
