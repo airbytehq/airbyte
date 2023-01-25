@@ -26,10 +26,10 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
       - config_path: "secrets/config_oauth.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
