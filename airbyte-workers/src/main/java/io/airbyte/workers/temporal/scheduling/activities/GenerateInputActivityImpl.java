@@ -168,7 +168,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withDockerImage(config.getSourceDockerImage())
           .withProtocolVersion(config.getSourceProtocolVersion())
           .withIsCustomConnector(config.getIsSourceCustomConnector())
-          .withAllowedHosts(configReplacer.getAllowedHosts(sourceDefinition.getAllowedHosts(), config.getSourceConfiguration()));
+          .withAllowedHosts(configReplacer.getAllowedHosts(sourceDefinition.getAllowedHosts(), attemptSyncConfig.getSourceConfiguration()));
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
@@ -179,7 +179,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
           .withSupportsDbt(destinationDefinition.getSupportsDbt())
           .withNormalizationIntegrationType(normalizationIntegrationType)
-          .withAllowedHosts(configReplacer.getAllowedHosts(destinationDefinition.getAllowedHosts(), config.getDestinationConfiguration()));
+          .withAllowedHosts(configReplacer.getAllowedHosts(destinationDefinition.getAllowedHosts(), attemptSyncConfig.getDestinationConfiguration()));
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
