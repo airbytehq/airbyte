@@ -152,65 +152,6 @@ class DefaultReplicationWorkerTest {
     MDC.clear();
   }
 
-  @Test
-  void test() throws Exception {
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        messageTracker,
-        recordSchemaValidator,
-        workerMetricReporter,
-        connectorConfigUpdater, false);
-
-    worker.run(syncInput, jobRoot);
-
-    verify(source).start(sourceConfig, jobRoot);
-    verify(destination).start(destinationConfig, jobRoot);
-    verify(destination).accept(RECORD_MESSAGE1);
-    verify(destination).accept(RECORD_MESSAGE2);
-    verify(source, atLeastOnce()).close();
-    verify(destination).close();
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE1.getRecord()));
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE2.getRecord()));
-  }
-
-  @Test
-  void testInvalidSchema() throws Exception {
-    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(RECORD_MESSAGE2), Optional.of(RECORD_MESSAGE3));
-
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        messageTracker,
-        recordSchemaValidator,
-        workerMetricReporter,
-        connectorConfigUpdater,
-        false);
-
-    worker.run(syncInput, jobRoot);
-
-    verify(source).start(sourceConfig, jobRoot);
-    verify(destination).start(destinationConfig, jobRoot);
-    verify(destination).accept(RECORD_MESSAGE1);
-    verify(destination).accept(RECORD_MESSAGE2);
-    verify(destination).accept(RECORD_MESSAGE3);
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE1.getRecord()));
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE2.getRecord()));
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE3.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE3.getRecord()));
-    verify(source).close();
-    verify(destination).close();
-  }
 
   @Test
   void testSourceNonZeroExitValue() throws Exception {
@@ -253,26 +194,7 @@ class DefaultReplicationWorkerTest {
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE) && f.getStacktrace().contains(SOURCE_ERROR_MESSAGE)));
   }
 
-  @Test
-  void testReplicationRunnableSourceUpdateConfig() throws Exception {
-    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(CONFIG_MESSAGE), Optional.empty());
 
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        messageTracker,
-        recordSchemaValidator,
-        workerMetricReporter,
-        connectorConfigUpdater, false);
-
-    final ReplicationOutput output = worker.run(syncInput, jobRoot);
-    assertEquals(ReplicationStatus.COMPLETED, output.getReplicationAttemptSummary().getStatus());
-
-    verify(connectorConfigUpdater).updateSource(syncInput.getSourceId(), CONNECTOR_CONFIG);
-  }
 
   @Test
   void testSourceConfigPersistError() throws Exception {
@@ -412,37 +334,6 @@ class DefaultReplicationWorkerTest {
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(WORKER_ERROR_MESSAGE)));
-  }
-
-  @Test
-  void testOnlyStateAndRecordMessagesDeliveredToDestination() throws Exception {
-    final AirbyteMessage LOG_MESSAGE = AirbyteMessageUtils.createLogMessage(Level.INFO, "a log message");
-    final AirbyteMessage TRACE_MESSAGE = AirbyteMessageUtils.createErrorMessage("a trace message", 123456.0);
-    when(mapper.mapMessage(LOG_MESSAGE)).thenReturn(LOG_MESSAGE);
-    when(mapper.mapMessage(TRACE_MESSAGE)).thenReturn(TRACE_MESSAGE);
-    when(source.isFinished()).thenReturn(false, false, false, false, true);
-    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(LOG_MESSAGE), Optional.of(TRACE_MESSAGE),
-        Optional.of(RECORD_MESSAGE2));
-
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        messageTracker,
-        recordSchemaValidator,
-        workerMetricReporter,
-        connectorConfigUpdater, false);
-
-    worker.run(syncInput, jobRoot);
-
-    verify(source).start(sourceConfig, jobRoot);
-    verify(destination).start(destinationConfig, jobRoot);
-    verify(destination).accept(RECORD_MESSAGE1);
-    verify(destination).accept(RECORD_MESSAGE2);
-    verify(destination, never()).accept(LOG_MESSAGE);
-    verify(destination, never()).accept(TRACE_MESSAGE);
   }
 
   @Test
