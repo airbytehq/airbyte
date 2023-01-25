@@ -321,7 +321,7 @@ Before enrolling in the program, [set up](https://docs.airbyte.com/cloud/getting
 You must be enrolled in the program to use alpha and beta connectors for free. If either the source or destination is in alpha or beta, the whole connection is free to sync.
 
 To get started:
-1. Click the **Credits** icon in the navigation bar. 
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Credits** in the navigation bar.
 
 2. Click **Enroll now** in the **Free Connector Program** banner.
 
@@ -345,7 +345,7 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
 
  To buy credits:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the **Credits** icon in the navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Credits** in the navigation bar.
 
 2. If you are unsure of how many credits you need, click **Talk to Sales** to find the right amount for your team.
 
