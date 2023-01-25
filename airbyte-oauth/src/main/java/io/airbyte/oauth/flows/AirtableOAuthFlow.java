@@ -17,8 +17,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,18 +35,11 @@ import org.apache.http.client.utils.URIBuilder;
 public class AirtableOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://airtable.com/oauth2/v1/token";
-
+  private final Clock clock;
   private static final List<String> SCOPES = Arrays.asList(
       "data.records:read",
       "data.recordComments:read",
       "schema.bases:read");
-
-  // Randomly generated string, min 43 - max 150 symbols
-  private static final String CODE_VERIFIER = "XmG5afcqXCamPk3jshWQXmG5afcqXCamPk3jshWQXmG5afcqXCamPk3jshWQXmG5afcqXCamPk3jshWQ";
-  // Base64(s256) from CODE_VERIFIER
-  private static final String CODE_CHALLENGE = "jajoblvFNHmH8rSnW84xFEUKMGC8CYwR82phhRR6iCg";
-  // State
-  private static final String STATE = "WeHH_yy2irpl8UYAvv-my";
 
   public String getScopes() {
     // More info and additional scopes could be found here:
@@ -53,25 +49,30 @@ public class AirtableOAuthFlow extends BaseOAuth2Flow {
   }
 
   public String getCodeVerifier() {
-    return CODE_VERIFIER;
+    // Randomly generated string, min 43 - max 150 symbols
+    return "XmG5afcqXCamPk3jshWQXmG5afcqXCamPk3jshWQXmG5afcqXCamPk3jshWQXmG5afcqXCamPk3jshWQ";
   }
 
   public String getCodeChanlenge() {
-    return CODE_CHALLENGE;
+    // Base64(s256) from CODE_VERIFIER
+    return "jajoblvFNHmH8rSnW84xFEUKMGC8CYwR82phhRR6iCg";
   }
 
   @Override
   public String getState() {
-    return STATE;
+    // State
+    return "WeHH_yy2irpl8UYAvv-my";
   }
 
   public AirtableOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
+    this.clock = Clock.systemUTC();
   }
 
   @VisibleForTesting
-  public AirtableOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  public AirtableOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier, Clock clock) {
     super(configRepository, httpClient, stateSupplier);
+    this.clock = clock;
   }
 
   @Override
@@ -149,6 +150,28 @@ public class AirtableOAuthFlow extends BaseOAuth2Flow {
     } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
+  }
+
+  @Override
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
+    final Map<String, Object> result = new HashMap<>();
+    if (data.has("refresh_token")) {
+      result.put("refresh_token", data.get("refresh_token").asText());
+    } else {
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
+    }
+    if (data.has("access_token")) {
+      result.put("access_token", data.get("access_token").asText());
+    } else {
+      throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
+    }
+    if (data.has("expires_in")) {
+      Instant expires_in = Instant.now(this.clock).plusSeconds(data.get("expires_in").asInt());
+      result.put("token_expiry_date", expires_in.toString());
+    } else {
+      throw new IOException(String.format("Missing 'expires_in' in query params from %s", accessTokenUrl));
+    }
+    return result;
   }
 
 }
