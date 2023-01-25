@@ -2,5 +2,7 @@
   min-width: fit-content;
   padding-right: 15px;
 
-  --webkit-overlay: true;
+  &.fixedHeight {
+    max-height: 600px;
+  }
 }

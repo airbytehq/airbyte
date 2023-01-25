@@ -73,7 +73,12 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
     <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
-        <div className={classNames(styles.catalogTreeTable, { [styles.newCatalogTreeTable]: isNewTableDesignEnabled })}>
+        <div
+          className={classNames(styles.catalogTreeTable, {
+            [styles.newCatalogTreeTable]: isNewTableDesignEnabled,
+            [styles.scrollable]: mode === "create",
+          })}
+        >
           <CatalogTreeBody
             streams={filteredStreams}
             changedStreams={changedStreams}
