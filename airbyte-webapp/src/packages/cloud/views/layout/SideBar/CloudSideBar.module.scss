@@ -1,6 +1,6 @@
-@use "../../../../../scss/colors";
-@use "../../../../../scss/variables";
-@forward "../../../../../views/layout/SideBar/SideBar.module.scss";
+@use "scss/colors";
+@use "scss/variables";
+@forward "views/layout/SideBar/SideBar.module.scss";
 
 $sidebar-workspace-font-size: 9px;
 $sidebar-workspace-font-weight: 400;
