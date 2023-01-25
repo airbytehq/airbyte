@@ -11,11 +11,8 @@ import {
 import { initialSetupCompleted } from "commands/workspaces";
 
 describe("Connector builder", () => {
-  beforeEach(() => {
-    initialSetupCompleted();
-  });
-
   before(() => {
+    initialSetupCompleted();
     goToConnectorBuilderPage();
   });
 
