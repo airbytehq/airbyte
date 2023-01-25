@@ -19,6 +19,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams import AvailabilityStrategy
 
 from .custom_reports_validator import CustomReportsValidator
 
@@ -115,6 +116,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     @property
     def state_checkpoint_interval(self) -> int:
         return self.window_in_days
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     @staticmethod
     def to_datetime_str(date: datetime) -> str:
