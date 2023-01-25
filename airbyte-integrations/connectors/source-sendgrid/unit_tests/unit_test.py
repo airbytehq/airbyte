@@ -28,6 +28,7 @@ from source_sendgrid.streams import (
 )
 
 FAKE_NOW = pendulum.DateTime(2022, 1, 1, tzinfo=pendulum.timezone("utc"))
+FAKE_NOW_ISO_STRING = FAKE_NOW.to_iso8601_string()
 
 
 @pytest.fixture(name="sendgrid_stream")
@@ -59,7 +60,7 @@ def test_source_wrong_credentials():
 
 
 def test_messages_stream_request_params(mock_pendulum_now):
-    start_time = 1558359830
+    start_time = "2019-05-20T13:43:50.000Z"
     stream = Messages(start_time)
     state = {"last_event_time": 1558359000}
     request_params = stream.request_params(state)
@@ -70,7 +71,7 @@ def test_messages_stream_request_params(mock_pendulum_now):
 
 
 def test_streams():
-    streams = SourceSendgrid().streams(config={"apikey": "wrong.api.key123", "start_time": FAKE_NOW})
+    streams = SourceSendgrid().streams(config={"apikey": "wrong.api.key123", "start_time": FAKE_NOW_ISO_STRING})
 
     assert len(streams) == 15
 
@@ -89,10 +90,10 @@ def test_pagination(mocker):
 
 @patch.multiple(SendgridStreamIncrementalMixin, __abstractmethods__=set())
 def test_stream_state():
-    stream = SendgridStreamIncrementalMixin(start_time=FAKE_NOW)
+    stream = SendgridStreamIncrementalMixin(start_time=FAKE_NOW_ISO_STRING)
     state = {}
     request_params = stream.request_params(stream_state=state)
-    assert request_params == {"end_time": pendulum.now().int_timestamp, "start_time": FAKE_NOW}
+    assert request_params == {"end_time": pendulum.now().int_timestamp, "start_time": int(FAKE_NOW.timestamp())}
 
 
 @pytest.mark.parametrize(
