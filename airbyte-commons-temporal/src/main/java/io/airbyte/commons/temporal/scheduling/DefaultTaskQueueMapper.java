@@ -16,10 +16,8 @@ public class DefaultTaskQueueMapper implements TaskQueueMapper {
   @VisibleForTesting
   static final String DEFAULT_SYNC_TASK_QUEUE = TemporalJobType.SYNC.name();
   @VisibleForTesting
-
   static final String DEFAULT_CHECK_TASK_QUEUE = TemporalJobType.CHECK_CONNECTION.name();
   @VisibleForTesting
-
   static final String DEFAULT_DISCOVER_TASK_QUEUE = TemporalJobType.DISCOVER_SCHEMA.name();
 
   // By default, map every Geography value to the default task queue.
