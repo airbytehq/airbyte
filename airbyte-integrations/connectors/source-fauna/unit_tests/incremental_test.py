@@ -115,6 +115,7 @@ def test_read_no_updates_or_creates_but_removes_present():
                         stream=AirbyteStream(
                             name="my_stream_name",
                             json_schema={},
+                            supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
                         ),
                     )
                 ]
@@ -226,6 +227,7 @@ def test_read_updates_ignore_deletes():
                         stream=AirbyteStream(
                             name="my_stream_name",
                             json_schema={},
+                            supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
                         ),
                     )
                 ]
@@ -683,6 +685,7 @@ def test_read_updates_query():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),
@@ -719,6 +722,7 @@ def test_read_updates_query():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),
@@ -741,6 +745,7 @@ def test_read_updates_query():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),
@@ -854,6 +859,7 @@ def test_read_updates_resume():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),
@@ -885,6 +891,7 @@ def test_read_updates_resume():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),

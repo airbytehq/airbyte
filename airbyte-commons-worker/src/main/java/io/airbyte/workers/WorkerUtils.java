@@ -5,28 +5,37 @@
 package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
+import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.protocol.models.Config;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +101,7 @@ public class WorkerUtils {
    */
   public static WorkerSourceConfig syncToWorkerSourceConfig(final StandardSyncInput sync) {
     return new WorkerSourceConfig()
+        .withSourceId(sync.getSourceId())
         .withSourceConnectionConfiguration(sync.getSourceConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
@@ -103,47 +113,92 @@ public class WorkerUtils {
    */
   public static WorkerDestinationConfig syncToWorkerDestinationConfig(final StandardSyncInput sync) {
     return new WorkerDestinationConfig()
+        .withDestinationId(sync.getDestinationId())
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
   }
 
-  public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,
-                                                              final Map<Type, List<AirbyteMessage>> messagesByType,
-                                                              final String defaultErrorMessage)
-      throws WorkerException {
-    final Optional<AirbyteTraceMessage> traceMessage =
-        messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
-            .map(AirbyteMessage::getTrace)
-            .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
-            .findFirst();
-
-    if (traceMessage.isPresent()) {
-      final ConnectorCommand connectorCommand = switch (outputType) {
-        case SPEC -> ConnectorCommand.SPEC;
-        case CHECK_CONNECTION -> ConnectorCommand.CHECK;
-        case DISCOVER_CATALOG_ID -> ConnectorCommand.DISCOVER;
-      };
-
-      final FailureReason failureReason = FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand);
-      return new ConnectorJobOutput().withOutputType(outputType).withFailureReason(failureReason);
-    }
-
-    throw new WorkerException(defaultErrorMessage);
+  private static ConnectorCommand getConnectorCommandFromOutputType(final OutputType outputType) {
+    return switch (outputType) {
+      case SPEC -> ConnectorCommand.SPEC;
+      case CHECK_CONNECTION -> ConnectorCommand.CHECK;
+      case DISCOVER_CATALOG_ID -> ConnectorCommand.DISCOVER;
+    };
   }
 
-  public static Map<String, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
+  public static Optional<AirbyteControlConnectorConfigMessage> getMostRecentConfigControlMessage(final Map<Type, List<AirbyteMessage>> messagesByType) {
+    return messagesByType.getOrDefault(Type.CONTROL, new ArrayList<>()).stream()
+        .map(AirbyteMessage::getControl)
+        .filter(control -> control.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG)
+        .map(AirbyteControlMessage::getConnectorConfig)
+        .reduce((first, second) -> second);
+  }
+
+  private static Optional<AirbyteTraceMessage> getTraceMessageFromMessagesByType(final Map<Type, List<AirbyteMessage>> messagesByType) {
+    return messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
+        .map(AirbyteMessage::getTrace)
+        .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
+        .findFirst();
+  }
+
+  public static Boolean getDidControlMessageChangeConfig(final JsonNode initialConfigJson, final AirbyteControlConnectorConfigMessage configMessage) {
+    final Config newConfig = configMessage.getConfig();
+    final JsonNode newConfigJson = Jsons.jsonNode(newConfig);
+    return !initialConfigJson.equals(newConfigJson);
+  }
+
+  public static Map<Type, List<AirbyteMessage>> getMessagesByType(final Process process, final AirbyteStreamFactory streamFactory, final int timeOut)
+      throws IOException {
+    final Map<Type, List<AirbyteMessage>> messagesByType;
+    try (final InputStream stdout = process.getInputStream()) {
+      messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+          .collect(Collectors.groupingBy(AirbyteMessage::getType));
+
+      WorkerUtils.gentleClose(process, timeOut, TimeUnit.MINUTES);
+      return messagesByType;
+    }
+  }
+
+  public static Optional<FailureReason> getJobFailureReasonFromMessages(final OutputType outputType,
+                                                                        final Map<Type, List<AirbyteMessage>> messagesByType) {
+    final Optional<AirbyteTraceMessage> traceMessage = getTraceMessageFromMessagesByType(messagesByType);
+    if (traceMessage.isPresent()) {
+      final ConnectorCommand connectorCommand = getConnectorCommandFromOutputType(outputType);
+      return Optional.of(FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand));
+    } else {
+      return Optional.empty();
+    }
+
+  }
+
+  public static Map<AirbyteStreamNameNamespacePair, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
     return syncInput.getCatalog().getStreams().stream().collect(
         Collectors.toMap(
-            k -> {
-              return streamNameWithNamespace(k.getStream().getNamespace(), k.getStream().getName());
-            },
+            k -> AirbyteStreamNameNamespacePair.fromAirbyteStream(k.getStream()),
             v -> v.getStream().getJsonSchema()));
 
   }
 
-  public static String streamNameWithNamespace(final @Nullable String namespace, final String streamName) {
-    return Objects.toString(namespace, "").trim() + streamName.trim();
+  public static String getStdErrFromErrorStream(final InputStream errorStream) throws IOException {
+    final BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8));
+    final StringBuilder errorOutput = new StringBuilder();
+    String line;
+    while ((line = reader.readLine()) != null) {
+      errorOutput.append(line);
+      errorOutput.append(System.lineSeparator());
+    }
+    return errorOutput.toString();
+  }
+
+  public static void throwWorkerException(final String errorMessage, final Process process)
+      throws WorkerException, IOException {
+    final String stderr = getStdErrFromErrorStream(process.getErrorStream());
+    if (stderr.isEmpty()) {
+      throw new WorkerException(errorMessage);
+    } else {
+      throw new WorkerException(errorMessage + ": \n" + stderr);
+    }
   }
 
 }

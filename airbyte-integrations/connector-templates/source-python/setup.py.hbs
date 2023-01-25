@@ -10,7 +10,7 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
+    "pytest~=6.2",
     "source-acceptance-test",
 ]
 

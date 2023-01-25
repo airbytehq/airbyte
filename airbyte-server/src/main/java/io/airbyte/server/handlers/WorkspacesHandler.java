@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.Geography;
@@ -37,6 +38,8 @@ import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -46,6 +49,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class WorkspacesHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkspacesHandler.class);
@@ -57,6 +61,7 @@ public class WorkspacesHandler {
   private final Supplier<UUID> uuidSupplier;
   private final Slugify slugify;
 
+  @Inject
   public WorkspacesHandler(final ConfigRepository configRepository,
                            final SecretsRepositoryWriter secretsRepositoryWriter,
                            final ConnectionsHandler connectionsHandler,
@@ -163,6 +168,11 @@ public class WorkspacesHandler {
     return buildWorkspaceRead(workspace);
   }
 
+  public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionIdRequestBody.getConnectionId(), false);
+    return buildWorkspaceRead(workspace);
+  }
+
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspacePatch) throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = workspacePatch.getWorkspaceId();
 
@@ -180,7 +190,14 @@ public class WorkspacesHandler {
 
     LOGGER.debug("Patched Workspace before persisting: {}", workspace);
 
-    persistStandardWorkspace(workspace);
+    if (workspacePatch.getWebhookConfigs() == null) {
+      // We aren't persisting any secrets. It's safe (and necessary) to use the NoSecrets variant because
+      // we never hydrated them in the first place.
+      configRepository.writeStandardWorkspaceNoSecrets(workspace);
+    } else {
+      // We're saving new webhook configs, so we need to persist the secrets.
+      persistStandardWorkspace(workspace);
+    }
 
     // after updating email or tracking info, we need to re-identify the instance.
     TrackingClientSingleton.get().identify(workspaceId);
@@ -198,7 +215,9 @@ public class WorkspacesHandler {
         .withName(workspaceUpdateName.getName())
         .withSlug(generateUniqueSlug(workspaceUpdateName.getName()));
 
-    persistStandardWorkspace(persistedWorkspace);
+    // NOTE: it's safe (and necessary) to use the NoSecrets variant because we never hydrated them in
+    // the first place.
+    configRepository.writeStandardWorkspaceNoSecrets(persistedWorkspace);
 
     return buildWorkspaceReadFromId(workspaceId);
   }

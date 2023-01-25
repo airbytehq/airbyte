@@ -15,6 +15,7 @@ from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from pendulum.datetime import DateTime
 from requests.auth import AuthBase
 
 TWILIO_API_URL_BASE = "https://api.twilio.com"
@@ -160,16 +161,25 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
                 value[self.cursor_field] = new_start_date
         self._cursor_value = value.get(self.cursor_field)
 
-    def generate_date_ranges(self, super_slice: MutableMapping[str, Any]) -> Iterable[Optional[MutableMapping[str, Any]]]:
-        end_datetime = pendulum.now()
+    def generate_date_ranges(self) -> Iterable[Optional[MutableMapping[str, Any]]]:
+        def align_to_dt_format(dt: DateTime) -> DateTime:
+            return pendulum.parse(dt.format(self.time_filter_template))
+
+        end_datetime = pendulum.now("utc")
         start_datetime = min(end_datetime, pendulum.parse(self.state.get(self.cursor_field, self._start_date)))
         current_start = start_datetime
         current_end = start_datetime
-        while current_end < end_datetime:
+        # Aligning to a datetime format is done to avoid the following scenario:
+        # start_dt = 2021-11-14T00:00:00, end_dt (now) = 2022-11-14T12:03:01, time_filter_template = "YYYY-MM-DD"
+        # First slice: (2021-11-14, 2022-11-14)
+        # (!) Second slice: (2022-11-15, 2022-11-14) - because 2022-11-14T00:00:00 (prev end) < 2022-11-14T12:03:01,
+        # so we have to compare dates, not date-times to avoid yielding that last slice
+        while align_to_dt_format(current_end) < align_to_dt_format(end_datetime):
             current_end = min(end_datetime, current_start + self.slice_step)
-            slice_ = copy.deepcopy(super_slice) if super_slice else {}
-            slice_[self.lower_boundary_filter_field] = current_start.format(self.time_filter_template)
-            slice_[self.upper_boundary_filter_field] = current_end.format(self.time_filter_template)
+            slice_ = {
+                self.lower_boundary_filter_field: current_start.format(self.time_filter_template),
+                self.upper_boundary_filter_field: current_end.format(self.time_filter_template),
+            }
             yield slice_
             current_start = current_end + self.slice_granularity
 
@@ -177,7 +187,10 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for super_slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
-            yield from self.generate_date_ranges(super_slice)
+            for dt_range in self.generate_date_ranges():
+                slice_ = copy.deepcopy(super_slice) if super_slice else {}
+                slice_.update(dt_range)
+                yield slice_
 
     def request_params(
         self,

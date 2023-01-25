@@ -11,24 +11,22 @@ from source_tplcentral.source import SourceTplcentral
 @fixture
 def config():
     return {
-        "config": {
-            "url_base": "https://secure-wms.com/",
-            "client_id": "xxx",
-            "client_secret": "yyy",
-            "user_login_id": 123,
-            "tpl_key": "{00000000-0000-0000-0000-000000000000}",
-            "customer_id": 4,
-            "facility_id": 5,
-            "start_date": "2021-10-01",
-        }
+        "url_base": "https://secure-wms.com/",
+        "client_id": "xxx",
+        "client_secret": "yyy",
+        "user_login_id": 123,
+        "tpl_key": "{00000000-0000-0000-0000-000000000000}",
+        "customer_id": 4,
+        "facility_id": 5,
+        "start_date": "2021-10-01",
     }
 
 
-def test_check_connection(mocker, requests_mock, config):
+def test_check_connection(requests_mock, config):
     source = SourceTplcentral()
     logger_mock = MagicMock()
     requests_mock.post(
-        f"{config['config']['url_base']}AuthServer/api/Token",
+        f"{config['url_base']}AuthServer/api/Token",
         json={
             "access_token": "the_token",
             "token_type": "Bearer",
@@ -37,12 +35,11 @@ def test_check_connection(mocker, requests_mock, config):
             "scope": None,
         },
     )
-    assert source.check_connection(logger_mock, **config) == (True, None)
+    assert source.check_connection(logger_mock, config) == (True, None)
 
 
-def test_streams(mocker):
+def test_streams(config):
     source = SourceTplcentral()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
+    streams = source.streams(config)
     expected_streams_number = 6
     assert len(streams) == expected_streams_number

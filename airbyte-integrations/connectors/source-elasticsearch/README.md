@@ -52,11 +52,11 @@ Airbyte has a standard test suite that all destination connectors must pass. See
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:sources-elasticsearch:unitTest
+./gradlew :airbyte-integrations:connectors:source-elasticsearch:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:sources-elasticsearch:integrationTest
+./gradlew :airbyte-integrations:connectors:source-elasticsearch:integrationTest
 ```
 
 ## Dependency Management

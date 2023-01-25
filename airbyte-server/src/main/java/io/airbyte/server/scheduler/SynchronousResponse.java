@@ -5,9 +5,11 @@
 package io.airbyte.server.scheduler;
 
 import io.airbyte.commons.temporal.TemporalResponse;
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobConfig.ConfigType;
 import java.util.Objects;
 import java.util.UUID;
+import javax.annotation.Nullable;
 
 public class SynchronousResponse<T> {
 
@@ -23,7 +25,8 @@ public class SynchronousResponse<T> {
   }
 
   public static <T, U> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<U> temporalResponse,
-                                                                   final T output,
+                                                                   @Nullable final ConnectorJobOutput jobOutput,
+                                                                   @Nullable final T responseOutput,
                                                                    final UUID id,
                                                                    final ConfigType configType,
                                                                    final UUID configId,
@@ -35,9 +38,10 @@ public class SynchronousResponse<T> {
         id,
         configType,
         configId,
+        jobOutput != null ? jobOutput.getConnectorConfigurationUpdated() : false,
         createdAt,
         endedAt);
-    return new SynchronousResponse<>(output, metadata);
+    return new SynchronousResponse<>(responseOutput, metadata);
   }
 
   public SynchronousResponse(final T output, final SynchronousJobMetadata metadata) {

@@ -33,9 +33,8 @@ const NotificationService = ({ children }: { children: React.ReactNode }) => {
       {firstNotification ? (
         // Show only first notification
         <Toast
-          title={firstNotification.title}
           text={firstNotification.text}
-          hasError={firstNotification.isError}
+          type={firstNotification.type}
           onClose={
             firstNotification.nonClosable
               ? undefined

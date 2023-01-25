@@ -1,0 +1,147 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+
+  requester:
+    url_base: "https://api.spacexdata.com/v4/"
+    http_method: "GET"
+
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  base_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_spacex_api/schemas/{{ options['name'] }}.json"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  launches_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "launches"
+      primary_key: "id"
+      path: "/launches/{{config['options'] or config['id'] or latest}}"
+
+  capsules_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "capsules"
+      primary_key: "id"
+      path: "/capsules"
+
+  company_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "company"
+      primary_key: "id"
+      path: "/company"
+
+  crew_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "crew"
+      primary_key: "id"
+      path: "/crew"
+
+  cores_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "cores"
+      primary_key: "id"
+      path: "/cores"
+
+  dragons_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "dragons"
+      primary_key: "id"
+      path: "/dragons"
+
+  landpads_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "landpads"
+      primary_key: "id"
+      path: "/landpads"
+
+  payloads_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "payloads"
+      primary_key: "id"
+      path: "/payloads"
+
+  history_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "history"
+      primary_key: "id"
+      path: "/history"
+
+  rockets_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "rockets"
+      primary_key: "id"
+      path: "/rockets"
+
+  roadster_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "roadster"
+      primary_key: "id"
+      path: "/roadster"
+
+  ships_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "ships"
+      primary_key: "id"
+      path: "/ships"
+
+  starlink_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "starlink"
+      primary_key: "id"
+      path: "/starlink"
+
+streams:
+  - "*ref(definitions.launches_stream)"
+  - "*ref(definitions.capsules_stream)"
+  - "*ref(definitions.company_stream)"
+  - "*ref(definitions.crew_stream)"
+  - "*ref(definitions.cores_stream)"
+  - "*ref(definitions.dragons_stream)"
+  - "*ref(definitions.landpads_stream)"
+  - "*ref(definitions.payloads_stream)"
+  - "*ref(definitions.history_stream)"
+  - "*ref(definitions.rockets_stream)"
+  - "*ref(definitions.roadster_stream)"
+  - "*ref(definitions.ships_stream)"
+  - "*ref(definitions.starlink_stream)"
+
+check:
+  stream_names:
+    - "launches"
+    - "capsules"
+    - "company"
+    - "crew"
+    - "cores"
+    - "dragons"
+    - "landpads"
+    - "payloads"
+    - "history"
+    - "rockets"
+    - "roadster"
+    - "ships"
+    - "starlink"

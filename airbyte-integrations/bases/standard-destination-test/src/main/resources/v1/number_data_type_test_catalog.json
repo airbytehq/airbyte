@@ -1,0 +1,34 @@
+{
+  "streams": [
+    {
+      "name": "int_test",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "float_test",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/Number"
+          }
+        }
+      }
+    },
+    {
+      "name": "default_number_test",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/Number"
+          }
+        }
+      }
+    }
+  ]
+}

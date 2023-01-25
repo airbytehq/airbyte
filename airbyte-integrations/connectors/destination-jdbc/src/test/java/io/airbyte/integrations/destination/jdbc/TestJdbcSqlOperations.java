@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.List;
 
 public class TestJdbcSqlOperations extends JdbcSqlOperations {

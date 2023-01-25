@@ -14,7 +14,7 @@ runs:
   steps:
     - name: Pip Caching
       if: ${{ inputs.cache_python }} == 'true'
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cache/pip
@@ -23,7 +23,7 @@ runs:
           ${{ inputs.cache-key }}-pip-${{ runner.os }}-
 
     - name: Npm Caching
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.npm
@@ -33,7 +33,7 @@ runs:
 
     # this intentionally does not use restore-keys so we don't mess with gradle caching
     - name: Gradle and Python Caching
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.gradle/caches

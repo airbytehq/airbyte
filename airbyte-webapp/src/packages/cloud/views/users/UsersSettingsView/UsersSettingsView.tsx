@@ -120,7 +120,7 @@ export const UsersSettingsView: React.VFC = () => {
   useTrackPage(PageTrackingCodes.SETTINGS_ACCESS_MANAGEMENT);
 
   return (
-    <InviteUsersModalServiceProvider>
+    <InviteUsersModalServiceProvider invitedFrom="user.settings">
       <Header />
       <UsersTable />
     </InviteUsersModalServiceProvider>

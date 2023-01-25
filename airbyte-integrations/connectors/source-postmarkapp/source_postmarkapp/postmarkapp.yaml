@@ -1,0 +1,158 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  selector_bounces:
+    extractor:
+      field_pointer: ["Bounces"]
+  selector_domains:
+    extractor:
+      field_pointer: ["Domains"]
+  selector_servers:
+    extractor:
+      field_pointer: ["Servers"]
+  selector_message_streams:
+    extractor:
+      field_pointer: ["MessageStreams"]
+  selector_messages:
+    extractor:
+      field_pointer: ["Messages"]
+  requester:
+    url_base: "https://api.postmarkapp.com"
+    http_method: "GET"
+    request_options_provider:
+      request_body_json:
+        Accept: "application/json"
+      request_parameters:
+        count: "500"
+    authenticator:
+      type: "ApiKeyAuthenticator"
+      header: "X-Postmark-Server-Token"
+      api_token: "{{ config['X-Postmark-Server-Token'] }}"
+  requester_account:
+    url_base: "https://api.postmarkapp.com"
+    http_method: "GET"
+    request_options_provider:
+      request_body_json:
+        Accept: "application/json"
+      request_parameters:
+        count: "500"
+    authenticator:
+      type: "ApiKeyAuthenticator"
+      header: "X-Postmark-Account-Token"
+      api_token: "{{ config['X-Postmark-Account-Token'] }}"
+  retriever_account:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: DefaultPaginator
+      $options:
+        url_base: "*ref(definitions.requester.url_base)"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 500
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "offset"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "offset"
+    requester:
+      $ref: "*ref(definitions.requester_account)"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: DefaultPaginator
+      $options:
+        url_base: "*ref(definitions.requester.url_base)"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 500
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "offset"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "offset"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  base_stream_account:
+    retriever:
+      $ref: "*ref(definitions.retriever_account)"
+  deliverystats:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_bounces)"
+    $options:
+      name: "deliverystats"
+      primary_key: "Name"
+      path: "/deliverystats"
+  message-streams:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_message_streams)"
+    $options:
+      name: "message-streams"
+      primary_key: "ID"
+      path: "/message-streams"
+  bounces:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_bounces)"
+    $options:
+      name: "bounces"
+      primary_key: "ID"
+      path: "/bounces"
+
+  servers:
+    $ref: "*ref(definitions.base_stream_account)"
+    retriever:
+      $ref: "*ref(definitions.retriever_account)"
+      record_selector:
+        $ref: "*ref(definitions.selector_servers)"
+    $options:
+      name: "servers"
+      primary_key: "ID"
+      path: "/servers"
+  messages:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector_messages)"
+    $options:
+      name: "messages"
+      primary_key: "MessageID"
+      path: "/messages/outbound"
+  domains:
+    $ref: "*ref(definitions.base_stream_account)"
+    $options:
+      name: "domains"
+      primary_key: "ID"
+      path: "/domains"
+    retriever:
+      $ref: "*ref(definitions.retriever_account)"
+      record_selector:
+        $ref: "*ref(definitions.selector_domains)"
+streams:
+  - "*ref(definitions.deliverystats)"
+  - "*ref(definitions.message-streams)"
+  - "*ref(definitions.domains)"
+  - "*ref(definitions.messages)"
+  - "*ref(definitions.bounces)"
+  - "*ref(definitions.servers)"
+
+check:
+  stream_names:
+    - "message-streams"

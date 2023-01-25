@@ -8,6 +8,7 @@ import { loadOsano } from "utils/dataPrivacy";
 import { loadSentry } from "utils/sentry";
 
 import "./globals";
+import "./scss/global.scss";
 
 // We do not follow default config approach since we want to init sentry/datadog asap
 loadSentry();

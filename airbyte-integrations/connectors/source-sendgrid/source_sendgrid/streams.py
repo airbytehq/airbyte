@@ -17,6 +17,11 @@ class SendgridStream(HttpStream, ABC):
     primary_key = "id"
     limit = 50
     data_field = None
+    raise_on_http_errors = True
+    permission_error_codes = {
+        400: "authorization required",
+        401: "authorization required",
+    }
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
@@ -48,6 +53,20 @@ class SendgridStream(HttpStream, ABC):
             # do NOT print request headers as it contains auth token
             self.logger.info(err_msg)
 
+    def should_retry(self, response: requests.Response) -> bool:
+        """Override to provide skip the stream possibility"""
+
+        status = response.status_code
+        if status in self.permission_error_codes.keys():
+            for message in response.json().get("errors", []):
+                if message.get("message") == self.permission_error_codes.get(status):
+                    self.logger.error(
+                        f"Stream `{self.name}` is not available, due to subscription plan limitations or perrmission issues. Skipping."
+                    )
+                    setattr(self, "raise_on_http_errors", False)
+                    return False
+        return 500 <= response.status_code < 600
+
 
 class SendgridStreamOffsetPagination(SendgridStream):
     offset = 0
@@ -75,8 +94,6 @@ class SendgridStreamIncrementalMixin(HttpStream, ABC):
     def __init__(self, start_time: Optional[Union[int, str]], **kwargs):
         super().__init__(**kwargs)
         self._start_time = start_time or 0
-        # for backward compatibility
-        self._start_time = start_time
         if isinstance(self._start_time, str):
             self._start_time = int(pendulum.parse(self._start_time).timestamp())
 

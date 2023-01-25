@@ -16,8 +16,8 @@ class BaseSizeEstimatorTest {
   @Test
   void testGetEstimatedByteSize() {
     assertEquals(0L, BaseSizeEstimator.getEstimatedByteSize(null));
-    assertEquals(28L, BaseSizeEstimator.getEstimatedByteSize("12345"));
-    assertEquals(60L, BaseSizeEstimator.getEstimatedByteSize(Jsons.jsonNode(Map.of("key", "value"))));
+    assertEquals(21L, BaseSizeEstimator.getEstimatedByteSize("12345"));
+    assertEquals(45L, BaseSizeEstimator.getEstimatedByteSize(Jsons.jsonNode(Map.of("key", "value"))));
   }
 
   public static class TestSizeEstimator extends BaseSizeEstimator {

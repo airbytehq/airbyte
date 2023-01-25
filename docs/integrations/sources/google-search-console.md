@@ -22,7 +22,7 @@ Since Google has deprecated certain [OAuth workflows](https://developers.google.
 You can either:
 
 * Use the existing `Service Account` for your Google Project with granted Admin Permissions
-* Use your personal Google User Account with oauth. If you choose this option, your account must have permissions to view the Google Search Console project you choose. 
+* Use your personal Google User Account with oauth. If you choose this option, your account must have permissions to view the Google Search Console project you choose.
 * Create the new `Service Account` credentials for your Google Project, and grant Admin Permissions to it
 * Follow the `Delegating domain-wide authority` process to obtain the necessary permissions to your google account from the administrator of Workspace
 
@@ -36,7 +36,7 @@ A service account's credentials include a generated email address that is unique
 4. Under Service account details, type a `name`, `ID`, and `description` for the service account, then click `Create`.
    * Optional: Under `Service account permissions`, select the `IAM roles` to grant to the service account, then click `Continue`.
    * Optional: Under `Grant users access to this service account`, add the `users` or `groups` that are allowed to use and manage the service account.
-5. Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on the Email address of service account you just created. 
+5. Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on the Email address of service account you just created.
 6. Open `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
 7. On `Keys` tab click `+ Add key`, then click `Create new key`.
 
@@ -64,24 +64,28 @@ At the end of this process, you should have JSON credentials to this Google Serv
 
 ## Step 2: Set up the google search console connector in Airbyte
 
-### For Airbyte Cloud:
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the google search console connector and select **google search console** from the Source type dropdown.
-4. Click Authenticate your account to sign in with Google and authorize your account. 
+4. Click Authenticate your account to sign in with Google and authorize your account.
 5. Fill in the `site_urls` field.
 5. Fill in the `start date` field.
 6. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
 7. You should be ready to sync data.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source:
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
-1. Fill in the `service_account_info` and `email` fields for authentication. 
-2. Fill in the `site_urls` field. 
+1. Fill in the `service_account_info` and `email` fields for authentication.
+2. Fill in the `site_urls` field.
 3. Fill in the `start date` field.
 4. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
 5. You should be ready to sync data.
+<!-- /env:oss -->
 
 
 ## Supported sync modes

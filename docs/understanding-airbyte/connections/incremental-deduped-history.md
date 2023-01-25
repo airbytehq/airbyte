@@ -35,57 +35,57 @@ As mentioned above, the delta from a sync will be _appended_ to the existing his
 
 Assume that `updated_at` is our `cursor_field` and `name` is the `primary_key`. Let's say the following data already exists into our data warehouse.
 
-| name | deceased | updated\_at |
-| :--- | :--- | :--- |
-| Louis XVI | false | 1754 |
-| Marie Antoinette | false | 1755 |
+| name             | deceased | updated_at |
+| :--------------- | :------- | :--------- |
+| Louis XVI        | false    | 1754       |
+| Marie Antoinette | false    | 1755       |
 
 In the next sync, the delta contains the following record:
 
-| name | deceased | updated\_at |
-| :--- | :--- | :--- |
-| Louis XVII | false | 1785 |
+| name       | deceased | updated_at |
+| :--------- | :------- | :--------- |
+| Louis XVII | false    | 1785       |
 
 At the end of this incremental sync, the data warehouse would now contain:
 
-| name | deceased | updated\_at |
-| :--- | :--- | :--- |
-| Louis XVI | false | 1754 |
-| Marie Antoinette | false | 1755 |
-| Louis XVII | false | 1785 |
+| name             | deceased | updated_at |
+| :--------------- | :------- | :--------- |
+| Louis XVI        | false    | 1754       |
+| Marie Antoinette | false    | 1755       |
+| Louis XVII       | false    | 1785       |
 
 ### Updating a Record
 
 Let's assume that our warehouse contains all the data that it did at the end of the previous section. Now, unfortunately the king and queen lose their heads. Let's see that delta:
 
-| name | deceased | updated\_at |
-| :--- | :--- | :--- |
-| Louis XVI | true | 1793 |
-| Marie Antoinette | true | 1793 |
+| name             | deceased | updated_at |
+| :--------------- | :------- | :--------- |
+| Louis XVI        | true     | 1793       |
+| Marie Antoinette | true     | 1793       |
 
 The output we expect to see in the warehouse is as follows:
 
 In the history table:
 
-| name | deceased | updated\_at | start\_at | end\_at |
-| :--- | :--- | :--- | :--- | :--- |
-| Louis XVI | false | 1754 | 1754 | 1793 |
-| Louis XVI | true | 1793 | 1793 | NULL |
-| Louis XVII | false | 1785 | 1785 | NULL |
-| Marie Antoinette | false | 1755 | 1755 | 1793 |
-| Marie Antoinette | true | 1793 | 1793 | NULL |
+| name             | deceased | updated_at | start_at | end_at |
+| :--------------- | :------- | :--------- | :------- | :----- |
+| Louis XVI        | false    | 1754       | 1754     | 1793   |
+| Louis XVI        | true     | 1793       | 1793     | NULL   |
+| Louis XVII       | false    | 1785       | 1785     | NULL   |
+| Marie Antoinette | false    | 1755       | 1755     | 1793   |
+| Marie Antoinette | true     | 1793       | 1793     | NULL   |
 
 In the final de-duplicated table:
 
-| name | deceased | updated\_at |
-| :--- | :--- | :--- |
-| Louis XVI | true | 1793 |
-| Louis XVII | false | 1785 |
-| Marie Antoinette | true | 1793 |
+| name             | deceased | updated_at |
+| :--------------- | :------- | :--------- |
+| Louis XVI        | true     | 1793       |
+| Louis XVII       | false    | 1785       |
+| Marie Antoinette | true     | 1793       |
 
 ## Source-Defined Cursor
 
-Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../integrations/sources/exchangeratesapi.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
+Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../integrations/sources/exchange-rates.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
 
 ![](../../.gitbook/assets/incremental_source_defined.png)
 
@@ -127,23 +127,23 @@ select * from table where cursor_field > 'last_sync_max_cursor_field_value'
 
 Let's say the following data already exists into our data warehouse.
 
-| name | deceased | updated\_at |
-| :--- | :--- | :--- |
-| Louis XVI | false | 1754 |
-| Marie Antoinette | false | 1755 |
+| name             | deceased | updated_at |
+| :--------------- | :------- | :--------- |
+| Louis XVI        | false    | 1754       |
+| Marie Antoinette | false    | 1755       |
 
 At the start of the next sync, the source data contains the following new record:
 
-| name | deceased | updated\_at |
-| :--- | :--- | :--- |
-| Louis XVI | true | 1754 |
+| name      | deceased | updated_at |
+| :-------- | :------- | :--------- |
+| Louis XVI | true     | 1754       |
 
 At the end of the second incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field \(the cursor field is not greater than last sync's max value, `1754 < 1755`\), so it is not emitted by the source as a new or modified record.
 
-| name | deceased | updated\_at |
-| :--- | :--- | :--- |
-| Louis XVI | false | 1754 |
-| Marie Antoinette | false | 1755 |
+| name             | deceased | updated_at |
+| :--------------- | :------- | :--------- |
+| Louis XVI        | false    | 1754       |
+| Marie Antoinette | false    | 1755       |
 
 Similarly, if multiple modifications are made during the same day to the same records. If the frequency of the sync is not granular enough \(for example, set for every 24h\), then intermediate modifications to the data are not going to be detected and emitted. Only the state of data at the time the sync runs will be reflected in the destination.
 

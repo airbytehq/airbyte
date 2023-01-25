@@ -9,17 +9,18 @@ import * as yup from "yup";
 import { Label, LabeledSwitch } from "components";
 import { DocsIcon } from "components/icons/DocsIcon";
 import { PlayIcon } from "components/icons/PlayIcon";
-import { Row, Cell } from "components/SimpleTableComponents";
+import { Cell, Row } from "components/SimpleTableComponents";
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
+import { ToastType } from "components/ui/Toast";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { useNotificationService } from "hooks/services/Notification";
 import useWorkspace, { WebhookPayload } from "hooks/services/useWorkspace";
 import { links } from "utils/links";
 
-import { useNotificationService } from "../../../../../hooks/services/Notification";
 import { Content, SettingsCard } from "../../SettingsComponents";
 import help from "./help.png";
 import styles from "./WebHookForm.module.scss";
@@ -59,34 +60,38 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
         case true: {
           registerNotification({
             id: "settings.webhook.test.passed",
-            title: formatMessage({ id: "settings.webhook.test.passed" }),
-            isError: false,
+            text: formatMessage({ id: "settings.webhook.test.passed" }),
+            type: ToastType.SUCCESS,
           });
           break;
         }
         case false: {
           registerNotification({
             id: "settings.webhook.test.failed",
-            title: formatMessage({ id: "settings.webhook.test.failed" }),
-            isError: true,
+            text: formatMessage({ id: "settings.webhook.test.failed" }),
+            type: ToastType.ERROR,
           });
           break;
         }
       }
     }
     if (action === WebhookAction.Save) {
-      switch (await testWebhookAction(data)) {
-        case true: {
-          await updateWebhook(data);
-          break;
-        }
-        case false: {
-          registerNotification({
-            id: "settings.webhook.save.failed",
-            title: formatMessage({ id: "settings.webhook.save.failed" }),
-            isError: true,
-          });
-          break;
+      if (data.webhook === "") {
+        await updateWebhook(data);
+      } else {
+        switch (await testWebhookAction(data)) {
+          case true: {
+            await updateWebhook(data);
+            break;
+          }
+          case false: {
+            registerNotification({
+              id: "settings.webhook.save.failed",
+              text: formatMessage({ id: "settings.webhook.save.failed" }),
+              type: ToastType.ERROR,
+            });
+            break;
+          }
         }
       }
     }
@@ -155,13 +160,7 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
                     </a>
                   </li>
                 </ul>
-                <img
-                  className={styles.webhookGuideImg}
-                  alt={formatMessage({
-                    id: "settings.notificationGuide.button",
-                  })}
-                  src={help}
-                />
+                <img className={styles.webhookGuideImg} alt="" src={help} />
               </div>
               <Row className={styles.webhookUrlLabelRow}>
                 <Cell className={styles.webhookUrlLabelCell}>
@@ -180,13 +179,7 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
                       >
                         <FormattedMessage id="settings.notificationGuide.button" />
                       </Button>
-                      <img
-                        className={styles.webhookGuideButtonImg}
-                        alt={formatMessage({
-                          id: "settings.notificationGuide.button",
-                        })}
-                        src={help}
-                      />
+                      <img className={styles.webhookGuideButtonImg} alt="" src={help} />
                     </>
                   )}
                 </Cell>

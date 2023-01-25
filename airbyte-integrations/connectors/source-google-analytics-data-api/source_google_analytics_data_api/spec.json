@@ -90,6 +90,8 @@
         "type": "integer",
         "title": "Data request time increment in days",
         "examples": [30, 60, 90, 120, 200, 364],
+        "minimum": 1,
+        "maximum": 364,
         "default": 1,
         "order": 4
       }

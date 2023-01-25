@@ -16,11 +16,7 @@ describe("Destination main actions", () => {
   it("Update destination", () => {
     const destName = appendRandomString("Test destination cypress for update");
     createLocalJsonDestination(destName, "/local");
-    updateDestination(
-      destName,
-      "connectionConfiguration.destination_path",
-      "/local/my-json"
-    );
+    updateDestination(destName, "connectionConfiguration.destination_path", "/local/my-json");
 
     cy.get("div[data-id='success-result']").should("exist");
     cy.get("input[value='/local/my-json']").should("exist");

@@ -8,6 +8,7 @@ import {
   enterUsername,
   enterPassword,
   enterPokemonName,
+  enterSchema,
 } from "pages/createConnectorPage";
 
 export const fillPostgresForm = (
@@ -16,18 +17,18 @@ export const fillPostgresForm = (
   port: string,
   database: string,
   username: string,
-  password: string
+  password: string,
+  schema: string
 ) => {
   cy.intercept("/api/v1/source_definition_specifications/get").as("getSourceSpecifications");
 
   selectServiceType("Postgres");
 
-  cy.wait("@getSourceSpecifications");
-
   enterName(name);
   enterHost(host);
   enterPort(port);
   enterDatabase(database);
+  enterSchema(schema);
   enterUsername(username);
   enterPassword(password);
 };
@@ -36,8 +37,6 @@ export const fillPokeAPIForm = (name: string, pokeName: string) => {
   cy.intercept("/api/v1/source_definition_specifications/get").as("getSourceSpecifications");
 
   selectServiceType("PokeAPI");
-
-  cy.wait("@getSourceSpecifications");
 
   enterName(name);
   enterPokemonName(pokeName);

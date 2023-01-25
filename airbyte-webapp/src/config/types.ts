@@ -3,6 +3,7 @@ declare global {
     TRACKING_STRATEGY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
+    CONNECTOR_BUILDER_API_URL?: string;
     CLOUD?: string;
     REACT_APP_DATADOG_APPLICATION_ID: string;
     REACT_APP_DATADOG_CLIENT_TOKEN: string;
@@ -14,7 +15,6 @@ declare global {
     REACT_APP_INTEGRATION_DOCS_URLS?: string;
     SEGMENT_TOKEN?: string;
     LAUNCHDARKLY_KEY?: string;
-    analytics: SegmentAnalytics.AnalyticsJS;
   }
 }
 

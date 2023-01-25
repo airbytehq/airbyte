@@ -21,7 +21,12 @@ def create_config_fixture():
     secrets_path.mkdir(exist_ok=True)
     config_filename = str(secrets_path / "config.json")
 
-    config = {"url": "http://localhost:8080", "access_key": "59662QEPFNCJ3KFL3VCT5VNQ4NHVUF4Y", "_allow_http": True}
+    config = {
+        "url": "http://localhost:8080",
+        "_allow_http": True,
+        "access_key": "59662QEPFNCJ3KFL3VCT5VNQ4NHVUF4Y",
+        "start_date": "2021-05-25",
+    }
 
     with open(config_filename, "w+") as fp:
         json.dump(obj=config, fp=fp)

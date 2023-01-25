@@ -29,6 +29,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.FieldSelectionData;
 import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
@@ -55,6 +56,7 @@ import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -69,6 +71,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class ConnectionsHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionsHandler.class);
@@ -78,29 +81,35 @@ public class ConnectionsHandler {
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
   private final EventRunner eventRunner;
+  private final ConnectionHelper connectionHelper;
 
   @VisibleForTesting
   ConnectionsHandler(final ConfigRepository configRepository,
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
-                     final EventRunner eventRunner) {
+                     final EventRunner eventRunner,
+                     final ConnectionHelper connectionHelper) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
     this.eventRunner = eventRunner;
+    this.connectionHelper = connectionHelper;
   }
 
+  @Deprecated(forRemoval = true)
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
-                            final EventRunner eventRunner) {
+                            final EventRunner eventRunner,
+                            final ConnectionHelper connectionHelper) {
     this(configRepository,
         UUID::randomUUID,
         workspaceHelper,
         trackingClient,
-        eventRunner);
+        eventRunner,
+        connectionHelper);
 
   }
 
@@ -142,16 +151,20 @@ public class ConnectionsHandler {
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
         .withSourceCatalogId(connectionCreate.getSourceCatalogId())
         .withGeography(getGeographyFromConnectionCreateOrWorkspace(connectionCreate))
-        .withBreakingChange(false);
+        .withBreakingChange(false)
+        .withNonBreakingChangesPreference(
+            ApiPojoConverters.toPersistenceNonBreakingChangesPreference(connectionCreate.getNonBreakingChangesPreference()));
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
     }
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
     if (connectionCreate.getSyncCatalog() != null) {
-      standardSync.withCatalog(CatalogConverter.toProtocol(connectionCreate.getSyncCatalog()));
+      standardSync.withCatalog(CatalogConverter.toConfiguredProtocol(connectionCreate.getSyncCatalog()));
+      standardSync.withFieldSelectionData(CatalogConverter.getFieldSelectionData(connectionCreate.getSyncCatalog()));
     } else {
       standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
+      standardSync.withFieldSelectionData(new FieldSelectionData());
     }
 
     if (connectionCreate.getSchedule() != null && connectionCreate.getScheduleType() != null) {
@@ -174,7 +187,7 @@ public class ConnectionsHandler {
       eventRunner.createConnectionManagerWorkflow(connectionId);
     } catch (final Exception e) {
       LOGGER.error("Start of the connection manager workflow failed", e);
-      configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
+      configRepository.deleteStandardSync(standardSync.getConnectionId());
       throw e;
     }
 
@@ -305,7 +318,8 @@ public class ConnectionsHandler {
     // in the patch. Otherwise, leave the field unchanged.
 
     if (patch.getSyncCatalog() != null) {
-      sync.setCatalog(CatalogConverter.toProtocol(patch.getSyncCatalog()));
+      sync.setCatalog(CatalogConverter.toConfiguredProtocol(patch.getSyncCatalog()));
+      sync.withFieldSelectionData(CatalogConverter.getFieldSelectionData(patch.getSyncCatalog()));
     }
 
     if (patch.getName() != null) {
@@ -342,6 +356,18 @@ public class ConnectionsHandler {
 
     if (patch.getGeography() != null) {
       sync.setGeography(ApiPojoConverters.toPersistenceGeography(patch.getGeography()));
+    }
+
+    if (patch.getBreakingChange() != null) {
+      sync.setBreakingChange(patch.getBreakingChange());
+    }
+
+    if (patch.getNotifySchemaChanges() != null) {
+      sync.setNotifySchemaChanges(patch.getNotifySchemaChanges());
+    }
+
+    if (patch.getNonBreakingChangesPreference() != null) {
+      sync.setNonBreakingChangesPreference(ApiPojoConverters.toPersistenceNonBreakingChangesPreference(patch.getNonBreakingChangesPreference()));
     }
   }
 
@@ -403,6 +429,14 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
+  public ConnectionReadList listConnectionsForSource(final UUID sourceId, final boolean includeDeleted) throws IOException {
+    final List<ConnectionRead> connectionReads = Lists.newArrayList();
+    for (final StandardSync standardSync : configRepository.listConnectionsBySource(sourceId, includeDeleted)) {
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
+    }
+    return new ConnectionReadList().connections(connectionReads);
+  }
+
   public ConnectionReadList listConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
@@ -421,7 +455,8 @@ public class ConnectionsHandler {
     return buildConnectionRead(connectionId);
   }
 
-  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog, final ConfiguredAirbyteCatalog configuredCatalog) {
+  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog, final ConfiguredAirbyteCatalog configuredCatalog)
+      throws JsonValidationException {
     return new CatalogDiff().transforms(CatalogHelpers.getCatalogDiff(
         CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(oldCatalog)),
         CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)), configuredCatalog)
@@ -541,8 +576,9 @@ public class ConnectionsHandler {
     return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
-  public void deleteConnection(final UUID connectionId) {
-    eventRunner.deleteConnection(connectionId);
+  public void deleteConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    connectionHelper.deleteConnection(connectionId);
+    eventRunner.forceDeleteConnection(connectionId);
   }
 
   private ConnectionRead buildConnectionRead(final UUID connectionId)

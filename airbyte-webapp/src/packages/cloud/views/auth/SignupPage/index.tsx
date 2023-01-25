@@ -1,3 +1,3 @@
 import SignupPage from "./SignupPage";
 
-export { SignupPage };
+export default SignupPage;

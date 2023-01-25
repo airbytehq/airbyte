@@ -1,0 +1,8 @@
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-dynamodb:dev
+acceptance-tests:
+  spec:
+    tests:
+      - spec_path: "main/resources/spec.json"
+        

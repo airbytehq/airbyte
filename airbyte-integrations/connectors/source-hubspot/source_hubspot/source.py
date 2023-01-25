@@ -3,6 +3,7 @@
 #
 
 import logging
+from itertools import chain
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
@@ -15,7 +16,6 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
-from source_hubspot.constants import API_KEY_CREDENTIALS
 from source_hubspot.streams import (
     API,
     Campaigns,
@@ -39,7 +39,6 @@ from source_hubspot.streams import (
     Owners,
     Products,
     PropertyHistory,
-    Quotes,
     SubscriptionChanges,
     TicketPipelines,
     Tickets,
@@ -117,10 +116,6 @@ class SourceHubspot(AbstractSource):
             Workflows(**common_params),
         ]
 
-        credentials_title = credentials.get("credentials_title")
-        if credentials_title == API_KEY_CREDENTIALS:
-            streams.append(Quotes(**common_params))
-
         api = API(credentials=credentials)
         if api.is_oauth2():
             authenticator = API(credentials=credentials).get_authenticator()
@@ -130,6 +125,12 @@ class SourceHubspot(AbstractSource):
             available_streams = [stream for stream in streams if stream.scope_is_granted(granted_scopes)]
             unavailable_streams = [stream for stream in streams if not stream.scope_is_granted(granted_scopes)]
             self.logger.info(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
+            partially_available_streams = [stream for stream in streams if not stream.properties_scope_is_granted()]
+            required_scoped = set(chain(*[x.properties_scopes for x in partially_available_streams]))
+            self.logger.info(
+                f"The following streams are partially available: {[s.name for s in partially_available_streams]}, "
+                f"add the following scopes to download all available data: {required_scoped}"
+            )
         else:
             self.logger.info("No scopes to grant when authenticating with API key.")
             available_streams = streams

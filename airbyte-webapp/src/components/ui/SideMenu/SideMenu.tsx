@@ -27,7 +27,7 @@ interface SideMenuProps {
 }
 
 const Content = styled.nav`
-  min-width: 147px;
+  min-width: 155px;
 `;
 
 const Category = styled.div`

@@ -20,7 +20,7 @@
       "type": ["null", "string"]
     },
     "s_query": {
-      "type": ["null", "string"]
+      "type": ["null", "object"]
     },
     "type": {
       "type": ["null", "string"]

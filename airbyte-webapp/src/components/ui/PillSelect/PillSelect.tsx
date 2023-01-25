@@ -1,34 +1,45 @@
+import React from "react";
+
 import { Popout, PopoutProps } from "../Popout";
 import { Tooltip } from "../Tooltip";
-import { PillButton } from "./PillButton";
+import { PillButton, PillButtonVariant } from "./PillButton";
 
-type PillSelectProps = Pick<PopoutProps, "value" | "options" | "isMulti" | "onChange" | "className">;
+type PickedPopoutProps = Pick<PopoutProps, "value" | "options" | "isMulti" | "onChange" | "className">;
 
-export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) => {
-  const { isMulti } = props;
+interface PillSelectProps extends PickedPopoutProps {
+  variant?: PillButtonVariant;
+  disabled?: boolean;
+  disabledLabel?: React.ReactNode;
+  hasError?: boolean;
+}
 
+export const PillSelect: React.FC<PillSelectProps> = ({ className, disabledLabel, ...props }) => {
+  const { isMulti, variant, disabled } = props;
   return (
     <Popout
       {...props}
+      isDisabled={disabled}
       targetComponent={({ onOpen, isOpen, value }) => {
         const label = value
           ? isMulti
-            ? value.map(({ label }: { label: string }) => label).join(", ")
+            ? value.map(({ label }: { label: string }) => (Array.isArray(label) ? label.join(" | ") : label)).join(", ")
             : value.label
           : "";
-
         return (
           <Tooltip
             control={
               <PillButton
+                variant={variant}
+                disabled={disabled}
                 onClick={(event) => {
                   event.stopPropagation();
                   onOpen();
                 }}
                 active={isOpen}
                 className={className}
+                hasError={props?.hasError}
               >
-                {label}
+                {(disabled && disabledLabel) || label}
               </PillButton>
             }
             placement="bottom-start"

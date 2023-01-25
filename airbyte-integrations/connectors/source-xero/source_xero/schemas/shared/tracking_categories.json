@@ -1,0 +1,57 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "TrackingCategoryID": {
+      "type": ["string"]
+    },
+    "Option": {
+      "type": ["null", "string"]
+    },
+    "TrackingCategoryName": {
+      "type": ["null", "string"]
+    },
+    "TrackingOptionID": {
+      "type": ["null", "string"]
+    },
+    "TrackingOptionName": {
+      "type": ["null", "string"]
+    },
+    "Options": {
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "IsActive": {
+            "type": ["null", "boolean"]
+          },
+          "IsDeleted": {
+            "type": ["null", "boolean"]
+          },
+          "TrackingOptionID": {
+            "type": ["null", "string"]
+          },
+          "IsArchived": {
+            "type": ["null", "boolean"]
+          },
+          "Status": {
+            "type": ["null", "string"]
+          },
+          "Name": {
+            "type": ["null", "string"]
+          },
+          "HasValidationErrors": {
+            "type": ["null", "boolean"]
+          }
+        },
+        "additionalProperties": true
+      },
+      "type": ["null", "array"]
+    },
+    "Name": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "owner_id": {
+      "type": "integer"
+    },
+    "description": {
+      "type": "string"
+    },
+    "billing_address": {
+      "type": "string"
+    },
+    "billing_country": {
+      "type": "string"
+    },
+    "billing_email": {
+      "type": "string"
+    },
+    "vat_number": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "is_default": {
+      "type": "boolean"
+    },
+    "is_saml_org": {
+      "type": "boolean"
+    }
+  }
+}

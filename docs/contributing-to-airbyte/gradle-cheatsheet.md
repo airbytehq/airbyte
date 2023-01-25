@@ -24,6 +24,25 @@ Future Work: The next step here is to figure out how to more formally split conn
 
 Here is a cheatsheet for common gradle commands.
 
+### List Gradle Tasks
+
+To view all available tasks:
+```text
+./gradlew tasks
+```
+
+To view all tasks available for a given namespace:
+
+```text
+./gradlew <namespace>:tasks
+```
+
+for example:
+
+```text
+./gradlew :airbyte-integrations:connectors:source-bigquery:tasks
+```
+
 ### Basic Build Syntax
 
 Here is the syntax for running gradle commands on the different parts of the code base that we called out above.
@@ -57,6 +76,17 @@ For example all the following are valid.
 SUB_BUILD=PLATFORM ./gradlew build -x test # builds Airbyte Platform without running tests
 SUB_BUILD=CONNECTORS_BASE ./gradlew build # builds all Airbyte connectors and runs unit tests
 ```
+
+### Debugging
+
+To debug a Gradle task, add `--scan` to the `./gradlew` command. After the task has completed, you should see a message like:
+
+```text
+Publishing build scan...
+https://gradle.com/s/6y7ritpvzkwp4
+```
+
+Clicking the link opens a browser page which contains lots of information pertinent to debugging why a build failed, or understanding what sub-tasks were run during a task.
 
 ### Formatting
 

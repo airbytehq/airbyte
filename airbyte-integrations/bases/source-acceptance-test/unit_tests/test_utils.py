@@ -15,8 +15,10 @@ from unittest.mock import Mock
 import docker
 import pytest
 import yaml
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from docker.errors import ContainerError, NotFound
-from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, load_yaml_or_json_path
+from source_acceptance_test.config import EmptyStreamConfiguration
+from source_acceptance_test.utils import common
 from source_acceptance_test.utils.compare import make_hashable
 from source_acceptance_test.utils.connector_runner import ConnectorRunner
 
@@ -332,20 +334,20 @@ class TestLoadYamlOrJsonPath:
         with tempfile.NamedTemporaryFile("w", suffix=".json") as f:
             f.write(json.dumps(self.VALID_SPEC))
             f.flush()
-            actual = load_yaml_or_json_path(Path(f.name))
+            actual = common.load_yaml_or_json_path(Path(f.name))
             assert self.VALID_SPEC == actual
 
     def test_load_yaml(self):
         with tempfile.NamedTemporaryFile("w", suffix=".yaml") as f:
             f.write(yaml.dump(self.VALID_SPEC))
             f.flush()
-            actual = load_yaml_or_json_path(Path(f.name))
+            actual = common.load_yaml_or_json_path(Path(f.name))
             assert self.VALID_SPEC == actual
 
     def test_load_other(self):
         with tempfile.NamedTemporaryFile("w", suffix=".txt") as f:
             with pytest.raises(RuntimeError):
-                load_yaml_or_json_path(Path(f.name))
+                common.load_yaml_or_json_path(Path(f.name))
 
 
 @pytest.mark.parametrize(
@@ -375,4 +377,96 @@ class TestLoadYamlOrJsonPath:
     ],
 )
 def test_find_all_values_for_key_in_schema(schema, searched_key, expected_values):
-    assert list(find_all_values_for_key_in_schema(schema, searched_key)) == expected_values
+    assert list(common.find_all_values_for_key_in_schema(schema, searched_key)) == expected_values
+
+
+DUMMY_DISCOVERED_CATALOG = {
+    "stream_a": AirbyteStream(
+        name="stream_a",
+        json_schema={"a": {"type": "string"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+    "stream_b": AirbyteStream(
+        name="stream_b",
+        json_schema={"a": {"type": "string"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+}
+
+DUMMY_CUSTOM_CATALOG = {
+    "stream_a": AirbyteStream(
+        name="stream_a",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+    "stream_b": AirbyteStream(
+        name="stream_b",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+}
+
+DUMMY_CUSTOM_CATALOG_WITH_EXTRA_STREAM = {
+    "stream_a": AirbyteStream(
+        name="stream_a",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+    "stream_b": AirbyteStream(
+        name="stream_b",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+    "stream_c": AirbyteStream(
+        name="stream_c",
+        json_schema={"a": {"type": "number"}},
+        supported_sync_modes=[SyncMode.full_refresh],
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    "discovered_catalog, empty_streams",
+    [
+        (DUMMY_DISCOVERED_CATALOG, set()),
+        (DUMMY_DISCOVERED_CATALOG, {EmptyStreamConfiguration(name="stream_b", bypass_reason="foobar")}),
+    ],
+)
+def test_build_configured_catalog_from_discovered_catalog_and_empty_streams(mocker, discovered_catalog, empty_streams):
+    mocker.patch.object(common, "logging")
+    configured_catalog = common.build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, empty_streams)
+    assert len(configured_catalog.streams) == len(DUMMY_DISCOVERED_CATALOG.values()) - len(empty_streams)
+    if empty_streams:
+        common.logging.warning.assert_called_once()
+        configured_stream_names = [configured_stream.stream.name for configured_stream in configured_catalog.streams]
+        for empty_stream in empty_streams:
+            assert empty_stream.name not in configured_stream_names
+    else:
+        common.logging.info.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "custom_configured_catalog, expect_failure", [(DUMMY_CUSTOM_CATALOG, False), (DUMMY_CUSTOM_CATALOG_WITH_EXTRA_STREAM, True)]
+)
+def test_build_configured_catalog_from_custom_catalog(mocker, custom_configured_catalog, expect_failure):
+    mocker.patch.object(common, "logging")
+    mocker.patch.object(common.pytest, "fail")
+
+    dummy_configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(stream=stream, sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
+            for stream in custom_configured_catalog.values()
+        ]
+    )
+    mocker.patch.object(common.ConfiguredAirbyteCatalog, "parse_file", mocker.Mock(return_value=dummy_configured_catalog))
+
+    configured_catalog = common.build_configured_catalog_from_custom_catalog("path", DUMMY_DISCOVERED_CATALOG)
+
+    if not expect_failure:
+        assert len(configured_catalog.streams) == len(dummy_configured_catalog.streams)
+        # Checking that the function under test retrieves the stream from the discovered catalog
+        assert configured_catalog.streams[0].stream == DUMMY_DISCOVERED_CATALOG["stream_a"]
+        assert configured_catalog.streams[0].stream != custom_configured_catalog["stream_a"]
+        common.logging.info.assert_called_once()
+    else:
+        common.pytest.fail.assert_called_once()

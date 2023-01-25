@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": ["null", "integer"]
+    },
+    "amount_usd": {
+      "type": ["null", "integer"]
+    },
+    "approved": {
+      "type": ["null", "boolean"]
+    },
+    "category_key": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "type": ["null", "object"]
+    },
+    "customer_key": {
+      "type": ["null", "string"]
+    },
+    "extension": {
+      "type": ["null", "object"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "product_key": {
+      "type": ["null", "object"]
+    },
+    "updated_at": {
+      "type": ["null", "integer"]
+    }
+  }
+}

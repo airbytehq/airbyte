@@ -1,0 +1,20 @@
+@use "../../../../../scss/colors";
+@use "../../../../../scss/variables";
+
+.container {
+  border-radius: variables.$border-radius-md;
+  overflow: hidden;
+}
+
+.card {
+  cursor: pointer;
+  background: colors.$white;
+  border: variables.$border-thin solid colors.$grey-100;
+  border-radius: variables.$border-radius-md;
+  min-height: 70px;
+  width: 100%;
+
+  &:active {
+    background-color: colors.$grey-100;
+  }
+}

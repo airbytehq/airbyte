@@ -20,7 +20,7 @@ export const NumberBadge: React.FC<NumberBadgeProps> = ({ value, color, classNam
 
   return (
     <div className={numberBadgeClassnames} aria-label={ariaLabel}>
-      <div>{value}</div>
+      {value}
     </div>
   );
 };

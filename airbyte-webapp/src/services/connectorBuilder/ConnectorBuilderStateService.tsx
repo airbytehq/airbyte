@@ -1,105 +1,247 @@
-import { load, YAMLException } from "js-yaml";
-import React, { useContext, useEffect, useState } from "react";
-import { useDebounce, useLocalStorage } from "react-use";
+import { dump } from "js-yaml";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useIntl } from "react-intl";
+import { UseQueryResult } from "react-query";
+import { useLocalStorage } from "react-use";
+
+import { BuilderFormValues, convertToManifest, DEFAULT_BUILDER_FORM_VALUES } from "components/connectorBuilder/types";
 
 import {
+  StreamRead,
   StreamReadRequestBodyConfig,
   StreamsListReadStreamsItem,
-  StreamsListRequestBodyManifest,
 } from "core/request/ConnectorBuilderClient";
+import { ConnectorManifest, DeclarativeComponentSchema } from "core/request/ConnectorManifest";
 
-import { useListStreams } from "./ConnectorBuilderApiService";
-import { template } from "./YamlTemplate";
+import { useListStreams, useReadStream } from "./ConnectorBuilderApiService";
 
-interface Context {
+const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
+  version: "0.1.0",
+  type: "DeclarativeSource",
+  check: {
+    type: "CheckStream",
+    stream_names: [],
+  },
+  streams: [],
+};
+
+export type EditorView = "ui" | "yaml";
+export type BuilderView = "global" | "inputs" | number;
+
+interface FormStateContext {
+  builderFormValues: BuilderFormValues;
+  jsonManifest: ConnectorManifest;
+  lastValidJsonManifest: DeclarativeComponentSchema | undefined;
   yamlManifest: string;
-  jsonManifest: StreamsListRequestBodyManifest;
-  streams: StreamsListReadStreamsItem[];
-  selectedStream: StreamsListReadStreamsItem;
-  configString: string;
-  configJson: StreamReadRequestBodyConfig;
-  setYamlManifest: (yamlValue: string) => void;
-  setSelectedStream: (streamName: string) => void;
-  setConfigString: (configString: string) => void;
+  yamlEditorIsMounted: boolean;
+  yamlIsValid: boolean;
+  selectedView: BuilderView;
+  editorView: EditorView;
+  setBuilderFormValues: (values: BuilderFormValues, isInvalid: boolean) => void;
+  setJsonManifest: (jsonValue: ConnectorManifest) => void;
+  setYamlEditorIsMounted: (value: boolean) => void;
+  setYamlIsValid: (value: boolean) => void;
+  setSelectedView: (view: BuilderView) => void;
+  setEditorView: (editorView: EditorView) => void;
 }
 
-export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
+interface TestStateContext {
+  streams: StreamsListReadStreamsItem[];
+  streamListErrorMessage: string | undefined;
+  testInputJson: StreamReadRequestBodyConfig;
+  setTestInputJson: (value: StreamReadRequestBodyConfig) => void;
+  setTestStreamIndex: (streamIndex: number) => void;
+  testStreamIndex: number;
+  streamRead: UseQueryResult<StreamRead, unknown>;
+}
 
-const useYamlManifest = () => {
-  const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
-  const [yamlManifest, setYamlManifest] = useState(locallyStoredYaml ?? "");
-  useDebounce(() => setLocallyStoredYaml(yamlManifest), 500, [yamlManifest]);
+export const ConnectorBuilderFormStateContext = React.createContext<FormStateContext | null>(null);
+export const ConnectorBuilderTestStateContext = React.createContext<TestStateContext | null>(null);
 
-  const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
-  useEffect(() => {
-    try {
-      const json = load(yamlManifest) as StreamsListRequestBodyManifest;
-      setJsonManifest(json);
-    } catch (err) {
-      if (err instanceof YAMLException) {
-        console.error(`Connector manifest yaml is not valid! Error: ${err}`);
+export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  // manifest values
+  const [storedBuilderFormValues, setStoredBuilderFormValues] = useLocalStorage<BuilderFormValues>(
+    "connectorBuilderFormValues",
+    DEFAULT_BUILDER_FORM_VALUES
+  );
+
+  const lastValidBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
+  const currentBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
+
+  const setBuilderFormValues = useCallback(
+    (values: BuilderFormValues, isValid: boolean) => {
+      if (isValid) {
+        // update ref first because calling setStoredBuilderFormValues might synchronously kick off a react render cycle.
+        lastValidBuilderFormValuesRef.current = values;
       }
-    }
-  }, [yamlManifest]);
+      currentBuilderFormValuesRef.current = values;
+      setStoredBuilderFormValues(values);
+    },
+    [setStoredBuilderFormValues]
+  );
 
-  return { yamlManifest, jsonManifest, setYamlManifest };
-};
+  // use the ref for the current builder form values because useLocalStorage will always serialize and deserialize the whole object,
+  // changing all the references which re-triggers all memoizations
+  const builderFormValues = currentBuilderFormValuesRef.current || DEFAULT_BUILDER_FORM_VALUES;
 
-const useStreams = () => {
-  const { jsonManifest } = useYamlManifest();
-  const streamListRead = useListStreams({ manifest: jsonManifest });
-  const streams = streamListRead.streams;
+  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
+    "connectorBuilderJsonManifest",
+    DEFAULT_JSON_MANIFEST_VALUES
+  );
+  const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
 
-  const [selectedStreamName, setSelectedStream] = useState(streamListRead.streams[0].name);
-  const selectedStream = streams.find((stream) => stream.name === selectedStreamName) ?? {
-    name: selectedStreamName,
-    url: "",
-  };
+  const [editorView, rawSetEditorView] = useLocalStorage<EditorView>("connectorBuilderEditorView", "ui");
 
-  return { streams, selectedStream, setSelectedStream };
-};
+  const derivedJsonManifest = useMemo(
+    () => (editorView === "yaml" ? manifest : convertToManifest(builderFormValues)),
+    [editorView, builderFormValues, manifest]
+  );
 
-const useConfig = () => {
-  const [configString, setConfigString] = useState("{\n  \n}");
-  const [configJson, setConfigJson] = useState<StreamReadRequestBodyConfig>({});
+  const manifestRef = useRef(derivedJsonManifest);
+  manifestRef.current = derivedJsonManifest;
 
-  useEffect(() => {
-    try {
-      const json = JSON.parse(configString) as StreamReadRequestBodyConfig;
-      setConfigJson(json);
-    } catch (err) {
-      console.error(`Config value is not valid JSON! Error: ${err}`);
-    }
-  }, [configString]);
+  const setEditorView = useCallback(
+    (view: EditorView) => {
+      if (view === "yaml") {
+        // when switching to yaml, store the currently derived json manifest
+        setJsonManifest(manifestRef.current);
+      }
+      rawSetEditorView(view);
+    },
+    [rawSetEditorView, setJsonManifest]
+  );
 
-  return { configString, configJson, setConfigString };
-};
+  const [yamlIsValid, setYamlIsValid] = useState(true);
+  const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
 
-export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  const { yamlManifest, jsonManifest, setYamlManifest } = useYamlManifest();
-  const { streams, selectedStream, setSelectedStream } = useStreams();
-  const { configString, configJson, setConfigString } = useConfig();
+  const yamlManifest = useMemo(() => dump(derivedJsonManifest), [derivedJsonManifest]);
+
+  const lastValidBuilderFormValues = lastValidBuilderFormValuesRef.current;
+  /**
+   * The json manifest derived from the last valid state of the builder form values.
+   * In the yaml view, this is undefined. Can still be invalid in case an invalid state is loaded from localstorage
+   */
+  const lastValidJsonManifest = useMemo(
+    () =>
+      editorView !== "ui"
+        ? jsonManifest
+        : builderFormValues === lastValidBuilderFormValues
+        ? derivedJsonManifest
+        : convertToManifest(lastValidBuilderFormValues),
+    [builderFormValues, editorView, jsonManifest, derivedJsonManifest, lastValidBuilderFormValues]
+  );
+
+  const [selectedView, setSelectedView] = useState<BuilderView>("global");
 
   const ctx = {
+    builderFormValues,
+    jsonManifest: derivedJsonManifest,
+    lastValidJsonManifest,
     yamlManifest,
-    jsonManifest,
-    streams,
-    selectedStream,
-    configString,
-    configJson,
-    setYamlManifest,
-    setSelectedStream,
-    setConfigString,
+    yamlEditorIsMounted,
+    yamlIsValid,
+    selectedView,
+    editorView: editorView || "ui",
+    setBuilderFormValues,
+    setJsonManifest,
+    setYamlIsValid,
+    setYamlEditorIsMounted,
+    setSelectedView,
+    setEditorView,
   };
 
-  return <ConnectorBuilderStateContext.Provider value={ctx}>{children}</ConnectorBuilderStateContext.Provider>;
+  return <ConnectorBuilderFormStateContext.Provider value={ctx}>{children}</ConnectorBuilderFormStateContext.Provider>;
 };
 
-export const useConnectorBuilderState = (): Context => {
-  const connectorBuilderState = useContext(ConnectorBuilderStateContext);
+export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const { formatMessage } = useIntl();
+  const { lastValidJsonManifest, selectedView } = useConnectorBuilderFormState();
+
+  const manifest = lastValidJsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
+
+  // config
+  const [testInputJson, setTestInputJson] = useState<StreamReadRequestBodyConfig>({});
+
+  // streams
+  const {
+    data: streamListRead,
+    isError: isStreamListError,
+    error: streamListError,
+  } = useListStreams({ manifest, config: testInputJson });
+  const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
+  const streamListErrorMessage = isStreamListError
+    ? streamListError instanceof Error
+      ? streamListError.message || unknownErrorMessage
+      : unknownErrorMessage
+    : undefined;
+  const streams = useMemo(() => {
+    return streamListRead?.streams ?? [];
+  }, [streamListRead]);
+
+  const [testStreamIndex, setTestStreamIndex] = useState(0);
+  useEffect(() => {
+    if (typeof selectedView === "number") {
+      setTestStreamIndex(selectedView);
+    }
+  }, [selectedView]);
+
+  const streamRead = useReadStream({
+    manifest,
+    stream: streams[testStreamIndex]?.name,
+    config: testInputJson,
+  });
+
+  const ctx = {
+    streams,
+    streamListErrorMessage,
+    testInputJson,
+    setTestInputJson,
+    testStreamIndex,
+    setTestStreamIndex,
+    streamRead,
+  };
+
+  return <ConnectorBuilderTestStateContext.Provider value={ctx}>{children}</ConnectorBuilderTestStateContext.Provider>;
+};
+
+export const useConnectorBuilderTestState = (): TestStateContext => {
+  const connectorBuilderState = useContext(ConnectorBuilderTestStateContext);
   if (!connectorBuilderState) {
-    throw new Error("useConnectorBuilderState must be used within a ConnectorBuilderStateProvider.");
+    throw new Error("useConnectorBuilderTestStae must be used within a ConnectorBuilderTestStateProvider.");
   }
 
   return connectorBuilderState;
+};
+
+export const useConnectorBuilderFormState = (): FormStateContext => {
+  const connectorBuilderState = useContext(ConnectorBuilderFormStateContext);
+  if (!connectorBuilderState) {
+    throw new Error("useConnectorBuilderFormState must be used within a ConnectorBuilderFormStateProvider.");
+  }
+
+  return connectorBuilderState;
+};
+
+export const useSelectedPageAndSlice = () => {
+  const { streams, testStreamIndex } = useConnectorBuilderTestState();
+
+  const selectedStreamName = streams[testStreamIndex].name;
+
+  const [streamToSelectedSlice, setStreamToSelectedSlice] = useState({ [selectedStreamName]: 0 });
+  const setSelectedSlice = (sliceIndex: number) => {
+    setStreamToSelectedSlice((prev) => {
+      return { ...prev, [selectedStreamName]: sliceIndex };
+    });
+  };
+  const selectedSlice = streamToSelectedSlice[selectedStreamName] ?? 0;
+
+  const [streamToSelectedPage, setStreamToSelectedPage] = useState({ [selectedStreamName]: 0 });
+  const setSelectedPage = (pageIndex: number) => {
+    setStreamToSelectedPage((prev) => {
+      return { ...prev, [selectedStreamName]: pageIndex };
+    });
+  };
+  const selectedPage = streamToSelectedPage[selectedStreamName] ?? 0;
+
+  return { selectedSlice, selectedPage, setSelectedSlice, setSelectedPage };
 };

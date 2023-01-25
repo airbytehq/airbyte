@@ -1,0 +1,32 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/tyntec-sms
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Tyntec Sms Spec
+  type: object
+  required:
+    - api_key
+    - to
+    - from
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      title: Tyntec API Key
+      description: Your Tyntec API Key. See <a href="https://www.tyntec.com/docs/docs-center-sms-api-quick-start">here</a>
+      order: 0
+      airbyte_secret: true
+    to:
+      type: string
+      title: SMS Message Recipient Phone
+      description: The phone number of the SMS message recipient (international).
+      order: 1
+    from:
+      type: string
+      title: SMS Message Sender Phone
+      description: The phone number of the SMS message sender (international).
+      order: 2
+    message:
+      type: string
+      title: SMS Message Body
+      description: The content of the SMS message to be sent.
+      order: 3

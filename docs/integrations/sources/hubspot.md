@@ -24,7 +24,6 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `owners`                    | `crm.objects.contacts.read`                                                      |
 | `products`                  | `e-commerce`                                                                     |
 | `property_history`          | `crm.objects.contacts.read`                                                      |
-| `quotes`                    | no scope required                                                                |
 | `subscription_changes`      | `content`                                                                        |
 | `tickets`                   | `tickets`                                                                        |
 | `workflows`                 | `automation`                                                                     |
@@ -77,7 +76,6 @@ The HubSpot source connector supports the following streams:
 * [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners)
 * [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
 * [Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
-* [Quotes](https://developers.hubspot.com/docs/api/crm/quotes) \(Incremental\)
 * [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
 * [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
 * [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines)
@@ -92,10 +90,6 @@ Objects in the `engagements` stream can have one of the following types: `note`,
 - A `meeting` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns.
 - A `note` engagement has a corresponding `engagements_metadata` object with non-null values in the `body` column.
 - A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
-
-:::note
-HubSpot API currently only supports `quotes` endpoint using API Key, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
-:::
 
 ### New state strategy on Incremental streams
 
@@ -132,6 +126,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.0   | 2022-10-27 | [18546](https://github.com/airbytehq/airbyte/pull/18546) | Sunsetting API Key authentication. `Quotes` stream is no longer available                                                                                                             |
 | 0.2.2   | 2022-10-03 | [16914](https://github.com/airbytehq/airbyte/pull/16914) | Fix 403 forbidden error validation                                                                                                             |
 | 0.2.1   | 2022-09-26 | [17120](https://github.com/airbytehq/airbyte/pull/17120) | Migrate to per-stream state.                                                                                                                   |
 | 0.2.0   | 2022-09-13 | [16632](https://github.com/airbytehq/airbyte/pull/16632) | Remove Feedback Submissions stream as the one using unstable (beta) API.                                                                       |

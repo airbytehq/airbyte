@@ -31,6 +31,22 @@ import lombok.extern.slf4j.Slf4j;
 public class ConnectionManagerUtils {
 
   /**
+   * Send a cancellation to the workflow. It will swallow any exception and won't check if the
+   * workflow is already deleted when being cancel.
+   */
+  public void deleteWorkflowIfItExist(final WorkflowClient client,
+                                      final UUID connectionId) {
+    try {
+      final ConnectionManagerWorkflow connectionManagerWorkflow =
+          client.newWorkflowStub(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+      connectionManagerWorkflow.deleteConnection();
+    } catch (final Exception e) {
+      log.warn("The workflow is not reachable when trying to cancel it", e);
+    }
+
+  }
+
+  /**
    * Attempts to send a signal to the existing ConnectionManagerWorkflow for the provided connection.
    *
    * If the workflow is unreachable, this will restart the workflow and send the signal in a single
@@ -189,22 +205,22 @@ public class ConnectionManagerUtils {
           String.format("ConnectionManagerWorkflow for connection %s is unreachable due to having COMPLETED status.", connectionId));
     }
 
-    if (workflowState.isQuarantined()) {
-      throw new UnreachableWorkflowException(
-          String.format("ConnectionManagerWorkflow for connection %s is unreachable due to being in a quarantined state.", connectionId));
-    }
-
     return connectionManagerWorkflow;
   }
 
-  boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
+  Optional<WorkflowState> getWorkflowState(final WorkflowClient client, final UUID connectionId) {
     try {
       final ConnectionManagerWorkflow connectionManagerWorkflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
           getConnectionManagerName(connectionId));
-      return connectionManagerWorkflow.getState().isRunning();
+      return Optional.of(connectionManagerWorkflow.getState());
     } catch (final Exception e) {
-      return false;
+      log.error("Exception thrown while checking workflow state for connection id {}", connectionId, e);
+      return Optional.empty();
     }
+  }
+
+  boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
+    return getWorkflowState(client, connectionId).map(WorkflowState::isRunning).orElse(false);
   }
 
   public WorkflowExecutionStatus getConnectionManagerWorkflowStatus(final WorkflowClient workflowClient, final UUID connectionId) {

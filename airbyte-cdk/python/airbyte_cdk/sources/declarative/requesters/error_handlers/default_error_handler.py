@@ -92,8 +92,8 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
 
     DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
-    config: Config
     options: InitVar[Mapping[str, Any]]
+    config: Config
     response_filters: Optional[List[HttpResponseFilter]] = None
     max_retries: Optional[int] = 5
     _max_retries: int = field(init=False, repr=False, default=5)
@@ -111,7 +111,7 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
             self.response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config={}, options={}))
 
         if not self.backoff_strategies:
-            self.backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY()]
+            self.backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(options=options, config=self.config)]
 
         self._last_request_to_attempt_count: MutableMapping[requests.PreparedRequest, int] = {}
 

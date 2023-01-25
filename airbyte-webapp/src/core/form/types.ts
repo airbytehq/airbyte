@@ -1,36 +1,58 @@
 import { JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
 
-import { AirbyteJSONSchema } from "core/jsonSchema";
+import { AirbyteJSONSchema } from "core/jsonSchema/types";
 
-interface FormItem {
+/**
+ * When turning the JSON schema into `FormBlock`s,
+ * some often used props are copied over for easy access.
+ */
+type FormRelevantJSONSchema = Pick<
+  AirbyteJSONSchema,
+  | "default"
+  | "examples"
+  | "description"
+  | "pattern"
+  | "order"
+  | "const"
+  | "title"
+  | "airbyte_hidden"
+  | "enum"
+  | "format"
+>;
+
+interface FormItem extends FormRelevantJSONSchema {
   fieldKey: string;
   path: string;
   isRequired: boolean;
-  order?: number;
-  title?: string;
-  description?: string;
-  airbyte_hidden?: boolean;
 }
 
-export interface FormBaseItem extends FormItem, AirbyteJSONSchema {
+export interface FormBaseItem extends FormItem {
   _type: "formItem";
   type: JSONSchema7TypeName;
   isSecret?: boolean;
   multiline?: boolean;
-  default?: JSONSchema7Type;
 }
 
 export interface FormGroupItem extends FormItem {
   _type: "formGroup";
-  jsonSchema: AirbyteJSONSchema;
   properties: FormBlock[];
-  isLoading?: boolean;
-  examples?: JSONSchema7Type;
 }
 
 export interface FormConditionItem extends FormItem {
   _type: "formCondition";
-  conditions: Record<string, FormGroupItem | FormBaseItem>;
+  conditions: FormGroupItem[];
+  /**
+   * The full path to the const property describing which condition is selected (e.g. connectionConfiguration.a.deep.path.type)
+   */
+  selectionPath: string;
+  /**
+   * The key of the const property describing which condition is selected (e.g. type)
+   */
+  selectionKey: string;
+  /**
+   * The possible values of the selectionKey property ordered in the same way as the conditions
+   */
+  selectionConstValues: JSONSchema7Type[];
 }
 
 export interface FormObjectArrayItem extends FormItem {
@@ -39,10 +61,3 @@ export interface FormObjectArrayItem extends FormItem {
 }
 
 export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectArrayItem;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WidgetConfig = Record<string, any>;
-export type WidgetConfigMap = Record<string, WidgetConfig>;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FormComponentOverrideProps = Record<string, any>;

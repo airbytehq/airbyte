@@ -4,11 +4,16 @@ global:
   configMapName: ""
   secretName: ""
   extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
   database:
     secretName: ""
     secretValue: ""
     host: "example.com"
     port: "5432"
+  secrets: {}
 
 enabled: true
 ##  cron.replicaCount Number of cron replicas
@@ -24,6 +29,10 @@ image:
 ##  cron.podAnnotations [object] Add extra annotations to the cron pod(s)
 ##
 podAnnotations: {}
+
+##  cron.podLabels [object] Add extra labels to the cron pod(s)
+##
+podLabels: {}
 
 ## cron.containerSecurityContext Security context for the container
 ## Examples:
@@ -207,3 +216,8 @@ env_vars: {}
 
 
 
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}

@@ -23,6 +23,7 @@ import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
+import io.airbyte.workers.temporal.scheduling.ConnectionNotificationWorkflowImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
@@ -77,6 +78,11 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Inject
   @Named("discoverActivities")
   private Optional<List<Object>> discoverActivities;
+
+  @Inject
+  @Named("notifyActivities")
+  private Optional<List<Object>> notifyActivities;
+
   @Inject
   @Named(TaskExecutors.IO)
   private ExecutorService executorService;
@@ -91,6 +97,8 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private Optional<LogConfigs> logConfigs;
   @Value("${airbyte.worker.check.max-workers}")
   private Integer maxCheckWorkers;
+  @Value("${airbyte.worker.notify.max-workers}")
+  private Integer maxNotifyWorkers;
   @Value("${airbyte.worker.discover.max-workers}")
   private Integer maxDiscoverWorkers;
   @Value("${airbyte.worker.spec.max-workers}")
@@ -107,6 +115,9 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private boolean shouldRunGetSpecWorkflows;
   @Value("${airbyte.worker.sync.enabled}")
   private boolean shouldRunSyncWorkflows;
+  @Value("${airbyte.worker.notify.enabled}")
+  private boolean shouldRunNotifyWorkflows;
+
   @Inject
   @Named("specActivities")
   private Optional<List<Object>> specActivities;
@@ -148,7 +159,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
 
       registerWorkerFactory(workerFactory,
           new MaxWorkersConfig(maxCheckWorkers, maxDiscoverWorkers, maxSpecWorkers,
-              maxSyncWorkers));
+              maxSyncWorkers, maxNotifyWorkers));
 
       log.info("Starting worker factory...");
       workerFactory.start();
@@ -220,6 +231,18 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     if (shouldRunConnectionManagerWorkflows) {
       registerConnectionManager(workerFactory, maxWorkersConfiguration);
     }
+
+    if (shouldRunNotifyWorkflows) {
+      registerConnectionNotification(workerFactory, maxWorkersConfiguration);
+    }
+  }
+
+  private void registerConnectionNotification(final WorkerFactory factory, final MaxWorkersConfig maxWorkersConfig) {
+    final Worker notifyWorker = factory.newWorker(TemporalJobType.NOTIFY.name(), getWorkerOptions(maxWorkersConfig.getMaxNotifyWorkers()));
+    final WorkflowImplementationOptions options =
+        WorkflowImplementationOptions.newBuilder().setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
+    notifyWorker.registerWorkflowImplementationTypes(options, temporalProxyHelper.proxyWorkflowClass(ConnectionNotificationWorkflowImpl.class));
+    notifyWorker.registerActivitiesImplementations(notifyActivities.orElseThrow().toArray(new Object[] {}));
   }
 
   private void registerCheckConnection(final WorkerFactory factory,

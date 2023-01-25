@@ -4,7 +4,6 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static org.jooq.impl.DSL.asterisk;
 
@@ -32,11 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.jooq.DSLContext;
-import org.jooq.Record1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +71,7 @@ public class ActorDefinitionMigrator {
       throws IOException {
     LOGGER.info("Updating connector definitions from the seed if necessary...");
 
-    final Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
+    final Set<String> connectorRepositoriesInUse = ConfigWriter.getConnectorRepositoriesInUse(ctx);
     LOGGER.info("Connectors in use: {}", connectorRepositoriesInUse);
 
     final Map<String, ConnectorInfo> connectorRepositoryToInfoMap = getConnectorRepositoryToInfoMap(ctx);
@@ -95,29 +91,6 @@ public class ActorDefinitionMigrator {
     updatedConnectorCount += destinationConnectorCounter.updateCount;
 
     LOGGER.info("Connector definitions have been updated ({} new connectors, and {} updates)", newConnectorCount, updatedConnectorCount);
-  }
-
-  /**
-   * @return A set of connectors (both source and destination) that are already used in standard
-   *         syncs. We identify connectors by its repository name instead of definition id because
-   *         connectors can be added manually by users, and their config ids are not always the same
-   *         as those in the seed.
-   */
-  private Set<String> getConnectorRepositoriesInUse(final DSLContext ctx) {
-    final Set<UUID> usedConnectorDefinitionIds = ctx
-        .select(ACTOR.ACTOR_DEFINITION_ID)
-        .from(ACTOR)
-        .fetch()
-        .stream()
-        .flatMap(row -> Stream.of(row.value1()))
-        .collect(Collectors.toSet());
-
-    return ctx.select(ACTOR_DEFINITION.DOCKER_REPOSITORY)
-        .from(ACTOR_DEFINITION)
-        .where(ACTOR_DEFINITION.ID.in(usedConnectorDefinitionIds))
-        .fetch().stream()
-        .map(Record1::value1)
-        .collect(Collectors.toSet());
   }
 
   /**

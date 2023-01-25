@@ -6,9 +6,9 @@ import useSyncActions from "components/EntityTable/hooks";
 import { ITableDataItem } from "components/EntityTable/types";
 import { getConnectionTableData } from "components/EntityTable/utils";
 
+import { WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { RoutePaths } from "pages/routePaths";
 
-import { WebBackendConnectionListItem } from "../../../../../core/request/AirbyteClient";
 import styles from "./SourceConnectionTable.module.scss";
 
 interface IProps {

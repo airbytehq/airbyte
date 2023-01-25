@@ -22,7 +22,12 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.micronaut.core.util.StringUtils;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -39,10 +44,10 @@ import lombok.extern.slf4j.Slf4j;
  * application. Unlike {@link KubePodProcess} there is no heartbeat mechanism that requires the
  * launching pod and the launched pod to co-exist for the duration of execution for the launched
  * pod.
- *
+ * <p>
  * Instead, this process creates the pod and interacts with a document store on cloud storage to
  * understand the state of the created pod.
- *
+ * <p>
  * The document store is considered to be the truth when retrieving the status for an async pod
  * process. If the store isn't updated by the underlying pod, it will appear as failed.
  */
@@ -58,6 +63,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final String secretName;
   private final String secretMountPath;
   private final String googleApplicationCredentials;
+  private final String dataPlaneCredsSecretName;
+  private final String dataPlaneCredsSecretMountPath;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
   private final Map<String, String> environmentVariables;
   private final Integer serverPort;
@@ -68,6 +75,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final KubernetesClient kubernetesClient,
                                      final String secretName,
                                      final String secretMountPath,
+                                     final String dataPlaneCredsSecretName,
+                                     final String dataPlaneCredsSecretMountPath,
                                      final String googleApplicationCredentials,
                                      final Map<String, String> environmentVariables,
                                      final Integer serverPort) {
@@ -76,6 +85,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     this.kubernetesClient = kubernetesClient;
     this.secretName = secretName;
     this.secretMountPath = secretMountPath;
+    this.dataPlaneCredsSecretName = dataPlaneCredsSecretName;
+    this.dataPlaneCredsSecretMountPath = dataPlaneCredsSecretMountPath;
     this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
     this.environmentVariables = environmentVariables;
@@ -186,14 +197,15 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     }
   }
 
-  @Override
   public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
     // implementation copied from Process.java since this isn't a real Process
     long remainingNanos = unit.toNanos(timeout);
-    if (hasExited())
+    if (hasExited()) {
       return true;
-    if (timeout <= 0)
+    }
+    if (timeout <= 0) {
       return false;
+    }
 
     final long deadline = System.nanoTime() + remainingNanos;
     do {
@@ -202,8 +214,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
       // We are waiting polling every 500ms for status. The trade-off here is between how often
       // we poll our status storage (GCS) and how reactive we are to detect that a process is done.
       Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1, 500));
-      if (hasExited())
+      if (hasExited()) {
         return true;
+      }
       remainingNanos = deadline - System.nanoTime();
     } while (remainingNanos > 0);
 
@@ -226,6 +239,56 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     return kubePodInfo;
   }
 
+  @Override
+  public Process toProcess() {
+    return new Process() {
+
+      @Override
+      public OutputStream getOutputStream() {
+        try {
+          final String output = AsyncOrchestratorPodProcess.this.getOutput().orElse("");
+          final OutputStream os = new BufferedOutputStream(new ByteArrayOutputStream());
+          os.write(output.getBytes(Charset.defaultCharset()));
+          return os;
+        } catch (final Exception e) {
+          log.warn("Unable to write output to stream.", e);
+          return OutputStream.nullOutputStream();
+        }
+      }
+
+      @Override
+      public InputStream getInputStream() {
+        return InputStream.nullInputStream();
+      }
+
+      @Override
+      public InputStream getErrorStream() {
+        return InputStream.nullInputStream();
+      }
+
+      @Override
+      public int waitFor() throws InterruptedException {
+        return AsyncOrchestratorPodProcess.this.waitFor();
+      }
+
+      @Override
+      public int exitValue() {
+        return AsyncOrchestratorPodProcess.this.exitValue();
+      }
+
+      @Override
+      public void destroy() {
+        AsyncOrchestratorPodProcess.this.destroy();
+      }
+
+      @Override
+      public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
+        return AsyncOrchestratorPodProcess.this.waitFor(timeout, unit);
+      }
+
+    };
+  }
+
   private Optional<String> getDocument(final String key) {
     return documentStoreClient.read(getInfo().namespace() + "/" + getInfo().name() + "/" + key);
   }
@@ -236,7 +299,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
   /**
    * Checks terminal states first, then running, then initialized. Defaults to not started.
-   *
+   * <p>
    * The order matters here!
    */
   public AsyncKubePodStatus getDocStoreStatus() {
@@ -257,7 +320,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   public void create(final Map<String, String> allLabels,
                      final ResourceRequirements resourceRequirements,
                      final Map<String, String> fileMap,
-                     final Map<Integer, Integer> portMap) {
+                     final Map<Integer, Integer> portMap,
+                     final Map<String, String> nodeSelectors) {
     final List<Volume> volumes = new ArrayList<>();
     final List<VolumeMount> volumeMounts = new ArrayList<>();
     final List<EnvVar> envVars = new ArrayList<>();
@@ -292,11 +356,53 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     }
 
+    if (StringUtils.isNotEmpty(dataPlaneCredsSecretName) && StringUtils.isNotEmpty(dataPlaneCredsSecretMountPath)) {
+      volumes.add(new VolumeBuilder()
+          .withName("airbyte-dataplane-creds")
+          .withSecret(new SecretVolumeSourceBuilder()
+              .withSecretName(dataPlaneCredsSecretName)
+              .withDefaultMode(420)
+              .build())
+          .build());
+
+      volumeMounts.add(new VolumeMountBuilder()
+          .withName("airbyte-dataplane-creds")
+          .withMountPath(dataPlaneCredsSecretMountPath)
+          .build());
+    }
+
     // Copy all additionally provided environment variables
     envVars.addAll(environmentVariables.entrySet().stream().map(e -> new EnvVar(e.getKey(), e.getValue(), null)).toList());
 
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
     containerPorts.add(new ContainerPort(serverPort, null, null, null, null));
+
+    final var initContainer = new ContainerBuilder()
+        .withName(KubePodProcess.INIT_CONTAINER_NAME)
+        .withImage("busybox:1.35")
+        .withVolumeMounts(volumeMounts)
+        .withCommand(List.of(
+            "sh",
+            "-c",
+            String.format("""
+                          i=0
+                          until [ $i -gt 60 ]
+                          do
+                            echo "$i - waiting for config file transfer to complete..."
+                            # check if the upload-complete file exists, if so exit without error
+                            if [ -f "%s/%s" ]; then
+                              exit 0
+                            fi
+                            i=$((i+1))
+                            sleep 1
+                          done
+                          echo "config files did not transfer in time"
+                          # no upload-complete file was created in time, exit with error
+                          exit 1
+                          """,
+                KubePodProcess.CONFIG_DIR,
+                KubePodProcess.SUCCESS_FILE_NAME)))
+        .build();
 
     final var mainContainer = new ContainerBuilder()
         .withName(KubePodProcess.MAIN_CONTAINER_NAME)
@@ -316,10 +422,13 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withLabels(allLabels)
         .endMetadata()
         .withNewSpec()
-        .withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true)
+        .withServiceAccount("airbyte-admin")
+        .withAutomountServiceAccountToken(true)
         .withRestartPolicy("Never")
         .withContainers(mainContainer)
+        .withInitContainers(initContainer)
         .withVolumes(volumes)
+        .withNodeSelector(nodeSelectors)
         .endSpec()
         .build();
 
@@ -332,9 +441,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
         .withName(kubePodInfo.name())
-        .waitUntilCondition(p -> {
-          return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
-        }, 5, TimeUnit.MINUTES);
+        .waitUntilCondition(p -> !p.getStatus().getInitContainerStatuses().isEmpty()
+            && p.getStatus().getInitContainerStatuses().get(0).getState().getWaiting() == null,
+            5, TimeUnit.MINUTES);
 
     final var podStatus = kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
@@ -343,7 +452,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .getStatus();
 
     final var containerState = podStatus
-        .getContainerStatuses()
+        .getInitContainerStatuses()
         .get(0)
         .getState();
 
@@ -359,7 +468,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     copyFilesToKubeConfigVolumeMain(createdPod, updatedFileMap);
   }
 
-  public static void copyFilesToKubeConfigVolumeMain(final Pod podDefinition, final Map<String, String> files) {
+  private static void copyFilesToKubeConfigVolumeMain(final Pod podDefinition, final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
     // copy this file last to indicate that the copy has completed
@@ -378,7 +487,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         // several issues with copying files. See https://github.com/airbytehq/airbyte/issues/8643 for
         // details.
         final String command = String.format("kubectl cp %s %s/%s:%s -c %s", tmpFile, podDefinition.getMetadata().getNamespace(),
-            podDefinition.getMetadata().getName(), containerPath, "main");
+            podDefinition.getMetadata().getName(), containerPath, KubePodProcess.INIT_CONTAINER_NAME);
         log.info(command);
 
         proc = Runtime.getRuntime().exec(command);

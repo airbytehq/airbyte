@@ -8,5 +8,12 @@
     "runMode": 2,
     "openMode": 0
   },
-  "defaultCommandTimeout": 10000
+  "defaultCommandTimeout": 10000,
+  "db": {
+    "user": "postgres",
+    "host": "localhost",
+    "database": "airbyte_ci_source",
+    "password": "secret_password",
+    "port":5433
+  }
 }

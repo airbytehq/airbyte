@@ -14,8 +14,9 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .auth import ShopifyAuthenticator
+from .graphql import get_query_products
 from .transform import DataTypeEnforcer
-from .utils import SCOPES_MAPPING
+from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
 
@@ -381,6 +382,65 @@ class Products(IncrementalShopifyStream):
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
+
+
+class ProductsGraphQl(IncrementalShopifyStream):
+    filter_field = "updatedAt"
+    cursor_field = "updatedAt"
+    data_field = "graphql"
+    http_method = "POST"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+    def request_params(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping]:
+        state_value = stream_state.get(self.filter_field)
+        if state_value:
+            filter_value = state_value
+        else:
+            filter_value = self.default_filter_field_value
+        query = get_query_products(
+            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token
+        )
+        return {"query": query}
+
+    @staticmethod
+    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
+        page_info = response.json()["data"]["products"]["pageInfo"]
+        has_next_page = page_info["hasNextPage"]
+        if has_next_page:
+            return page_info["endCursor"]
+        else:
+            return None
+
+    @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code is requests.codes.OK:
+            json_response = response.json()["data"]["products"]["nodes"]
+            if isinstance(json_response, dict):
+                # for cases when we have a single record as dict
+                # add shop_url to the record to make querying easy
+                json_response["shop_url"] = self.config["shop"]
+                yield json_response
+            else:
+                # for other cases
+                for record in json_response:
+                    # add shop_url to the record to make querying easy
+                    record["shop_url"] = self.config["shop"]
+                    yield record
 
 
 class MetafieldProducts(MetafieldShopifySubstream):
@@ -751,6 +811,7 @@ class SourceShopify(AbstractSource):
             PriceRules(config),
             ProductImages(config),
             Products(config),
+            ProductsGraphQl(config),
             ProductVariants(config),
             Shop(config),
             SmartCollections(config),

@@ -1,0 +1,56 @@
+@use "scss/colors";
+@use "scss/variables";
+
+$containerHeight: 23px;
+
+.container {
+  padding: 0;
+  height: $containerHeight;
+  width: 80%;
+  display: flex;
+  gap: 2px;
+  font-size: 10px;
+  margin: 0;
+}
+
+.button {
+  list-style-type: none;
+  border-radius: variables.$border-radius-xs;
+  min-width: $containerHeight;
+  cursor: pointer;
+
+  a {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    user-select: none;
+  }
+
+  &:hover:not(.active) {
+    background-color: colors.$grey-100;
+  }
+}
+
+.page {
+  justify-self: center;
+}
+
+.previous {
+  justify-self: flex-start;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.next {
+  justify-self: flex-end;
+  margin-right: 0;
+  margin-left: auto;
+}
+
+.active {
+  background: colors.$dark-blue;
+  color: colors.$white;
+}

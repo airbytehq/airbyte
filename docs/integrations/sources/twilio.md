@@ -11,20 +11,22 @@ You can find your Account SID and Auth Token on your [dashboard](https://www.twi
 See [docs](https://www.twilio.com/docs/iam/api) for more details.
 
 ## Setup guide
-## Step 1: Set up the Twilio connector in Airbyte
 
-### For Airbyte Cloud:
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the <Source/Destination> type dropdown. 
+3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the <Source/Destination> type dropdown.
 4. Enter your `account_sid`.
 5. Enter your `auth_token`.
 6. Enter your `start_date`.
 7. Enter your `lookback_window`.
 8. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte OSS:
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
@@ -33,6 +35,7 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 5. Enter your `start_date`.
 6. Enter your `lookback_window`.
 7. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -73,13 +76,14 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 ## Performance considerations
 
-The Twilio connector will gracefully handle rate limits. 
+The Twilio connector will gracefully handle rate limits.
 For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests).
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.1.14  | 2022-11-16 | [19479](https://github.com/airbytehq/airbyte/pull/19479) | Fix date range slicing                                                                                  |
 | 0.1.13  | 2022-10-25 | [18423](https://github.com/airbytehq/airbyte/pull/18423) | Implement datetime slicing for streams supporting incremental syncs                                     |
 | 0.1.11  | 2022-09-30 | [17478](https://github.com/airbytehq/airbyte/pull/17478) | Add lookback_window parameters                                                                          |
 | 0.1.10  | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states                                                                            |

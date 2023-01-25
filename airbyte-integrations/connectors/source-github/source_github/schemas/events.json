@@ -53,7 +53,8 @@
       }
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "id": {
       "type": ["null", "string"]

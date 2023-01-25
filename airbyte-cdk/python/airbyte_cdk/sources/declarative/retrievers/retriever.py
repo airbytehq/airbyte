@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.core import StreamData
 from dataclasses_jsonschema import JsonSchemaMixin
 
 
@@ -24,7 +25,7 @@ class Retriever(JsonSchemaMixin):
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
         stream_state: Optional[StreamState] = None,
-    ) -> Iterable[Record]:
+    ) -> Iterable[StreamData]:
         """
         Fetch a stream's records from an HTTP API source
 

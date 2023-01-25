@@ -1,0 +1,12 @@
+{
+  "posts": {
+    "snapshot_cursor": "hi",
+    "snapshot_has_more": false,
+    "delta_cursor": 1
+  },
+  "users": {
+    "snapshot_cursor": null,
+    "snapshot_has_more": true,
+    "delta_cursor": null
+  }
+}

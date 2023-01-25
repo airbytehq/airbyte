@@ -25,6 +25,8 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.converters.OperationsConverter;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,19 +34,21 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+@Singleton
 public class OperationsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidGenerator;
 
+  @Inject
+  public OperationsHandler(final ConfigRepository configRepository) {
+    this(configRepository, UUID::randomUUID);
+  }
+
   @VisibleForTesting
   OperationsHandler(final ConfigRepository configRepository, final Supplier<UUID> uuidGenerator) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
-  }
-
-  public OperationsHandler(final ConfigRepository configRepository) {
-    this(configRepository, UUID::randomUUID);
   }
 
   public CheckOperationRead checkOperation(final OperatorConfiguration operationCheck) {

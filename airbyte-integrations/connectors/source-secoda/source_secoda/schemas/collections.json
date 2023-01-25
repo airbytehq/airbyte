@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "entity_type": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "definition": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "published": {
+      "type": "boolean"
+    },
+    "archived": {
+      "type": "boolean"
+    },
+    "pii": {
+      "type": "boolean"
+    },
+    "verified": {
+      "type": "boolean"
+    }
+  }
+}

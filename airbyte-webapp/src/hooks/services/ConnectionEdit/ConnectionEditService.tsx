@@ -1,7 +1,13 @@
+import pick from "lodash/pick";
 import { useContext, useState, createContext, useCallback } from "react";
 import { useAsyncFn } from "react-use";
 
-import { ConnectionStatus, WebBackendConnectionUpdate } from "core/request/AirbyteClient";
+import {
+  AirbyteCatalog,
+  ConnectionStatus,
+  WebBackendConnectionRead,
+  WebBackendConnectionUpdate,
+} from "core/request/AirbyteClient";
 
 import { ConnectionFormServiceProvider } from "../ConnectionForm/ConnectionFormService";
 import { useGetConnection, useUpdateConnection, useWebConnectionService } from "../useConnectionHook";
@@ -11,22 +17,77 @@ interface ConnectionEditProps {
   connectionId: string;
 }
 
-const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
-  const [connection, setConnection] = useState(useGetConnection(connectionId));
+export interface ConnectionCatalog {
+  syncCatalog: AirbyteCatalog;
+  catalogId?: string;
+}
+
+interface ConnectionEditHook {
+  connection: WebBackendConnectionRead;
+  connectionUpdating: boolean;
+  schemaError?: Error;
+  schemaRefreshing: boolean;
+  schemaHasBeenRefreshed: boolean;
+  updateConnection: (connectionUpdates: WebBackendConnectionUpdate) => Promise<void>;
+  refreshSchema: () => Promise<void>;
+  discardRefreshedSchema: () => void;
+}
+
+const getConnectionCatalog = (connection: WebBackendConnectionRead): ConnectionCatalog =>
+  pick(connection, ["syncCatalog", "catalogId"]);
+
+const useConnectionEdit = ({ connectionId }: ConnectionEditProps): ConnectionEditHook => {
   const connectionService = useWebConnectionService();
+  const [connection, setConnection] = useState(useGetConnection(connectionId));
+  const [catalog, setCatalog] = useState<ConnectionCatalog>(() => getConnectionCatalog(connection));
   const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
 
   const [{ loading: schemaRefreshing, error: schemaError }, refreshSchema] = useAsyncFn(async () => {
     const refreshedConnection = await connectionService.getConnection(connectionId, true);
-    setConnection(refreshedConnection);
-    setSchemaHasBeenRefreshed(true);
+    if (refreshedConnection.catalogDiff && refreshedConnection.catalogDiff.transforms?.length > 0) {
+      setConnection(refreshedConnection);
+      setSchemaHasBeenRefreshed(true);
+    }
   }, [connectionId]);
+
+  const discardRefreshedSchema = useCallback(() => {
+    setConnection((connection) => ({
+      ...connection,
+      ...catalog,
+      catalogDiff: undefined,
+    }));
+    setSchemaHasBeenRefreshed(false);
+  }, [catalog]);
 
   const { mutateAsync: updateConnectionAction, isLoading: connectionUpdating } = useUpdateConnection();
 
   const updateConnection = useCallback(
-    async (connection: WebBackendConnectionUpdate) => {
-      setConnection(await updateConnectionAction(connection));
+    async (connectionUpdates: WebBackendConnectionUpdate) => {
+      const updatedConnection = await updateConnectionAction(connectionUpdates);
+      const updatedKeys = Object.keys(connectionUpdates).map((key) => (key === "sourceCatalogId" ? "catalogId" : key));
+      const connectionPatch = pick(updatedConnection, updatedKeys);
+      const wasSyncCatalogUpdated = !!connectionPatch.syncCatalog;
+
+      // Ensure that the catalog diff cleared and that the schemaChange status has been updated
+      const syncCatalogUpdates: Partial<WebBackendConnectionRead> | undefined = wasSyncCatalogUpdated
+        ? {
+            catalogDiff: undefined,
+            schemaChange: updatedConnection.schemaChange,
+          }
+        : undefined;
+
+      // Mutate the current connection state only with the values that were updated
+      setConnection((connection) => ({
+        ...connection,
+        ...connectionPatch,
+        ...syncCatalogUpdates,
+      }));
+
+      if (wasSyncCatalogUpdated) {
+        // The catalog ws also saved, so update the current catalog
+        setCatalog(getConnectionCatalog(updatedConnection));
+        setSchemaHasBeenRefreshed(false);
+      }
     },
     [updateConnectionAction]
   );
@@ -38,15 +99,12 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps) => {
     schemaRefreshing,
     schemaHasBeenRefreshed,
     updateConnection,
-    setSchemaHasBeenRefreshed,
     refreshSchema,
+    discardRefreshedSchema,
   };
 };
 
-const ConnectionEditContext = createContext<Omit<
-  ReturnType<typeof useConnectionEdit>,
-  "refreshSchema" | "schemaError"
-> | null>(null);
+const ConnectionEditContext = createContext<Omit<ConnectionEditHook, "refreshSchema" | "schemaError"> | null>(null);
 
 export const ConnectionEditServiceProvider: React.FC<React.PropsWithChildren<ConnectionEditProps>> = ({
   children,

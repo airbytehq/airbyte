@@ -1,0 +1,26 @@
+{
+  "activity": {
+    "id": "635d289a9d503fb0760382ba",
+    "created_at": "2022-10-29T13:20:26.020000Z",
+    "updated_at": "2022-10-29T13:20:26.020000Z",
+    "type": "soft_bounced",
+    "email": {
+      "id": "635d1a39e8e985ebb60bb41e",
+      "from": "no-reply@exemple.com",
+      "subject": "subject",
+      "text": null,
+      "html": null,
+      "status": "rejected",
+      "tags": null,
+      "created_at": "2022-10-29T12:19:05.181000Z",
+      "updated_at": "2022-10-29T13:20:25.998000Z",
+      "recipient": {
+        "id": "62c34cacaf1b3db0da0f6ee9",
+        "email": "test@exemple.com",
+        "created_at": "2022-07-04T20:25:16.846000Z",
+        "updated_at": "2022-09-19T22:47:26.486000Z",
+        "deleted_at": "2022-09-19T22:47:26.486000Z"
+      }
+    }
+  }
+}

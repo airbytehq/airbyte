@@ -1,0 +1,8 @@
+{
+  "jobId": "824289",
+  "attemptId": 10,
+  "dockerImage": "airbyte/destination-postgres-strict-encrypt:0.3.26",
+  "protocolVersion": {
+    "version": "0.2.0"
+  }
+}

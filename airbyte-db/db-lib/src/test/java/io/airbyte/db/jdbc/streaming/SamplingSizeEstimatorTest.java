@@ -29,38 +29,38 @@ class SamplingSizeEstimatorTest {
 
     double maxByteSize = initialByteSize;
 
-    // size: 3 * 4 = 12, not sampled
+    // size: 3 * 3 = 12, not sampled
     sizeEstimator.accept("1");
     assertFalse(sizeEstimator.getFetchSize().isPresent());
     assertEquals(maxByteSize, sizeEstimator.getMaxRowByteSize());
 
-    // size: 4 * 4 = 16, not sampled
+    // size: 4 * 3 = 16, not sampled
     sizeEstimator.accept("11");
     assertFalse(sizeEstimator.getFetchSize().isPresent());
     assertEquals(maxByteSize, sizeEstimator.getMaxRowByteSize());
 
-    // size: 5 * 4 = 20, sampled, fetch size is ready
+    // size: 5 * 3 = 15, sampled, fetch size is ready
     sizeEstimator.accept("111");
     final Optional<Integer> fetchSize1 = sizeEstimator.getFetchSize();
-    maxByteSize = 20;
-    assertDoubleEquals(20, sizeEstimator.getMaxRowByteSize());
+    maxByteSize = 15;
+    assertDoubleEquals(15, sizeEstimator.getMaxRowByteSize());
     assertDoubleEquals(bufferByteSize / maxByteSize, fetchSize1.get().doubleValue());
 
-    // size: 6 * 4 = 24, not sampled
+    // size: 6 * 3 = 24, not sampled
     sizeEstimator.accept("1111");
     assertFalse(sizeEstimator.getFetchSize().isPresent());
     assertDoubleEquals(maxByteSize, sizeEstimator.getMaxRowByteSize());
 
-    // size: 7 * 4 = 28, not sampled
+    // size: 7 * 3 = 28, not sampled
     sizeEstimator.accept("11111");
     assertFalse(sizeEstimator.getFetchSize().isPresent());
     assertDoubleEquals(maxByteSize, sizeEstimator.getMaxRowByteSize());
 
-    // size: 8 * 4 = 32, sampled, fetch size is ready
+    // size: 8 * 3 = 24, sampled, fetch size is ready
     sizeEstimator.accept("111111");
     final Optional<Integer> fetchSize2 = sizeEstimator.getFetchSize();
     assertTrue(fetchSize2.isPresent());
-    maxByteSize = 32;
+    maxByteSize = 24;
     assertDoubleEquals(maxByteSize, sizeEstimator.getMaxRowByteSize());
     assertDoubleEquals(bufferByteSize / maxByteSize, fetchSize2.get().doubleValue());
   }

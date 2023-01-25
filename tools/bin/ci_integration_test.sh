@@ -32,6 +32,7 @@ else
     export SUB_BUILD="CONNECTORS_BASE"
   elif [[ "$connector" == *"connectors"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
+    run-qa-checks $connector_name
     selected_integration_test=$(echo "$all_integration_tests" | grep "^$connector_name$" || echo "")
     integrationTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" integrationTest)"
   else
@@ -134,6 +135,9 @@ write_logs() {
 
 echo "# $connector" >> $GITHUB_STEP_SUMMARY
 echo "" >> $GITHUB_STEP_SUMMARY
+
+# Cut the $GITHUB_STEP_SUMMARY with head if its larger than 1MB
+echo "$GITHUB_STEP_SUMMARY" | head -c 1048576 >> $GITHUB_STEP_SUMMARY
 
 # Copy command output to extract gradle scan link.
 run | tee build.out

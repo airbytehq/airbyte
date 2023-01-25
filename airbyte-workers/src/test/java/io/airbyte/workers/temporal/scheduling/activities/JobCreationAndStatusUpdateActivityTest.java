@@ -33,10 +33,12 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.persistence.job.JobCreator;
 import io.airbyte.persistence.job.JobNotifier;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.factory.SyncJobFactory;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptStatus;
@@ -82,6 +84,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JobCreationAndStatusUpdateActivityTest {
 
+  public static final String REASON = "reason";
   @Mock
   private SyncJobFactory mJobFactory;
 
@@ -114,6 +117,9 @@ class JobCreationAndStatusUpdateActivityTest {
 
   @Mock
   private StreamResetPersistence mStreamResetPersistence;
+
+  @Mock
+  private OAuthConfigSupplier mOAuthConfigSupplier;
 
   @InjectMocks
   private JobCreationAndStatusUpdateActivityImpl jobCreationAndStatusUpdateActivity;
@@ -179,11 +185,13 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mStreamResetPersistence.getStreamResets(CONNECTION_ID)).thenReturn(streamsToReset);
 
       Mockito
-          .when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, DESTINATION_PROTOCOL_VERSION, List.of(),
+          .when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, DESTINATION_PROTOCOL_VERSION, false, List.of(),
               streamsToReset))
           .thenReturn(Optional.of(JOB_ID));
 
       final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
+
+      Mockito.verify(mOAuthConfigSupplier).injectDestinationOAuthParameters(any(), any(), any());
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }
@@ -227,7 +235,7 @@ class JobCreationAndStatusUpdateActivityTest {
     @Test
     void isLastJobOrAttemptFailureTrueTest() throws Exception {
       final int activeAttemptNumber = 0;
-      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
+      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
 
       final Job previousJob = new Job(PREVIOUS_JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(),
           new JobConfig(), List.of(), JobStatus.SUCCEEDED, 4L, 4L, 5L);
@@ -247,7 +255,7 @@ class JobCreationAndStatusUpdateActivityTest {
     @Test
     void isLastJobOrAttemptFailureFalseTest() throws Exception {
       final int activeAttemptNumber = 0;
-      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
+      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
 
       final Job previousJob = new Job(PREVIOUS_JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(),
           new JobConfig(), List.of(), JobStatus.FAILED, 4L, 4L, 5L);
@@ -266,9 +274,9 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     void isLastJobOrAttemptFailurePreviousAttemptFailureTest() throws Exception {
-      final Attempt previousAttempt = new Attempt(0, 1, Path.of(""), null, AttemptStatus.FAILED, null, 2L, 3L, 3L);
+      final Attempt previousAttempt = new Attempt(0, 1, Path.of(""), null, AttemptStatus.FAILED, null, null, 2L, 3L, 3L);
       final int activeAttemptNumber = 1;
-      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
+      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
 
       final Job previousJob = new Job(PREVIOUS_JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(),
           JobStatus.SUCCEEDED, 4L, 4L, 5L);
@@ -393,10 +401,10 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobPersistence.getJob(JOB_ID))
           .thenReturn(mJob);
 
-      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, "reason"));
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, REASON));
 
       verify(mJobPersistence).failJob(JOB_ID);
-      verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
+      verify(mJobNotifier).failJob(eq(REASON), Mockito.any());
       verify(mJobErrorReporter).reportSyncJobFailure(eq(CONNECTION_ID), eq(failureSummary), Mockito.any());
     }
 
@@ -415,6 +423,29 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
+    void setJobFailureWithNullJobSyncConfig() throws IOException {
+      final Attempt mAttempt = Mockito.mock(Attempt.class);
+      Mockito.when(mAttempt.getFailureSummary()).thenReturn(Optional.of(failureSummary));
+
+      final JobConfig mJobConfig = Mockito.mock(JobConfig.class);
+      Mockito.when(mJobConfig.getSync()).thenReturn(null);
+
+      final Job mJob = Mockito.mock(Job.class);
+      Mockito.when(mJob.getScope()).thenReturn(CONNECTION_ID.toString());
+      Mockito.when(mJob.getConfig()).thenReturn(mJobConfig);
+      Mockito.when(mJob.getLastFailedAttempt()).thenReturn(Optional.of(mAttempt));
+
+      Mockito.when(mJobPersistence.getJob(JOB_ID))
+          .thenReturn(mJob);
+
+      jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, 1, CONNECTION_ID, REASON));
+
+      verify(mJobPersistence).failJob(JOB_ID);
+      verify(mJobNotifier).failJob(eq(REASON), Mockito.any());
+      verify(mJobErrorReporter).reportSyncJobFailure(eq(CONNECTION_ID), eq(failureSummary), Mockito.any());
+    }
+
+    @Test
     void setAttemptFailure() throws IOException {
       jobCreationAndStatusUpdateActivity
           .attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID, standardSyncOutput, failureSummary));
@@ -422,6 +453,16 @@ class JobCreationAndStatusUpdateActivityTest {
       verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
       verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
       verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
+    }
+
+    @Test
+    void setAttemptFailureManuallyTerminated() throws IOException {
+      jobCreationAndStatusUpdateActivity
+          .attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID, standardSyncOutput, null));
+
+      verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
+      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
+      verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, null);
     }
 
     @Test
@@ -465,9 +506,9 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     void ensureCleanJobState() throws IOException {
-      final Attempt failedAttempt = new Attempt(0, 1, Path.of(""), null, AttemptStatus.FAILED, null, 2L, 3L, 3L);
+      final Attempt failedAttempt = new Attempt(0, 1, Path.of(""), null, AttemptStatus.FAILED, null, null, 2L, 3L, 3L);
       final int runningAttemptNumber = 1;
-      final Attempt runningAttempt = new Attempt(runningAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
+      final Attempt runningAttempt = new Attempt(runningAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
       final Job runningJob = new Job(1, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(failedAttempt, runningAttempt),
           JobStatus.RUNNING, 2L, 2L, 3L);
 
@@ -493,6 +534,15 @@ class JobCreationAndStatusUpdateActivityTest {
       Mockito.verifyNoMoreInteractions(mJobPersistence, mJobNotifier, mJobtracker);
     }
 
+  }
+
+  @Test
+  void testReleaseStageOrdering() {
+    final List<ReleaseStage> input = List.of(ReleaseStage.alpha, ReleaseStage.custom, ReleaseStage.beta, ReleaseStage.generally_available);
+    final List<ReleaseStage> expected = List.of(ReleaseStage.custom, ReleaseStage.alpha, ReleaseStage.beta, ReleaseStage.generally_available);
+
+    Assertions.assertThat(JobCreationAndStatusUpdateActivityImpl.orderByReleaseStageAsc(input))
+        .containsExactlyElementsOf(expected);
   }
 
 }

@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.tracing;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
+
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.interceptor.MutableSpan;
 import datadog.trace.api.interceptor.TraceInterceptor;
@@ -20,14 +22,19 @@ import lombok.extern.slf4j.Slf4j;
 public class TemporalSdkInterceptor implements TraceInterceptor {
 
   /**
-   * Trace resource name used to scope the filtering performed by this interceptor.
+   * Connection Manager trace resource name used to scope the filtering performed by this interceptor.
    */
   static final String CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME = "ConnectionManagerWorkflowImpl.run";
 
   /**
+   * Sync Workflow trace resource name used to scope the filtering performed by this interceptor.
+   */
+  static final String SYNC_WORKFLOW_IMPL_RESOURCE_NAME = "SyncWorkflowImpl.run";
+
+  /**
    * Error message tag key name that contains the Temporal exit error message.
    */
-  static final String ERROR_MESSAGE_TAG_KEY = "error.message";
+  static final String ERROR_MESSAGE_TAG_KEY = "error.msg";
 
   /**
    * Temporal exit error message text.
@@ -76,7 +83,24 @@ public class TemporalSdkInterceptor implements TraceInterceptor {
 
     return trace.isError() &&
         EXIT_ERROR_MESSAGE.equalsIgnoreCase(trace.getTags().getOrDefault(ERROR_MESSAGE_TAG_KEY, "").toString()) &&
-        CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME.equalsIgnoreCase(trace.getResourceName().toString());
+        (safeEquals(trace.getOperationName(), WORKFLOW_TRACE_OPERATION_NAME)
+            || safeEquals(trace.getResourceName(), CONNECTION_MANAGER_WORKFLOW_IMPL_RESOURCE_NAME)
+            || safeEquals(trace.getResourceName(), SYNC_WORKFLOW_IMPL_RESOURCE_NAME));
+  }
+
+  /**
+   * Safely test if the provided {@link CharSequence} equals the provided expected string value.
+   *
+   * @param actual The {@link CharSequence} to test.
+   * @param expected The expected string value to be contained in the {@link CharSequence}.
+   * @return {@code true} if the strings are equal (ignoring case) or {@code false} otherwise.
+   */
+  private boolean safeEquals(final CharSequence actual, final String expected) {
+    if (actual != null) {
+      return expected.equalsIgnoreCase(actual.toString());
+    } else {
+      return false;
+    }
   }
 
 }

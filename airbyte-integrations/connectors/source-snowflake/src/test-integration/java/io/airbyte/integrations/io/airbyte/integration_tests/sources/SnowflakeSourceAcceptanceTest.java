@@ -20,14 +20,14 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,7 +75,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("ID"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
+                STREAM_NAME1, SCHEMA_NAME,
                 Field.of("ID", JsonSchemaType.NUMBER),
                 Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
@@ -84,7 +84,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
+                STREAM_NAME2, SCHEMA_NAME,
                 Field.of("ID", JsonSchemaType.NUMBER),
                 Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(

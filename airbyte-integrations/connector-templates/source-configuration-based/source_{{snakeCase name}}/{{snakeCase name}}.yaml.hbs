@@ -2,15 +2,19 @@ version: "0.1.0"
 
 definitions:
   selector:
+    type: RecordSelector
     extractor:
+      type: DpathExtractor
       field_pointer: []
   requester:
+    type: HttpRequester
     url_base: "https://example.com"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
       api_token: "\{{ config['api_key'] }}"
   retriever:
+    type: SimpleRetriever
     record_selector:
       $ref: "*ref(definitions.selector)"
     paginator:
@@ -18,6 +22,7 @@ definitions:
     requester:
       $ref: "*ref(definitions.requester)"
   base_stream:
+    type: DeclarativeStream
     retriever:
       $ref: "*ref(definitions.retriever)"
   customers_stream:
@@ -33,3 +38,17 @@ streams:
 check:
   stream_names:
     - "customers"
+
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/{{dashCase name}}
+  connection_specification:
+    title: {{capitalCase name}} Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: true
+    properties:
+      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+      api_key:
+        type: string
+        description: API Key

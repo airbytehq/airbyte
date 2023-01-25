@@ -1,3 +1,7 @@
+:::warning
+Stripe API Restriction: Access to events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events). Using the full-refresh-overwrite sync from Airbyte will delete data older than 30 days from your target destination.
+:::
+
 # Stripe
 
 This page guides you through the process of setting up the Stripe source connector.
@@ -18,11 +22,11 @@ This page guides you through the process of setting up the Stripe source connect
 
    We recommend creating a secret key specifically for Airbyte to control which resources Airbyte can access. For ease of use, we recommend granting read permission to all resources and configuring which resource to replicate in the Airbyte UI. You can also use the API keys for the [test mode](https://stripe.com/docs/keys#obtain-api-keys) to try out the Stripe integration with Airbyte.
 
-7. For **Replication start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. For **Replication start date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. For **Lookback Window in days (Optional)**, select the number of days the value in days prior to the start date that you to sync your data with. If your data is updated after setting up this connector, you can use the this option to reload data from the past N days. Example: If the Replication start date is set to `2021-01-01T00:00:00Z`, then:
    - If you leave the Lookback Window in days parameter to its the default value of 0, Airbyte will sync data from the Replication start date `2021-01-01T00:00:00Z`
    - If the Lookback Window in days value is set to 1, Airbyte will consider the Replication start date to be `2020-12-31T00:00:00Z`
-   - If the Lookback Window in days value is set to 7, Airbyte will sync data from `2020-12-31T00:00:00Z`
+   - If the Lookback Window in days value is set to 7, Airbyte will sync data from `2020-12-25T00:00:00Z`
 9. Click **Set up source**.
 
 ## Supported sync modes
@@ -49,8 +53,10 @@ The Stripe source connector supports the following streams:
 - [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
 - [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
+   - This endpoint does not include deleted customers 
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
 - [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
+   - The Stripe API does not guarantee access to events older than 30 days, so this stream will only pull events created from the 30 days prior to the initial sync and not from the Replication start date.
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)

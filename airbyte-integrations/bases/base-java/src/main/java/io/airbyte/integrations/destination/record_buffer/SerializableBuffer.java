@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

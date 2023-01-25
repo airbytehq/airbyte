@@ -8,7 +8,6 @@ import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.N
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
 import io.airbyte.commons.temporal.exception.UnreachableWorkflowException;
 import io.airbyte.commons.temporal.scheduling.CheckConnectionWorkflow;
@@ -16,6 +15,7 @@ import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.DiscoverCatalogWorkflow;
 import io.airbyte.commons.temporal.scheduling.SpecWorkflow;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -29,7 +29,6 @@ import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.micronaut.context.annotation.Requires;
 import io.temporal.api.common.v1.WorkflowType;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
 import io.temporal.api.workflowservice.v1.ListClosedWorkflowExecutionsRequest;
@@ -61,7 +60,6 @@ import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class TemporalClient {
 
   /**
@@ -189,6 +187,10 @@ public class TemporalClient {
     final Optional<Long> jobId;
     final Optional<ErrorCode> errorCode;
 
+  }
+
+  public Optional<WorkflowState> getWorkflowState(final UUID connectionId) {
+    return connectionManagerUtils.getWorkflowState(client, connectionId);
   }
 
   public ManualOperationResult startNewManualSync(final UUID connectionId) {
@@ -327,7 +329,8 @@ public class TemporalClient {
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
-        .withDockerImage(config.getDockerImage());
+        .withDockerImage(config.getDockerImage())
+        .withIsCustomConnector(config.getIsCustomConnector());
     return execute(jobRunConfig,
         () -> getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(jobRunConfig, launcherConfig));
 
@@ -341,8 +344,12 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
-        .withProtocolVersion(config.getProtocolVersion());
-    final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
+        .withProtocolVersion(config.getProtocolVersion())
+        .withIsCustomConnector(config.getIsCustomConnector());
+    final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
+        .withActorType(config.getActorType())
+        .withActorId(config.getActorId())
+        .withConnectionConfiguration(config.getConnectionConfiguration());
 
     return execute(jobRunConfig,
         () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
@@ -356,7 +363,8 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
-        .withProtocolVersion(config.getProtocolVersion());
+        .withProtocolVersion(config.getProtocolVersion())
+        .withIsCustomConnector(config.getIsCustomConnector());
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration())
         .withSourceId(config.getSourceId()).withConnectorVersion(config.getConnectorVersion()).withConfigHash(config.getConfigHash());
 
@@ -371,13 +379,15 @@ public class TemporalClient {
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
         .withDockerImage(config.getSourceDockerImage())
-        .withProtocolVersion(config.getSourceProtocolVersion());
+        .withProtocolVersion(config.getSourceProtocolVersion())
+        .withIsCustomConnector(config.getIsSourceCustomConnector());
 
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDestinationDockerImage())
-        .withProtocolVersion(config.getDestinationProtocolVersion());
+        .withProtocolVersion(config.getDestinationProtocolVersion())
+        .withIsCustomConnector(config.getIsDestinationCustomConnector());
 
     final StandardSyncInput input = new StandardSyncInput()
         .withNamespaceDefinition(config.getNamespaceDefinition())
@@ -476,13 +486,13 @@ public class TemporalClient {
     return connectionManagerWorkflow;
   }
 
-  public void deleteConnection(final UUID connectionId) {
-    try {
-      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId,
-          connectionManagerWorkflow -> connectionManagerWorkflow::deleteConnection);
-    } catch (final DeletedWorkflowException e) {
-      log.info("Connection {} has already been deleted.", connectionId);
-    }
+  /**
+   * This will cancel a workflow even if the connection is deleted already
+   *
+   * @param connectionId - connectionId to cancel
+   */
+  public void forceDeleteWorkflow(final UUID connectionId) {
+    connectionManagerUtils.deleteWorkflowIfItExist(client, connectionId);
   }
 
   public void update(final UUID connectionId) {

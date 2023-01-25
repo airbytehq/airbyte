@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "type": ["null", "integer"]
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "features": {
+      "type": ["null", "object"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "slug": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "integer"]
+    }
+  }
+}

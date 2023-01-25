@@ -15,6 +15,7 @@ import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobType;
 import io.airbyte.api.model.generated.JobTypeResourceLimit;
 import io.airbyte.api.model.generated.NonBreakingChangesPreference;
+import io.airbyte.api.model.generated.NormalizationDestinationDefinitionConfig;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.BasicSchedule;
@@ -81,6 +82,17 @@ public class ApiPojoConverters {
         .memoryLimit(resourceReqs.getMemoryLimit());
   }
 
+  public static NormalizationDestinationDefinitionConfig normalizationDestinationDefinitionConfigToApi(final io.airbyte.config.NormalizationDestinationDefinitionConfig normalizationDestinationDefinitionConfig) {
+    if (normalizationDestinationDefinitionConfig == null) {
+      return new NormalizationDestinationDefinitionConfig().supported(false);
+    }
+    return new NormalizationDestinationDefinitionConfig()
+        .supported(true)
+        .normalizationRepository(normalizationDestinationDefinitionConfig.getNormalizationRepository())
+        .normalizationTag(normalizationDestinationDefinitionConfig.getNormalizationTag())
+        .normalizationIntegrationType(normalizationDestinationDefinitionConfig.getNormalizationIntegrationType());
+  }
+
   public static ConnectionRead internalToConnectionRead(final StandardSync standardSync) {
     final ConnectionRead connectionRead = new ConnectionRead()
         .connectionId(standardSync.getConnectionId())
@@ -92,7 +104,7 @@ public class ApiPojoConverters {
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.generated.NamespaceDefinitionType.class))
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
+        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionData()))
         .sourceCatalogId(standardSync.getSourceCatalogId())
         .breakingChange(standardSync.getBreakingChange())
         .geography(Enums.convertTo(standardSync.getGeography(), Geography.class))
@@ -131,6 +143,10 @@ public class ApiPojoConverters {
 
   public static StandardSync.Status toPersistenceStatus(final ConnectionStatus apiStatus) {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
+  }
+
+  public static StandardSync.NonBreakingChangesPreference toPersistenceNonBreakingChangesPreference(final NonBreakingChangesPreference preference) {
+    return Enums.convertTo(preference, StandardSync.NonBreakingChangesPreference.class);
   }
 
   public static Geography toApiGeography(final io.airbyte.config.Geography geography) {

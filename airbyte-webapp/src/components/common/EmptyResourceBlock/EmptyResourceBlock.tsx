@@ -10,7 +10,7 @@ interface EmptyResourceBlockProps {
 export const EmptyResourceBlock: React.FC<EmptyResourceBlockProps> = ({ text, description }) => (
   <div className={styles.content}>
     <div className={styles.imgBlock}>
-      <img src="/cactus.png" height={40} alt="cactus" />
+      <img src="/cactus.png" height={40} alt="" />
     </div>
     {text}
     <div className={styles.description}>{description}</div>

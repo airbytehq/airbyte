@@ -5,12 +5,12 @@
 package io.airbyte.workers.temporal.sync;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
@@ -31,7 +31,7 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DbtTransformationRunner;
 import io.airbyte.workers.general.DbtTransformationWorker;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.workers.normalization.DefaultNormalizationRunner;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.DbtLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
@@ -95,7 +95,8 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                   final ResourceRequirements resourceRequirements,
                   final OperatorDbtInput input) {
     ApmTraceUtils.addTagsToTrace(
-        Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
+        Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+            destinationLauncherConfig.getDockerImage()));
     final ActivityExecutionContext context = Activity.getExecutionContext();
     return temporalUtils.withBackgroundHeartbeat(
         () -> {
@@ -141,21 +142,23 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
         Math.toIntExact(jobRunConfig.getAttemptId()),
         resourceRequirements,
         new DbtTransformationRunner(
-            processFactory, NormalizationRunnerFactory.create(
-                destinationLauncherConfig.getDockerImage(),
+            processFactory, new DefaultNormalizationRunner(
                 processFactory,
-                NormalizationRunnerFactory.NORMALIZATION_VERSION)));
+                destinationLauncherConfig.getNormalizationDockerImage(),
+                destinationLauncherConfig.getNormalizationIntegrationType())));
   }
 
   private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getContainerLauncherWorkerFactory(
                                                                                                        final WorkerConfigs workerConfigs,
                                                                                                        final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                        final JobRunConfig jobRunConfig,
-                                                                                                       final Supplier<ActivityExecutionContext> activityContext)
-      throws ApiException {
+                                                                                                       final Supplier<ActivityExecutionContext> activityContext) {
     final JobIdRequestBody id = new JobIdRequestBody();
     id.setId(Long.valueOf(jobRunConfig.getJobId()));
-    final var jobScope = airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId();
+
+    final var jobScope = AirbyteApiClient.retryWithJitter(
+        () -> airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId(),
+        "get job scope");
     final var connectionId = UUID.fromString(jobScope);
 
     return () -> new DbtLauncherWorker(

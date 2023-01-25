@@ -123,6 +123,10 @@ image:
 ##
 podAnnotations: {}
 
+##  podSweeper.podLabels [object] Add extra labels to the podSweeper pod
+##
+podLabels: {}
+
 ##  podSweeper.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:

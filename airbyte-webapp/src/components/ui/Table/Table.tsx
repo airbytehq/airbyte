@@ -84,7 +84,7 @@ const Th = styled.th<TableHeaderProps>`
   font-size: ${({ light }) => (light ? 11 : 10)}px;
   line-height: 12px;
   color: ${({ theme, highlighted }) => (highlighted ? theme.whiteColor : theme.lightTextColor)};
-  border-bottom: ${({ theme, light }) => (light ? "none" : ` 1px solid ${theme.backgroundColor}`)};
+  border-bottom: none;
   width: ${({ collapse, customWidth }) => (customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto")};
   font-weight: ${({ light }) => (light ? 400 : 600)};
   text-transform: ${({ light }) => (light ? "capitalize" : "uppercase")};
@@ -110,9 +110,10 @@ interface TableProps {
   onClickRow?: (data: any) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sortBy?: Array<SortingRule<any>>;
+  testId?: string;
 }
 
-export const Table: React.FC<TableProps> = memo(({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
+export const Table: React.FC<TableProps> = memo(({ columns, data, onClickRow, erroredRows, sortBy, light, testId }) => {
   const [plugins, config] = useMemo(() => {
     const pl = [];
     const plConfig: Record<string, unknown> = {};
@@ -133,7 +134,7 @@ export const Table: React.FC<TableProps> = memo(({ columns, data, onClickRow, er
   );
 
   return (
-    <TableView {...getTableProps()} light={light}>
+    <TableView {...getTableProps()} light={light} data-testid={testId}>
       <thead>
         {headerGroups.map((headerGroup, key) => (
           <tr {...headerGroup.getHeaderGroupProps()} key={`table-header-${key}`}>

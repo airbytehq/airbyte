@@ -21,7 +21,7 @@ jobs:
       next-version: ${{ steps.ver.outputs.fragment }}
       tag: ${{ steps.sem-ver.outputs.version_tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -70,7 +70,7 @@ jobs:
       - name: "Helm package"
         shell: bash
         run: |
-          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics" "airbyte-cron")
+          declare -a StringArray=("airbyte-bootloader" "airbyte-server" "airbyte-temporal" "airbyte-webapp" "airbyte-pod-sweeper" "airbyte-worker" "airbyte-metrics" "airbyte-cron" "airbyte-connector-builder-server")
           for val in ${StringArray[@]}; do
             cd ./airbyte/charts/${val} && helm dep update && cd $GITHUB_WORKSPACE
             sed -i -E  's/version: \"[0-9]+\.[0-9]+\.[0-9]+\"/version: \"${{ needs.generate-semantic-version.outputs.next-version }}\"/' ./airbyte/charts/${val}/Chart.yaml

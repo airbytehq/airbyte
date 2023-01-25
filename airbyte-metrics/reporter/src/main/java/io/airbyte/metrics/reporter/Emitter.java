@@ -82,7 +82,7 @@ final class OldestPendingJob extends Emitter {
       db.oldestPendingJobAgeSecsByGeography().forEach((geographyType, count) -> client.gauge(
           OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS,
           count,
-          new MetricAttribute(MetricTags.GEOGRAPHY, geographyType.getLiteral())));
+          new MetricAttribute(MetricTags.GEOGRAPHY, geographyType)));
       return null;
     });
   }

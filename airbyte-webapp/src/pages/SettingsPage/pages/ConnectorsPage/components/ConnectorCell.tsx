@@ -12,7 +12,6 @@ interface ConnectorCellProps {
   connectorName: string;
   img?: string;
   hasUpdate?: boolean;
-  isDeprecated?: boolean;
   releaseStage?: ReleaseStage;
 }
 
@@ -40,14 +39,14 @@ const CustomAnnotation = styled.span`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const ConnectorCell: React.FC<ConnectorCellProps> = ({ connectorName, img, hasUpdate, isDeprecated, releaseStage }) => {
+const ConnectorCell: React.FC<ConnectorCellProps> = ({ connectorName, img, hasUpdate, releaseStage }) => {
   return (
     <Content>
       {hasUpdate && <Notification />}
       <Image>{getIcon(img)}</Image>
       <span>{connectorName}</span>
       <ReleaseStageBadge small tooltip={false} stage={releaseStage} />
-      {isDeprecated && (
+      {releaseStage === "custom" && (
         <CustomAnnotation>
           (<FormattedMessage id="admin.customImage" />)
         </CustomAnnotation>

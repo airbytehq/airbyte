@@ -1,0 +1,16 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/intruder
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Intruder Spec
+  type: object
+  required:
+    - access_token
+  additionalProperties: true
+  properties:
+    access_token:
+      title: API Access token
+      type: string
+      description: >-
+        Your API Access token. See <a
+        href="https://developers.intruder.io/docs/authentication">here</a>.
+      airbyte_secret: true

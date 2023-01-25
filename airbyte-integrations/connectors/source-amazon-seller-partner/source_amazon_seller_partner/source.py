@@ -21,28 +21,50 @@ from source_amazon_seller_partner.streams import (
     FbaAfnInventoryByCountryReports,
     FbaAfnInventoryReports,
     FbaCustomerReturnsReports,
+    FbaEstimatedFbaFeesTxtReport,
+    FbaFulfillmentCurrentInventoryReport,
+    FbaFulfillmentCustomerShipmentPromotionReport,
+    FbaFulfillmentInventoryAdjustReport,
+    FbaFulfillmentInventoryReceiptsReport,
+    FbaFulfillmentInventorySummaryReport,
+    FbaFulfillmentMonthlyInventoryReport,
+    FbaInventoryPlaningReport,
     FbaInventoryReports,
+    FbaMyiUnsuppressedInventoryReport,
     FbaOrdersReports,
     FbaReplacementsReports,
     FbaShipmentsReports,
+    FbaSnsForecastReport,
+    FbaSnsPerformanceReport,
     FbaStorageFeesReports,
+    FlatFileArchivedOrdersDataByOrderDate,
     FlatFileOpenListingsReports,
     FlatFileOrdersReports,
     FlatFileOrdersReportsByLastUpdate,
+    FlatFileReturnsDataByReturnDate,
     FlatFileSettlementV2Reports,
     FulfilledShipmentsReports,
     GetXmlBrowseTreeData,
+    LedgerDetailedViewReports,
+    LedgerSummaryViewReport,
     ListFinancialEventGroups,
     ListFinancialEvents,
+    MerchantCancelledListingsReport,
+    MerchantListingsFypReport,
+    MerchantListingsInactiveData,
+    MerchantListingsReport,
+    MerchantListingsReportBackCompat,
     MerchantListingsReports,
     Orders,
     RestockInventoryReports,
     SellerAnalyticsSalesAndTrafficReports,
     SellerFeedbackReports,
+    StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
     VendorInventoryReports,
     VendorSalesReports,
+    XmlAllOrdersDataByOrderDataGeneral,
 )
 
 
@@ -117,10 +139,9 @@ class SourceAmazonSellerPartner(AbstractSource):
 
             return True, None
         except Exception as e:
+            # Validate Orders stream without data
             if isinstance(e, StopIteration):
-                logger.error(
-                    "Could not check connection without data for Orders stream. Please change value for replication start date field."
-                )
+                return True, None
 
             # Additional check, since Vendor-ony accounts within Amazon Seller API will not pass the test without this exception
             if "403 Client Error" in str(e):
@@ -166,6 +187,28 @@ class SourceAmazonSellerPartner(AbstractSource):
             GetXmlBrowseTreeData(**stream_kwargs),
             ListFinancialEventGroups(**stream_kwargs),
             ListFinancialEvents(**stream_kwargs),
+            LedgerDetailedViewReports(**stream_kwargs),
+            FbaEstimatedFbaFeesTxtReport(**stream_kwargs),
+            FbaFulfillmentCurrentInventoryReport(**stream_kwargs),
+            FbaFulfillmentCustomerShipmentPromotionReport(**stream_kwargs),
+            FbaFulfillmentInventoryAdjustReport(**stream_kwargs),
+            FbaFulfillmentInventoryReceiptsReport(**stream_kwargs),
+            FbaFulfillmentInventorySummaryReport(**stream_kwargs),
+            FbaMyiUnsuppressedInventoryReport(**stream_kwargs),
+            MerchantCancelledListingsReport(**stream_kwargs),
+            MerchantListingsReport(**stream_kwargs),
+            MerchantListingsReportBackCompat(**stream_kwargs),
+            MerchantListingsInactiveData(**stream_kwargs),
+            StrandedInventoryUiReport(**stream_kwargs),
+            XmlAllOrdersDataByOrderDataGeneral(**stream_kwargs),
+            FbaFulfillmentMonthlyInventoryReport(**stream_kwargs),
+            MerchantListingsFypReport(**stream_kwargs),
+            FbaSnsForecastReport(**stream_kwargs),
+            FbaSnsPerformanceReport(**stream_kwargs),
+            FlatFileArchivedOrdersDataByOrderDate(**stream_kwargs),
+            FlatFileReturnsDataByReturnDate(**stream_kwargs),
+            FbaInventoryPlaningReport(**stream_kwargs),
+            LedgerSummaryViewReport(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
