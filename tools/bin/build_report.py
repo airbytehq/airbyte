@@ -29,7 +29,7 @@ CONNECTOR_DEFINITIONS_DIR = "./airbyte-config/init/src/main/resources/seed"
 SOURCE_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/source_definitions.yaml"
 DESTINATION_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/destination_definitions.yaml"
 CONNECTORS_ROOT_PATH = "./airbyte-integrations/connectors"
-RELEVANT_BASE_MODULES = ["base-normalization", "source-acceptance-test"]
+RELEVANT_BASE_MODULES = ["base-normalization", "connector-acceptance-test"]
 
 # Global vars
 TESTED_SOURCE = []

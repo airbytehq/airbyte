@@ -1,6 +1,6 @@
-# CDK and SAT
+# CDK and CAT
 /airbyte-cdk/ @airbytehq/connector-extensibility
-/airbyte-integrations/bases/source-acceptance-tests/ @airbytehq/connector-extensibility
+/airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
 
 # Oauth

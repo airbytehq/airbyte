@@ -162,7 +162,7 @@ python source.py read --config secrets/valid_config.json --catalog incremental_c
 
 ## Run the incremental tests
 
-The [Source Acceptance Test (SAT) suite](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) also includes test cases to ensure that incremental mode is working correctly. 
+The [Source Acceptance Test (SAT) suite](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) also includes test cases to ensure that incremental mode is working correctly. 
 
 To enable these tests, modify the existing `acceptance-test-config.yml` by adding the following:
 
@@ -176,7 +176,7 @@ To enable these tests, modify the existing `acceptance-test-config.yml` by addin
 Your full `acceptance-test-config.yml` should look something like this:
 
 ```yaml
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-stock-ticker-api:dev
 tests:

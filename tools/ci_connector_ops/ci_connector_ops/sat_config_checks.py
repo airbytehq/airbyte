@@ -16,7 +16,7 @@ GA_CONNECTOR_REVIEWERS = {"gl-python"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
 def find_connectors_with_bad_strictness_level() -> List[str]:
-    """Check if changed connectors have the expected SAT test strictness level according to their release stage.
+    """Check if changed connectors have the expected CAT test strictness level according to their release stage.
     1. Identify changed connectors
     2. Retrieve their release stage from the catalog
     3. Parse their acceptance test config file
@@ -66,7 +66,7 @@ def check_test_strictness_level():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
     if connectors_with_bad_strictness_level:
         logging.error(
-            f"The following GA connectors must enable high test strictness level: {connectors_with_bad_strictness_level}. Please check this documentation for details: https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference/#strictness-level"
+            f"The following GA connectors must enable high test strictness level: {connectors_with_bad_strictness_level}. Please check this documentation for details: https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/#strictness-level"
         )
         sys.exit(1)
     else:
