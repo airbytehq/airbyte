@@ -312,7 +312,9 @@ Changes to data residency will not affect any sync in progress.
 
 :::
 
-## Enroll in the Free Connector Program
+## Manage credits
+
+### Enroll in the Free Connector Program
 
 By enrolling the Free Connector Program, you can sync connections with [alpha](https://docs.airbyte.com/project-overview/product-release-stages#alpha) or [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta) connectors at no cost.
 
@@ -339,7 +341,7 @@ When both the source and destination of a connection become [generally available
 
 Since alpha and beta connectors are still in development, support is not provided. For additional resources, check out our [Connector Catalog](https://docs.airbyte.com/integrations/), [Troubleshooting & FAQ](https://docs.airbyte.com/troubleshooting/), and our [Community Slack](https://slack.airbyte.io/).
 
-## Buy credits
+### Buy credits
 
 This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://airbyte.com/pricing) is a unit of measure used to pay for Airbyte resources when you run a sync. 
 
@@ -354,14 +356,16 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
 4. The Stripe payment page displays. If you want to change the amount of credits, click Qty **200**. The **Update quantity** dialog displays, and you can either type the amount or use minus (**-**) or plus (**+**) to change the quantity. Click **Update**. 
 
     :::note 
+    
     Purchase limits:
     * Minimum: 100 credits
     * Maximum: 999 credits
+    
     :::
 
     To buy more credits or a subscription plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
 
-5. Fill out the payment information.  
+5. Fill out the payment information. 
     
     After you enter your billing address, sales tax is calculated and added to the total.
 
@@ -376,4 +380,3 @@ This section guides you through purchasing credits on Airbyte Cloud. An Airbyte 
     Credits expire after one year if they are not used.
     
     :::
-
