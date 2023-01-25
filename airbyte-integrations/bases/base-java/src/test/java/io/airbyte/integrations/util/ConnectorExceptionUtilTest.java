@@ -4,12 +4,14 @@
 
 package io.airbyte.integrations.util;
 
-import static io.airbyte.integrations.util.ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE;
-import static io.airbyte.integrations.util.ConnectorExceptionUtil.RECOVERY_CONNECTION_ERROR_MESSAGE;
+import static io.airbyte.integrations.util.ConnectorExceptionUtil.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
+
+import java.io.EOFException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import org.junit.jupiter.api.Test;
@@ -19,6 +21,8 @@ class ConnectorExceptionUtilTest {
   public static final String CONFIG_EXCEPTION_MESSAGE = "test message";
   public static final String RECOVERY_EXCEPTION_MESSAGE = "FATAL: terminating connection due to conflict with recovery";
   public static final String COMMON_EXCEPTION_MESSAGE = "something happens with connection";
+  public static final String EOF_EXCEPTION_MESSAGE = "Can not read response from server. Expected to read";
+  public static final String EOF_EXCEPTION_IN_CDC_MESSAGE = "Failed to read remaining";
   public static final String CONNECTION_ERROR_MESSAGE_TEMPLATE = "State code: %s; Error code: %s; Message: %s";
   public static final String UNKNOWN_COLUMN_SQL_EXCEPTION_MESSAGE = "Unknown column 'table.column' in 'field list'";
 
@@ -49,8 +53,8 @@ class ConnectorExceptionUtilTest {
 
   @Test
   void isConfigErrorForCommonSQLException() {
-    SQLException recoveryPSQLException = new SQLException(COMMON_EXCEPTION_MESSAGE);
-    assertFalse(ConnectorExceptionUtil.isConfigError(recoveryPSQLException));
+    SQLException commonSQLException = new SQLException(COMMON_EXCEPTION_MESSAGE);
+    assertFalse(ConnectorExceptionUtil.isConfigError(commonSQLException));
   }
 
   @Test
@@ -96,6 +100,13 @@ class ConnectorExceptionUtilTest {
   }
 
   @Test
+  void getDisplayMessageForEOFException() {
+    Exception exception = new EOFException(EOF_EXCEPTION_MESSAGE);
+    String actualDisplayMessage = ConnectorExceptionUtil.getDisplayMessage(exception);
+    assertEquals(ConnectorExceptionUtil.EOF_EXCEPTION_MESSAGE, actualDisplayMessage);
+  }
+
+  @Test
   void getRootConfigErrorFromConfigException() {
     ConfigErrorException configErrorException = new ConfigErrorException(CONFIG_EXCEPTION_MESSAGE);
     Exception exception = new Exception(COMMON_EXCEPTION_MESSAGE, configErrorException);
@@ -122,6 +133,26 @@ class ConnectorExceptionUtilTest {
 
     Throwable actualRootConfigError = ConnectorExceptionUtil.getRootConfigError(exception);
     assertEquals(unknownSQLErrorException, actualRootConfigError);
+  }
+
+  @Test
+  void getRootConfigErrorFromEOFException() {
+    EOFException eofException = new EOFException(EOF_EXCEPTION_MESSAGE);
+    IOException ioException = new IOException(COMMON_EXCEPTION_MESSAGE, eofException);
+    Exception exception = new Exception(ioException);
+
+    Throwable actualRootConfigError = ConnectorExceptionUtil.getRootConfigError(exception);
+    assertEquals(eofException, actualRootConfigError);
+  }
+
+  @Test
+  void getRootConfigErrorFromEOFExceptionInCDC() {
+    EOFException eofException = new EOFException(EOF_EXCEPTION_IN_CDC_MESSAGE);
+    IOException ioException = new IOException(COMMON_EXCEPTION_MESSAGE, eofException);
+    Exception exception = new Exception(ioException);
+
+    Throwable actualRootConfigError = ConnectorExceptionUtil.getRootConfigError(exception);
+    assertEquals(eofException, actualRootConfigError);
   }
 
   @Test

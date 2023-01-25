@@ -8,6 +8,8 @@ import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
+
+import java.io.EOFException;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.List;
@@ -23,11 +25,13 @@ public class ConnectorExceptionUtil {
   static final String RECOVERY_CONNECTION_ERROR_MESSAGE =
       "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
           "Please see https://docs.airbyte.com/integrations/sources/postgres/#sync-data-from-postgres-hot-standby-server for options and workarounds";
+  public static final String EOF_EXCEPTION_MESSAGE = "Connection was unexpectedly lost. PLease verify connection to source and try again";
 
   public static final List<Integer> HTTP_AUTHENTICATION_ERROR_CODES = ImmutableList.of(401, 403);
   private static final List<Predicate<Throwable>> configErrorPredicates =
       List.of(getConfigErrorPredicate(), getConnectionErrorPredicate(),
-          isRecoveryConnectionExceptionPredicate(), isUnknownColumnInFieldListException());
+          isRecoveryConnectionExceptionPredicate(), isUnknownColumnInFieldListException(),
+          isEofExceptionPredicate());
 
   public static boolean isConfigError(final Throwable e) {
     return configErrorPredicates.stream().anyMatch(predicate -> predicate.test(e));
@@ -43,6 +47,8 @@ public class ConnectorExceptionUtil {
       return RECOVERY_CONNECTION_ERROR_MESSAGE;
     } else if (isUnknownColumnInFieldListException().test(e)) {
       return e.getMessage();
+    } else if (isEofExceptionPredicate().test(e)) {
+      return EOF_EXCEPTION_MESSAGE;
     } else {
       return String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, e.getMessage() != null ? e.getMessage() : "");
     }
@@ -86,6 +92,12 @@ public class ConnectorExceptionUtil {
         && e.getMessage()
             .toLowerCase(Locale.ROOT)
             .contains("in 'field list'");
+  }
+
+  private static Predicate<Throwable> isEofExceptionPredicate() {
+    return e -> e instanceof EOFException
+        && (e.getMessage().contains("Can not read response from server. Expected to read")
+        || e.getMessage().contains("Failed to read remaining"));
   }
 
 }
