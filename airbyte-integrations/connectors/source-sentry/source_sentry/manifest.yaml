@@ -11,7 +11,6 @@ definitions:
       field_path: []
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     url_base: "https://{{ config.hostname }}/api/0/"
     http_method: "GET"
     authenticator:
@@ -32,8 +31,6 @@ definitions:
       stop_condition: "{{ headers.link.next.results != 'true' }}"
   retriever:
     type: SimpleRetriever
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
 
 streams:
   - type: DeclarativeStream

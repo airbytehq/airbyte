@@ -12,7 +12,6 @@ definitions:
         - "{{ parameters['name'] }}"
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -25,8 +24,6 @@ definitions:
     type: SimpleRetriever
     $parameters:
       url_base: "{{ 'https://api.gocardless.com' if config['gocardless_environment'] == 'live' else 'https://api-sandbox.gocardless.com' }}"
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
