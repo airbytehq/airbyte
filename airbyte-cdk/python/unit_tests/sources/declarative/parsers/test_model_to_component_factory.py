@@ -106,7 +106,6 @@ metadata_paginator:
       type: "CursorPagination"
       cursor_value: "{{ response._metadata.next }}"
       page_size: 10
-    url_base: "https://api.sendgrid.com/v3/"
 request_options_provider:
   type: InterpolatedRequestOptionsProvider
   request_parameters:

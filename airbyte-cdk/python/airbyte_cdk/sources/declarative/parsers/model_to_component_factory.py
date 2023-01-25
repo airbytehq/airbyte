@@ -677,7 +677,7 @@ class ModelToComponentFactory:
         requester = self._create_component_from_model(model=model.requester, config=config)
         record_selector = self._create_component_from_model(model=model.record_selector, config=config)
         paginator = (
-            self.create_default_paginator(model=model.paginator, url_base=requester.get_url_base(), config=config)
+            self._create_component_from_model(model=model.paginator, config=config, url_base=model.requester.url_base)
             if model.paginator
             else NoPagination(options={})
         )
