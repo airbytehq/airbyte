@@ -52,303 +52,267 @@ describe("Connection - creation, updating connection replication settings, delet
     interceptUpdateConnectionRequest();
   });
 
-  it("Create Postgres <> LocalJSON connection, check it's creation", () => {
+  describe("postgres -> local file", () => {
     const sourceName = appendRandomString("Test connection source cypress");
     const destName = appendRandomString("Test connection destination cypress");
 
-    createTestConnection(sourceName, destName);
-    cy.get("div").contains(sourceName).should("exist");
-    cy.get("div").contains(destName).should("exist");
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
-  it("Create Postgres <> LocalJSON connection, update connection replication settings - select schedule and add destination prefix", () => {
-    const sourceName = appendRandomString("Test update connection source cypress");
-    const destName = appendRandomString("Test update connection destination cypress");
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceOverview(sourceName);
-    openConnectionOverviewByDestinationName(destName);
-
-    goToReplicationTab();
-
-    selectSchedule("Every hour");
-    fillOutDestinationPrefix("auto_test");
-
-    submitButtonClick();
-
-    waitForUpdateConnectionRequest().then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
+    before(() => {
+      createTestConnection(sourceName, destName);
     });
 
-    checkSuccessResult();
+    it("Create Postgres <> LocalJSON connection, check it's creation", () => {
+      cy.get("div").contains(sourceName).should("exist");
+      cy.get("div").contains(destName).should("exist");
 
-    deleteSource(sourceName);
-    deleteDestination(destName);
+      deleteSource(sourceName);
+      deleteDestination(destName);
+    });
+
+    it("Create Postgres <> LocalJSON connection, update connection replication settings - select schedule and add destination prefix", () => {
+      goToSourcePage();
+      openSourceOverview(sourceName);
+      openConnectionOverviewByDestinationName(destName);
+
+      goToReplicationTab();
+
+      selectSchedule("Every hour");
+      fillOutDestinationPrefix("auto_test");
+
+      submitButtonClick();
+
+      waitForUpdateConnectionRequest().then((interception) => {
+        assert.isNotNull(interception.response?.statusCode, "200");
+      });
+
+      checkSuccessResult();
+    });
+
+    after(() => {
+      deleteSource(sourceName);
+      deleteDestination(destName);
+    });
   });
 
-  it(`Creates PokeAPI <> Local JSON connection, update connection replication settings - 
-  select schedule, add destination prefix, set destination namespace custom format, change prefix and make sure that it's applied to all streams`, () => {
+  describe("pokeapi -> local file", () => {
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceOverview(sourceName);
-    openConnectionOverviewByDestinationName(destName);
-
-    goToReplicationTab();
-
-    selectSchedule("Every hour");
-    fillOutDestinationPrefix("auto_test");
-    setupDestinationNamespaceCustomFormat("_test");
-    selectSyncMode("Full refresh", "Append");
-
-    const prefix = "auto_test";
-    fillOutDestinationPrefix(prefix);
-
-    // Ensures the prefix is applied to the streams
-    assert(cy.get(`[title*="${prefix}"]`));
-
-    submitButtonClick();
-    confirmStreamConfigurationChangedPopup();
-
-    waitForUpdateConnectionRequest().then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
-      expect(interception.request.method).to.eq("POST");
-      expect(interception.request)
-        .property("body")
-        .to.contain({
-          name: `${sourceName} <> ${destName}Connection name`,
-          prefix: "auto_test",
-          namespaceDefinition: "customformat",
-          namespaceFormat: "${SOURCE_NAMESPACE}_test",
-          status: "active",
-        });
-      expect(interception.request.body.scheduleData.basicSchedule).to.contain({
-        units: 1,
-        timeUnit: "hours",
-      });
-
-      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
-
-      expect(streamToUpdate.config).to.contain({
-        aliasName: "pokemon",
-        destinationSyncMode: "append",
-        selected: true,
-      });
-
-      expect(streamToUpdate.stream).to.contain({
-        name: "pokemon",
-      });
-      expect(streamToUpdate.stream.supportedSyncModes).to.contain("full_refresh");
-    });
-    checkSuccessResult();
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
-  it("Create PokeAPI <> Local JSON connection, update connection replication settings - edit the schedule type one by one - cron, manual, every hour", () => {
-    const sourceName = appendRandomString("Test connection source cypress PokeAPI");
-    const destName = appendRandomString("Test connection destination cypress");
-
-    createTestConnection(sourceName, destName);
-
-    goToReplicationTab();
-
-    selectSchedule("Cron");
-    submitButtonClick();
-    checkSuccessResult();
-
-    selectSchedule("Manual");
-    submitButtonClick();
-    checkSuccessResult();
-
-    selectSchedule("Every hour");
-    submitButtonClick();
-    checkSuccessResult();
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
-  it("Create PokeAPI <> Local JSON connection, update connection replication settings - make sure that saving a connection's schedule type only changes expected values", () => {
-    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
-    const destName = appendRandomString("Test update connection Local JSON destination cypress");
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceOverview(sourceName);
-    openConnectionOverviewByDestinationName(destName);
-
-    let loadedConnection: any = null; // Should be a WebBackendConnectionRead
-    waitForGetConnectionRequest().then((interception) => {
-      const {
-        scheduleType: readScheduleType,
-        scheduleData: readScheduleData,
-        ...connectionRead
-      } = interception.response?.body;
-      loadedConnection = connectionRead;
-
-      expect(loadedConnection).not.to.eq(null);
-      expect(readScheduleType).to.eq("manual");
-      expect(readScheduleData).to.eq(undefined);
+    before(() => {
+      createTestConnection(sourceName, destName);
     });
 
-    goToReplicationTab();
+    it(`Creates PokeAPI <> Local JSON connection, update connection replication settings - 
+    select schedule, add destination prefix, set destination namespace custom format, change prefix and make sure that it's applied to all streams`, () => {
+      goToSourcePage();
+      openSourceOverview(sourceName);
+      openConnectionOverviewByDestinationName(destName);
 
-    selectSchedule("Every hour");
-    submitButtonClick();
+      goToReplicationTab();
 
-    waitForUpdateConnectionRequest().then((interception) => {
-      // Schedule is pulled out here, but we don't do anything with is as it's legacy
-      const { scheduleType, scheduleData, schedule, ...connectionUpdate } = interception.response?.body;
-      expect(scheduleType).to.eq("basic");
-      expect(scheduleData.basicSchedule).to.deep.eq({
-        timeUnit: "hours",
-        units: 1,
-      });
+      selectSchedule("Every hour");
+      fillOutDestinationPrefix("auto_test");
+      setupDestinationNamespaceCustomFormat("_test");
+      selectSyncMode("Full refresh", "Append");
 
-      expect(loadedConnection).to.deep.eq(connectionUpdate);
-    });
-    checkSuccessResult();
+      const prefix = "auto_test";
+      fillOutDestinationPrefix(prefix);
 
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
+      // Ensures the prefix is applied to the streams
+      assert(cy.get(`[title*="${prefix}"]`));
 
-  it("Create PokeAPI <> Local JSON connection, and delete connection", () => {
-    const sourceName = "Test delete connection source cypress";
-    const destName = "Test delete connection destination cypress";
-    createTestConnection(sourceName, destName);
+      submitButtonClick();
+      confirmStreamConfigurationChangedPopup();
 
-    goToSourcePage();
-    openSourceOverview(sourceName);
-    openConnectionOverviewByDestinationName(destName);
-
-    goToSettingsPage();
-
-    deleteEntity();
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
-  it("Create PokeAPI <> Local JSON connection, update connection replication settings - set destination namespace with 'Custom format' option", () => {
-    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
-    const destName = appendRandomString("Test update connection Local JSON destination cypress");
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceOverview(sourceName);
-    openConnectionOverviewByDestinationName(destName);
-
-    goToReplicationTab();
-
-    const namespace = "_DestinationNamespaceCustomFormat";
-    setupDestinationNamespaceCustomFormat(namespace);
-
-    // Ensures the DestinationNamespace is applied to the streams
-    assert(cy.get(`[title*="${namespace}"]`));
-
-    submitButtonClick();
-
-    waitForUpdateConnectionRequest().then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
-      expect(interception.request.method).to.eq("POST");
-      expect(interception.request)
-        .property("body")
-        .to.contain({
-          name: `${sourceName} <> ${destName}Connection name`,
-          namespaceDefinition: "customformat",
-          namespaceFormat: "${SOURCE_NAMESPACE}_DestinationNamespaceCustomFormat",
-          status: "active",
+      waitForUpdateConnectionRequest().then((interception) => {
+        assert.isNotNull(interception.response?.statusCode, "200");
+        expect(interception.request.method).to.eq("POST");
+        expect(interception.request)
+          .property("body")
+          .to.contain({
+            name: `${sourceName} <> ${destName}Connection name`,
+            prefix: "auto_test",
+            namespaceDefinition: "customformat",
+            namespaceFormat: "${SOURCE_NAMESPACE}_test",
+            status: "active",
+          });
+        expect(interception.request.body.scheduleData.basicSchedule).to.contain({
+          units: 1,
+          timeUnit: "hours",
         });
 
-      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+        const streamToUpdate = interception.request.body.syncCatalog.streams[0];
 
-      expect(streamToUpdate.stream).to.contain({
-        name: "pokemon",
-      });
-    });
-    checkSuccessResult();
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
-  it("Create PokeAPI <> Local JSON connection, update connection replication settings - set destination namespace with 'Mirror source structure' option", () => {
-    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
-    const destName = appendRandomString("Test update connection Local JSON destination cypress");
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceOverview(sourceName);
-    openConnectionOverviewByDestinationName(destName);
-
-    goToReplicationTab();
-
-    const namespace = "<source schema>";
-
-    // Ensures the DestinationNamespace is applied to the streams
-    assert(cy.get(`[title*="${namespace}"]`));
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
-  it("Create PokeAPI <> Local JSON connection, update connection replication settings - set destination namespace with 'Destination default' option", () => {
-    const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
-    const destName = appendRandomString("Test update connection Local JSON destination cypress");
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceOverview(sourceName);
-    openConnectionOverviewByDestinationName(destName);
-
-    goToReplicationTab();
-
-    setupDestinationNamespaceDefaultFormat();
-
-    const namespace = "<destination schema>";
-
-    // Ensures the DestinationNamespace is applied to the streams
-    assert(cy.get(`[title*="${namespace}"]`));
-
-    submitButtonClick();
-
-    waitForUpdateConnectionRequest().then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
-      expect(interception.request.method).to.eq("POST");
-      expect(interception.request)
-        .property("body")
-        .to.contain({
-          name: `${sourceName} <> ${destName}Connection name`,
-          namespaceDefinition: "destination",
-          namespaceFormat: "${SOURCE_NAMESPACE}",
-          status: "active",
+        expect(streamToUpdate.config).to.contain({
+          aliasName: "pokemon",
+          destinationSyncMode: "append",
+          selected: true,
         });
 
-      const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+        expect(streamToUpdate.stream).to.contain({
+          name: "pokemon",
+        });
+        expect(streamToUpdate.stream.supportedSyncModes).to.contain("full_refresh");
+      });
+      checkSuccessResult();
+    });
 
-      expect(streamToUpdate.stream).to.contain({
-        name: "pokemon",
+    it("Create PokeAPI <> Local JSON connection, update connection replication settings - edit the schedule type one by one - cron, manual, every hour", () => {
+      goToSourcePage();
+      openSourceOverview(sourceName);
+      openConnectionOverviewByDestinationName(destName);
+
+      goToReplicationTab();
+
+      selectSchedule("Cron");
+      submitButtonClick();
+      checkSuccessResult();
+
+      selectSchedule("Every hour");
+      submitButtonClick();
+      checkSuccessResult();
+
+      selectSchedule("Manual");
+      submitButtonClick();
+      checkSuccessResult();
+    });
+
+    it("Create PokeAPI <> Local JSON connection, update connection replication settings - make sure that saving a connection's schedule type only changes expected values", () => {
+      goToSourcePage();
+      openSourceOverview(sourceName);
+      openConnectionOverviewByDestinationName(destName);
+
+      let loadedConnection: any = null; // Should be a WebBackendConnectionRead
+      waitForGetConnectionRequest().then((interception) => {
+        const {
+          scheduleType: readScheduleType,
+          scheduleData: readScheduleData,
+          ...connectionRead
+        } = interception.response?.body;
+        loadedConnection = connectionRead;
+
+        expect(loadedConnection).not.to.eq(null);
+        expect(readScheduleType).to.eq("manual");
+        expect(readScheduleData).to.eq(undefined);
+      });
+
+      goToReplicationTab();
+
+      selectSchedule("Every hour");
+      submitButtonClick();
+
+      waitForUpdateConnectionRequest().then((interception) => {
+        // Schedule is pulled out here, but we don't do anything with is as it's legacy
+        const { scheduleType, scheduleData, schedule, ...connectionUpdate } = interception.response?.body;
+        expect(scheduleType).to.eq("basic");
+        expect(scheduleData.basicSchedule).to.deep.eq({
+          timeUnit: "hours",
+          units: 1,
+        });
+
+        expect(loadedConnection).to.deep.eq(connectionUpdate);
       });
     });
-    checkSuccessResult();
 
-    deleteSource(sourceName);
-    deleteDestination(destName);
+    it("Create PokeAPI <> Local JSON connection, update connection replication settings - set destination namespace with 'Mirror source structure' option", () => {
+      goToSourcePage();
+      openSourceOverview(sourceName);
+      openConnectionOverviewByDestinationName(destName);
+
+      goToReplicationTab();
+
+      const namespace = "<source schema>";
+
+      // Ensures the DestinationNamespace is applied to the streams
+      assert(cy.get(`[title*="${namespace}"]`));
+    });
+
+    it("Create PokeAPI <> Local JSON connection, update connection replication settings - set destination namespace with 'Custom format' option", () => {
+      goToSourcePage();
+      openSourceOverview(sourceName);
+      openConnectionOverviewByDestinationName(destName);
+
+      goToReplicationTab();
+
+      const namespace = "_DestinationNamespaceCustomFormat";
+      setupDestinationNamespaceCustomFormat(namespace);
+
+      // Ensures the DestinationNamespace is applied to the streams
+      assert(cy.get(`[title*="${namespace}"]`));
+
+      submitButtonClick();
+
+      waitForUpdateConnectionRequest().then((interception) => {
+        assert.isNotNull(interception.response?.statusCode, "200");
+        expect(interception.request.method).to.eq("POST");
+        expect(interception.request)
+          .property("body")
+          .to.contain({
+            name: `${sourceName} <> ${destName}Connection name`,
+            namespaceDefinition: "customformat",
+            namespaceFormat: "${SOURCE_NAMESPACE}_DestinationNamespaceCustomFormat",
+            status: "active",
+          });
+
+        const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+
+        expect(streamToUpdate.stream).to.contain({
+          name: "pokemon",
+        });
+      });
+      checkSuccessResult();
+    });
+
+    it("Create PokeAPI <> Local JSON connection, update connection replication settings - set destination namespace with 'Destination default' option", () => {
+      goToSourcePage();
+      openSourceOverview(sourceName);
+      openConnectionOverviewByDestinationName(destName);
+
+      goToReplicationTab();
+
+      setupDestinationNamespaceDefaultFormat();
+
+      const namespace = "<destination schema>";
+
+      // Ensures the DestinationNamespace is applied to the streams
+      assert(cy.get(`[title*="${namespace}"]`));
+
+      submitButtonClick();
+
+      waitForUpdateConnectionRequest().then((interception) => {
+        assert.isNotNull(interception.response?.statusCode, "200");
+        expect(interception.request.method).to.eq("POST");
+        expect(interception.request)
+          .property("body")
+          .to.contain({
+            name: `${sourceName} <> ${destName}Connection name`,
+            namespaceDefinition: "destination",
+            namespaceFormat: "${SOURCE_NAMESPACE}",
+            status: "active",
+          });
+
+        const streamToUpdate = interception.request.body.syncCatalog.streams[0];
+
+        expect(streamToUpdate.stream).to.contain({
+          name: "pokemon",
+        });
+      });
+      checkSuccessResult();
+    });
+
+    it("Create PokeAPI <> Local JSON connection, and delete connection", () => {
+      goToSourcePage();
+      openSourceOverview(sourceName);
+      openConnectionOverviewByDestinationName(destName);
+
+      goToSettingsPage();
+
+      deleteEntity();
+    });
+
+    after(() => {
+      deleteSource(sourceName);
+      deleteDestination(destName);
+    });
   });
 });
 
