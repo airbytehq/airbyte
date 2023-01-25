@@ -206,7 +206,7 @@ class SnapchatMarketingStream(HttpStream, ABC):
         Also, the client side filtering for incremental sync is used
         """
 
-        json_response = response.json().get(self.response_root_name)
+        json_response = response.json().get(self.response_root_name, [])
         for resp in json_response:
             if self.response_item_name not in resp:
                 error_text = f"stream {self.name}: field named '{self.response_item_name}' is absent in the response: {resp}"

@@ -46,7 +46,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   /**
    * If true, launcher will use a separated isolated pool to run the job.
-   *
+   * <p>
    * At this moment, we put custom connector jobs into an isolated pool.
    */
   private final boolean useIsolatedPool;
@@ -56,13 +56,14 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
                                     final String imageName,
                                     final ProcessFactory processFactory,
                                     final ResourceRequirements resourceRequirement,
-                                    final boolean useIsolatedPool) {
+                                    final boolean useIsolatedPool,
+                                    final FeatureFlags featureFlags) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
-    this.featureFlags = new EnvVariableFeatureFlags();
+    this.featureFlags = featureFlags;
     this.useIsolatedPool = useIsolatedPool;
   }
 

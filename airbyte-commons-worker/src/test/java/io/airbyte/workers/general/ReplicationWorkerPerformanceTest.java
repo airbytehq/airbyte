@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.general;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
@@ -65,7 +66,7 @@ public class ReplicationWorkerPerformanceTest {
   public void executeOneSync() throws InterruptedException {
     final var perSource = new LimitedAirbyteSource();
     final var perDestination = new EmptyAirbyteDestination();
-    final var messageTracker = new AirbyteMessageTracker();
+    final var messageTracker = new AirbyteMessageTracker(new EnvVariableFeatureFlags());
     final var connectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
     final var metricReporter = new WorkerMetricReporter(new NotImplementedMetricClient(), "test-image:0.01");
     final var dstNamespaceMapper = new NamespacingMapper(NamespaceDefinitionType.DESTINATION, "", "");

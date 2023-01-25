@@ -277,7 +277,8 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.41  | 2022-12-16 | [\#20566](https://github.com/airbytehq/airbyte/pull/20566) | Improve spec to adhere to standards                                                                     |
+| 0.4.41  | 2023-01-12 | [\#21342](https://github.com/airbytehq/airbyte/pull/21342) | Better handling for conflicting destination streams                                                                                                 |
+| 0.4.41  | 2022-12-16 | [\#20566](https://github.com/airbytehq/airbyte/pull/20566) | Improve spec to adhere to standards                                                                                                                 |
 | 0.4.40  | 2022-11-11 | [\#19302](https://github.com/airbytehq/airbyte/pull/19302) | Set jdbc application env variable depends on env - airbyte_oss or airbyte_cloud                                                                     |
 | 0.4.39  | 2022-11-09 | [\#18970](https://github.com/airbytehq/airbyte/pull/18970) | Updated "check" connection method to handle more errors                                                                                             |
 | 0.4.38  | 2022-09-26 | [\#17115](https://github.com/airbytehq/airbyte/pull/17115) | Added connection string identifier                                                                                                                  |

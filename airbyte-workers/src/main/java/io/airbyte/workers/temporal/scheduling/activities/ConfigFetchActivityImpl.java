@@ -21,12 +21,10 @@ import io.airbyte.api.client.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.WorkspaceRead;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Job;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -50,7 +48,6 @@ import org.slf4j.LoggerFactory;
 
 @Slf4j
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFetchActivityImpl.class);

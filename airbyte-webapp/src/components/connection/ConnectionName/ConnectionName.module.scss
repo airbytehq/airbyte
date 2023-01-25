@@ -1,0 +1,82 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  margin-top: variables.$spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.textContainer {
+  width: 650px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.icon {
+  display: none;
+  position: absolute;
+  right: variables.$spacing-xl;
+
+  // used to control svg size, not text size
+  font-size: 18px;
+  color: colors.$blue;
+}
+
+.nameContainer {
+  composes: textContainer;
+  background-color: colors.$grey-100;
+  border: variables.$border-thin solid colors.$grey-100;
+  border-radius: variables.$border-radius-md;
+  padding: 0 variables.$spacing-xl;
+
+  div {
+    width: 100%;
+
+    h2 {
+      text-align: center;
+      margin: variables.$spacing-md;
+      word-wrap: break-word;
+    }
+  }
+
+  &:hover {
+    cursor: pointer;
+    border: variables.$border-thin solid colors.$blue;
+    background-color: colors.$blue-50;
+
+    & > .icon {
+      display: block;
+    }
+  }
+}
+
+.editingContainer {
+  composes: textContainer;
+  background-color: colors.$white;
+  border: variables.$border-thin solid colors.$blue;
+  border-radius: variables.$border-radius-md;
+}
+
+.inputContainer {
+  height: 50px;
+  width: 100%;
+
+  div {
+    border-radius: variables.$border-radius-md;
+    border: none;
+    box-shadow: none;
+    background-color: colors.$white !important; // fix style import order issue
+  }
+}
+
+.input {
+  border-radius: variables.$border-radius-md;
+  background-color: colors.$white;
+  font-size: 24px !important; // fix style import order issue
+  height: 50px;
+  text-align: center;
+}

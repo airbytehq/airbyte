@@ -19,6 +19,7 @@ def commonConfigs = [
 node {
     download = true
     version = nodeVersion
+    npmInstallCommand = 'ci'
 }
 
 npm_run_build {
@@ -33,7 +34,7 @@ npm_run_build {
 task test(type: NpmTask) {
     dependsOn assemble
 
-    args = ['run', 'test', '--', '--watchAll=false', '--silent']
+    args = ['run', 'test:ci']
     inputs.files commonConfigs
     inputs.dir 'src'
 }

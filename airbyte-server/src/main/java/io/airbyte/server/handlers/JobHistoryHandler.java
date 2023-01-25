@@ -5,7 +5,11 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.api.model.generated.AttemptInfoRead;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
+import io.airbyte.api.model.generated.AttemptRead;
+import io.airbyte.api.model.generated.AttemptStats;
+import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -33,19 +37,25 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence.JobAttemptPair;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.WorkflowStateConverter;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Singleton
+@Slf4j
 public class JobHistoryHandler {
 
   private final ConnectionsHandler connectionsHandler;
@@ -118,14 +128,60 @@ public class JobHistoryHandler {
           (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0);
     }
 
+    final List<JobWithAttemptsRead> jobReads = jobs.stream().map(JobConverter::getJobWithAttemptsRead).collect(Collectors.toList());
+    final var jobIds = jobReads.stream().map(r -> r.getJob().getId()).toList();
+    final Map<JobAttemptPair, JobPersistence.AttemptStats> stats = jobPersistence.getAttemptStats(jobIds);
+    for (final JobWithAttemptsRead jwar : jobReads) {
+      for (final AttemptRead a : jwar.getAttempts()) {
+        final var stat = stats.get(new JobAttemptPair(jwar.getJob().getId(), a.getId().intValue()));
+        if (stat == null) {
+          log.error("Missing stats for job {} attempt {}", jwar.getJob().getId(), a.getId().intValue());
+          continue;
+        }
+
+        hydrateWithStats(a, stat);
+      }
+    }
+
     final Long totalJobCount = jobPersistence.getJobCount(configTypes, configId);
-
-    final List<JobWithAttemptsRead> jobReads = jobs
-        .stream()
-        .map(JobConverter::getJobWithAttemptsRead)
-        .collect(Collectors.toList());
-
     return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
+  }
+
+  /**
+   * Retrieve stats for a given job id and attempt number and hydrate the api model with the retrieved
+   * information.
+   *
+   * @param jobId the job the attempt belongs to. Used as an index to retrieve stats.
+   * @param a the attempt to hydrate stats for.
+   */
+  private void hydrateWithStats(final AttemptRead a, final JobPersistence.AttemptStats attemptStats) {
+    a.setTotalStats(new AttemptStats());
+
+    final var combinedStats = attemptStats.combinedStats();
+    if (combinedStats == null) {
+      // If overall stats are missing, assume stream stats are also missing, since overall stats are
+      // easier to produce than stream stats. Exit early.
+      return;
+    }
+
+    a.getTotalStats()
+        .estimatedBytes(combinedStats.getEstimatedBytes())
+        .estimatedRecords(combinedStats.getEstimatedRecords())
+        .bytesEmitted(combinedStats.getBytesEmitted())
+        .recordsEmitted(combinedStats.getRecordsEmitted())
+        .recordsCommitted(combinedStats.getRecordsCommitted());
+
+    final var streamStats = attemptStats.perStreamStats().stream().map(s -> new AttemptStreamStats()
+        .streamName(s.getStreamName())
+        .streamNamespace(s.getStreamNamespace())
+        .stats(new AttemptStats()
+            .bytesEmitted(s.getStats().getBytesEmitted())
+            .recordsEmitted(s.getStats().getRecordsEmitted())
+            .recordsCommitted(s.getStats().getRecordsCommitted())
+            .estimatedBytes(s.getStats().getEstimatedBytes())
+            .estimatedRecords(s.getStats().getEstimatedRecords())))
+        .collect(Collectors.toList());
+    a.setStreamStats(streamStats);
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
@@ -142,6 +198,12 @@ public class JobHistoryHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     final JobInfoRead jobinfoRead = jobConverter.getJobInfoRead(job);
+
+    for (final AttemptInfoRead a : jobinfoRead.getAttempts()) {
+      final int attemptNumber = a.getAttempt().getId().intValue();
+      final var attemptStats = jobPersistence.getAttemptStats(job.getId(), attemptNumber);
+      hydrateWithStats(a.getAttempt(), attemptStats);
+    }
 
     final JobDebugInfoRead jobDebugInfoRead = buildJobDebugInfoRead(jobinfoRead);
     if (temporalClient != null) {

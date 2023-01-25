@@ -44,6 +44,8 @@ import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.book_keeping.MessageTracker;
+import io.airbyte.workers.internal.exception.DestinationException;
+import io.airbyte.workers.internal.exception.SourceException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -707,30 +709,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
 
     return tags;
-  }
-
-  private static class SourceException extends RuntimeException {
-
-    SourceException(final String message) {
-      super(message);
-    }
-
-    SourceException(final String message, final Throwable cause) {
-      super(message, cause);
-    }
-
-  }
-
-  private static class DestinationException extends RuntimeException {
-
-    DestinationException(final String message) {
-      super(message);
-    }
-
-    DestinationException(final String message, final Throwable cause) {
-      super(message, cause);
-    }
-
   }
 
 }

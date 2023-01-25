@@ -1078,7 +1078,7 @@ $  docker images | head
 If the Airbyte server isn't already running, start it by running **from the Airbyte repository root**:
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 When Airbyte server is done starting up, it prints the following banner in the log output \(it can take 10-20 seconds for the server to start\):
@@ -1098,7 +1098,7 @@ airbyte-server      | Version: dev
 airbyte-server      | 
 ```
 
-After you see the above banner printed out in the terminal window where you are running `docker-compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser and log in with the default credentials: username `airbyte` and password `password`. 
+After you see the above banner printed out in the terminal window where you are running `docker compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser and log in with the default credentials: username `airbyte` and password `password`.
 
 If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time wizard. To skip it, click the "Skip Onboarding" button.
 

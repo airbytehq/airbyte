@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.20.2
+Add missing package in previous patch release
+
+## 0.20.1
+Handle edge cases for CheckStream - checking connection to empty stream, and checking connection to substream with no parent records
+
+## 0.20.0
+Low-Code: Refactor low-code to use Pydantic model based manifest parsing and component creation
+
+## 0.19.1
+Low-code: Make documentation_url in the Spec be optional
+
+## 0.19.0
+Low-Code: Handle forward references in manifest
+
+## 0.18.1
+Allow for CustomRequester to be defined within declarative manifests
+
 ## 0.18.0
 Adding `cursor_granularity` to the declarative API of DatetimeStreamSlicer
 

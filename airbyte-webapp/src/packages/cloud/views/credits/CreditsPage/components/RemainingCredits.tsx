@@ -109,6 +109,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       workspaceId: currentWorkspace.workspaceId,
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
+      stripeMode: "payment",
     });
     analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
       actionDescription: "Checkout Start",

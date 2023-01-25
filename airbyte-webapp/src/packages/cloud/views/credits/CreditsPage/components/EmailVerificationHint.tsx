@@ -1,10 +1,11 @@
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AuthErrorCodes } from "firebase/auth";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { InfoBox } from "components/ui/InfoBox";
+import { Callout } from "components/ui/Callout";
 import { ToastType } from "components/ui/Toast";
 
 import { useNotificationService } from "hooks/services/Notification";
@@ -76,7 +77,8 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
   };
 
   return (
-    <InfoBox icon={faEnvelope} className={className}>
+    <Callout className={className}>
+      <FontAwesomeIcon icon={faEnvelope} size="lg" />
       <FormattedMessage id="credits.emailVerificationRequired" />{" "}
       {isEmailResend ? (
         <FormattedMessage id="credits.emailVerification.resendConfirmation" />
@@ -85,6 +87,6 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
           <FormattedMessage id="credits.emailVerification.resend" />
         </ResendEmailLink>
       )}
-    </InfoBox>
+    </Callout>
   );
 };

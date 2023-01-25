@@ -115,24 +115,15 @@ export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) 
   );
 };
 
-export const NewsField: React.FC = () => {
-  const { formatMessage } = useIntl();
-  return (
-    <Field name="news">
-      {({ field, meta }: FieldProps<string>) => (
-        <MarginBlock>
-          <CheckBoxControl
-            {...field}
-            checked={!!field.value}
-            checkbox
-            label={<FormattedMessage id="login.subscribe" />}
-            message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-          />
-        </MarginBlock>
-      )}
-    </Field>
-  );
-};
+export const NewsField: React.FC = () => (
+  <Field name="news">
+    {({ field }: FieldProps<string>) => (
+      <MarginBlock>
+        <CheckBoxControl {...field} checked={!!field.value} label={<FormattedMessage id="login.subscribe" />} />
+      </MarginBlock>
+    )}
+  </Field>
+);
 
 export const Disclaimer: React.FC = () => {
   return (

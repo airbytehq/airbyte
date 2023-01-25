@@ -1,15 +1,19 @@
 import { dump } from "js-yaml";
-import merge from "lodash/merge";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
+import { UseQueryResult } from "react-query";
 import { useLocalStorage } from "react-use";
 
 import { BuilderFormValues, convertToManifest, DEFAULT_BUILDER_FORM_VALUES } from "components/connectorBuilder/types";
 
-import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
+import {
+  StreamRead,
+  StreamReadRequestBodyConfig,
+  StreamsListReadStreamsItem,
+} from "core/request/ConnectorBuilderClient";
 import { ConnectorManifest, DeclarativeComponentSchema } from "core/request/ConnectorManifest";
 
-import { useListStreams } from "./ConnectorBuilderApiService";
+import { useListStreams, useReadStream } from "./ConnectorBuilderApiService";
 
 const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   version: "0.1.0",
@@ -48,6 +52,7 @@ interface TestStateContext {
   setTestInputJson: (value: StreamReadRequestBodyConfig) => void;
   setTestStreamIndex: (streamIndex: number) => void;
   testStreamIndex: number;
+  streamRead: UseQueryResult<StreamRead, unknown>;
 }
 
 export const ConnectorBuilderFormStateContext = React.createContext<FormStateContext | null>(null);
@@ -61,6 +66,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
   );
 
   const lastValidBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
+  const currentBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
 
   const setBuilderFormValues = useCallback(
     (values: BuilderFormValues, isValid: boolean) => {
@@ -68,14 +74,15 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
         // update ref first because calling setStoredBuilderFormValues might synchronously kick off a react render cycle.
         lastValidBuilderFormValuesRef.current = values;
       }
+      currentBuilderFormValuesRef.current = values;
       setStoredBuilderFormValues(values);
     },
     [setStoredBuilderFormValues]
   );
 
-  const builderFormValues = useMemo(() => {
-    return merge({}, DEFAULT_BUILDER_FORM_VALUES, storedBuilderFormValues);
-  }, [storedBuilderFormValues]);
+  // use the ref for the current builder form values because useLocalStorage will always serialize and deserialize the whole object,
+  // changing all the references which re-triggers all memoizations
+  const builderFormValues = currentBuilderFormValuesRef.current || DEFAULT_BUILDER_FORM_VALUES;
 
   const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
     "connectorBuilderJsonManifest",
@@ -119,9 +126,9 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
       editorView !== "ui"
         ? jsonManifest
         : builderFormValues === lastValidBuilderFormValues
-        ? jsonManifest
+        ? derivedJsonManifest
         : convertToManifest(lastValidBuilderFormValues),
-    [builderFormValues, editorView, jsonManifest, lastValidBuilderFormValues]
+    [builderFormValues, editorView, jsonManifest, derivedJsonManifest, lastValidBuilderFormValues]
   );
 
   const [selectedView, setSelectedView] = useState<BuilderView>("global");
@@ -178,6 +185,12 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     }
   }, [selectedView]);
 
+  const streamRead = useReadStream({
+    manifest,
+    stream: streams[testStreamIndex]?.name,
+    config: testInputJson,
+  });
+
   const ctx = {
     streams,
     streamListErrorMessage,
@@ -185,6 +198,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     setTestInputJson,
     testStreamIndex,
     setTestStreamIndex,
+    streamRead,
   };
 
   return <ConnectorBuilderTestStateContext.Provider value={ctx}>{children}</ConnectorBuilderTestStateContext.Provider>;

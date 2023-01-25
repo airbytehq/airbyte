@@ -16,7 +16,7 @@ import { Text } from "components/ui/Text";
 
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";

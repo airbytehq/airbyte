@@ -176,7 +176,7 @@ Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-re
 - The modifications you want to capture must be made using `DELETE`/`INSERT`/`UPDATE`. For example, changes made using `TRUNCATE`/`ALTER` will not appear in logs and therefore in your destination.
 - Schema changes are not supported automatically for CDC sources. Reset and resync data if you make a schema change.
 - The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
-- Log-based replication only works for master instances of Postgres.
+- Log-based replication only works for master instances of Postgres.  CDC cannot be run from a read-replica of your primary database.
 - Using logical replication increases disk space used on the database server. The additional data is stored until it is consumed.
   - Set frequent syncs for CDC to ensure that the data doesn't fill up your disk space.
   - If you stop syncing a CDC-configured Postgres instance with Airbyte, delete the replication slot. Otherwise, it may fill up your disk space.
@@ -411,6 +411,9 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                    |
 |:--------|:-----------|:----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.38  | 2022-01-17 | [20436](https://github.com/airbytehq/airbyte/pull/20346)   | Consolidate date/time values mapping for JDBC sources                          |
+| 1.0.37  | 2023-01-17 | [20783](https://github.com/airbytehq/airbyte/pull/20783)  | Emit estimate trace messages for non-CDC mode.                                                                                                                             |
+| 1.0.36  | 2023-01-11 | [21003](https://github.com/airbytehq/airbyte/pull/21003)  | Handle null values for array data types in CDC mode gracefully.                                                                                                            |
 | 1.0.35  | 2023-01-04 | [20469](https://github.com/airbytehq/airbyte/pull/20469)  | Introduce feature to make LSN commit behaviour configurable.                                                                                                               |
 | 1.0.34  | 2022-12-13 | [20378](https://github.com/airbytehq/airbyte/pull/20378)  | Improve descriptions                                                                                                                                                       |
 | 1.0.33  | 2022-12-12 | [18959](https://github.com/airbytehq/airbyte/pull/18959)  | CDC : Don't timeout if snapshot is not complete.                                                                                                                           |

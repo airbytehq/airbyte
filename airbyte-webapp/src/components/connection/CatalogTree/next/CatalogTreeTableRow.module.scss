@@ -46,7 +46,7 @@
   line-height: 13px;
   display: flex;
   justify-content: flex-end;
-  padding-left: variables.$spacing-xl + variables.$spacing-sm;
+  gap: variables.$spacing-sm;
 }
 
 .cellText {

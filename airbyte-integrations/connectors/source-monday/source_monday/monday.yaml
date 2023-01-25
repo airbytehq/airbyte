@@ -18,7 +18,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['credentials']['api_token'] if config['credentials']['auth_type'] == 'api_token' else config['credentials']['access_token'] if config['credentials']['auth_type'] == 'oauth2.0' else config.get('api_token', '') }}"
     request_options_provider:
-      type: InterpolatedRequestOptionsProvider
+      type: CustomRequestOptionsProvider
       class_name: "source_monday.GraphQLRequestOptionsProvider"
       limit: "{{ options['items_per_page'] }}"
     error_handler:

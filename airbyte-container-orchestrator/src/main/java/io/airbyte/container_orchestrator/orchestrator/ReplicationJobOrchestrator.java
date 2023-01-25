@@ -124,7 +124,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getSourceResourceRequirements(),
-        useIsolatedPool);
+        useIsolatedPool,
+        featureFlags);
 
     log.info("Setting up destination launcher...");
     final var destinationLauncher = new AirbyteIntegrationLauncher(
@@ -133,7 +134,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         destinationLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getDestinationResourceRequirements(),
-        useIsolatedPool);
+        useIsolatedPool,
+        featureFlags);
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
@@ -142,7 +144,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             featureFlags.useStreamCapableState())
             : new DefaultAirbyteSource(sourceLauncher,
                 getStreamFactory(sourceLauncherConfig.getProtocolVersion(), syncInput.getCatalog(), DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER),
-                migratorFactory.getProtocolSerializer(sourceLauncherConfig.getProtocolVersion()));
+                migratorFactory.getProtocolSerializer(sourceLauncherConfig.getProtocolVersion()), featureFlags);
 
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
     final var metricClient = MetricClientFactory.getMetricClient();
@@ -161,7 +163,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
                 Optional.of(syncInput.getCatalog())),
             migratorFactory.getProtocolSerializer(destinationLauncherConfig.getProtocolVersion())),
-        new AirbyteMessageTracker(),
+        new AirbyteMessageTracker(featureFlags),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
         new ConnectorConfigUpdater(sourceApi, destinationApi),
@@ -180,7 +182,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
                                                 final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                                 final MdcScope.Builder mdcScope) {
     return protocolVersion != null
-        ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion, Optional.of(configuredAirbyteCatalog), mdcScope)
+        ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion, Optional.of(configuredAirbyteCatalog), mdcScope,
+            Optional.of(RuntimeException.class))
         : new DefaultAirbyteStreamFactory(mdcScope);
   }
 

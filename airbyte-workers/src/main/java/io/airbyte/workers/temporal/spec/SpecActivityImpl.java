@@ -11,6 +11,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
@@ -57,6 +58,7 @@ public class SpecActivityImpl implements SpecActivity {
   private final String airbyteVersion;
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
+  private final FeatureFlags featureFlags;
 
   public SpecActivityImpl(@Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
                           @Named("specProcessFactory") final ProcessFactory processFactory,
@@ -66,7 +68,8 @@ public class SpecActivityImpl implements SpecActivity {
                           final AirbyteApiClient airbyteApiClient,
                           @Value("${airbyte.version}") final String airbyteVersion,
                           final AirbyteMessageSerDeProvider serDeProvider,
-                          final AirbyteProtocolVersionedMigratorFactory migratorFactory) {
+                          final AirbyteProtocolVersionedMigratorFactory migratorFactory,
+                          final FeatureFlags featureFlags) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
@@ -76,6 +79,7 @@ public class SpecActivityImpl implements SpecActivity {
     this.airbyteVersion = airbyteVersion;
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
+    this.featureFlags = featureFlags;
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -114,7 +118,8 @@ public class SpecActivityImpl implements SpecActivity {
           launcherConfig.getDockerImage(),
           processFactory,
           workerConfigs.getResourceRequirements(),
-          launcherConfig.getIsCustomConnector());
+          launcherConfig.getIsCustomConnector(),
+          featureFlags);
 
       return new DefaultGetSpecWorker(integrationLauncher, streamFactory);
     };
@@ -124,7 +129,8 @@ public class SpecActivityImpl implements SpecActivity {
     final Version protocolVersion =
         launcherConfig.getProtocolVersion() != null ? launcherConfig.getProtocolVersion() : migratorFactory.getMostRecentVersion();
     // Try to detect version from the stream
-    return new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion, Optional.empty()).withDetectVersion(true);
+    return new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion, Optional.empty(), Optional.empty())
+        .withDetectVersion(true);
   }
 
 }

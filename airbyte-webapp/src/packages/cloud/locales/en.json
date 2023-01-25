@@ -178,5 +178,10 @@
   "inviteUsersHint.message": "Need help from a teammate to set up the {connector}?",
   "inviteUsersHint.cta": "Invite users",
 
-  "sidebar.credits": "Credits"
+  "sidebar.credits": "Credits",
+
+  "freeConnectorProgram.youCanEnroll": "You can <enrollLink>enroll</enrollLink> in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <freeText>free</freeText>.",
+  "freeConnectorProgram.title": "Free Connector Program",
+  "freeConnectorProgram.enrollNow": "Enroll now!",
+  "freeConnectorProgram.enroll.description": "Enroll in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <b>free</b>."
 }

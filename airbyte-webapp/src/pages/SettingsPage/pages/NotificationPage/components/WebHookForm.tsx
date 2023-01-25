@@ -17,10 +17,10 @@ import { Text } from "components/ui/Text";
 import { ToastType } from "components/ui/Toast";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { useNotificationService } from "hooks/services/Notification";
 import useWorkspace, { WebhookPayload } from "hooks/services/useWorkspace";
 import { links } from "utils/links";
 
-import { useNotificationService } from "../../../../../hooks/services/Notification";
 import { Content, SettingsCard } from "../../SettingsComponents";
 import help from "./help.png";
 import styles from "./WebHookForm.module.scss";

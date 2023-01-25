@@ -16,6 +16,7 @@ import static io.airbyte.workers.process.Metadata.WRITE_STEP;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.WorkerConfigs;
@@ -49,14 +50,16 @@ class AirbyteIntegrationLauncherTest {
       CONFIG, "{}",
       CATALOG, "{}",
       "state", "{}");
+
+  private static final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
   private static final Map<String, String> JOB_METADATA = Map.of(
       WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, FAKE_IMAGE,
       WorkerEnvConstants.WORKER_JOB_ID, JOB_ID,
       WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT),
-      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(new EnvVariableFeatureFlags().useStreamCapableState()),
-      EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(new EnvVariableFeatureFlags().autoDetectSchema()),
-      EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(new EnvVariableFeatureFlags().applyFieldSelection()),
-      EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, new EnvVariableFeatureFlags().fieldSelectionWorkspaces());
+      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()),
+      EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()),
+      EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()),
+      EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
 
   private WorkerConfigs workerConfigs;
   @Mock
@@ -66,7 +69,8 @@ class AirbyteIntegrationLauncherTest {
   @BeforeEach
   void setUp() {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
-    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements(), false);
+    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements(), false,
+        featureFlags);
   }
 
   @Test

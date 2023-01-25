@@ -68,7 +68,7 @@ import org.junit.jupiter.api.Test;
 class JobConverterTest {
 
   private static final long JOB_ID = 100L;
-  private static final long ATTEMPT_ID = 1002L;
+  private static final Integer ATTEMPT_NUMBER = 0;
   private static final String JOB_CONFIG_ID = "123";
   private static final JobStatus JOB_STATUS = JobStatus.RUNNING;
   private static final AttemptStatus ATTEMPT_STATUS = AttemptStatus.RUNNING;
@@ -124,7 +124,7 @@ class JobConverterTest {
               .updatedAt(CREATED_AT))
           .attempts(Lists.newArrayList(new AttemptInfoRead()
               .attempt(new AttemptRead()
-                  .id(ATTEMPT_ID)
+                  .id((long) ATTEMPT_NUMBER)
                   .status(io.airbyte.api.model.generated.AttemptStatus.RUNNING)
                   .recordsSynced(RECORDS_EMITTED)
                   .bytesSynced(BYTES_EMITTED)
@@ -195,7 +195,7 @@ class JobConverterTest {
     when(job.getCreatedAtInSecond()).thenReturn(CREATED_AT);
     when(job.getUpdatedAtInSecond()).thenReturn(CREATED_AT);
     when(job.getAttempts()).thenReturn(Lists.newArrayList(attempt));
-    when(attempt.getId()).thenReturn(ATTEMPT_ID);
+    when(attempt.getAttemptNumber()).thenReturn(ATTEMPT_NUMBER);
     when(attempt.getStatus()).thenReturn(ATTEMPT_STATUS);
     when(attempt.getOutput()).thenReturn(Optional.of(JOB_OUTPUT));
     when(attempt.getLogPath()).thenReturn(LOG_PATH);

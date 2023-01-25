@@ -60,6 +60,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
       size="sm"
       onClick={handleClick}
       disabled={buttonDisabled}
+      data-testid="read-stream"
       icon={
         showWarningIcon ? (
           <FontAwesomeIcon icon={faWarning} />

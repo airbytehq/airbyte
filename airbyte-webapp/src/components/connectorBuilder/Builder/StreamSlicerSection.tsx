@@ -5,7 +5,6 @@ import { ControlLabels } from "components/LabeledControl";
 
 import { RequestOption, SimpleRetrieverStreamSlicer } from "core/request/ConnectorManifest";
 
-import { timeDeltaRegex } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
@@ -99,6 +98,12 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
           />
           <BuilderFieldWithInputs
             type="string"
+            path={buildPath("cursor_granularity")}
+            label="Cursor granularity"
+            tooltip="Smallest increment the datetime format has (ISO 8601 duration) that will be used to ensure that the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S"
+          />
+          <BuilderFieldWithInputs
+            type="string"
             path={buildPath("start_datetime")}
             label="Start datetime"
             tooltip="Start time to start slicing"
@@ -113,8 +118,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
             type="string"
             path={buildPath("step")}
             label="Step"
-            tooltip="Time interval for which to break up stream into slices, e.g. 1d"
-            pattern={timeDeltaRegex}
+            tooltip="Time interval (ISO 8601 duration) for which to break up stream into slices, e.g. P1D for daily slices"
           />
           <BuilderFieldWithInputs
             type="string"
@@ -127,7 +131,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
               type="string"
               path={buildPath("lookback_window")}
               label="Lookback window"
-              tooltip="How many days before the start_datetime to read data for, e.g. 31d"
+              tooltip="Time interval (ISO 8601 duration) before the start_datetime to read data for, e.g. P1M for looking back one month"
               optional
             />
             <ToggleGroupField<RequestOption>
