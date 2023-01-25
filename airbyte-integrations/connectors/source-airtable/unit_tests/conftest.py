@@ -106,9 +106,9 @@ def expected_json_schema():
         "$schema": "http://json-schema.org/draft-07/schema#",
         "additionalProperties": True,
         "properties": {
-            "_airtable_created_time": {"type": ["null", "string"]},
-            "_airtable_id": {"type": ["null", "string"]},
-            "test": {"type": ["null", "string"]},
+            "_airtable_created_time": {"type": ["string", "null"]},
+            "_airtable_id": {"type": ["string", "null"]},
+            "test": {"type": ["string", "null"]},
         },
         "type": "object",
     }
@@ -127,20 +127,20 @@ def prepared_stream():
                 "properties": {
                     "_airtable_id": {
                         "type": [
-                            "null",
-                            "string"
+                            "string",
+                            "null"
                         ]
                     },
                     "_airtable_created_time": {
                         "type": [
-                            "null",
-                            "string"
+                            "string",
+                            "null"
                         ]
                     },
                     "name": {
                         "type": [
-                            "null",
-                            "string"
+                            "string",
+                            "null"
                         ]
                     }
                 }
