@@ -18,6 +18,10 @@
 
 .pill {
   z-index: 2;
+
+  // HACK: the hardcoded top margin is to vertically center the image, which was exported
+  // from Figma with an off-center vertical alignment
+  margin-top: 2em;
 }
 
 .contentWrapper {
@@ -31,4 +35,19 @@
 
 .iconContainer {
   flex: 0 0 82px;
+}
+
+.resendEmailLink {
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  color: colors.$dark-blue;
+  border: none;
+  background-color: transparent;
+  font-size: inherit;
+
+  &:hover,
+  &:active {
+    color: colors.$blue;
+  }
 }

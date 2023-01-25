@@ -132,7 +132,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
 
   return (
     <div className={styles.content}>
-      <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />
+      <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows testId={`${entity}sTable`} />
     </div>
   );
 };

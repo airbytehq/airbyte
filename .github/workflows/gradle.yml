@@ -124,6 +124,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -229,6 +230,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
@@ -285,7 +287,7 @@ jobs:
         if: always()
         with:
           junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
+          comment_mode: failures
           json_file: connectors_base_results.json
           json_test_case_results: true
           check_name: "Connectors Base Test Results"
@@ -318,6 +320,7 @@ jobs:
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:
@@ -411,6 +414,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -534,6 +538,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Delete default old docker and replace it with a new one
         shell: bash
@@ -665,6 +670,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - uses: actions/setup-node@v3
         with:
@@ -799,6 +805,7 @@ jobs:
         if: always()
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Publish Platform Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -806,7 +813,7 @@ jobs:
         if: always()
         with:
           junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
+          comment_mode: failures
           json_file: platform_results.json
           json_test_case_results: true
           check_name: "Platform Test Results"
@@ -839,6 +846,7 @@ jobs:
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
@@ -943,6 +951,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Install unzip
         shell: bash
@@ -1019,6 +1028,7 @@ jobs:
         if: always()
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - name: Publish Kube Test Results
         id: kube-results
@@ -1026,7 +1036,7 @@ jobs:
         if: always()
         with:
           junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
+          comment_mode: failures
           json_file: kube_results.json
           json_test_case_results: true
           check_name: "Kube Test Results"
@@ -1058,6 +1068,7 @@ jobs:
           name: Platform Kubernetes E2E Test Report
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
@@ -1188,6 +1199,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ env.PAT }}
 
       - uses: actions/setup-java@v1
         with:
@@ -1285,6 +1297,7 @@ jobs:
           name: Platform Helm E2E Test Report
           path: "./*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
       - uses: actions/upload-artifact@v2
         if: failure()
