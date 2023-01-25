@@ -179,7 +179,7 @@ airbyte:
       max-attempts: ${SYNC_JOB_MAX_ATTEMPTS:3}
       max-timeout: ${SYNC_JOB_MAX_TIMEOUT_DAYS:3}
     notify:
-      enabled: ${SHOULD_RUN_NOTIFY_WORKFLOWS:false}
+      enabled: ${SHOULD_RUN_NOTIFY_WORKFLOWS:true}
       max-workers: ${MAX_NOTIFY_WORKERS:5}
   role: ${AIRBYTE_ROLE:}
   secret:

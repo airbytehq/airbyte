@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.notification.SlackNotificationClient;
 import java.io.IOException;
 import java.util.UUID;
@@ -29,8 +30,9 @@ class NotifySchemaChangeActivityTest {
   void testNotifySchemaChange() throws IOException, InterruptedException {
     UUID connectionId = UUID.randomUUID();
     boolean isBreaking = false;
-    notifySchemaChangeActivity.notifySchemaChange(mNotificationClient, connectionId, isBreaking);
-    verify(mNotificationClient, times(1)).notifySchemaChange(connectionId, isBreaking);
+    SlackNotificationConfiguration config = new SlackNotificationConfiguration();
+    notifySchemaChangeActivity.notifySchemaChange(connectionId, isBreaking, config);
+    verify(mNotificationClient, times(1)).notifySchemaChange(connectionId, isBreaking, config);
   }
 
 }

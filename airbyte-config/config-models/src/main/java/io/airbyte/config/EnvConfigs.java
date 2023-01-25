@@ -1042,7 +1042,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public boolean shouldRunNotifyWorkflows() {
-    return getEnvOrDefault(SHOULD_RUN_NOTIFY_WORKFLOWS, false);
+    return getEnvOrDefault(SHOULD_RUN_NOTIFY_WORKFLOWS, true);
   }
 
   // Worker - Data plane

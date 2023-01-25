@@ -6,11 +6,8 @@ package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
-import io.airbyte.config.Notification;
-import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.notification.SlackNotificationClient;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
@@ -46,12 +43,7 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
       final Optional<SlackNotificationConfiguration> slackConfig = slackConfigActivity.fetchSlackConfiguration(connectionId);
       log.info("slack config is: " + slackConfig);
       if (slackConfig.isPresent() && breakingChange.isPresent()) {
-        final Notification notification =
-            new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
-                .withSlackConfiguration(slackConfig.get());
-        log.info("notification: " + notification);
-        final SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
-        return notifySchemaChangeActivity.notifySchemaChange(notificationClient, connectionId, breakingChange.get());
+        return notifySchemaChangeActivity.notifySchemaChange(connectionId, breakingChange.get(), slackConfig.get());
       } else {
         return false;
       }
