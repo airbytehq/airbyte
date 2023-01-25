@@ -11,7 +11,7 @@
     "livemode": {
       "type": ["null", "boolean"]
     },
-    "start": {
+    "start_date": {
       "type": ["null", "integer"]
     },
     "items": {
