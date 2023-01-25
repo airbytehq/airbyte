@@ -14,6 +14,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.streams import AvailabilityStrategy
+
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.datetime import DateTime
 from requests.auth import AuthBase
@@ -39,6 +41,10 @@ class TwilioStream(HttpStream, ABC):
         :return list of changeable fields that should be removed from the records
         """
         return []
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, **kwargs):
         return f"{self.name.title()}.json"
