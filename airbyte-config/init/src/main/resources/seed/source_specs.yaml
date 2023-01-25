@@ -280,7 +280,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.35"
+- dockerImage: "airbyte/source-alloydb:1.0.36"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -508,6 +508,7 @@
             - "method"
             - "replication_slot"
             - "publication"
+            additionalProperties: true
             properties:
               method:
                 type: "string"
@@ -552,6 +553,19 @@
                 order: 5
                 min: 120
                 max: 1200
+              lsn_commit_behaviour:
+                type: "string"
+                title: "LSN commit behaviour"
+                description: "Determines when Airbtye should flush the LSN of processed\
+                  \ WAL logs in the source database. `After loading Data in the destination`\
+                  \ is default. If `While reading Data` is selected, in case of a\
+                  \ downstream failure (while loading data into the destination),\
+                  \ next sync would result in a full sync."
+                enum:
+                - "While reading Data"
+                - "After loading Data in the destination"
+                default: "After loading Data in the destination"
+                order: 6
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -8988,7 +9002,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.19"
+- dockerImage: "airbyte/source-mysql:1.0.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -12646,7 +12660,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.29"
+- dockerImage: "airbyte/source-s3:0.1.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12855,14 +12869,10 @@
                 - "infer"
                 - "error"
                 order: 1
-                allOf:
-                - title: "UnexpectedFieldBehaviorEnum"
-                  description: "An enumeration."
-                  enum:
-                  - "ignore"
-                  - "infer"
-                  - "error"
-                  type: "string"
+                enum:
+                - "ignore"
+                - "infer"
+                - "error"
               block_size:
                 title: "Block Size"
                 description: "The chunk size in bytes to process at a time in memory\
@@ -13222,7 +13232,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.16"
+- dockerImage: "airbyte/source-sendgrid:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sendgrid"
     connectionSpecification:
@@ -13242,9 +13252,7 @@
           order: 0
         start_time:
           title: "Start time"
-          type:
-          - "integer"
-          - "string"
+          type: "string"
           description: "Start time in ISO8601 format. Any data before this time point\
             \ will not be replicated."
           examples:
