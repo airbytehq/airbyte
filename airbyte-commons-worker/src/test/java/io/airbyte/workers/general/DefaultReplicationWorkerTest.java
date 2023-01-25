@@ -11,10 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +40,6 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
-import io.airbyte.protocol.models.AirbyteLogMessage.Level;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
@@ -152,7 +149,6 @@ class DefaultReplicationWorkerTest {
     MDC.clear();
   }
 
-
   @Test
   void testSourceNonZeroExitValue() throws Exception {
     when(source.getExitValue()).thenReturn(1);
@@ -193,8 +189,6 @@ class DefaultReplicationWorkerTest {
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE) && f.getStacktrace().contains(SOURCE_ERROR_MESSAGE)));
   }
-
-
 
   @Test
   void testSourceConfigPersistError() throws Exception {
