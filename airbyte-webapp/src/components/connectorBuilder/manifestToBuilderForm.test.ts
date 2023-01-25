@@ -196,6 +196,39 @@ describe("Conversion throws error when", () => {
     };
     expect(convert).toThrow("api_token value must be of the form {{ config[");
   });
+
+  it("manifest has an OAuthAuthenticator with a refresh_request_body containing nested objects", () => {
+    const convert = () => {
+      const manifest: ConnectorManifest = {
+        ...baseManifest,
+        streams: [
+          merge({}, stream1, {
+            retriever: {
+              requester: {
+                authenticator: {
+                  type: "OAuthAuthenticator",
+                  client_id: "{{ config['client_id'] }}",
+                  client_secret: "{{ config['client_secret'] }}",
+                  refresh_token: "{{ config['client_refresh_token'] }}",
+                  refresh_request_body: {
+                    key1: "val1",
+                    key2: {
+                      a: 1,
+                      b: 2,
+                    },
+                  },
+                  token_refresh_endpoint: "https://api.com/refresh_token",
+                  grant_type: "client_credentials",
+                },
+              },
+            },
+          }),
+        ],
+      };
+      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    };
+    expect(convert).toThrow("OAuthAuthenticator contains a refresh_request_body with nested objects or arrays");
+  });
 });
 
 describe("Conversion successfully results in", () => {
