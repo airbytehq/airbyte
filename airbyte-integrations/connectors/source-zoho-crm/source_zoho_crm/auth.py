@@ -32,4 +32,4 @@ class ZohoOauth2Authenticator(Oauth2Authenticator):
             response_json = response.json()
             return response_json[self.access_token_name], response_json[self.expires_in_name]
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            raise Exception(f"Error while refreshing access token: {response_json} ") from e
