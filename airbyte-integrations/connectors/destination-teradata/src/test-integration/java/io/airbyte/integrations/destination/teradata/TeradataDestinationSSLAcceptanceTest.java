@@ -35,14 +35,12 @@ import org.slf4j.LoggerFactory;
 
 public class TeradataDestinationSSLAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationAcceptanceTest.class);
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   private JsonNode configJson;
   private JdbcDatabase database;
   private DataSource dataSource;
   private TeradataDestination destination = new TeradataDestination();
-  private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
   @Override
   protected String getImageName() {
@@ -56,8 +54,6 @@ public class TeradataDestinationSSLAcceptanceTest extends JdbcDestinationAccepta
 
   public JsonNode getStaticConfig() throws Exception {
     final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/sslconfig.json")));
-    ((ObjectNode) config).put("ssl", true);
-    ((ObjectNode) config).put("sslmode", "require");
     return config;
   }
 
