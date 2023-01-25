@@ -21,14 +21,11 @@ The schema of a requester object is:
     type: object
     additionalProperties: true
     required:
-      - name
       - url_base
       - path
     properties:
       "$parameters":
         "$ref": "#/definitions/$parameters"
-      name:
-        type: string
       url_base:
         type: string
         description: "base url"

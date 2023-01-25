@@ -533,7 +533,7 @@ class ModelToComponentFactory:
         )
 
         return HttpRequester(
-            name=model.name,
+            name=model.parameters.get("name", "") if model.parameters else "",
             url_base=model.url_base,
             path=model.path,
             authenticator=authenticator,
@@ -698,9 +698,9 @@ class ModelToComponentFactory:
 
         if self._limit_slices_fetched:
             return SimpleRetrieverTestReadDecorator(
-                name=model.name,
+                name=model.parameters.get("name", ""),
                 paginator=paginator,
-                primary_key=model.primary_key.__root__ if model.primary_key else None,
+                primary_key=model.parameters.get("primary_key"),
                 requester=requester,
                 record_selector=record_selector,
                 stream_slicer=stream_slicer,
@@ -709,9 +709,9 @@ class ModelToComponentFactory:
                 parameters=model.parameters,
             )
         return SimpleRetriever(
-            name=model.name,
+            name=model.parameters.get("name", ""),
             paginator=paginator,
-            primary_key=model.primary_key.__root__ if model.primary_key else None,
+            primary_key=model.parameters.get("primary_key"),
             requester=requester,
             record_selector=record_selector,
             stream_slicer=stream_slicer,

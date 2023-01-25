@@ -398,7 +398,6 @@ class CompositeErrorHandler(BaseModel):
 
 class HttpRequester(BaseModel):
     type: Literal["HttpRequester"]
-    name: str
     path: str
     url_base: str
     authenticator: Optional[
@@ -486,9 +485,7 @@ class SimpleRetriever(BaseModel):
     type: Literal["SimpleRetriever"]
     record_selector: RecordSelector
     requester: Union[CustomRequester, HttpRequester]
-    name: Optional[str] = ""
     paginator: Optional[Union[DefaultPaginator, NoPagination]] = None
-    primary_key: Optional[PrimaryKey] = None
     stream_slicer: Optional[
         Union[
             CartesianProductStreamSlicer,

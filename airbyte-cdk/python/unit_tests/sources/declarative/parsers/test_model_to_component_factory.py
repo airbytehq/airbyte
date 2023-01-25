@@ -108,7 +108,6 @@ metadata_paginator:
       page_size: 10
 requester:
   type: HttpRequester
-  name: "{{ parameters['name'] }}"
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
@@ -201,8 +200,8 @@ spec:
     assert add_fields.fields[0].value.string == "{{ response.to_add }}"
 
     assert isinstance(stream.retriever, SimpleRetriever)
-    assert stream.retriever.primary_key == "{{ parameters['primary_key'] }}"
-    assert stream.retriever.name == "lists"
+    assert stream.retriever.primary_key == stream.primary_key
+    assert stream.retriever.name == stream.name
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
 
@@ -229,6 +228,7 @@ spec:
 
     assert isinstance(stream.retriever.requester, HttpRequester)
     assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester.name == stream.name
     assert stream.retriever.requester.path.string == "{{ next_page_token['next_page_url'] }}"
     assert stream.retriever.requester.path.default == "{{ next_page_token['next_page_url'] }}"
 
@@ -338,7 +338,6 @@ def test_create_substream_slicer():
       name: "{{ parameters['stream_name'] }}"
     retriever:
       requester:
-        name: "{{ parameters['name'] }}"
         type: "HttpRequester"
         path: "kek"
       record_selector:
@@ -694,6 +693,8 @@ def test_config_with_defaults():
     assert stream.primary_key == "id"
     assert stream.name == "lists"
     assert isinstance(stream.retriever, SimpleRetriever)
+    assert stream.retriever.name == stream.name
+    assert stream.retriever.primary_key == stream.primary_key
 
     assert isinstance(stream.schema_loader, JsonFileSchemaLoader)
     assert stream.schema_loader.file_path.string == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
@@ -849,13 +850,11 @@ def test_custom_components_do_not_contain_extra_fields():
                     "primary_key": "id",
                     "retriever": {
                         "type": "SimpleRetriever",
-                        "name": "a_parent",
-                        "primary_key": "id",
                         "record_selector": {
                             "type": "RecordSelector",
                             "extractor": {"type": "DpathExtractor", "field_path": []},
                         },
-                        "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
+                        "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "some"},
                     },
                     "schema_loader": {
                         "type": "JsonFileSchemaLoader",
@@ -897,13 +896,11 @@ def test_parse_custom_component_fields_if_subcomponent():
                     "primary_key": "id",
                     "retriever": {
                         "type": "SimpleRetriever",
-                        "name": "a_parent",
-                        "primary_key": "id",
                         "record_selector": {
                             "type": "RecordSelector",
                             "extractor": {"type": "DpathExtractor", "field_path": []},
                         },
-                        "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
+                        "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "some"},
                     },
                     "schema_loader": {
                         "type": "JsonFileSchemaLoader",
@@ -1032,11 +1029,8 @@ class TestCreateTransformations:
             "primary_key": [],
             "retriever": {
                 "type": "SimpleRetriever",
-                "name": "test",
-                "primary_key": [],
                 "requester": {
                     "type": "HttpRequester",
-                    "name": "test",
                     "url_base": "http://localhost:6767/",
                     "path": "items/",
                     "request_options_provider": {
