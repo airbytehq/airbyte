@@ -50,6 +50,8 @@ definitions:
       type: DefaultPaginator
       pagination_strategy:
         type: "CursorPagination"
+        # next_offset parameter returns as list of strings, e.g. ["123", "456"]
+        # tojson() transforms it to string to obtain only 1 parameter in request, e.g. ?offset="["123", "456"]"
         cursor_value: "{{ response.get('next_offset')|tojson() }}"
         stop_condition: "{{ not response.next_offset }}"
         page_size_option:
