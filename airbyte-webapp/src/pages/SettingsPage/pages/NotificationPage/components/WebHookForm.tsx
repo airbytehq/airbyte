@@ -76,18 +76,22 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
       }
     }
     if (action === WebhookAction.Save) {
-      switch (await testWebhookAction(data)) {
-        case true: {
-          await updateWebhook(data);
-          break;
-        }
-        case false: {
-          registerNotification({
-            id: "settings.webhook.save.failed",
-            text: formatMessage({ id: "settings.webhook.save.failed" }),
-            type: ToastType.ERROR,
-          });
-          break;
+      if (data.webhook === "") {
+        await updateWebhook(data);
+      } else {
+        switch (await testWebhookAction(data)) {
+          case true: {
+            await updateWebhook(data);
+            break;
+          }
+          case false: {
+            registerNotification({
+              id: "settings.webhook.save.failed",
+              text: formatMessage({ id: "settings.webhook.save.failed" }),
+              type: ToastType.ERROR,
+            });
+            break;
+          }
         }
       }
     }
