@@ -1,4 +1,5 @@
 @use "scss/colors";
+@use "scss/variables" as vars;
 
 .container {
   min-height: 100vh;
@@ -8,4 +9,13 @@
 
 .content {
   padding: 0 35px;
+}
+
+.requestContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: vars.$spacing-lg;
+  justify-content: center;
+  height: 80vh;
 }

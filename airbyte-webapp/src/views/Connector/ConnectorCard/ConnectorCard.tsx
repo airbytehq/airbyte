@@ -25,13 +25,13 @@ import {
   ConnectorFormValues,
 } from "views/Connector/ConnectorForm";
 
-import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
-import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
-import { FetchingConnectorError } from "../ConnectorForm/components/TestingConnectionError";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import styles from "./ConnectorCard.module.scss";
 import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
 import { useTestConnector } from "./useTestConnector";
+import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
+import { FetchingConnectorError } from "../ConnectorForm/components/TestingConnectionError";
 
 // TODO: need to clean up the ConnectorCard and ConnectorForm props,
 // since some of props are used in both components, and some of them used just as a prop-drill
@@ -90,7 +90,8 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [logsVisible, setLogsVisible] = useState(false);
 
-  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
+  const { setDocumentationUrl, setDocumentationPanelOpen, setSelectedConnectorDefinition } =
+    useDocumentationPanelContext();
   const {
     testConnector,
     isTestConnectionInProgress,
@@ -132,11 +133,13 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 
     setDocumentationUrl(selectedConnectorDefinition?.documentationUrl ?? "");
     setDocumentationPanelOpen(true);
+    setSelectedConnectorDefinition(selectedConnectorDefinition);
   }, [
     selectedConnectorDefinitionSpecification,
     selectedConnectorDefinition,
     setDocumentationPanelOpen,
     setDocumentationUrl,
+    setSelectedConnectorDefinition,
   ]);
 
   const handleTestConnector: ConnectorFormProps["testConnector"] = (v) => {

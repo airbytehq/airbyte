@@ -10,8 +10,8 @@ import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
 import { ConnectorForm, ConnectorFormProps } from "views/Connector/ConnectorForm";
 
-import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorFormValues } from "./types";
+import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
 jest.mock("components/ui/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
@@ -29,6 +29,8 @@ jest.mock("../ConnectorDocumentationLayout/DocumentationPanelContext", () => {
     documentationUrl: "",
     setDocumentationPanelOpen: emptyFn,
     setDocumentationUrl: emptyFn,
+    selectedConnectorDefinition: {} as ConnectorDefinition,
+    setSelectedConnectorDefinition: emptyFn,
   });
 
   return {

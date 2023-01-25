@@ -6,6 +6,7 @@ export const enum Namespace {
   ONBOARDING = "Onboarding",
   USER = "User",
   CREDITS = "Credits",
+  SCHEMA = "Schema",
 }
 
 export const enum Action {
