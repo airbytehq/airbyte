@@ -432,9 +432,8 @@ public class SchedulerHandler {
       }
       updateObject.status(connectionStatus);
       connectionsHandler.updateConnection(updateObject);
-      if (!diff.getTransforms().isEmpty()) {
+      if (!diff.getTransforms().isEmpty() && connectionRead.getNotifySchemaChanges()) {
         try {
-          log.info("sending schema change notification");
           notificationWorkflow.sendSchemaChangeNotification(connectionRead.getConnectionId());
         } catch (ApiException | InterruptedException e) {
           log.error("There was an error while sending a Schema Change Notification", e);
