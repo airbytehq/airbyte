@@ -59,6 +59,7 @@ dependencies {
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-commons-server')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:init')

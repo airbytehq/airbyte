@@ -10,7 +10,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.client.generated.AttemptApi;
+import io.airbyte.api.client.generated.StateApi;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.client.model.generated.ConnectionState;
+import io.airbyte.api.client.model.generated.ConnectionStateType;
+import io.airbyte.api.client.model.generated.SaveAttemptSyncConfigRequestBody;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.server.converters.ApiPojoConverters;
 import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
@@ -22,11 +31,8 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
-import io.airbyte.config.StateType;
-import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.Job;
@@ -38,7 +44,6 @@ import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.G
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +53,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class GenerateInputActivityTest {
 
+  static private AttemptApi attemptApi;
   static private JobPersistence jobPersistence;
   static private ConfigRepository configRepository;
   static private GenerateInputActivityImpl generateInputActivity;
@@ -64,12 +70,14 @@ class GenerateInputActivityTest {
   static private final UUID CONNECTION_ID = UUID.randomUUID();
 
   @BeforeEach
-  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
-    final StatePersistence statePersistence = mock(StatePersistence.class);
+  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+    final StateApi stateApi = mock(StateApi.class);
+    final FeatureFlags featureFlags = mock(FeatureFlags.class);
 
+    attemptApi = mock(AttemptApi.class);
     jobPersistence = mock(JobPersistence.class);
     configRepository = mock(ConfigRepository.class);
-    generateInputActivity = new GenerateInputActivityImpl(jobPersistence, statePersistence, configRepository);
+    generateInputActivity = new GenerateInputActivityImpl(jobPersistence, configRepository, stateApi, attemptApi, featureFlags);
 
     job = mock(Job.class);
 
@@ -89,12 +97,14 @@ class GenerateInputActivityTest {
         .withDestinationId(DESTINATION_ID);
     when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(standardSync);
 
-    when(statePersistence.getCurrentState(CONNECTION_ID)).thenReturn(
-        Optional.ofNullable(new StateWrapper().withStateType(StateType.LEGACY).withLegacyState(STATE.getState())));
+    when(stateApi.getState(new ConnectionIdRequestBody().connectionId(CONNECTION_ID)))
+        .thenReturn(new ConnectionState()
+            .stateType(ConnectionStateType.LEGACY)
+            .state(STATE.getState()));
   }
 
   @Test
-  void testGetSyncWorkflowInput() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testGetSyncWorkflowInput() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     final SyncInput syncInput = new SyncInput(ATTEMPT_ID, JOB_ID);
 
     final SourceConnection sourceConnection = new SourceConnection()
@@ -153,11 +163,14 @@ class GenerateInputActivityTest {
         .withDestinationConfiguration(DESTINATION_CONFIGURATION)
         .withState(STATE);
 
-    verify(jobPersistence).writeAttemptSyncConfig(JOB_ID, ATTEMPT_ID, expectedAttemptSyncConfig);
+    verify(attemptApi).saveSyncConfig(new SaveAttemptSyncConfigRequestBody()
+        .jobId(JOB_ID)
+        .attemptNumber(ATTEMPT_ID)
+        .syncConfig(ApiPojoConverters.attemptSyncConfigToClient(expectedAttemptSyncConfig, CONNECTION_ID, true)));
   }
 
   @Test
-  void testGetResetSyncWorkflowInput() throws IOException {
+  void testGetResetSyncWorkflowInput() throws IOException, ApiException {
     final SyncInput syncInput = new SyncInput(ATTEMPT_ID, JOB_ID);
 
     final JobResetConnectionConfig jobResetConfig = new JobResetConnectionConfig()
@@ -210,7 +223,10 @@ class GenerateInputActivityTest {
         .withDestinationConfiguration(DESTINATION_CONFIGURATION)
         .withState(STATE);
 
-    verify(jobPersistence).writeAttemptSyncConfig(JOB_ID, ATTEMPT_ID, expectedAttemptSyncConfig);
+    verify(attemptApi).saveSyncConfig(new SaveAttemptSyncConfigRequestBody()
+        .jobId(JOB_ID)
+        .attemptNumber(ATTEMPT_ID)
+        .syncConfig(ApiPojoConverters.attemptSyncConfigToClient(expectedAttemptSyncConfig, CONNECTION_ID, true)));
   }
 
 }

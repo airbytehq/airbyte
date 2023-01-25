@@ -5,6 +5,7 @@
 package io.airbyte.commons.server.converters;
 
 import io.airbyte.api.model.generated.ActorDefinitionResourceRequirements;
+import io.airbyte.api.model.generated.AttemptSyncConfig;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleData;
@@ -22,6 +23,12 @@ import io.airbyte.commons.server.handlers.helpers.CatalogConverter;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.State;
+import io.airbyte.config.StateWrapper;
+import io.airbyte.config.helpers.StateMessageHelper;
+import io.airbyte.workers.helper.StateConverter;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ApiPojoConverters {
@@ -40,6 +47,36 @@ public class ApiPojoConverters {
                     .withJobType(toInternalJobType(jobSpecific.getJobType()))
                     .withResourceRequirements(resourceRequirementsToInternal(jobSpecific.getResourceRequirements())))
                 .collect(Collectors.toList()));
+  }
+
+  public static io.airbyte.config.AttemptSyncConfig attemptSyncConfigToInternal(final AttemptSyncConfig attemptSyncConfig) {
+    if (attemptSyncConfig == null) {
+      return null;
+    }
+    final StateWrapper stateWrapper = StateConverter.toInternal(attemptSyncConfig.getState());
+    final io.airbyte.config.State state = StateMessageHelper.getState(stateWrapper);
+
+    return new io.airbyte.config.AttemptSyncConfig()
+        .withSourceConfiguration(attemptSyncConfig.getSourceConfiguration())
+        .withDestinationConfiguration(attemptSyncConfig.getDestinationConfiguration())
+        .withState(state);
+  }
+
+  public static io.airbyte.api.client.model.generated.AttemptSyncConfig attemptSyncConfigToClient(final io.airbyte.config.AttemptSyncConfig attemptSyncConfig,
+                                                                                                  final UUID connectionId,
+                                                                                                  final boolean useStreamCapableState) {
+    if (attemptSyncConfig == null) {
+      return null;
+    }
+
+    final State state = attemptSyncConfig.getState();
+    final Optional<StateWrapper> optStateWrapper = state != null ? StateMessageHelper.getTypedState(
+        state.getState(), useStreamCapableState) : Optional.empty();
+
+    return new io.airbyte.api.client.model.generated.AttemptSyncConfig()
+        .sourceConfiguration(attemptSyncConfig.getSourceConfiguration())
+        .destinationConfiguration(attemptSyncConfig.getDestinationConfiguration())
+        .state(StateConverter.toClient(connectionId, optStateWrapper.orElse(null)));
   }
 
   public static ActorDefinitionResourceRequirements actorDefResourceReqsToApi(final io.airbyte.config.ActorDefinitionResourceRequirements actorDefResourceReqs) {

@@ -9,8 +9,16 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.AttemptApi;
+import io.airbyte.api.client.generated.StateApi;
+import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.client.model.generated.ConnectionState;
+import io.airbyte.api.client.model.generated.SaveAttemptSyncConfigRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.server.converters.ApiPojoConverters;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
@@ -25,41 +33,59 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
+import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.helper.StateConverter;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
 public class GenerateInputActivityImpl implements GenerateInputActivity {
 
-  private final StatePersistence statePersistence;
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
+  private final AttemptApi attemptApi;
+  private final StateApi stateApi;
+  private final FeatureFlags featureFlags;
 
   public GenerateInputActivityImpl(final JobPersistence jobPersistence,
-                                   final StatePersistence statePersistence,
-                                   final ConfigRepository configRepository) {
+                                   final ConfigRepository configRepository,
+                                   final StateApi stateApi,
+                                   final AttemptApi attemptApi,
+                                   final FeatureFlags featureFlags) {
     this.jobPersistence = jobPersistence;
-    this.statePersistence = statePersistence;
     this.configRepository = configRepository;
+    this.stateApi = stateApi;
+    this.attemptApi = attemptApi;
+    this.featureFlags = featureFlags;
   }
 
-  private Optional<State> getCurrentConnectionState(final UUID connectionId) throws IOException {
-    return statePersistence.getCurrentState(connectionId).map(StateMessageHelper::getState);
+  private State getCurrentConnectionState(final UUID connectionId) {
+    final ConnectionState state = AirbyteApiClient.retryWithJitter(
+        () -> stateApi.getState(new ConnectionIdRequestBody().connectionId(connectionId)),
+        "get state");
+    final StateWrapper internalState = StateConverter.clientToInternal(state);
+    return StateMessageHelper.getState(internalState);
+  }
+
+  private void saveAttemptSyncConfig(final long jobId, final int attemptNumber, final UUID connectionId, final AttemptSyncConfig attemptSyncConfig) {
+    AirbyteApiClient.retryWithJitter(
+        () -> attemptApi.saveSyncConfig(new SaveAttemptSyncConfigRequestBody()
+            .jobId(jobId)
+            .attemptNumber(attemptNumber)
+            .syncConfig(ApiPojoConverters.attemptSyncConfigToClient(attemptSyncConfig, connectionId, featureFlags.useStreamCapableState()))),
+        "update attempt sync config");
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -78,7 +104,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
       final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig();
-      getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::withState);
+      attemptSyncConfig.withState(getCurrentConnectionState(connectionId));
 
       if (ConfigType.SYNC.equals(jobConfigType)) {
         config = job.getConfig().getSync();
@@ -163,7 +189,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withDestinationResourceRequirements(config.getDestinationResourceRequirements())
           .withWorkspaceId(config.getWorkspaceId());
 
-      jobPersistence.writeAttemptSyncConfig(jobId, attempt, attemptSyncConfig);
+      saveAttemptSyncConfig(jobId, attempt, connectionId, attemptSyncConfig);
 
       return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
