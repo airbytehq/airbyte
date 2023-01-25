@@ -10,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.sources.streams import AvailabilityStrategy
 
 
 class RechargeStream(HttpStream, ABC):
@@ -27,6 +28,10 @@ class RechargeStream(HttpStream, ABC):
     @property
     def data_path(self):
         return self.name
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
