@@ -65,7 +65,7 @@ def table_schema() -> str:
             # with Decimal data type enabled
             "column5": {"type": ["null", "string"], "airbyte_type": "big_number"},
             "column6": {"type": "array", "items": {"type": ["null", "integer"]}},
-            "column7": {"type": ["null", "integer"]},
+            "column7": {"type": ["null", "boolean"]},
         },
     }
     return schema
