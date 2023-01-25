@@ -10,6 +10,7 @@ import Indicator from "components/Indicator";
 import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 import { Text } from "components/ui/Text";
+import { TextWithHTML } from "components/ui/TextWithHTML";
 
 import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -66,7 +67,9 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ s
               type="string"
               path={streamFieldPath("urlPath")}
               label="Path URL"
-              tooltip="Path of the endpoint that this stream represents."
+              tooltip={
+                <TextWithHTML text="Path of the API endpoint that this stream represents.<br><br>Do not put sensitive information (e.g. API tokens) into this field - use the Authentication component in the Global Configuration section for this." />
+              }
             />
             <BuilderField
               type="enum"

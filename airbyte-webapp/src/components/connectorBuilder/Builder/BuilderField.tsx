@@ -30,7 +30,7 @@ interface BaseFieldProps {
   // path to the location in the Connector Manifest schema which should be set by this component
   path: string;
   label: string;
-  tooltip?: string;
+  tooltip?: React.ReactNode;
   readOnly?: boolean;
   optional?: boolean;
   pattern?: RegExp;
