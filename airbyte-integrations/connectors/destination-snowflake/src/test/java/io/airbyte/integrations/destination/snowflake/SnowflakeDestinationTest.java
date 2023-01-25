@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -45,6 +47,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -120,6 +123,61 @@ public class SnowflakeDestinationTest {
 
     verify(sqlOperations, times(1)).cleanUpStage(any(), anyString(), anyList());
   }
+
+  @Test
+  public void testSyncWithTableNameAlreadyExistsButNonAccessible() throws Exception {
+    final String errMsg = "'TEXT_SCHEMA_EXCHANGE_RATE' already exists, but current role has no privileges on it.";
+    final JdbcDatabase mockDb = mock(JdbcDatabase.class);
+    doThrow(new SnowflakeSQLException(errMsg)).when(mockDb).execute(anyString());
+
+    final SnowflakeSqlOperations snowflakeSqlOperations = spy(new SnowflakeSqlOperations());
+    ConfigErrorException configErrorException = assertThrows(ConfigErrorException.class,
+        () -> snowflakeSqlOperations.createTableIfNotExists(mockDb, "testSchema", "testTableName"));
+
+    assertEquals(errMsg, configErrorException.getMessage());
+  }
+
+  @Test
+  public void testSyncFailsOnCreateTable() throws Exception {
+    final String errMsg = "Dummy table fail message";
+    final JdbcDatabase mockDb = mock(JdbcDatabase.class);
+    doThrow(new SnowflakeSQLException(errMsg)).when(mockDb).execute(anyString());
+
+    final SnowflakeSqlOperations snowflakeSqlOperations = spy(new SnowflakeSqlOperations());
+    final SnowflakeSQLException snowflakeSQLException = assertThrows(SnowflakeSQLException.class,
+        () -> snowflakeSqlOperations.createTableIfNotExists(mockDb, "testSchema", "testTableName"));
+
+    assertEquals(errMsg, snowflakeSQLException.getMessage());
+  }
+
+  @Test
+  public void testSyncWithStageAlreadyExistsButNonAccessible() throws Exception {
+    final String errMsg = "Stage already exists, but current role has no privileges on it";
+    final JdbcDatabase mockDb = mock(JdbcDatabase.class);
+    doThrow(new SnowflakeSQLException(errMsg)).when(mockDb).execute(anyString());
+
+    final SnowflakeInternalStagingSqlOperations snowflakeSqlOperations =
+        spy(new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer()));
+    ConfigErrorException configErrorException = assertThrows(ConfigErrorException.class,
+        () -> snowflakeSqlOperations.createTableIfNotExists(mockDb, "testSchema", "testTableName"));
+
+    assertEquals(errMsg, configErrorException.getMessage());
+  }
+
+  @Test
+  public void testSyncFailsOnCreateStage() throws Exception {
+    final String errMsg = "Dummy stage failed message";
+    final JdbcDatabase mockDb = mock(JdbcDatabase.class);
+    doThrow(new SnowflakeSQLException(errMsg)).when(mockDb).execute(anyString());
+
+    final SnowflakeInternalStagingSqlOperations snowflakeSqlOperations =
+        spy(new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer()));
+    final SnowflakeSQLException snowflakeSQLException = assertThrows(SnowflakeSQLException.class,
+        () -> snowflakeSqlOperations.createTableIfNotExists(mockDb, "testSchema", "testTableName"));
+
+    assertEquals(errMsg, snowflakeSQLException.getMessage());
+  }
+
 
   @ParameterizedTest
   @MethodSource("destinationTypeToConfig")

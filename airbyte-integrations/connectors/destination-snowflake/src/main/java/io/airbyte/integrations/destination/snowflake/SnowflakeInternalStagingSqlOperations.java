@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,7 +132,16 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
     final String query = getCreateStageQuery(stageName);
     LOGGER.debug("Executing query: {}", query);
-    database.execute(query);
+
+    try {
+      database.execute(query);
+    } catch (SnowflakeSQLException ex){
+      if (ex.getMessage().contains(ALREADY_EXISTS_EXCEPTION_MSG)) {
+        throw new ConfigErrorException(ex.getMessage(), ex);
+      } else {
+        throw ex;
+      }
+    }
   }
 
   /**

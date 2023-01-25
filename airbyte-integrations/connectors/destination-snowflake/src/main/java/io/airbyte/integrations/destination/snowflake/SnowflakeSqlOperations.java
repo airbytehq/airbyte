@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
@@ -15,6 +16,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +24,20 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
   private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
+  protected static final String ALREADY_EXISTS_EXCEPTION_MSG = "already exists";
+
+  @Override
+  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
+    try {
+      database.execute(createTableQuery(database, schemaName, tableName));
+    } catch (SnowflakeSQLException ex){
+      if (ex.getMessage().contains(ALREADY_EXISTS_EXCEPTION_MSG)) {
+        throw new ConfigErrorException(ex.getMessage(), ex);
+      } else {
+        throw ex;
+      }
+    }
+  }
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
