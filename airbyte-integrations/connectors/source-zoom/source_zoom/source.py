@@ -16,4 +16,3 @@ WARNING: Do not modify this file.
 class SourceZoom(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
- 
