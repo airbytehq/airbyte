@@ -3,58 +3,10 @@
 #
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
-import dpath.util
-import requests
-from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-
-
-# TODO: Remove after CDK changes are merged
-@dataclass
-class NestedDpathExtractor(DpathExtractor):
-    """
-    Record extractor that searches a decoded response over a path defined as an array of fields.
-
-    Extends the DpathExtractor to allow for a list of records to be generated from a dpath that points
-    to an array object as first point and iterates over list of records by the rest of path. See the example.
-
-    Example data:
-    ```
-    {
-        "list": [
-            {"item": {
-                "id": "id1",
-                "name": "name1",
-                ...
-                },
-            {"item": {
-                "id": "id2",
-                "name": "name2",
-                ...
-                }
-                ...
-            ...
-        ]
-    }
-    ```
-    """
-
-    def extract_records(self, response: requests.Response) -> List[Record]:
-        response_body = self.decoder.decode(response)
-        if len(self.field_pointer) == 0:
-            extracted = response_body
-        else:
-            pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
-            extracted = dpath.util.values(response_body, pointer)
-        if isinstance(extracted, list):
-            return extracted
-        elif extracted:
-            return [extracted]
-        else:
-            return []
 
 
 @dataclass

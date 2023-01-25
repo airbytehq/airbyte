@@ -4,8 +4,6 @@ definitions:
   nested_selector:
     type: RecordSelector
     extractor:
-      type: CustomRecordExtractor
-      class_name: source_chargebee.components.NestedDpathExtractor
       field_pointer: [ "list", '*', "{{ options.get('name') }}" ]
   custom_field_transformation:
     type: CustomTransformation
@@ -83,7 +81,6 @@ definitions:
     transformations:
       - "*ref(definitions.custom_field_transformation)"
   addon_stream:
-    is_active: "{{ config['product_catalog_version'] == '1.0' }}"
     $ref: "*ref(definitions.base_incremental_stream)"
     $options:
       name: "addon"
