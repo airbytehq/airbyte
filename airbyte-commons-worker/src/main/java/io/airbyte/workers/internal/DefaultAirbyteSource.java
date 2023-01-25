@@ -49,6 +49,10 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Integer exitValue = null;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
+  }
+
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
