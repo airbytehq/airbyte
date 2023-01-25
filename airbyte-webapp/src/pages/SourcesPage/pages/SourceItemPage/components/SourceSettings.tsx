@@ -62,7 +62,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
       <p>
         <FormattedMessage id="tables.affectedConnectionsOnDeletion" values={{ count: connectionsWithSource.length }} />
         {connectionsWithSource.map((connection) => (
-          <b>- {`${connection.name}\n`}</b>
+          - <strong>{`${connection.name}\n`}</strong>
         ))}
       </p>
     );
