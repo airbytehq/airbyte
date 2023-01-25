@@ -5,7 +5,7 @@ acceptance_tests:
     tests:
     - backward_compatibility_tests_config:
         # skip because allOf gets converted into enum
-        disable_for_version: 0.1.28
+        disable_for_version: 0.1.29
       spec_path: integration_tests/spec.json
 
   connection:
