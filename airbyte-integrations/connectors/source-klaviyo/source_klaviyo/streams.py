@@ -10,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.sources.streams import AvailabilityStrategy
 
 
 class KlaviyoStream(HttpStream, ABC):
@@ -26,6 +27,10 @@ class KlaviyoStream(HttpStream, ABC):
         self._api_key = api_key
         transform_function = self.get_custom_transform()
         self.transformer.registerCustomTransform(transform_function)
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def get_custom_transform(self):
         def custom_transform_date_rfc3339(original_value, field_schema):
