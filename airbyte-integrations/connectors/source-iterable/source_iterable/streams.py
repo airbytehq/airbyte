@@ -15,6 +15,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.streams import AvailabilityStrategy
 from pendulum.datetime import DateTime
 from requests import codes
 from requests.exceptions import ChunkedEncodingError
@@ -47,6 +48,10 @@ class IterableStream(HttpStream, ABC):
         """
         :return: Default field name to get data from response
         """
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def check_unauthorized_key(self, response: requests.Response) -> bool:
         if response.status_code == codes.UNAUTHORIZED:
