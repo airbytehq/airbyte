@@ -28,6 +28,7 @@ import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
@@ -91,6 +92,7 @@ class GenerateInputActivityTest {
         .withConfiguration(DESTINATION_CONFIGURATION);
     when(configRepository.getDestinationConnection(DESTINATION_ID)).thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(destinationDefinitionId)).thenReturn(mock(StandardDestinationDefinition.class));
+    when(configRepository.getSourceDefinitionFromSource(SOURCE_ID)).thenReturn(mock(StandardSourceDefinition.class));
 
     final StandardSync standardSync = new StandardSync()
         .withSourceId(SOURCE_ID)
