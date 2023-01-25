@@ -61,6 +61,8 @@ def check_changelog_entry_is_updated(connector: Connector) -> bool:
     Returns:
         bool: Wether a the changelog is up to date.
     """
+    if not check_documentation_file_exists(connector):
+        return False
     with open(connector.documentation_file_path) as f:
         after_changelog = False
         for line in f:
