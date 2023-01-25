@@ -42,7 +42,7 @@ class SourceAirtable(AbstractSource):
 
         Retrieve: Bases, Tables from each Base, generate JSON Schema for each table.
         """
-        auth = self._auth if self._auth else AirtableAuth(config)
+        auth = self._auth or AirtableAuth(config)
         # list all bases available for authenticated account
         for base in AirtableBases(authenticator=auth).read_records(sync_mode=None):
             base_id = base.get("id")

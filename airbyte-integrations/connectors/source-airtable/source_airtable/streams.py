@@ -9,6 +9,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from source_airtable.schema_helpers import SchemaHelpers
 
 URL_BASE: str = "https://api.airtable.com/v0/"
 
@@ -145,7 +146,7 @@ class AirtableStream(HttpStream, ABC):
                 yield {
                     "_airtable_id": record.get("id"),
                     "_airtable_created_time": record.get("createdTime"),
-                    **data,
+                    **{SchemaHelpers.clean_name(k): v for k, v in data.items()},
                 }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:

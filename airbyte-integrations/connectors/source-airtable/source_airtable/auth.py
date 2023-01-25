@@ -21,9 +21,8 @@ class AirtableOAuth(SingleUseRefreshTokenOauth2Authenticator):
         """
         https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-headers
         """
-        config_creds = self._connector_config["credentials"]
         return {
-            "Authorization": BasicHttpAuthenticator(config_creds["client_id"], config_creds["client_secret"]).token,
+            "Authorization": BasicHttpAuthenticator(self.get_client_id(), self.get_client_secret()).token,
             "Content-Type": "application/x-www-form-urlencoded",
         }
 
@@ -48,9 +47,9 @@ class AirtableOAuth(SingleUseRefreshTokenOauth2Authenticator):
 
 
 class AirtableAuth:
-    def __new__(self, config: dict) -> Union[TokenAuthenticator, AirtableOAuth]:
+    def __new__(cls, config: dict) -> Union[TokenAuthenticator, AirtableOAuth]:
         # for old configs with api_key provided
         if "api_key" in config:
-            return TokenAuthenticator(token=config["api_key"])
+            return TokenAuthenticator(token=(config or {}).get("api_key"))
         # for new oauth configs
         return AirtableOAuth(config, "https://airtable.com/oauth2/v1/token")
