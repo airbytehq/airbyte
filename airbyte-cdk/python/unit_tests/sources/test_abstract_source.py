@@ -331,6 +331,57 @@ def test_valid_full_refresh_read_with_slices(mocker):
     assert expected == messages
 
 
+def test_read_full_refresh_with_slices_sends_slice_messages(mocker):
+    """Given the logger is debug and a full refresh, AirbyteMessages are sent for slices"""
+    debug_logger = logging.getLogger("airbyte.debug")
+    debug_logger.setLevel(logging.DEBUG)
+    slices = [{"1": "1"}, {"2": "2"}]
+    stream = MockStream(
+        [({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+        name="s1",
+    )
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+
+    src = MockSource(streams=[stream])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(stream, SyncMode.full_refresh),
+        ]
+    )
+
+    messages = src.read(debug_logger, {}, catalog)
+
+    assert 2 == len(list(filter(lambda message: message.log and message.log.message.startswith("slice:"), messages)))
+
+
+def test_read_incremental_with_slices_sends_slice_messages(mocker):
+    """Given the logger is debug and a incremental, AirbyteMessages are sent for slices"""
+    debug_logger = logging.getLogger("airbyte.debug")
+    debug_logger.setLevel(logging.DEBUG)
+    slices = [{"1": "1"}, {"2": "2"}]
+    stream = MockStream(
+        [({"sync_mode": SyncMode.incremental, "stream_slice": s, 'stream_state': {}}, [s]) for s in slices],
+        name="s1",
+    )
+
+    MockStream.supports_incremental = mocker.PropertyMock(return_value=True)
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+
+    src = MockSource(streams=[stream])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(stream, SyncMode.incremental),
+        ]
+    )
+
+    messages = src.read(debug_logger, {}, catalog)
+
+    assert 2 == len(list(filter(lambda message: message.log and message.log.message.startswith("slice:"), messages)))
+
+
 class TestIncrementalRead:
     @pytest.mark.parametrize(
         "use_legacy",
