@@ -11,9 +11,9 @@ import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { FormikPatch } from "core/form/FormikPatch";
 
-import { BuilderFormInput, BuilderFormValues, getInferredInputs } from "../types";
 import { BuilderField } from "./BuilderField";
 import styles from "./InputsForm.module.scss";
+import { BuilderFormInput, BuilderFormValues, getInferredInputs } from "../types";
 
 const supportedTypes = ["string", "integer", "number", "array", "boolean", "enum", "unknown"] as const;
 

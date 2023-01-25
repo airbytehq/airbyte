@@ -15,11 +15,11 @@ import {
   useConnectorBuilderTestState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import styles from "./YamlEditor.module.scss";
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "../DownloadYamlButton";
 import { convertToBuilderFormValues } from "../manifestToBuilderForm";
 import { convertToManifest } from "../types";
-import styles from "./YamlEditor.module.scss";
 
 interface YamlEditorProps {
   toggleYamlEditor: () => void;

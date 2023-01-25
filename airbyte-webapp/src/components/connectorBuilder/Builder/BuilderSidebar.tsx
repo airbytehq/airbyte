@@ -13,12 +13,12 @@ import { Text } from "components/ui/Text";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { DownloadYamlButton } from "../DownloadYamlButton";
-import { BuilderFormValues, DEFAULT_BUILDER_FORM_VALUES, getInferredInputs } from "../types";
-import { useBuilderErrors } from "../useBuilderErrors";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
 import { UiYamlToggleButton } from "./UiYamlToggleButton";
+import { DownloadYamlButton } from "../DownloadYamlButton";
+import { BuilderFormValues, DEFAULT_BUILDER_FORM_VALUES, getInferredInputs } from "../types";
+import { useBuilderErrors } from "../useBuilderErrors";
 
 interface ViewSelectButtonProps {
   className?: string;

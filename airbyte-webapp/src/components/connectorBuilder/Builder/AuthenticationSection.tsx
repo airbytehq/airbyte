@@ -1,10 +1,10 @@
-import { inferredAuthValues } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { BuilderOptional } from "./BuilderOptional";
 import { KeyValueListField } from "./KeyValueListField";
+import { inferredAuthValues } from "../types";
 
 export const AuthenticationSection: React.FC = () => {
   return (

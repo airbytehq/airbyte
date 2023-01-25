@@ -11,10 +11,10 @@ import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { FormikPatch } from "core/form/FormikPatch";
 
-import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
-import { BuilderStream, DEFAULT_BUILDER_STREAM_VALUES } from "../types";
 import styles from "./AddStreamButton.module.scss";
 import { BuilderField } from "./BuilderField";
+import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
+import { BuilderStream, DEFAULT_BUILDER_STREAM_VALUES } from "../types";
 
 interface AddStreamValues {
   streamName: string;

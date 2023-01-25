@@ -16,8 +16,8 @@ import { useConnectionEditService } from "hooks/services/ConnectionEdit/Connecti
 import { useFreeConnectorProgram } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
 import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
 
-import { ConnectionRoutePaths } from "../types";
 import styles from "./ConnectionPageTitle.module.scss";
+import { ConnectionRoutePaths } from "../types";
 
 export const ConnectionPageTitle: React.FC = () => {
   const params = useParams<{ id: string; "*": ConnectionRoutePaths }>();
