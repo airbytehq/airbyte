@@ -28,7 +28,6 @@ export const CustomTransformationsCard: React.FC<{
     <ConnectionEditFormCard<{ transformations?: OperationRead[] }>
       title={<FormattedMessage id="connection.customTransformations" />}
       collapsible
-      bottomSeparator
       form={{
         initialValues,
         enableReinitialize: true,

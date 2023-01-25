@@ -280,7 +280,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.35"
+- dockerImage: "airbyte/source-alloydb:1.0.36"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -508,6 +508,7 @@
             - "method"
             - "replication_slot"
             - "publication"
+            additionalProperties: true
             properties:
               method:
                 type: "string"
@@ -552,6 +553,19 @@
                 order: 5
                 min: 120
                 max: 1200
+              lsn_commit_behaviour:
+                type: "string"
+                title: "LSN commit behaviour"
+                description: "Determines when Airbtye should flush the LSN of processed\
+                  \ WAL logs in the source database. `After loading Data in the destination`\
+                  \ is default. If `While reading Data` is selected, in case of a\
+                  \ downstream failure (while loading data into the destination),\
+                  \ next sync would result in a full sync."
+                enum:
+                - "While reading Data"
+                - "After loading Data in the destination"
+                default: "After loading Data in the destination"
+                order: 6
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -4732,7 +4746,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:1.0.0"
+- dockerImage: "airbyte/source-gitlab:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -5215,7 +5229,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.7"
+- dockerImage: "airbyte/source-google-ads:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -6648,7 +6662,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-instagram:1.0.0"
+- dockerImage: "airbyte/source-instagram:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/instagram"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/instagram"
@@ -8113,7 +8127,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.27"
+- dockerImage: "airbyte/source-mssql:0.4.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -8272,6 +8286,18 @@
                   \ the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\"\
                   >snapshot isolation mode</a> on the database."
                 order: 2
+              initial_waiting_seconds:
+                type: "integer"
+                title: "Initial Waiting Time in Seconds (Advanced)"
+                description: "The amount of time the connector will wait when it launches\
+                  \ to determine if there is new data to sync or not. Defaults to\
+                  \ 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about\
+                  \ <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"\
+                  >initial waiting time</a>."
+                default: 300
+                min: 120
+                max: 1200
+                order: 3
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -8976,7 +9002,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.19"
+- dockerImage: "airbyte/source-mysql:1.0.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -9374,7 +9400,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-netsuite:0.1.2"
+- dockerImage: "airbyte/source-netsuite:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -11476,7 +11502,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.38"
+- dockerImage: "airbyte/source-postgres:1.0.39"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12634,7 +12660,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.28"
+- dockerImage: "airbyte/source-s3:0.1.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12843,14 +12869,10 @@
                 - "infer"
                 - "error"
                 order: 1
-                allOf:
-                - title: "UnexpectedFieldBehaviorEnum"
-                  description: "An enumeration."
-                  enum:
-                  - "ignore"
-                  - "infer"
-                  - "error"
-                  type: "string"
+                enum:
+                - "ignore"
+                - "infer"
+                - "error"
               block_size:
                 title: "Block Size"
                 description: "The chunk size in bytes to process at a time in memory\
@@ -13210,7 +13232,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.16"
+- dockerImage: "airbyte/source-sendgrid:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sendgrid"
     connectionSpecification:
@@ -13230,9 +13252,7 @@
           order: 0
         start_time:
           title: "Start time"
-          type:
-          - "integer"
-          - "string"
+          type: "string"
           description: "Start time in ISO8601 format. Any data before this time point\
             \ will not be replicated."
           examples:
