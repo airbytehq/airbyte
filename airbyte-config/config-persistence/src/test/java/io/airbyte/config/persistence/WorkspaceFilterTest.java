@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class WorkspaceFilterTest extends BaseConfigDatabaseTest {
+class WorkspaceFilterTest extends BaseConfigDatabaseTest {
 
   private static final UUID SRC_DEF_ID = UUID.randomUUID();
   private static final UUID DST_DEF_ID = UUID.randomUUID();
