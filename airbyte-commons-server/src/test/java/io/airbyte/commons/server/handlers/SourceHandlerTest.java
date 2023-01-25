@@ -48,14 +48,6 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-<<<<<<< HEAD:airbyte-server/src/test/java/io/airbyte/server/handlers/SourceHandlerTest.java
-import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.handlers.helpers.CatalogConverter;
-import io.airbyte.server.helpers.ConnectionHelpers;
-import io.airbyte.server.helpers.ConnectorSpecificationHelpers;
-import io.airbyte.server.helpers.SourceHelpers;
-=======
->>>>>>> origin/master:airbyte-commons-server/src/test/java/io/airbyte/commons/server/handlers/SourceHandlerTest.java
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;

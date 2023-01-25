@@ -33,11 +33,6 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-<<<<<<< HEAD:airbyte-server/src/main/java/io/airbyte/server/handlers/SourceHandler.java
-import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.handlers.helpers.CatalogConverter;
-=======
->>>>>>> origin/master:airbyte-commons-server/src/main/java/io/airbyte/commons/server/handlers/SourceHandler.java
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import jakarta.inject.Inject;

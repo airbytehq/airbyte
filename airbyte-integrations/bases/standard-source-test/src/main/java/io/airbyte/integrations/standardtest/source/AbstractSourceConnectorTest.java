@@ -179,16 +179,11 @@ public abstract class AbstractSourceConnectorTest {
 
   protected UUID runDiscover() throws Exception {
     final UUID toReturn = new DefaultDiscoverCatalogWorker(
-<<<<<<< HEAD
         mAirbyteApiClient,
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false,
-=======
-        mConfigRepository,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), null, false,
->>>>>>> origin/master
             new EnvVariableFeatureFlags()),
-        mConnectorConfigUpdater)
-            .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
+            mConnectorConfigUpdater)
+        .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
             .getDiscoverCatalogId();
     verify(mSourceApi).writeActorCatalogFetchEvent(discoverWriteRequest.capture());
     return toReturn;

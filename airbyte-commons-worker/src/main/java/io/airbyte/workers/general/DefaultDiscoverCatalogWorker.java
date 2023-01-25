@@ -110,7 +110,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
       if (catalog.isPresent()) {
         final DiscoverCatalogResult result =
-            airbyteApiClient.getSourceApi().writeDiscoverCatalogResult(new SourceDiscoverSchemaWriteRequestBody().catalog(
+            AirbyteApiClient.retryWithJitter(()->airbyteApiClient.getSourceApi().writeDiscoverCatalogResult(new SourceDiscoverSchemaWriteRequestBody().catalog(
                 CatalogConverter.toClientApi(catalog.get())).sourceId(
                     // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
                     // it, so we check again here.
@@ -118,7 +118,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
                 .connectorVersion(
                     discoverSchemaInput.getConnectorVersion())
                 .configurationHash(
-                    discoverSchemaInput.getConfigHash()));
+                    discoverSchemaInput.getConfigHash())), "write discover schema result");
         jobOutput.setDiscoverCatalogId(result.getCatalogId());
       } else if (failureReason.isEmpty()) {
         WorkerUtils.throwWorkerException("Integration failed to output a catalog struct and did not output a failure reason", process);
