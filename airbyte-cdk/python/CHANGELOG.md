@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.24.0
+Use dpath.util.values method to parse response with nested lists
+
 ## 0.23.0
 Limiting the number of HTTP requests during a test read
 
