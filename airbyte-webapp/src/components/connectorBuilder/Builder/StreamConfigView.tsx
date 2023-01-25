@@ -231,7 +231,7 @@ const SchemaEditor = ({ streamFieldPath }: { streamFieldPath: (fieldPath: string
             const formattedJson = formatJson(streamRead.data?.inferred_schema, true);
             helpers.setValue(formattedJson);
             analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.OVERWRITE_SCHEMA, {
-              actionDescription: "Declared schema ovewritten by detected schema",
+              actionDescription: "Declared schema overwritten by detected schema",
               stream_name: streams[testStreamIndex]?.name,
             });
           }}

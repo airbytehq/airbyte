@@ -101,7 +101,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
                     onClick={() => {
                       helpers.setValue(formattedSchema);
                       analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.OVERWRITE_SCHEMA, {
-                        actionDescription: "Declared schema ovewritten by detected schema",
+                        actionDescription: "Declared schema overwritten by detected schema",
                         stream_name: streams[testStreamIndex]?.name,
                       });
                     }}
@@ -150,7 +150,7 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
           onClick={() => {
             helpers.setValue(formattedSchema);
             analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.OVERWRITE_SCHEMA, {
-              actionDescription: "Declared schema ovewritten by detected schema",
+              actionDescription: "Declared schema overwritten by detected schema",
               stream_name: streams[testStreamIndex]?.name,
             });
           }}
