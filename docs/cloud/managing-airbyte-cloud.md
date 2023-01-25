@@ -314,7 +314,7 @@ Changes to data residency will not affect any sync in progress.
 
 ## Enroll in the Free Connector Program
 
-By joining the Free Connector Program, you can sync connections with [alpha](https://docs.airbyte.com/project-overview/product-release-stages#alpha) or [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta) connectors at no cost.
+By enrolling the Free Connector Program, you can sync connections with [alpha](https://docs.airbyte.com/project-overview/product-release-stages#alpha) or [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta) connectors at no cost.
 
 Before enrolling in the program, [set up](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-source) at least one alpha or beta connector and verify your email, if prompted.
 
