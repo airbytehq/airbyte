@@ -208,9 +208,9 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
   private static final String AWS_ACCESS_KEY = "AWS_ACCESS_KEY";
   private static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
-  private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.3-r0";
-  private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
-  private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
+  private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.4-r0";
+  private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.35";
+  private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.87.0";
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
   private static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   private static final long DEFAULT_MAX_CHECK_WORKERS = 5;

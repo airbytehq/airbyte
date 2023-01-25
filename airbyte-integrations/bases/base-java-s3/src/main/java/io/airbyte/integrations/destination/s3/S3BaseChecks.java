@@ -120,7 +120,7 @@ public final class S3BaseChecks {
     final var bucketPath = s3Config.getBucketPath();
 
     if (!Strings.isNullOrEmpty(bucketPath)) {
-      storageOperations.createBucketObjectIfNotExists(bucketPath);
+      storageOperations.createBucketIfNotExists();
     }
     s3.putObject(s3Bucket, outputTableName, "check-content");
     testIAMUserHasListObjectPermission(s3, s3Bucket);

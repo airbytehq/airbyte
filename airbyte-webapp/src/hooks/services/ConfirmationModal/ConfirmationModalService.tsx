@@ -63,6 +63,7 @@ export const ConfirmationModalService = ({ children }: { children: React.ReactNo
           extra={state.confirmationModal.extra}
           title={state.confirmationModal.title}
           text={state.confirmationModal.text}
+          textValues={state.confirmationModal.textValues}
           onSubmit={state.confirmationModal.onSubmit}
           submitButtonText={state.confirmationModal.submitButtonText}
           submitButtonDataId={state.confirmationModal.submitButtonDataId}
