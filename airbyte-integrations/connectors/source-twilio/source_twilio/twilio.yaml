@@ -80,6 +80,11 @@ definitions:
     $options:
       name: "outgoing_caller_ids"
       primary_key: "sid"
+  transcriptions_stream:
+    $ref: "*ref(definitions.base_nested_stream)"
+    $options:
+      name: "transcriptions"
+      primary_key: "sid"
 
 streams:
   - "*ref(definitions.accounts_stream)"
@@ -88,6 +93,7 @@ streams:
   - "*ref(definitions.incoming_phone_numbers_stream)"
   - "*ref(definitions.keys_stream)"
   - "*ref(definitions.outgoing_caller_ids_stream)"
+  - "*ref(definitions.transcriptions_stream)"
 
 check:
   stream_names:
