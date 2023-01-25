@@ -8,11 +8,10 @@ from typing import Any, Mapping, Union
 
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class MinMaxDatetime(JsonSchemaMixin):
+class MinMaxDatetime:
     """
     Compares the provided date against optional minimum or maximum times. If date is earlier than
     min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.

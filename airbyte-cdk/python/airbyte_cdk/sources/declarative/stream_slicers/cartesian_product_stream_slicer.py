@@ -10,11 +10,10 @@ from typing import Any, Iterable, List, Mapping, Optional
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CartesianProductStreamSlicer(StreamSlicer, JsonSchemaMixin):
+class CartesianProductStreamSlicer(StreamSlicer):
     """
     Stream slicers that iterates over the cartesian product of input stream slicers
     Given 2 stream slicers with the following slices:

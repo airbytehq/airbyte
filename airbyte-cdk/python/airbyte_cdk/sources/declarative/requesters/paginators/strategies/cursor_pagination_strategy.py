@@ -12,11 +12,10 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import I
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CursorPaginationStrategy(PaginationStrategy, JsonSchemaMixin):
+class CursorPaginationStrategy(PaginationStrategy):
     """
     Pagination strategy that evaluates an interpolated string to define the next page token
 

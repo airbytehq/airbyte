@@ -7,11 +7,10 @@ from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class RecordFilter(JsonSchemaMixin):
+class RecordFilter:
     """
     Filter applied on a list of Records
 

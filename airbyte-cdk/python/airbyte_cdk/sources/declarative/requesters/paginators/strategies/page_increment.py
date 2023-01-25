@@ -7,11 +7,10 @@ from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class PageIncrement(PaginationStrategy, JsonSchemaMixin):
+class PageIncrement(PaginationStrategy):
     """
     Pagination strategy that returns the number of pages reads so far and returns it as the next page token
 

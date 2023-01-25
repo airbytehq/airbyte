@@ -12,11 +12,10 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config, Record
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DpathExtractor(RecordExtractor, JsonSchemaMixin):
+class DpathExtractor(RecordExtractor):
     """
     Record extractor that searches a decoded response over a path defined as an array of fields.
 

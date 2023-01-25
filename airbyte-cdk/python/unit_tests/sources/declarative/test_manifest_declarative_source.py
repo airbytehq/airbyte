@@ -53,27 +53,7 @@ class TestManifestDeclarativeSource:
     def test_valid_manifest(self):
         manifest = {
             "version": "version",
-            "definitions": {
-                "schema_loader": {
-                    "name": "{{ parameters.stream_name }}",
-                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
-                },
-                "retriever": {
-                    "paginator": {
-                        "type": "DefaultPaginator",
-                        "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
-                        "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
-                    },
-                    "requester": {
-                        "path": "/v3/marketing/lists",
-                        "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                        "request_parameters": {"page_size": "{{ 10 }}"},
-                    },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
-                },
-            },
+            "definitions": {},
             "streams": [
                 {
                     "type": "DeclarativeStream",

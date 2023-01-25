@@ -10,11 +10,10 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CheckStream(ConnectionChecker, JsonSchemaMixin):
+class CheckStream(ConnectionChecker):
     """
     Checks the connections by checking availability of one or many streams selected by the developer
 

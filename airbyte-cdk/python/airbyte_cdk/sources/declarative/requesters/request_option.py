@@ -6,8 +6,6 @@ from dataclasses import InitVar, dataclass
 from enum import Enum
 from typing import Any, Mapping, Optional
 
-from dataclasses_jsonschema import JsonSchemaMixin
-
 
 class RequestOptionType(Enum):
     """
@@ -22,7 +20,7 @@ class RequestOptionType(Enum):
 
 
 @dataclass
-class RequestOption(JsonSchemaMixin):
+class RequestOption:
     """
     Describes an option to set on a request
 

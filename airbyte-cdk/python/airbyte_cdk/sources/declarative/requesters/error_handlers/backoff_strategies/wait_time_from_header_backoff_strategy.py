@@ -11,11 +11,10 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
+class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
     """
     Extract wait time from http header
 

@@ -9,11 +9,10 @@ import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ExponentialBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
+class ExponentialBackoffStrategy(BackoffStrategy):
     """
     Backoff strategy with an exponential backoff interval
 

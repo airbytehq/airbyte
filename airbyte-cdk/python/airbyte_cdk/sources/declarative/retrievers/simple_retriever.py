@@ -26,11 +26,10 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
+class SimpleRetriever(Retriever, HttpStream):
     """
     Retrieves records by synchronously sending requests to fetch records.
 

@@ -12,11 +12,10 @@ from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DeclarativeStream(Stream, JsonSchemaMixin):
+class DeclarativeStream(Stream):
     """
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
 

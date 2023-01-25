@@ -9,11 +9,10 @@ import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass(frozen=True)
-class AddedFieldDefinition(JsonSchemaMixin):
+class AddedFieldDefinition:
     """Defines the field to add on a record"""
 
     path: FieldPointer
@@ -22,7 +21,7 @@ class AddedFieldDefinition(JsonSchemaMixin):
 
 
 @dataclass(frozen=True)
-class ParsedAddFieldDefinition(JsonSchemaMixin):
+class ParsedAddFieldDefinition:
     """Defines the field to add on a record"""
 
     path: FieldPointer
@@ -31,7 +30,7 @@ class ParsedAddFieldDefinition(JsonSchemaMixin):
 
 
 @dataclass
-class AddFields(RecordTransformation, JsonSchemaMixin):
+class AddFields(RecordTransformation):
     """
     Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate

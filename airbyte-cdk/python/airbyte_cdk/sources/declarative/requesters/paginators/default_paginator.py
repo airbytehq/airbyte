@@ -13,11 +13,10 @@ from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Pagi
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DefaultPaginator(Paginator, JsonSchemaMixin):
+class DefaultPaginator(Paginator):
     """
     Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 

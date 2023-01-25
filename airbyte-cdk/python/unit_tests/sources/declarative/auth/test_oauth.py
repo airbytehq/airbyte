@@ -87,9 +87,6 @@ class TestOauth2Authenticator:
         mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
         token = oauth.refresh_access_token()
 
-        schem = DeclarativeOauth2Authenticator.json_schema()
-        print(schem)
-
         assert ("access_token", 1000) == token
 
     @pytest.mark.parametrize(
