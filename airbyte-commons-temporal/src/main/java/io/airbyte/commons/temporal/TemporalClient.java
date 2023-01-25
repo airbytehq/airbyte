@@ -58,14 +58,10 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Slf4j
 @Singleton
 public class TemporalClient {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TemporalClient.class);
 
   /**
    * This is used to sleep between 2 temporal queries. The query is needed to ensure that the cancel
@@ -383,11 +379,6 @@ public class TemporalClient {
                                                          final AttemptSyncConfig attemptConfig,
                                                          final UUID connectionId) {
     final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
-
-    // write a 10 iteration for loop
-    for (int i = 0; i < 10; i++) {
-      LOGGER.warn("EXECUTING SUPPOSEDLY DEAD CODE");
-    }
 
     final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
