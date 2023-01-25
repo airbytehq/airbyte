@@ -49,13 +49,13 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        path: "{{ stream_slice.subresource_uris[options.subresource_uri_key or options.name] }}"
+        path: "{{ stream_slice.path }}"
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "*ref(definitions.accounts_stream)"
-            parent_key: subresource_uris
-            stream_slice_field: subresource_uris
+            parent_key: "subresource_uris/{{ options.subresource_uri_key or options.name }}"
+            stream_slice_field: "path"
   addresses_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     $options:
