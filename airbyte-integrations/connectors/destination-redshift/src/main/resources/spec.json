@@ -207,7 +207,7 @@
                   }
                 ]
               },
-              "file_buffer_size": {
+              "file_buffer_count": {
                 "title": "File Buffer Count",
                 "type": "integer",
                 "minimum": 15,
