@@ -82,21 +82,16 @@ DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
-
     spec_cache: ConnectorSpecification = None
     previous_spec_cache: ConnectorSpecification = None
 
-    @pytest.fixture(name="connection_specification", scope="class")
-    def connection_specification_fixture(self, connector_spec_dict: dict) -> dict:
-        return connector_spec_dict["connectionSpecification"]
-
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
-        self,
-        inputs: SpecTestConfig,
-        previous_connector_docker_runner: ConnectorRunner,
-        previous_connector_spec: ConnectorSpecification,
-        actual_connector_spec: ConnectorSpecification,
+            self,
+            inputs: SpecTestConfig,
+            previous_connector_docker_runner: ConnectorRunner,
+            previous_connector_spec: ConnectorSpecification,
+            actual_connector_spec: ConnectorSpecification,
     ) -> bool:
         if actual_connector_spec == previous_connector_spec:
             pytest.skip("The previous and actual specifications are identical.")
@@ -162,7 +157,7 @@ class TestSpec(BaseTest):
         for variant_path in variant_paths:
             top_level_obj = schema_helper.get_node(variant_path[:-1])
             assert (
-                top_level_obj.get("type") == "object"
+                    top_level_obj.get("type") == "object"
             ), f"The top-level definition in a `oneOf` block should have type: object. misconfigured object: {top_level_obj}. {docs_msg}"
 
             variants = schema_helper.get_node(variant_path)
@@ -179,17 +174,17 @@ class TestSpec(BaseTest):
                 if all(["const" in variant["properties"][common_prop] for variant in variants]):
                     const_common_props.add(common_prop)
             assert (
-                len(const_common_props) == 1
+                    len(const_common_props) == 1
             ), f"There should be exactly one common property with 'const' keyword for {oneof_path} subobjects. {docs_msg}"
 
             const_common_prop = const_common_props.pop()
             for n, variant in enumerate(variants):
                 prop_obj = variant["properties"][const_common_prop]
                 assert (
-                    "default" not in prop_obj
+                        "default" not in prop_obj
                 ), f"There should not be 'default' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
                 assert (
-                    "enum" not in prop_obj
+                        "enum" not in prop_obj
                 ), f"There should not be 'enum' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
 
     def test_required(self):
@@ -285,12 +280,12 @@ class TestSpec(BaseTest):
         if len(errors) > 0:
             pytest.fail("\n".join(errors))
 
-    def test_property_type_is_not_array(self, connector_specification: dict):
+    def test_property_type_is_not_array(self, connector_spec: dict):
         """
         Each field has one or multiple types, but the UI only supports a single type and optionally "null" as a second type.
         """
         errors = []
-        for type_path, type_value in dpath.util.search(connector_specification, "**/properties/*/type", yielded=True):
+        for type_path, type_value in dpath.util.search(connector_spec, "**/properties/*/type", yielded=True):
             if isinstance(type_value, List):
                 number_of_types = len(type_value)
                 if number_of_types != 2 and number_of_types != 1:
@@ -303,14 +298,14 @@ class TestSpec(BaseTest):
                     )
         self._fail_on_errors(errors)
 
-    def test_object_not_empty(self, connector_specification: dict):
+    def test_object_not_empty(self, connector_spec: dict):
         """
         Each object field needs to have at least one property as the UI won't be able to show them otherwise.
         If the whole spec is empty, it's allowed to have a single empty object at the top level
         """
-        schema_helper = JsonSchemaHelper(connector_specification)
+        schema_helper = JsonSchemaHelper(connector_spec)
         errors = []
-        for type_path, type_value in dpath.util.search(connector_specification, "**/type", yielded=True):
+        for type_path, type_value in dpath.util.search(connector_spec, "**/type", yielded=True):
             if type_path == "type":
                 # allow empty root object
                 continue
@@ -322,13 +317,13 @@ class TestSpec(BaseTest):
                     )
         self._fail_on_errors(errors)
 
-    def test_array_type(self, connector_specification: dict):
+    def test_array_type(self, connector_spec: dict):
         """
         Each array has one or multiple types for its items, but the UI only supports a single type which can either be object, string or an enum
         """
-        schema_helper = JsonSchemaHelper(connector_specification)
+        schema_helper = JsonSchemaHelper(connector_spec)
         errors = []
-        for type_path, type_type in dpath.util.search(connector_specification, "**/type", yielded=True):
+        for type_path, type_type in dpath.util.search(connector_spec, "**/type", yielded=True):
             property_definition = schema_helper.get_parent(type_path)
             if type_type != "array":
                 # unrelated "items", not an array definition
@@ -342,7 +337,7 @@ class TestSpec(BaseTest):
                 errors.append(f"Items of {type_path} has to be either object or string or define an enum")
         self._fail_on_errors(errors)
 
-    def test_forbidden_complex_types(self, connector_specification: dict):
+    def test_forbidden_complex_types(self, connector_spec: dict):
         """
         not, anyOf, patternProperties, prefixItems, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed
         """
@@ -360,25 +355,25 @@ class TestSpec(BaseTest):
         ]
         found_keys = set()
         for forbidden_key in forbidden_keys:
-            for path, value in dpath.util.search(connector_specification, f"**/{forbidden_key}", yielded=True):
+            for path, value in dpath.util.search(connector_spec, f"**/{forbidden_key}", yielded=True):
                 found_keys.add(path)
 
         for forbidden_key in forbidden_keys:
             # remove forbidden keys if they are used as properties directly
-            for path, _value in dpath.util.search(connector_specification, f"**/properties/{forbidden_key}", yielded=True):
+            for path, _value in dpath.util.search(connector_spec, f"**/properties/{forbidden_key}", yielded=True):
                 found_keys.remove(path)
 
         if len(found_keys) > 0:
             key_list = ", ".join(found_keys)
             pytest.fail(f"Found the following disallowed JSON schema features: {key_list}")
 
-    def test_date_pattern(self, connector_specification: dict, detailed_logger):
+    def test_date_pattern(self, connector_spec: dict, detailed_logger):
         """
         Properties with format date or date-time should always have a pattern defined how the date/date-time should be formatted
         that corresponds with the format the datepicker component is creating.
         """
-        schema_helper = JsonSchemaHelper(connector_specification)
-        for format_path, format in dpath.util.search(connector_specification, "**/format", yielded=True):
+        schema_helper = JsonSchemaHelper(connector_spec)
+        for format_path, format in dpath.util.search(connector_spec, "**/format", yielded=True):
             if not isinstance(format, str):
                 # format is not a format definition here but a property named format
                 continue
@@ -393,12 +388,12 @@ class TestSpec(BaseTest):
                     f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI."
                 )
 
-    def test_date_format(self, connector_specification: dict, detailed_logger):
+    def test_date_format(self, connector_spec: dict, detailed_logger):
         """
         Properties with a pattern that looks like a date should have their format set to date or date-time.
         """
-        schema_helper = JsonSchemaHelper(connector_specification)
-        for pattern_path, pattern in dpath.util.search(connector_specification, "**/pattern", yielded=True):
+        schema_helper = JsonSchemaHelper(connector_spec)
+        for pattern_path, pattern in dpath.util.search(connector_spec, "**/pattern", yielded=True):
             if not isinstance(pattern, str):
                 # pattern is not a pattern definition here but a property named pattern
                 continue
@@ -447,11 +442,11 @@ class TestSpec(BaseTest):
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
-        self,
-        skip_backward_compatibility_tests: bool,
-        actual_connector_spec: ConnectorSpecification,
-        previous_connector_spec: ConnectorSpecification,
-        number_of_configs_to_generate: int = 100,
+            self,
+            skip_backward_compatibility_tests: bool,
+            actual_connector_spec: ConnectorSpecification,
+            previous_connector_spec: ConnectorSpecification,
+            number_of_configs_to_generate: int = 100,
     ):
         """Check if the current spec is backward_compatible with the previous one"""
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
@@ -501,11 +496,11 @@ class TestConnection(BaseTest):
 class TestDiscovery(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
-        self,
-        inputs: DiscoveryTestConfig,
-        previous_connector_docker_runner: ConnectorRunner,
-        discovered_catalog: MutableMapping[str, AirbyteStream],
-        previous_discovered_catalog: MutableMapping[str, AirbyteStream],
+            self,
+            inputs: DiscoveryTestConfig,
+            previous_connector_docker_runner: ConnectorRunner,
+            discovered_catalog: MutableMapping[str, AirbyteStream],
+            previous_discovered_catalog: MutableMapping[str, AirbyteStream],
     ) -> bool:
         if discovered_catalog == previous_discovered_catalog:
             pytest.skip("The previous and actual discovered catalogs are identical.")
@@ -595,10 +590,10 @@ class TestDiscovery(BaseTest):
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
-        self,
-        skip_backward_compatibility_tests: bool,
-        discovered_catalog: MutableMapping[str, AirbyteStream],
-        previous_discovered_catalog: MutableMapping[str, AirbyteStream],
+            self,
+            skip_backward_compatibility_tests: bool,
+            discovered_catalog: MutableMapping[str, AirbyteStream],
+            previous_discovered_catalog: MutableMapping[str, AirbyteStream],
     ):
         """Check if the current catalog is backward_compatible with the previous one."""
         assert isinstance(discovered_catalog, MutableMapping) and isinstance(previous_discovered_catalog, MutableMapping)
@@ -720,11 +715,11 @@ class TestBasicRead(BaseTest):
         assert not stream_name_to_empty_fields_mapping, msg
 
     def _validate_expected_records(
-        self,
-        records: List[AirbyteRecordMessage],
-        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
-        flags,
-        detailed_logger: Logger,
+            self,
+            records: List[AirbyteRecordMessage],
+            expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
+            flags,
+            detailed_logger: Logger,
     ):
         """
         We expect some records from stream to match expected_records, partially or fully, in exact or any order.
@@ -761,11 +756,11 @@ class TestBasicRead(BaseTest):
 
     @pytest.fixture(name="configured_catalog")
     def configured_catalog_fixture(
-        self,
-        test_strictness_level: Config.TestStrictnessLevel,
-        configured_catalog_path: Optional[str],
-        discovered_catalog: MutableMapping[str, AirbyteStream],
-        empty_streams: Set[EmptyStreamConfiguration],
+            self,
+            test_strictness_level: Config.TestStrictnessLevel,
+            configured_catalog_path: Optional[str],
+            discovered_catalog: MutableMapping[str, AirbyteStream],
+            empty_streams: Set[EmptyStreamConfiguration],
     ) -> ConfiguredAirbyteCatalog:
         """Build a configured catalog for basic read only.
         We discard the use of custom configured catalog if:
@@ -792,16 +787,16 @@ class TestBasicRead(BaseTest):
             return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
 
     def test_read(
-        self,
-        connector_config,
-        configured_catalog,
-        expect_records_config: ExpectedRecordsConfig,
-        should_validate_schema: Boolean,
-        should_validate_data_points: Boolean,
-        empty_streams: Set[EmptyStreamConfiguration],
-        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
-        docker_runner: ConnectorRunner,
-        detailed_logger,
+            self,
+            connector_config,
+            configured_catalog,
+            expect_records_config: ExpectedRecordsConfig,
+            should_validate_schema: Boolean,
+            should_validate_data_points: Boolean,
+            empty_streams: Set[EmptyStreamConfiguration],
+            expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
+            docker_runner: ConnectorRunner,
+            detailed_logger,
     ):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
@@ -815,7 +810,7 @@ class TestBasicRead(BaseTest):
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
             for pk_path, pk_value in pks.items():
                 assert (
-                    pk_value is not None
+                        pk_value is not None
                 ), f"Primary key subkeys {repr(pk_path)} have null values or not present in {record.stream} stream records."
 
         # TODO: remove this condition after https://github.com/airbytehq/airbyte/issues/8312 is done
@@ -873,13 +868,13 @@ class TestBasicRead(BaseTest):
 
     @staticmethod
     def compare_records(
-        stream_name: str,
-        actual: List[Mapping[str, Any]],
-        expected: List[Mapping[str, Any]],
-        extra_fields: bool,
-        exact_order: bool,
-        extra_records: bool,
-        detailed_logger: Logger,
+            stream_name: str,
+            actual: List[Mapping[str, Any]],
+            expected: List[Mapping[str, Any]],
+            extra_fields: bool,
+            exact_order: bool,
+            extra_records: bool,
+            detailed_logger: Logger,
     ):
         """Compare records using combination of restrictions"""
         if exact_order:
