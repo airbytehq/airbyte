@@ -68,9 +68,7 @@ export const useInvalidateSource = <T extends string | undefined | null>(sourceI
   const queryClient = useQueryClient();
 
   return useCallback(() => {
-    const arr = [...sourcesKeys.detail(sourceId ?? "")];
-    // arr.pop();
-    queryClient.invalidateQueries(arr);
+    queryClient.invalidateQueries(sourcesKeys.detail(sourceId ?? ""));
   }, [queryClient, sourceId]);
 };
 
