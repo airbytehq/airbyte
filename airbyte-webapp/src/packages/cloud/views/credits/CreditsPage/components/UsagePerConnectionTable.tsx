@@ -144,7 +144,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         customPadding: { right: 0 },
         Cell: ({ cell }: CellProps<FullTableProps>) => (
           <UsageValue>
-            <FormattedNumber value={cell.value} />
+            <FormattedNumber value={cell.value} maximumFractionDigits={2} minimumFractionDigits={2} />
           </UsageValue>
         ),
       },

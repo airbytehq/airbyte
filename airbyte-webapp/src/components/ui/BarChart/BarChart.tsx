@@ -67,7 +67,7 @@ export const BarChart: React.FC<BarChartProps> = React.memo(({ data, legendLabel
         <Tooltip
           cursor={{ fill: chartHoverFill }}
           formatter={(value: number) => {
-            return [<FormattedNumber value={value} />, yLabel];
+            return [<FormattedNumber value={value} maximumFractionDigits={2} minimumFractionDigits={2} />, yLabel];
           }}
         />
         {legendLabels.map((barName, key) => (
