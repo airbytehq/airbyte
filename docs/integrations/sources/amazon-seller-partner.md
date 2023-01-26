@@ -110,6 +110,9 @@ This source is capable of syncing the following tables and their data:
 
 Make sure to configure the [required parameters](https://developer-docs.amazon.com/sp-api/docs/report-type-values) in the report options setting for the reports configured.
 
+For `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL` and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams maximum value for `period_in_days` 30 days and 60 days. 
+So, for any value that exceeds the limit, the `period_in_days` will be automatically reduced to the limit for the stream.
+
 ## Data type mapping
 
 | Integration Type         | Airbyte Type |
