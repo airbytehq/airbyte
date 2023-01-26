@@ -329,13 +329,12 @@ function manifestAuthenticatorToBuilder(
     throw new ManifestCompatibilityError(streamName, "uses a CustomAuthenticator");
   } else if (manifestAuthenticator.type === "OAuthAuthenticator") {
     if (
-      Object.values(manifestAuthenticator.refresh_request_body ?? {}).filter(
-        (val) => (val !== null && typeof val === "object") || Array.isArray(val)
-      ).length > 0
+      Object.values(manifestAuthenticator.refresh_request_body ?? {}).filter((value) => typeof value !== "string")
+        .length > 0
     ) {
       throw new ManifestCompatibilityError(
         streamName,
-        "OAuthAuthenticator contains a refresh_request_body with nested objects or arrays"
+        "OAuthAuthenticator contains a refresh_request_body with non-string values"
       );
     }
 

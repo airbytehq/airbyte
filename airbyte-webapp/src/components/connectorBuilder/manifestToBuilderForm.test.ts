@@ -197,7 +197,7 @@ describe("Conversion throws error when", () => {
     expect(convert).toThrow("api_token value must be of the form {{ config[");
   });
 
-  it("manifest has an OAuthAuthenticator with a refresh_request_body containing nested objects", () => {
+  it("manifest has an OAuthAuthenticator with a refresh_request_body containing non-string values", () => {
     const convert = () => {
       const manifest: ConnectorManifest = {
         ...baseManifest,
@@ -227,7 +227,7 @@ describe("Conversion throws error when", () => {
       };
       convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
     };
-    expect(convert).toThrow("OAuthAuthenticator contains a refresh_request_body with nested objects or arrays");
+    expect(convert).toThrow("OAuthAuthenticator contains a refresh_request_body with non-string values");
   });
 });
 
