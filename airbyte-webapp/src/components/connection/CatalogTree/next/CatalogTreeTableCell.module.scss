@@ -1,11 +1,13 @@
 $xsmall: 20px;
-$small: 50px;
-$medium: 120px;
+$small: 35px;
+$medium: 60px;
 $large: 200px;
 
 .tableCell {
-  flex: 1 0 $medium;
-  min-width: $medium;
+  &:not(.fixed) {
+    flex-grow: 1;
+    flex-shrink: 0;
+  }
 
   [data-type="text"] {
     word-break: break-word;
@@ -22,6 +24,11 @@ $large: 200px;
   &.small {
     flex-basis: $small;
     min-width: $small;
+  }
+
+  &.medium {
+    flex-basis: $medium;
+    min-width: $medium;
   }
 
   &.large {

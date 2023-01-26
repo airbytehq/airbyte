@@ -15,6 +15,7 @@
 
   border-bottom: 1px solid colors.$grey-50;
   padding: 0;
+  padding-right: variables.$spacing-xl;
   margin-bottom: 1px;
   gap: variables.$spacing-sm;
   min-height: 50px;
@@ -40,13 +41,28 @@
 }
 %streamRowCheckboxCell,
 .streamRowCheckboxCell {
-  max-width: 53px;
+  width: 53px;
   text-align: center;
   font-size: 10px;
   line-height: 13px;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: variables.$spacing-sm;
+}
+
+.syncCell {
+  width: 35px;
+  text-align: center;
+}
+
+.arrowCell {
+  width: 20px;
+  text-align: center;
+}
+
+.fieldsCell {
+  width: 60px;
 }
 
 .cellText {

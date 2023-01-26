@@ -55,18 +55,22 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
 
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
-      <CatalogTreeTableCell size="small" className={styles.streamRowCheckboxCell}>
+      <CatalogTreeTableCell size="fixed" className={styles.streamRowCheckboxCell}>
         {!disabled && (
           <>
             <CatalogTreeTableRowIcon stream={stream} />
-            <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
+            <CheckBox checkboxSize="sm" checked={isSelected} onChange={selectForBulkEdit} />
           </>
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="small">
+      <CatalogTreeTableCell size="fixed" className={styles.syncCell}>
         <Switch size="sm" checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </CatalogTreeTableCell>
-      {/* <Cell>{fieldCount}</Cell> */}
+      {/* <CatalogTreeTableCell size="fixed" className={styles.fieldsCell}>
+        <Text size="sm" className={styles.cellText}>
+          124567
+        </Text>
+      </CatalogTreeTableCell> */}
       <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
@@ -117,7 +121,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="xsmall">
+      <CatalogTreeTableCell size="fixed" className={styles.arrowCell}>
         <ArrowRightIcon />
       </CatalogTreeTableCell>
       <CatalogTreeTableCell withTooltip>
