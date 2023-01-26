@@ -10,7 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams import AvailabilityStrategy
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
 class GitlabStream(HttpStream, ABC):

@@ -5,7 +5,7 @@
 from abc import ABC, abstractmethod
 from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
-from airbyte_cdk.sources.streams import AvailabilityStrategy
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 import requests
 from airbyte_cdk.sources.streams.core import Stream
