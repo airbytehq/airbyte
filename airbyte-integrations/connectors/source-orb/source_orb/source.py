@@ -182,12 +182,34 @@ class SubscriptionUsage(IncrementalOrbStream):
     API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-subscription-usage
     """
 
+    cursor_field = "timeframe_start"
+
     def __init__(
-        self, subscription_usage_grouping_key: Optional[str] = None, plan_id: Optional[str] = None, **kwargs
+        self,
+        subscription_usage_grouping_key: Optional[str] = None,
+        plan_id: Optional[str] = None,
+        end_date: Optional[pendulum.DateTime] = None,
+        **kwargs
     ):
         super().__init__(**kwargs)
         self.subscription_usage_grouping_key = subscription_usage_grouping_key
         self.plan_id = plan_id
+        self.end_date = end_date
+
+    def chunk_date_range(self, start_date: pendulum.DateTime, end_date: Optional[pendulum.DateTime] = None) -> Iterable[pendulum.Period]:
+        """
+        Yields a list of the beginning and ending timestamps of each day between the start date and now.
+        The return value is a pendulum.period
+        """
+        one_day = pendulum.duration(days=1)
+        end_date = end_date or pendulum.now()
+
+        # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
+        chunk_start_date = start_date
+        while chunk_start_date < end_date:
+            chunk_end_date = min(chunk_start_date + one_day, end_date)
+            yield pendulum.period(chunk_start_date, chunk_end_date)
+            chunk_start_date = chunk_end_date
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # use a regex capture group to extract the subscription ID from the request URL
@@ -231,6 +253,13 @@ class SubscriptionUsage(IncrementalOrbStream):
         record["billable_metric_name"] = nested_billable_metric_name
         record["billable_metric_id"] = nested_billable_metric_id
 
+        # If a group_by key is specified, un-nest it
+        if self.subscription_usage_grouping_key:
+            nested_key = record["metric_group"]["property_key"]
+            nested_value = record["metric_group"]["property_value"]
+            del record["metric_group"]
+            record[nested_key] = nested_value
+
         self.logger.debug("transformed subscription usage record: %s", record)
         return record
 
@@ -246,24 +275,13 @@ class SubscriptionUsage(IncrementalOrbStream):
         """
         # force granularity to 'day' so that this stream can be used incrementally,
         # with a day-based "cursor" based on timeframe_start and timeframe_end
-        params = {"granularity": "day"}
+        # self.logger.warning("request_params called with stream_state %s and stream_slice %s", stream_state, stream_slice)
 
-        current_subscription_state = stream_state.get(stream_slice["subscription_id"], {})
-        last_timeframe_end = current_subscription_state.get("timeframe_end")
-
-        if last_timeframe_end or self.start_date:
-            # if no start_date is specified and no previous timeframe_end exists,
-            # do not specify a timeframe in params at all, the API will default to
-            # the current billing window of the subscription.
-
-            # use the state's timeframe_end as the new request's timeframe_start, or default to the original start_date.
-            new_timeframe_start = last_timeframe_end or self.start_date.isoformat()
-            params["timeframe_start"] = new_timeframe_start
-
-            # set the new timeframe_end to the current time plus 1 day, because
-            # Orb treats timeframe_end as an exclusive boundary
-            params["timeframe_end"] = pendulum.now('UTC').add(days=1).isoformat()
-
+        params = {
+            "granularity": "day",
+            "timeframe_start": stream_slice["timeframe_start"].in_timezone('UTC').isoformat(),
+            "timeframe_end": stream_slice["timeframe_end"].in_timezone('UTC').isoformat()
+        }
 
         if self.subscription_usage_grouping_key:
             params["group_by"] = self.subscription_usage_grouping_key
@@ -271,47 +289,19 @@ class SubscriptionUsage(IncrementalOrbStream):
             # if a group_by key is specified, assume the stream slice contains a billable_metric_id
             params["billable_metric_id"] = stream_slice["billable_metric_id"]
 
-        self.logger.debug("new request_params are: %s", params)
+        # self.logger.warning("new request_params are: %s", params)
         return params
 
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        TODO write description
-        """
+        # self.logger.warning("calling get_updated_state with current_stream_state %s and latest_record %s", current_stream_state, latest_record)
+        current_stream_state = current_stream_state or {}
 
-        current_subscription_id = latest_record["subscription_id"]
-        self.logger.debug("in get_updated_state, latest_record is %s", latest_record)
+        current_stream_state[self.cursor_field] = max(
+            pendulum.parse(latest_record[self.cursor_field]),
+            current_stream_state.get(self.cursor_field, self.start_date)
+        )
 
-        latest_record_timeframe_start_dt = pendulum.parse(latest_record.get("timeframe_start"))
-        latest_record_timeframe_end_dt = pendulum.parse(latest_record.get("timeframe_end"))
-
-        current_state = current_stream_state.get(current_subscription_id, {})
-        current_state_timeframe_start = current_stream_state.get("timeframe_start")
-        current_state_timeframe_end = current_stream_state.get("timeframe_end")
-
-        # Default existing state timeframe_start and timeframe_end to DateTime.min.
-        # This means the latest record will always exceed the existing state.
-        current_timeframe_start_dt = pendulum.DateTime.min
-        current_timeframe_end_dt = pendulum.DateTime.min
-
-        if current_state_timeframe_start is not None:
-            current_timeframe_start_dt = pendulum.parse(current_state_timeframe_start)
-
-        if current_state_timeframe_end is not None:
-            current_timeframe_end_dt = pendulum.parse(current_state_timeframe_end)
-
-        current_subscription_updated_state = {
-            "timeframe_start": max(latest_record_timeframe_start_dt, current_timeframe_start_dt).isoformat(),
-            "timeframe_end": max(latest_record_timeframe_end_dt, current_timeframe_end_dt).isoformat()
-        }
-
-        return {
-            # We need to keep the other slices as is, and only override the dictionary entry
-            # corresponding to the current slice customer id.
-            **current_stream_state,
-            current_subscription_id: current_subscription_updated_state,
-        }
+        return current_stream_state
 
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
@@ -323,39 +313,83 @@ class SubscriptionUsage(IncrementalOrbStream):
         subscription_id = stream_slice["subscription_id"]
         return f"subscriptions/{subscription_id}/usage"
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def get_billable_metric_ids_by_plan_id(self) -> Mapping[str, Any]:
+        metric_ids_by_plan_id = {}
+
+        for plan in Plans(authenticator=self._session.auth).read_records(sync_mode=SyncMode.full_refresh):
+            # if a plan_id filter is specified, skip any plan that doesn't match
+            if self.plan_id and plan["id"] != self.plan_id:
+                continue
+
+            prices = plan.get("prices", [])
+            metric_ids_by_plan_id[plan["id"]] = [(price.get("billable_metric") or {}).get("id") for price in prices]
+
+        # self.logger.warning("returning %s from get_billable_metric_ids", metric_ids_by_plan_id)
+        return metric_ids_by_plan_id
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        This schema differs from `subscription_usage.json` based on the configuration
+        of the Stream. If a group_by key is specified, the stream will output
+        records that contain the group_key name and value.
+        """
+        schema = super().get_json_schema()
+        if self.subscription_usage_grouping_key:
+            schema[self.subscription_usage_grouping_key] = {
+                "type": "string"
+            }
+
+        return schema
+
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         This stream is sliced per `subscription_id`, as well as `billable_metric_id`
         if a grouping key is provided. This is because the API only supports a
-        single billable_metric_id when using a group_by param.
+        single billable_metric_id per API call when using a group_by param.
 
         """
+        # self.logger.warning("called stream_slices with stream_state %s, self.cursor_field is %s and self.start_date is %s", stream_state, self.cursor_field, self.start_date)
+        stream_state = stream_state or {}
+        start_date = stream_state.get(self.cursor_field, self.start_date)
+        end_date = self.end_date
+        slice_yielded = False
         subscriptions_stream = Subscriptions(authenticator=self._session.auth)
 
+        # if using a group_by key, populate prices_by_plan_id so that each
+        # billable metric will get its own slice
         if self.subscription_usage_grouping_key:
-            plans_stream = Plans(authenticator=self._session.auth)
+            metric_ids_by_plan_id = self.get_billable_metric_ids_by_plan_id()
 
-            prices_by_plan_id = {}
-            for plan in plans_stream.read_records(sync_mode=SyncMode.full_refresh):
-                prices_by_plan_id[plan["id"]] = plan["prices"]
+        for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+            # if filtering subscription usage by plan ID, skip any subscription that doesn't match the plan_id
+            if self.plan_id and subscription["plan_id"] != self.plan_id:
+                continue
 
-            for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
-                # if filtering subscription usage by plan ID, skip any subscription that doesn't match the plan_id
-                if self.plan_id and subscription["plan_id"] != self.plan_id:
-                    continue
-
-                prices = prices_by_plan_id.get(subscription["plan_id"])
-                if prices is not None:
-                    for price in prices:
-                        yield {
-                            "subscription_id": subscription["id"],
-                            "billable_metric_id": price["billable_metric"]["id"]
-                            }
-        else:
-            for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
-                yield {
+            for period in self.chunk_date_range(start_date=start_date, end_date=end_date):
+                slice = {
                     "subscription_id": subscription["id"],
-                    }
+                    "timeframe_start": period.start,
+                    "timeframe_end": period.end
+                }
+                # if using a group_by key, yield one slice per billable_metric_id.
+                # otherwise, yield slices without a billable_metric_id because
+                # each API call will return usage broken down by billable metric
+                # when grouping isn't used.
+                if self.subscription_usage_grouping_key:
+                    metric_ids = metric_ids_by_plan_id.get(subscription["plan_id"])
+                    if metric_ids is not None:
+                        for metric_id in metric_ids:
+                            # self.logger.warning("stream_slices is about to yield the following slice: %s", slice)
+                            yield {**slice, "billable_metric_id": metric_id}
+                            slice_yielded = True
+                else:
+                    # self.logger.warning("stream_slices is about to yield the following slice: %s", slice)
+                    yield slice
+                    slice_yielded = True
+        if not slice_yielded:
+            # yield an empty slice to checkpoint state later
+            yield {}
 
 
 class Plans(IncrementalOrbStream):
@@ -614,6 +648,10 @@ class SourceOrb(AbstractSource):
         subscription_usage_grouping_key = config.get("subscription_usage_grouping_key")
         plan_id = config.get("plan_id")
 
+        # this field is not exposed to spec, used only for testing purposes
+        end_date = config.get("end_date")
+        end_date = end_date and pendulum.parse(end_date)
+
         if not self.input_keys_mutually_exclusive(string_event_properties_keys, numeric_event_properties_keys):
             raise ValueError("Supplied property keys for string and numeric valued property values must be mutually exclusive.")
 
@@ -634,6 +672,7 @@ class SourceOrb(AbstractSource):
                 authenticator=authenticator,
                 lookback_window_days=lookback_window,
                 start_date=start_date,
+                end_date=end_date,
                 plan_id=plan_id,
                 subscription_usage_grouping_key=subscription_usage_grouping_key
             )
