@@ -63,6 +63,7 @@ class TestYamlDeclarativeSource:
                 type: "CursorPagination"
                 cursor_value: "{{ response._metadata.next }}"
             requester:
+              url_base: "https://api.sendgrid.com"
               path: "/v3/marketing/lists"
               authenticator:
                 type: "BearerAuthenticator"
@@ -77,7 +78,6 @@ class TestYamlDeclarativeSource:
             $parameters:
               name: "lists"
               primary_key: id
-              url_base: "https://api.sendgrid.com"
             schema_loader: "#/definitions/schema_loader"
             retriever: "#/definitions/retriever"
         check:

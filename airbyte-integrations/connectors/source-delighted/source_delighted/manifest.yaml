@@ -54,7 +54,6 @@ definitions:
       page_token_option:
         field_name: "page"
         inject_into: "request_parameter"
-      url_base: "#/definitions/requester/url_base"
     requester:
       $ref: "#/definitions/requester"
     stream_slicer:
@@ -80,7 +79,6 @@ definitions:
           inject_into: "request_parameter"
         page_token_option:
           inject_into: "path"
-        url_base: "#/definitions/requester/url_base"
     $parameters:
       name: "people"
       path: "people.json"

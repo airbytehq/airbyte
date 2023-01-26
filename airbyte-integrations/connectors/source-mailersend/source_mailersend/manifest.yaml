@@ -38,7 +38,6 @@ definitions:
     page_token_option:
       inject_into: "request_parameter"
       field_name: "page"
-    url_base: "#/definitions/requester/url_base"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"

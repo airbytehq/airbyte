@@ -20,7 +20,6 @@ definitions:
       $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
-      url_base: "#/definitions/requester/url_base"
       pagination_strategy:
         type: "OffsetIncrement"
         page_size: 50

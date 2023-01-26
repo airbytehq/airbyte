@@ -33,8 +33,6 @@ definitions:
       page_token_option:
         field_name: "starting_after"
         inject_into: "request_parameter"
-      url_base:
-        $ref: "#/definitions/requester/url_base"
     requester:
       $ref: "#/definitions/requester"
     stream_slicer:

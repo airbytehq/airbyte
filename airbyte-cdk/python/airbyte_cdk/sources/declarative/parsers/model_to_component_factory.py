@@ -171,7 +171,7 @@ class ModelToComponentFactory:
         # Needed for the case where we need to perform a second parse on the fields of a custom component
         self.TYPE_NAME_TO_MODEL = {cls.__name__: cls for cls in self.PYDANTIC_MODEL_TO_CONSTRUCTOR}
 
-    def create_component(self, model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config) -> type:
+    def create_component(self, model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config, **kwargs) -> type:
         """
         Takes a given Pydantic model type and Mapping representing a component definition and creates a declarative component and
         subcomponents which will be used at runtime. This is done by first parsing the mapping into a Pydantic model and then creating
@@ -192,7 +192,7 @@ class ModelToComponentFactory:
         if not isinstance(declarative_component_model, model_type):
             raise ValueError(f"Expected {model_type.__name__} component, but received {declarative_component_model.__class__.__name__}")
 
-        return self._create_component_from_model(model=declarative_component_model, config=config)
+        return self._create_component_from_model(model=declarative_component_model, config=config, **kwargs)
 
     def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs) -> Any:
         if model.__class__ not in self.PYDANTIC_MODEL_TO_CONSTRUCTOR:
@@ -458,7 +458,7 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    def create_default_paginator(self, model: DefaultPaginatorModel, config: Config, **kwargs) -> DefaultPaginator:
+    def create_default_paginator(self, model: DefaultPaginatorModel, config: Config, *, url_base: str) -> DefaultPaginator:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
@@ -473,7 +473,7 @@ class ModelToComponentFactory:
             page_size_option=page_size_option,
             page_token_option=page_token_option,
             pagination_strategy=pagination_strategy,
-            url_base=model.url_base,
+            url_base=url_base,
             config=config,
             parameters=model.parameters,
         )
@@ -658,8 +658,9 @@ class ModelToComponentFactory:
     def create_simple_retriever(self, model: SimpleRetrieverModel, config: Config, **kwargs) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config)
         record_selector = self._create_component_from_model(model=model.record_selector, config=config)
+        url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         paginator = (
-            self._create_component_from_model(model=model.paginator, config=config, url_base=model.requester.url_base)
+            self._create_component_from_model(model=model.paginator, config=config, url_base=url_base)
             if model.paginator
             else NoPagination(parameters={})
         )

@@ -44,7 +44,6 @@ definitions:
         inject_into: "request_parameter"
       page_token_option:
         inject_into: "path"
-      url_base: "#/definitions/requester/url_base"
   base_stream:
     type: DeclarativeStream
     $parameters:

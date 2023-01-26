@@ -13,7 +13,6 @@ definitions:
       password: "{{config['api_password']}}"
   increment_paginator:
     type: DefaultPaginator
-    url_base: "#/definitions/requester/url_base"
     page_size_option:
       inject_into: "request_parameter"
       field_name: "limit"

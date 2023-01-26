@@ -21,7 +21,6 @@ definitions:
     page_token_option:
       field_name: "next_page_token"
       inject_into: "request_parameter"
-    url_base: "#/definitions/requester/url_base"
 
   retriever:
     requester:

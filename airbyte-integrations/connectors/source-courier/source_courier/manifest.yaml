@@ -29,7 +29,6 @@ definitions:
 
   cursor_paginator:
     type: DefaultPaginator
-    url_base: "#/definitions/requester/url_base"
     page_token_option:
       field_name: cursor
       inject_into: request_parameter

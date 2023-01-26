@@ -11,7 +11,6 @@ definitions:
       api_key: "{{ config['api_key'] }}"
   increment_paginator:
     type: DefaultPaginator
-    url_base: "#/definitions/requester/url_base"
     pagination_strategy:
       type: PageIncrement
       page_size: 50

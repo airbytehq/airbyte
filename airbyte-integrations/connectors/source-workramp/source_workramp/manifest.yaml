@@ -24,8 +24,6 @@ definitions:
       page_token_option:
         inject_into: "request_parameter"
         field_name: "page"
-      url_base:
-        $ref: "#/definitions/requester/url_base"
     requester:
       $ref: "#/definitions/requester"
 

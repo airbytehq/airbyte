@@ -19,7 +19,6 @@ definitions:
       password: "api_token"
   increment_paginator:
     type: "DefaultPaginator"
-    url_base: "#/definitions/requester/url_base"
     page_size_option:
       inject_into: "request_parameter"
       field_name: "per_page"

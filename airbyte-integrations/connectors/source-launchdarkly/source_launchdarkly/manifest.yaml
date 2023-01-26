@@ -14,7 +14,6 @@ definitions:
   offset_paginator:
     type: DefaultPaginator
     $parameters:
-      url_base: "#/definitions/requester/url_base"
     pagination_strategy:
       type: "OffsetIncrement"
       page_size: 20
