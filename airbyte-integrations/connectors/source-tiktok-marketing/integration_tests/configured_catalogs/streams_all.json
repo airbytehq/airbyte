@@ -10,7 +10,6 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     },
-
     {
       "stream": {
         "name": "ads",
@@ -47,7 +46,6 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     },
-
     {
       "stream": {
         "name": "ads_reports_daily",
