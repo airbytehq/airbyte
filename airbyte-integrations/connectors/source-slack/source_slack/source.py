@@ -318,6 +318,10 @@ class JoinChannelsStream(HttpStream):
     http_method = "POST"
     primary_key = "id"
 
+    def __init__(self, channel_filter: List[str] = None, **kwargs):
+        self.channel_filter = channel_filter or []
+        super().__init__(**kwargs)
+
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         return [{"message": f"Successfully joined channel: {stream_slice['channel_name']}"}]
 
@@ -328,7 +332,7 @@ class JoinChannelsStream(HttpStream):
         return "conversations.join"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        channels_stream = Channels(authenticator=self._session.auth)
+        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
         for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel": channel["id"], "channel_name": channel["name"]}
 
@@ -398,7 +402,7 @@ class SourceSlack(AbstractSource):
         if config["join_channels"]:
             logger = AirbyteLogger()
             logger.info("joining Slack channels")
-            join_channels_stream = JoinChannelsStream(authenticator=authenticator)
+            join_channels_stream = JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
             for stream_slice in join_channels_stream.stream_slices():
                 for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                     logger.info(message["message"])
