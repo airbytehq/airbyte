@@ -1,4 +1,4 @@
-# Connector Acceptance Tests Reference
+# Acceptance Tests Reference
 
 To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests. Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
