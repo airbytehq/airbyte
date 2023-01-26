@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -50,12 +51,14 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
    * At this moment, we put custom connector jobs into an isolated pool.
    */
   private final boolean useIsolatedPool;
+  private final AllowedHosts allowedHosts;
 
   public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
                                     final String imageName,
                                     final ProcessFactory processFactory,
                                     final ResourceRequirements resourceRequirement,
+                                    final AllowedHosts allowedHosts,
                                     final boolean useIsolatedPool,
                                     final FeatureFlags featureFlags) {
     this.jobId = jobId;
@@ -63,6 +66,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
+    this.allowedHosts = allowedHosts;
     this.featureFlags = featureFlags;
     this.useIsolatedPool = useIsolatedPool;
   }
@@ -82,6 +86,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, SPEC_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
@@ -103,6 +108,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, CHECK_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
@@ -125,6 +131,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, DISCOVER_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
@@ -171,6 +178,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, READ_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
@@ -201,6 +209,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, WRITE_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
