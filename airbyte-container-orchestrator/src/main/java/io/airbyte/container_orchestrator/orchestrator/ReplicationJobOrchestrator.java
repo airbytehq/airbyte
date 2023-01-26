@@ -124,6 +124,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getSourceResourceRequirements(),
+        sourceLauncherConfig.getAllowedHosts(),
         useIsolatedPool,
         featureFlags);
 
@@ -134,6 +135,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         destinationLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getDestinationResourceRequirements(),
+        destinationLauncherConfig.getAllowedHosts(),
         useIsolatedPool,
         featureFlags);
 
