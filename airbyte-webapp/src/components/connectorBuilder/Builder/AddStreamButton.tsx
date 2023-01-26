@@ -13,10 +13,10 @@ import { Action, Namespace } from "core/analytics";
 import { FormikPatch } from "core/form/FormikPatch";
 import { useAnalyticsService } from "hooks/services/Analytics";
 
-import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
-import { BuilderStream, DEFAULT_BUILDER_STREAM_VALUES } from "../types";
 import styles from "./AddStreamButton.module.scss";
 import { BuilderField } from "./BuilderField";
+import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
+import { BuilderStream, DEFAULT_BUILDER_STREAM_VALUES } from "../types";
 
 interface AddStreamValues {
   streamName: string;

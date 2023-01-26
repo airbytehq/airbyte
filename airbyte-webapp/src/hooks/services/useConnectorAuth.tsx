@@ -13,11 +13,11 @@ import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/
 import { isCommonRequestError } from "core/request/CommonRequestError";
 import { useConnectorForm } from "views/Connector/ConnectorForm/connectorFormContext";
 
-import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useQuery } from "../useQuery";
 import { useAppMonitoringService } from "./AppMonitoringService";
 import { useNotificationService } from "./Notification";
 import { useCurrentWorkspace } from "./useWorkspace";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useQuery } from "../useQuery";
 
 let windowObjectReference: Window | null = null; // global variable
 

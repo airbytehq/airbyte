@@ -7,13 +7,13 @@ import { ControlLabels } from "components/LabeledControl";
 
 import { RequestOption } from "core/request/ConnectorManifest";
 
-import { BuilderPaginator } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { InjectRequestOptionFields } from "./InjectRequestOptionFields";
 import { ToggleGroupField } from "./ToggleGroupField";
+import { BuilderPaginator } from "../types";
 
 interface PaginationSectionProps {
   streamFieldPath: (fieldPath: string) => string;

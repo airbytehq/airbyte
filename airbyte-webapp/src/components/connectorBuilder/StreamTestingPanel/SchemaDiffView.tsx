@@ -21,8 +21,8 @@ import {
   useConnectorBuilderTestState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { formatJson } from "../utils";
 import styles from "./SchemaDiffView.module.scss";
+import { formatJson } from "../utils";
 
 interface SchemaDiffViewProps {
   inferredSchema: StreamReadInferredSchema;
