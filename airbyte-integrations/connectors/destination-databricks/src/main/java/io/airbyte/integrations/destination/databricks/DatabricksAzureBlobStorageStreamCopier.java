@@ -173,7 +173,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
         }
       }
 
-      if (columnType.equals("") || columnType.equals("object")) {
+      if (columnType.equals("") || columnType.equals("object") || columnType.equals("array")) {
         LOGGER.info("Unable to parse type for the `{}` column. Falling back to \"string\"", header);
         columnType = "string";
       }
