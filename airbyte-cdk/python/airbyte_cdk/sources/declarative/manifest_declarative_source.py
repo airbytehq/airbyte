@@ -5,7 +5,6 @@
 import json
 import logging
 import pkgutil
-from enum import Enum
 from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
 import yaml
