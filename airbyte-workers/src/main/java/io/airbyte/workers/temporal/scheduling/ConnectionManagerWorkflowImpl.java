@@ -377,6 +377,19 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private SyncCheckConnectionFailure checkConnections(final JobRunConfig jobRunConfig,
                                                       @Nullable final GenerateInputActivity.GeneratedJobInput jobInputs) {
+    final SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
+
+    final JobCheckFailureInput jobStateInput =
+        new JobCheckFailureInput(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), connectionId);
+    final boolean isLastJobOrAttemptFailure =
+        runMandatoryActivityWithOutput(jobCreationAndStatusUpdateActivity::isLastJobOrAttemptFailure, jobStateInput);
+
+    if (!isLastJobOrAttemptFailure) {
+      log.info("SOURCE CHECK: Skipped, last attempt was not a failure");
+      log.info("DESTINATION CHECK: Skipped, last attempt was not a failure");
+      return checkFailure;
+    }
+
     final int generateCheckInputVersion =
         Workflow.getVersion(GENERATE_CHECK_INPUT_TAG, Workflow.DEFAULT_VERSION, GENERATE_CHECK_INPUT_CURRENT_VERSION);
 
@@ -387,21 +400,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       checkInputs = getCheckConnectionInput();
     }
 
-    final SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
-
     final IntegrationLauncherConfig sourceLauncherConfig = checkInputs.getSourceLauncherConfig();
     final CheckConnectionInput checkSourceInput = new CheckConnectionInput(
         jobRunConfig,
         sourceLauncherConfig,
         checkInputs.getSourceCheckConnectionInput());
 
-    final JobCheckFailureInput jobStateInput =
-        new JobCheckFailureInput(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), connectionId);
-    final boolean isLastJobOrAttemptFailure =
-        runMandatoryActivityWithOutput(jobCreationAndStatusUpdateActivity::isLastJobOrAttemptFailure, jobStateInput);
-    if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed() || !isLastJobOrAttemptFailure) {
+    if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed()) {
       // reset jobs don't need to connect to any external source, so check connection is unnecessary
-      log.info("SOURCE CHECK: Skipped");
+      log.info("SOURCE CHECK: Skipped, reset job");
     } else {
       log.info("SOURCE CHECK: Starting");
       final ConnectorJobOutput sourceCheckResponse = getCheckResponse(checkSourceInput);
@@ -419,8 +426,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         checkInputs.getDestinationLauncherConfig(),
         checkInputs.getDestinationCheckConnectionInput());
 
-    if (checkFailure.isFailed() || !isLastJobOrAttemptFailure) {
-      log.info("DESTINATION CHECK: Skipped");
+    if (checkFailure.isFailed()) {
+      log.info("DESTINATION CHECK: Skipped, source check failed");
     } else {
       log.info("DESTINATION CHECK: Starting");
       final ConnectorJobOutput destinationCheckResponse = getCheckResponse(checkDestinationInput);
