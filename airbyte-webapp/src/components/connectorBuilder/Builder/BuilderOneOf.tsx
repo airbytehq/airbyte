@@ -23,6 +23,7 @@ interface BuilderOneOfProps {
   path: string; // path to the oneOf component in the json schema
   label: string;
   tooltip: string;
+  onSelect?: (type: string) => void;
 }
 
 const InnerBuilderOneOf: React.FC<BuilderOneOfProps & FastFieldProps<string>> = ({
@@ -32,6 +33,7 @@ const InnerBuilderOneOf: React.FC<BuilderOneOfProps & FastFieldProps<string>> = 
   field: typePathField,
   path,
   form,
+  onSelect,
 }) => {
   const value = typePathField.value;
 
@@ -56,6 +58,8 @@ const InnerBuilderOneOf: React.FC<BuilderOneOfProps & FastFieldProps<string>> = 
               type: selectedOption.value,
               ...selectedOption.default,
             });
+
+            onSelect?.(selectedOption.value);
           }}
         />
       }
