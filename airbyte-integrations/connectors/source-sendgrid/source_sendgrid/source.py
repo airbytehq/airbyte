@@ -9,7 +9,7 @@ import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import (
     Blocks,
@@ -19,7 +19,6 @@ from .streams import (
     GlobalSuppressions,
     InvalidEmails,
     Lists,
-    Messages,
     Scopes,
     Segments,
     SingleSends,
@@ -58,7 +57,6 @@ class SourceSendgrid(AbstractSource):
             Segments(authenticator=authenticator),
             SingleSends(authenticator=authenticator),
             Templates(authenticator=authenticator),
-            Messages(authenticator=authenticator, start_time=start_time),
             GlobalSuppressions(authenticator=authenticator, start_time=start_time),
             SuppressionGroups(authenticator=authenticator),
             SuppressionGroupMembers(authenticator=authenticator),
