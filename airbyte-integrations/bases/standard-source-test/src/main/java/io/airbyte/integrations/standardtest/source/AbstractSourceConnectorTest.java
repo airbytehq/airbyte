@@ -24,6 +24,7 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -120,6 +121,13 @@ public abstract class AbstractSourceConnectorTest {
   private ConnectorConfigUpdater mConnectorConfigUpdater;
 
   // This has to be using the protocol version of the platform in order to capture the arg
+  private final ArgumentCaptor<io.airbyte.protocol.models.AirbyteCatalog> lastPersistedCatalog =
+      ArgumentCaptor.forClass(io.airbyte.protocol.models.AirbyteCatalog.class);
+
+  protected AirbyteCatalog getLastPersistedCatalog() {
+    return convertProtocolObject(lastPersistedCatalog.getValue(), AirbyteCatalog.class);
+  }
+
   private final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> discoverWriteRequest =
       ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
 
@@ -190,7 +198,7 @@ public abstract class AbstractSourceConnectorTest {
         mConnectorConfigUpdater)
             .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
             .getDiscoverCatalogId();
-    verify(mSourceApi).writeActorCatalogFetchEvent(discoverWriteRequest.capture());
+    verify(mSourceApi).writeDiscoverCatalogResult(discoverWriteRequest.capture());
     return toReturn;
   }
 
