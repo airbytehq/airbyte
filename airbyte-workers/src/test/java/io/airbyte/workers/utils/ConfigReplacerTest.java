@@ -24,6 +24,7 @@ class ConfigReplacerTest {
   final ObjectMapper mapper = new ObjectMapper();
 
   @Test
+  @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
   void getAllowedHostsGeneralTest() throws IOException {
     final AllowedHosts allowedHosts = new AllowedHosts();
     final List<String> hosts = new ArrayList();
@@ -31,6 +32,7 @@ class ConfigReplacerTest {
     hosts.add("static-site.com");
     hosts.add("${host}");
     hosts.add("${subdomain}.vendor.com");
+    hosts.add("${tunnel_method.tunnel_host}");
     allowedHosts.setHosts(hosts);
 
     final List<String> expected = new ArrayList<>();
@@ -38,8 +40,27 @@ class ConfigReplacerTest {
     expected.add("static-site.com");
     expected.add("foo.com");
     expected.add("account.vendor.com");
+    expected.add("1.2.3.4");
 
-    final String configJson = "{\"host\": \"foo.com\", \"subdomain\": \"account\", \"password\": \"abc123\"}";
+    final String configJson =
+        "{\"host\": \"foo.com\", \"subdomain\": \"account\", \"password\": \"abc123\", \"tunnel_method\": {\"tunnel_host\": \"1.2.3.4\"}}";
+    final JsonNode config = mapper.readValue(configJson, JsonNode.class);
+    final AllowedHosts response = replacer.getAllowedHosts(allowedHosts, config);
+
+    assertThat(response.getHosts()).isEqualTo(expected);
+  }
+
+  @Test
+  void getAllowedHostsNestingTest() throws IOException {
+    final AllowedHosts allowedHosts = new AllowedHosts();
+    final List<String> hosts = new ArrayList();
+    hosts.add("value-${a.b.c.d}");
+    allowedHosts.setHosts(hosts);
+
+    final List<String> expected = new ArrayList<>();
+    expected.add("value-100");
+
+    final String configJson = "{\"a\": {\"b\": {\"c\": {\"d\": 100 }}}, \"array\": [1,2,3]}";
     final JsonNode config = mapper.readValue(configJson, JsonNode.class);
     final AllowedHosts response = replacer.getAllowedHosts(allowedHosts, config);
 
