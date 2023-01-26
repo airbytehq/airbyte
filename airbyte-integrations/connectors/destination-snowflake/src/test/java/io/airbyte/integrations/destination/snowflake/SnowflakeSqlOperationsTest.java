@@ -79,4 +79,26 @@ class SnowflakeSqlOperationsTest {
     }
   }
 
+  @ParameterizedTest
+  @CsvSource({"TEST,false", "but current role has no privileges on it,true"})
+  public void testCreateTableIfNotExists(final String message, final boolean shouldCapture) {
+    final JdbcDatabase db = Mockito.mock(JdbcDatabase.class);
+    final var schemaName = "foo";
+    final var tableName = "bar";
+    try {
+      Mockito.doThrow(new SnowflakeSQLException(message)).when(db).execute(Mockito.anyString());
+    } catch (SQLException e) {
+      // This would not be expected, but the `execute` method above will flag as an unhandled exception
+      assert false;
+    }
+    final Exception exception = Assertions.assertThrows(Exception.class, () ->
+        snowflakeSqlOperations.createTableIfNotExists(db, schemaName, tableName));
+    if (shouldCapture) {
+      Assertions.assertInstanceOf(ConfigErrorException.class, exception);
+    } else {
+      Assertions.assertInstanceOf(SnowflakeSQLException.class, exception);
+      Assertions.assertEquals(exception.getMessage(), message);
+    }
+  }
+
 }
