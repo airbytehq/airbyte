@@ -1,4 +1,4 @@
-name: Connector Ops CI - Check CAT strictness level
+name: Connector Ops CI - Check SAT strictness level
 
 on:
   pull_request:

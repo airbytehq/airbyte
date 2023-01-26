@@ -1,4 +1,4 @@
-# CDK and CAT
+# CDK and Acceptance tests
 /airbyte-cdk/ @airbytehq/connector-extensibility
 /airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility

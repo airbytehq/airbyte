@@ -27,7 +27,7 @@ _Note: this way will also build docker image for the connector_
 ```
 _Note: this will use the latest docker image for connector-acceptance-test and will also build docker image for the connector_
 
-## When does CAT run?
+## When does acceptance test run?
 * When running local acceptance tests on connector:
   * When running `connectorAcceptanceTest` `gradle` task
   * When running or `./acceptance-test-docker.sh` in a connector project
@@ -35,27 +35,27 @@ _Note: this will use the latest docker image for connector-acceptance-test and w
 * When running `/publish` command on a GitHub pull request.
 * When running ` integration-test` GitHub action that is creating the [connector builds summary](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md).
 
-## Developing on the CAT 
-You may want to iterate on the CAT project: adding new tests, fixing a bug etc.
+## Developing on the acceptance tests
+You may want to iterate on the acceptance test project: adding new tests, fixing a bug etc.
 These iterations are more conveniently achieved by remaining in the current directory.
 
 1. Create a `virtualenv`: `python -m venv .venv`
 2. Activate the `virtualenv`: `source ./.venv/bin/activate`
 3. Install requirements: `pip install -e .`
-4. Run the unit tests on CAT: `python -m pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
+4. Run the unit tests on the acceptance tests themselves: `python -m pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
 5. Make the changes you want:
     * Global pytest fixtures are defined in `./connector_acceptance_test/conftest.py`
     * Existing test modules are defined in `./connector_acceptance_test/tests`
     * `acceptance-test-config.yaml` structure is defined in `./connector_acceptance_test/config.py`
 6. Unit test your changes by adding tests to `./unit_tests`
-7. Run the unit tests on CAT again: `python -m pytest unit_tests`, make sure the coverage did not decrease. You can bypass slow tests by using the `slow` marker: `python -m pytest unit_tests -m "not slow"`.
-8. Manually test the changes you made by running CAT on a specific connector. e.g. `python -m pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
+7. Run the unit tests on the acceptance tests again: `python -m pytest unit_tests`, make sure the coverage did not decrease. You can bypass slow tests by using the `slow` marker: `python -m pytest unit_tests -m "not slow"`.
+8. Manually test the changes you made by running acceptance tests on a specific connector. e.g. `python -m pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
 9. Make sure you updated `docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md` according to your changes
-10. Bump the CAT version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
+10. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
 11. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
 12. Open a PR on our GitHub repository
 13. Run the unit test on the CI by running `/test connector=bases/connector-acceptance-test` in a GitHub comment
-14. Publish the new CAT version if your PR is approved by running `/publish connector=bases/connector-acceptance-test auto-bump-version=false` in a GitHub comment
+14. Publish the new acceptance test version if your PR is approved by running `/publish connector=bases/connector-acceptance-test auto-bump-version=false` in a GitHub comment
 15. Merge your PR
 
 ## Migrating `acceptance-test-config.yml` to latest configuration format
