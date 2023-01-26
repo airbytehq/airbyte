@@ -11,6 +11,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
