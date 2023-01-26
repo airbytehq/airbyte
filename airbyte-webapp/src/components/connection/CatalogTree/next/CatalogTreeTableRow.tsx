@@ -81,13 +81,12 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           {stream.stream?.name}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="large">
+      <CatalogTreeTableCell size="fixed" className={styles.syncModeCell}>
         {disabled ? (
           <Text size="md" className={styles.cellText}>
             {syncSchema.syncMode}
           </Text>
         ) : (
-          // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
           <SyncModeSelect
             options={availableSyncModes}
             onChange={onSelectSyncMode}
@@ -96,7 +95,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}

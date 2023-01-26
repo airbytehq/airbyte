@@ -94,7 +94,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
           <FormattedMessage id="connectionForm.sourceStreamName.info" />
         </InfoTooltip>
       </HeaderCell>
-      <HeaderCell size="large">
+      <HeaderCell size="fixed" className={styles.syncModeCell}>
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
