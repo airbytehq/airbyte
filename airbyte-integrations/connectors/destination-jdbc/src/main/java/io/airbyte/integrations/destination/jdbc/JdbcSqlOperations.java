@@ -67,7 +67,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
-    try{
+    try {
       database.execute(createTableQuery(database, schemaName, tableName));
     } catch (SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
