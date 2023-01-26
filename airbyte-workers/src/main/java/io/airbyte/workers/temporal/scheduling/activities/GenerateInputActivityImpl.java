@@ -145,6 +145,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withResourceRequirements(config.getResourceRequirements())
           .withSourceResourceRequirements(config.getSourceResourceRequirements())
           .withDestinationResourceRequirements(config.getDestinationResourceRequirements())
+          .withConnectionId(standardSync.getConnectionId())
           .withWorkspaceId(config.getWorkspaceId());
 
       return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
