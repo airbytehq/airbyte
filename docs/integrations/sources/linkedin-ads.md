@@ -182,7 +182,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 0.1.13  | TODO       | [21888](https://github.com/airbytehq/airbyte/pull/21888) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.12  | 2022-10-18 | [18111](https://github.com/airbytehq/airbyte/pull/18111) | for adDirectSponsoredContents stream skip accounts which are part of organization                               |
 | 0.1.11  | 2022-10-07 | [17724](https://github.com/airbytehq/airbyte/pull/17724) | Retry 429/5xx errors when refreshing access token                                                               |
 | 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                   |
