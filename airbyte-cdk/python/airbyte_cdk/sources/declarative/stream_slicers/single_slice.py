@@ -8,11 +8,10 @@ from typing import Any, Iterable, Mapping, Optional
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class SingleSlice(StreamSlicer, JsonSchemaMixin):
+class SingleSlice(StreamSlicer):
     """Stream slicer returning only a single stream slice"""
 
     parameters: InitVar[Mapping[str, Any]]

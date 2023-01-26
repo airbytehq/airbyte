@@ -10,11 +10,10 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ParentStreamConfig(JsonSchemaMixin):
+class ParentStreamConfig:
     """
     Describes how to create a stream slice from a parent stream
 
@@ -32,7 +31,7 @@ class ParentStreamConfig(JsonSchemaMixin):
 
 
 @dataclass
-class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
+class SubstreamSlicer(StreamSlicer):
     """
     Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components

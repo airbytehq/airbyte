@@ -7,11 +7,10 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Union
 
 import requests
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class Decoder(JsonSchemaMixin):
+class Decoder:
     """
     Decoder strategy to transform a requests.Response into a Mapping[str, Any]
     """

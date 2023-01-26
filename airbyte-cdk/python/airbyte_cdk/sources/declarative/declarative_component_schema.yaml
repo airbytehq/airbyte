@@ -714,7 +714,7 @@ definitions:
       - type
     properties:
       type:
-        enum: [JsonFileSchemaLoader, JsonSchema] # TODO As part of Beta, remove JsonSchema and update connectors to use JsonFileSchemaLoader
+        enum: [JsonFileSchemaLoader]
       file_path:
         type: string
       $parameters:

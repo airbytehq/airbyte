@@ -10,11 +10,10 @@ import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
+class CompositeErrorHandler(ErrorHandler):
     """
     Error handler that sequentially iterates over a list of `ErrorHandler`s
 

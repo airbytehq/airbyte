@@ -10,11 +10,10 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
+class ListStreamSlicer(StreamSlicer):
     """
     Stream slicer that iterates over the values of a list
     If slice_values is a string, then evaluate it as literal and assert the resulting literal is a list

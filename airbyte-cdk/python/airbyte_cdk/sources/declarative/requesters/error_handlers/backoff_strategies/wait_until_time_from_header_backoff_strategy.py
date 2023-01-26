@@ -13,11 +13,10 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
+class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
     """
     Extract time at which we can retry the request from response header
     and wait for the difference between now and that time

@@ -7,9 +7,11 @@ CDK_DIR=$ROOT_DIR/airbyte-cdk/python/
 
 for directory in $CONNECTORS_DIR/source-* ; do
   MANIFEST_DIRECTORY=$(basename $directory | tr - _)
-  SOURCE_NAME=${MANIFEST_DIRECTORY#source_}
-  FILEPATH=$directory/source_$SOURCE_NAME/$SOURCE_NAME.yaml
+  FILEPATH=$directory/$MANIFEST_DIRECTORY/manifest.yaml
+
   if test -f $FILEPATH; then
+    echo "Migrating manifest located at $FILEPATH"
+
     gsed -i -E 's/\*ref\((.*)\)/#\/\1/' $FILEPATH
     gsed -i -E '/#\//  y/./\//' $FILEPATH
   fi

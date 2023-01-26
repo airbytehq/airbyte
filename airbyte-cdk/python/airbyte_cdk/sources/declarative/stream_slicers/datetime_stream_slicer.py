@@ -14,12 +14,11 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 from isodate import Duration, parse_duration
 
 
 @dataclass
-class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
+class DatetimeStreamSlicer(StreamSlicer):
     """
     Slices the stream over a datetime range.
 

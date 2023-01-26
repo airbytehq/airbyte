@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.23.0",
+    version="0.25.0",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -45,8 +45,6 @@ setup(
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
         "backoff",
-        # pinned to the last working version for us temporarily while we fix
-        "dataclasses-jsonschema==2.15.1",
         "dpath~=2.0.1",
         "isodate~=0.6.1",
         "jsonschema~=3.2.0",

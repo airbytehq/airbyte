@@ -12,7 +12,6 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 def _default_file_path() -> str:
@@ -31,7 +30,7 @@ def _default_file_path() -> str:
 
 
 @dataclass
-class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, JsonSchemaMixin):
+class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
     """
     Loads the schema from a json file
 

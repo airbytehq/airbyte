@@ -9,11 +9,10 @@ from typing import Any, Mapping
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DefaultSchemaLoader(SchemaLoader, JsonSchemaMixin):
+class DefaultSchemaLoader(SchemaLoader):
     """
     Loads a schema from the default location or returns an empty schema for streams that have not defined their schema file yet.
 
