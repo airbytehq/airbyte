@@ -26,10 +26,10 @@ class ParentStreamConfig(JsonSchemaMixin):
     request_option: How to inject the slice value on an outgoing HTTP request
     """
 
-    config: Config
     stream: Stream
     parent_key: Union[InterpolatedString, str]
     stream_slice_field: Union[InterpolatedString, str]
+    config: Config
     options: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
@@ -48,8 +48,8 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         parent_stream_configs (List[ParentStreamConfig]): parent streams to iterate over and their config
     """
 
-    config: Config
     parent_stream_configs: List[ParentStreamConfig]
+    config: Config
     options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
