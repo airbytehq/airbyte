@@ -143,6 +143,7 @@ task generateWellKnownTypes() {
 
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
+    dependsOn generateWellKnownTypes
 }
 
 // Ideally, we would have buildDockerImage depend on generateWellKnownTypes
