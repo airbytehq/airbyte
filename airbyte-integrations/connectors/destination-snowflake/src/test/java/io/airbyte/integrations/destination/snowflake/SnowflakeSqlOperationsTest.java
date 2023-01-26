@@ -91,8 +91,8 @@ class SnowflakeSqlOperationsTest {
       // This would not be expected, but the `execute` method above will flag as an unhandled exception
       assert false;
     }
-    final Exception exception = Assertions.assertThrows(Exception.class, () ->
-        snowflakeSqlOperations.createTableIfNotExists(db, schemaName, tableName));
+    final Exception exception =
+        Assertions.assertThrows(Exception.class, () -> snowflakeSqlOperations.createTableIfNotExists(db, schemaName, tableName));
     if (shouldCapture) {
       Assertions.assertInstanceOf(ConfigErrorException.class, exception);
     } else {

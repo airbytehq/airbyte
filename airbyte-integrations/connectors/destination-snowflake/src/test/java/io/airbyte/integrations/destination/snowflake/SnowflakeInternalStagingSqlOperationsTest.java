@@ -85,8 +85,7 @@ class SnowflakeInternalStagingSqlOperationsTest {
       // This would not be expected, but the `execute` method above will flag as an unhandled exception
       assert false;
     }
-    final Exception exception = Assertions.assertThrows(Exception.class, () ->
-        snowflakeStagingSqlOperations.createStageIfNotExists(db, stageName));
+    final Exception exception = Assertions.assertThrows(Exception.class, () -> snowflakeStagingSqlOperations.createStageIfNotExists(db, stageName));
     if (shouldCapture) {
       Assertions.assertInstanceOf(ConfigErrorException.class, exception);
     } else {
