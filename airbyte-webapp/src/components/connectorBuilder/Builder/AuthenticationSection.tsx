@@ -1,3 +1,6 @@
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
+
 import { inferredAuthValues } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
@@ -7,12 +10,20 @@ import { BuilderOptional } from "./BuilderOptional";
 import { KeyValueListField } from "./KeyValueListField";
 
 export const AuthenticationSection: React.FC = () => {
+  const analyticsService = useAnalyticsService();
+
   return (
     <BuilderCard>
       <BuilderOneOf
         path="global.authenticator"
         label="Authentication"
         tooltip="Authentication method to use for requests sent to the API"
+        onSelect={(type) =>
+          analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.AUTHENTICATION_METHOD_SELECT, {
+            actionDescription: "Authentication method selected",
+            auth_type: type,
+          })
+        }
         options={[
           { label: "No Auth", typeValue: "NoAuth" },
           {
