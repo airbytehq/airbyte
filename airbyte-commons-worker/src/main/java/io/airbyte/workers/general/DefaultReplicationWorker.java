@@ -339,7 +339,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap<>();
-      final Map<AirbyteStreamNameNamespacePair, Boolean> unexpectedFields = new HashMap<>();
+      final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields = new HashMap<>();
       if (fieldSelectionEnabled) {
         populatedStreamToSelectedFields(catalog, streamToSelectedFields);
       }
@@ -401,9 +401,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             metricReporter.trackSchemaValidationError(stream);
           });
         }
-        unexpectedFields.forEach((stream, hasUnexpectedFields) -> {
-          if (hasUnexpectedFields) {
-            LOGGER.warn("Source {} has unexpected fields in stream {}", sourceId, stream);
+        unexpectedFields.forEach((stream, unexpectedFieldNames) -> {
+          if (!unexpectedFieldNames.isEmpty()) {
+            LOGGER.warn("Source {} has unexpected fields [{}] in stream {}", sourceId, String.join(", ", unexpectedFieldNames), stream);
             // TODO(mfsiega-airbyte): publish this as a metric.
           }
         });
@@ -607,7 +607,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
                                      Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
-                                     Map<AirbyteStreamNameNamespacePair, Boolean> unexpectedFields,
+                                     Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
                                      final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
                                      final AirbyteMessage message) {
     if (message.getRecord() == null) {
@@ -622,6 +622,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     if (streamHasLessThenTenErrs) {
       try {
         recordSchemaValidator.validateSchema(record, messageStream);
+        final Set<String> unexpectedFieldNames = unexpectedFields.getOrDefault(messageStream, new HashSet<>());
+        populateUnexpectedFieldNames(record, streamToAllFields.get(messageStream), unexpectedFieldNames);
+        unexpectedFields.put(messageStream, unexpectedFieldNames);
       } catch (final RecordSchemaValidationException e) {
         final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
         if (exceptionWithCount == null) {
@@ -633,23 +636,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
         }
       }
-      // If we haven't already encountered an unexpected field for this stream, check this record.
-      if (!unexpectedFields.getOrDefault(messageStream, false)) {
-        unexpectedFields.put(messageStream, recordHasUnexpectedField(record, streamToAllFields.get(messageStream)));
-      }
     }
   }
 
-  private static Boolean recordHasUnexpectedField(AirbyteRecordMessage record, Set<String> fieldsInCatalog) {
+  private static void populateUnexpectedFieldNames(AirbyteRecordMessage record, Set<String> fieldsInCatalog, Set<String> unexpectedFieldNames) {
     final JsonNode data = record.getData();
     if (data.isObject()) {
       Iterator<String> fieldNamesInRecord = data.fieldNames();
       while (fieldNamesInRecord.hasNext()) {
-        if (!fieldsInCatalog.contains(fieldNamesInRecord.next())) {
-          return false;
+        final String fieldName = fieldNamesInRecord.next();
+        if (!fieldsInCatalog.contains(fieldName)) {
+          unexpectedFieldNames.add(fieldName);
         }
       }
-      return true;
     } else {
       throw new RuntimeException(String.format("Unexpected data in record: %s", data));
     }
