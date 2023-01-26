@@ -87,11 +87,11 @@ class TestSpec(BaseTest):
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
-            self,
-            inputs: SpecTestConfig,
-            previous_connector_docker_runner: ConnectorRunner,
-            previous_connector_spec: ConnectorSpecification,
-            actual_connector_spec: ConnectorSpecification,
+        self,
+        inputs: SpecTestConfig,
+        previous_connector_docker_runner: ConnectorRunner,
+        previous_connector_spec: ConnectorSpecification,
+        actual_connector_spec: ConnectorSpecification,
     ) -> bool:
         if actual_connector_spec == previous_connector_spec:
             pytest.skip("The previous and actual specifications are identical.")
@@ -157,7 +157,7 @@ class TestSpec(BaseTest):
         for variant_path in variant_paths:
             top_level_obj = schema_helper.get_node(variant_path[:-1])
             assert (
-                    top_level_obj.get("type") == "object"
+                top_level_obj.get("type") == "object"
             ), f"The top-level definition in a `oneOf` block should have type: object. misconfigured object: {top_level_obj}. {docs_msg}"
 
             variants = schema_helper.get_node(variant_path)
@@ -174,17 +174,17 @@ class TestSpec(BaseTest):
                 if all(["const" in variant["properties"][common_prop] for variant in variants]):
                     const_common_props.add(common_prop)
             assert (
-                    len(const_common_props) == 1
+                len(const_common_props) == 1
             ), f"There should be exactly one common property with 'const' keyword for {oneof_path} subobjects. {docs_msg}"
 
             const_common_prop = const_common_props.pop()
             for n, variant in enumerate(variants):
                 prop_obj = variant["properties"][const_common_prop]
                 assert (
-                        "default" not in prop_obj
+                    "default" not in prop_obj
                 ), f"There should not be 'default' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
                 assert (
-                        "enum" not in prop_obj
+                    "enum" not in prop_obj
                 ), f"There should not be 'enum' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
 
     def test_required(self):
@@ -442,11 +442,11 @@ class TestSpec(BaseTest):
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
-            self,
-            skip_backward_compatibility_tests: bool,
-            actual_connector_spec: ConnectorSpecification,
-            previous_connector_spec: ConnectorSpecification,
-            number_of_configs_to_generate: int = 100,
+        self,
+        skip_backward_compatibility_tests: bool,
+        actual_connector_spec: ConnectorSpecification,
+        previous_connector_spec: ConnectorSpecification,
+        number_of_configs_to_generate: int = 100,
     ):
         """Check if the current spec is backward_compatible with the previous one"""
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
@@ -496,11 +496,11 @@ class TestConnection(BaseTest):
 class TestDiscovery(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
-            self,
-            inputs: DiscoveryTestConfig,
-            previous_connector_docker_runner: ConnectorRunner,
-            discovered_catalog: MutableMapping[str, AirbyteStream],
-            previous_discovered_catalog: MutableMapping[str, AirbyteStream],
+        self,
+        inputs: DiscoveryTestConfig,
+        previous_connector_docker_runner: ConnectorRunner,
+        discovered_catalog: MutableMapping[str, AirbyteStream],
+        previous_discovered_catalog: MutableMapping[str, AirbyteStream],
     ) -> bool:
         if discovered_catalog == previous_discovered_catalog:
             pytest.skip("The previous and actual discovered catalogs are identical.")
@@ -590,10 +590,10 @@ class TestDiscovery(BaseTest):
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
-            self,
-            skip_backward_compatibility_tests: bool,
-            discovered_catalog: MutableMapping[str, AirbyteStream],
-            previous_discovered_catalog: MutableMapping[str, AirbyteStream],
+        self,
+        skip_backward_compatibility_tests: bool,
+        discovered_catalog: MutableMapping[str, AirbyteStream],
+        previous_discovered_catalog: MutableMapping[str, AirbyteStream],
     ):
         """Check if the current catalog is backward_compatible with the previous one."""
         assert isinstance(discovered_catalog, MutableMapping) and isinstance(previous_discovered_catalog, MutableMapping)
@@ -715,11 +715,11 @@ class TestBasicRead(BaseTest):
         assert not stream_name_to_empty_fields_mapping, msg
 
     def _validate_expected_records(
-            self,
-            records: List[AirbyteRecordMessage],
-            expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
-            flags,
-            detailed_logger: Logger,
+        self,
+        records: List[AirbyteRecordMessage],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
+        flags,
+        detailed_logger: Logger,
     ):
         """
         We expect some records from stream to match expected_records, partially or fully, in exact or any order.
@@ -756,11 +756,11 @@ class TestBasicRead(BaseTest):
 
     @pytest.fixture(name="configured_catalog")
     def configured_catalog_fixture(
-            self,
-            test_strictness_level: Config.TestStrictnessLevel,
-            configured_catalog_path: Optional[str],
-            discovered_catalog: MutableMapping[str, AirbyteStream],
-            empty_streams: Set[EmptyStreamConfiguration],
+        self,
+        test_strictness_level: Config.TestStrictnessLevel,
+        configured_catalog_path: Optional[str],
+        discovered_catalog: MutableMapping[str, AirbyteStream],
+        empty_streams: Set[EmptyStreamConfiguration],
     ) -> ConfiguredAirbyteCatalog:
         """Build a configured catalog for basic read only.
         We discard the use of custom configured catalog if:
@@ -787,16 +787,16 @@ class TestBasicRead(BaseTest):
             return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
 
     def test_read(
-            self,
-            connector_config,
-            configured_catalog,
-            expect_records_config: ExpectedRecordsConfig,
-            should_validate_schema: Boolean,
-            should_validate_data_points: Boolean,
-            empty_streams: Set[EmptyStreamConfiguration],
-            expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
-            docker_runner: ConnectorRunner,
-            detailed_logger,
+        self,
+        connector_config,
+        configured_catalog,
+        expect_records_config: ExpectedRecordsConfig,
+        should_validate_schema: Boolean,
+        should_validate_data_points: Boolean,
+        empty_streams: Set[EmptyStreamConfiguration],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
+        docker_runner: ConnectorRunner,
+        detailed_logger,
     ):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in filter_output(output, Type.RECORD)]
@@ -810,7 +810,7 @@ class TestBasicRead(BaseTest):
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
             for pk_path, pk_value in pks.items():
                 assert (
-                        pk_value is not None
+                    pk_value is not None
                 ), f"Primary key subkeys {repr(pk_path)} have null values or not present in {record.stream} stream records."
 
         # TODO: remove this condition after https://github.com/airbytehq/airbyte/issues/8312 is done
@@ -868,13 +868,13 @@ class TestBasicRead(BaseTest):
 
     @staticmethod
     def compare_records(
-            stream_name: str,
-            actual: List[Mapping[str, Any]],
-            expected: List[Mapping[str, Any]],
-            extra_fields: bool,
-            exact_order: bool,
-            extra_records: bool,
-            detailed_logger: Logger,
+        stream_name: str,
+        actual: List[Mapping[str, Any]],
+        expected: List[Mapping[str, Any]],
+        extra_fields: bool,
+        exact_order: bool,
+        extra_records: bool,
+        detailed_logger: Logger,
     ):
         """Compare records using combination of restrictions"""
         if exact_order:
