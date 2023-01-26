@@ -30,6 +30,7 @@ export const getExcludedConnectorIds = (workspaceId?: string): string[] =>
         ConnectorIds.Destinations.MeiliSearch, // hide MeiliSearch Destination https://github.com/airbytehq/airbyte/issues/16313
         ConnectorIds.Destinations.RabbitMq, // hide RabbitMQ Destination https://github.com/airbytehq/airbyte/issues/16315
         ConnectorIds.Destinations.AmazonSqs, // hide Amazon SQS Destination https://github.com/airbytehq/airbyte/issues/16316
+        ConnectorIds.Sources.AmazonSellerPartner, // hide Amazon Seller Partner Source https://github.com/airbytehq/airbyte/issues/14734
         // revert me
         ...(workspaceId !== "d705a766-e9e3-4689-85cb-52143422317d" // `oauth-testing` workspace for review
           ? [ConnectorIds.Sources.YouTubeAnalyticsBusiness] // Youtube Analytics Business
