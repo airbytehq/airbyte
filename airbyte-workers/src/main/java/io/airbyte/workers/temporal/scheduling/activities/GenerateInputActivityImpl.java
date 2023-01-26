@@ -19,6 +19,7 @@ import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -28,11 +29,14 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.utils.ConfigReplacer;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -40,6 +44,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
+  private static final Logger LOGGER = LoggerFactory.getLogger(GenerateInputActivity.class);
 
   public GenerateInputActivityImpl(final JobPersistence jobPersistence,
                                    final ConfigRepository configRepository) {
@@ -50,6 +55,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
+    final ConfigReplacer configReplacer = new ConfigReplacer(LOGGER);
+
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, input.getAttemptId(), JOB_ID_KEY, input.getJobId()));
       final long jobId = input.getJobId();
@@ -94,6 +101,9 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final UUID connectionId = UUID.fromString(job.getScope());
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
+      final StandardSourceDefinition sourceDefinition =
+          configRepository.getSourceDefinitionFromSource(standardSync.getSourceId());
+
       final StandardDestinationDefinition destinationDefinition =
           configRepository.getDestinationDefinitionFromDestination(standardSync.getDestinationId());
       final String destinationNormalizationDockerImage = destinationDefinition.getNormalizationConfig() != null
@@ -109,7 +119,9 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withAttemptId((long) attempt)
           .withDockerImage(config.getSourceDockerImage())
           .withProtocolVersion(config.getSourceProtocolVersion())
-          .withIsCustomConnector(config.getIsSourceCustomConnector());
+          .withIsCustomConnector(config.getIsSourceCustomConnector())
+          .withAllowedHosts(ConfigType.RESET_CONNECTION.equals(jobConfigType) ? null
+              : configReplacer.getAllowedHosts(sourceDefinition.getAllowedHosts(), config.getSourceConfiguration()));
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
@@ -119,7 +131,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withIsCustomConnector(config.getIsDestinationCustomConnector())
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
           .withSupportsDbt(destinationDefinition.getSupportsDbt())
-          .withNormalizationIntegrationType(normalizationIntegrationType);
+          .withNormalizationIntegrationType(normalizationIntegrationType)
+          .withAllowedHosts(configReplacer.getAllowedHosts(destinationDefinition.getAllowedHosts(), config.getDestinationConfiguration()));
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
