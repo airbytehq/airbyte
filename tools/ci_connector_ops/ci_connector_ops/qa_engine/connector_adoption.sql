@@ -22,7 +22,7 @@ job_status_per_version AS (
     FROM official_connector_syncs 
     GROUP BY connector_definition_id, docker_repository, connector_version, job_status
 ),
-sucess_failure_by_connector_version AS (
+success_failure_by_connector_version AS (
     SELECT 
         connector_definition_id,
         docker_repository,
@@ -42,5 +42,5 @@ SELECT
   * 
 FROM 
   adoption_per_version 
-  LEFT JOIN sucess_failure_by_connector_version 
+  LEFT JOIN success_failure_by_connector_version 
   USING (connector_definition_id, docker_repository, connector_version);
