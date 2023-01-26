@@ -8,7 +8,7 @@ CDK_DIR=$ROOT_DIR/airbyte-cdk/python/
 for directory in $CONNECTORS_DIR/source-* ; do
   MANIFEST_DIRECTORY=$(basename $directory | tr - _)
   SOURCE_NAME=${MANIFEST_DIRECTORY#source_}
-  if test -f "$directory/source_$SOURCE_NAME/$SOURCE_NAME.yaml"; then
+  if test -f "$directory/$MANIFEST_DIRECTORY/manifest.yaml"; then
     cd $directory
 
     rm -rf .venv
