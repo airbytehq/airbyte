@@ -21,9 +21,9 @@ import { useNotificationService } from "hooks/services/Notification";
 import useWorkspace, { WebhookPayload } from "hooks/services/useWorkspace";
 import { links } from "utils/links";
 
-import { Content, SettingsCard } from "../../SettingsComponents";
 import help from "./help.png";
 import styles from "./WebHookForm.module.scss";
+import { Content, SettingsCard } from "../../SettingsComponents";
 
 const enum WebhookAction {
   Test = "test",
