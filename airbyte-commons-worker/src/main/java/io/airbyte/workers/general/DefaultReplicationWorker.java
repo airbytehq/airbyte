@@ -649,9 +649,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           unexpectedFieldNames.add(fieldName);
         }
       }
-    } else {
-      throw new RuntimeException(String.format("Unexpected data in record: %s", data));
     }
+    // If it's not an object it's malformed, but we tolerate it here - it will be logged as an error by
+    // the validation.
   }
 
   /**
