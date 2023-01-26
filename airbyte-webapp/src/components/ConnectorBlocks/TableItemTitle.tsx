@@ -9,8 +9,8 @@ import { Text } from "components/ui/Text";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { getIcon } from "utils/imageUtils";
 
-import { Button } from "../ui/Button";
 import styles from "./TableItemTitle.module.scss";
+import { Button } from "../ui/Button";
 
 interface TableItemTitleProps {
   type: "source" | "destination";
