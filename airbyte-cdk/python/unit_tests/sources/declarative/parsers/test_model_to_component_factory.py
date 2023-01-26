@@ -116,7 +116,6 @@ requester:
   request_parameters:
     unit: "day"
 retriever:
-  name: "{{ parameters['name'] }}"
   stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime: "{{ config['start_time'] }}"
@@ -128,7 +127,6 @@ retriever:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
   paginator:
     type: NoPagination
-  primary_key: "{{ parameters['primary_key'] }}"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -138,10 +136,11 @@ list_stream:
   $ref: "#/partial_stream"
   $parameters:
     name: "lists"
-    primary_key: "id"
     extractor:
       $ref: "#/extractor"
       field_path: ["{{ parameters['name'] }}"]
+  name: "lists"
+  primary_key: "id"
   retriever:
     $ref: "#/retriever"
     requester:
@@ -345,17 +344,17 @@ def test_create_substream_slicer():
           field_path: []
     stream_A:
       type: DeclarativeStream
+      name: "A"
+      primary_key: "id"
       $parameters:
-        name: "A"
-        primary_key: "id"
         retriever: "#/retriever"
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
     stream_B:
       type: DeclarativeStream
+      name: "B"
+      primary_key: "id"
       $parameters:
-        name: "B"
-        primary_key: "id"
         retriever: "#/retriever"
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
@@ -650,9 +649,10 @@ def test_config_with_defaults():
     content = """
     lists_stream:
       type: "DeclarativeStream"
+      name: "lists"
+      primary_key: id
       $parameters:
         name: "lists"
-        primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
           name: "{{ parameters.stream_name }}"
@@ -734,10 +734,7 @@ def test_create_default_paginator():
     paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
 
     paginator = factory.create_component(
-        model_type=DefaultPaginatorModel,
-        component_definition=paginator_manifest,
-        config=input_config,
-        url_base="https://airbyte.io"
+        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io"
     )
 
     assert isinstance(paginator, DefaultPaginator)

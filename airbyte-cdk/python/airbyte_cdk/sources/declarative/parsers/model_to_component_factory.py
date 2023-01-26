@@ -404,7 +404,7 @@ class ModelToComponentFactory:
         )
 
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
-        retriever = self._create_component_from_model(model=model.retriever, config=config)
+        retriever = self._create_component_from_model(model=model.retriever, config=config, name=model.name, primary_key=model.primary_key)
 
         cursor_field = self._get_cursor_field_from_stream_slicer(model)
 
@@ -681,8 +681,10 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    def create_simple_retriever(self, model: SimpleRetrieverModel, config: Config, **kwargs) -> SimpleRetriever:
-        requester = self._create_component_from_model(model=model.requester, config=config)
+    def create_simple_retriever(
+        self, model: SimpleRetrieverModel, config: Config, *, name: str, primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    ) -> SimpleRetriever:
+        requester = self._create_component_from_model(model=model.requester, config=config, name=name)
         record_selector = self._create_component_from_model(model=model.record_selector, config=config)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         paginator = (
@@ -698,9 +700,9 @@ class ModelToComponentFactory:
 
         if self._limit_slices_fetched:
             return SimpleRetrieverTestReadDecorator(
-                name=model.parameters.get("name", ""),
+                name=name,
                 paginator=paginator,
-                primary_key=model.parameters.get("primary_key"),
+                primary_key=primary_key,
                 requester=requester,
                 record_selector=record_selector,
                 stream_slicer=stream_slicer,
@@ -709,9 +711,9 @@ class ModelToComponentFactory:
                 parameters=model.parameters,
             )
         return SimpleRetriever(
-            name=model.parameters.get("name", ""),
+            name=name,
             paginator=paginator,
-            primary_key=model.parameters.get("primary_key"),
+            primary_key=primary_key,
             requester=requester,
             record_selector=record_selector,
             stream_slicer=stream_slicer,
