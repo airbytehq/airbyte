@@ -1,100 +1,127 @@
 connector_image: airbyte/source-amazon-seller-partner:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "integration_tests/spec.json"
+    tests:
+      - spec_path: "integration_tests/spec.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.30"
   connection:
-    # - config_path: "secrets/config.json"
-    #   status: "succeed"
-    #   timeout_seconds: 60
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-      timeout_seconds: 60
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+        timeout_seconds: 60
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+        timeout_seconds: 60
   discovery:
-    - config_path: "secrets/config.json"
-# TODO: uncomment when at least one record exist
-#  basic_read:
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog.json"
-#      empty_streams:
-#        [
-#          "Orders",
-#          "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
-#          "GET_MERCHANT_LISTINGS_ALL_DATA",
-#          "GET_FBA_INVENTORY_AGED_DATA",
-#          "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
-#          "GET_FLAT_FILE_OPEN_LISTINGS_DATA",
-#          "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA",
-#          "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA",
-#          "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT",
-#          "VendorDirectFulfillmentShipping"
-#        ]
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_alternate_purchase.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_item_comparison.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_market_basket.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_repeat_purchase.json.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_search_terms.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_fba_fulfillment_customer_shipment_replacement_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_browse_tree_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_restock_inventory.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_estimated_fba_fees_txt_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_fulfillment_current_inventory_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_fulfillment_customer_shipment_promotion_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_fulfillment_inventory_adjustments_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_fulfillment_inventory_receipts_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_fulfillment_inventory_summary_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_fulfillment_monthly_inventory_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_myi_unsuppressed_inventory_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_sns_forecast_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_sns_performance_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_flat_file_archived_orders_data_by_order_date.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_flat_file_returns_data_by_return_date.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_merchant_cancelled_listings_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_merchant_listings_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_merchant_listings_data_back_compat.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_merchants_listings_fyp_report.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_merchant_listings_inactive_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_stranded_inventory_ui_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_xml_all_orders_data_by_order_date_general.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_ledger_detail_view_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_fba_inventory_planning_data.json"
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog_get_ledger_summary_view_data.json"
-# TODO: uncomment when Orders (or any other incremental) stream is filled with data
-#  incremental:
-#   - config_path: "secrets/config.json"
-#     configured_catalog_path: "integration_tests/configured_catalog.json"
-#     future_state_path: "integration_tests/future_state.json"
-#     cursor_paths:
-#       Orders: ["LastUpdateDate"]
-#  full_refresh:
-#   - config_path: "secrets/config.json"
-#     configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.30"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 2400
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        # TODO: Add records for empty streams - https://github.com/airbytehq/airbyte/issues/21555
+        empty_streams:
+          - name: Orders
+            bypass_reason: "no records"
+          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            bypass_reason: "no records"
+          - name: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA
+            bypass_reason: "no records"
+          - name: GET_SELLER_FEEDBACK_DATA
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA
+            bypass_reason: "no records"
+          - name: GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT
+            bypass_reason: "no records"
+          - name: GET_LEDGER_DETAIL_VIEW_DATA
+            bypass_reason: "no records"
+          - name: GET_AFN_INVENTORY_DATA_BY_COUNTRY
+            bypass_reason: "no records"
+          - name: GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA
+            bypass_reason: "no records"
+          - name: GET_VENDOR_SALES_REPORT
+            bypass_reason: "no records"
+          - name: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA
+            bypass_reason: "no records"
+          - name: GET_FBA_SNS_FORECAST_DATA
+            bypass_reason: "no records"
+          - name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA
+            bypass_reason: "no records"
+          - name: GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
+            bypass_reason: "no records"
+          - name: GET_AFN_INVENTORY_DATA
+            bypass_reason: "no records"
+          - name: GET_MERCHANT_CANCELLED_LISTINGS_DATA
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA
+            bypass_reason: "no records"
+          - name: GET_LEDGER_SUMMARY_VIEW_DATA
+            bypass_reason: "no records"
+          - name: GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT
+            bypass_reason: "no records"
+          - name: GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA
+            bypass_reason: "no records"
+          - name: GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT
+            bypass_reason: "no records"
+          - name: GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
+            bypass_reason: "no records"
+          - name: VendorDirectFulfillmentShipping
+            bypass_reason: "no records"
+          - name: GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE
+            bypass_reason: "no records"
+          - name: GET_VENDOR_INVENTORY_REPORT
+            bypass_reason: "no records"
+          - name: GET_FBA_SNS_PERFORMANCE_DATA
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_CURRENT_INVENTORY_DATA
+            bypass_reason: "no records"
+          - name: GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
+            bypass_reason: "no records"
+          - name: GET_FBA_INVENTORY_PLANNING_DATA
+            bypass_reason: "no records"
+          - name: GET_FBA_STORAGE_FEE_CHARGES_DATA
+            bypass_reason: "no records"
+          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
+            bypass_reason: "no records"
+          - name: GET_SALES_AND_TRAFFIC_REPORT
+            bypass_reason: "no records"
+          - name: GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA
+            bypass_reason: "no records"
+          - name: GET_STRANDED_INVENTORY_UI_DATA
+            bypass_reason: "no records"
+          - name: GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA
+            bypass_reason: "no records"
+          - name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            bypass_reason: "no records"
+          - name: ListFinancialEvents
+            bypass_reason: "no records"
+  incremental:
+    tests:
+      - config_path: "secrets/config_old_data.json"
+        configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+        future_state:
+          future_state_path: "integration_tests/future_state.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
