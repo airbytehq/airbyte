@@ -2,8 +2,8 @@
 @use "scss/variables";
 
 $cell-height: 28px;
-$cell-min-width: 100px;
-$cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
+$cell-padding: variables.$spacing-xl + variables.$spacing-sm;
+$cell-fixed-width: 100px;
 
 .customTableStyle {
   td {
@@ -21,7 +21,7 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   text-transform: capitalize;
 
   &:first-child {
-    padding-left: $cell-left-padding;
+    padding-left: $cell-padding;
     border-radius: 0;
   }
 
@@ -40,7 +40,7 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   text-transform: capitalize;
 
   &:first-child {
-    padding-left: $cell-left-padding;
+    padding-left: $cell-padding;
     border-radius: 0;
   }
 
@@ -55,8 +55,13 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   padding: 0;
 
   &:first-child {
-    padding-left: $cell-left-padding;
+    padding-left: $cell-padding;
     border-radius: 0;
+    min-width: 130px;
+  }
+
+  &:last-child {
+    padding-right: $cell-padding;
   }
 }
 
@@ -64,33 +69,25 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   @extend %bodyCell;
 
   color: colors.$dark-blue;
-
-  // allow cell to grow
-  min-width: 200px;
-  max-width: 350px;
+  max-width: 0;
 }
 
 .dataTypeCell {
   @extend %bodyCell;
 
-  min-width: $cell-min-width;
+  width: $cell-fixed-width;
   color: colors.$grey-400;
 }
 
 .cursorCell {
-  display: flex;
-  align-items: center;
-  height: $cell-height;
-  overflow: unset;
-  padding-left: 0;
-  width: 100px;
-  min-width: $cell-min-width;
+  padding: 0;
+  width: $cell-fixed-width;
 }
 
 .pkCell {
   @extend %bodyCell;
 
-  min-width: $cell-min-width;
+  width: $cell-fixed-width;
 }
 
 .arrowCell {
