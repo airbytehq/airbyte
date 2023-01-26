@@ -56,6 +56,7 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
    * Similar to #markFlushedAsCommmitted, this method should no longer be used to align with the
    * changes to destination checkpointing where flush/commit operations will be bundled
    */
+  @Deprecated
   @Override
   public void markPendingAsFlushed() {
     moveToNextPhase(streamToLastPendingState, streamToLastFlushedState);
@@ -71,6 +72,7 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
    * use in favor of #markPendingAsCommitted where states will be flushed/committed as a singular
    * transaction
    */
+  @Deprecated
   @Override
   public void markFlushedAsCommitted() {
     moveToNextPhase(streamToLastFlushedState, streamToLastCommittedState);

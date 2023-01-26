@@ -263,11 +263,6 @@ public class StagingConsumerFactory {
                                           final boolean purgeStagingData) {
     return (hasFailed) -> {
       if (!hasFailed) {
-        /*
-         * This section is mostly a no-op since the #flushBufferFunction will flush and commit within
-         * the same operation. What this section previously included was logic to ensure any flushed
-         * files were moved from the staging area -> temp tables -> raw destination table
-         */
         stagingOperations.onDestinationCloseOperations(database, writeConfigs);
         LOGGER.info("Finalizing tables in destination completed.");
       }

@@ -17,8 +17,6 @@ import java.util.Queue;
  * <li>committed - associated records have been committed</li>
  * </ol>
  *
- * Since the methods for flushing and committing are not atomic, adding in a method
- * `markPendingAsCommitted` while deprecating `markPendingAsFlushed`
  */
 public interface DestStateLifecycleManager {
 

@@ -203,8 +203,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
     streamToIgnoredRecordCount
         .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
-    // If the replication has failed then log the issue as failed otherwise wrap up any remaining data
-    // in the buffer
     if (hasFailed) {
       LOGGER.error("executing on failed close procedure.");
     } else {
