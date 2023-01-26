@@ -186,7 +186,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                        final Database database)
       throws SQLException {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
-    final List<InvalidCursorInfo> tablesWithInvalidCursorToWarnAbout = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
@@ -219,14 +218,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       }
 
       if (!verifyCursorColumnValues(database, stream.getNamespace(), stream.getName(), cursorField.get())) {
-        tablesWithInvalidCursorToWarnAbout.add(
+        tablesWithInvalidCursor.add(
             new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(),
                 cursorType.toString(), "Cursor column contains NULL value"));
       }
-    }
-
-    if (!tablesWithInvalidCursorToWarnAbout.isEmpty()) {
-      LOGGER.warn("source-postgres detected null cursor value " + InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor));
     }
 
     if (!tablesWithInvalidCursor.isEmpty()) {
