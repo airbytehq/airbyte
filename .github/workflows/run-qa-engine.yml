@@ -27,4 +27,6 @@ jobs:
       - name: Install ci-connector-ops package
         run: pip install --quiet -e ./tools/ci_connector_ops
       - name: Run QA Engine
+        env:
+          QA_ENGINE_AIRBYTE_DATA_PROD_SA: '${{ secrets.QA_ENGINE_AIRBYTE_DATA_PROD_SA }}'
         run: run-qa-engine

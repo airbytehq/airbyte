@@ -5,6 +5,8 @@ import { useIntl } from "react-intl";
 import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
 
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import {
   useConnectorBuilderTestState,
   useConnectorBuilderFormState,
@@ -29,6 +31,7 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
 };
 
 export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
+  const analyticsService = useAnalyticsService();
   const { formatMessage } = useIntl();
   const { selectedView, setSelectedView } = useConnectorBuilderFormState();
   const { streams, testStreamIndex, setTestStreamIndex } = useConnectorBuilderTestState();
@@ -45,6 +48,10 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => 
 
       if (selectedView !== "global") {
         setSelectedView(selectedStreamIndex);
+        analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_SELECT, {
+          actionDescription: "Stream view selected in testing panel",
+          stream_name: selectedStreamName,
+        });
       }
     }
   };

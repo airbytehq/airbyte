@@ -1,5 +1,4 @@
 import { Form, Formik, useField, useFormikContext } from "formik";
-import { JSONSchema7 } from "json-schema";
 import { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useEffectOnce } from "react-use";
@@ -9,7 +8,10 @@ import { Button } from "components/ui/Button";
 import { Callout } from "components/ui/Callout";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
+import { Action, Namespace } from "core/analytics";
 import { FormikPatch } from "core/form/FormikPatch";
+import { AirbyteJSONSchema } from "core/jsonSchema/types";
+import { useAnalyticsService } from "hooks/services/Analytics";
 
 import { BuilderField } from "./BuilderField";
 import styles from "./InputsForm.module.scss";
@@ -19,7 +21,7 @@ const supportedTypes = ["string", "integer", "number", "array", "boolean", "enum
 
 export interface InputInEditing {
   key: string;
-  definition: JSONSchema7;
+  definition: AirbyteJSONSchema;
   required: boolean;
   isNew?: boolean;
   showDefaultValueField: boolean;
@@ -68,6 +70,7 @@ export const InputForm = ({
   inputInEditing: InputInEditing;
   onClose: (newInput?: BuilderFormInput) => void;
 }) => {
+  const analyticsService = useAnalyticsService();
   const { values, setFieldValue } = useFormikContext<BuilderFormValues>();
   const [inputs, , helpers] = useField<BuilderFormInput[]>("inputs");
   const inferredInputs = useMemo(
@@ -112,6 +115,22 @@ export const InputForm = ({
           );
           onClose(newInput);
         }
+        analyticsService.track(
+          Namespace.CONNECTOR_BUILDER,
+          values.isNew ? Action.USER_INPUT_CREATE : Action.USER_INPUT_EDIT,
+          {
+            actionDescription: values.isNew ? "New user input created" : "Existing user input edited",
+            user_input_id: values.key,
+            user_input_name: values.definition.title,
+            hint: values.definition.description,
+            type: values.type,
+            allowed_enum_values: values.definition.enum,
+            secret_field: values.definition.airbyte_secret,
+            required_field: values.definition.required,
+            enable_default_value: values.showDefaultValueField,
+            default_value: values.definition.default,
+          }
+        );
       }}
     >
       <>
@@ -121,6 +140,11 @@ export const InputForm = ({
           onDelete={() => {
             helpers.setValue(inputs.value.filter((input) => input.key !== inputInEditing.key));
             onClose();
+            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.USER_INPUT_DELETE, {
+              actionDescription: "User input deleted",
+              user_input_id: inputInEditing.key,
+              user_input_name: inputInEditing.definition.title,
+            });
           }}
           onClose={() => {
             onClose();

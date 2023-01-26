@@ -13,7 +13,9 @@ import { Callout } from "components/ui/Callout";
 import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { Action, Namespace } from "core/analytics";
 import { StreamReadInferredSchema } from "core/request/ConnectorBuilderClient";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import {
   useConnectorBuilderFormState,
   useConnectorBuilderTestState,
@@ -62,7 +64,8 @@ function getDiff(existingSchema: string | undefined, detectedSchema: object): Di
 }
 
 export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }) => {
-  const { testStreamIndex } = useConnectorBuilderTestState();
+  const analyticsService = useAnalyticsService();
+  const { streams, testStreamIndex } = useConnectorBuilderTestState();
   const { editorView } = useConnectorBuilderFormState();
   const [field, , helpers] = useField(`streams[${testStreamIndex}].schema`);
   const formattedSchema = useMemo(() => inferredSchema && formatJson(inferredSchema, true), [inferredSchema]);
@@ -97,6 +100,10 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
                     disabled={field.value === formattedSchema}
                     onClick={() => {
                       helpers.setValue(formattedSchema);
+                      analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.OVERWRITE_SCHEMA, {
+                        actionDescription: "Declared schema overwritten by detected schema",
+                        stream_name: streams[testStreamIndex]?.name,
+                      });
                     }}
                   >
                     <FormattedMessage
@@ -117,6 +124,10 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
                           variant="dark"
                           onClick={() => {
                             helpers.setValue(schemaDiff.mergedSchema);
+                            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.MERGE_SCHEMA, {
+                              actionDescription: "Detected and Declared schemas merged to update declared schema",
+                              stream_name: streams[testStreamIndex]?.name,
+                            });
                           }}
                         >
                           <FormattedMessage id="connectorBuilder.mergeSchemaButton" />
@@ -138,6 +149,10 @@ export const SchemaDiffView: React.FC<SchemaDiffViewProps> = ({ inferredSchema }
           variant="secondary"
           onClick={() => {
             helpers.setValue(formattedSchema);
+            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.OVERWRITE_SCHEMA, {
+              actionDescription: "Declared schema overwritten by detected schema",
+              stream_name: streams[testStreamIndex]?.name,
+            });
           }}
         >
           <FormattedMessage id="connectorBuilder.useSchemaButton" />

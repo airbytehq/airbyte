@@ -10,6 +10,8 @@ import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -57,6 +59,7 @@ interface BuilderSidebarProps {
 }
 
 export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ className, toggleYamlEditor }) => {
+  const analyticsService = useAnalyticsService();
   const { formatMessage } = useIntl();
   const { hasErrors } = useBuilderErrors();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
@@ -71,6 +74,9 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
         setValues(DEFAULT_BUILDER_FORM_VALUES);
         setSelectedView("global");
         closeConfirmationModal();
+        analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.RESET_ALL, {
+          actionDescription: "Connector Builder UI reset back to blank slate",
+        });
       },
     });
   };
@@ -100,7 +106,12 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
         className={styles.globalConfigButton}
         selected={selectedView === "global"}
         showErrorIndicator={hasErrors(true, ["global"])}
-        onClick={() => handleViewSelect("global")}
+        onClick={() => {
+          handleViewSelect("global");
+          analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.GLOBAL_CONFIGURATION_SELECT, {
+            actionDescription: "Global Configuration view selected",
+          });
+        }}
       >
         <FontAwesomeIcon icon={faSliders} />
         <FormattedMessage id="connectorBuilder.globalConfiguration" />
@@ -111,7 +122,12 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
         showErrorIndicator={false}
         className={styles.globalConfigButton}
         selected={selectedView === "inputs"}
-        onClick={() => handleViewSelect("inputs")}
+        onClick={() => {
+          handleViewSelect("inputs");
+          analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.USER_INPUTS_SELECT, {
+            actionDescription: "User Inputs view selected",
+          });
+        }}
       >
         <FontAwesomeIcon icon={faUser} />
         <FormattedMessage
@@ -131,13 +147,20 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
       </div>
 
       <div className={styles.streamList}>
-        {values.streams.map(({ name }, num) => (
+        {values.streams.map(({ name, id }, num) => (
           <ViewSelectButton
             key={num}
             data-testid={`navbutton-${String(num)}`}
             selected={selectedView === num}
             showErrorIndicator={hasErrors(true, [num])}
-            onClick={() => handleViewSelect(num)}
+            onClick={() => {
+              handleViewSelect(num);
+              analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_SELECT, {
+                actionDescription: "Stream view selected",
+                stream_id: id,
+                stream_name: name,
+              });
+            }}
           >
             {name && name.trim() ? (
               <Text className={styles.streamViewText}>{name}</Text>
