@@ -26,7 +26,7 @@ export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({
 }) => {
   const { formatMessage } = useIntl();
 
-  if (!stage || stage === ReleaseStage.custom) {
+  if (!stage) {
     return null;
   }
 
