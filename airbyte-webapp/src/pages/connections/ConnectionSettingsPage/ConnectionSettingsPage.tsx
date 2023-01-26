@@ -19,7 +19,8 @@ export const ConnectionSettingsPageInner: React.FC = () => {
   const { connection } = useConnectionEditService();
   const { mutateAsync: deleteConnection } = useDeleteConnection();
   const canUpdateDataResidency = useFeature(FeatureItem.AllowChangeDataGeographies);
-  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
+  // TODO: Disabled until feature is implemented in backend
+  const canSendSchemaUpdateNotifications = false; // useFeature(FeatureItem.AllowAutoDetectSchema);
 
   const [isAdvancedMode] = useAdvancedModeSetting();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_SETTINGS);
@@ -27,7 +28,7 @@ export const ConnectionSettingsPageInner: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {allowAutoDetectSchema && <SchemaUpdateNotifications />}
+      {canSendSchemaUpdateNotifications && <SchemaUpdateNotifications />}
       {canUpdateDataResidency && <UpdateConnectionDataResidency />}
       {isAdvancedMode && <StateBlock connectionId={connection.connectionId} />}
       <DeleteBlock type="connection" onDelete={onDelete} />
