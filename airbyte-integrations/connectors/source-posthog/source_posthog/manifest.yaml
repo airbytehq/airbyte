@@ -46,8 +46,8 @@ definitions:
   projects_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "projects"
       path: "projects"
+    name: "projects"
 
   base_slicing_stream:
     $ref: "#/definitions/base_stream"
@@ -66,44 +66,44 @@ definitions:
   cohorts_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
-      name: "cohorts"
       path: "cohorts"
+    name: "cohorts"
 
   feature_flags_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
-      name: "feature_flags"
       path: "feature_flags"
+    name: "feature_flags"
 
   persons_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
-      name: "persons"
       path: "persons"
+    name: "persons"
 
   annotations_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
-      name: "annotations"
       path: "annotations"
+    name: "annotations"
 
   insights_stream:
     $ref: "#/definitions/base_slicing_stream"
     $parameters:
-      name: "insights"
       path: "insights"
+    name: "insights"
 
   events_stream:
     $parameters:
-      name: "events"
       path: "events"
+    name: "events"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
       class_name: source_posthog.components.EventsSimpleRetriever
-      name: "{{ parameters['name'] }}"
-      primary_key: "{{ parameters['primary_key'] }}"
+      name: "#/definitions/events_stream/name"
+      primary_key: "#/definitions/events_stream/primary_key"
       record_selector:
         $ref: "#/definitions/selector"
       requester:
