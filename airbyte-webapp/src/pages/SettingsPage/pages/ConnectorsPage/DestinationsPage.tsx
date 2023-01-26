@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
@@ -22,6 +22,8 @@ const DestinationsPage: React.FC = () => {
   const { destinations } = useDestinationList();
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
+  const feedbackListRef = useRef(feedbackList);
+  feedbackListRef.current = feedbackList;
 
   const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
   const [updatingDefinitionId, setUpdatingDefinitionId] = useState<string>();
@@ -36,18 +38,18 @@ const DestinationsPage: React.FC = () => {
           destinationDefinitionId: id,
           dockerImageTag: version,
         });
-        setFeedbackList({ ...feedbackList, [id]: "success" });
+        setFeedbackList({ ...feedbackListRef.current, [id]: "success" });
       } catch (e) {
         const messageId = e.status === 422 ? "form.imageCannotFound" : "form.someError";
         setFeedbackList({
-          ...feedbackList,
+          ...feedbackListRef.current,
           [id]: formatMessage({ id: messageId }),
         });
       } finally {
         setUpdatingDefinitionId(undefined);
       }
     },
-    [feedbackList, formatMessage, updateDestinationDefinition]
+    [formatMessage, updateDestinationDefinition]
   );
 
   const usedDestinationDefinitions = useMemo<DestinationDefinitionRead[]>(() => {
