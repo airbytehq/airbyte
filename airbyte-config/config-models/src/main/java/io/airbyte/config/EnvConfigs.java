@@ -1124,7 +1124,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public boolean getAutoDetectSchema() {
-    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false);
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, true);
   }
 
   @Override
