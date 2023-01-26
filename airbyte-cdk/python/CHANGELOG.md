@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.25.1
+Low-Code CDK: make DatetimeStreamSlicer.step as InterpolatedString
 Low-Code: SubstreamSlicer.parent_key - dpath support added
 
 ## 0.25.0
