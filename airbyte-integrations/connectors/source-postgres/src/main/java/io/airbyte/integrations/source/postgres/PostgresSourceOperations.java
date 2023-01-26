@@ -185,7 +185,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
         case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
         case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
-        case "jsonb" -> putObject(json, columnName, resultSet, colIndex, PGobject.class);
+        case "jsonb" -> putJsonb(json, columnName, resultSet, colIndex);
         case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
         case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
         case "_numeric", "_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
@@ -219,6 +219,16 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
           }
         }
       }
+    }
+  }
+
+  private void putJsonb(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+    final PGobject object = getObject(resultSet, colIndex, PGobject.class);
+
+    try {
+      node.put(columnName, new ObjectMapper().readTree(object.getValue()));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("Could not parse 'jsonb' value:" + e);
     }
   }
 

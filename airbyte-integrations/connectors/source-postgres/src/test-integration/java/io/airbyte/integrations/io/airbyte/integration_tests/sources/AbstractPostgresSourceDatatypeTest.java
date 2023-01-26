@@ -259,8 +259,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 JsonSchemaPrimitive.BOOLEAN,
                 JsonSchemaPrimitive.NUMBER)
                 .build())
-            .addInsertValues("null", "'[1, 2, 3]'::jsonb")
-            .addExpectedValues(null, "[1, 2, 3]")
+            .addInsertValues("null", "'10000'::jsonb", "'true'::jsonb")
+            .addExpectedValues(null, "10000", "true")
             .build());
 
     addDataTypeTestData(
