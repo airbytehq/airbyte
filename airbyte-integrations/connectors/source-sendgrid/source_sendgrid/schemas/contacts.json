@@ -39,10 +39,12 @@
       "type": ["null", "array"]
     },
     "created_at": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "updated_at": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "_metadata": {
       "type": "object",
