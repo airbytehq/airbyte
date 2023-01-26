@@ -63,7 +63,7 @@ class MockStream(Stream):
             "test_single_parent_slices_no_records",
             [
                 ParentStreamConfig(
-                    stream=MockStream([{}], [], "first_stream"), parent_key="id", stream_slice_field="first_stream_id", options={}
+                    stream=MockStream([{}], [], "first_stream"), parent_key="id", stream_slice_field="first_stream_id", options={}, config={},
                 )
             ],
             [],
@@ -76,6 +76,7 @@ class MockStream(Stream):
                     parent_key="id",
                     stream_slice_field="first_stream_id",
                     options={},
+                    config={},
                 )
             ],
             [{"first_stream_id": 1, "parent_slice": {}}, {"first_stream_id": 2, "parent_slice": {}}],
@@ -88,6 +89,7 @@ class MockStream(Stream):
                     parent_key="id",
                     stream_slice_field="first_stream_id",
                     options={},
+                    config={},
                 )
             ],
             [
@@ -104,12 +106,14 @@ class MockStream(Stream):
                     parent_key="id",
                     stream_slice_field="first_stream_id",
                     options={},
+                    config={},
                 ),
                 ParentStreamConfig(
                     stream=MockStream(second_parent_stream_slice, more_records, "second_stream"),
                     parent_key="id",
                     stream_slice_field="second_stream_id",
                     options={},
+                    config={},
                 ),
             ],
             [
@@ -125,11 +129,11 @@ class MockStream(Stream):
 def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
     if expected_slices is None:
         try:
-            SubstreamSlicer(parent_stream_configs=parent_stream_configs, options={})
+            SubstreamSlicer(parent_stream_configs=parent_stream_configs, options={}, config={})
             assert False
         except ValueError:
             return
-    slicer = SubstreamSlicer(parent_stream_configs=parent_stream_configs, options={})
+    slicer = SubstreamSlicer(parent_stream_configs=parent_stream_configs, options={}, config={})
     slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices
 
@@ -154,16 +158,18 @@ def test_update_cursor(test_name, stream_slice, expected_state):
             parent_key="id",
             stream_slice_field="first_stream_id",
             options={},
+            config={},
         ),
         ParentStreamConfig(
             stream=MockStream(second_parent_stream_slice, more_records, "second_stream"),
             parent_key="id",
             stream_slice_field="second_stream_id",
             options={},
+            config={},
         ),
     ]
 
-    slicer = SubstreamSlicer(parent_stream_configs=parent_stream_name_to_config, options={})
+    slicer = SubstreamSlicer(parent_stream_configs=parent_stream_name_to_config, options={}, config={})
     slicer.update_cursor(stream_slice, None)
     updated_state = slicer.get_stream_state()
     assert expected_state == updated_state
@@ -244,6 +250,7 @@ def test_request_option(
                 parent_key="id",
                 stream_slice_field="first_stream_id",
                 options={},
+                config={},
                 request_option=parent_stream_request_options[0],
             ),
             ParentStreamConfig(
@@ -251,10 +258,12 @@ def test_request_option(
                 parent_key="id",
                 stream_slice_field="second_stream_id",
                 options={},
+                config={},
                 request_option=parent_stream_request_options[1],
             ),
         ],
         options={},
+        config={},
     )
     stream_slice = {"first_stream_id": "1234", "second_stream_id": "4567"}
 
