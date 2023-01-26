@@ -125,6 +125,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
             logger.setLevel(logging.DEBUG)
 
     def _validate_source(self):
+        """
+        Validates the connector manifest against the declarative component schema
+        """
         try:
             raw_component_schema = pkgutil.get_data("airbyte_cdk", "sources/declarative/declarative_component_schema.yaml")
             declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
@@ -150,10 +153,3 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     def _emit_manifest_debug_message(self, extra_args: dict):
         self.logger.debug("declarative source created from manifest", extra=extra_args)
-
-
-class SchemaEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, property) or isinstance(obj, Enum):
-            return str(obj)
-        return json.JSONEncoder.default(self, obj)
