@@ -13,10 +13,10 @@ import {
   useConnectorBuilderTestState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
-import { formatJson } from "../utils";
 import styles from "./PageDisplay.module.scss";
 import { SchemaDiffView } from "./SchemaDiffView";
+import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
+import { formatJson } from "../utils";
 
 interface PageDisplayProps {
   page: StreamReadSlicesItemPagesItem;

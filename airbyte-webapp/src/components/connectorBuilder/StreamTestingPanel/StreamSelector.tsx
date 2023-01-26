@@ -12,8 +12,8 @@ import {
   useConnectorBuilderFormState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { ReactComponent as CaretDownIcon } from "../../ui/ListBox/CaretDownIcon.svg";
 import styles from "./StreamSelector.module.scss";
+import { ReactComponent as CaretDownIcon } from "../../ui/ListBox/CaretDownIcon.svg";
 
 interface StreamSelectorProps {
   className?: string;
