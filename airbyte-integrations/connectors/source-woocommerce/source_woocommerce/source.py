@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceWoocommerce(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "woocommerce.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
