@@ -6,8 +6,9 @@ import copy
 import typing
 from typing import Any, Mapping
 
-PARAMETERS_STR = "$parameters"
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 
+PARAMETERS_STR = "$parameters"
 
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # CompositeErrorHandler
@@ -105,7 +106,8 @@ class ManifestComponentTransformer:
                 propagated_component["type"] = found_type
 
         # When there is no resolved type, we're not processing a component (likely a regular object) and don't need to propagate parameters
-        if "type" not in propagated_component:
+        valid_types = [k.__name__ for k in ModelToComponentFactory().PYDANTIC_MODEL_TO_CONSTRUCTOR.keys()]
+        if ("type" not in propagated_component or propagated_component.get("type") not in valid_types) and parent_field_identifier:
             return propagated_component
 
         # Combines parameters defined at the current level with parameters from parent components. Parameters at the current
@@ -118,6 +120,7 @@ class ManifestComponentTransformer:
         # both exist
         for parameter_key, parameter_value in current_parameters.items():
             propagated_component[parameter_key] = propagated_component.get(parameter_key) or parameter_value
+        print(f"type: {propagated_component.get('type')}")
 
         for field_name, field_value in propagated_component.items():
             if isinstance(field_value, dict):
@@ -135,6 +138,7 @@ class ManifestComponentTransformer:
                 for i, element in enumerate(field_value):
                     if isinstance(element, dict):
                         parent_type_field_identifier = f"{propagated_component.get('type')}.{field_name}"
+
                         field_value[i] = self.propagate_types_and_parameters(parent_type_field_identifier, element, current_parameters)
                 if excluded_parameter:
                     current_parameters[field_name] = excluded_parameter

@@ -65,6 +65,7 @@ definitions:
           q: "{{ config['query'] }}"
           in: "{{ ','.join(config['in']) }}"
           sortby: "{{ config['sortby'] }}"
+          type: "hello"
   top_headlines_stream:
     schema_loader:
       $ref: "#/definitions/schema_loader"

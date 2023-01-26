@@ -195,7 +195,9 @@ class DeclarativeComponentFactory:
             # If type is set instead of class_name, get the class_name from the CLASS_TYPES_REGISTRY
             definition[PARAMETERS_STR] = self._merge_dicts(kwargs.get(PARAMETERS_STR, dict()), definition.get(PARAMETERS_STR, dict()))
             object_type = definition.pop("type")
-            class_name = CLASS_TYPES_REGISTRY[object_type]
+            class_name = CLASS_TYPES_REGISTRY.get(object_type)
+            if not class_name:
+                return definition
             definition["class_name"] = class_name
             return self.create_component(definition, config, instantiate)()
         elif isinstance(definition, dict):
