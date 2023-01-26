@@ -56,7 +56,7 @@ public class IntegrationRunner {
   private final Destination destination;
   private final Source source;
   private static JsonSchemaValidator validator;
-  private final RecordWriter<AirbyteMessage> recordWriter;
+  private final AirbyteMessageRecordWriter recordWriter;
 
   public IntegrationRunner(final Destination destination) {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
@@ -79,7 +79,7 @@ public class IntegrationRunner {
     this.source = source;
     this.destination = destination;
     validator = new JsonSchemaValidator();
-    this.recordWriter = new RecordWriter<>();
+    this.recordWriter = new AirbyteMessageRecordWriter();
     Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
 
@@ -187,8 +187,6 @@ public class IntegrationRunner {
     watchForOrphanThreads(
         () -> messageIterator.forEachRemaining(
             message -> {
-              LOGGER.debug("*** incoming message type: {}", message.getType());
-              // System.out.println(Jsons.serialize(message));
               recordWriter.outputRecord(message);
             }),
         () -> System.exit(FORCED_EXIT_CODE),

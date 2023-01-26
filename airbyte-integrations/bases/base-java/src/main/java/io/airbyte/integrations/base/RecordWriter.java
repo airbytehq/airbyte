@@ -29,8 +29,9 @@ public class RecordWriter<T> {
   private final int messagesQueueSize;
   private final BlockingQueue<T> messagesQueue;
   private final int numThreads;
-  private final ExecutorService producerPool;
-  final BufferedWriter bufferedWriter;
+  private ExecutorService producerPool;
+  private final int writerBufferSize;
+  final private BufferedWriter bufferedWriter;
   private boolean started;
   private final Lock lock;
 
@@ -38,28 +39,26 @@ public class RecordWriter<T> {
 
     @Override
     public void run() {
-      final int sz = 100;
-      final List<T> ll = new ArrayList<>(sz);
+      final int maxObjectsFromQueue = 50;
+      final List<T> queueObjects = new ArrayList<>(maxObjectsFromQueue);
       while (true) {
-        // LOGGER.info("*** thread: intrp {} sz {}", RecordWriter.this.producerPool.isShutdown(),
-        // RecordWriter.this.messagesQueue.size());
         if (RecordWriter.this.producerPool.isShutdown() && RecordWriter.this.messagesQueue.peek() == null) {
-          LOGGER.info("*** thread interrupted");
-          ll.clear();
+          LOGGER.debug("*** thread interrupted");
+          queueObjects.clear();
           break;
         }
 
-        final int drained = RecordWriter.this.messagesQueue.drainTo(ll, sz);
-        // LOGGER.debug("*** {} message drained", drained);
+        final int drained = RecordWriter.this.messagesQueue.drainTo(queueObjects, maxObjectsFromQueue);
+         LOGGER.debug("*** {} message drained", drained);
         if (drained == 0) {
           try {
             Thread.sleep(100);
           } catch (final InterruptedException e) {
-            LOGGER.info("*** interrupt exception");
+            LOGGER.debug("*** interrupt exception");
           }
         } else {
           for (int i = 0; i < drained; i++) {
-            final String json = Jsons.serialize(ll.get(i));
+            final String json = Jsons.serialize(queueObjects.get(i));
             LOGGER.debug("*** msg from queue: {}", json);
             synchronized (RecordWriter.this.bufferedWriter) {
               try {
@@ -71,6 +70,13 @@ public class RecordWriter<T> {
               }
             }
           }
+        }
+      }
+      synchronized (RecordWriter.this.bufferedWriter) {
+        try {
+          RecordWriter.this.bufferedWriter.flush();
+        } catch (final IOException e) {
+          throw new RuntimeException(e);
         }
       }
     }
@@ -85,14 +91,18 @@ public class RecordWriter<T> {
     this.messagesQueueSize = messagesQueueSize;
     this.messagesQueue = new LinkedBlockingQueue<>(this.messagesQueueSize);
     this.numThreads = numThreads;
-    this.producerPool = Executors.newFixedThreadPool(this.numThreads);
-    this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(System.out), writerBufferSize);
     this.started = false;
+    this.writerBufferSize = writerBufferSize;
+    this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(System.out), this.writerBufferSize);
     this.lock = new ReentrantLock();
 
   }
 
   public void outputRecord(final T message) {
+    outputRecord_internal(message);
+  }
+
+  private void outputRecord_internal(final T message) {
     if (!started) {
       try {
         startWorkers();
@@ -109,51 +119,56 @@ public class RecordWriter<T> {
     }
   }
 
-  public void drainQueuea() {
-
+  public void drainQueueAndOutputRecord(final T message) {
+    drainQueueAndOutputRecord_internal(message);
   }
 
-  public void drainQueueAndOutputRecord(final T message) {
+  private void drainQueueAndOutputRecord_internal(final T message) {
+
+    try {
+      LOGGER.debug("*** draining queue");
+      shutdownWorkers(1, TimeUnit.MINUTES);
+      LOGGER.debug("*** queue drained -- writing out");
+      outputRecord_internal(message);
+    } catch (final InterruptedException | IOException e) {
+      throw new RuntimeException(e);
+    }
 
   }
 
   public void shutdownWorkers(final long timeout, final TimeUnit unit) throws InterruptedException, IOException {
-    LOGGER.info("*** shutdownWorkers: {}", this.started);
+    LOGGER.debug("*** shutdownWorkers: {}", this.started);
     try {
       this.lock.lock();
       if (this.started) {
-        LOGGER.info("*** shutdownNow");
+        LOGGER.debug("*** shutdownNow");
         this.producerPool.shutdownNow(); // TODO: check here
-        LOGGER.info("*** awaitTermination {} {}", timeout, unit.name());
+        LOGGER.debug("*** awaitTermination {} {}", timeout, unit.name());
         this.producerPool.awaitTermination(timeout, unit);
-        LOGGER.info("*** done awaitTermination");
-        synchronized (this.bufferedWriter) {
-          this.bufferedWriter.close();
-        }
-        LOGGER.info("*** done writer close");
+        LOGGER.debug("*** done awaitTermination");
         this.started = false;
       }
     } finally {
       this.lock.unlock();
     }
-    LOGGER.info("*** done shutdownWorkers");
+    LOGGER.debug("*** done shutdownWorkers");
   }
 
   public void startWorkers() throws IOException, InterruptedException {
-    LOGGER.info("*** startWorkers: {}", this.started);
+    LOGGER.debug("*** startWorkers: {}", this.started);
     try {
       this.lock.lock();
       if (!this.started) {
-        // shutdownWorkers(1, TimeUnit.SECONDS); // TEMP
         startInternal();
       }
     } finally {
       this.lock.unlock();
     }
-    LOGGER.info("*** done startWorkers");
+    LOGGER.debug("*** done startWorkers");
   }
 
   private void startInternal() {
+    this.producerPool = Executors.newFixedThreadPool(this.numThreads);
     for (int i = 0; i < this.numThreads; i++) {
       this.producerPool.execute(this.r);
     }
