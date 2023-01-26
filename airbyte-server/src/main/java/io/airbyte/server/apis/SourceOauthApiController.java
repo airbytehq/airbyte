@@ -59,7 +59,7 @@ public class SourceOauthApiController implements SourceOauthApi {
       return new SecretId().secretId(secretCoordinate.getFullCoordinate());
     } catch (JsonProcessingException e) {
       // TODO - throw real exception here
-      throw new RuntimeException(e);
+      throw new RuntimeException();
     }
   }
 
