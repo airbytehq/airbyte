@@ -3,8 +3,8 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
 
-import { RoutePaths } from "../routePaths";
 import { ConnectionRoutePaths } from "./types";
+import { RoutePaths } from "../routePaths";
 
 const CreateConnectionPage = React.lazy(() => import("./CreateConnectionPage"));
 const ConnectionPage = React.lazy(() => import("./ConnectionPage"));
