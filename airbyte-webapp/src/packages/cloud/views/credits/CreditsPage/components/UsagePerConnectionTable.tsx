@@ -1,12 +1,12 @@
 import queryString from "query-string";
 import React, { useCallback } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
-import styled from "styled-components";
 
 import { SortOrderEnum } from "components/EntityTable/types";
 import { Table, SortableTableHeader } from "components/ui/Table";
+import { Text } from "components/ui/Text";
 
 import { useQuery } from "hooks/useQuery";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
@@ -15,18 +15,7 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 
 import ConnectionCell from "./ConnectionCell";
 import UsageCell from "./UsageCell";
-
-const Content = styled.div`
-  padding: 0 60px 0 15px;
-`;
-
-const UsageValue = styled.div`
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
-  padding-right: 10px;
-  min-width: 53px;
-`;
+import styles from "./UsagePerConnectionTable.module.scss";
 
 interface UsagePerConnectionTableProps {
   creditConsumption: CreditConsumptionByConnector[];
@@ -142,7 +131,11 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         accessor: "creditsConsumed",
         collapse: true,
         customPadding: { right: 0 },
-        Cell: ({ cell }: CellProps<FullTableProps>) => <UsageValue>{cell.value}</UsageValue>,
+        Cell: ({ cell }: CellProps<FullTableProps>) => (
+          <Text className={styles.usageValue} size="lg">
+            <FormattedNumber value={cell.value} maximumFractionDigits={2} minimumFractionDigits={2} />
+          </Text>
+        ),
       },
       {
         Header: "",
@@ -162,9 +155,9 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
   );
 
   return (
-    <Content>
+    <div className={styles.content}>
       <Table columns={columns} data={sortingData} light />
-    </Content>
+    </div>
   );
 };
 

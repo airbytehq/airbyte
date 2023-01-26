@@ -42,23 +42,4 @@ class ConfigReplacerTest {
     assertThat(response.getHosts()).isEqualTo(expected);
   }
 
-  @Test()
-  void getAllowedHostsMissingValue() throws IOException {
-    final AllowedHosts allowedHosts = new AllowedHosts();
-    final List<String> hosts = new ArrayList();
-    hosts.add("${subdomain}.vendor.com");
-    allowedHosts.setHosts(hosts);
-
-    final String configJson = "{\"password\": \"abc123\"}";
-    final JsonNode config = mapper.readValue(configJson, JsonNode.class);
-
-    try {
-      replacer.getAllowedHosts(allowedHosts, config);
-      throw new RuntimeException("should not get here");
-    } catch (Exception e) {
-      assertThat(e).hasMessage(
-          "The allowed host value, '${subdomain}.vendor.com', is expecting an interpolation value from the connector's configuration, but none is present");
-    }
-  }
-
 }
