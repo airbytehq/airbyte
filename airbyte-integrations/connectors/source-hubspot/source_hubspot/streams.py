@@ -1596,6 +1596,7 @@ class Workflows(Stream):
     created_at_field = "insertedAt"
     primary_key = "id"
     scopes = {"automation"}
+    filter_old_records = False
 
 
 class Companies(CRMSearchStream):
@@ -1612,6 +1613,7 @@ class Contacts(CRMSearchStream):
     associations = ["contacts", "companies"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
+    filter_old_records = False
 
 
 class EngagementsCalls(CRMSearchStream):
