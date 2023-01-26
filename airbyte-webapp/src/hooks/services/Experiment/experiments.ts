@@ -12,6 +12,7 @@ export interface Experiments {
   "connector.orderOverwrite": Record<string, number>;
   "connector.frequentlyUsedDestinationIds": string[];
   "connector.form.useDatepicker": boolean;
+  "connector.shortSetupGuides": boolean;
   "authPage.rightSideUrl": string | undefined;
   "authPage.hideSelfHostedCTA": boolean;
   "authPage.signup.hideName": boolean;
