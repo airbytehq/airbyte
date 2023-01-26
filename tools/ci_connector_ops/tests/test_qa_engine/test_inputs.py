@@ -8,9 +8,9 @@ from importlib.resources import files
 import pandas as pd
 import pytest
 
-from ci_connector_ops.qa_engine import inputs
+from ci_connector_ops.qa_engine import inputs, constants
 
-@pytest.mark.parametrize("catalog_url", [inputs.OSS_CATALOG_URL, inputs.CLOUD_CATALOG_URL])
+@pytest.mark.parametrize("catalog_url", [constants.OSS_CATALOG_URL, constants.CLOUD_CATALOG_URL])
 def test_fetch_remote_catalog(catalog_url):
     catalog = inputs.fetch_remote_catalog(catalog_url)
     assert isinstance(catalog, pd.DataFrame)

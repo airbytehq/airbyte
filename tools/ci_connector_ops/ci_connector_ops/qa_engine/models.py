@@ -32,6 +32,9 @@ class ConnectorQAReport(BaseModel):
     number_of_connections: int 
     number_of_users: int
     sync_success_rate: float
+    total_syncs_count: int
+    failed_syncs_count: int
+    succeeded_syncs_count: int
 
 class QAReport(BaseModel):
     connectors_qa_report: List[ConnectorQAReport]

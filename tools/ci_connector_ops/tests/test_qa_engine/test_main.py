@@ -28,9 +28,21 @@ def dummy_report() -> pd.DataFrame:
 def test_main(tmp_path, mocker, dummy_report):
     output_path = tmp_path / "output.json"
     mocker.patch.object(main, "GCS_QA_REPORT_PATH", output_path)
-    mocker.patch.object(main, "get_enriched_catalog")
-    mocker.patch.object(main, "get_qa_report", mocker.Mock(return_value=dummy_report))
+    mocker.patch.object(main, "enrichments")
+    mocker.patch.object(
+        main.inputs, 
+        "fetch_remote_catalog",
+        mocker.Mock(side_effect=["oss", "cloud"]))
+    mocker.patch.object(main.inputs, "fetch_adoption_metrics_per_connector_version")
+    mocker.patch.object(main.validations, "get_qa_report", mocker.Mock(return_value=dummy_report))
     main.main()
-    main.get_enriched_catalog.assert_called_with(main.OSS_CATALOG, main.CLOUD_CATALOG)
-    main.get_qa_report.assert_called_with(main.get_enriched_catalog.return_value)
+    main.enrichments.get_enriched_catalog.assert_called_with(
+        "oss", 
+        "cloud",
+        main.inputs.fetch_adoption_metrics_per_connector_version.return_value
+    )
+    main.validations.get_qa_report.assert_called_with(
+        main.enrichments.get_enriched_catalog.return_value,
+        3 # len of the "oss" string...
+    )
     assert pd.read_json(output_path).to_dict() == dummy_report.to_dict()
