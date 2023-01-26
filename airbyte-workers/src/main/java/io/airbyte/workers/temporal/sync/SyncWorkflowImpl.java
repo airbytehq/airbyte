@@ -62,7 +62,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  @TemporalActivityStub(activityOptionsBeanName = "discoveryActivityOptions")
   private RefreshSchemaActivity refreshSchemaActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private ConfigFetchActivity configFetchActivity;
