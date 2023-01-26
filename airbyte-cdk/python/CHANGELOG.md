@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.23.1
+Low-Code: SubstreamSlicer.parent_key - dpath support added
+
 ## 0.23.0
 Limiting the number of HTTP requests during a test read
 
