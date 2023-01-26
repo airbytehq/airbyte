@@ -50,14 +50,14 @@
 }
 
 .tableData {
-  padding: variables.$spacing-lg;
+  max-width: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: 12px;
   font-weight: normal;
   color: colors.$dark-blue;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: none;
+  padding: variables.$spacing-lg;
   border-bottom: variables.$border-thin solid colors.$grey-100;
 
   &.responsive {

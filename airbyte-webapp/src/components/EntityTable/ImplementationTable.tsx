@@ -4,13 +4,13 @@ import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 
-import { ConnectorNameCell } from "components/EntityTable/components/ConnectorNameCell";
 import { Table, SortableTableHeader } from "components/ui/Table";
 
 import { useQuery } from "hooks/useQuery";
 
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
+import { ConnectorNameCell } from "./components/ConnectorNameCell";
 import { EntityNameCell } from "./components/EntityNameCell";
 import { LastSyncCell } from "./components/LastSyncCell";
 import styles from "./ImplementationTable.module.scss";
