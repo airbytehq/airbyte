@@ -1,7 +1,7 @@
-import { Config } from "../../config";
 import { CommonRequestError } from "./CommonRequestError";
 import { RequestMiddleware } from "./RequestMiddleware";
 import { VersionError } from "./VersionError";
+import { Config } from "../../config";
 
 export interface ApiOverrideRequestOptions {
   config: Pick<Config, "apiUrl">;
