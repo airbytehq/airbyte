@@ -658,8 +658,9 @@ class ModelToComponentFactory:
     def create_simple_retriever(self, model: SimpleRetrieverModel, config: Config, **kwargs) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config)
         record_selector = self._create_component_from_model(model=model.record_selector, config=config)
+        url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         paginator = (
-            self._create_component_from_model(model=model.paginator, config=config, url_base=model.requester.url_base)
+            self._create_component_from_model(model=model.paginator, config=config, url_base=url_base)
             if model.paginator
             else NoPagination(parameters={})
         )
