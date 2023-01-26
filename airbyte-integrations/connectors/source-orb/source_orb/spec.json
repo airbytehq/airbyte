@@ -47,6 +47,16 @@
         "title": "Event properties keys (numeric values)",
         "description": "Property key names to extract from all events, in order to enrich ledger entries corresponding to an event deduction.",
         "order": 5
+      },
+      "subscription_usage_grouping_key": {
+        "type": "string",
+        "title": "Subscription usage grouping key (string value)",
+        "description": "Property key name to group subscription usage by."
+      },
+      "plan_id": {
+        "type": "string",
+        "title": "Orb Plan ID for Subscription Usage (string value)",
+        "description": "Orb Plan ID to filter subscriptions that should have usage fetched."
       }
     }
   }

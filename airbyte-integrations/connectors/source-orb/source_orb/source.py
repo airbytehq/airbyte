@@ -182,6 +182,13 @@ class SubscriptionUsage(IncrementalOrbStream):
     API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-subscription-usage
     """
 
+    def __init__(
+        self, subscription_usage_grouping_key: Optional[str] = None, plan_id: Optional[str] = None, **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.subscription_usage_grouping_key = subscription_usage_grouping_key
+        self.plan_id = plan_id
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # use a regex capture group to extract the subscription ID from the request URL
         # so that we can include it in the returned record
@@ -199,7 +206,13 @@ class SubscriptionUsage(IncrementalOrbStream):
             subrecords = record.get("usage", [])
             del record["usage"]
             for subrecord in subrecords:
-                yield self.transform_record(record, subrecord, subscription_id)
+                # skip records that don't contain any actual usage
+                if subrecord.get("quantity", 0) > 0:
+                    yield self.transform_record(record, subrecord, subscription_id)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # This API endpoint is not paginated, so there will never be a next page
+        return None
 
 
     def transform_record(self, parent_record, sub_record, subscription_id):
@@ -231,41 +244,36 @@ class SubscriptionUsage(IncrementalOrbStream):
         and so we need to pull out relevant slice state from the stream state.
 
         """
+        # force granularity to 'day' so that this stream can be used incrementally,
+        # with a day-based "cursor" based on timeframe_start and timeframe_end
+        params = {"granularity": "day"}
 
         current_subscription_state = stream_state.get(stream_slice["subscription_id"], {})
-        self.logger.debug("current subscription state is: %s", current_subscription_state)
-
-        params = {}
-
         last_timeframe_end = current_subscription_state.get("timeframe_end")
 
-        if last_timeframe_end is None and self.start_date is None:
+        if last_timeframe_end or self.start_date:
             # if no start_date is specified and no previous timeframe_end exists,
             # do not specify a timeframe in params at all, the API will default to
             # the current billing window of the subscription.
-            return params
 
-        # use the state's timeframe_end as the new request's timeframe_start, or default to the original start_date.
-        params["timeframe_start"] = last_timeframe_end or self.start_date.isoformat()
+            # use the state's timeframe_end as the new request's timeframe_start, or default to the original start_date.
+            new_timeframe_start = last_timeframe_end or self.start_date.isoformat()
+            params["timeframe_start"] = new_timeframe_start
 
-        # use the current time as the new request's timeframe_end
-        params["timeframe_end"] = pendulum.now()
+            # set the new timeframe_end to the current time plus 1 day, because
+            # Orb treats timeframe_end as an exclusive boundary
+            params["timeframe_end"] = pendulum.now('UTC').add(days=1).isoformat()
 
 
+        if self.subscription_usage_grouping_key:
+            params["group_by"] = self.subscription_usage_grouping_key
+
+            # if a group_by key is specified, assume the stream slice contains a billable_metric_id
+            params["billable_metric_id"] = stream_slice["billable_metric_id"]
 
         self.logger.debug("new request_params are: %s", params)
-
         return params
 
-    # @property
-    # def cursor_field(self) -> str:
-    #     """
-    #     SubscriptionUsage response entries don't contain a 'created_at', but rather a
-    #     'timeframe_start' and 'timeframe_end' property that signify the timeframe
-    #     during which usage occurred. For this incremental stream, we want to
-
-    #     """
-    #     return "timeframe_start"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -317,30 +325,37 @@ class SubscriptionUsage(IncrementalOrbStream):
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        This stream is sliced per `subscription_id`. This has two implications:
-        (1) State can be checkpointed after processing each slice
-        (2) The other parameters (e.g. request_params, path) can be dependent on this slice.
+        This stream is sliced per `subscription_id`, as well as `billable_metric_id`
+        if a grouping key is provided. This is because the API only supports a
+        single billable_metric_id when using a group_by param.
 
-        This allows us to pull data on a per subscription_id basis, since that's what Orb exposes.
-
-        Furthermore, each stream slice includes the 'prices' associated with the
-        subscription. This allows the subscription usage stream to request
-        usage grouped by a custom attribute (since grouping by custom attribute
-        also requires an explicit billing_metric_id to be specified.)
         """
-        # TODO: self.authenticator should optionally pull from self._session.auth
         subscriptions_stream = Subscriptions(authenticator=self._session.auth)
-        plans_stream = Plans(authenticator=self._session.auth)
 
-        prices_by_plan_id = {}
-        for plan in plans_stream.read_records(sync_mode=SyncMode.full_refresh):
-            prices_by_plan_id[plan["id"]] = plan["prices"]
+        if self.subscription_usage_grouping_key:
+            plans_stream = Plans(authenticator=self._session.auth)
 
-        for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {
-                "subscription_id": subscription["id"],
-                "prices": prices_by_plan_id[subscription["plan_id"]]
-                }
+            prices_by_plan_id = {}
+            for plan in plans_stream.read_records(sync_mode=SyncMode.full_refresh):
+                prices_by_plan_id[plan["id"]] = plan["prices"]
+
+            for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+                # if filtering subscription usage by plan ID, skip any subscription that doesn't match the plan_id
+                if self.plan_id and subscription["plan_id"] != self.plan_id:
+                    continue
+
+                prices = prices_by_plan_id.get(subscription["plan_id"])
+                if prices is not None:
+                    for price in prices:
+                        yield {
+                            "subscription_id": subscription["id"],
+                            "billable_metric_id": price["billable_metric"]["id"]
+                            }
+        else:
+            for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+                yield {
+                    "subscription_id": subscription["id"],
+                    }
 
 
 class Plans(IncrementalOrbStream):
@@ -596,6 +611,8 @@ class SourceOrb(AbstractSource):
         lookback_window = config.get("lookback_window_days")
         string_event_properties_keys = config.get("string_event_properties_keys")
         numeric_event_properties_keys = config.get("numeric_event_properties_keys")
+        subscription_usage_grouping_key = config.get("subscription_usage_grouping_key")
+        plan_id = config.get("plan_id")
 
         if not self.input_keys_mutually_exclusive(string_event_properties_keys, numeric_event_properties_keys):
             raise ValueError("Supplied property keys for string and numeric valued property values must be mutually exclusive.")
@@ -613,5 +630,11 @@ class SourceOrb(AbstractSource):
                 string_event_properties_keys=string_event_properties_keys,
                 numeric_event_properties_keys=numeric_event_properties_keys,
             ),
-            SubscriptionUsage(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date)
+            SubscriptionUsage(
+                authenticator=authenticator,
+                lookback_window_days=lookback_window,
+                start_date=start_date,
+                plan_id=plan_id,
+                subscription_usage_grouping_key=subscription_usage_grouping_key
+            )
         ]
