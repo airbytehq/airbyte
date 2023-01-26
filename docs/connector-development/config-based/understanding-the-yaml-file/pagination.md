@@ -36,7 +36,6 @@ Schema:
     required:
       - page_token_option
       - pagination_strategy
-      - url_base
     properties:
       "$parameters":
         "$ref": "#/definitions/$parameters"
@@ -48,8 +47,6 @@ Schema:
         "$ref": "#/definitions/RequestOption"
       pagination_strategy:
         "$ref": "#/definitions/PaginationStrategy"
-      url_base:
-        type: string
 ```
 
 3 pagination strategies are supported
