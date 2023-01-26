@@ -8,11 +8,10 @@ from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class InterpolatedMapping(JsonSchemaMixin):
+class InterpolatedMapping:
     """
     Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated.
 

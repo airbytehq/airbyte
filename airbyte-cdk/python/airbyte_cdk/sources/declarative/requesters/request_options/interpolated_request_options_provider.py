@@ -8,13 +8,12 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 RequestInput = Union[str, Mapping[str, str]]
 
 
 @dataclass
-class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin):
+class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
     """
     Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
 

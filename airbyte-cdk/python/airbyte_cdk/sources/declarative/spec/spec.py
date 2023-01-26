@@ -6,11 +6,10 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class Spec(JsonSchemaMixin):
+class Spec:
     """
     Returns a connection specification made up of information about the connector and how it can be configured
 

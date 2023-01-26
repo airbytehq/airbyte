@@ -16,11 +16,10 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_fil
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
+class DefaultErrorHandler(ErrorHandler):
     """
     Default error handler.
 

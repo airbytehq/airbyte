@@ -35,7 +35,6 @@ new_date = "2022-06-24T20:12:19.597854Z"
     ],
 )
 def test_min_max_datetime(test_name, date, min_date, max_date, expected_date):
-    print(MinMaxDatetime.json_schema())
     config = {"older": old_date, "middle": middle_date}
     stream_state = {"newer": new_date}
     parameters = {"newer": new_date, "older": old_date}

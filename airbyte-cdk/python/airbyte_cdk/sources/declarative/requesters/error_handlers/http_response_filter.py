@@ -12,11 +12,10 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action i
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.http import HttpStream
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class HttpResponseFilter(JsonSchemaMixin):
+class HttpResponseFilter:
     """
     Filter to select HttpResponses
 

@@ -18,11 +18,10 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class HttpRequester(Requester, JsonSchemaMixin):
+class HttpRequester(Requester):
     """
     Default implementation of a Requester
 

@@ -7,11 +7,10 @@ from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class InterpolatedString(JsonSchemaMixin):
+class InterpolatedString:
     """
     Wrapper around a raw string to be interpolated with the Jinja2 templating engine
 
