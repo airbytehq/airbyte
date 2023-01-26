@@ -124,6 +124,32 @@ class MockStream(Stream):
                 {"parent_slice": {"slice": "second_parent"}, "second_stream_id": 20},
             ],
         ),
+        (
+            "test_missed_parent_key",
+            [
+                ParentStreamConfig(
+                    stream=MockStream([{}], [{"id": 0}, {"id": 1}, {"_id": 2}, {"id": 3}], "first_stream"),
+                    parent_key="id",
+                    stream_slice_field="first_stream_id",
+                    options={},
+                    config={},
+                )
+            ],
+            [{"first_stream_id": 0, "parent_slice": {}}, {"first_stream_id": 1, "parent_slice": {}}, {"first_stream_id": 3, "parent_slice": {}}],
+        ),
+        (
+            "test_dpath_extraction",
+            [
+                ParentStreamConfig(
+                    stream=MockStream([{}], [{"a": {"b": 0}}, {"a": {"b": 1}}, {"a": {"c": 2}}, {"a": {"b": 3}}], "first_stream"),
+                    parent_key="a/b",
+                    stream_slice_field="first_stream_id",
+                    options={},
+                    config={},
+                )
+            ],
+            [{"first_stream_id": 0, "parent_slice": {}}, {"first_stream_id": 1, "parent_slice": {}}, {"first_stream_id": 3, "parent_slice": {}}],
+        ),
     ],
 )
 def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
