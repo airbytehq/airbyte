@@ -10,7 +10,6 @@ import io.airbyte.featureflag.EnvVar
 import io.airbyte.featureflag.FeatureFlagClient
 import io.airbyte.featureflag.Flag
 import io.airbyte.featureflag.LaunchDarklyClient
-import io.airbyte.featureflag.Multi
 import io.airbyte.featureflag.Temporary
 import io.airbyte.featureflag.TestClient
 import io.airbyte.featureflag.User
@@ -32,7 +31,7 @@ import kotlin.test.assertTrue
 
 class ConfigFileClient {
     @Test
-    fun `verify platform functionality`() {
+    fun `verify config-file functionality`() {
         val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
         val client: FeatureFlagClient = ConfigFileClient(cfg)
 
@@ -57,6 +56,19 @@ class ConfigFileClient {
      *
      * TODO: move this to a different test suite
      */
+    @Test
+    fun `verify no-config file returns default flag state`() {
+        val client: FeatureFlagClient = ConfigFileClient(null)
+        val defaultFalse = Temporary(key = "default-false")
+        val defaultTrue = Temporary(key = "default-true", default = true)
+
+        val ctx = Workspace("workspace")
+        with(client) {
+            assertTrue { enabled(defaultTrue, ctx) }
+            assertFalse { enabled(defaultFalse, ctx) }
+        }
+    }
+
     @Test
     @Ignore
     fun `verify platform reload capabilities`() {
@@ -158,22 +170,6 @@ class LaunchDarklyClient {
             ldClient.boolVariation(testTrue.key, any<LDUser>(), testTrue.default)
             ldClient.boolVariation(testFalse.key, any<LDUser>(), testFalse.default)
             ldClient.boolVariation(testDne.key, any<LDUser>(), testDne.default)
-        }
-    }
-
-    @Test
-    fun `verify multi-context is not supported`() {
-        /**
-         * TODO replace this test once LDv6 is being used and Context.toLDUser no longer exists, to verify Multi support
-         */
-        val ldClient: LDClient = mockk()
-        every { ldClient.boolVariation(any(), any<LDUser>(), any()) } returns false
-
-        val client: FeatureFlagClient = LaunchDarklyClient(ldClient)
-        val multiCtx = Multi(listOf(User("test")))
-
-        assertFailsWith<IllegalArgumentException> {
-            client.enabled(Temporary(key = "test"), multiCtx)
         }
     }
 
