@@ -19,6 +19,7 @@ import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowInternalState;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.commons.temporal.scheduling.state.listener.NoopStateListener;
+import io.airbyte.config.ActorType;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
@@ -344,8 +345,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final IntegrationLauncherConfig destinationLauncherConfig = jobInputs.getDestinationLauncherConfig();
     final SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
 
-    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
-    final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
+    final StandardCheckConnectionInput standardCheckInputSource = new StandardCheckConnectionInput()
+        .withActorType(ActorType.SOURCE)
+        .withActorId(syncInput.getSourceId())
+        .withConnectionConfiguration(sourceConfig);
+    final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, standardCheckInputSource);
 
     final JobCheckFailureInput jobStateInput =
         new JobCheckFailureInput(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), connectionId);
@@ -366,8 +370,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
     }
 
-    final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(destinationConfig);
-    final CheckConnectionInput checkDestinationInput = new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
+    final StandardCheckConnectionInput standardCheckInputDestination = new StandardCheckConnectionInput()
+        .withActorType(ActorType.DESTINATION)
+        .withActorId(syncInput.getDestinationId())
+        .withConnectionConfiguration(destinationConfig);
+    final CheckConnectionInput checkDestinationInput =
+        new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, standardCheckInputDestination);
 
     if (checkFailure.isFailed() || !isLastJobOrAttemptFailure) {
       log.info("DESTINATION CHECK: Skipped");
@@ -485,19 +493,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return new JobInformation(
         jobId,
         attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber);
-  }
-
-  @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
-  @Override
-  public QuarantinedInformation getQuarantinedInformation() {
-    final Long jobId = workflowInternalState.getJobId() != null ? workflowInternalState.getJobId() : NON_RUNNING_JOB_ID;
-    final Integer attemptNumber = workflowInternalState.getAttemptNumber();
-    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId, JOB_ID_KEY, jobId));
-    return new QuarantinedInformation(
-        connectionId,
-        jobId,
-        attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber,
-        workflowState.isQuarantined());
   }
 
   /**

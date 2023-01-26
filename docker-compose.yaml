@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.8"
 #https://github.com/compose-spec/compose-spec/blob/master/spec.md#using-extensions-as-fragments
 x-logging: &default-logging
   options:
@@ -24,16 +24,15 @@ services:
     container_name: airbyte-bootloader
     environment:
       - AIRBYTE_VERSION=${VERSION}
-      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
-      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
-      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_URL=${DATABASE_URL}
       - DATABASE_USER=${DATABASE_USER}
       - LOG_LEVEL=${LOG_LEVEL}
-      - RUN_DATABASE_MIGRATION_ON_STARTUP=${RUN_DATABASE_MIGRATION_ON_STARTUP}
     networks:
       - airbyte_internal
+    depends_on:
+      init:
+        condition: service_completed_successfully
   db:
     image: airbyte/db:${VERSION}
     logging: *default-logging
@@ -118,6 +117,9 @@ services:
       - 9000
     networks:
       - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging
@@ -150,6 +152,7 @@ services:
       - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
       - GITHUB_STORE_BRANCH=${GITHUB_STORE_BRANCH}
+      - MICRONAUT_ENVIRONMENTS=${WORKERS_MICRONAUT_ENVIRONMENTS}
       - AUTO_DETECT_SCHEMA=${AUTO_DETECT_SCHEMA}
     ports:
       - 8001
@@ -159,6 +162,9 @@ services:
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
     networks:
       - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
   webapp:
     image: airbyte/webapp:${VERSION}
     logging: *default-logging
@@ -178,6 +184,9 @@ services:
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
     networks:
       - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
   airbyte-temporal:
     image: airbyte/temporal:${VERSION}
     logging: *default-logging
@@ -217,6 +226,9 @@ services:
       - workspace:${WORKSPACE_ROOT}
     networks:
       - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
   airbyte-connector-builder-server:
     image: airbyte/connector-builder-server:${VERSION}
     logging: *default-logging
@@ -228,6 +240,9 @@ services:
       - AIRBYTE_VERSION=${VERSION}
     networks:
       - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
   airbyte-proxy:
     image: airbyte/proxy:${VERSION}
     container_name: airbyte-proxy

@@ -125,7 +125,7 @@ public class BigQueryUtils {
   }
 
   public static void checkHasCreateAndDeleteDatasetRole(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
-    final String tmpTestDatasetId = datasetId + CHECK_TEST_DATASET_SUFFIX  + System.currentTimeMillis();
+    final String tmpTestDatasetId = datasetId + CHECK_TEST_DATASET_SUFFIX + System.currentTimeMillis();
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(tmpTestDatasetId).setLocation(datasetLocation).build();
 
     bigquery.create(datasetInfo);

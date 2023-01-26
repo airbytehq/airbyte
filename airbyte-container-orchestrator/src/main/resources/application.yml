@@ -3,6 +3,7 @@ micronaut:
     port: 9000
 
 airbyte:
+  config-dir: /config
   acceptance:
     test:
       enabled: ${ACCEPTANCE_TEST_ENABLED:false}
@@ -21,3 +22,29 @@ airbyte:
         name: ${AIRBYTE_API_AUTH_HEADER_NAME:}
         value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
       host: ${INTERNAL_API_HOST}
+
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  env:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true

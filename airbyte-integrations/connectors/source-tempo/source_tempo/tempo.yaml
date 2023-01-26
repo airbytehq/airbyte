@@ -66,13 +66,14 @@ definitions:
       stream_slicer:
         cursor_field: "startDate"
         datetime_format: "%Y-%m-%d"
+        cursor_granularity: "P1D"
         start_datetime:
           datetime: "2020-01-01"
           datetime_format: "%Y-%m-%d"
         end_datetime:
           datetime: "{{ today_utc() }}"
           datetime_format: "%Y-%m-%d"
-        step: "1w"
+        step: "P1W"
         end_time_option:
           field_name: "to"
           inject_into: "request_parameter"

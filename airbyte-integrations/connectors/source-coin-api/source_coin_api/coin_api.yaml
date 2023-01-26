@@ -26,7 +26,8 @@ definitions:
       datetime: "{{ config['end_time'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S"
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    step: 1d
+    cursor_granularity: "PT1S"
+    step: "P1D"
     start_time_option:
       field_name: time_start
       inject_into: request_parameter

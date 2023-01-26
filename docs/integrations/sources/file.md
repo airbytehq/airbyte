@@ -75,6 +75,7 @@ Setup through Airbyte Cloud will be exactly the same as the open-source setup, e
 - In case of GCS, it is necessary to provide the content of the service account keyfile to access private buckets. See settings of [BigQuery Destination](../destinations/bigquery.md)
 - In case of AWS S3, the pair of `aws_access_key_id` and `aws_secret_access_key` is necessary to access private S3 buckets.
 - In case of AzBlob, it is necessary to provide the `storage_account` in which the blob you want to access resides. Either `sas_token` [(info)](https://docs.microsoft.com/en-us/azure/storage/blobs/sas-service-create?tabs=dotnet) or `shared_key` [(info)](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal) is necessary to access private blobs.
+- In case of a locally stored file on a Windows OS, it's necessary to change the values for `LOCAL_ROOT`, `LOCAL_DOCKER_MOUNT` and `HACK_LOCAL_ROOT_PARENT` in the `.env` file to an existing absolute path on your machine (colons in the path need to be replaced with a double forward slash, //). `LOCAL_ROOT` & `LOCAL_DOCKER_MOUNT` should be the same value, and `HACK_LOCAL_ROOT_PARENT` should be the parent directory of the other two.
 
 ### Reader Options
 

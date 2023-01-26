@@ -1,3 +1,5 @@
+@use "scss/variables";
+
 %headerCell {
   font-size: 10px;
   line-height: 13px;
@@ -7,7 +9,7 @@
   @extend %headerCell;
 
   max-width: 43px;
-  text-align: center;
+  padding-left: variables.$spacing-sm;
 }
 
 .catalogHeader,

@@ -2,20 +2,24 @@ import React, { createContext, useCallback, useContext, useState } from "react";
 import { useIntl } from "react-intl";
 
 import {
+  ConnectionFormValues,
+  ConnectionValidationSchema,
+  FormikConnectionFormValues,
+  mapFormPropsToOperation,
+  useInitialValues,
+} from "components/connection/ConnectionForm/formConfig";
+
+import {
   ConnectionScheduleType,
+  DestinationDefinitionRead,
   DestinationDefinitionSpecificationRead,
   OperationRead,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
-import {
-  ConnectionFormValues,
-  createConnectionValidationSchema,
-  FormikConnectionFormValues,
-  mapFormPropsToOperation,
-  useInitialValues,
-} from "views/Connection/ConnectionForm/formConfig";
 
 import { useUniqueFormId } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
@@ -37,17 +41,11 @@ interface ConnectionServiceProps {
 export const tidyConnectionFormValues = (
   values: FormikConnectionFormValues,
   workspaceId: string,
-  mode: ConnectionFormMode,
-  allowSubOneHourCronExpressions: boolean,
-  allowAutoDetectSchema: boolean,
+  validationSchema: ConnectionValidationSchema,
   operations?: OperationRead[]
 ): ValuesProps => {
   // TODO (https://github.com/airbytehq/airbyte/issues/17279): We should try to fix the types so we don't need the casting.
-  const formValues: ConnectionFormValues = createConnectionValidationSchema({
-    mode,
-    allowSubOneHourCronExpressions,
-    allowAutoDetectSchema,
-  }).cast(values, {
+  const formValues: ConnectionFormValues = validationSchema.cast(values, {
     context: { isRequest: true },
   }) as unknown as ConnectionFormValues;
 
@@ -63,7 +61,8 @@ export const tidyConnectionFormValues = (
 interface ConnectionFormHook {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
-  destDefinition: DestinationDefinitionSpecificationRead;
+  destDefinition: DestinationDefinitionRead;
+  destDefinitionSpecification: DestinationDefinitionSpecificationRead;
   initialValues: FormikConnectionFormValues;
   schemaError?: SchemaError;
   formId: string;
@@ -78,17 +77,19 @@ const useConnectionForm = ({
   schemaError,
   refreshSchema,
 }: ConnectionServiceProps): ConnectionFormHook => {
-  const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
-  const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
+  const destDefinition = useDestinationDefinition(connection.destination.destinationDefinitionId);
+  const destDefinitionSpecification = useGetDestinationDefinitionSpecification(
+    connection.destination.destinationDefinitionId
+  );
+  const initialValues = useInitialValues(connection, destDefinition, destDefinitionSpecification, mode !== "create");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
   const formId = useUniqueFormId();
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
 
   const getErrorMessage = useCallback(
     (formValid: boolean, connectionDirty: boolean) => {
-      const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
-
-      if (isNewStreamsTableEnabled) {
+      if (isNewTableDesignEnabled) {
         // There is a case when some fields could be dropped in the database. We need to validate the form without property dirty
         return submitError
           ? generateMessageFromError(submitError)
@@ -102,13 +103,14 @@ const useConnectionForm = ({
         ? formatMessage({ id: "connectionForm.validation.error" })
         : null;
     },
-    [formatMessage, submitError]
+    [formatMessage, isNewTableDesignEnabled, submitError]
   );
 
   return {
     connection,
     mode,
     destDefinition,
+    destDefinitionSpecification,
     initialValues,
     schemaError,
     formId,

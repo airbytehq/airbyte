@@ -26,8 +26,9 @@ definitions:
     end_datetime:
       datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
-    step: "7d"
+    step: "P7D"
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_granularity: "PT1S"
     cursor_field: "{{ options['stream_cursor_field'] }}"
     start_time_option:
       field_name: "from-date"

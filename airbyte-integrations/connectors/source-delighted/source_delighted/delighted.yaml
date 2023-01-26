@@ -22,13 +22,14 @@ definitions:
   stream_slicer:
     cursor_field: "{{ options['stream_cursor_field'] }}"
     datetime_format: "%s"
+    cursor_granularity: "PT1S"
     start_datetime:
       datetime: "{{ config['since'] }}"
       datetime_format: "%Y-%m-%d %H:%M:%S"
     end_datetime:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
-    step: "1w"
+    step: "P1W"
     end_time_option:
       field_name: "until"
       inject_into: "request_parameter"

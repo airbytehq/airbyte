@@ -1,10 +1,10 @@
 import { JSONSchema7 } from "json-schema";
+import merge from "lodash/merge";
 import * as yup from "yup";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import {
   ConnectorManifest,
-  InterpolatedRequestOptionsProvider,
   Spec,
   ApiKeyAuthenticator,
   BasicHttpAuthenticator,
@@ -14,12 +14,15 @@ import {
   SessionTokenAuthenticator,
   RequestOption,
   OAuthAuthenticator,
-  DefaultPaginatorPaginationStrategy,
   SimpleRetrieverStreamSlicer,
   HttpRequesterAuthenticator,
   SubstreamSlicer,
   SubstreamSlicerType,
   CartesianProductStreamSlicer,
+  DeclarativeStreamSchemaLoader,
+  PageIncrement,
+  OffsetIncrement,
+  CursorPagination,
 } from "core/request/ConnectorManifest";
 
 export interface BuilderFormInput {
@@ -28,7 +31,7 @@ export interface BuilderFormInput {
   definition: AirbyteJSONSchema;
 }
 
-type BuilderFormAuthenticator = (
+export type BuilderFormAuthenticator = (
   | NoAuth
   | (Omit<OAuthAuthenticator, "refresh_request_body"> & {
       refresh_request_body: Array<[string, string]>;
@@ -48,10 +51,12 @@ export interface BuilderFormValues {
   inputs: BuilderFormInput[];
   inferredInputOverrides: Record<string, Partial<AirbyteJSONSchema>>;
   streams: BuilderStream[];
+  checkStreams: string[];
+  version: string;
 }
 
 export interface BuilderPaginator {
-  strategy: DefaultPaginatorPaginationStrategy;
+  strategy: PageIncrement | OffsetIncrement | CursorPagination;
   pageTokenOption: RequestOption;
   pageSizeOption?: RequestOption;
 }
@@ -89,6 +94,7 @@ export interface BuilderStream {
     | BuilderSubstreamSlicer
     | BuilderCartesianProductSlicer;
   schema?: string;
+  unsupportedFields?: Record<string, unknown>;
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -100,6 +106,8 @@ export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   inputs: [],
   inferredInputOverrides: {},
   streams: [],
+  checkStreams: [],
+  version: "0.1.0",
 };
 
 export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
@@ -115,129 +123,169 @@ export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
   },
 };
 
-function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
-  if (values.global.authenticator.type === "ApiKeyAuthenticator") {
-    return [
-      {
-        key: "api_key",
-        required: true,
-        definition: {
-          type: "string",
-          title: "API Key",
-          airbyte_secret: true,
-        },
+export const authTypeToKeyToInferredInput: Record<string, Record<string, BuilderFormInput>> = {
+  NoAuth: {},
+  ApiKeyAuthenticator: {
+    api_token: {
+      key: "api_key",
+      required: true,
+      definition: {
+        type: "string",
+        title: "API Key",
+        airbyte_secret: true,
       },
-    ];
-  }
-  if (values.global.authenticator.type === "BearerAuthenticator") {
-    return [
-      {
-        key: "api_key",
-        required: true,
-        definition: {
-          type: "string",
-          title: "API Key",
-          airbyte_secret: true,
-        },
+    },
+  },
+  BearerAuthenticator: {
+    api_token: {
+      key: "api_key",
+      required: true,
+      definition: {
+        type: "string",
+        title: "API Key",
+        airbyte_secret: true,
       },
-    ];
-  }
-  if (values.global.authenticator.type === "BasicHttpAuthenticator") {
-    return [
-      {
-        key: "username",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Username",
-        },
+    },
+  },
+  BasicHttpAuthenticator: {
+    username: {
+      key: "username",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Username",
       },
-      {
-        key: "password",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Password",
-          airbyte_secret: true,
-        },
+    },
+    password: {
+      key: "password",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Password",
+        airbyte_secret: true,
       },
-    ];
-  }
-  if (values.global.authenticator.type === "OAuthAuthenticator") {
-    return [
-      {
-        key: "client_id",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Client ID",
-          airbyte_secret: true,
-        },
+    },
+  },
+  OAuthAuthenticator: {
+    client_id: {
+      key: "client_id",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Client ID",
+        airbyte_secret: true,
       },
-      {
-        key: "client_secret",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Client secret",
-          airbyte_secret: true,
-        },
+    },
+    client_secret: {
+      key: "client_secret",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Client secret",
+        airbyte_secret: true,
       },
-      {
-        key: "refresh_token",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Refresh token",
-          airbyte_secret: true,
-        },
+    },
+    refresh_token: {
+      key: "client_refresh_token",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Refresh token",
+        airbyte_secret: true,
       },
-    ];
-  }
-  if (values.global.authenticator.type === "SessionTokenAuthenticator") {
-    return [
-      {
-        key: "username",
-        required: false,
-        definition: {
-          type: "string",
-          title: "Username",
-        },
+    },
+  },
+  SessionTokenAuthenticator: {
+    username: {
+      key: "username",
+      required: false,
+      definition: {
+        type: "string",
+        title: "Username",
       },
-      {
-        key: "password",
-        required: false,
-        definition: {
-          type: "string",
-          title: "Password",
-          airbyte_secret: true,
-        },
+    },
+    password: {
+      key: "password",
+      required: false,
+      definition: {
+        type: "string",
+        title: "Password",
+        airbyte_secret: true,
       },
-      {
-        key: "session_token",
-        required: false,
-        definition: {
-          type: "string",
-          title: "Session token",
-          description: "Session token generated by user (if provided username and password are not required)",
-          airbyte_secret: true,
-        },
+    },
+    session_token: {
+      key: "session_token",
+      required: false,
+      definition: {
+        type: "string",
+        title: "Session token",
+        description: "Session token generated by user (if provided username and password are not required)",
+        airbyte_secret: true,
       },
-    ];
-  }
-  return [];
+    },
+  },
+};
+
+export const inferredAuthValues = (type: BuilderFormAuthenticator["type"]): Record<string, string> => {
+  return Object.fromEntries(
+    Object.entries(authTypeToKeyToInferredInput[type]).map(([authKey, inferredInput]) => {
+      return [authKey, interpolateConfigKey(inferredInput.key)];
+    })
+  );
+};
+
+function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormInput[] {
+  const authKeyToInferredInput = authTypeToKeyToInferredInput[global.authenticator.type];
+  const authKeys = Object.keys(authKeyToInferredInput);
+  return authKeys.flatMap((authKey) => {
+    if (
+      extractInterpolatedConfigKey(Reflect.get(global.authenticator, authKey)) === authKeyToInferredInput[authKey].key
+    ) {
+      return [authKeyToInferredInput[authKey]];
+    }
+    return [];
+  });
 }
 
-export function getInferredInputs(values: BuilderFormValues): BuilderFormInput[] {
-  const inferredInputs = getInferredInputList(values);
+export function getInferredInputs(
+  global: BuilderFormValues["global"],
+  inferredInputOverrides: BuilderFormValues["inferredInputOverrides"]
+): BuilderFormInput[] {
+  const inferredInputs = getInferredInputList(global);
   return inferredInputs.map((input) =>
-    values.inferredInputOverrides[input.key]
+    inferredInputOverrides[input.key]
       ? {
           ...input,
-          definition: { ...input.definition, ...values.inferredInputOverrides[input.key] },
+          definition: { ...input.definition, ...inferredInputOverrides[input.key] },
         }
       : input
   );
+}
+
+const interpolateConfigKey = (key: string): string => {
+  return `{{ config['${key}'] }}`;
+};
+
+const interpolatedConfigValueRegex = /^{{config\[('|"+)(.+)('|"+)\]}}$/;
+
+export function isInterpolatedConfigKey(str: string | undefined): boolean {
+  if (str === undefined) {
+    return false;
+  }
+  const noWhitespaceString = str.replace(/\s/g, "");
+  return interpolatedConfigValueRegex.test(noWhitespaceString);
+}
+
+function extractInterpolatedConfigKey(str: string | undefined): string | undefined {
+  if (str === undefined) {
+    return undefined;
+  }
+  const noWhitespaceString = str.replace(/\s/g, "");
+  const regexResult = interpolatedConfigValueRegex.exec(noWhitespaceString);
+  if (regexResult === null) {
+    return undefined;
+  }
+  return regexResult[2];
 }
 
 export const injectIntoValues = ["request_parameter", "header", "path", "body_data", "body_json"];
@@ -249,9 +297,6 @@ const nonPathRequestOptionSchema = yup
   })
   .notRequired()
   .default(undefined);
-
-// eslint-disable-next-line no-useless-escape
-export const timeDeltaRegex = /^(([\.\d]+?)y)?(([\.\d]+?)m)?(([\.\d]+?)w)?(([\.\d]+?)d)?$/;
 
 const regularSlicerShape = {
   cursor_field: yup.mixed().when("type", {
@@ -277,7 +322,7 @@ const regularSlicerShape = {
   }),
   step: yup.mixed().when("type", {
     is: "DatetimeStreamSlicer",
-    then: yup.string().matches(timeDeltaRegex, "form.pattern.error").required("form.empty.error"),
+    then: yup.string().required("form.empty.error"),
     otherwise: (schema) => schema.strip(),
   }),
   datetime_format: yup.mixed().when("type", {
@@ -441,9 +486,7 @@ export const builderFormValidationSchema = yup.object().shape({
   ),
 });
 
-function builderFormAuthenticatorToAuthenticator(
-  globalSettings: BuilderFormValues["global"]
-): HttpRequesterAuthenticator {
+function builderAuthenticatorToManifest(globalSettings: BuilderFormValues["global"]): HttpRequesterAuthenticator {
   if (globalSettings.authenticator.type === "OAuthAuthenticator") {
     return {
       ...globalSettings.authenticator,
@@ -459,7 +502,7 @@ function builderFormAuthenticatorToAuthenticator(
   return globalSettings.authenticator as HttpRequesterAuthenticator;
 }
 
-function builderFormStreamSlicerToStreamSlicer(
+function builderStreamSlicerToManifest(
   values: BuilderFormValues,
   slicer: BuilderStream["streamSlicer"],
   visitedStreams: string[]
@@ -474,7 +517,7 @@ function builderFormStreamSlicerToStreamSlicer(
     return {
       type: "CartesianProductStreamSlicer",
       stream_slicers: slicer.stream_slicers.map((subSlicer) => {
-        return builderFormStreamSlicerToStreamSlicer(values, subSlicer, visitedStreams);
+        return builderStreamSlicerToManifest(values, subSlicer, visitedStreams);
       }),
     } as unknown as CartesianProductStreamSlicer;
   }
@@ -506,14 +549,16 @@ function builderFormStreamSlicerToStreamSlicer(
   };
 }
 
-function parseSchemaString(schema?: string) {
+const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} };
+
+function parseSchemaString(schema?: string): DeclarativeStreamSchemaLoader {
   if (!schema) {
-    return undefined;
+    return EMPTY_SCHEMA;
   }
   try {
     return { type: "InlineSchemaLoader", schema: JSON.parse(schema) };
   } catch {
-    return undefined;
+    return EMPTY_SCHEMA;
   }
 }
 
@@ -522,7 +567,7 @@ function builderStreamToDeclarativeSteam(
   stream: BuilderStream,
   visitedStreams: string[]
 ): DeclarativeStream {
-  return {
+  const declarativeStream: DeclarativeStream = {
     type: "DeclarativeStream",
     name: stream.name,
     primary_key: stream.primaryKey,
@@ -536,14 +581,14 @@ function builderStreamToDeclarativeSteam(
         name: stream.name,
         url_base: values.global?.urlBase,
         path: stream.urlPath,
+        http_method: stream.httpMethod,
         request_options_provider: {
-          // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
-          // type: "InterpolatedRequestOptionsProvider",
+          type: "InterpolatedRequestOptionsProvider",
           request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
           request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
           request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
-        } as InterpolatedRequestOptionsProvider,
-        authenticator: builderFormAuthenticatorToAuthenticator(values.global),
+        },
+        authenticator: builderAuthenticatorToManifest(values.global),
       },
       record_selector: {
         type: "RecordSelector",
@@ -567,9 +612,11 @@ function builderStreamToDeclarativeSteam(
             url_base: values.global?.urlBase,
           }
         : { type: "NoPagination" },
-      stream_slicer: builderFormStreamSlicerToStreamSlicer(values, stream.streamSlicer, [...visitedStreams, stream.id]),
+      stream_slicer: builderStreamSlicerToManifest(values, stream.streamSlicer, [...visitedStreams, stream.id]),
     },
   };
+
+  return merge({}, declarativeStream, stream.unsupportedFields);
 }
 
 export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
@@ -577,7 +624,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     builderStreamToDeclarativeSteam(values, stream, [])
   );
 
-  const allInputs = [...values.inputs, ...getInferredInputs(values)];
+  const allInputs = [...values.inputs, ...getInferredInputs(values.global, values.inferredInputOverrides)];
 
   const specSchema: JSONSchema7 = {
     $schema: "http://json-schema.org/draft-07/schema#",
@@ -593,14 +640,14 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     type: "Spec",
   };
 
-  return {
-    version: "0.1.0",
+  return merge({
+    version: values.version,
     type: "DeclarativeSource",
     check: {
       type: "CheckStream",
-      stream_names: [],
+      stream_names: values.checkStreams,
     },
     streams: manifestStreams,
     spec,
-  };
+  });
 };

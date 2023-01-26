@@ -1,4 +1,9 @@
+set -e
+
 cd $1
+
+# Fail script on failing command
+set -e
 
 # Pasted from https://github.com/airbytehq/airbyte/blob/master/buildSrc/src/main/groovy/airbyte-python.gradle#L85-L96
 pip install 'mccabe==0.6.1'

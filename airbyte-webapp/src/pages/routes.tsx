@@ -15,8 +15,8 @@ import MainView from "views/layout/MainView";
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 import { RoutePaths, DestinationPaths } from "./routePaths";
 
-const ConnectionPage = React.lazy(() => import("./ConnectionPage"));
-const CreationFormPage = React.lazy(() => import("./ConnectionPage/pages/CreationFormPage"));
+const ConnectionsRoutes = React.lazy(() => import("./connections/ConnectionsRoutes"));
+const CreateConnectionPage = React.lazy(() => import("./connections/CreateConnectionPage"));
 const ConnectorBuilderPage = React.lazy(() => import("./ConnectorBuilderPage/ConnectorBuilderPage"));
 
 const AllDestinationsPage = React.lazy(() => import("./destination/AllDestinationsPage"));
@@ -48,14 +48,14 @@ const MainViewRoutes: React.FC = () => {
           <Route path={RoutePaths.Destination}>
             <Route index element={<AllDestinationsPage />} />
             <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
-            <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+            <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
             <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
               <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
               <Route index element={<DestinationOverviewPage />} />
             </Route>
           </Route>
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
 
           <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
