@@ -123,7 +123,7 @@ def run_qa_checks():
     connector_technical_name = sys.argv[1].split("/")[-1]
     if not connector_technical_name.startswith("source-") and not connector_technical_name.startswith("destination-"):
         print("No QA check to run as this is not a connector.")
-        return None
+        sys.exit(0)
     connector = Connector(connector_technical_name)
     print(f"Running QA checks for {connector_technical_name}:{connector.version}")
     qa_check_results = {qa_check.__name__: qa_check(connector) for qa_check in QA_CHECKS}
