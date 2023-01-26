@@ -8,6 +8,7 @@ import { Navigate } from "react-router-dom";
 import { DeleteBlock } from "components/common/DeleteBlock";
 import { UpdateConnectionDataResidency } from "components/connection/UpdateConnectionDataResidency";
 import { Button } from "components/ui/Button";
+import { Spinner } from "components/ui/Spinner";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
@@ -46,7 +47,9 @@ export const ConnectionSettingsPageInner: React.FC = () => {
               <FormattedMessage id="connectionForm.settings.advancedButton" />
             </Disclosure.Button>
             <Disclosure.Panel className={styles.advancedPanel}>
-              <StateBlock connectionId={connection.connectionId} />
+              <React.Suspense fallback={<Spinner />}>
+                <StateBlock connectionId={connection.connectionId} />
+              </React.Suspense>
             </Disclosure.Panel>
           </>
         )}
