@@ -19,7 +19,10 @@ internal const val CONFIG_OSS_KEY = "airbyte.feature-flag.path"
 @Factory
 class Factory {
     @Singleton
-    fun featureFlagClient(@Property(name = CONFIG_LD_KEY) apiKey: String, @Property(name = CONFIG_OSS_KEY) configPath: String): FeatureFlagClient {
+    fun featureFlagClient(
+        @Property(name = CONFIG_LD_KEY) apiKey: String,
+        @Property(name = CONFIG_OSS_KEY) configPath: String,
+    ): FeatureFlagClient {
         // I cannot get the @Requires annotation to work to load one instance if a property is set and another instance if unset.
         // Combined both cases together here instead resulting to manually doing the is-set check via the isNotBlank function.
         if (apiKey.isNotBlank()) {
