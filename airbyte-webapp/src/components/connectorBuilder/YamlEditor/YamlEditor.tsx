@@ -8,7 +8,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CodeEditor } from "components/ui/CodeEditor";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectorManifest } from "core/request/ConnectorManifest";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
   useConnectorBuilderFormState,
@@ -26,6 +28,7 @@ interface YamlEditorProps {
 }
 
 export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
+  const analyticsService = useAnalyticsService();
   const { setValues } = useFormikContext();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
@@ -102,7 +105,14 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
             setYamlIsValid(true);
             toggleYamlEditor();
             closeConfirmationModal();
+            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.DISCARD_YAML_CHANGES, {
+              actionDescription: "YAML changes were discarded due to failure when converting from YAML to UI",
+            });
           },
+        });
+        analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.YAML_TO_UI_CONVERSION_FAILURE, {
+          actionDescription: "Failure occured when converting from YAML to UI",
+          error_message: e.message,
         });
       }
     } else {
