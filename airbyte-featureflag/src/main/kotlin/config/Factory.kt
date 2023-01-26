@@ -30,6 +30,7 @@ class Factory {
             return LaunchDarklyClient(client)
         }
 
+
         val path: Path? = when {
             configPath.isNotBlank() -> Path.of(configPath)
             else -> null
