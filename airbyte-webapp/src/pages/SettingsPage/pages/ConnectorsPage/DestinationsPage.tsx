@@ -10,8 +10,8 @@ import {
   useUpdateDestinationDefinition,
 } from "services/connector/DestinationDefinitionService";
 
-import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 import ConnectorsView from "./components/ConnectorsView";
+import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 
 const DestinationsPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SETTINGS_DESTINATION);
