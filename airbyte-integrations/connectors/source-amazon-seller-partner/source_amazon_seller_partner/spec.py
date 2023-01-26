@@ -85,9 +85,9 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     period_in_days: int = Field(
-        30,
-        le=30,
-        examples=["1", "10", "30"],
+        90,
+        le=90,
+        examples=["1", "10", "30", "60", "90"],
         description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
         order=10,
     )

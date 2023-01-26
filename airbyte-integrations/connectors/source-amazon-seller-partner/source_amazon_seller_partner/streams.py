@@ -182,7 +182,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._replication_start_date = replication_start_date
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
-        self.period_in_days = max(period_in_days, 30)  # ensure old configs work as well
+        self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
         self._report_options = report_options or "{}"
         self.max_wait_seconds = max_wait_seconds
 
