@@ -1,19 +1,14 @@
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { IntlProvider } from "react-intl";
 import { mockDestinationsData } from "test-utils/mock-data/mockFrequentlyUsedDestinations";
-
-import { defaultOssFeatures, FeatureService } from "hooks/services/Feature";
-import en from "locales/en.json";
+import { TestWrapper } from "test-utils/testutils";
 
 import { FrequentlyUsedConnectorsCard, FrequentlyUsedConnectorsCardProps } from "./FrequentlyUsedConnectorsCard";
 
 const renderFrequentlyUsedConnectorsComponent = (props: FrequentlyUsedConnectorsCardProps) =>
   render(
-    <IntlProvider locale="en" messages={en}>
-      <FeatureService features={defaultOssFeatures}>
-        <FrequentlyUsedConnectorsCard {...props} />
-      </FeatureService>
-    </IntlProvider>
+    <TestWrapper>
+      <FrequentlyUsedConnectorsCard {...props} />
+    </TestWrapper>
   );
 
 describe("<mockFrequentlyUsedConnectors />", () => {
