@@ -11,7 +11,7 @@ def get_all_manifest_paths(airbyte_integrations_path):
         for connector in connectors:
             if connector.startswith("source-"):
                 source_name = connector.replace("source-", "")
-                manifest_path = os.path.join(connectors_path, connector, f"source_{source_name}", f"{source_name}.yaml")
+                manifest_path = os.path.join(connectors_path, connector, f"source_{source_name}", f"manifest.yaml")
                 if os.path.isfile(manifest_path):
                     yield manifest_path
 
