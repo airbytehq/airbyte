@@ -19,7 +19,6 @@ definitions:
       api_token: "{{ config.auth_token }}"
   paginator:
     type: DefaultPaginator
-    url_base: "#/definitions/requester/url_base"
     page_size: "#/definitions/page_size"
     limit_option:
       inject_into: "request_parameter"

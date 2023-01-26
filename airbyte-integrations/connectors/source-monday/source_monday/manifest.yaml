@@ -30,7 +30,6 @@ definitions:
           backoff_time_in_seconds: 60
   default_paginator:
     type: "DefaultPaginator"
-    url_base: "https://api.monday.com/v2"
     pagination_strategy:
       type: "PageIncrement"
       start_from_page: 1
