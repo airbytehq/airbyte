@@ -16,6 +16,7 @@ class HarvestStream(HttpStream, ABC):
     url_base = "https://api.harvestapp.com/v2/"
     per_page = 50
     primary_key = "id"
+    raise_on_http_errors = True
 
     @property
     def data_field(self) -> str:
@@ -70,6 +71,12 @@ class HarvestStream(HttpStream, ABC):
             yield from stream_data
         else:
             yield stream_data
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.FORBIDDEN:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warn(f"Stream `{self.name}` is not available. Please check required permissions. {response.text}")
+        return super().should_retry(response)
 
 
 class IncrementalHarvestStream(HarvestStream, ABC):
@@ -200,13 +207,6 @@ class EstimateItemCategories(IncrementalHarvestStream):
     """
     Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/
     """
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        try:
-            yield from super().read_records(**kwargs)
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code != requests.codes.FORBIDDEN:
-                raise e
 
 
 class Expenses(IncrementalHarvestStream):

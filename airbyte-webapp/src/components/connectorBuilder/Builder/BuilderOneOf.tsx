@@ -1,4 +1,4 @@
-import { useField } from "formik";
+import { FastField, FastFieldProps } from "formik";
 import React from "react";
 
 import GroupControls from "components/GroupControls";
@@ -11,7 +11,7 @@ interface Option {
   default?: object;
 }
 
-interface OneOfOption {
+export interface OneOfOption {
   label: string; // label shown in the dropdown menu
   typeValue: string; // value to set on the `type` field for this component - should match the oneOf type definition
   default?: object; // default values for the path
@@ -23,12 +23,18 @@ interface BuilderOneOfProps {
   path: string; // path to the oneOf component in the json schema
   label: string;
   tooltip: string;
+  onSelect?: (type: string) => void;
 }
 
-export const BuilderOneOf: React.FC<BuilderOneOfProps> = ({ options, path, label, tooltip }) => {
-  const [, , oneOfPathHelpers] = useField(path);
-  const typePath = `${path}.type`;
-  const [typePathField] = useField(typePath);
+const InnerBuilderOneOf: React.FC<BuilderOneOfProps & FastFieldProps<string>> = ({
+  options,
+  label,
+  tooltip,
+  field: typePathField,
+  path,
+  form,
+  onSelect,
+}) => {
   const value = typePathField.value;
 
   const selectedOption = options.find((option) => option.typeValue === value);
@@ -48,15 +54,24 @@ export const BuilderOneOf: React.FC<BuilderOneOfProps> = ({ options, path, label
               return;
             }
             // clear all values for this oneOf and set selected option and default values
-            oneOfPathHelpers.setValue({
+            form.setFieldValue(path, {
               type: selectedOption.value,
               ...selectedOption.default,
             });
+
+            onSelect?.(selectedOption.value);
           }}
         />
       }
     >
       {selectedOption?.children}
     </GroupControls>
+  );
+};
+export const BuilderOneOf: React.FC<BuilderOneOfProps> = (props) => {
+  return (
+    <FastField name={`${props.path}.type`}>
+      {(fastFieldProps: FastFieldProps<string>) => <InnerBuilderOneOf {...props} {...fastFieldProps} />}
+    </FastField>
   );
 };

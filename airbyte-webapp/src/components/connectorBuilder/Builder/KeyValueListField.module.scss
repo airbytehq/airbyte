@@ -22,18 +22,6 @@ $removeButtonWidth: 20px;
   color: colors.$grey-400;
 }
 
-.removeButton {
-  border: none;
-  background-color: transparent;
-  color: colors.$grey;
-  cursor: pointer;
-  padding: 0;
-  width: $removeButtonWidth;
-  height: $removeButtonWidth;
-  font-size: 18px;
-  transition: variables.$transition;
-
-  &:hover {
-    color: colors.$red;
-  }
+.inputWithHelper {
+  padding-right: 55px;
 }

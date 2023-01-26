@@ -1,10 +1,10 @@
 import { JSONSchema7 } from "json-schema";
+import merge from "lodash/merge";
 import * as yup from "yup";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import {
   ConnectorManifest,
-  InterpolatedRequestOptionsProvider,
   Spec,
   ApiKeyAuthenticator,
   BasicHttpAuthenticator,
@@ -14,9 +14,15 @@ import {
   SessionTokenAuthenticator,
   RequestOption,
   OAuthAuthenticator,
-  DefaultPaginatorPaginationStrategy,
   SimpleRetrieverStreamSlicer,
   HttpRequesterAuthenticator,
+  SubstreamSlicer,
+  SubstreamSlicerType,
+  CartesianProductStreamSlicer,
+  DeclarativeStreamSchemaLoader,
+  PageIncrement,
+  OffsetIncrement,
+  CursorPagination,
 } from "core/request/ConnectorManifest";
 
 export interface BuilderFormInput {
@@ -25,7 +31,7 @@ export interface BuilderFormInput {
   definition: AirbyteJSONSchema;
 }
 
-type BuilderFormAuthenticator = (
+export type BuilderFormAuthenticator = (
   | NoAuth
   | (Omit<OAuthAuthenticator, "refresh_request_body"> & {
       refresh_request_body: Array<[string, string]>;
@@ -45,15 +51,33 @@ export interface BuilderFormValues {
   inputs: BuilderFormInput[];
   inferredInputOverrides: Record<string, Partial<AirbyteJSONSchema>>;
   streams: BuilderStream[];
+  checkStreams: string[];
+  version: string;
 }
 
 export interface BuilderPaginator {
-  strategy: DefaultPaginatorPaginationStrategy;
+  strategy: PageIncrement | OffsetIncrement | CursorPagination;
   pageTokenOption: RequestOption;
   pageSizeOption?: RequestOption;
 }
 
+export interface BuilderSubstreamSlicer {
+  type: SubstreamSlicerType;
+  parent_key: string;
+  stream_slice_field: string;
+  parentStreamReference: string;
+  request_option?: RequestOption;
+}
+
+export interface BuilderCartesianProductSlicer {
+  type: "CartesianProductStreamSlicer";
+  stream_slicers: Array<
+    Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer> | BuilderSubstreamSlicer
+  >;
+}
+
 export interface BuilderStream {
+  id: string;
   name: string;
   urlPath: string;
   fieldPointer: string[];
@@ -65,8 +89,12 @@ export interface BuilderStream {
     requestBody: Array<[string, string]>;
   };
   paginator?: BuilderPaginator;
-  streamSlicer?: SimpleRetrieverStreamSlicer;
+  streamSlicer?:
+    | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
+    | BuilderSubstreamSlicer
+    | BuilderCartesianProductSlicer;
   schema?: string;
+  unsupportedFields?: Record<string, unknown>;
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -78,9 +106,11 @@ export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   inputs: [],
   inferredInputOverrides: {},
   streams: [],
+  checkStreams: [],
+  version: "0.1.0",
 };
 
-export const DEFAULT_BUILDER_STREAM_VALUES: BuilderStream = {
+export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
   name: "",
   urlPath: "",
   fieldPointer: [],
@@ -93,129 +123,169 @@ export const DEFAULT_BUILDER_STREAM_VALUES: BuilderStream = {
   },
 };
 
-function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
-  if (values.global.authenticator.type === "ApiKeyAuthenticator") {
-    return [
-      {
-        key: "api_key",
-        required: true,
-        definition: {
-          type: "string",
-          title: "API Key",
-          airbyte_secret: true,
-        },
+export const authTypeToKeyToInferredInput: Record<string, Record<string, BuilderFormInput>> = {
+  NoAuth: {},
+  ApiKeyAuthenticator: {
+    api_token: {
+      key: "api_key",
+      required: true,
+      definition: {
+        type: "string",
+        title: "API Key",
+        airbyte_secret: true,
       },
-    ];
-  }
-  if (values.global.authenticator.type === "BearerAuthenticator") {
-    return [
-      {
-        key: "api_key",
-        required: true,
-        definition: {
-          type: "string",
-          title: "API Key",
-          airbyte_secret: true,
-        },
+    },
+  },
+  BearerAuthenticator: {
+    api_token: {
+      key: "api_key",
+      required: true,
+      definition: {
+        type: "string",
+        title: "API Key",
+        airbyte_secret: true,
       },
-    ];
-  }
-  if (values.global.authenticator.type === "BasicHttpAuthenticator") {
-    return [
-      {
-        key: "username",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Username",
-        },
+    },
+  },
+  BasicHttpAuthenticator: {
+    username: {
+      key: "username",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Username",
       },
-      {
-        key: "password",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Password",
-          airbyte_secret: true,
-        },
+    },
+    password: {
+      key: "password",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Password",
+        airbyte_secret: true,
       },
-    ];
-  }
-  if (values.global.authenticator.type === "OAuthAuthenticator") {
-    return [
-      {
-        key: "client_id",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Client ID",
-          airbyte_secret: true,
-        },
+    },
+  },
+  OAuthAuthenticator: {
+    client_id: {
+      key: "client_id",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Client ID",
+        airbyte_secret: true,
       },
-      {
-        key: "client_secret",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Client secret",
-          airbyte_secret: true,
-        },
+    },
+    client_secret: {
+      key: "client_secret",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Client secret",
+        airbyte_secret: true,
       },
-      {
-        key: "refresh_token",
-        required: true,
-        definition: {
-          type: "string",
-          title: "Refresh token",
-          airbyte_secret: true,
-        },
+    },
+    refresh_token: {
+      key: "client_refresh_token",
+      required: true,
+      definition: {
+        type: "string",
+        title: "Refresh token",
+        airbyte_secret: true,
       },
-    ];
-  }
-  if (values.global.authenticator.type === "SessionTokenAuthenticator") {
-    return [
-      {
-        key: "username",
-        required: false,
-        definition: {
-          type: "string",
-          title: "Username",
-        },
+    },
+  },
+  SessionTokenAuthenticator: {
+    username: {
+      key: "username",
+      required: false,
+      definition: {
+        type: "string",
+        title: "Username",
       },
-      {
-        key: "password",
-        required: false,
-        definition: {
-          type: "string",
-          title: "Password",
-          airbyte_secret: true,
-        },
+    },
+    password: {
+      key: "password",
+      required: false,
+      definition: {
+        type: "string",
+        title: "Password",
+        airbyte_secret: true,
       },
-      {
-        key: "session_token",
-        required: false,
-        definition: {
-          type: "string",
-          title: "Session token",
-          description: "Session token generated by user (if provided username and password are not required)",
-          airbyte_secret: true,
-        },
+    },
+    session_token: {
+      key: "session_token",
+      required: false,
+      definition: {
+        type: "string",
+        title: "Session token",
+        description: "Session token generated by user (if provided username and password are not required)",
+        airbyte_secret: true,
       },
-    ];
-  }
-  return [];
+    },
+  },
+};
+
+export const inferredAuthValues = (type: BuilderFormAuthenticator["type"]): Record<string, string> => {
+  return Object.fromEntries(
+    Object.entries(authTypeToKeyToInferredInput[type]).map(([authKey, inferredInput]) => {
+      return [authKey, interpolateConfigKey(inferredInput.key)];
+    })
+  );
+};
+
+function getInferredInputList(global: BuilderFormValues["global"]): BuilderFormInput[] {
+  const authKeyToInferredInput = authTypeToKeyToInferredInput[global.authenticator.type];
+  const authKeys = Object.keys(authKeyToInferredInput);
+  return authKeys.flatMap((authKey) => {
+    if (
+      extractInterpolatedConfigKey(Reflect.get(global.authenticator, authKey)) === authKeyToInferredInput[authKey].key
+    ) {
+      return [authKeyToInferredInput[authKey]];
+    }
+    return [];
+  });
 }
 
-export function getInferredInputs(values: BuilderFormValues): BuilderFormInput[] {
-  const inferredInputs = getInferredInputList(values);
+export function getInferredInputs(
+  global: BuilderFormValues["global"],
+  inferredInputOverrides: BuilderFormValues["inferredInputOverrides"]
+): BuilderFormInput[] {
+  const inferredInputs = getInferredInputList(global);
   return inferredInputs.map((input) =>
-    values.inferredInputOverrides[input.key]
+    inferredInputOverrides[input.key]
       ? {
           ...input,
-          definition: { ...input.definition, ...values.inferredInputOverrides[input.key] },
+          definition: { ...input.definition, ...inferredInputOverrides[input.key] },
         }
       : input
   );
+}
+
+const interpolateConfigKey = (key: string): string => {
+  return `{{ config['${key}'] }}`;
+};
+
+const interpolatedConfigValueRegex = /^{{config\[('|"+)(.+)('|"+)\]}}$/;
+
+export function isInterpolatedConfigKey(str: string | undefined): boolean {
+  if (str === undefined) {
+    return false;
+  }
+  const noWhitespaceString = str.replace(/\s/g, "");
+  return interpolatedConfigValueRegex.test(noWhitespaceString);
+}
+
+function extractInterpolatedConfigKey(str: string | undefined): string | undefined {
+  if (str === undefined) {
+    return undefined;
+  }
+  const noWhitespaceString = str.replace(/\s/g, "");
+  const regexResult = interpolatedConfigValueRegex.exec(noWhitespaceString);
+  if (regexResult === null) {
+    return undefined;
+  }
+  return regexResult[2];
 }
 
 export const injectIntoValues = ["request_parameter", "header", "path", "body_data", "body_json"];
@@ -228,8 +298,79 @@ const nonPathRequestOptionSchema = yup
   .notRequired()
   .default(undefined);
 
-// eslint-disable-next-line no-useless-escape
-export const timeDeltaRegex = /^(([\.\d]+?)y)?(([\.\d]+?)m)?(([\.\d]+?)w)?(([\.\d]+?)d)?$/;
+const regularSlicerShape = {
+  cursor_field: yup.mixed().when("type", {
+    is: (val: string) => val !== "SubstreamSlicer" && val !== "CartesianProductStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  slice_values: yup.mixed().when("type", {
+    is: "ListStreamSlicer",
+    then: yup.array().of(yup.string()),
+    otherwise: (schema) => schema.strip(),
+  }),
+  request_option: nonPathRequestOptionSchema,
+  start_datetime: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  end_datetime: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  step: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  datetime_format: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  start_time_option: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: nonPathRequestOptionSchema,
+    otherwise: (schema) => schema.strip(),
+  }),
+  end_time_option: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: nonPathRequestOptionSchema,
+    otherwise: (schema) => schema.strip(),
+  }),
+  stream_state_field_start: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string(),
+    otherwise: (schema) => schema.strip(),
+  }),
+  stream_state_field_end: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string(),
+    otherwise: (schema) => schema.strip(),
+  }),
+  lookback_window: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string(),
+    otherwise: (schema) => schema.strip(),
+  }),
+  parent_key: yup.mixed().when("type", {
+    is: "SubstreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  parentStreamReference: yup.mixed().when("type", {
+    is: "SubstreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  stream_slice_field: yup.mixed().when("type", {
+    is: "SubstreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+};
 
 export const builderFormValidationSchema = yup.object().shape({
   global: yup.object().shape({
@@ -332,56 +473,10 @@ export const builderFormValidationSchema = yup.object().shape({
       streamSlicer: yup
         .object()
         .shape({
-          cursor_field: yup.string().required("form.empty.error"),
-          slice_values: yup.mixed().when("type", {
-            is: "ListStreamSlicer",
-            then: yup.array().of(yup.string()),
-            otherwise: (schema) => schema.strip(),
-          }),
-          request_option: nonPathRequestOptionSchema,
-          start_datetime: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          end_datetime: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          step: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().matches(timeDeltaRegex, "form.pattern.error").required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          datetime_format: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          start_time_option: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: nonPathRequestOptionSchema,
-            otherwise: (schema) => schema.strip(),
-          }),
-          end_time_option: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: nonPathRequestOptionSchema,
-            otherwise: (schema) => schema.strip(),
-          }),
-          stream_state_field_start: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string(),
-            otherwise: (schema) => schema.strip(),
-          }),
-          stream_state_field_end: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string(),
-            otherwise: (schema) => schema.strip(),
-          }),
-          lookback_window: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string(),
+          ...regularSlicerShape,
+          stream_slicers: yup.mixed().when("type", {
+            is: "CartesianProductStreamSlicer",
+            then: yup.array().of(yup.object().shape(regularSlicerShape)),
             otherwise: (schema) => schema.strip(),
           }),
         })
@@ -391,9 +486,7 @@ export const builderFormValidationSchema = yup.object().shape({
   ),
 });
 
-function builderFormAuthenticatorToAuthenticator(
-  globalSettings: BuilderFormValues["global"]
-): HttpRequesterAuthenticator {
+function builderAuthenticatorToManifest(globalSettings: BuilderFormValues["global"]): HttpRequesterAuthenticator {
   if (globalSettings.authenticator.type === "OAuthAuthenticator") {
     return {
       ...globalSettings.authenticator,
@@ -409,73 +502,129 @@ function builderFormAuthenticatorToAuthenticator(
   return globalSettings.authenticator as HttpRequesterAuthenticator;
 }
 
-function parseSchemaString(schema?: string) {
-  if (!schema) {
+function builderStreamSlicerToManifest(
+  values: BuilderFormValues,
+  slicer: BuilderStream["streamSlicer"],
+  visitedStreams: string[]
+): SimpleRetrieverStreamSlicer | undefined {
+  if (!slicer) {
     return undefined;
+  }
+  if (slicer.type !== "SubstreamSlicer" && slicer.type !== "CartesianProductStreamSlicer") {
+    return slicer;
+  }
+  if (slicer.type === "CartesianProductStreamSlicer") {
+    return {
+      type: "CartesianProductStreamSlicer",
+      stream_slicers: slicer.stream_slicers.map((subSlicer) => {
+        return builderStreamSlicerToManifest(values, subSlicer, visitedStreams);
+      }),
+    } as unknown as CartesianProductStreamSlicer;
+  }
+  const parentStream = values.streams.find(({ id }) => id === slicer.parentStreamReference);
+  if (!parentStream) {
+    return {
+      type: "SubstreamSlicer",
+      parent_stream_configs: [],
+    };
+  }
+  if (visitedStreams.includes(parentStream.id)) {
+    // circular dependency
+    return {
+      type: "SubstreamSlicer",
+      parent_stream_configs: [],
+    };
+  }
+  return {
+    type: "SubstreamSlicer",
+    parent_stream_configs: [
+      {
+        type: "ParentStreamConfig",
+        parent_key: slicer.parent_key,
+        request_option: slicer.request_option,
+        stream_slice_field: slicer.stream_slice_field,
+        stream: builderStreamToDeclarativeSteam(values, parentStream, visitedStreams),
+      },
+    ],
+  };
+}
+
+const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} };
+
+function parseSchemaString(schema?: string): DeclarativeStreamSchemaLoader {
+  if (!schema) {
+    return EMPTY_SCHEMA;
   }
   try {
     return { type: "InlineSchemaLoader", schema: JSON.parse(schema) };
   } catch {
-    return undefined;
+    return EMPTY_SCHEMA;
   }
 }
 
-export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
-  const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
-    return {
-      type: "DeclarativeStream",
+function builderStreamToDeclarativeSteam(
+  values: BuilderFormValues,
+  stream: BuilderStream,
+  visitedStreams: string[]
+): DeclarativeStream {
+  const declarativeStream: DeclarativeStream = {
+    type: "DeclarativeStream",
+    name: stream.name,
+    primary_key: stream.primaryKey,
+    schema_loader: parseSchemaString(stream.schema),
+    retriever: {
+      type: "SimpleRetriever",
       name: stream.name,
       primary_key: stream.primaryKey,
-      schema_loader: parseSchemaString(stream.schema),
-      retriever: {
-        type: "SimpleRetriever",
+      requester: {
+        type: "HttpRequester",
         name: stream.name,
-        primary_key: stream.primaryKey,
-        requester: {
-          type: "HttpRequester",
-          name: stream.name,
-          url_base: values.global?.urlBase,
-          path: stream.urlPath,
-          request_options_provider: {
-            // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
-            // type: "InterpolatedRequestOptionsProvider",
-            request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
-            request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
-            request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
-          } as InterpolatedRequestOptionsProvider,
-          authenticator: builderFormAuthenticatorToAuthenticator(values.global),
-          // TODO: remove these empty "config" values once they are no longer required in the connector manifest JSON schema
-          config: {},
+        url_base: values.global?.urlBase,
+        path: stream.urlPath,
+        http_method: stream.httpMethod,
+        request_options_provider: {
+          type: "InterpolatedRequestOptionsProvider",
+          request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
+          request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
+          request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
         },
-        record_selector: {
-          type: "RecordSelector",
-          extractor: {
-            type: "DpathExtractor",
-            field_pointer: stream.fieldPointer,
-          },
-        },
-        paginator: stream.paginator
-          ? {
-              type: "DefaultPaginator",
-              page_token_option: {
-                ...stream.paginator.pageTokenOption,
-                // ensures that empty field_name is not set, as connector builder server cannot accept a field_name if inject_into is set to 'path'
-                field_name: stream.paginator.pageTokenOption?.field_name
-                  ? stream.paginator.pageTokenOption?.field_name
-                  : undefined,
-              },
-              page_size_option: stream.paginator.pageSizeOption,
-              pagination_strategy: stream.paginator.strategy,
-              url_base: values.global?.urlBase,
-            }
-          : { type: "NoPagination" },
-        stream_slicer: stream.streamSlicer,
-        config: {},
+        authenticator: builderAuthenticatorToManifest(values.global),
       },
-    };
-  });
+      record_selector: {
+        type: "RecordSelector",
+        extractor: {
+          type: "DpathExtractor",
+          field_pointer: stream.fieldPointer,
+        },
+      },
+      paginator: stream.paginator
+        ? {
+            type: "DefaultPaginator",
+            page_token_option: {
+              ...stream.paginator.pageTokenOption,
+              // ensures that empty field_name is not set, as connector builder server cannot accept a field_name if inject_into is set to 'path'
+              field_name: stream.paginator.pageTokenOption?.field_name
+                ? stream.paginator.pageTokenOption?.field_name
+                : undefined,
+            },
+            page_size_option: stream.paginator.pageSizeOption,
+            pagination_strategy: stream.paginator.strategy,
+            url_base: values.global?.urlBase,
+          }
+        : { type: "NoPagination" },
+      stream_slicer: builderStreamSlicerToManifest(values, stream.streamSlicer, [...visitedStreams, stream.id]),
+    },
+  };
 
-  const allInputs = [...values.inputs, ...getInferredInputs(values)];
+  return merge({}, declarativeStream, stream.unsupportedFields);
+}
+
+export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
+  const manifestStreams: DeclarativeStream[] = values.streams.map((stream) =>
+    builderStreamToDeclarativeSteam(values, stream, [])
+  );
+
+  const allInputs = [...values.inputs, ...getInferredInputs(values.global, values.inferredInputOverrides)];
 
   const specSchema: JSONSchema7 = {
     $schema: "http://json-schema.org/draft-07/schema#",
@@ -491,14 +640,14 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     type: "Spec",
   };
 
-  return {
-    version: "0.1.0",
+  return merge({
+    version: values.version,
     type: "DeclarativeSource",
     check: {
       type: "CheckStream",
-      stream_names: [],
+      stream_names: values.checkStreams,
     },
     streams: manifestStreams,
     spec,
-  };
+  });
 };

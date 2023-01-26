@@ -2,8 +2,9 @@ import { useField } from "formik";
 
 import { RequestOption } from "core/request/ConnectorManifest";
 
-import { injectIntoValues } from "../types";
 import { BuilderField } from "./BuilderField";
+import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
+import { injectIntoValues } from "../types";
 
 interface InjectRequestOptionFieldsProps {
   path: string;
@@ -37,7 +38,7 @@ export const InjectRequestOptionFields: React.FC<InjectRequestOptionFieldsProps>
         tooltip={`Configures where the ${descriptor} should be set on the HTTP requests`}
       />
       {field.value.inject_into !== "path" && (
-        <BuilderField
+        <BuilderFieldWithInputs
           type="string"
           path={`${path}.field_name`}
           label="Field name"

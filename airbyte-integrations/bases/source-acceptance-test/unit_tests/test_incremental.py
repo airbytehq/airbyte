@@ -744,18 +744,18 @@ def test_future_state_configuration_fixture(mocker, test_strictness_level, input
         test_incremental.pytest.fail.assert_not_called()
 
 
-TEST_AIRBYTE_STREAM_A = AirbyteStream(name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])
-TEST_AIRBYTE_STREAM_B = AirbyteStream(name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])
+TEST_AIRBYTE_STREAM_A = AirbyteStream(name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
+TEST_AIRBYTE_STREAM_B = AirbyteStream(name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
 
 TEST_CONFIGURED_AIRBYTE_STREAM_A = ConfiguredAirbyteStream(
     stream=TEST_AIRBYTE_STREAM_A,
-    sync_mode=SyncMode.full_refresh,
+    sync_mode=SyncMode.incremental,
     destination_sync_mode=DestinationSyncMode.overwrite,
 )
 
 TEST_CONFIGURED_AIRBYTE_STREAM_B = ConfiguredAirbyteStream(
     stream=TEST_AIRBYTE_STREAM_B,
-    sync_mode=SyncMode.full_refresh,
+    sync_mode=SyncMode.incremental,
     destination_sync_mode=DestinationSyncMode.overwrite,
 )
 

@@ -1,18 +1,19 @@
 import { useFormikContext, setIn, useField } from "formik";
+import clone from "lodash/clone";
 import get from "lodash/get";
 import React, { useCallback, useMemo } from "react";
 
 import GroupControls from "components/GroupControls";
 import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 
-import { FormBlock, FormConditionItem } from "core/form/types";
-import { isDefined } from "utils/common";
+import { FormConditionItem } from "core/form/types";
 
-import { ConnectorFormValues } from "../../types";
 import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 import { GroupLabel } from "./GroupLabel";
 import { SectionContainer } from "./SectionContainer";
+import { ConnectorFormValues } from "../../types";
+import { setDefaultValues } from "../../useBuildForm";
 
 interface ConditionSectionProps {
   formField: FormConditionItem;
@@ -39,22 +40,15 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
 
   const onOptionChange = useCallback(
     (selectedItem: DropDownOptionDataItem) => {
-      const newSelectedPath = formField.conditions[selectedItem.value];
+      const newSelectedFormBlock = formField.conditions[selectedItem.value];
 
-      const newValues =
-        newSelectedPath._type === "formGroup"
-          ? newSelectedPath.properties?.reduce(
-              (acc: ConnectorFormValues, property: FormBlock) =>
-                property._type === "formItem" && isDefined(property.const)
-                  ? setIn(acc, property.path, property.const)
-                  : acc,
-              values
-            )
-          : values;
+      const conditionValues = clone(get(values, path) || {});
+      conditionValues[formField.selectionKey] = formField.selectionConstValues[selectedItem.value];
+      setDefaultValues(newSelectedFormBlock, conditionValues, { respectExistingValues: true });
 
-      setValues(newValues);
+      setValues(setIn(values, path, conditionValues));
     },
-    [values, formField.conditions, setValues]
+    [formField.conditions, formField.selectionKey, formField.selectionConstValues, values, path, setValues]
   );
 
   const options = useMemo(

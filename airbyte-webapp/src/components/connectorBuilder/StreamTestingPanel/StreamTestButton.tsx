@@ -7,27 +7,27 @@ import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
 
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { useBuilderErrors } from "../useBuilderErrors";
 import styles from "./StreamTestButton.module.scss";
+import { useBuilderErrors } from "../useBuilderErrors";
 
 interface StreamTestButtonProps {
   readStream: () => void;
-  hasConfigJsonErrors: boolean;
+  hasTestInputJsonErrors: boolean;
   setTestInputOpen: (open: boolean) => void;
 }
 
 export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
   readStream,
-  hasConfigJsonErrors,
+  hasTestInputJsonErrors,
   setTestInputOpen,
 }) => {
-  const { editorView, yamlIsValid } = useConnectorBuilderState();
+  const { editorView, yamlIsValid } = useConnectorBuilderFormState();
   const { hasErrors, validateAndTouch } = useBuilderErrors();
 
   const handleClick = () => {
-    if (hasConfigJsonErrors) {
+    if (hasTestInputJsonErrors) {
       setTestInputOpen(true);
       return;
     }
@@ -49,7 +49,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
     tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlTest" />;
   }
 
-  if ((editorView === "ui" && hasErrors(false)) || hasConfigJsonErrors) {
+  if ((editorView === "ui" && hasErrors(false)) || hasTestInputJsonErrors) {
     showWarningIcon = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsTest" />;
   }
@@ -60,6 +60,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
       size="sm"
       onClick={handleClick}
       disabled={buttonDisabled}
+      data-testid="read-stream"
       icon={
         showWarningIcon ? (
           <FontAwesomeIcon icon={faWarning} />
