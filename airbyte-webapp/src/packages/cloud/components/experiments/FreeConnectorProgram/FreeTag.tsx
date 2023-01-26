@@ -15,9 +15,8 @@ export const FreeTag: React.FC<FreeTagProps> = ({ releaseStage }) => {
   const { enrollmentStatusQuery } = useFreeConnectorProgram();
   const { isEnrolled } = enrollmentStatusQuery.data || {};
   const { formatMessage } = useIntl();
-  const freeStages: Array<ReleaseStage | undefined> = ["alpha", "beta"];
 
-  return isEnrolled && freeStages.includes(releaseStage) ? (
+  return isEnrolled && ["alpha", "beta"].includes(releaseStage) ? (
     <span className={styles.freeTag}>{formatMessage({ id: "freeConnectorProgram.releaseStageBadge.free" })}</span>
   ) : null;
 };
