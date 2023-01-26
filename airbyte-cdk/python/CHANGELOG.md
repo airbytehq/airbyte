@@ -1,7 +1,13 @@
 # Changelog
 
-## 0.23.1
+## 0.25.1
 Low-Code: SubstreamSlicer.parent_key - dpath support added
+
+## 0.25.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.24.0
+Use dpath.util.values method to parse response with nested lists
 
 ## 0.23.0
 Limiting the number of HTTP requests during a test read
