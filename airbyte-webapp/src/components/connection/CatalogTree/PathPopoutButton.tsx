@@ -10,16 +10,18 @@ import styles from "./PathPopoutButton.module.scss";
 interface PathPopoutButtonProps {
   items?: string[];
   onClick: React.MouseEventHandler;
+  testId?: string;
 }
 
 export const PathPopoutButton: React.FC<React.PropsWithChildren<PathPopoutButtonProps>> = ({
   items = [],
   onClick,
   children,
+  testId,
 }) => (
   <Tooltip
     control={
-      <button className={styles.button} onClick={onClick}>
+      <button className={styles.button} onClick={onClick} data-testid={testId}>
         <Text size="sm" className={styles.text}>
           {children}
         </Text>

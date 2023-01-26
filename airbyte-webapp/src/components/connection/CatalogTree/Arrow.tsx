@@ -12,9 +12,9 @@ interface ArrowProps {
   onExpand?: () => void;
 }
 
-const Arrow: React.FC<ArrowProps> = ({ isItemHasChildren, isItemOpen, onExpand }) => {
+const Arrow: React.FC<ArrowProps> = ({ isItemHasChildren, isItemOpen, onExpand, ...restProps }) => {
   return (
-    <span className={styles.container}>
+    <span className={styles.container} {...restProps}>
       {(isItemHasChildren || !onExpand) && (
         <FontAwesomeIcon
           icon={faChevronRight}
