@@ -22,8 +22,10 @@ import { ConnectorDefinition } from "core/domain/connector";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { useExperiment } from "hooks/services/Experiment";
+import { useFeature, FeatureItem } from "hooks/services/Feature";
 import { useModalService } from "hooks/services/Modal";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { FreeTag } from "packages/cloud/components/experiments/FreeConnectorProgram";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
@@ -51,6 +53,8 @@ const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps
 );
 
 const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage }) => {
+  const fcpEnabled = useFeature(FeatureItem.FreeConnectorProgram);
+
   if (!releaseStage) {
     return null;
   }
@@ -62,6 +66,7 @@ const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage })
   return (
     <div className={styles.stageLabel}>
       <FormattedMessage id={`connector.releaseStage.${releaseStage}`} defaultMessage={releaseStage} />
+      {fcpEnabled && <FreeTag releaseStage={releaseStage} />}
     </div>
   );
 };
