@@ -23,7 +23,6 @@ definitions:
       $ref: "#/definitions/requester"
     paginator:
       type: DefaultPaginator
-      url_base: "#/definitions/requester/url_base"
       limit_option:
         inject_into: "request_parameter"
         field_name: ""

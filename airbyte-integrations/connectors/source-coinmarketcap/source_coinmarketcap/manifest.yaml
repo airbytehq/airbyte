@@ -14,7 +14,6 @@ definitions:
   offset_paginator:
     type: DefaultPaginator
     $parameters:
-      url_base: "#/definitions/requester/url_base"
     page_size_option:
       inject_into: "request_parameter"
       field_name: "limit"

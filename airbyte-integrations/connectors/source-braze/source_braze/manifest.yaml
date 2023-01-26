@@ -23,7 +23,6 @@ definitions:
       $ref: "#/definitions/list_selector"
     paginator:
       type: DefaultPaginator
-      url_base: "{{ config['url'] }}"
       pagination_strategy:
         type: PageIncrement
         page_size: 2

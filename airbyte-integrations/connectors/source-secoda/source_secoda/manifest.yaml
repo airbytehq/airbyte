@@ -19,7 +19,6 @@ definitions:
           action: FAIL
   cursor_paginator:
     type: DefaultPaginator
-    url_base: "#/definitions/requester/url_base"
     page_token_option:
       inject_into: path
     page_size_option:

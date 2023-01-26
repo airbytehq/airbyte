@@ -29,7 +29,6 @@ definitions:
     page_token_option:
       field_name: "next_token"
       inject_into: "request_parameter"
-    url_base: "#/definitions/base_requester/url_base"
     page_size_option: # Not used, but check fails without it
       field_name: ""
       inject_into: "request_parameter"

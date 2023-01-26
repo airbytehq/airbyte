@@ -32,7 +32,6 @@ definitions:
     page_size_option: # This is useless, only there because it is required, but page sizes are managed automatically by API subscription type
       field_name: "X-Pagination-Page-Size"
       inject_into: "header"
-    url_base: "#/definitions/base_requester/url_base"
   latest_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
