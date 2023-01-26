@@ -1,0 +1,46 @@
+{"stream": "sites", "data": {"permissionLevel": "siteOwner"}, "emitted_at": 1674600072721}
+{"stream": "sites", "data": {"permissionLevel": "siteOwner"}, "emitted_at": 1674600073155}
+{"stream": "sitemaps", "data": {"lastSubmitted": "2021-09-10T23:02:22.258Z", "isPending": false, "isSitemapsIndex": false, "type": "sitemap", "warnings": "0", "errors": "0", "contents": [{"type": "web", "submitted": "5690", "indexed": "0"}]}, "emitted_at": 1674600073428}
+{"stream": "sitemaps", "data": {"lastSubmitted": "2021-09-10T23:02:22.258Z", "isPending": false, "isSitemapsIndex": false, "type": "sitemap", "warnings": "0", "errors": "0", "contents": [{"type": "web", "submitted": "5690", "indexed": "0"}]}, "emitted_at": 1674600073798}
+{"stream": "search_analytics_by_date", "data": {"ctr": 0.07940251572327044, "position": 31.88456498951782, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600074364}
+{"stream": "search_analytics_by_date", "data": {"ctr": 0.07130707837236687, "position": 32.45505691482403, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600074364}
+{"stream": "search_analytics_by_date", "data": {"ctr": 0.06246691371095818, "position": 35.16079936474325, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600074365}
+{"stream": "search_analytics_by_date", "data": {"ctr": 0.04798676227247656, "position": 37.52137341423056, "search_type": "web", "date": "2021-09-17"}, "emitted_at": 1674600074816}
+{"stream": "search_analytics_by_date", "data": {"ctr": 0.026209048361934478, "position": 43.134477379095166, "search_type": "web", "date": "2021-09-18"}, "emitted_at": 1674600074817}
+{"stream": "search_analytics_by_date", "data": {"ctr": 0.029040774420651217, "position": 42.78952772073922, "search_type": "web", "date": "2021-09-19"}, "emitted_at": 1674600074818}
+{"stream": "search_analytics_by_country", "data": {"ctr": 0.1301955990220049, "position": 24.62530562347188, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600075212}
+{"stream": "search_analytics_by_country", "data": {"ctr": 0.10391061452513967, "position": 29.924022346368716, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600075213}
+{"stream": "search_analytics_by_country", "data": {"ctr": 0.09462915601023018, "position": 30.83759590792839, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600075213}
+{"stream": "search_analytics_by_country", "data": {"ctr": 0.0832, "position": 27.408, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600075213}
+{"stream": "search_analytics_by_country", "data": {"ctr": 0.08223684210526316, "position": 26.820723684210527, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600075214}
+{"stream": "search_analytics_by_country", "data": {"ctr": 0.07445008460236886, "position": 27.43993231810491, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600075214}
+{"stream": "search_analytics_by_device", "data": {"ctr": 0.07708300015992324, "position": 31.635375019990406, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600075873}
+{"stream": "search_analytics_by_device", "data": {"ctr": 0.07342657342657342, "position": 31.832326764144945, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600075873}
+{"stream": "search_analytics_by_device", "data": {"ctr": 0.06650602409638554, "position": 34.87839357429719, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600075874}
+{"stream": "search_analytics_by_device", "data": {"ctr": 0.09090909090909091, "position": 33.38137472283814, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600075874}
+{"stream": "search_analytics_by_device", "data": {"ctr": 0.06221889055472264, "position": 35.52473763118441, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600075874}
+{"stream": "search_analytics_by_device", "data": {"ctr": 0.04354469060351413, "position": 36.913674560733384, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600075875}
+{"stream": "search_analytics_by_page", "data": {"ctr": 0.16593362654938024, "position": 32.60535785685725, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600077103}
+{"stream": "search_analytics_by_page", "data": {"ctr": 0.14685874349739897, "position": 34.94597839135654, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600077104}
+{"stream": "search_analytics_by_page", "data": {"ctr": 0.14058234758871702, "position": 37.05686988171065, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600077105}
+{"stream": "search_analytics_by_page", "data": {"ctr": 0.09090909090909091, "position": 14.812316715542522, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600077105}
+{"stream": "search_analytics_by_page", "data": {"ctr": 0.07418397626112759, "position": 11.57566765578635, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600077106}
+{"stream": "search_analytics_by_page", "data": {"ctr": 0.02894736842105263, "position": 2.375, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600077107}
+{"stream": "search_analytics_by_query", "data": {"ctr": 0.6571428571428571, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600078165}
+{"stream": "search_analytics_by_query", "data": {"ctr": 0.6563786008230452, "position": 1.0041152263374487, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600078165}
+{"stream": "search_analytics_by_query", "data": {"ctr": 0.6157517899761337, "position": 1, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600078166}
+{"stream": "search_analytics_by_query", "data": {"ctr": 0.6666666666666666, "position": 1.3333333333333333, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600078166}
+{"stream": "search_analytics_by_query", "data": {"ctr": 0.6363636363636364, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600078166}
+{"stream": "search_analytics_by_query", "data": {"ctr": 0.5384615384615384, "position": 1, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600078166}
+{"stream": "search_analytics_all_fields", "data": {"ctr": 0.6490066225165563, "position": 1, "search_type": "web", "date": "2021-09-15"}, "emitted_at": 1674600079765}
+{"stream": "search_analytics_all_fields", "data": {"ctr": 0.5272727272727272, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600079765}
+{"stream": "search_analytics_all_fields", "data": {"ctr": 0.6229508196721312, "position": 1, "search_type": "web", "date": "2021-09-16"}, "emitted_at": 1674600079766}
+{"stream": "search_analytics_all_fields", "data": {"ctr": 0.6097560975609756, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600079766}
+{"stream": "search_analytics_all_fields", "data": {"ctr": 0.8, "position": 1, "search_type": "web", "date": "2021-09-14"}, "emitted_at": 1674600079766}
+{"stream": "search_analytics_all_fields", "data": {"ctr": 0.6666666666666666, "position": 1, "date": "2021-09-15"}, "emitted_at": 1674600079766}
+{"stream": "custom_dimensions", "data": {"ctr": 0.10220440881763528, "position": 29.36005344021376, "date": "2021-09-15"}, "emitted_at": 1674600080130}
+{"stream": "custom_dimensions", "data": {"ctr": 0.11009174311926606, "position": 25.412079510703364, "date": "2021-09-14"}, "emitted_at": 1674600080131}
+{"stream": "custom_dimensions", "data": {"ctr": 0.1004601226993865, "position": 30.555981595092025, "date": "2021-09-16"}, "emitted_at": 1674600080131}
+{"stream": "custom_dimensions", "data": {"ctr": 0.21518987341772153, "position": 22.227848101265824, "date": "2021-09-14"}, "emitted_at": 1674600080131}
+{"stream": "custom_dimensions", "data": {"ctr": 0.09109730848861283, "position": 26.467908902691512, "date": "2021-09-14"}, "emitted_at": 1674600080131}
+{"stream": "custom_dimensions", "data": {"ctr": 0.08528784648187633, "position": 27.658848614072493, "date": "2021-09-15"}, "emitted_at": 1674600080132}
