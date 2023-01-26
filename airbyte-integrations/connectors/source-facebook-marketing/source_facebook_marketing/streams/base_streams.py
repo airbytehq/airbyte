@@ -12,11 +12,11 @@ from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, 
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 from .common import deep_merge
 

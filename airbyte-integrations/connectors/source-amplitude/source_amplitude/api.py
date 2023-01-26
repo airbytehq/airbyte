@@ -15,8 +15,8 @@ from urllib.parse import parse_qs
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.http import HttpStream
 
 from .errors import HTTP_ERROR_CODES, error_msg_from_status
 

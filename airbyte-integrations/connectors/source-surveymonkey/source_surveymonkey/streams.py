@@ -6,13 +6,12 @@ import tempfile
 import urllib.parse
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-
 
 import pendulum
 import requests
 import vcr
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 cache_file = tempfile.NamedTemporaryFile()
