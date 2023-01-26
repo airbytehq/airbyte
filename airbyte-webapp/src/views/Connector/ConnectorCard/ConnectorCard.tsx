@@ -126,7 +126,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     setDocumentationUrl,
   ]);
 
-  const testConnectorWithTracking = async (connectorCardValues: ConnectorCardValues) => {
+  const testConnectorWithTracking = async (connectorCardValues?: ConnectorCardValues) => {
     trackTestConnectorStarted(selectedConnectorDefinition);
     try {
       await testConnector(connectorCardValues);
@@ -137,7 +137,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     }
   };
 
-  const handleTestConnector = async (values: ConnectorCardValues) => {
+  const handleTestConnector = async (values?: ConnectorCardValues) => {
     setErrorStatusRequest(null);
     try {
       await testConnectorWithTracking(values);
@@ -233,7 +233,9 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
             if (!selectedConnectorDefinitionId) {
               return;
             }
-            handleTestConnector({ ...getValues(), serviceType: selectedConnectorDefinitionId });
+            handleTestConnector(
+              isEditMode ? undefined : { ...getValues(), serviceType: selectedConnectorDefinitionId }
+            );
           }}
           onDeleteClick={onDeleteClick}
           isValid={isValid}

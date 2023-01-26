@@ -41,6 +41,7 @@ export const Controls: React.FC<IProps> = ({
       {hasDefinition && (
         <TestCard
           {...restProps}
+          dirty={dirty}
           formType={formType}
           isTestConnectionInProgress={isTestConnectionInProgress}
           isEditMode={isEditMode}

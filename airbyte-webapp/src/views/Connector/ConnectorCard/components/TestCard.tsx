@@ -26,6 +26,7 @@ interface IProps {
   errorMessage?: React.ReactNode;
   job?: SynchronousJobRead;
   isEditMode?: boolean;
+  dirty: boolean;
   connectionTestSuccess: boolean;
 }
 
@@ -41,6 +42,7 @@ export const TestCard: React.FC<IProps> = ({
   onCancelTesting,
   job,
   isEditMode,
+  dirty,
 }) => {
   const [logsVisible, setLogsVisible] = useState(false);
 
@@ -98,7 +100,8 @@ export const TestCard: React.FC<IProps> = ({
               onClick={onRetestClick}
               variant="secondary"
               icon={<FontAwesomeIcon icon={faRefresh} />}
-              disabled={!isValid}
+              // disable if there are changes in edit mode because the retest API can currently only test the saved state
+              disabled={!isValid || (isEditMode && dirty)}
             >
               <FormattedMessage id={!isEditMode ? "form.test" : `form.${formType}Retest`} />
             </Button>
