@@ -287,6 +287,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.46  | 2023-01-26 | [#21912](https://github.com/airbytehq/airbyte/pull/21912)  | Catch "Create" Table and Stage Known Permissions and rethrow as ConfigExceptions                                                                      |
 | 0.4.45  | 2023-01-25 | [#21087](https://github.com/airbytehq/airbyte/pull/21764)  | Catch Known Permissions and rethrow as ConfigExceptions                                                                                             |
 | 0.4.44  | 2023-01-20 | [#21087](https://github.com/airbytehq/airbyte/pull/21087)  | Wrap Authentication Errors as Config Exceptions                                                                                                     |
 | 0.4.43  | 2023-01-20 | [\#21450](https://github.com/airbytehq/airbyte/pull/21450) | Updated Check methods to handle more possible s3 and gcs stagings issues                                                                            |
