@@ -48,10 +48,6 @@ public class ConfigReplacer {
     final List<String> hosts = allowedHosts.getHosts();
     for (String host : hosts) {
       final String replacedString = sub.replace(host);
-      if (replacedString.contains("${")) {
-        throw new IOException(
-            "The allowed host value, '" + host + "', is expecting an interpolation value from the connector's configuration, but none is present");
-      }
       resolvedHosts.add(replacedString);
     }
 
