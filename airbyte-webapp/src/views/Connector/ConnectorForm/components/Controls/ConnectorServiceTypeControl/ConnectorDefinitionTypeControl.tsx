@@ -27,10 +27,10 @@ import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
-import { WarningMessage } from "../../WarningMessage";
 import styles from "./ConnectorServiceTypeControl.module.scss";
 import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
 import { getSortedDropdownDataUsingExperiment } from "./utils";
+import { WarningMessage } from "../../WarningMessage";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MenuWithRequestButtonProps = MenuListProps<DropDownOptionDataItem, false> & { selectProps: any };

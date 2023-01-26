@@ -19,6 +19,8 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { useModalService } from "hooks/services/Modal";
 import { links } from "utils/links";
 
+import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
+import styles from "./CatalogTreeTableHeader.module.scss";
 import {
   DestinationNamespaceFormValueType,
   DestinationNamespaceModal,
@@ -28,8 +30,6 @@ import {
   DestinationStreamNamesModal,
   StreamNameDefinitionValueType,
 } from "../../DestinationStreamNamesModal/DestinationStreamNamesModal";
-import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
-import styles from "./CatalogTreeTableHeader.module.scss";
 
 const HeaderCell: React.FC<React.PropsWithChildren<Parameters<typeof CatalogTreeTableCell>[0]>> = ({
   size,

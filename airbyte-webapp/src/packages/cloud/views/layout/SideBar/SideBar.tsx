@@ -31,9 +31,9 @@ import StatusIcon from "views/layout/SideBar/components/StatusIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 import { useCalculateSidebarStyles } from "views/layout/SideBar/SideBar";
 
+import styles from "./SideBar.module.scss";
 import { RoutePaths } from "../../../../../pages/routePaths";
 import { LOW_BALANCE_CREDIT_TRESHOLD } from "../../credits/CreditsPage/components/LowCreditBalanceHint/LowCreditBalanceHint";
-import styles from "./SideBar.module.scss";
 
 const SideBar: React.FC = () => {
   const navLinkClassName = useCalculateSidebarStyles();
