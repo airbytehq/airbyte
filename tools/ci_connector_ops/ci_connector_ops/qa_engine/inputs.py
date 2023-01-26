@@ -10,9 +10,7 @@ from google.oauth2 import service_account
 import requests
 import pandas as pd
 
-CLOUD_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/cloud_catalog.json"
-OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
-
+from .constants import CLOUD_CATALOG_URL, OSS_CATALOG_URL
 
 def fetch_remote_catalog(catalog_url: str) -> pd.DataFrame:
     """Fetch a combined remote catalog and return a single DataFrame 
