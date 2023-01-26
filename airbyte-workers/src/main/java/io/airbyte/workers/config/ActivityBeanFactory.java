@@ -112,10 +112,10 @@ public class ActivityBeanFactory {
                                      final PersistStateActivity persistStateActivity,
                                      final NormalizationSummaryCheckActivity normalizationSummaryCheckActivity,
                                      final WebhookOperationActivity webhookOperationActivity,
-                                     // final ConfigFetchActivity configFetchActivity,
+                                     final ConfigFetchActivity configFetchActivity,
                                      final RefreshSchemaActivity refreshSchemaActivity) {
     return List.of(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity, normalizationSummaryCheckActivity,
-        webhookOperationActivity, /* configFetchActivity, */ refreshSchemaActivity);
+        webhookOperationActivity, configFetchActivity, refreshSchemaActivity);
   }
 
   @Singleton
