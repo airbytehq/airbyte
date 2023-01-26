@@ -1,10 +1,7 @@
 # Changelog
 
-## 0.4.0
-Revert 0.3.0
-
 ## 0.3.0
-(Broken) Add various stricter checks for specs (see PR for details). [#21451](https://github.com/airbytehq/airbyte/pull/21451)
+Add various stricter checks for specs (see PR for details). [#21451](https://github.com/airbytehq/airbyte/pull/21451)
 
 ## 0.2.26
 Check `future_state` only for incremental streams. [#21248](https://github.com/airbytehq/airbyte/pull/21248)
