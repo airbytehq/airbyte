@@ -577,6 +577,8 @@ class FlatFileArchivedOrdersDataByOrderDate(ReportsAmazonSPStream):
 class FlatFileReturnsDataByReturnDate(ReportsAmazonSPStream):
     name = "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE"
 
+    replication_start_date_limit_in_days = 60
+
 
 class FbaInventoryPlaningReport(ReportsAmazonSPStream):
     name = "GET_FBA_INVENTORY_PLANNING_DATA"
