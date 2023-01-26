@@ -57,6 +57,7 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+// Duplicated from :airbyte-worker, eventually, this should be handled in :airbyte-protocol
 task generateWellKnownTypes() {
     doLast {
         def wellKnownTypesYaml = project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml').text

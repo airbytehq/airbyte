@@ -130,6 +130,7 @@ task cloudStorageIntegrationTest(type: Test) {
     }
 }
 
+// Duplicated in :airbyte-container-orchestrator, eventually, this should be handled in :airbyte-protocol
 task generateWellKnownTypes() {
     doLast {
         def wellKnownTypesYaml = project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml').text
