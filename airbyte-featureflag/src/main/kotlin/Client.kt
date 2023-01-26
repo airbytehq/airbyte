@@ -12,6 +12,8 @@ import com.launchdarkly.sdk.ContextKind
 import com.launchdarkly.sdk.LDContext
 import com.launchdarkly.sdk.LDUser
 import com.launchdarkly.sdk.server.LDClient
+import io.micronaut.context.annotation.Property
+import jakarta.inject.Singleton
 import java.lang.Thread.MIN_PRIORITY
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
@@ -21,6 +23,9 @@ import kotlin.concurrent.read
 import kotlin.concurrent.thread
 import kotlin.concurrent.write
 import kotlin.io.path.isRegularFile
+
+internal const val CONFIG_LD_KEY = "airbyte.feature-flag.api-key"
+internal const val CONFIG_OSS_KEY = "airbyte.feature-flag.path"
 
 /**
  * Feature-Flag Client interface.
@@ -41,7 +46,9 @@ sealed interface FeatureFlagClient {
  * @param [config] optional location of the yaml config file that contains the feature-flag definitions.
  * If the [config] is provided, it will be watched for changes and the internal representation of the [config] will be updated to match.
  */
-class ConfigFileClient(config: Path?) : FeatureFlagClient {
+@Singleton
+//@Requires(property = CONFIG_LD_KEY, pattern = "^\\s*S")
+class ConfigFileClient(@Property(name = CONFIG_OSS_KEY) config: Path?) : FeatureFlagClient {
     /** [flags] holds the mappings of the flag-name to the flag properties */
     private var flags: Map<String, ConfigFileFlag> = config?.let { readConfig(it) } ?: mapOf()
 
@@ -74,6 +81,8 @@ class ConfigFileClient(config: Path?) : FeatureFlagClient {
  *
  * @param [client] the Launch-Darkly client for interfacing with Launch-Darkly.
  */
+@Singleton
+//@Requires(property = CONFIG_LD_KEY, pattern = "^.+$")
 class LaunchDarklyClient(private val client: LDClient) : FeatureFlagClient {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {

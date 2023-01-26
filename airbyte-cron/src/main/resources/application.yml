@@ -12,6 +12,10 @@ airbyte:
     update-definitions:
       enabled: ${UPDATE_DEFINITIONS_CRON_ENABLED:false}
   deployment-mode: ${DEPLOYMENT_MODE:OSS}
+  feature-flag:
+    #    client: launchdarkly
+    path: ${FEATURE_FLAG_PATH:/flags}
+    api-key: ${LAUNCHDARKLY_KEY:}
   flyway:
     configs:
       initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}

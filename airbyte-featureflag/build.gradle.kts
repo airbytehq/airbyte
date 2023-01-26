@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     `java-library`
     kotlin("jvm") version "1.8.0"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.8.0"
 }
 
 dependencies {
@@ -12,6 +13,7 @@ dependencies {
 
     implementation(platform(libs.micronaut.bom))
     implementation(libs.micronaut.inject)
+    implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
     implementation(libs.launchdarkly)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.dataformat)

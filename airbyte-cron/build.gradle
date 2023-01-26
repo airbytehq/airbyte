@@ -15,6 +15,8 @@ dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:init')
+    implementation project(':airbyte-featureflag')
+//    implementation libs.launchdarkly
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-metrics:metrics-lib')
