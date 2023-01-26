@@ -12,8 +12,8 @@ import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
-import { WorkspaceRead } from "../core/request/AirbyteClient";
 import { RoutePaths, DestinationPaths } from "./routePaths";
+import { WorkspaceRead } from "../core/request/AirbyteClient";
 
 const ConnectionsRoutes = React.lazy(() => import("./connections/ConnectionsRoutes"));
 const CreateConnectionPage = React.lazy(() => import("./connections/CreateConnectionPage"));
