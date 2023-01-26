@@ -35,8 +35,6 @@ The stream object is represented in the YAML file as:
         type: string
       transformations:
         "$ref": "#/definitions/RecordTransformation"
-      checkpoint_interval:
-        type: integer
       schema_loader:
         "$ref": "#/definitions/InlineSchemaLoader"
 ```

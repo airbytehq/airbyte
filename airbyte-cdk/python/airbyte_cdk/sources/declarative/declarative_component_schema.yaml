@@ -462,9 +462,6 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
-      checkpoint_interval:
-        definition: How often the stream will checkpoint state (i.e. emit a STATE message)
-        type: integer
       name:
         definition: The stream name
         type: string

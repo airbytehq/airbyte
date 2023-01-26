@@ -419,7 +419,6 @@ class ModelToComponentFactory:
             for transformation_model in model.transformations:
                 transformations.append(self._create_component_from_model(model=transformation_model, config=config))
         return DeclarativeStream(
-            checkpoint_interval=model.checkpoint_interval,
             name=model.name,
             primary_key=model.primary_key,
             retriever=retriever,

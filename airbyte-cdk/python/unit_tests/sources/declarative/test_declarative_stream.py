@@ -31,7 +31,6 @@ def test_declarative_stream():
         {"date": "2021-01-02"},
         {"date": "2021-01-03"},
     ]
-    checkpoint_interval = 1000
 
     retriever = MagicMock()
     retriever.state = state
@@ -52,7 +51,6 @@ def test_declarative_stream():
         retriever=retriever,
         config=config,
         transformations=transformations,
-        checkpoint_interval=checkpoint_interval,
         parameters={},
     )
 
@@ -64,7 +62,6 @@ def test_declarative_stream():
     assert stream.primary_key == primary_key
     assert stream.cursor_field == cursor_field
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=None) == stream_slices
-    assert stream.state_checkpoint_interval == checkpoint_interval
     for transformation in transformations:
         assert len(transformation.transform.call_args_list) == len(records)
         expected_calls = [
