@@ -19,17 +19,20 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-      # bypassed this check, because discovery mechanism was changed
-        backward_compatibility_tests_config:
-          disable_for_version: "1.0.1"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+          extra_fields: true
+          exact_order: true
+          extra_records: false
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+          extra_fields: true
+          exact_order: true
+          extra_records: false
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
