@@ -1451,7 +1451,7 @@ class BasicAcceptanceTests {
 
     testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
 
-    // Update the catalog, so we only select the id column.evan/suggested-streams-actor-def
+    // Update the catalog, so we only select the id column.
     catalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true).addSelectedFieldsItem(new SelectedFieldInfo().addFieldPathItem("id"));
     testHarness.updateConnectionCatalog(connectionId, catalog);
 
