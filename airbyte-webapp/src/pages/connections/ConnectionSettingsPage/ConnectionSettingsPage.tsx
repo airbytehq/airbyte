@@ -1,14 +1,18 @@
+import { faChevronDown, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Disclosure } from "@headlessui/react";
 import React from "react";
+import { FormattedMessage } from "react-intl";
 import { Navigate } from "react-router-dom";
 
 import { DeleteBlock } from "components/common/DeleteBlock";
 import { UpdateConnectionDataResidency } from "components/connection/UpdateConnectionDataResidency";
+import { Button } from "components/ui/Button";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
-import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
 import styles from "./ConnectionSettingsPage.module.scss";
@@ -22,7 +26,6 @@ export const ConnectionSettingsPageInner: React.FC = () => {
   // TODO: Disabled until feature is implemented in backend
   const canSendSchemaUpdateNotifications = false; // useFeature(FeatureItem.AllowAutoDetectSchema);
 
-  const [isAdvancedMode] = useAdvancedModeSetting();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_SETTINGS);
   const onDelete = () => deleteConnection(connection);
 
@@ -30,8 +33,24 @@ export const ConnectionSettingsPageInner: React.FC = () => {
     <div className={styles.container}>
       {canSendSchemaUpdateNotifications && <SchemaUpdateNotifications />}
       {canUpdateDataResidency && <UpdateConnectionDataResidency />}
-      {isAdvancedMode && <StateBlock connectionId={connection.connectionId} />}
       <DeleteBlock type="connection" onDelete={onDelete} />
+      <Disclosure>
+        {({ open }) => (
+          <>
+            <Disclosure.Button
+              as={Button}
+              variant="clear"
+              icon={<FontAwesomeIcon icon={open ? faChevronDown : faChevronRight} />}
+              className={styles.advancedButton}
+            >
+              <FormattedMessage id="connectionForm.settings.advancedButton" />
+            </Disclosure.Button>
+            <Disclosure.Panel className={styles.advancedPanel}>
+              <StateBlock connectionId={connection.connectionId} />
+            </Disclosure.Panel>
+          </>
+        )}
+      </Disclosure>
     </div>
   );
 };
