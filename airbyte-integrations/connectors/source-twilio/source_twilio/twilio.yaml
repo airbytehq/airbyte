@@ -97,6 +97,38 @@ definitions:
     $options:
       name: "queues"
       primary_key: "sid"
+  base_phone_number_countries_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "{{ stream_slice.path }}"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.available_phone_number_countries_stream)"
+            parent_key: "subresource_uris/{{ options.subresource_uri_key }}"
+            stream_slice_field: "path"
+  available_phone_numbers_local_stream:
+    $ref: "*ref(definitions.base_phone_number_countries_stream)"
+    $options:
+      name: "available_phone_numbers_local"
+      data_field: "available_phone_numbers"
+      subresource_uri_key: "local"
+  available_phone_numbers_mobile_stream:
+    $ref: "*ref(definitions.base_phone_number_countries_stream)"
+    $options:
+      name: "available_phone_numbers_mobile"
+      data_field: "available_phone_numbers"
+      subresource_uri_key: "mobile"
+  available_phone_numbers_toll_free_stream:
+    $ref: "*ref(definitions.base_phone_number_countries_stream)"
+    $options:
+      name: "available_phone_numbers_toll_free"
+      data_field: "available_phone_numbers"
+      subresource_uri_key: "toll_free"
+
 
 streams:
   - "*ref(definitions.accounts_stream)"
@@ -108,6 +140,9 @@ streams:
   - "*ref(definitions.transcriptions_stream)"
   - "*ref(definitions.available_phone_number_countries_stream)"
   - "*ref(definitions.queues_stream)"
+  - "*ref(definitions.available_phone_numbers_local_stream)"
+  - "*ref(definitions.available_phone_numbers_mobile_stream)"
+  - "*ref(definitions.available_phone_numbers_toll_free_stream)"
 
 check:
   stream_names:
