@@ -5,7 +5,7 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
-import dpath
+import dpath.util
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -155,7 +155,7 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                                 continue
 
                         try:
-                            stream_state_value = dpath.get(parent_record, parent_field)
+                            stream_state_value = dpath.util.get(parent_record, parent_field)
                         except KeyError:
                             pass
                         else:
