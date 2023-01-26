@@ -1,0 +1,35 @@
+@use "scss/colors";
+@use "scss/variables";
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.card {
+  border-spacing: 0;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 10px;
+  box-shadow: variables.$box-shadow;
+
+  &.light {
+    box-shadow: none;
+  }
+}
+
+.row {
+  background-color: colors.$white;
+
+  &.erroredRows {
+    background-color: colors.$red-50;
+  }
+
+  &.hasClick {
+    cursor: pointer;
+  }
+
+  &:hover {
+    background-color: colors.$grey-50;
+  }
+}

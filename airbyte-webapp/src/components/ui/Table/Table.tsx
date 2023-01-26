@@ -1,7 +1,9 @@
+import classNames from "classnames";
 import React, { memo, useMemo } from "react";
 import { Cell, Column, ColumnInstance, SortingRule, useSortBy, useTable } from "react-table";
 import styled from "styled-components";
 
+import styles from "./Table.module.scss";
 import { Card } from "../Card";
 
 interface PaddingProps {
@@ -28,25 +30,25 @@ interface TableHeaderProps extends React.ThHTMLAttributes<HTMLTableHeaderCellEle
   light?: boolean;
 }
 
-const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
-  border-spacing: 0;
-  width: 100%;
-  max-width: 100%;
-  border-radius: 10px;
-  box-shadow: ${({ light, theme }) => (light ? "none" : `0 2px 4px ${theme.cardShadowColor}`)};
-};
-`;
+// const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
+//   border-spacing: 0;
+//   width: 100%;
+//   max-width: 100%;
+//   border-radius: 10px;
+//   box-shadow: ${({ light, theme }) => (light ? "none" : `0 2px 4px ${theme.cardShadowColor}`)};
+// };
+// `;
 
-const Tr = styled.tr<{
-  hasClick?: boolean;
-  erroredRows?: boolean;
-}>`
-  background: ${({ theme, erroredRows }) => (erroredRows ? theme.dangerTransparentColor : theme.whiteColor)};
-  cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
-  &:hover {
-    background-color: ${({ theme }) => `${theme.grey50}`};
-  }
-`;
+// const Tr = styled.tr<{
+//   hasClick?: boolean;
+//   erroredRows?: boolean;
+// }>`
+//   background: ${({ theme, erroredRows }) => (erroredRows ? theme.dangerTransparentColor : theme.whiteColor)};
+//   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
+//   &:hover {
+//     background-color: ${({ theme }) => `${theme.grey50}`};
+//   }
+// `;
 
 const Td = styled.td<{
   collapse?: boolean;
@@ -114,6 +116,8 @@ interface TableProps {
 }
 
 export const Table: React.FC<TableProps> = memo(({ columns, data, onClickRow, erroredRows, sortBy, light, testId }) => {
+  const cardStyles = classNames(styles.card, { [styles.light]: light });
+
   const [plugins, config] = useMemo(() => {
     const pl = [];
     const plConfig: Record<string, unknown> = {};
@@ -134,54 +138,60 @@ export const Table: React.FC<TableProps> = memo(({ columns, data, onClickRow, er
   );
 
   return (
-    <TableView {...getTableProps()} light={light} data-testid={testId}>
-      <thead>
-        {headerGroups.map((headerGroup, key) => (
-          <tr {...headerGroup.getHeaderGroupProps()} key={`table-header-${key}`}>
-            {headerGroup.headers.map((column: HeaderProps, columnKey) => (
-              <Th
-                {...column.getHeaderProps()}
-                highlighted={column.headerHighlighted}
-                collapse={column.collapse}
-                customPadding={column.customPadding}
-                customWidth={column.customWidth}
-                key={`table-column-${key}-${columnKey}`}
-                light={light}
+    <Card {...getTableProps()} className={cardStyles} data-testid={testId}>
+      <table>
+        <thead>
+          {headerGroups.map((headerGroup, key) => (
+            <tr {...headerGroup.getHeaderGroupProps()} key={`table-header-${key}`}>
+              {headerGroup.headers.map((column: HeaderProps, columnKey) => (
+                <Th
+                  {...column.getHeaderProps()}
+                  highlighted={column.headerHighlighted}
+                  collapse={column.collapse}
+                  customPadding={column.customPadding}
+                  customWidth={column.customWidth}
+                  key={`table-column-${key}-${columnKey}`}
+                  light={light}
+                >
+                  {column.render("Header")}
+                </Th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {rows.map((row) => {
+            prepareRow(row);
+            const rowStyles = classNames(styles.row, {
+              [styles.hasClick]: !!onClickRow,
+              [styles.erroredRows]: erroredRows && !!row.original.error,
+            });
+
+            return (
+              <tr
+                {...row.getRowProps()}
+                key={`table-row-${row.id}`}
+                onClick={() => onClickRow?.(row.original)}
+                className={rowStyles}
               >
-                {column.render("Header")}
-              </Th>
-            ))}
-          </tr>
-        ))}
-      </thead>
-      <tbody {...getTableBodyProps()}>
-        {rows.map((row) => {
-          prepareRow(row);
-          return (
-            <Tr
-              {...row.getRowProps()}
-              key={`table-row-${row.id}`}
-              hasClick={!!onClickRow}
-              onClick={() => onClickRow?.(row.original)}
-              erroredRows={erroredRows && !!row.original.error}
-            >
-              {row.cells.map((cell: CellProps, key) => {
-                return (
-                  <Td
-                    {...cell.getCellProps()}
-                    collapse={cell.column.collapse}
-                    customPadding={cell.column.customPadding}
-                    customWidth={cell.column.customWidth}
-                    key={`table-cell-${row.id}-${key}`}
-                  >
-                    {cell.render("Cell")}
-                  </Td>
-                );
-              })}
-            </Tr>
-          );
-        })}
-      </tbody>
-    </TableView>
+                {row.cells.map((cell: CellProps, key) => {
+                  return (
+                    <Td
+                      {...cell.getCellProps()}
+                      collapse={cell.column.collapse}
+                      customPadding={cell.column.customPadding}
+                      customWidth={cell.column.customWidth}
+                      key={`table-cell-${row.id}-${key}`}
+                    >
+                      {cell.render("Cell")}
+                    </Td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </Card>
   );
 });
