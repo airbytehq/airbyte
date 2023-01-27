@@ -9,13 +9,17 @@ import pytest
 from ci_connector_ops.qa_engine import enrichments, inputs, models, validations
 
 @pytest.fixture
-def enriched_catalog() -> pd.DataFrame:
-    return enrichments.get_enriched_catalog(inputs.OSS_CATALOG, inputs.CLOUD_CATALOG)
+def enriched_catalog(oss_catalog, cloud_catalog, adoption_metrics_per_connector_version) -> pd.DataFrame:
+    return enrichments.get_enriched_catalog(
+        oss_catalog, 
+        cloud_catalog, 
+        adoption_metrics_per_connector_version
+    )
 
 @pytest.fixture
 def qa_report(enriched_catalog, mocker) -> pd.DataFrame:
     mocker.patch.object(validations, "url_is_reachable", mocker.Mock(return_value=True))
-    return validations.get_qa_report(enriched_catalog)
+    return validations.get_qa_report(enriched_catalog, len(enriched_catalog))
 
 @pytest.fixture
 def qa_report_columns(qa_report: pd.DataFrame) -> set:
@@ -31,7 +35,7 @@ def test_not_null_values_after_validation(qa_report: pd.DataFrame):
 def test_report_generation_error(enriched_catalog, mocker):
     mocker.patch.object(validations, "url_is_reachable", mocker.Mock(return_value=True))
     with pytest.raises(validations.QAReportGenerationError):
-        return validations.get_qa_report(enriched_catalog.sample(10))
+        return validations.get_qa_report(enriched_catalog.sample(1), 2)
 
 @pytest.mark.parametrize(
     "connector_qa_data, expected_to_be_eligible",
