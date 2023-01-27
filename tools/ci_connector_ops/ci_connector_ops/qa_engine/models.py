@@ -3,6 +3,7 @@
 #
 
 
+from datetime import datetime
 from enum import Enum
 from typing import List
 
@@ -38,6 +39,8 @@ class ConnectorQAReport(BaseModel):
     total_syncs_count: int = PRIVATE_FIELD
     failed_syncs_count: int = PRIVATE_FIELD
     succeeded_syncs_count: int = PRIVATE_FIELD
+    is_eligible_for_promotion_to_cloud: bool = PUBLIC_FIELD
+    report_generation_datetime: datetime = PUBLIC_FIELD
 
 class QAReport(BaseModel):
     connectors_qa_report: List[ConnectorQAReport]

@@ -3,6 +3,7 @@
 #
 
 
+from datetime import datetime
 import pandas as pd
 import pytest
 
@@ -49,6 +50,8 @@ def dummy_qa_report() -> pd.DataFrame:
             "sync_success_rate": .99,
             "total_syncs_count": 0,
             "failed_syncs_count": 0,
-            "succeeded_syncs_count": 0
+            "succeeded_syncs_count": 0,
+            "is_eligible_for_promotion_to_cloud": True,
+            "report_generation_datetime": datetime.utcnow()
         }
     ])
