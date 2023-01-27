@@ -354,7 +354,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
 
-          // final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved, System.currentTimeMillis());
+          // final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved,
+          // System.currentTimeMillis());
 
           try {
             messageOptional = Mono.fromCallable(() -> source.attemptRead())
