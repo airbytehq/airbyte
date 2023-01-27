@@ -28,12 +28,12 @@ from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
 
 class NetsuiteStream(HttpStream, ABC):
     def __init__(
-        self,
-        auth: OAuth1,
-        object_name: str,
-        base_url: str,
-        start_datetime: str,
-        window_in_days: int,
+            self,
+            auth: OAuth1,
+            object_name: str,
+            base_url: str,
+            start_datetime: str,
+            window_in_days: int,
     ):
         self.object_name = object_name
         self.base_url = base_url
@@ -44,14 +44,11 @@ class NetsuiteStream(HttpStream, ABC):
 
     primary_key = "id"
 
-    # instance input date format format selector
-    index_datetime_format = 0
-
     raise_on_http_errors = True
 
     @property
     def default_datetime_format(self) -> str:
-        return NETSUITE_INPUT_DATE_FORMATS[self.index_datetime_format]
+        return NETSUITE_INPUT_DATE_FORMATS[0]
 
     @property
     def name(self) -> str:
@@ -152,12 +149,12 @@ class NetsuiteStream(HttpStream, ABC):
             yield response.json()
 
     def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        **kwargs,
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs,
     ) -> Iterable[Mapping]:
 
         records = response.json().get("items")
@@ -180,29 +177,16 @@ class NetsuiteStream(HttpStream, ABC):
 
                     # handle data-format error
                     if "INVALID_PARAMETER" in error_code and "failed with date format" in detail_message:
-                        self.logger.warn(f"Stream `{self.name}`: cannot read using date format `{self.default_datetime_format}")
-                        self.index_datetime_format += 1
-                        if self.index_datetime_format < len(NETSUITE_INPUT_DATE_FORMATS):
-                            self.logger.warn(f"Stream `{self.name}`: retry using next date format `{self.default_datetime_format}")
-                            return True
-                        else:
-                            self.logger.error(f"DATE FORMAT exception. Cannot read using known formats {NETSUITE_INPUT_DATE_FORMATS}")
-                            raise DateFormatExeption
-
-                    # handle other known errors
-                    self.logger.error(f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
-                    return False
+                        self.logger.error(
+                            f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
                 else:
                     return super().should_retry(response)
         return super().should_retry(response)
 
     def read_records(
-        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
+            self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        try:
-            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
-        except DateFormatExeption:
-            """continue trying other formats, until the list is exhausted"""
+        yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
 
 
 class IncrementalNetsuiteStream(NetsuiteStream):
@@ -211,9 +195,9 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         return INCREMENTAL_CURSOR
 
     def filter_records_newer_than_state(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        records: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any] = None,
+            records: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Parse the records with respect to `stream_state` for `incremental` sync."""
         if stream_state:
@@ -236,27 +220,27 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         return state
 
     def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        **kwargs,
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs,
     ) -> Iterable[Mapping]:
         records = super().parse_response(response, stream_state, stream_slice, next_page_token)
         yield from self.filter_records_newer_than_state(stream_state, records)
 
     def get_updated_state(
-        self,
-        current_stream_state: MutableMapping[str, Any],
-        latest_record: Mapping[str, Any],
+            self,
+            current_stream_state: MutableMapping[str, Any],
+            latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         latest_cursor = latest_record.get(self.cursor_field, self.start_datetime)
         current_cursor = current_stream_state.get(self.cursor_field, self.start_datetime)
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
     def request_params(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+            self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
         if stream_slice:
@@ -268,20 +252,20 @@ class IncrementalNetsuiteStream(NetsuiteStream):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         # Netsuite cannot order records returned by the API, so we need stream slices
         # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
-
-        slices = []
-        state = self.get_state_value(stream_state)
-        start = datetime.strptime(state, NETSUITE_OUTPUT_DATETIME_FORMAT).date()
-        # handle abnormal state values
-        if start > date.today():
-            return slices
-        else:
-            while start <= date.today():
-                next_day = start + timedelta(days=self.window_in_days)
-                slice_start = start.strftime(self.default_datetime_format)
-                slice_end = next_day.strftime(self.default_datetime_format)
-                yield {"start": slice_start, "end": slice_end}
-                start = next_day
+        for input_date_format in NETSUITE_INPUT_DATE_FORMATS:
+            slices = []
+            state = self.get_state_value(stream_state)
+            start = datetime.strptime(state, NETSUITE_OUTPUT_DATETIME_FORMAT).date()
+            # handle abnormal state values
+            if start > date.today():
+                return slices
+            else:
+                while start <= date.today():
+                    next_day = start + timedelta(days=self.window_in_days)
+                    slice_start = start.strftime(input_date_format)
+                    slice_end = next_day.strftime(input_date_format)
+                    yield {"start": slice_start, "end": slice_end}
+                    start = next_day
 
 
 class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):
