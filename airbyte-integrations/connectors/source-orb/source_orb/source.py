@@ -165,10 +165,12 @@ class Subscriptions(IncrementalOrbStream):
         return "subscriptions"
 
     def transform_record(self, subscription_record):
-        # Un-nest customer -> id into customer_id
+        # Un-nest customer -> id, external_customer_id into customer_id,external_customer_id
         nested_customer_id = subscription_record["customer"]["id"]
+        nested_external_customer_id = subscription_record["customer"]["external_customer_id"]
         del subscription_record["customer"]
         subscription_record["customer_id"] = nested_customer_id
+        subscription_record["external_customer_id"] = nested_external_customer_id
 
         # Un-nest plan -> id into plan_id
         nested_plan_id = subscription_record["plan"]["id"]
