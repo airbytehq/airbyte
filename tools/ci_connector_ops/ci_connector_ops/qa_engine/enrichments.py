@@ -33,12 +33,13 @@ def get_enriched_catalog(
         how="left",
         on="connector_definition_id",
         indicator=True,
-        suffixes=("", "_del"),
+        suffixes=("", "_cloud"),
     )
+    
     enriched_catalog.columns = enriched_catalog.columns.str.replace(
         "(?<=[a-z])(?=[A-Z])", "_", regex=True
     ).str.lower() # column names to snake case
-    enriched_catalog = enriched_catalog[[c for c in enriched_catalog.columns if "_del" not in c]]
+    enriched_catalog = enriched_catalog[[c for c in enriched_catalog.columns if "_cloud" not in c]]
     enriched_catalog["is_on_cloud"] = enriched_catalog["_merge"] == "both"
     enriched_catalog = enriched_catalog.drop(columns="_merge")
     enriched_catalog["connector_name"] = enriched_catalog["name"]
