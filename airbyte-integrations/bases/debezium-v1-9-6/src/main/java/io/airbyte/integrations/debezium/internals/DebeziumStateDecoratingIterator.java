@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.debezium.internals;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -23,6 +22,7 @@ import org.slf4j.LoggerFactory;
  * able to recover for any acknowledged checkpoint in the following syncs.
  */
 public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+
   public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(10);
   public static final int SYNC_CHECKPOINT_RECORDS = 1000;
 
@@ -60,7 +60,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    * @param offsetManager Handler to read and write debezium offset file
    * @param trackSchemaHistory Set true if the schema needs to be tracked
    * @param schemaHistoryManager Handler to write schema. Needs to be initialized if
-   *                             trackSchemaHistory is set to true
+   *        trackSchemaHistory is set to true
    * @param checkpointDuration Duration between syncs
    * @param checkpointRecords Number of records between syncs
    */
@@ -101,7 +101,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
       return endOfData();
     }
 
-    if (sendCheckpointMessage){
+    if (sendCheckpointMessage) {
       AirbyteMessage stateMessage = createStateMessage(checkpointOffset);
       initializeCheckpointValues();
       return stateMessage;
@@ -115,7 +115,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
         if (checkpointOffset == null &&
             (recordsLastSync >= syncCheckpointRecords ||
                 Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
-           checkpointOffset = offsetManager.read();
+          checkpointOffset = offsetManager.read();
         }
 
         if (checkpointOffset != null && cdcStateHandler.isRecordBehindOffset(checkpointOffset, message)) {
@@ -151,7 +151,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
   private AirbyteMessage createStateMessage(Map<String, String> offset) {
     final String dbHistory = trackSchemaHistory ? schemaHistoryManager
         .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but manager is not initialised")).read() : null;
-    return cdcStateHandler.saveState(offset != null ? offset : offsetManager.read() , dbHistory);
+    return cdcStateHandler.saveState(offset != null ? offset : offsetManager.read(), dbHistory);
   }
 
 }
