@@ -1124,7 +1124,7 @@ where 1 = 1
         return self.get_incremental_clause_for_column(tablename, self.get_emitted_at(in_jinja=True))
 
     def get_incremental_clause_for_column(self, tablename: str, column: str) -> Any:
-        return "{{ incremental_clause(" + column + ", " + tablename + ") }}"
+        return "{{ incremental_clause(" + column + ", " + tablename + ", '>=') }}"
 
     @staticmethod
     def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
