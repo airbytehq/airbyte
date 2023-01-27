@@ -15,10 +15,12 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OP
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SERVICE_ACCOUNT;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.groupConcat;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
@@ -82,6 +84,7 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.JoinType;
 import org.jooq.Record;
+import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectJoinStep;
@@ -759,6 +762,25 @@ public class ConfigRepository {
         .and(ACTOR.WORKSPACE_ID.eq(workspaceId))
         .andNot(ACTOR.TOMBSTONE).fetch());
     return result.stream().map(DbConverter::buildDestinationConnection).collect(Collectors.toList());
+  }
+
+  /**
+   * List workspace IDs with most recently running jobs within a given time window (in hours).
+   *
+   * @param timeWindowInHours - integer, e.g. 24, 48, etc
+   * @return List<UUID> - list of workspace IDs
+   * @throws IOException - failed to query data
+   */
+  public List<UUID> listWorkspacesByMostRecentlyRunningJobs(final int timeWindowInHours) throws IOException {
+    final Result<Record1<UUID>> records = database.query(ctx -> ctx.selectDistinct(ACTOR.WORKSPACE_ID)
+        .from(ACTOR)
+        .join(CONNECTION)
+        .on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .join(JOBS)
+        .on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
+        .where(JOBS.UPDATED_AT.greaterOrEqual(OffsetDateTime.now().minusHours(timeWindowInHours)))
+        .fetch());
+    return records.stream().map(record -> record.get(ACTOR.WORKSPACE_ID)).collect(Collectors.toList());
   }
 
   /**

@@ -196,6 +196,39 @@ describe("Conversion throws error when", () => {
     };
     expect(convert).toThrow("api_token value must be of the form {{ config[");
   });
+
+  it("manifest has an OAuthAuthenticator with a refresh_request_body containing non-string values", () => {
+    const convert = () => {
+      const manifest: ConnectorManifest = {
+        ...baseManifest,
+        streams: [
+          merge({}, stream1, {
+            retriever: {
+              requester: {
+                authenticator: {
+                  type: "OAuthAuthenticator",
+                  client_id: "{{ config['client_id'] }}",
+                  client_secret: "{{ config['client_secret'] }}",
+                  refresh_token: "{{ config['client_refresh_token'] }}",
+                  refresh_request_body: {
+                    key1: "val1",
+                    key2: {
+                      a: 1,
+                      b: 2,
+                    },
+                  },
+                  token_refresh_endpoint: "https://api.com/refresh_token",
+                  grant_type: "client_credentials",
+                },
+              },
+            },
+          }),
+        ],
+      };
+      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    };
+    expect(convert).toThrow("OAuthAuthenticator contains a refresh_request_body with non-string values");
+  });
 });
 
 describe("Conversion successfully results in", () => {
@@ -452,6 +485,45 @@ describe("Conversion successfully results in", () => {
           record_filter: manifest.streams[0].retriever.record_selector.record_filter,
         },
       },
+    });
+  });
+
+  it("OAuth authenticator refresh_request_body converted to array", () => {
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        merge({}, stream1, {
+          retriever: {
+            requester: {
+              authenticator: {
+                type: "OAuthAuthenticator",
+                client_id: "{{ config['client_id'] }}",
+                client_secret: "{{ config['client_secret'] }}",
+                refresh_token: "{{ config['client_refresh_token'] }}",
+                refresh_request_body: {
+                  key1: "val1",
+                  key2: "val2",
+                },
+                token_refresh_endpoint: "https://api.com/refresh_token",
+                grant_type: "client_credentials",
+              },
+            },
+          },
+        }),
+      ],
+    };
+    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    expect(formValues.global.authenticator).toEqual({
+      type: "OAuthAuthenticator",
+      client_id: "{{ config['client_id'] }}",
+      client_secret: "{{ config['client_secret'] }}",
+      refresh_token: "{{ config['client_refresh_token'] }}",
+      refresh_request_body: [
+        ["key1", "val1"],
+        ["key2", "val2"],
+      ],
+      token_refresh_endpoint: "https://api.com/refresh_token",
+      grant_type: "client_credentials",
     });
   });
 });
