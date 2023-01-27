@@ -334,6 +334,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                     final ThreadedTimeTracker timeHolder,
                                                     final UUID sourceId,
                                                     final boolean fieldSelectionEnabled) {
+
+
+    final Future<Optional<AirbyteMessage>> future = executors.submit(() -> source.attemptRead());
+
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -349,14 +353,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       try {
         final Duration MAX_FETCH_SECONDS = Duration.ofHours(30);
         long lastMessageRecieved = System.currentTimeMillis();
-        final Future<Optional<AirbyteMessage>> future = CompletableFuture.supplyAsync(() -> source.attemptRead(), executors);
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
 
           final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved, System.currentTimeMillis());
 
           try {
-            messageOptional = future.get(MAX_FETCH_SECONDS.minus(durationSinceLast).getSeconds(), TimeUnit.SECONDS);
+            messageOptional = future.get(MAX_FETCH_SECONDS.getSeconds(), TimeUnit.SECONDS);
           } catch (final TimeoutException ex) {
             throw new SourceException("Source process was un-responsive", ex);
           } catch (final Exception e) {
