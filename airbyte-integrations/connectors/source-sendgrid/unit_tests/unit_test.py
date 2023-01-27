@@ -165,7 +165,7 @@ def test_compressed_contact_response(requests_mock):
         requests_mock.register_uri("GET", "https://sample_url/sample_csv.csv.gzip",
                                    [{"body": compressed_response, "status_code": 202}])
         recs = list(stream.read_records(sync_mode=SyncMode.full_refresh))
-        decompressed_response = pd.read_csv(os.path.dirname(__file__)+"/decompressed_response.csv")
+        decompressed_response = pd.read_csv(os.path.dirname(__file__)+"/decompressed_response.csv", dtype=str)
         expected_records = [{k.lower(): v for k, v in x.items()} for x in
                             decompressed_response.replace({nan: None}).to_dict(orient="records")]
 
