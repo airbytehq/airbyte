@@ -393,6 +393,8 @@ definitions:
         type: string
       datetime_format:
         type: string
+      cursor_format:
+        type: string
       cursor_granularity:
         type: string
       end_datetime:

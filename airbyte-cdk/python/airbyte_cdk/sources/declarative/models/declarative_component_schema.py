@@ -352,6 +352,7 @@ class DatetimeStreamSlicer(BaseModel):
     type: Literal["DatetimeStreamSlicer"]
     cursor_field: str
     datetime_format: str
+    cursor_format: Optional[str] = None
     cursor_granularity: str
     end_datetime: Union[str, MinMaxDatetime]
     start_datetime: Union[str, MinMaxDatetime]

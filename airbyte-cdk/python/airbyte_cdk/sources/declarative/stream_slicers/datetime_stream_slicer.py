@@ -45,6 +45,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_state_field_start (Optional[str]): stream slice start time field
         stream_state_field_end (Optional[str]): stream slice end time field
         lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for (ISO8601 duration)
+        cursor_format (str): datetime format of the cursor field in the data record if different from `datetime_format`.
     """
 
     start_datetime: Union[MinMaxDatetime, str]
@@ -62,6 +63,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     stream_state_field_start: Optional[str] = None
     stream_state_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
+    cursor_format: str = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         if not isinstance(self.start_datetime, MinMaxDatetime):
@@ -106,6 +108,8 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice_value = stream_slice.get(self.cursor_field.eval(self.config))
         stream_slice_value_end = stream_slice.get(self.stream_slice_field_end.eval(self.config))
         last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
+        if last_record_value and self.cursor_format:
+            last_record_value = self._format_datetime(self._parser.parse(last_record_value, self.cursor_format, self._timezone))
         cursor = None
         if stream_slice_value and last_record_value:
             cursor = max(stream_slice_value, last_record_value)
