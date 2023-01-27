@@ -10,7 +10,6 @@ from google.oauth2 import service_account
 import requests
 import pandas as pd
 
-from .constants import CLOUD_CATALOG_URL, OSS_CATALOG_URL
 
 def fetch_remote_catalog(catalog_url: str) -> pd.DataFrame:
     """Fetch a combined remote catalog and return a single DataFrame 
@@ -50,6 +49,3 @@ def fetch_adoption_metrics_per_connector_version() -> pd.DataFrame:
         "total_syncs_count",
         "sync_success_rate",
     ]]
-
-CLOUD_CATALOG = fetch_remote_catalog(CLOUD_CATALOG_URL)
-OSS_CATALOG = fetch_remote_catalog(OSS_CATALOG_URL)
