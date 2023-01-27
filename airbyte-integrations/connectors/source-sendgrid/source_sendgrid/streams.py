@@ -183,6 +183,7 @@ class Campaigns(SendgridStreamMetadataPagination):
 
 
 class Contacts(SendgridStream):
+    primary_key = "contact_id"
     MAX_RETRY_NUMBER = 3
     DEFAULT_WAIT_TIMEOUT_SECONDS = 60
     MAX_CHECK_INTERVAL_SECONDS = 2.0
