@@ -45,8 +45,14 @@ global:
       type: "MINIO"
 
     ##  logs.minio.enabled Switch to enable or disable the Minio helm chart
+    ##  logs.minio.nodeSelector [object] Node labels for pod assignment
+    ##  logs.minio.tolerations [array] Tolerations for webapp pod assignment.
+    ##  logs.minio.affinity [object] Affinity and anti-affinity for webapp pod assignment.
     minio:
       enabled: true
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
 
     ##  logs.externalMinio.enabled Switch to enable or disable an external Minio instance
     ##  logs.externalMinio.host External Minio Host
