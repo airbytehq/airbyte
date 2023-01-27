@@ -315,7 +315,7 @@ class Contacts(SendgridStream):
         """
         try:
             with open(path, "r", encoding=file_encoding) as data:
-                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
+                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=str)
                 for chunk in chunks:
                     chunk = ({k.lower(): v for k, v in x.items()} for x in chunk.replace({nan: None}).to_dict(orient="records"))
                     for row in chunk:
