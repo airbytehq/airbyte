@@ -322,8 +322,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   // return Duration.ofMillis(now - previousMessageTime);
   // }
 
-  static Optional<AirbyteMessage> messageOptional;
-
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                     final AirbyteDestination destination,
@@ -359,20 +357,21 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           // final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved,
           // System.currentTimeMillis());
 
-          try {
-            Thread.startVirtualThread(() -> messageOptional = source.attemptRead()).join(MAX_FETCH_SECONDS);
-          } catch (Exception e) {
-            throw new SourceException("Casse");
-          }
-
-
           // try {
-          //   CompletableFuture<Optional<AirbyteMessage>> future = CompletableFuture.supplyAsync(() -> source.attemptRead(), executors);
-          //   messageOptional = Mono.fromFuture(future)
-          //       .block(MAX_FETCH_SECONDS);
-          // } catch (final Exception e) {
-          //   throw new SourceException("Source process read attempt failed", e);
+          //   Thread.startVirtualThread(() -> messageOptional = source.attemptRead()).join(MAX_FETCH_SECONDS);
+          // } catch (Exception e) {
+          //   throw new SourceException("Casse");
           // }
+
+          final Optional<AirbyteMessage> messageOptional;
+
+          try {
+            CompletableFuture<Optional<AirbyteMessage>> future = CompletableFuture.supplyAsync (() -> source.attemptRead(), ForkJoinPool.commonPool());
+            messageOptional = Mono.fromFuture(future)
+                .block(MAX_FETCH_SECONDS);
+          } catch (final Exception e) {
+            throw new SourceException("Source process read attempt failed", e);
+          }
 
           if (messageOptional.isPresent()) {
             final AirbyteMessage airbyteMessage = messageOptional.get();
