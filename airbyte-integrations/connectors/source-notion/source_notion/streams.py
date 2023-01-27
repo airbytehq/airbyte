@@ -8,8 +8,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeV
 import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams import AvailabilityStrategy
 
 from .utils import transform_properties
 
