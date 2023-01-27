@@ -29,3 +29,26 @@ def adoption_metrics_per_connector_version():
         "total_syncs_count": 0,
         "sync_success_rate": 0.0,
     }])
+
+@pytest.fixture
+def dummy_qa_report() -> pd.DataFrame:
+    return pd.DataFrame([
+        {
+            "connector_type": "source",
+            "connector_name": "test",
+            "connector_technical_name": "source-test",
+            "connector_definition_id": "foobar",
+            "connector_version": "0.0.0",
+            "release_stage": "alpha",
+            "is_on_cloud": False,
+            "is_appropriate_for_cloud_use": True,
+            "latest_build_is_successful": True,
+            "documentation_is_available": False,
+            "number_of_connections": 0,
+            "number_of_users": 0,
+            "sync_success_rate": .99,
+            "total_syncs_count": 0,
+            "failed_syncs_count": 0,
+            "succeeded_syncs_count": 0
+        }
+    ])

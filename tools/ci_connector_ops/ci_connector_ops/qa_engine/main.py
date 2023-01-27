@@ -4,7 +4,7 @@
 
 
 from .constants import CLOUD_CATALOG_URL, GCS_QA_REPORT_PATH, OSS_CATALOG_URL
-from . import enrichments, inputs, validations
+from . import enrichments, inputs, validations, outputs
 
 
 def main():
@@ -17,4 +17,4 @@ def main():
         adoption_metrics_per_connector_version
     )
     qa_report = validations.get_qa_report(enriched_catalog, len(oss_catalog))
-    qa_report.to_json(GCS_QA_REPORT_PATH, orient="records")
+    outputs.persist_qa_report(qa_report, GCS_QA_REPORT_PATH, public_fields_only=True)
