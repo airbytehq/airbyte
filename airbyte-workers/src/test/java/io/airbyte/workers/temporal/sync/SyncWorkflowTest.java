@@ -179,9 +179,9 @@ class SyncWorkflowTest {
             .setMaximumInterval(Duration.ofSeconds(600))
             .build())
         .build();
-    discoveryActivityOptions =  ActivityOptions.newBuilder()
-            .setStartToCloseTimeout(Duration.ofSeconds(360))
-            .build();
+    discoveryActivityOptions = ActivityOptions.newBuilder()
+        .setStartToCloseTimeout(Duration.ofSeconds(360))
+        .build();
 
     final BeanIdentifier longActivitiesBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration longActivityOptionsBeanRegistration = mock(BeanRegistration.class);
@@ -198,7 +198,8 @@ class SyncWorkflowTest {
     when(discoveryActivityBeanIdentifier.getName()).thenReturn("discoveryActivityOptions");
     when(discoveryActivityOptionsBeanRegistration.getIdentifier()).thenReturn(discoveryActivityBeanIdentifier);
     when(discoveryActivityOptionsBeanRegistration.getBean()).thenReturn(discoveryActivityOptions);
-    temporalProxyHelper = new TemporalProxyHelper(List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration, discoveryActivityOptionsBeanRegistration));
+    temporalProxyHelper = new TemporalProxyHelper(
+        List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration, discoveryActivityOptionsBeanRegistration));
 
     syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
   }

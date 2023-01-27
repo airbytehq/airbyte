@@ -49,9 +49,6 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final int NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION = 1;
   private static final String AUTO_DETECT_SCHEMA_TAG = "auto_detect_schema";
   private static final int AUTO_DETECT_SCHEMA_VERSION = 2;
-  private static final String DISCOVERY_OPTIONS_TAG = "discovery_options_version";
-  private static final int DISCOVER_OPTIONS_VERSION = 2;
-
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
@@ -64,10 +61,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-  private RefreshSchemaActivity refreshSchemaActivity;
   @TemporalActivityStub(activityOptionsBeanName = "discoveryActivityOptions")
-  private RefreshSchemaActivity refreshSchemaActivityNew;
+  private RefreshSchemaActivity refreshSchemaActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private ConfigFetchActivity configFetchActivity;
 
@@ -92,21 +87,12 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION,
             AUTO_DETECT_SCHEMA_VERSION);
 
-    final int discoveryOptionsVersion = Workflow.getVersion(DISCOVERY_OPTIONS_TAG, Workflow.DEFAULT_VERSION, DISCOVER_OPTIONS_VERSION);
-
     if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
       final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
 
-      if (discoveryOptionsVersion >= DISCOVER_OPTIONS_VERSION) {
-        if (!sourceId.isEmpty() && refreshSchemaActivityNew.shouldRefreshSchema(sourceId.get())) {
-          LOGGER.info("Refreshing source schema...");
-          refreshSchemaActivityNew.refreshSchema(sourceId.get(), connectionId);
-        }
-      } else {
-        if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
-          LOGGER.info("Refreshing source schema...");
-          refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
-        }
+      if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
+        LOGGER.info("Refreshing source schema...");
+        refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
       }
 
       final Optional<ConnectionStatus> status = configFetchActivity.getStatus(connectionId);

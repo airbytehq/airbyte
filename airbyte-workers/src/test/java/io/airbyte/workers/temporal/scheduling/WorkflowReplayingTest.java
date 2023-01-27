@@ -43,7 +43,8 @@ class WorkflowReplayingTest {
     final BeanRegistration longActivityOptionsBeanRegistration = getActivityOptionBeanRegistration("longRunActivityOptions", activityOptions);
     final BeanRegistration discoveryActivityOptionsBeanRegistration = getActivityOptionBeanRegistration("discoveryActivityOptions", activityOptions);
 
-    temporalProxyHelper = new TemporalProxyHelper(List.of(shortActivityOptionsBeanRegistration, longActivityOptionsBeanRegistration, discoveryActivityOptionsBeanRegistration));
+    temporalProxyHelper = new TemporalProxyHelper(
+        List.of(shortActivityOptionsBeanRegistration, longActivityOptionsBeanRegistration, discoveryActivityOptionsBeanRegistration));
   }
 
   @Test
