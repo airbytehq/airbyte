@@ -84,7 +84,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
       default: {
         datetime_format: "",
         start_datetime: "",
-        end_datetime: "",
+        end_datetime: "{{ now_utc() }}",
         step: "",
         cursor_field: "",
       },
