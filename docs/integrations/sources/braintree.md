@@ -40,7 +40,7 @@ This source can sync data for the [Braintree API](https://developers.braintreepa
 
 ## Supported Streams
 
-Several output streams are available from this source:
+The following streams are supported:
 
 * [Customers](https://developer.paypal.com/braintree/docs/reference/request/customer/search)
 * [Discounts](https://developer.paypal.com/braintree/docs/reference/response/discount)
