@@ -25,10 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Requires(env = {Environment.TEST})
 public class MicronautHealthCheck extends BaseControllerTest {
 
-  @Inject
-  @Client("/")
-  HttpClient client;
-
   @Test
   void testHealth() {
     testEndpointStatus(

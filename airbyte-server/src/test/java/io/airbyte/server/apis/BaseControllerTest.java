@@ -11,6 +11,7 @@ import io.airbyte.commons.server.handlers.*;
 import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.db.Database;
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
@@ -239,8 +240,14 @@ public abstract class BaseControllerTest {
   @Inject
   EmbeddedServer embeddedServer;
 
+  HttpClient client;
+
   @BeforeEach
   void init() {
+
+    client = HttpClient.create(embeddedServer.getURL());//embeddedServer.getApplicationContext().createBean(HttpClient.class, embeddedServer.getURL());
+
+    log.error(String.valueOf(embeddedServer.getURL()));
     log.error(String.valueOf(embeddedServer.getPort()));
   }
 
