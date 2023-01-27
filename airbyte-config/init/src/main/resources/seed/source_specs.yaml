@@ -804,7 +804,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.27"
+- dockerImage: "airbyte/source-amazon-ads:0.1.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -880,6 +880,16 @@
           type: "array"
           uniqueItems: true
           order: 7
+        look_back_window:
+          title: "Look Back Window"
+          description: "The amount of days to go back in time to get the updated data\
+            \ from Amazon Ads"
+          examples:
+          - 3
+          - 10
+          type: "integer"
+          default: 3
+          order: 8
       required:
       - "client_id"
       - "client_secret"
@@ -11596,7 +11606,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.41"
+- dockerImage: "airbyte/source-postgres:1.0.42"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
