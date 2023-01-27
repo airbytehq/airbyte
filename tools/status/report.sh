@@ -18,20 +18,33 @@ BUCKET_WRITE_ROOT=/tmp/bucket_write_root
 LAST_TEN_ROOT=/tmp/last_ten_root
 SUMMARY_WRITE_ROOT=/tmp/summary_write_root
 
+DOCKER_VERSION=$(get_connector_version "$CONNECTOR")
+GITHUB_ACTION_LINK=https://github.com/$REPOSITORY/actions/runs/$RUN_ID
+
 export AWS_PAGER=""
+
+function generate_job_log_json() {
+  local timestamp=$1
+  local outcome=$2
+
+  echo "{ \"link\": \"$GITHUB_ACTION_LINK\", \"outcome\": \"$outcome\", \"docker_version\": \"$DOCKER_VERSION\", \"timestamp\": \"$timestamp\", \"connector\": \"$CONNECTOR\" }"
+}
 
 function write_job_log() {
   rm -r $BUCKET_WRITE_ROOT || true
   mkdir -p $BUCKET_WRITE_ROOT
   cd $BUCKET_WRITE_ROOT
   mkdir -p tests/history/"$CONNECTOR"
-  LINK=https://github.com/$REPOSITORY/actions/runs/$RUN_ID
-  TIMESTAMP="$(date +%s)"
-  OUTCOME=failure
+
+  local timestamp="$(date +%s)"
+  local outcome=failure
   if [ "$TEST_OUTCOME" = "success" ] && [ "$QA_CHECKS_OUTCOME" = "success" ]; then
-    OUTCOME=success
+    outcome=success
   fi
-  echo "{ \"link\": \"$LINK\", \"outcome\": \"$OUTCOME\" }" > tests/history/"$CONNECTOR"/"$TIMESTAMP".json
+
+  # Generate the JSON for the job log
+  generate_job_log_json "$timestamp" "$outcome" > tests/history/"$CONNECTOR"/"$timestamp".json
+
   # TODO (ben): Idea, perhaps this is a better location to use for versioning?
   # is it being used elsewhere?
   aws s3 sync "$BUCKET_WRITE_ROOT"/tests/history/"$CONNECTOR"/ s3://"$BUCKET"/tests/history/"$CONNECTOR"/
@@ -57,10 +70,8 @@ function write_badge_and_summary() {
   successes=0
   failures=0
 
-  local docker_version=$(get_connector_version "$CONNECTOR")
-
   # TODO (ben) remove
-  echo "Docker version!!!: $docker_version"
+  echo "Docker version!!!: $DOCKER_VERSION"
 
   # TODO (ben) refactor, this is a bit unweildly
   while IFS= read -r file; do
@@ -103,7 +114,6 @@ function write_badge_and_summary() {
   fi
 
   echo "color: $color"
-
   echo "message: $message"
 
   HTML_TOP="<html><head><title>$CONNECTOR</title><style>body {padding:20px; font-family:monospace;} table {border-collapse: collapse;} th, td {padding:20px; text-align:left;} th, td { border:1px solid #c5c4ff;} </style></head><body><p><img src=\"https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2F$CONNECTOR%2Fbadge.json\"></p><h1>$CONNECTOR</h1>"
@@ -123,9 +133,9 @@ function write_badge_and_summary() {
   # TODO (ben) either update the badge.json orrrr use a new json file?
 
   # Add a versioned file output
-  mkdir -p $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$docker_version"
-  echo "$BADGE" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$docker_version"/badge.json
-  echo "$HTML" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$docker_version"/index.html
+  mkdir -p $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$DOCKER_VERSION"
+  echo "$BADGE" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$DOCKER_VERSION"/badge.json
+  echo "$HTML" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$DOCKER_VERSION"/index.html
 
   aws s3 sync "$SUMMARY_WRITE_ROOT"/tests/summary/"$CONNECTOR"/ s3://"$BUCKET"/tests/summary/"$CONNECTOR"/
 }
