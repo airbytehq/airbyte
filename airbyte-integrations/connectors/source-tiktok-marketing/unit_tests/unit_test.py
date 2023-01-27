@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffExcept
 from source_tiktok_marketing import SourceTiktokMarketing
 from source_tiktok_marketing.streams import Ads, Advertisers, JsonUpdatedState
 
-SANDBOX_CONFIG_FILE = "secrets/config.json"
+SANDBOX_CONFIG_FILE = "secrets/sandbox_config.json"
 PROD_CONFIG_FILE = "secrets/prod_config.json"
 
 

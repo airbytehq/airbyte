@@ -140,6 +140,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           launcherConfig.getDockerImage(),
           processFactory,
           workerConfigs.getResourceRequirements(),
+          launcherConfig.getAllowedHosts(),
           launcherConfig.getIsCustomConnector(),
           featureFlags);
 
