@@ -72,7 +72,7 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
         <DropDownText primary={props.data.primary} secondary={props.data.secondary} fullText={props.data.fullText}>
           {props.isMulti && (
             <>
-              <CheckBox checked={props.isSelected} onChange={() => props.selectOption(props.data)} />{" "}
+              <CheckBox checked={props.isSelected} onChange={() => props.selectOption(props.data)} tabIndex={-1} />{" "}
             </>
           )}
           {Array.isArray(props.label)
