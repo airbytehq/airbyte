@@ -10,6 +10,7 @@ MAIN_REQUIREMENTS = [
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
     "pandas~=1.5.3",
+    "pandas-gbq~=0.19.0",
     "pydantic~=1.10.4",
     "fsspec~=2023.1.0",
     "gcsfs~=2023.1.0"
@@ -22,7 +23,7 @@ TEST_REQUIREMENTS = [
 
 
 setup(
-    version="0.1.4",
+    version="0.1.9",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",
@@ -33,6 +34,7 @@ setup(
         "tests": TEST_REQUIREMENTS,
     },
     python_requires=">=3.9",
+    package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"]},
     entry_points={
         "console_scripts": [
             "check-test-strictness-level = ci_connector_ops.sat_config_checks:check_test_strictness_level",
