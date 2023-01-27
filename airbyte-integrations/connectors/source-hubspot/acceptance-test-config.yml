@@ -4,15 +4,13 @@ acceptance_tests:
     - config_path: secrets/config.json
       empty_streams:
       - name: companies
-        bypass_reason: hs_time_in_opportunity field changes after every read
-      - name: contacts
-        bypass_reason: data is changing after every read
+        bypass_reason: unable to populate
       - name: deals
-        bypass_reason: data is changing after every read
+        bypass_reason: unable to populate
       - name: property_history
-        bypass_reason: data is changing after every read
+        bypass_reason: unable to populate
       - name: tickets
-        bypass_reason: data is changing after every read
+        bypass_reason: unable to populate
       - name: form_submissions
         bypass_reason: unable to populate
       - name: ticket_pipelines
