@@ -320,14 +320,20 @@ class SubscriptionUsage(IncrementalOrbStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # self.logger.warning("calling get_updated_state with current_stream_state %s and latest_record %s", current_stream_state, latest_record)
         current_stream_state = current_stream_state or {}
+        current_subscription_id = latest_record["subscription_id"]
+        current_subscription_state = current_stream_state.get(current_subscription_id, {})
 
         record_cursor_value = to_datetime(latest_record[self.cursor_field])
-        state_cursor_value = to_datetime(current_stream_state.get(self.cursor_field, self.start_date))
+        state_cursor_value = to_datetime(current_subscription_state.get(self.cursor_field, self.start_date))
         max_cursor_value = max(record_cursor_value, state_cursor_value)
 
-        current_stream_state[self.cursor_field] = to_utc_isoformat(max_cursor_value)
+        current_subscription_state[self.cursor_field] = to_utc_isoformat(max_cursor_value)
 
-        return current_stream_state
+        return {
+            **current_stream_state,
+            current_subscription_id: current_subscription_state
+        }
+
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         """
@@ -366,15 +372,13 @@ class SubscriptionUsage(IncrementalOrbStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        This stream is sliced per `subscription_id`, as well as `billable_metric_id`
+        This stream is sliced per `subscription_id` and day, as well as `billable_metric_id`
         if a grouping key is provided. This is because the API only supports a
         single billable_metric_id per API call when using a group_by param.
 
         """
         # self.logger.warning("called stream_slices with stream_state %s, self.cursor_field is %s and self.start_date is %s", stream_state, self.cursor_field, self.start_date)
         stream_state = stream_state or {}
-        start_date = to_datetime(stream_state.get(self.cursor_field, self.start_date))
-        end_date = to_datetime(self.end_date)
         slice_yielded = False
         subscriptions_stream = Subscriptions(authenticator=self._session.auth)
 
@@ -384,18 +388,27 @@ class SubscriptionUsage(IncrementalOrbStream):
             metric_ids_by_plan_id = self.get_billable_metric_ids_by_plan_id()
 
         for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+            subscription_id = subscription["id"]
+            subscription_plan_id = subscription["plan_id"]
+
             # if filtering subscription usage by plan ID, skip any subscription that doesn't match the plan_id
-            if self.plan_id and subscription["plan_id"] != self.plan_id:
+            if self.plan_id and subscription_plan_id != self.plan_id:
                 continue
 
+            subscription_state = stream_state.get(subscription_id, {})
+            start_date = to_datetime(subscription_state.get(self.cursor_field, self.start_date))
+            end_date = to_datetime(self.end_date)
+
+            # create one slice for each day of usage between the start and end date
             for period in self.chunk_date_range(start_date=start_date, end_date=end_date):
-                slice = {"subscription_id": subscription["id"], "timeframe_start": period.start, "timeframe_end": period.end}
+                slice = {"subscription_id": subscription_id, "timeframe_start": period.start, "timeframe_end": period.end}
+
                 # if using a group_by key, yield one slice per billable_metric_id.
                 # otherwise, yield slices without a billable_metric_id because
                 # each API call will return usage broken down by billable metric
                 # when grouping isn't used.
                 if self.subscription_usage_grouping_key:
-                    metric_ids = metric_ids_by_plan_id.get(subscription["plan_id"])
+                    metric_ids = metric_ids_by_plan_id.get(subscription_plan_id)
                     if metric_ids is not None:
                         for metric_id in metric_ids:
                             # self.logger.warning("stream_slices is about to yield the following slice: %s", slice)
