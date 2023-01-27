@@ -14,9 +14,9 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-from airbyte_cdk.sources.streams import AvailabilityStrategy
 
 from .utils import STRING_TYPES, clean_string, format_value, to_datetime_str
 
