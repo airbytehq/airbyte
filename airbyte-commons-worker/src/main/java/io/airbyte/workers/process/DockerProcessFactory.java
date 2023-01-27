@@ -12,6 +12,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
@@ -91,6 +92,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
+                        final AllowedHosts allowedHosts,
                         final Map<String, String> labels,
                         final Map<String, String> jobMetadata,
                         final Map<Integer, Integer> internalToExternalPorts,
@@ -120,7 +122,7 @@ public class DockerProcessFactory implements ProcessFactory {
           "--log-driver",
           "none");
       final String containerName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
-      LOGGER.info("Creating docker container = {} with resources {}", containerName, resourceRequirements);
+      LOGGER.info("Creating docker container = {} with resources {} and allowedHosts {}", containerName, resourceRequirements, allowedHosts);
       cmd.add("--name");
       cmd.add(containerName);
       cmd.addAll(localDebuggingOptions(containerName));
