@@ -1,12 +1,11 @@
-import React, { useCallback } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useNavigate } from "react-router-dom";
 
 import { H5 } from "components/base/Titles";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 
-import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { useDeleteModal } from "hooks/useDeleteModal";
 
 import styles from "./DeleteBlock.module.scss";
 
@@ -16,24 +15,8 @@ interface IProps {
   modalAdditionalContent?: React.ReactNode;
 }
 
-export const DeleteBlock: React.FC<IProps> = ({ type, onDelete, modalAdditionalContent }) => {
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const navigate = useNavigate();
-
-  const onDeleteButtonClick = useCallback(() => {
-    openConfirmationModal({
-      additionalContent: modalAdditionalContent,
-      text: `tables.${type}DeleteModalText`,
-      title: `tables.${type}DeleteConfirm`,
-      submitButtonText: "form.delete",
-      onSubmit: async () => {
-        await onDelete();
-        closeConfirmationModal();
-        navigate("../..");
-      },
-      submitButtonDataId: "delete",
-    });
-  }, [closeConfirmationModal, onDelete, openConfirmationModal, navigate, type, modalAdditionalContent]);
+export const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
+  const onDeleteButtonClick = useDeleteModal(type, onDelete);
 
   return (
     <Card className={styles.deleteBlock}>

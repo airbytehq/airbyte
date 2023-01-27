@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 
 import { LoadingPage } from "components";
 
+import { MissingConfigError, useConfig } from "config";
 import { ApiServices } from "core/ApiServices";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { ServicesProvider, useGetService, useInjectServices } from "core/servicesProvider";
@@ -9,7 +10,6 @@ import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddle
 import { UserService } from "packages/cloud/lib/domain/users";
 import { useAuth } from "packages/firebaseReact";
 
-import { useConfig } from "./config";
 import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 
 /**
@@ -42,6 +42,10 @@ const ServiceOverrides: React.FC<React.PropsWithChildren<unknown>> = React.memo(
   );
 
   const { cloudApiUrl } = useConfig();
+
+  if (!cloudApiUrl) {
+    throw new MissingConfigError("Missing required configuration cloudApiUrl");
+  }
 
   const inject = useMemo(
     () => ({
