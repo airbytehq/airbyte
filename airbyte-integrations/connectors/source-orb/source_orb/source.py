@@ -232,10 +232,11 @@ class SubscriptionUsage(IncrementalOrbStream):
         end_date: Optional[pendulum.DateTime] = None,
         **kwargs,
     ):
-        super().__init__(**kwargs)
+
         self.subscription_usage_grouping_key = subscription_usage_grouping_key
         self.plan_id = plan_id
         self.end_date = end_date
+        super().__init__(**kwargs)
 
     @property
     def primary_key(self) -> Iterable[str]:
