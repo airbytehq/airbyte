@@ -258,6 +258,7 @@ class StreamProcessor(object):
             self.get_model_materialization_mode(is_intermediate=True),
             is_intermediate=True,
             suffix="ab1",
+            is_reading_from_raw_table=True,
         )
         from_table = self.add_to_outputs(
             self.generate_column_typing_model(from_table, column_names),
@@ -830,7 +831,8 @@ where 1 = 1
             "fields": self.list_fields(column_names),
             "from_table": from_table,
             "hash_id": self.hash_id(),
-            "incremental_clause": self.get_incremental_clause_emitted_at("this"),
+            # The SCD table depends on the _stg table, which has a normalized_at column. So we can use that instead of emitted_at.
+            "incremental_clause": self.get_incremental_clause_normalized_at("this"),
             "input_data_table": input_data_table,
             "lag_begin": lag_begin,
             "lag_end": lag_end,
@@ -1110,21 +1112,13 @@ where 1 = 1
     def is_incremental_mode(destination_sync_mode: DestinationSyncMode) -> bool:
         return destination_sync_mode.value in [DestinationSyncMode.append.value, DestinationSyncMode.append_dedup.value]
 
-    def add_incremental_clause(self, sql_query: str) -> Any:
-        template = Template(
-            """
-{{ sql_query }}
-{{ incremental_clause }}
-    """
-        )
-        sql = template.render(sql_query=sql_query, incremental_clause=self.get_incremental_clause_emitted_at("this"))
-        return sql
-
     def get_incremental_clause_emitted_at(self, tablename: str) -> Any:
+        # We have to use >= here because sources don't necessarily provide strong guarantees about emitted_at
         return self.get_incremental_clause_for_column(tablename, self.get_emitted_at(in_jinja=True), ">=")
 
     def get_incremental_clause_normalized_at(self, tablename: str) -> Any:
-        return self.get_incremental_clause_for_column(tablename, self.get_normalized_at(in_jinja=True), ">=")
+        # We can use a strict > comparison here because normalized_at is always a millis(or more)-precison timestamp
+        return self.get_incremental_clause_for_column(tablename, self.get_normalized_at(in_jinja=True), ">")
 
     def get_incremental_clause_for_column(self, tablename: str, column: str, comparisonOperator: str) -> Any:
         return "{{ incremental_clause(" + column + ", " + tablename + ", '" + comparisonOperator + "') }}"
@@ -1142,6 +1136,7 @@ where 1 = 1
         unique_key: str = "",
         subdir: str = "",
         partition_by: PartitionScheme = PartitionScheme.DEFAULT,
+        is_reading_from_raw_table: bool = False,
     ) -> str:
         # Explicit function so that we can have type hints to satisfy the linter
         def wrap_in_quotes(s: str) -> str:
@@ -1269,8 +1264,14 @@ where 1 = 1
 
                 config["post_hook"] = "[" + ",".join(map(wrap_in_quotes, hooks)) + "]"
             else:
-                # incremental is handled in the SCD SQL already
-                sql = self.add_incremental_clause(sql)
+                # incremental is handled in the SCD SQL already, so we don't need to explicitly add an incremental clause in the previous if-branch.
+                # For all the other models (ab1, ab2, ab3, stg, final model):
+                # The first model in the chain needs to use emitted_at, because the raw tables don't have a normalized_at column
+                # But the rest can use normalized_at.
+                if is_reading_from_raw_table:
+                    sql += self.get_incremental_clause_emitted_at("this")
+                else:
+                    sql += self.get_incremental_clause_normalized_at("this")
         elif self.destination_sync_mode == DestinationSyncMode.overwrite:
             if suffix == "" and not is_intermediate:
                 # drop SCD table after creating the destination table
