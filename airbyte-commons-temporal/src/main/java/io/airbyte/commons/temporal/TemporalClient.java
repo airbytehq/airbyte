@@ -400,7 +400,9 @@ public class TemporalClient {
         .withState(config.getState())
         .withResourceRequirements(config.getResourceRequirements())
         .withSourceResourceRequirements(config.getSourceResourceRequirements())
-        .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
+        .withDestinationResourceRequirements(config.getDestinationResourceRequirements())
+        .withConnectionId(connectionId)
+        .withWorkspaceId(config.getWorkspaceId());
 
     return execute(jobRunConfig,
         () -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
