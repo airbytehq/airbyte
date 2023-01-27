@@ -27,7 +27,6 @@ public class ConfigReplacer {
   private final Logger logger;
   private final AlwaysAllowedHosts alwaysAllowedHosts = new AlwaysAllowedHosts();
 
-
   public ConfigReplacer(Logger logger) {
     this.logger = logger;
   }

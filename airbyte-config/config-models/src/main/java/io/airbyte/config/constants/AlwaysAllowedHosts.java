@@ -16,7 +16,7 @@ public class AlwaysAllowedHosts {
     hosts.add("*.datadoghq.com");
     hosts.add("*.datadoghq.eu");
 
-    // Sentry.  See https://docs.sentry.io/api/ for more information
+    // Sentry. See https://docs.sentry.io/api/ for more information
     hosts.add("*.sentry.io");
   }
 
