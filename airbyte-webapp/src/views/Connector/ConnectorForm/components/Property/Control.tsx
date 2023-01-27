@@ -98,7 +98,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
     );
   }
 
-  const value = field.value ?? property.default;
+  const value = field.value;
   if (property.enum) {
     return (
       <DropDown
