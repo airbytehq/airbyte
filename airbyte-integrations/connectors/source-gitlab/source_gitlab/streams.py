@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 
