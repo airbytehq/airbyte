@@ -52,7 +52,15 @@ public class ConfigReplacer {
         final String fullKey = (prefixes.isEmpty() ? "" : String.join(".", prefixes) + ".") + key;
         // the search path for JSON nodes is slash notation, e.g. `"/tunnel_method/tunnel_host"`
         final String lookupKey = "/" + (prefixes.isEmpty() ? "" : String.join("/", prefixes) + "/") + key;
-        final String value = config.at(lookupKey).textValue();
+
+        String value = config.at(lookupKey).textValue();
+        if (value == null) {
+          final Number numberValue = config.at(lookupKey).numberValue();
+          if (numberValue != null) {
+            value = numberValue.toString();
+          }
+        }
+
         if (value != null) {
           valuesMap.put(fullKey, value);
         }

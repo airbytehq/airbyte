@@ -31,6 +31,7 @@ class ConfigReplacerTest {
     hosts.add("localhost");
     hosts.add("static-site.com");
     hosts.add("${host}");
+    hosts.add("${number}");
     hosts.add("${subdomain}.vendor.com");
     hosts.add("${tunnel_method.tunnel_host}");
     allowedHosts.setHosts(hosts);
@@ -39,11 +40,12 @@ class ConfigReplacerTest {
     expected.add("localhost");
     expected.add("static-site.com");
     expected.add("foo.com");
+    expected.add("123");
     expected.add("account.vendor.com");
     expected.add("1.2.3.4");
 
     final String configJson =
-        "{\"host\": \"foo.com\", \"subdomain\": \"account\", \"password\": \"abc123\", \"tunnel_method\": {\"tunnel_host\": \"1.2.3.4\"}}";
+        "{\"host\": \"foo.com\", \"number\": 123, \"subdomain\": \"account\", \"password\": \"abc123\", \"tunnel_method\": {\"tunnel_host\": \"1.2.3.4\"}}";
     final JsonNode config = mapper.readValue(configJson, JsonNode.class);
     final AllowedHosts response = replacer.getAllowedHosts(allowedHosts, config);
 
