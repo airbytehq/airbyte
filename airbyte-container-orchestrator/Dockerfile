@@ -18,6 +18,9 @@ ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-${VERSION}/bin/${APPLICATION}"
 
 WORKDIR /app
 
+# Grab well-known types file
+COPY WellKnownTypes.json /app
+
 # Move orchestrator app
 ADD bin/${APPLICATION}-${VERSION}.tar /app
 

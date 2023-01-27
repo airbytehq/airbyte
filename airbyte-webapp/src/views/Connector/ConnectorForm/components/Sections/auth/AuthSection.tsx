@@ -4,12 +4,15 @@ import { isSourceDefinitionSpecificationDraft } from "core/domain/connector/sour
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useConnectorForm } from "views/Connector/ConnectorForm/connectorFormContext";
 
-import { SectionContainer } from "../SectionContainer";
 import { AuthButton } from "./AuthButton";
+import { SectionContainer } from "../SectionContainer";
 
 export const AuthSection: React.FC = () => {
   const { selectedConnectorDefinitionSpecification } = useConnectorForm();
-  if (isSourceDefinitionSpecificationDraft(selectedConnectorDefinitionSpecification)) {
+  if (
+    !selectedConnectorDefinitionSpecification ||
+    isSourceDefinitionSpecificationDraft(selectedConnectorDefinitionSpecification)
+  ) {
     return null;
   }
   return (
