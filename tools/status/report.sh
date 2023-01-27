@@ -2,6 +2,9 @@
 
 set -e
 
+. tools/lib/lib.sh
+
+
 BUCKET=airbyte-connector-build-status
 
 CONNECTOR=$1
@@ -51,6 +54,11 @@ function write_badge_and_summary() {
   successes=0
   failures=0
 
+  local docker_version=$(get_connector_version "$CONNECTOR")
+
+  echo "Docker version!!!: $docker_version"
+
+  # TODO (ben) refactor
   while IFS= read -r file; do
     line=$(cat "$LAST_TEN_ROOT/$file")
     outcome=$(echo "$line" | jq -r '.outcome')
@@ -107,12 +115,14 @@ function write_badge_and_summary() {
   echo "$BADGE" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/badge.json
   echo "$HTML" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/index.html
 
+  # TODO (ben) write this to a specific versioned folder so that we can see the history of the summary
+
   aws s3 sync "$SUMMARY_WRITE_ROOT"/tests/summary/"$CONNECTOR"/ s3://"$BUCKET"/tests/summary/"$CONNECTOR"/
 }
 
 function main() {
-  write_job_log
-  pull_latest_job_logs
+  # write_job_log
+  # pull_latest_job_logs
   write_badge_and_summary
 }
 

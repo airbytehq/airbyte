@@ -42,5 +42,18 @@ full_path_to_gradle_path() {
   python -c "print(':airbyte-' + ':'.join(p for p in '${path}'.split('airbyte-')[-1].replace('/', ':').split(':') if p))"
 }
 
+get_connector_path_from_name() {
+  local connector_name=$1
+  local connector_dir="airbyte-integrations/connectors"
+  echo "$connector_dir/$connector_name"
+}
+
+get_connector_version() {
+  local connector_name=$1
+  local connector_path=$(get_connector_path_from_name "$connector_name")
+  local dockerfile="$connector_path/Dockerfile"
+  _get_docker_image_version "$dockerfile"
+}
+
 VERSION=$(cat .env | grep "^VERSION=" | cut -d = -f 2); export VERSION
 SCRIPT_DIRECTORY=$(_script_directory); export SCRIPT_DIRECTORY
