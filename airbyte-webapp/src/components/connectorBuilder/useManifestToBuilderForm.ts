@@ -87,7 +87,13 @@ export const convertToBuilderFormValues = async (
 
   const serializedStreamToIndex = Object.fromEntries(streams.map((stream, index) => [JSON.stringify(stream), index]));
   builderFormValues.streams = streams.map((stream, index) =>
-    manifestStreamToBuilder(stream, index, serializedStreamToIndex, builderFormValues.global)
+    manifestStreamToBuilder(
+      stream,
+      index,
+      serializedStreamToIndex,
+      streams[0].retriever.requester.url_base,
+      streams[0].retriever.requester.authenticator
+    )
   );
 
   return builderFormValues;
@@ -97,7 +103,8 @@ const manifestStreamToBuilder = (
   stream: DeclarativeStream,
   index: number,
   serializedStreamToIndex: Record<string, number>,
-  builderFormGlobal: BuilderFormValues["global"]
+  firstStreamUrlBase: string,
+  firstStreamAuthenticator?: HttpRequesterAuthenticator
 ): BuilderStream => {
   assertType<SimpleRetriever>(stream.retriever, "SimpleRetriever", stream.name);
   const retriever = stream.retriever;
@@ -106,14 +113,14 @@ const manifestStreamToBuilder = (
   const requester = retriever.requester;
 
   if (
-    builderFormGlobal.authenticator.type === "NoAuth"
+    !firstStreamAuthenticator || firstStreamAuthenticator.type === "NoAuth"
       ? requester.authenticator && requester.authenticator.type !== "NoAuth"
-      : !isEqual(retriever.requester.authenticator, builderFormGlobal.authenticator)
+      : !isEqual(retriever.requester.authenticator, firstStreamAuthenticator)
   ) {
     throw new ManifestCompatibilityError(stream.name, "authenticator does not match the first stream's");
   }
 
-  if (retriever.requester.url_base !== builderFormGlobal.urlBase) {
+  if (retriever.requester.url_base !== firstStreamUrlBase) {
     throw new ManifestCompatibilityError(stream.name, "url_base does not match the first stream's");
   }
 
@@ -156,7 +163,7 @@ const manifestStreamToBuilder = (
       ),
     },
     primaryKey: manifestPrimaryKeyToBuilder(stream),
-    paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, builderFormGlobal.urlBase),
+    paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, firstStreamUrlBase),
     streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, serializedStreamToIndex, stream.name),
     schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
     unsupportedFields: {
@@ -322,9 +329,21 @@ function manifestAuthenticatorToBuilder(
     builderAuthenticator = {
       type: "NoAuth",
     };
+  } else if (manifestAuthenticator.type === undefined) {
+    throw new ManifestCompatibilityError(streamName, "authenticator has no type");
   } else if (manifestAuthenticator.type === "CustomAuthenticator") {
     throw new ManifestCompatibilityError(streamName, "uses a CustomAuthenticator");
   } else if (manifestAuthenticator.type === "OAuthAuthenticator") {
+    if (
+      Object.values(manifestAuthenticator.refresh_request_body ?? {}).filter((value) => typeof value !== "string")
+        .length > 0
+    ) {
+      throw new ManifestCompatibilityError(
+        streamName,
+        "OAuthAuthenticator contains a refresh_request_body with non-string values"
+      );
+    }
+
     builderAuthenticator = {
       ...manifestAuthenticator,
       refresh_request_body: Object.entries(manifestAuthenticator.refresh_request_body ?? {}),
