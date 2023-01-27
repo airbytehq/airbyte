@@ -33,26 +33,30 @@ sealed interface FeatureFlagClient {
 }
 
 /**
- * Config file based feature-flag client. Feature-flag are derived from a yaml config file.
- * Also supports flags defined via environment-variables via the [EnvVar] class.
+ * Config file based feature-flag client.
  *
- * @param [config] the location of the yaml config file that contains the feature-flag definitions.
- * The [config] will be watched for changes and the internal representation of the [config] will be updated to match.
+ * If no [config] is provided, will return the default state for each [Flag] requested.
+ * Supports [EnvVar] flags as well.
+ *
+ * @param [config] optional location of the yaml config file that contains the feature-flag definitions.
+ * If the [config] is provided, it will be watched for changes and the internal representation of the [config] will be updated to match.
  */
-class ConfigFileClient(config: Path) : FeatureFlagClient {
+class ConfigFileClient(config: Path?) : FeatureFlagClient {
     /** [flags] holds the mappings of the flag-name to the flag properties */
-    private var flags: Map<String, ConfigFileFlag> = readConfig(config)
+    private var flags: Map<String, ConfigFileFlag> = config?.let { readConfig(it) } ?: mapOf()
 
     /** lock is used for ensuring access to the flags map is handled correctly when the map is being updated. */
     private val lock = ReentrantReadWriteLock()
 
     init {
-        if (!config.isRegularFile()) {
-            throw IllegalArgumentException("config must reference a file")
-        }
+        config?.also {
+            if (!it.isRegularFile()) {
+                throw IllegalArgumentException("config must reference a file")
+            }
 
-        config.onChange {
-            lock.write { flags = readConfig(config) }
+            it.onChange {
+                lock.write { flags = readConfig(config) }
+            }
         }
     }
 
@@ -175,9 +179,23 @@ private fun Path.onChange(block: () -> Unit) {
  * Once v6 is GA, this method would be removed and replaced with toLDContext.
  */
 private fun Context.toLDUser(): LDUser = when (this) {
-    is Multi -> throw IllegalArgumentException("LDv5 does not support multiple contexts")
-    else -> {
+    is Multi -> {
         val builder = LDUser.Builder(key)
+        with(contexts) {
+            // Add each individual context's value as an attribute on the LDUser.
+            // This allows for more granular targeting of feature-flag rules that target LDUser types.
+            forEach { builder.custom(it.kind, it.key) }
+
+            if (all { it.key == ANONYMOUS.toString() }) {
+                builder.anonymous(true)
+            }
+        }
+        builder.build()
+    }
+
+    else -> {
+        // for LDv5 Users, add the context type and valid as a custom attribute
+        val builder = LDUser.Builder(key).apply { custom(kind, key) }
         if (this.key == ANONYMOUS.toString()) {
             builder.anonymous(true)
         }
