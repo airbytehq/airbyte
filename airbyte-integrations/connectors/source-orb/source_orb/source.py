@@ -202,6 +202,21 @@ def to_utc_isoformat(time) -> str:
     else:
         raise TypeError(f"Cannot convert input of type {type(time)} to isoformat")
 
+def chunk_date_range(start_date: pendulum.DateTime, end_date: Optional[pendulum.DateTime] = None) -> Iterable[pendulum.Period]:
+    """
+    Yields a list of the beginning and ending timestamps of each day between the start date and now.
+    The return value is a pendulum.period
+    """
+    one_day = pendulum.duration(days=1)
+    end_date = end_date or pendulum.now()
+
+    # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
+    chunk_start_date = start_date
+    while chunk_start_date < end_date:
+        chunk_end_date = min(chunk_start_date + one_day, end_date)
+        yield pendulum.period(chunk_start_date, chunk_end_date)
+        chunk_start_date = chunk_end_date
+
 
 class SubscriptionUsage(IncrementalOrbStream):
     """
@@ -222,20 +237,16 @@ class SubscriptionUsage(IncrementalOrbStream):
         self.plan_id = plan_id
         self.end_date = end_date
 
-    def chunk_date_range(self, start_date: pendulum.DateTime, end_date: Optional[pendulum.DateTime] = None) -> Iterable[pendulum.Period]:
-        """
-        Yields a list of the beginning and ending timestamps of each day between the start date and now.
-        The return value is a pendulum.period
-        """
-        one_day = pendulum.duration(days=1)
-        end_date = end_date or pendulum.now()
+    @property
+    def primary_key(self) -> Iterable[str]:
+        key = ["subscription_id", "billable_metric_id", "timeframe_start"]
 
-        # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
-        chunk_start_date = start_date
-        while chunk_start_date < end_date:
-            chunk_end_date = min(chunk_start_date + one_day, end_date)
-            yield pendulum.period(chunk_start_date, chunk_end_date)
-            chunk_start_date = chunk_end_date
+        # If a grouping key is present, it should be included in the primary key
+        if self.subscription_usage_grouping_key:
+            key.append(self.subscription_usage_grouping_key)
+
+        return key
+
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # use a regex capture group to extract the subscription ID from the request URL
@@ -400,7 +411,7 @@ class SubscriptionUsage(IncrementalOrbStream):
             end_date = to_datetime(self.end_date)
 
             # create one slice for each day of usage between the start and end date
-            for period in self.chunk_date_range(start_date=start_date, end_date=end_date):
+            for period in chunk_date_range(start_date=start_date, end_date=end_date):
                 slice = {"subscription_id": subscription_id, "timeframe_start": period.start, "timeframe_end": period.end}
 
                 # if using a group_by key, yield one slice per billable_metric_id.
