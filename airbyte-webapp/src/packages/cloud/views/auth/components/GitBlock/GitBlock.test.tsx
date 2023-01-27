@@ -3,8 +3,8 @@ import { IntlProvider } from "react-intl";
 
 import { ConfigContext, defaultConfig } from "config";
 
-import en from "../../../../locales/en.json";
 import { GitBlock, GitBlockProps } from "./GitBlock";
+import en from "../../../../locales/en.json";
 
 const renderGitBlock = (props?: GitBlockProps) =>
   render(

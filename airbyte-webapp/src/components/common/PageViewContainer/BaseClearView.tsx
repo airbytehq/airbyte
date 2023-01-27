@@ -2,8 +2,8 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 
-import { Version } from "../Version";
 import styles from "./BaseClearView.module.scss";
+import { Version } from "../Version";
 
 export const BaseClearView: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { formatMessage } = useIntl();
