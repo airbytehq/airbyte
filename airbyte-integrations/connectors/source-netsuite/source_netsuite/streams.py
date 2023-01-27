@@ -184,9 +184,10 @@ class NetsuiteStream(HttpStream, ABC):
                         self.index_datetime_format += 1
                         if self.index_datetime_format < len(NETSUITE_INPUT_DATE_FORMATS):
                             self.logger.warn(f"Stream `{self.name}`: retry using next date format `{self.default_datetime_format}")
-                            raise DateFormatExeption
+                            return True
                         else:
                             self.logger.error(f"DATE FORMAT exception. Cannot read using known formats {NETSUITE_INPUT_DATE_FORMATS}")
+                            raise DateFormatExeption
 
                     # handle other known errors
                     self.logger.error(f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
