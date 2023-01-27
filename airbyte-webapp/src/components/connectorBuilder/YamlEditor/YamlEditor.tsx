@@ -12,16 +12,13 @@ import { Action, Namespace } from "core/analytics";
 import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import {
-  useConnectorBuilderFormState,
-  useConnectorBuilderTestState,
-} from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./YamlEditor.module.scss";
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "../DownloadYamlButton";
-import { convertToBuilderFormValues } from "../manifestToBuilderForm";
 import { convertToManifest } from "../types";
+import { useManifestToBuilderForm } from "../useManifestToBuilderForm";
 
 interface YamlEditorProps {
   toggleYamlEditor: () => void;
@@ -41,8 +38,8 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
     setYamlIsValid,
     setJsonManifest,
   } = useConnectorBuilderFormState();
-  const { streamListErrorMessage } = useConnectorBuilderTestState();
   const [yamlValue, setYamlValue] = useState(yamlManifest);
+  const { convertToBuilderFormValues } = useManifestToBuilderForm();
 
   // debounce the setJsonManifest calls so that it doesnt result in a network call for every keystroke
   const debouncedSetJsonManifest = useMemo(() => debounce(setJsonManifest, 200), [setJsonManifest]);
@@ -90,10 +87,11 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
     return !isEqual(convertToManifest(builderFormValues), jsonManifest);
   }, [jsonManifest, builderFormValues]);
 
-  const handleToggleYamlEditor = () => {
+  const handleToggleYamlEditor = async () => {
     if (yamlIsDirty) {
       try {
-        setValues(convertToBuilderFormValues(jsonManifest, builderFormValues, streamListErrorMessage));
+        const convertedFormValues = await convertToBuilderFormValues(jsonManifest, builderFormValues);
+        setValues(convertedFormValues);
         toggleYamlEditor();
       } catch (e) {
         openConfirmationModal({

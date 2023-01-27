@@ -1,6 +1,7 @@
 import isEqual from "lodash/isEqual";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
+import { ResolveManifest } from "core/request/ConnectorBuilderClient";
 import {
   CartesianProductStreamSlicer,
   ConnectorManifest,
@@ -19,6 +20,7 @@ import {
   Spec,
   SubstreamSlicer,
 } from "core/request/ConnectorManifest";
+import { useResolveManifest } from "services/connectorBuilder/ConnectorBuilderApiService";
 
 import {
   authTypeToKeyToInferredInput,
@@ -33,14 +35,21 @@ import {
 } from "./types";
 import { formatJson } from "./utils";
 
-export const convertToBuilderFormValues = (
+export const useManifestToBuilderForm = () => {
+  const { resolve } = useResolveManifest();
+  return { convertToBuilderFormValues: convertToBuilderFormValues.bind(this, resolve) };
+};
+
+export const convertToBuilderFormValues = async (
+  resolve: (manifest: ConnectorManifest) => Promise<ResolveManifest>,
   manifest: ConnectorManifest,
-  currentBuilderFormValues: BuilderFormValues,
-  streamListErrorMessage?: string
+  currentBuilderFormValues: BuilderFormValues
 ) => {
-  // TODO: replace these checks with a call to the soon-to-be /manifest/resolve endpoint, to resolve refs, options, and validate the manifest against the schema
-  if (streamListErrorMessage) {
-    let errorMessage = streamListErrorMessage;
+  let resolveResult: ResolveManifest;
+  try {
+    resolveResult = await resolve(manifest);
+  } catch (e) {
+    let errorMessage = e.message;
     if (errorMessage[0] === '"') {
       errorMessage = errorMessage.substring(1, errorMessage.length);
     }
@@ -49,18 +58,15 @@ export const convertToBuilderFormValues = (
     }
     throw new ManifestCompatibilityError(undefined, errorMessage.trim());
   }
-  const manifestString = JSON.stringify(manifest);
-  if (manifestString.includes("*ref") || manifestString.includes("$ref") || manifestString.includes("$options")) {
-    throw new ManifestCompatibilityError(undefined, "Manifest contains refs or $options, which are unsupported");
-  }
+  const resolvedManifest = resolveResult.manifest as ConnectorManifest;
 
   const builderFormValues = DEFAULT_BUILDER_FORM_VALUES;
   builderFormValues.global.connectorName = currentBuilderFormValues.global.connectorName;
-  builderFormValues.checkStreams = manifest.check.stream_names;
+  builderFormValues.checkStreams = resolvedManifest.check.stream_names;
 
-  const streams = manifest.streams;
+  const streams = resolvedManifest.streams;
   if (streams === undefined || streams.length === 0) {
-    const { inputs, inferredInputOverrides } = manifestSpecAndAuthToBuilder(manifest.spec, undefined);
+    const { inputs, inferredInputOverrides } = manifestSpecAndAuthToBuilder(resolvedManifest.spec, undefined);
     builderFormValues.inputs = inputs;
     builderFormValues.inferredInputOverrides = inferredInputOverrides;
 
@@ -72,7 +78,7 @@ export const convertToBuilderFormValues = (
   builderFormValues.global.urlBase = streams[0].retriever.requester.url_base;
 
   const { inputs, inferredInputOverrides, auth } = manifestSpecAndAuthToBuilder(
-    manifest.spec,
+    resolvedManifest.spec,
     streams[0].retriever.requester.authenticator
   );
   builderFormValues.inputs = inputs;
@@ -81,7 +87,13 @@ export const convertToBuilderFormValues = (
 
   const serializedStreamToIndex = Object.fromEntries(streams.map((stream, index) => [JSON.stringify(stream), index]));
   builderFormValues.streams = streams.map((stream, index) =>
-    manifestStreamToBuilder(stream, index, serializedStreamToIndex, builderFormValues.global)
+    manifestStreamToBuilder(
+      stream,
+      index,
+      serializedStreamToIndex,
+      streams[0].retriever.requester.url_base,
+      streams[0].retriever.requester.authenticator
+    )
   );
 
   return builderFormValues;
@@ -91,7 +103,8 @@ const manifestStreamToBuilder = (
   stream: DeclarativeStream,
   index: number,
   serializedStreamToIndex: Record<string, number>,
-  builderFormGlobal: BuilderFormValues["global"]
+  firstStreamUrlBase: string,
+  firstStreamAuthenticator?: HttpRequesterAuthenticator
 ): BuilderStream => {
   assertType<SimpleRetriever>(stream.retriever, "SimpleRetriever", stream.name);
   const retriever = stream.retriever;
@@ -100,14 +113,14 @@ const manifestStreamToBuilder = (
   const requester = retriever.requester;
 
   if (
-    builderFormGlobal.authenticator.type === "NoAuth"
+    !firstStreamAuthenticator || firstStreamAuthenticator.type === "NoAuth"
       ? requester.authenticator && requester.authenticator.type !== "NoAuth"
-      : !isEqual(retriever.requester.authenticator, builderFormGlobal.authenticator)
+      : !isEqual(retriever.requester.authenticator, firstStreamAuthenticator)
   ) {
     throw new ManifestCompatibilityError(stream.name, "authenticator does not match the first stream's");
   }
 
-  if (retriever.requester.url_base !== builderFormGlobal.urlBase) {
+  if (retriever.requester.url_base !== firstStreamUrlBase) {
     throw new ManifestCompatibilityError(stream.name, "url_base does not match the first stream's");
   }
 
@@ -150,7 +163,7 @@ const manifestStreamToBuilder = (
       ),
     },
     primaryKey: manifestPrimaryKeyToBuilder(stream),
-    paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, builderFormGlobal.urlBase),
+    paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, firstStreamUrlBase),
     streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, serializedStreamToIndex, stream.name),
     schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
     unsupportedFields: {
@@ -316,9 +329,21 @@ function manifestAuthenticatorToBuilder(
     builderAuthenticator = {
       type: "NoAuth",
     };
+  } else if (manifestAuthenticator.type === undefined) {
+    throw new ManifestCompatibilityError(streamName, "authenticator has no type");
   } else if (manifestAuthenticator.type === "CustomAuthenticator") {
     throw new ManifestCompatibilityError(streamName, "uses a CustomAuthenticator");
   } else if (manifestAuthenticator.type === "OAuthAuthenticator") {
+    if (
+      Object.values(manifestAuthenticator.refresh_request_body ?? {}).filter((value) => typeof value !== "string")
+        .length > 0
+    ) {
+      throw new ManifestCompatibilityError(
+        streamName,
+        "OAuthAuthenticator contains a refresh_request_body with non-string values"
+      );
+    }
+
     builderAuthenticator = {
       ...manifestAuthenticator,
       refresh_request_body: Object.entries(manifestAuthenticator.refresh_request_body ?? {}),
