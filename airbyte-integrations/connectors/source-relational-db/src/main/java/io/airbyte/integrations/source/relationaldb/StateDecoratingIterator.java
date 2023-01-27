@@ -88,7 +88,14 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
   private String getCursorCandidate(final AirbyteMessage message) {
     final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
-    return (cursorCandidate != null ? cursorCandidate.replaceAll("\u0000", "") : null);
+    return (cursorCandidate != null ? replaceNull(cursorCandidate) : null);
+  }
+
+  private String replaceNull(final String cursorCandidate) {
+    if (cursorCandidate.contains("\u0000")) {
+      return cursorCandidate.replaceAll("\u0000", "");
+    }
+    return cursorCandidate;
   }
 
   /**
