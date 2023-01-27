@@ -47,10 +47,6 @@ class NetsuiteStream(HttpStream, ABC):
     raise_on_http_errors = True
 
     @property
-    def default_datetime_format(self) -> str:
-        return NETSUITE_INPUT_DATE_FORMATS[0]
-
-    @property
     def name(self) -> str:
         return self.object_name
 
@@ -125,11 +121,6 @@ class NetsuiteStream(HttpStream, ABC):
         if has_more:
             return {"offset": resp["offset"] + resp["count"]}
         return None
-
-    def format_date(self, last_modified_date: str) -> str:
-        # the date format returned is differnet than what we need to use in the query
-        lmd_datetime = datetime.strptime(last_modified_date, NETSUITE_OUTPUT_DATETIME_FORMAT)
-        return lmd_datetime.strftime(self.default_datetime_format)
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {}
