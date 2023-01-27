@@ -1121,7 +1121,9 @@ where 1 = 1
         return self.get_incremental_clause_for_column(tablename, self.get_normalized_at(in_jinja=True), ">")
 
     def get_incremental_clause_for_column(self, tablename: str, column: str, comparisonOperator: str) -> Any:
-        return "{{ incremental_clause(" + column + ", " + tablename + ", '" + comparisonOperator + "') }}"
+        # Note the leading space - this is just to prevent really dumb syntax errors
+        # e.g. "SELECT .... WHERE 1=1" + get_incremental_clause()
+        return " {{ incremental_clause(" + column + ", " + tablename + ", '" + comparisonOperator + "') }}"
 
     @staticmethod
     def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
