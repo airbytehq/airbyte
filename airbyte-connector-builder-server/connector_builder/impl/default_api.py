@@ -48,7 +48,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: []
+      field_path: []
   requester:
     type: HttpRequester
     url_base: "https://example.com"

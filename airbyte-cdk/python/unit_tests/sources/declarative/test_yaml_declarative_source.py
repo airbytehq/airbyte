@@ -72,7 +72,7 @@ class TestYamlDeclarativeSource:
                 page_size: "{{ 10 }}"
             record_selector:
               extractor:
-                field_pointer: ["result"]
+                field_path: ["result"]
         streams:
           - type: DeclarativeStream
             $parameters:

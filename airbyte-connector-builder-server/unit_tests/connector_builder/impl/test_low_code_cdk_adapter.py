@@ -55,18 +55,18 @@ MANIFEST = {
     "version": "0.1.0",
     "type": "DeclarativeSource",
     "definitions": {
-        "selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+        "selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
         "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "DeclarativeSource"},
         "retriever": {
             "type": "DeclarativeSource",
-            "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+            "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
             "paginator": {"type": "NoPagination"},
             "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
         },
         "hashiras_stream": {
             "retriever": {
                 "type": "DeclarativeSource",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
@@ -75,7 +75,7 @@ MANIFEST = {
         "breathing_techniques_stream": {
             "retriever": {
                 "type": "DeclarativeSource",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
@@ -87,7 +87,7 @@ MANIFEST = {
             "type": "DeclarativeStream",
             "retriever": {
                 "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
@@ -97,7 +97,7 @@ MANIFEST = {
             "type": "DeclarativeStream",
             "retriever": {
                 "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
@@ -111,7 +111,7 @@ MANIFEST_WITH_REFERENCES = {
     "version": "0.1.0",
     "type": "DeclarativeSource",
     "definitions": {
-        "selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": []}},
+        "selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": []}},
         "requester": {
             "type": "HttpRequester",
             "url_base": "https://demonslayers.com/api/v1/",
@@ -151,7 +151,7 @@ MANIFEST_WITH_PAGINATOR = {
             "type": "DeclarativeStream",
             "retriever": {
                 "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {
                     "type": "DefaultPaginator",
                     "pagination_strategy": {"type": "OffsetIncrement", "page_size": 10},
@@ -286,7 +286,7 @@ def test_read_streams_invalid_reference():
         "version": "0.1.0",
         "type": "DeclarativeSource",
         "definitions": {
-            "selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": []}},
+            "selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": []}},
             "ranks_stream": {"$ref": "#/definitions/base_stream", "$parameters": {"name": "ranks", "primary_key": "id", "path": "/ranks"}},
         },
         "streams": ["#/definitions/ranks_stream"],

@@ -19,12 +19,12 @@ class DpathExtractor(BaseModel):
 
     DpathExtractor - a model defined in OpenAPI
 
-        field_pointer: The field_pointer of this DpathExtractor.
+        field_path: The field_path of this DpathExtractor.
         config: The config of this DpathExtractor.
         decoder: The decoder of this DpathExtractor [Optional].
     """
 
-    field_pointer: List[AnyOfInterpolatedStringstring] = Field(alias="field_pointer")
+    field_path: List[AnyOfInterpolatedStringstring] = Field(alias="field_path")
     config: Dict[str, Any] = Field(alias="config")
     decoder: Optional[JsonDecoder] = Field(alias="decoder", default=None)
 
