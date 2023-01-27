@@ -22,7 +22,6 @@ definitions:
               backoff_time_in_seconds: 60
   offset_paginator:
     type: DefaultPaginator
-    $parameters:
     pagination_strategy:
       type: "OffsetIncrement"
       page_size: 100

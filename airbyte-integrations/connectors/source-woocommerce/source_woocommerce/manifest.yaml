@@ -42,7 +42,6 @@ definitions:
       $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
-      $parameters:
       pagination_strategy:
         type: "OffsetIncrement"
         page_size: 100
