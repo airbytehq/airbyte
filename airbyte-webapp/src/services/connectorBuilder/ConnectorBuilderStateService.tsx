@@ -15,15 +15,7 @@ import { ConnectorManifest, DeclarativeComponentSchema } from "core/request/Conn
 
 import { useListStreams, useReadStream } from "./ConnectorBuilderApiService";
 
-const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
-  version: "0.1.0",
-  type: "DeclarativeSource",
-  check: {
-    type: "CheckStream",
-    stream_names: [],
-  },
-  streams: [],
-};
+export const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = convertToManifest(DEFAULT_BUILDER_FORM_VALUES);
 
 export type EditorView = "ui" | "yaml";
 export type BuilderView = "global" | "inputs" | number;

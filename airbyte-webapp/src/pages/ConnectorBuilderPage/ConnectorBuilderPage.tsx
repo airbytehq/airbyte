@@ -1,6 +1,5 @@
 import classnames from "classnames";
-import { Formik, useFormikContext } from "formik";
-import { load, YAMLException } from "js-yaml";
+import { Formik } from "formik";
 import isEqual from "lodash/isEqual";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
@@ -12,28 +11,26 @@ import {
   BuilderFormValues,
   DEFAULT_BUILDER_FORM_VALUES,
 } from "components/connectorBuilder/types";
-import { useManifestToBuilderForm } from "components/connectorBuilder/useManifestToBuilderForm";
 import { YamlEditor } from "components/connectorBuilder/YamlEditor";
-import { Button } from "components/ui/Button";
 import { ResizablePanels } from "components/ui/ResizablePanels";
-import { Text } from "components/ui/Text";
 
 import { Action, Namespace } from "core/analytics";
-import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import {
   ConnectorBuilderTestStateProvider,
   ConnectorBuilderFormStateProvider,
   useConnectorBuilderFormState,
+  DEFAULT_JSON_MANIFEST_VALUES,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./ConnectorBuilderPage.module.scss";
+import { LandingPage } from "./LandingPage";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = function () {};
 
 const ConnectorBuilderPageInner: React.FC = React.memo(() => {
-  const { builderFormValues, editorView, setEditorView } = useConnectorBuilderFormState();
+  const { builderFormValues, jsonManifest, editorView, setEditorView } = useConnectorBuilderFormState();
   const analyticsService = useAnalyticsService();
 
   useEffect(() => {
@@ -45,7 +42,9 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
   const switchToUI = useCallback(() => setEditorView("ui"), [setEditorView]);
   const switchToYaml = useCallback(() => setEditorView("yaml"), [setEditorView]);
 
-  const [showLandingPage, setShowLandingPage] = useState(isEqual(builderFormValues, DEFAULT_BUILDER_FORM_VALUES));
+  const [showLandingPage, setShowLandingPage] = useState(
+    isEqual(builderFormValues, DEFAULT_BUILDER_FORM_VALUES) && isEqual(jsonManifest, DEFAULT_JSON_MANIFEST_VALUES)
+  );
 
   const initialFormValues = useRef(builderFormValues);
   return useMemo(() => {
@@ -134,100 +133,6 @@ const Panels = React.memo(
           },
         }}
       />
-    );
-  }
-);
-
-const LandingPage = React.memo(
-  ({
-    setShowLandingPage,
-    switchToUI,
-    switchToYaml,
-  }: {
-    setShowLandingPage: (value: boolean) => void;
-    switchToUI: () => void;
-    switchToYaml: () => void;
-  }) => {
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const { setJsonManifest, setYamlIsValid } = useConnectorBuilderFormState();
-    const { convertToBuilderFormValues } = useManifestToBuilderForm();
-    const { setValues } = useFormikContext<BuilderFormValues>();
-    const [importLoading, setImportLoading] = useState(false);
-
-    const handleYamlUpload = useCallback(
-      async (yaml: string) => {
-        try {
-          let json;
-          try {
-            json = load(yaml) as ConnectorManifest;
-          } catch (e) {
-            if (e instanceof YAMLException) {
-              console.log(`The YAML you provided is invalid! \nError: ${e.reason}\nLine number: ${e.mark.line}`);
-            }
-            return;
-          }
-          setYamlIsValid(true);
-
-          let convertedFormValues;
-          try {
-            convertedFormValues = await convertToBuilderFormValues(json, DEFAULT_BUILDER_FORM_VALUES);
-          } catch (e) {
-            switchToYaml();
-            setJsonManifest(json);
-            setShowLandingPage(false);
-            return;
-          }
-
-          switchToUI();
-          setValues(convertedFormValues);
-          setShowLandingPage(false);
-        } finally {
-          setImportLoading(false);
-        }
-      },
-      [
-        convertToBuilderFormValues,
-        setJsonManifest,
-        setShowLandingPage,
-        setValues,
-        setYamlIsValid,
-        switchToUI,
-        switchToYaml,
-      ]
-    );
-
-    return (
-      <div>
-        <Text>Landing Page</Text>
-        <input
-          type="file"
-          accept=".yml,.yaml"
-          ref={fileInputRef}
-          style={{ display: "none" }}
-          onChange={(uploadEvent) => {
-            setImportLoading(true);
-            const file = uploadEvent.target.files?.[0];
-            const reader = new FileReader();
-            reader.onload = (readerEvent) => {
-              handleYamlUpload(readerEvent.target?.result as string);
-            };
-            if (file) {
-              reader.readAsText(file);
-            }
-          }}
-        />
-        <Button onClick={() => fileInputRef.current?.click()} isLoading={importLoading}>
-          Import YAML
-        </Button>
-        <Button
-          onClick={() => {
-            switchToUI();
-            setShowLandingPage(false);
-          }}
-        >
-          Start from scratch
-        </Button>
-      </div>
     );
   }
 );

@@ -743,6 +743,7 @@
   "connectorBuilder.copyFromSlicerTitle": "Import slicing settings from...",
   "connectorBuilder.inputsButton": "Inputs",
   "connectorBuilder.interUserInputValue": "Insert a user input value",
+  "connectorBuilder.yamlUpload.error": "The YAML you provided is invalid: {reason} (line {line})",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
