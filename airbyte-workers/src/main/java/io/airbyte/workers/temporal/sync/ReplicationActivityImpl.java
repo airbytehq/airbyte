@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.sync;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_BYTES_SYNCED_KEY;
@@ -149,8 +150,12 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                       final StandardSyncInput syncInput,
                                       @Nullable final String taskQueue) {
     final Map<String, Object> traceAttributes =
-        Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
-            destinationLauncherConfig.getDockerImage(), SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage());
+        Map.of(
+            ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(),
+            CONNECTION_ID_KEY, syncInput.getConnectionId(),
+            JOB_ID_KEY, jobRunConfig.getJobId(),
+            DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
+            SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage());
     ApmTraceUtils
         .addTagsToTrace(traceAttributes);
     if (isResetJob(sourceLauncherConfig.getDockerImage())) {

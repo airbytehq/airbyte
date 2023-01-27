@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
+import org.slf4j.Logger;
 
 /**
  * This class takes values from a connector's configuration and uses it to fill in template-string
@@ -21,6 +22,12 @@ import org.apache.commons.text.StringSubstitutor;
  * with {animal: fox, target: fence}
  */
 public class ConfigReplacer {
+
+  private final Logger logger;
+
+  public ConfigReplacer(Logger logger) {
+    this.logger = logger;
+  }
 
   /**
    * Note: This method does not interact with the secret manager. It is currently expected that all
@@ -49,8 +56,8 @@ public class ConfigReplacer {
     for (String host : hosts) {
       final String replacedString = sub.replace(host);
       if (replacedString.contains("${")) {
-        throw new IOException(
-            "The allowed host value, '" + host + "', is expecting an interpolation value from the connector's configuration, but none is present");
+        this.logger.error(
+            "The allowedHost value, '" + host + "', is expecting an interpolation value from the connector's configuration, but none is present");
       }
       resolvedHosts.add(replacedString);
     }

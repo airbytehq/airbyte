@@ -13,10 +13,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ConfigReplacerTest {
 
-  final ConfigReplacer replacer = new ConfigReplacer();
+  final Logger logger = LoggerFactory.getLogger(ConfigReplacerTest.class);
+
+  final ConfigReplacer replacer = new ConfigReplacer(logger);
   final ObjectMapper mapper = new ObjectMapper();
 
   @Test
@@ -40,25 +44,6 @@ class ConfigReplacerTest {
     final AllowedHosts response = replacer.getAllowedHosts(allowedHosts, config);
 
     assertThat(response.getHosts()).isEqualTo(expected);
-  }
-
-  @Test()
-  void getAllowedHostsMissingValue() throws IOException {
-    final AllowedHosts allowedHosts = new AllowedHosts();
-    final List<String> hosts = new ArrayList();
-    hosts.add("${subdomain}.vendor.com");
-    allowedHosts.setHosts(hosts);
-
-    final String configJson = "{\"password\": \"abc123\"}";
-    final JsonNode config = mapper.readValue(configJson, JsonNode.class);
-
-    try {
-      replacer.getAllowedHosts(allowedHosts, config);
-      throw new RuntimeException("should not get here");
-    } catch (Exception e) {
-      assertThat(e).hasMessage(
-          "The allowed host value, '${subdomain}.vendor.com', is expecting an interpolation value from the connector's configuration, but none is present");
-    }
   }
 
 }
