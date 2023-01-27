@@ -247,6 +247,15 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
                           >
                             MongoDB
                           </div>
+                          <span
+                            class="<removed-for-snapshot-test>"
+                          >
+                            <div
+                              class="<removed-for-snapshot-test>"
+                            >
+                              Custom
+                            </div>
+                          </span>
                         </div>
                       </div>
                     </div>
