@@ -35,7 +35,7 @@ public class ConfigReplacer {
    * for a connector has a single depth.
    */
   public AllowedHosts getAllowedHosts(AllowedHosts allowedHosts, JsonNode config) throws IOException {
-    if (allowedHosts == null || allowedHosts.getHosts() == null || allowedHosts.getHosts().size() == 0) {
+    if (allowedHosts == null || allowedHosts.getHosts() == null) {
       return null;
     }
 
@@ -84,7 +84,7 @@ public class ConfigReplacer {
       }
     }
 
-    if (resolvedHosts.isEmpty()) {
+    if (resolvedHosts.isEmpty() && !hosts.isEmpty()) {
       this.logger.error(
           "All allowedHosts values are un-replaced.  Check this connector's configuration or actor definition - " + allowedHosts.getHosts());
     }

@@ -69,4 +69,17 @@ class ConfigReplacerTest {
     assertThat(response.getHosts()).isEqualTo(expected);
   }
 
+  @Test
+  void ensureEmptyArrayRemains() throws IOException {
+    final AllowedHosts allowedHosts = new AllowedHosts();
+    allowedHosts.setHosts(new ArrayList());
+    final List<String> expected = new ArrayList<>();
+
+    final String configJson = "{}";
+    final JsonNode config = mapper.readValue(configJson, JsonNode.class);
+    final AllowedHosts response = replacer.getAllowedHosts(allowedHosts, config);
+
+    assertThat(response.getHosts()).isEqualTo(expected);
+  }
+
 }
