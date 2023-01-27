@@ -150,7 +150,7 @@ def read(config, catalog, state):
         print(json.dumps(output_message))
 ```
 
-That code requires to add a new import in the file:
+That code requires to add a new library import in the `source.py` file:
 ```python
 from datetime import timezone
 ```
