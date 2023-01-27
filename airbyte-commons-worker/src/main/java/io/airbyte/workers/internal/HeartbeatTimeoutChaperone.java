@@ -27,83 +27,83 @@ import org.slf4j.LoggerFactory;
  */
 public class HeartbeatTimeoutChaperone {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
 
-    public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.of(5, ChronoUnit.MINUTES);
 
-    private final HeartbeatMonitor heartbeatMonitor;
-    private final Duration timeoutCheckDuration;
+  private final HeartbeatMonitor heartbeatMonitor;
+  private final Duration timeoutCheckDuration;
 
-    public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor, final Duration timeoutCheckDuration) {
-        this.timeoutCheckDuration = timeoutCheckDuration;
+  public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor, final Duration timeoutCheckDuration) {
+    this.timeoutCheckDuration = timeoutCheckDuration;
 
-        LOGGER.info("Starting source heartbeat check. Will check every {} minutes.", timeoutCheckDuration.toMinutes());
+    LOGGER.info("Starting source heartbeat check. Will check every {} minutes.", timeoutCheckDuration.toMinutes());
 
-        this.heartbeatMonitor = heartbeatMonitor;
-    }
+    this.heartbeatMonitor = heartbeatMonitor;
+  }
 
-    public Runnable runWithHeartbeatThread(final Runnable runnable, final ExecutorService executorService) {
-        return () -> {
-            final CompletableFuture<Void> runnableFuture = CompletableFuture.runAsync(runnable, executorService);
-            final CompletableFuture<Void> heartbeatFuture = CompletableFuture.runAsync(this::monitor, executorService);
+  public Runnable runWithHeartbeatThread(final Runnable runnable, final ExecutorService executorService) {
+    return () -> {
+      final CompletableFuture<Void> runnableFuture = CompletableFuture.runAsync(runnable, executorService);
+      final CompletableFuture<Void> heartbeatFuture = CompletableFuture.runAsync(this::monitor, executorService);
 
-            try {
-                CompletableFuture.anyOf(runnableFuture, heartbeatFuture).get();
-            } catch (final InterruptedException e) {
-                LOGGER.error("Heartbeat chaperone thread was interrupted.", e);
-                return;
-            } catch (final ExecutionException e) {
-                // this should check explicitly for source and destination exceptions
-                if (e.getCause() instanceof RuntimeException) {
-                    throw (RuntimeException) e.getCause();
-                } else {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            LOGGER.info("thread status... heartbeat thread: {} , replication thread: {}", heartbeatFuture.isDone(), runnableFuture.isDone());
-
-            boolean heartbeatTimedOut = false;
-            if (heartbeatFuture.isDone() && !runnableFuture.isDone()) {
-                heartbeatTimedOut = true;
-                runnableFuture.cancel(true);
-            }
-
-            if (runnableFuture.isDone() && !heartbeatFuture.isDone()) {
-                heartbeatFuture.cancel(true);
-            }
-
-            if (heartbeatTimedOut) {
-                throw new HeartbeatTimeoutException(String.format("Heartbeat has stopped. Heartbeat freshness threshold: %s Actual heartbeat age: %s",
-                        heartbeatMonitor.getHeartbeatFreshnessThreshold(),
-                        heartbeatMonitor.getTimeSinceLastBeat().orElse(null)));
-            }
-        };
-    }
-
-    @SuppressWarnings("BusyWait")
-    private void monitor() {
-        while (true) {
-            try {
-                sleep(timeoutCheckDuration.toMillis());
-            } catch (final InterruptedException e) {
-                LOGGER.info("Heartbeat thread has been interrupted (this is expected; the heartbeat was healthy the whole time).");
-                return;
-            }
-            // if not beating, return. otherwise, if it is beating or heartbeat hasn't started, continue.
-            if (!heartbeatMonitor.isBeating().orElse(true)) {
-                LOGGER.error("Source has stopped heart beating.");
-                return;
-            }
+      try {
+        CompletableFuture.anyOf(runnableFuture, heartbeatFuture).get();
+      } catch (final InterruptedException e) {
+        LOGGER.error("Heartbeat chaperone thread was interrupted.", e);
+        return;
+      } catch (final ExecutionException e) {
+        // this should check explicitly for source and destination exceptions
+        if (e.getCause() instanceof RuntimeException) {
+          throw (RuntimeException) e.getCause();
+        } else {
+          throw new RuntimeException(e);
         }
+      }
+
+      LOGGER.info("thread status... heartbeat thread: {} , replication thread: {}", heartbeatFuture.isDone(), runnableFuture.isDone());
+
+      boolean heartbeatTimedOut = false;
+      if (heartbeatFuture.isDone() && !runnableFuture.isDone()) {
+        heartbeatTimedOut = true;
+        runnableFuture.cancel(true);
+      }
+
+      if (runnableFuture.isDone() && !heartbeatFuture.isDone()) {
+        heartbeatFuture.cancel(true);
+      }
+
+      if (heartbeatTimedOut) {
+        throw new HeartbeatTimeoutException(String.format("Heartbeat has stopped. Heartbeat freshness threshold: %s Actual heartbeat age: %s",
+            heartbeatMonitor.getHeartbeatFreshnessThreshold(),
+            heartbeatMonitor.getTimeSinceLastBeat().orElse(null)));
+      }
+    };
+  }
+
+  @SuppressWarnings("BusyWait")
+  private void monitor() {
+    while (true) {
+      try {
+        sleep(timeoutCheckDuration.toMillis());
+      } catch (final InterruptedException e) {
+        LOGGER.info("Heartbeat thread has been interrupted (this is expected; the heartbeat was healthy the whole time).");
+        return;
+      }
+      // if not beating, return. otherwise, if it is beating or heartbeat hasn't started, continue.
+      if (!heartbeatMonitor.isBeating().orElse(true)) {
+        LOGGER.error("Source has stopped heart beating.");
+        return;
+      }
+    }
+  }
+
+  public static class HeartbeatTimeoutException extends RuntimeException {
+
+    private HeartbeatTimeoutException(final String message) {
+      super(message);
     }
 
-    public static class HeartbeatTimeoutException extends RuntimeException {
-
-        private HeartbeatTimeoutException(final String message) {
-            super(message);
-        }
-
-    }
+  }
 
 }

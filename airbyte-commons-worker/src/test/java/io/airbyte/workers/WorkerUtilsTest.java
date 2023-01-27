@@ -22,6 +22,7 @@ import io.airbyte.workers.test_utils.TestConfigHelpers;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -76,7 +77,7 @@ class WorkerUtilsTest {
       final AtomicInteger recordedBeats = new AtomicInteger(0);
       doAnswer((ignored) -> {
         recordedBeats.incrementAndGet();
-        return true;
+        return Optional.of(true);
       }).when(heartbeatMonitor).isBeating();
 
       final Thread thread = new Thread(this::runShutdown);
@@ -88,13 +89,13 @@ class WorkerUtilsTest {
         Thread.sleep(10);
       }
 
-      thread.stop();
+      thread.interrupt();
     }
 
     @Test
     @DisplayName("Test heartbeat ends and graceful shutdown.")
     void testGracefulShutdown() {
-      when(heartbeatMonitor.isBeating()).thenReturn(false);
+      when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(false));
       when(process.isAlive()).thenReturn(false);
 
       runShutdown();
@@ -105,7 +106,7 @@ class WorkerUtilsTest {
     @Test
     @DisplayName("Test heartbeat ends and shutdown is forced.")
     void testForcedShutdown() {
-      when(heartbeatMonitor.isBeating()).thenReturn(false);
+      when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(false));
       when(process.isAlive()).thenReturn(true);
 
       runShutdown();
@@ -116,7 +117,7 @@ class WorkerUtilsTest {
     @Test
     @DisplayName("Test process dies.")
     void testProcessDies() {
-      when(heartbeatMonitor.isBeating()).thenReturn(true);
+      when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(true));
       when(process.isAlive()).thenReturn(false);
       runShutdown();
 
@@ -165,7 +166,7 @@ class WorkerUtilsTest {
                                        final Duration checkHeartbeatDuration,
                                        final Duration forcedShutdownDuration,
                                        final BiConsumer<Process, Duration> forceShutdown) {
-    while (process.isAlive() && heartbeatMonitor.isBeating()) {
+    while (process.isAlive() && heartbeatMonitor.isBeating().orElse(false)) {
       try {
         if (workerConfigs.getWorkerEnvironment().equals(Configs.WorkerEnvironment.KUBERNETES)) {
           LOGGER.debug("Gently closing process {} with heartbeat..", process.info().commandLine().get());

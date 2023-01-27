@@ -36,21 +36,21 @@ class HeartbeatMonitorTest {
 
   @Test
   void testNeverBeat() {
-    assertFalse(heartbeatMonitor.isBeating());
+    assertTrue(heartbeatMonitor.isBeating().isEmpty());
   }
 
   @Test
   void testFreshBeat() {
     when(nowSupplier.get()).thenReturn(FIVE_SECONDS_BEFORE).thenReturn(NOW);
     heartbeatMonitor.beat();
-    assertTrue(heartbeatMonitor.isBeating());
+    assertTrue(heartbeatMonitor.isBeating().orElse(true));
   }
 
   @Test
   void testStaleBeat() {
     when(nowSupplier.get()).thenReturn(THIRTY_SECONDS_BEFORE).thenReturn(NOW);
     heartbeatMonitor.beat();
-    assertFalse(heartbeatMonitor.isBeating());
+    assertFalse(heartbeatMonitor.isBeating().orElse(true));
   }
 
 }

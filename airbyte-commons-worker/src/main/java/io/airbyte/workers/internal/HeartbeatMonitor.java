@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import lombok.Getter;
 
 /**
  * Tracks heartbeats and, when asked, says if it has been too long since the last heartbeat. He's
@@ -22,6 +23,7 @@ public class HeartbeatMonitor {
 
   public static final Duration DEFAULT_HEARTBEAT_FRESHNESS_THRESHOLD = Duration.of(5, ChronoUnit.MINUTES);
 
+  @Getter
   private final Duration heartbeatFreshnessThreshold;
   private final Supplier<Instant> nowSupplier;
   private final AtomicReference<Instant> lastBeat;
@@ -53,7 +55,6 @@ public class HeartbeatMonitor {
     return getTimeSinceLastBeat().map(timeSinceLastBeat -> timeSinceLastBeat.compareTo(heartbeatFreshnessThreshold) < 0);
   }
 
-
   public Optional<Duration> getTimeSinceLastBeat() {
     final Instant instantFetched = lastBeat.get();
 
@@ -63,4 +64,5 @@ public class HeartbeatMonitor {
       return Optional.ofNullable(Duration.between(lastBeat.get(), nowSupplier.get()));
     }
   }
+
 }
