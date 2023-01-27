@@ -3,6 +3,7 @@
 #
 
 
+from datetime import datetime
 from enum import Enum
 from typing import List
 
@@ -32,6 +33,8 @@ class ConnectorQAReport(BaseModel):
     number_of_connections: int 
     number_of_users: int
     sync_success_rate: float
+    is_eligible_for_promotion_to_cloud: bool
+    report_generation_datetime: datetime
 
 class QAReport(BaseModel):
     connectors_qa_report: List[ConnectorQAReport]
