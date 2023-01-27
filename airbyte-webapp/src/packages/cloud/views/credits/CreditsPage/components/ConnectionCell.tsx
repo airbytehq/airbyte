@@ -2,7 +2,10 @@ import React from "react";
 
 import { ConnectorIcon } from "components/common/ConnectorIcon";
 import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
+import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Text } from "components/ui/Text";
+
+import styles from "./ConnectionCell.module.scss";
 
 interface ConnectionCellProps {
   sourceDefinitionName: string;
@@ -18,17 +21,23 @@ const ConnectionCell: React.FC<ConnectionCellProps> = ({
   destinationIcon,
 }) => {
   return (
-    <>
-      <div>
-        <ConnectorIcon icon={sourceIcon} />
-        <Text size="lg">{sourceDefinitionName}</Text>
-      </div>
-      <ArrowRightIcon />
-      <div>
-        <ConnectorIcon icon={destinationIcon} />
-        <Text size="lg">{destinationDefinitionName}</Text>
-      </div>
-    </>
+    <FlexContainer justifyContent="space-between">
+      <FlexItem className={styles.connectorItem}>
+        <FlexContainer direction="row">
+          <ConnectorIcon icon={sourceIcon} />
+          <Text size="lg">{sourceDefinitionName}</Text>
+        </FlexContainer>
+      </FlexItem>
+      <FlexItem className={styles.arrowItem}>
+        <ArrowRightIcon />
+      </FlexItem>
+      <FlexItem className={styles.connectorItem}>
+        <FlexContainer direction="row">
+          <ConnectorIcon icon={destinationIcon} />
+          <Text size="lg">{destinationDefinitionName}</Text>
+        </FlexContainer>
+      </FlexItem>
+    </FlexContainer>
   );
 };
 
