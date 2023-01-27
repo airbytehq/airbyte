@@ -70,7 +70,7 @@ MANIFEST = {
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$options": {"name": "hashiras", "path": "/hashiras"},
+            "$parameters": {"name": "hashiras", "path": "/hashiras"},
         },
         "breathing_techniques_stream": {
             "retriever": {
@@ -79,7 +79,7 @@ MANIFEST = {
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$options": {"name": "breathing-techniques", "path": "/breathing_techniques"},
+            "$parameters": {"name": "breathing-techniques", "path": "/breathing_techniques"},
         },
     },
     "streams": [
@@ -91,7 +91,7 @@ MANIFEST = {
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$options": {"name": "hashiras", "path": "/hashiras"},
+            "$parameters": {"name": "hashiras", "path": "/hashiras"},
         },
         {
             "type": "DeclarativeStream",
@@ -101,7 +101,7 @@ MANIFEST = {
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$options": {"name": "breathing-techniques", "path": "/breathing_techniques"},
+            "$parameters": {"name": "breathing-techniques", "path": "/breathing_techniques"},
         },
     ],
     "check": {"stream_names": ["hashiras"], "type": "CheckStream"},
@@ -125,7 +125,7 @@ MANIFEST_WITH_REFERENCES = {
             "requester": {"$ref": "#/definitions/requester"},
         },
         "base_stream": {"type": "DeclarativeStream", "retriever": {"$ref": "#/definitions/retriever"}},
-        "ranks_stream": {"$ref": "#/definitions/base_stream", "$options": {"name": "ranks", "primary_key": "id", "path": "/ranks"}},
+        "ranks_stream": {"$ref": "#/definitions/base_stream", "$parameters": {"name": "ranks", "primary_key": "id", "path": "/ranks"}},
     },
     "streams": ["#/definitions/ranks_stream"],
     "check": {"type": "CheckStream", "stream_names": ["ranks"]},
@@ -159,7 +159,7 @@ MANIFEST_WITH_PAGINATOR = {
                 },
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$options": {"name": "hashiras", "path": "/hashiras"},
+            "$parameters": {"name": "hashiras", "path": "/hashiras"},
         },
     ],
     "check": {"stream_names": ["hashiras"], "type": "CheckStream"},
@@ -206,7 +206,7 @@ def test_get_http_streams_non_declarative_streams():
 
 def test_get_http_streams_non_http_stream():
     declarative_stream_non_http_retriever = DeclarativeStream(
-        name="hashiras", primary_key="id", retriever=MagicMock(), config={}, options={}
+        name="hashiras", primary_key="id", retriever=MagicMock(), config={}, parameters={}
     )
 
     mock_source = MagicMock()
@@ -287,7 +287,7 @@ def test_read_streams_invalid_reference():
         "type": "DeclarativeSource",
         "definitions": {
             "selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": []}},
-            "ranks_stream": {"$ref": "#/definitions/base_stream", "$options": {"name": "ranks", "primary_key": "id", "path": "/ranks"}},
+            "ranks_stream": {"$ref": "#/definitions/base_stream", "$parameters": {"name": "ranks", "primary_key": "id", "path": "/ranks"}},
         },
         "streams": ["#/definitions/ranks_stream"],
         "check": {"type": "CheckStream", "stream_names": ["ranks"]},

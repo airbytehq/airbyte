@@ -184,11 +184,7 @@ spec:
         :return: Airbyte record messages produced by the sync grouped by slice and page
         """
         try:
-            return ResolveManifest(
-                manifest=ManifestDeclarativeSource(
-                    resolve_manifest_request_body.manifest, construct_using_pydantic_models=True
-                ).resolved_manifest
-            )
+            return ResolveManifest(manifest=ManifestDeclarativeSource(resolve_manifest_request_body.manifest).resolved_manifest)
         except Exception as error:
             self.logger.error(f"Could not resolve manifest with error: {error.args[0]} - {self._get_stacktrace_as_string(error)}")
             raise HTTPException(
