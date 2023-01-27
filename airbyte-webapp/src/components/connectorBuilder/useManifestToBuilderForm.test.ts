@@ -127,7 +127,7 @@ describe("Conversion throws error when", () => {
     await expect(convert).rejects.toThrow("api_token value must be of the form {{ config[");
   });
 
-  it("manifest has an OAuthAuthenticator with a refresh_request_body containing non-string values", () => {
+  it("manifest has an OAuthAuthenticator with a refresh_request_body containing non-string values", async () => {
     const convert = () => {
       const manifest: ConnectorManifest = {
         ...baseManifest,
@@ -155,9 +155,9 @@ describe("Conversion throws error when", () => {
           }),
         ],
       };
-      convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+      return convertToBuilderFormValues(noOpResolve, manifest, DEFAULT_BUILDER_FORM_VALUES);
     };
-    expect(convert).toThrow("OAuthAuthenticator contains a refresh_request_body with non-string values");
+    await expect(convert).rejects.toThrow("OAuthAuthenticator contains a refresh_request_body with non-string values");
   });
 });
 
@@ -418,7 +418,7 @@ describe("Conversion successfully results in", () => {
     });
   });
 
-  it("OAuth authenticator refresh_request_body converted to array", () => {
+  it("OAuth authenticator refresh_request_body converted to array", async () => {
     const manifest: ConnectorManifest = {
       ...baseManifest,
       streams: [
@@ -442,7 +442,7 @@ describe("Conversion successfully results in", () => {
         }),
       ],
     };
-    const formValues = convertToBuilderFormValues(manifest, DEFAULT_BUILDER_FORM_VALUES);
+    const formValues = await convertToBuilderFormValues(noOpResolve, manifest, DEFAULT_BUILDER_FORM_VALUES);
     expect(formValues.global.authenticator).toEqual({
       type: "OAuthAuthenticator",
       client_id: "{{ config['client_id'] }}",
