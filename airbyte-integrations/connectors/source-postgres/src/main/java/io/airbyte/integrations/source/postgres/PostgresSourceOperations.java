@@ -64,10 +64,9 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   private static final String TIMETZ = "timetz";
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
   private static final Map<Integer, PostgresType> POSTGRES_TYPE_DICT = new HashMap<>();
-  private Map<String, Map<String, ColumnInfo>> streamColumnInfo = new HashMap<>();
+  private final Map<String, Map<String, ColumnInfo>> streamColumnInfo = new HashMap<>();
 
-  public PostgresSourceOperations() {
-    super();
+  static {
     Arrays.stream(PostgresType.class.getEnumConstants()).forEach(c -> POSTGRES_TYPE_DICT.put(c.type, c));
   }
 
