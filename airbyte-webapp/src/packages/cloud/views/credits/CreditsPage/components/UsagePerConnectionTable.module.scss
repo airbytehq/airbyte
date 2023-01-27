@@ -1,0 +1,10 @@
+@use "scss/variables";
+
+.content {
+  padding: 0 variables.$spacing-2xl 0 variables.$spacing-lg;
+}
+
+.usageValue {
+  padding-right: 10px;
+  min-width: 53px;
+}
