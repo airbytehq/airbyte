@@ -199,7 +199,7 @@ public class BufferedStreamConsumerTest {
     assertThrows(IllegalStateException.class, () -> consumer.accept(expectedRecordsBatch3.get(0)));
     consumer.close();
 
-    verifyStartAndClose();
+    verifyStartAndCloseFailure();
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
 
@@ -219,8 +219,7 @@ public class BufferedStreamConsumerTest {
     assertThrows(IllegalStateException.class, () -> consumer.accept(expectedRecordsBatch3.get(0)));
     consumer.close();
 
-    verify(onStart).call();
-    verify(onClose).accept(true);
+    verifyStartAndCloseFailure();
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
 
@@ -244,7 +243,7 @@ public class BufferedStreamConsumerTest {
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
 
-    verifyNoInteractions(outputRecordCollector);
+    verify(outputRecordCollector).accept(STATE_MESSAGE1);
   }
 
   @Test
@@ -297,6 +296,12 @@ public class BufferedStreamConsumerTest {
   private void verifyStartAndClose() throws Exception {
     verify(onStart).call();
     verify(onClose).accept(false);
+  }
+
+  /** Indicates that a failure occurred while consuming AirbyteMessages */
+  private void verifyStartAndCloseFailure() throws Exception {
+    verify(onStart).call();
+    verify(onClose).accept(true);
   }
 
   private static void consumeRecords(final BufferedStreamConsumer consumer, final Collection<AirbyteMessage> records) {

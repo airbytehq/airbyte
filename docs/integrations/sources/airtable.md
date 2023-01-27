@@ -24,7 +24,8 @@ This source syncs data from the [Airtable API](https://airtable.com/api).
 1. Navigate to the Airbyte Open Source dashboard
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
-4. Enter your `API Key` obtained by following [these steps](https://airtable.com/developers/web/guides/personal-access-tokens)
+4. Click **Authenticate your Airtable account**.
+5. Proceed with `login` and `grant the permissions` to the target `bases` you need the access to, we recommend to use `All Workspaces and bases`.
 5. Log in and Authorize to the Airtable account and click `Set up source`.
 
 
@@ -66,6 +67,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------|
+| 1.0.2   | 2023-01-25 | [20934](https://github.com/airbytehq/airbyte/pull/20934) | Added `OAuth2.0` authentication support 
 | 1.0.1   | 2023-01-10 | [21215](https://github.com/airbytehq/airbyte/pull/21215) | Fix field names                                        |
 | 1.0.0   | 2022-12-22 | [20846](https://github.com/airbytehq/airbyte/pull/20846) | Migrated to Metadata API for dynamic schema generation |
 | 0.1.3   | 2022-10-26 | [18491](https://github.com/airbytehq/airbyte/pull/18491) | Improve schema discovery logic                         |

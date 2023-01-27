@@ -6,6 +6,7 @@ import { ThemeProvider } from "styled-components";
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
+import { ConfigServiceProvider, config } from "config";
 import { I18nProvider } from "core/i18n";
 import { AppMonitoringServiceProvider } from "hooks/services/AppMonitoringService";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
@@ -22,7 +23,6 @@ import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
 
 import { AppServicesProvider } from "./services/AppServicesProvider";
-import { ConfigProvider } from "./services/ConfigProvider";
 import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 
 const messages = { ...en, ...cloudLocales };
@@ -64,13 +64,13 @@ const App: React.FC = () => {
         <I18nProvider locale="en" messages={messages}>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ConfigProvider>
+              <ConfigServiceProvider config={config}>
                 <Router>
                   <Services>
                     <Routing />
                   </Services>
                 </Router>
-              </ConfigProvider>
+              </ConfigServiceProvider>
             </Suspense>
           </StoreProvider>
         </I18nProvider>
