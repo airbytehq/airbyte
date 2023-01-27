@@ -213,7 +213,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec]")
+        log_error("Invalid command. Allowable commands: [spec]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -233,6 +233,8 @@ Some notes on the above code:
 
 1. As described in the [specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout
 2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging
+3. All Airbyte commands can output error messages that take the form `{"type":"TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}}`, so we create a helper method `log_error(message)` to allow error messages
+
 
 Now if we run `python source.py spec` we should see the specification printed out:
 
@@ -357,7 +359,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check]")
+        log_error("Invalid command. Allowable commands: [spec, check]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -476,7 +478,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -620,7 +622,7 @@ elif command == "read":
 and: 
 
 ```python
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
 ```
 
 this yields the following `run` method:
@@ -671,7 +673,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -897,7 +899,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
