@@ -52,7 +52,7 @@ get_connector_path_from_name() {
 
 get_connector_version() {
   # get the version of a connector from its name
-  # e.g source-postgres -> 0.1.0
+  # e.g source-postgres -> 0.1.1
   local connector_name=$1
   local connector_path=$(get_connector_path_from_name "$connector_name")
   local dockerfile="$connector_path/Dockerfile"
