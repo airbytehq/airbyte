@@ -2,8 +2,8 @@ import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { Text } from "../Text";
 import { Callout } from "./Callout";
+import { Text } from "../Text";
 
 export default {
   title: "UI/Callout",

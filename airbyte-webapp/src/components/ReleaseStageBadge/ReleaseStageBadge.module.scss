@@ -16,16 +16,4 @@
   &--small {
     font-size: 8px;
   }
-
-  &--contains-tag {
-    padding-right: 2px;
-  }
-}
-
-.freeTag {
-  background-color: colors.$green-300;
-  color: colors.$white;
-  border-radius: variables.$border-radius-pill;
-  padding: 2px 5px;
-  margin-left: 2px;
 }

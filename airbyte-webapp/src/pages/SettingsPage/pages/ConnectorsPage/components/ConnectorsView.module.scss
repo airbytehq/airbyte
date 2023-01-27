@@ -1,3 +1,13 @@
-.buttonsContainer {
-  display: flex;
+@use "scss/variables";
+@use "scss/colors";
+
+.changeToHeader {
+  margin-left: 200px;
+}
+
+.connectorsTable {
+  td {
+    padding-top: variables.$spacing-sm;
+    padding-bottom: variables.$spacing-sm;
+  }
 }
