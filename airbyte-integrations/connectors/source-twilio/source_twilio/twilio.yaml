@@ -128,6 +128,43 @@ definitions:
       name: "available_phone_numbers_toll_free"
       data_field: "available_phone_numbers"
       subresource_uri_key: "toll_free"
+  # https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources
+  calls_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "{{ stream_slice.path }}"
+        request_options_provider:
+          request_parameters:
+            "EndTime>": "{{ format_datetime(stream_slice.lower_boundary, '%Y-%m-%d') }}"
+            "EndTime<": "{{ format_datetime(stream_slice.upper_boundary, '%Y-%m-%d') }}"
+      stream_slicer:
+        type: CustomStreamSlicer
+        class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
+        stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "*ref(definitions.accounts_stream)"
+                parent_key: "/"
+                stream_slice_field: "record"
+          - type: DatetimeStreamSlicer
+            stream_state_field_start: "lower_boundary"
+            stream_state_field_end: "upper_boundary"
+            start_datetime:
+              datetime: "{{ config['start_date'] }}"
+            end_datetime:
+              datetime: "{{ today_utc() }}"
+              datetime_format: "%Y-%m-%d"
+            datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            cursor_format: "%a, %d %b %Y %H:%M:%S %z"
+            step: "{{ 'P' + config.slice_step_map[options.name]|string() + 'D' if config.slice_step_map[options.name] else 'P1Y' }}"
+            cursor_granularity: "P1D"
+    $options:
+      name: "calls"
+      cursor_field: "end_time"
+    stream_cursor_field: "end_time"
 
 
 streams:
@@ -143,6 +180,7 @@ streams:
   - "*ref(definitions.available_phone_numbers_local_stream)"
   - "*ref(definitions.available_phone_numbers_mobile_stream)"
   - "*ref(definitions.available_phone_numbers_toll_free_stream)"
+  - "*ref(definitions.calls_stream)"
 
 check:
   stream_names:
