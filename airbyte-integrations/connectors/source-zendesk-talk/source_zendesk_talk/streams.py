@@ -14,7 +14,6 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-
 class ZendeskTalkStream(HttpStream, ABC):
     """Base class for streams"""
 
