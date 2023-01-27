@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Children } from "react";
 
-import { Text } from "../Text";
 import styles from "./PillButton.module.scss";
+import { Text } from "../Text";
 
 export type PillButtonVariant = "grey" | "blue" | "green" | "red" | "strong-red" | "strong-blue";
 
