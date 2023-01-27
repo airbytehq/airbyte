@@ -36,6 +36,7 @@ def is_eligible_for_promotion_to_cloud(connector_qa_data: pd.Series) -> bool:
     for col in TRUTHY_COLUMNS_TO_BE_ELIGIBLE
   ])
 
+
 def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd.DataFrame:
     """Perform validation steps on top of the enriched catalog.
     Adds the following columns:
@@ -64,6 +65,9 @@ def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd
     
     # TODO YET TO IMPLEMENT VALIDATIONS
     qa_report["latest_build_is_successful"] = False # TODO, tracked in https://github.com/airbytehq/airbyte/issues/21720
+
+    qa_report["is_eligible_for_promotion_to_cloud"] = qa_report.apply(is_eligible_for_promotion_to_cloud, axis="columns")
+    qa_report["report_generation_datetime"] = datetime.utcnow()
 
     qa_report["is_eligible_for_promotion_to_cloud"] = qa_report.apply(is_eligible_for_promotion_to_cloud, axis="columns")
     qa_report["report_generation_datetime"] = datetime.utcnow()
