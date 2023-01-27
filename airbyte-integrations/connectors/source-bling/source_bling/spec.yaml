@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - api_key
     - merchant
+    - start_date
   properties:
     api_key:
       title: API Key
@@ -21,3 +22,8 @@ connectionSpecification:
       examples:
         - "BRXYZ"
         - "MXABC"
+    start_date:
+      title: Start Date (DD/MM/YYYY format)
+      type: string
+      description: Start replication date
+      order: 2
