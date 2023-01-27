@@ -2,11 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
-import re
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -177,6 +177,30 @@ class Subscriptions(IncrementalOrbStream):
 
         return subscription_record
 
+
+# helpers for working with pendulum dates and strings
+def to_datetime(time) -> pendulum.DateTime:
+    if time is None:
+        return None
+    elif isinstance(time, pendulum.DateTime):
+        return time
+    elif isinstance(time, str):
+        return pendulum.parse(time)
+    else:
+        raise TypeError(f"Cannot convert input of type {type(time)} to DateTime")
+
+
+def to_utc_isoformat(time) -> str:
+    if time is None:
+        return None
+    elif isinstance(time, pendulum.DateTime):
+        return time.in_timezone("UTC").isoformat()
+    elif isinstance(time, str):
+        return pendulum.parse(time).in_timezone("UTC").isoformat()
+    else:
+        raise TypeError(f"Cannot convert input of type {type(time)} to isoformat")
+
+
 class SubscriptionUsage(IncrementalOrbStream):
     """
     API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-subscription-usage
@@ -189,7 +213,7 @@ class SubscriptionUsage(IncrementalOrbStream):
         subscription_usage_grouping_key: Optional[str] = None,
         plan_id: Optional[str] = None,
         end_date: Optional[pendulum.DateTime] = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.subscription_usage_grouping_key = subscription_usage_grouping_key
@@ -214,7 +238,7 @@ class SubscriptionUsage(IncrementalOrbStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # use a regex capture group to extract the subscription ID from the request URL
         # so that we can include it in the returned record
-        subscription_id = re.search('/subscriptions/(.*)/usage',response.request.url).group(1)
+        subscription_id = re.search("/subscriptions/(.*)/usage", response.request.url).group(1)
         self.logger.debug("parsed subscription id from url: %s", subscription_id)
 
         # Records are in a container array called data
@@ -235,7 +259,6 @@ class SubscriptionUsage(IncrementalOrbStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # This API endpoint is not paginated, so there will never be a next page
         return None
-
 
     def transform_record(self, parent_record, sub_record, subscription_id):
         self.logger.debug("incoming subscription usage record: %s", parent_record)
@@ -279,8 +302,8 @@ class SubscriptionUsage(IncrementalOrbStream):
 
         params = {
             "granularity": "day",
-            "timeframe_start": stream_slice["timeframe_start"].in_timezone('UTC').isoformat(),
-            "timeframe_end": stream_slice["timeframe_end"].in_timezone('UTC').isoformat()
+            "timeframe_start": stream_slice["timeframe_start"].in_timezone("UTC").isoformat(),
+            "timeframe_end": stream_slice["timeframe_end"].in_timezone("UTC").isoformat(),
         }
 
         if self.subscription_usage_grouping_key:
@@ -296,13 +319,13 @@ class SubscriptionUsage(IncrementalOrbStream):
         # self.logger.warning("calling get_updated_state with current_stream_state %s and latest_record %s", current_stream_state, latest_record)
         current_stream_state = current_stream_state or {}
 
-        current_stream_state[self.cursor_field] = max(
-            pendulum.parse(latest_record[self.cursor_field]),
-            current_stream_state.get(self.cursor_field, self.start_date)
-        )
+        record_cursor_value = to_datetime(latest_record[self.cursor_field])
+        state_cursor_value = to_datetime(current_stream_state.get(self.cursor_field, self.start_date))
+        max_cursor_value = max(record_cursor_value, state_cursor_value)
+
+        current_stream_state[self.cursor_field] = to_utc_isoformat(max_cursor_value)
 
         return current_stream_state
-
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         """
@@ -335,12 +358,9 @@ class SubscriptionUsage(IncrementalOrbStream):
         """
         schema = super().get_json_schema()
         if self.subscription_usage_grouping_key:
-            schema[self.subscription_usage_grouping_key] = {
-                "type": "string"
-            }
+            schema[self.subscription_usage_grouping_key] = {"type": "string"}
 
         return schema
-
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -351,8 +371,8 @@ class SubscriptionUsage(IncrementalOrbStream):
         """
         # self.logger.warning("called stream_slices with stream_state %s, self.cursor_field is %s and self.start_date is %s", stream_state, self.cursor_field, self.start_date)
         stream_state = stream_state or {}
-        start_date = stream_state.get(self.cursor_field, self.start_date)
-        end_date = self.end_date
+        start_date = to_datetime(stream_state.get(self.cursor_field, self.start_date))
+        end_date = to_datetime(self.end_date)
         slice_yielded = False
         subscriptions_stream = Subscriptions(authenticator=self._session.auth)
 
@@ -367,11 +387,7 @@ class SubscriptionUsage(IncrementalOrbStream):
                 continue
 
             for period in self.chunk_date_range(start_date=start_date, end_date=end_date):
-                slice = {
-                    "subscription_id": subscription["id"],
-                    "timeframe_start": period.start,
-                    "timeframe_end": period.end
-                }
+                slice = {"subscription_id": subscription["id"], "timeframe_start": period.start, "timeframe_end": period.end}
                 # if using a group_by key, yield one slice per billable_metric_id.
                 # otherwise, yield slices without a billable_metric_id because
                 # each API call will return usage broken down by billable metric
@@ -674,6 +690,6 @@ class SourceOrb(AbstractSource):
                 start_date=start_date,
                 end_date=end_date,
                 plan_id=plan_id,
-                subscription_usage_grouping_key=subscription_usage_grouping_key
-            )
+                subscription_usage_grouping_key=subscription_usage_grouping_key,
+            ),
         ]
