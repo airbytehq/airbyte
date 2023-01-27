@@ -4,8 +4,8 @@ import { useIntl } from "react-intl";
 import { ConnectorCard } from "components";
 import { SlickSlider } from "components/ui/SlickSlider";
 
-import { SuggestedConnector } from "../../types";
 import styles from "./FrequentlyUsedConnectorsCard.module.scss";
+import { SuggestedConnector } from "../../types";
 
 export interface FrequentlyUsedConnectorsCardProps {
   connectors: SuggestedConnector[];

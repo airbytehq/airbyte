@@ -1,12 +1,13 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import Indicator from "components/Indicator";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+import { FlexContainer } from "components/ui/Flex";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { getIcon } from "utils/imageUtils";
+
+import styles from "./ConnectorCell.module.scss";
 
 interface ConnectorCellProps {
   connectorName: string;
@@ -15,43 +16,14 @@ interface ConnectorCellProps {
   releaseStage?: ReleaseStage;
 }
 
-const Content = styled.div<{ enabled?: boolean }>`
-  display: flex;
-  align-items: center;
-  padding-left: 30px;
-  position: relative;
-  margin: -5px 0;
-  min-width: 290px;
-  gap: 8px;
-`;
-
-const Image = styled.div`
-  height: 25px;
-  width: 17px;
-`;
-
-const Notification = styled(Indicator)`
-  position: absolute;
-  left: 8px;
-`;
-
-const CustomAnnotation = styled.span`
-  color: ${({ theme }) => theme.greyColor40};
-`;
-
 const ConnectorCell: React.FC<ConnectorCellProps> = ({ connectorName, img, hasUpdate, releaseStage }) => {
   return (
-    <Content>
-      {hasUpdate && <Notification />}
-      <Image>{getIcon(img)}</Image>
-      <span>{connectorName}</span>
+    <FlexContainer alignItems="center" gap="lg">
+      <Indicator hidden={!hasUpdate} />
+      <div className={styles.iconContainer}>{getIcon(img)}</div>
+      <div>{connectorName}</div>
       <ReleaseStageBadge small tooltip={false} stage={releaseStage} />
-      {releaseStage === "custom" && (
-        <CustomAnnotation>
-          (<FormattedMessage id="admin.customImage" />)
-        </CustomAnnotation>
-      )}
-    </Content>
+    </FlexContainer>
   );
 };
 

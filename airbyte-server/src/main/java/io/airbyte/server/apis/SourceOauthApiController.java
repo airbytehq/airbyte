@@ -12,7 +12,7 @@ import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
 import io.airbyte.api.model.generated.OAuthConsentRead;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SourceOauthConsentRequest;
-import io.airbyte.server.handlers.OAuthHandler;
+import io.airbyte.commons.server.handlers.OAuthHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
