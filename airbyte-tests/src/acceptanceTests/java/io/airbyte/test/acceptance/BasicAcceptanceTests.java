@@ -337,7 +337,8 @@ class BasicAcceptanceTests {
         .destinationSyncMode(DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
         .aliasName(STREAM_NAME.replace(".", "_"))
-        .selected(true);
+        .selected(true)
+        .suggested(true);
     final AirbyteCatalog expected = new AirbyteCatalog()
         .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
             .stream(stream)
@@ -359,6 +360,7 @@ class BasicAcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode).setFieldSelectionEnabled(false));
     final ConnectionRead createdConnection =
         testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.BASIC, BASIC_SCHEDULE_DATA);
+    createdConnection.getSyncCatalog().getStreams().forEach(s -> s.getConfig().setSuggested(true));
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
