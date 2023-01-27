@@ -6,8 +6,6 @@ package io.airbyte.commons.temporal.scheduling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.commons.temporal.scheduling.DefaultTaskQueueMapper;
-import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
 import io.airbyte.config.Geography;
 import java.util.Arrays;
 import java.util.Set;

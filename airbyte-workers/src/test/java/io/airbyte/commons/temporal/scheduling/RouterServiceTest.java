@@ -6,8 +6,6 @@ package io.airbyte.commons.temporal.scheduling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.commons.temporal.scheduling.RouterService;
-import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
 import io.airbyte.config.Geography;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
