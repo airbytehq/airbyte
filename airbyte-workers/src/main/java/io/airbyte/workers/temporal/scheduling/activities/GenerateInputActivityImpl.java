@@ -35,6 +35,8 @@ import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -42,6 +44,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
+  private static final Logger LOGGER = LoggerFactory.getLogger(GenerateInputActivity.class);
 
   public GenerateInputActivityImpl(final JobPersistence jobPersistence,
                                    final ConfigRepository configRepository) {
@@ -52,7 +55,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
-    final ConfigReplacer configReplacer = new ConfigReplacer();
+    final ConfigReplacer configReplacer = new ConfigReplacer(LOGGER);
 
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, input.getAttemptId(), JOB_ID_KEY, input.getJobId()));
@@ -117,7 +120,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withDockerImage(config.getSourceDockerImage())
           .withProtocolVersion(config.getSourceProtocolVersion())
           .withIsCustomConnector(config.getIsSourceCustomConnector())
-          .withAllowedHosts(configReplacer.getAllowedHosts(sourceDefinition.getAllowedHosts(), config.getSourceConfiguration()));
+          .withAllowedHosts(ConfigType.RESET_CONNECTION.equals(jobConfigType) ? null
+              : configReplacer.getAllowedHosts(sourceDefinition.getAllowedHosts(), config.getSourceConfiguration()));
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
@@ -145,6 +149,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withResourceRequirements(config.getResourceRequirements())
           .withSourceResourceRequirements(config.getSourceResourceRequirements())
           .withDestinationResourceRequirements(config.getDestinationResourceRequirements())
+          .withConnectionId(standardSync.getConnectionId())
           .withWorkspaceId(config.getWorkspaceId());
 
       return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
