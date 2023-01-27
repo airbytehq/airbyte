@@ -7,8 +7,7 @@ WORKDIR /airbyte/integration_code
 
 COPY setup.py ./
 
-ARG USE_LOCAL_CDK
-RUN USE_LOCAL_CDK=$USE_LOCAL_CDK LOCAL_CDK_DIR=$LOCAL_CDK_DIR pip install .
+RUN LOCAL_CDK_DIR=$LOCAL_CDK_DIR pip install .
 
 COPY source_greenhouse ./source_greenhouse
 COPY main.py ./

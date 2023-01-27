@@ -1,5 +1,10 @@
-FROM python:3.9-slim
+FROM python:3.9-slim AS base
 
 WORKDIR /home/airbyte-cdk
+
+FROM base AS local
 COPY python ./
 ENV LOCAL_CDK_DIR=/home/airbyte-cdk
+
+FROM base AS pypi
+ENV LOCAL_CDK_DIR=

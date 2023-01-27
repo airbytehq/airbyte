@@ -13,7 +13,7 @@ TEST_REQUIREMENTS = [
 
 CDK_VERSION = "airbyte-cdk~=0.1"
 
-if os.getenv("USE_LOCAL_CDK"):
+if os.getenv("LOCAL_CDK_DIR"):
     AIRBYTE_CDK = f"airbyte-cdk @ file://localhost/{os.getenv('LOCAL_CDK_DIR')}#egg=airbyte-cdk"
 else:
     AIRBYTE_CDK = CDK_VERSION
