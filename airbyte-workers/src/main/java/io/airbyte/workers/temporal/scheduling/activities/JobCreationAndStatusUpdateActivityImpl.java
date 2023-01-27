@@ -223,12 +223,13 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     try {
       final long jobId = input.getJobId();
       ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId));
-      final Job createdJob = jobPersistence.getJob(jobId);
+      final Job job = jobPersistence.getJob(jobId);
 
-      final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
+      final WorkerRun workerRun = temporalWorkerRunFactory.create(job);
       final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
       final int persistedAttemptNumber = jobPersistence.createAttempt(jobId, logFilePath);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_CREATED_BY_RELEASE_STAGE, jobId);
+      emitAttemptCreatedEvent(job, persistedAttemptNumber);
 
       LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
       return new AttemptNumberCreationOutput(persistedAttemptNumber);
