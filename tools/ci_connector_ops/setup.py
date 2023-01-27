@@ -12,6 +12,7 @@ MAIN_REQUIREMENTS = [
     "pandas~=1.5.3",
     "pandas-gbq~=0.19.0",
     "pydantic~=1.10.4",
+    "PyGithub"
     "fsspec~=2023.1.0",
     "gcsfs~=2023.1.0"
 ]

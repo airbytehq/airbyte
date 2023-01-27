@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
+from typing import Iterable
 
 import pandas as pd
 import requests
@@ -9,6 +11,8 @@ import requests
 from .constants import INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS
 from .inputs import OSS_CATALOG
 from .models import ConnectorQAReport, QAReport
+
+TRUTHY_TO_BE_ELIGIBLE = ["documentation_is_available", "is_appropriate_for_cloud_use", "latest_build_is_successful"]
 
 class QAReportGenerationError(Exception):
     pass
@@ -19,6 +23,14 @@ def url_is_reachable(url: str) -> bool:
 
 def is_appropriate_for_cloud_use(definition_id: str) -> bool:
     return definition_id not in INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS
+
+def is_eligible_for_cloud(connector_qa_data: pd.Series) -> bool:
+  if connector_qa_data["is_on_cloud"]:
+    return False
+  return all([
+    connector_qa_data[col] 
+    for col in TRUTHY_TO_BE_ELIGIBLE
+  ])
 
 def get_qa_report(enriched_catalog: pd.DataFrame) -> pd.DataFrame:
     """Perform validation steps on top of the enriched catalog.
@@ -45,12 +57,10 @@ def get_qa_report(enriched_catalog: pd.DataFrame) -> pd.DataFrame:
     qa_report["documentation_is_available"] = qa_report.documentation_url.apply(url_is_reachable)
     qa_report["is_appropriate_for_cloud_use"] = qa_report.connector_definition_id.apply(is_appropriate_for_cloud_use)
     
-    # TODO YET TO IMPLEMENT VALIDATIONS
     qa_report["latest_build_is_successful"] = False # TODO, tracked in https://github.com/airbytehq/airbyte/issues/21720
-    qa_report["number_of_connections"] = 0 # TODO, tracked in https://github.com/airbytehq/airbyte/issues/21721
-    qa_report["number_of_users"] = 0 # TODO, tracked in https://github.com/airbytehq/airbyte/issues/21721
-    qa_report["sync_success_rate"] = .0 # TODO, tracked in https://github.com/airbytehq/airbyte/issues/21721
 
+    qa_report["is_eligible_for_cloud"] = qa_report.apply(is_eligible_for_cloud, axis="columns")
+    qa_report["report_generation_datetime"] = datetime.utcnow()
     # Only select dataframe columns defined in the ConnectorQAReport model.
     qa_report= qa_report[[field.name for field in ConnectorQAReport.__fields__.values()]]
     # Validate the report structure with pydantic QAReport model.
@@ -58,3 +68,7 @@ def get_qa_report(enriched_catalog: pd.DataFrame) -> pd.DataFrame:
     if len(qa_report) != len(OSS_CATALOG):
         raise QAReportGenerationError("The QA report does not contain all the connectors defined in the OSS catalog.")
     return qa_report
+
+def get_connectors_eligible_for_cloud(qa_report: pd.DataFrame) -> Iterable[ConnectorQAReport]:
+    for _, row in qa_report[qa_report["is_eligible_for_cloud"]].iterrows():
+      yield ConnectorQAReport(**row)
