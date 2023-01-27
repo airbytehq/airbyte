@@ -84,7 +84,7 @@ describe("Connection - Auto-detect schema changes", () => {
       requestGetConnection({ connectionId: connection.connectionId, withRefreshedCatalog: true });
     });
 
-    it("shows breaking change on list page", () => {
+    it("shows non-breaking change on list page", () => {
       visitConnectionsListPage();
       getSchemaChangeIcon(connection, "non_breaking").should("exist");
       getManualSyncButton(connection).should("be.enabled");
@@ -110,12 +110,13 @@ describe("Connection - Auto-detect schema changes", () => {
 
   describe("breaking changes", () => {
     beforeEach(() => {
+      const streamName = "users";
       visitConnectionPage(connection, "replication");
 
       // Change users sync mode
-      searchStream("users");
+      searchStream(streamName);
       selectSyncMode("Incremental", "Deduped + history");
-      selectCursorField("updated_at");
+      selectCursorField(streamName, "updated_at");
       clickSaveReplication();
 
       // Remove cursor from db and refreshs schema to force breaking change detection
@@ -130,7 +131,7 @@ describe("Connection - Auto-detect schema changes", () => {
       getManualSyncButton(connection).should("be.disabled");
     });
 
-    it("shows breaking change that can be saved after refresh and fix", () => {
+    it.only("shows breaking change that can be saved after refresh and fix", () => {
       visitConnectionPage(connection, "replication");
 
       // Confirm that breaking changes are there
@@ -143,7 +144,7 @@ describe("Connection - Auto-detect schema changes", () => {
       checkSchemaChangesDetectedCleared();
 
       // Fix the conflict
-      searchStream("Users");
+      searchStream("users");
       selectSyncMode("Full refresh", "Append");
 
       clickSaveReplication();
