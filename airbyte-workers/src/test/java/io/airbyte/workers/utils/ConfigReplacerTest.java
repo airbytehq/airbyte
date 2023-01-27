@@ -98,4 +98,16 @@ class ConfigReplacerTest {
     assertThat(response).isEqualTo(null);
   }
 
+  @Test
+  void alwaysAllowedHostsListIsImmutable() {
+    List<String> hosts = alwaysAllowedHosts.getHosts();
+
+    try {
+      hosts.add("foo.com");
+      throw new IOException("should not get here");
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(UnsupportedOperationException.class);
+    }
+  }
+
 }
