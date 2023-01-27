@@ -37,8 +37,4 @@ def test_main(mocker, dummy_qa_report):
         main.enrichments.get_enriched_catalog.return_value,
         len(mock_oss_catalog)
     )
-    main.outputs.persist_qa_report.assert_called_once_with(
-        dummy_qa_report, 
-        main.GCS_QA_REPORT_PATH, 
-        public_fields_only=True
-    )
+

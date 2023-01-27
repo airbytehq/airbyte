@@ -16,5 +16,4 @@ def main():
         cloud_catalog, 
         adoption_metrics_per_connector_version
     )
-    qa_report = validations.get_qa_report(enriched_catalog, len(oss_catalog))
-    outputs.persist_qa_report(qa_report, GCS_QA_REPORT_PATH, public_fields_only=True)
+    validations.get_qa_report(enriched_catalog, len(oss_catalog))
