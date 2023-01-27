@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
  * able to recover for any acknowledged checkpoint in the following syncs.
  */
 public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
-  public final static Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(10);
-  public final static int SYNC_CHECKPOINT_RECORDS = 1000;
+  public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(10);
+  public static final int SYNC_CHECKPOINT_RECORDS = 1000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
 
@@ -118,10 +118,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
            checkpointOffset = offsetManager.read();
         }
 
-        // TODO: Review this ugly if statement.
-        String offsetString = (String) checkpointOffset.values().toArray()[0];
-        if (checkpointOffset != null &&
-            Integer.parseInt(message.getRecord().getData().get("_ab_cdc_lsn").toString()) >= Integer.parseInt(Splitter.on(",").withKeyValueSeparator(":").split(offsetString).get("\"lsn_commit\""))) {
+        if (checkpointOffset != null && cdcStateHandler.isRecordBehindOffset(checkpointOffset, message)) {
           sendCheckpointMessage = true;
         }
 

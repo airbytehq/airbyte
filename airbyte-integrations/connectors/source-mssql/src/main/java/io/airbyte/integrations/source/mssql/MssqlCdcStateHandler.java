@@ -55,4 +55,9 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
     throw new RuntimeException("Snapshot of individual tables is not implemented in MSSQL");
   }
 
+  @Override
+  public boolean isRecordBehindOffset(Map<String, String> offset, AirbyteMessage message){
+    // TODO: With this implementation the checkpoint is not going to be saved ever. Add required logic like in Postgres
+    return false;
+  };
 }

@@ -17,4 +17,6 @@ public interface CdcStateHandler {
 
   AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams();
 
+  boolean isRecordBehindOffset(Map<String, String> offset, AirbyteMessage message);
+
 }

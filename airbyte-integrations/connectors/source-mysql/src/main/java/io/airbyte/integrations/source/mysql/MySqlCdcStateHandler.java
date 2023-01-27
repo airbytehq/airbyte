@@ -62,4 +62,9 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
 
+  @Override
+  public boolean isRecordBehindOffset(Map<String, String> offset, AirbyteMessage message){
+    // TODO: With this implementation the checkpoint is not going to be saved ever. Add required logic like in Postgres
+    return false;
+  };
 }

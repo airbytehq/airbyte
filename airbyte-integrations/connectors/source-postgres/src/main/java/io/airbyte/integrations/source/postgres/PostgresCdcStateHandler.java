@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Splitter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
@@ -60,5 +61,18 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
     final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
+
+  @Override
+  public boolean isRecordBehindOffset(Map<String, String> offset, AirbyteMessage message){
+    String offsetString = offset.size() == 1 ? (String) offset.values().toArray()[0] : null;
+    if (offsetString == null){
+      return false;
+    }
+    Integer lsn = Splitter.on(",").withKeyValueSeparator(":").split(offsetString).get("\"lsn_commit\"") != null ?
+        Integer.parseInt(Splitter.on(",").withKeyValueSeparator(":").split(offsetString).get("\"lsn_commit\"")) :
+        Integer.parseInt(Splitter.on(",").withKeyValueSeparator(":").split(offsetString).get("\"lsn\""));
+    return Integer.parseInt(message.getRecord().getData().get("_ab_cdc_lsn").toString())
+        > lsn;
+  };
 
 }
