@@ -69,6 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
@@ -123,7 +124,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    this.executors = Executors.newFixedThreadPool(2);
+    this.executors = Executors.newFixedThreadPool(4);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.connectorConfigUpdater = connectorConfigUpdater;
@@ -321,6 +322,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   // return Duration.ofMillis(now - previousMessageTime);
   // }
 
+  static Optional<AirbyteMessage> messageOptional;
+
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                     final AirbyteDestination destination,
@@ -335,7 +338,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                     final ThreadedTimeTracker timeHolder,
                                                     final UUID sourceId,
                                                     final boolean fieldSelectionEnabled) {
-
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -352,17 +354,25 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         final Duration MAX_FETCH_SECONDS = Duration.ofHours(30);
         // long lastMessageRecieved = System.currentTimeMillis();
         while (!cancelled.get() && !source.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional;
+
 
           // final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved,
           // System.currentTimeMillis());
 
           try {
-            messageOptional = Mono.fromCallable(() -> source.attemptRead())
-                .block(MAX_FETCH_SECONDS);
-          } catch (final Exception e) {
-            throw new SourceException("Source process read attempt failed", e);
+            Thread.startVirtualThread(() -> messageOptional = source.attemptRead()).join(MAX_FETCH_SECONDS);
+          } catch (Exception e) {
+            throw new SourceException("Casse");
           }
+
+
+          // try {
+          //   CompletableFuture<Optional<AirbyteMessage>> future = CompletableFuture.supplyAsync(() -> source.attemptRead(), executors);
+          //   messageOptional = Mono.fromFuture(future)
+          //       .block(MAX_FETCH_SECONDS);
+          // } catch (final Exception e) {
+          //   throw new SourceException("Source process read attempt failed", e);
+          // }
 
           if (messageOptional.isPresent()) {
             final AirbyteMessage airbyteMessage = messageOptional.get();
