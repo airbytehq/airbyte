@@ -202,6 +202,7 @@ def to_utc_isoformat(time) -> str:
     else:
         raise TypeError(f"Cannot convert input of type {type(time)} to isoformat")
 
+
 def chunk_date_range(start_date: pendulum.DateTime, end_date: Optional[pendulum.DateTime] = None) -> Iterable[pendulum.Period]:
     """
     Yields a list of the beginning and ending timestamps of each day between the start date and now.
@@ -247,7 +248,6 @@ class SubscriptionUsage(IncrementalOrbStream):
             key.append(self.subscription_usage_grouping_key)
 
         return key
-
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # use a regex capture group to extract the subscription ID from the request URL
@@ -341,11 +341,7 @@ class SubscriptionUsage(IncrementalOrbStream):
 
         current_subscription_state[self.cursor_field] = to_utc_isoformat(max_cursor_value)
 
-        return {
-            **current_stream_state,
-            current_subscription_id: current_subscription_state
-        }
-
+        return {**current_stream_state, current_subscription_id: current_subscription_state}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         """
