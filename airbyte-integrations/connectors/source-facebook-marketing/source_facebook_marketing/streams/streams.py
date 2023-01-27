@@ -10,7 +10,6 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
-from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
@@ -18,6 +17,9 @@ from facebook_business.adobjects.user import User
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
 
+# To avoid warnings.warn() logged in stderr and so failed the task.
+# This will convert them to standard warning.
+logging.captureWarnings(True)
 logger = logging.getLogger("airbyte")
 
 
@@ -77,7 +79,11 @@ class CustomConversions(FBMarketingStream):
     enable_deleted = False
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_custom_conversions(params=params)
+        return self._api.account.get_custom_conversions(params=params, fields=self.fields)
+
+    def get_records_iter(self, stream_state=None):
+        """Loads the iterator directly list_objects"""
+        return self.list_objects(params=self.request_params(stream_state=stream_state))
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -114,24 +120,11 @@ class Activities(FBMarketingIncrementalStream):
     cursor_field = "event_time"
     primary_key = None
 
-    def list_objects(self, fields: List[str], params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_activities(fields=fields, params=params)
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_activities(fields=self.fields, params=params)
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """Main read method used by CDK"""
-        loaded_records_iter = self.list_objects(fields=self.fields, params=self.request_params(stream_state=stream_state))
-
-        for record in loaded_records_iter:
-            if isinstance(record, AbstractObject):
-                yield record.export_all_data()  # convert FB object to dict
-            else:
-                yield record  # execute_in_batch will emmit dicts
+    def get_records_iter(self, stream_state=None):
+        return self.list_objects(params=self.request_params(stream_state=stream_state))
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""

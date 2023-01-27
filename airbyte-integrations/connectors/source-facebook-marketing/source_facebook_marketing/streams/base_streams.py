@@ -92,6 +92,14 @@ class FBMarketingStream(Stream, ABC):
 
         yield from records
 
+    def get_records_iter(self, stream_state = None):
+        """Loads the iterator from list_objects and then loads object from facebook based on id."""
+        records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
+        loaded_records_iter = (record.api_get(fields=self.fields, pending=self.use_batch) for record in records_iter)
+        if self.use_batch:
+            loaded_records_iter = self.execute_in_batch(loaded_records_iter)
+        return loaded_records_iter
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -100,10 +108,7 @@ class FBMarketingStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
-        records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
-        loaded_records_iter = (record.api_get(fields=self.fields, pending=self.use_batch) for record in records_iter)
-        if self.use_batch:
-            loaded_records_iter = self.execute_in_batch(loaded_records_iter)
+        loaded_records_iter = self.get_records_iter(stream_state)
 
         for record in loaded_records_iter:
             if isinstance(record, AbstractObject):
