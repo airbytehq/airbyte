@@ -105,7 +105,7 @@ class BlingBase(HttpStream):
 
         item_list = []
 
-        for item in response_json['retorno'][self.record_list_name][:1]:
+        for item in response_json['retorno'][self.record_list_name]:
             item_json = {
                 "data":item[self.record_key_name],
                 "merchant": self.merchant.upper(),
