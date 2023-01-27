@@ -17,6 +17,7 @@ dependencies {
     }
     implementation 'org.apache.ant:ant:1.10.10'
     implementation 'org.apache.commons:commons-text:1.10.0'
+    implementation 'io.projectreactor:reactor-core:3.5.2'
     implementation libs.bundles.datadog
 
     implementation project(':airbyte-api')

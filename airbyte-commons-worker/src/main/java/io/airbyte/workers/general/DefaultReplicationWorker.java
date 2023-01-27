@@ -68,6 +68,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import reactor.core.publisher.Mono;
 
 /**
  * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
@@ -122,7 +123,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    this.executors = Executors.newFixedThreadPool(4);
+    this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.connectorConfigUpdater = connectorConfigUpdater;
@@ -335,7 +336,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                     final UUID sourceId,
                                                     final boolean fieldSelectionEnabled) {
 
-
     final Future<Optional<AirbyteMessage>> future = executors.submit(() -> source.attemptRead());
 
     return () -> {
@@ -359,9 +359,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved, System.currentTimeMillis());
 
           try {
-            messageOptional = future.get(MAX_FETCH_SECONDS.getSeconds(), TimeUnit.SECONDS);
-          } catch (final TimeoutException ex) {
-            throw new SourceException("Source process was un-responsive", ex);
+            messageOptional = Mono.fromCallable(() -> source.attemptRead())
+                .block(MAX_FETCH_SECONDS);
           } catch (final Exception e) {
             throw new SourceException("Source process read attempt failed", e);
           }
