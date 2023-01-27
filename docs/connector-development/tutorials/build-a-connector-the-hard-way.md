@@ -33,6 +33,11 @@ Python 3.9.11
 
 On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
 
+You need also to install `requests` python library:
+````bash
+pip install requests 
+````
+
 ## Our connector: a stock ticker API
 
 Our connector will output the daily price of a stock since a given date. We'll leverage the free [Polygon.io API](https://polygon.io/pricing) for this. We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
@@ -262,8 +267,8 @@ Then we'll add the `check_method`:
 
 ```python
 import requests
-import datetime
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 
 def _call_api(ticker, token):
@@ -545,7 +550,7 @@ Then we'll define the `read` method in `source.py`:
 
 ```python
 def log_error(error_message):
-    current_time_in_ms = int(datetime.datetime.now().timestamp()) * 1000
+    current_time_in_ms = int(datetime.now().timestamp()) * 1000
     log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
     print(json.dumps(log_json))
 
@@ -583,7 +588,7 @@ def read(config, catalog):
         results = response.json()["results"]
         for result in results:
             data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
-            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 ```
@@ -717,8 +722,8 @@ import json
 import sys
 import os
 import requests
-import datetime
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 
 def read(config, catalog):
@@ -754,7 +759,7 @@ def read(config, catalog):
         results = response.json()["results"]
         for result in results:
             data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
-            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 
@@ -799,7 +804,7 @@ def log(message):
 
 
 def log_error(error_message):
-   current_time_in_ms = int(datetime.datetime.now().timestamp()) * 1000
+   current_time_in_ms = int(datetime.now().timestamp()) * 1000
    log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
    print(json.dumps(log_json))
 

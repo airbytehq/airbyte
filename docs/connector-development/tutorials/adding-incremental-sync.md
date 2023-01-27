@@ -37,6 +37,39 @@ def discover():
     print(json.dumps(airbyte_message))
 ```
 
+Also, create a file called `incremental_configured_catalog.json` with the following content:
+```javascript
+{"type": "RECORD", "record": {"stream": "stock_prices", "data": {"date": "2023-01-25", "stock_ticker": "TSLA", "price": 144.43}, "emitted_at": 1674812095000}}
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "stock_prices",
+                "supported_sync_modes": [
+                    "full_refresh",
+                    "incremental"
+                ],
+                "json_schema": {
+                    "properties": {
+                        "date": {
+                            "type": "string"
+                        },
+                        "price": {
+                            "type": "number"
+                        },
+                        "stock_ticker": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        }
+    ]
+}
+```
+
 ## Update `read`
 
 Next we will adapt the `read` method that we wrote previously. We need to change three things.
@@ -115,6 +148,11 @@ def read(config, catalog, state):
     if stock_prices_stream["sync_mode"] == "incremental":
         output_message = {"type": "STATE", "state": {"data": {"stock_prices": {"date": cursor_value}}}}
         print(json.dumps(output_message))
+```
+
+That code requires to add a new import in the file:
+```python
+from datetime import timezone
 ```
 
 We will also need to parse `state` argument in the `run` method. In order to do that, we will modify the code that 
