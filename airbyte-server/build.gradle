@@ -121,6 +121,11 @@ run {
     environment 'MICRONAUT_ENVIRONMENTS', 'control-plane'
 }
 
+test {
+    systemProperty("mockito.test.enabled", "true")
+    environment 'MICRONAUT_ENVIRONMENTS', 'test'
+}
+
 // produce reproducible archives
 // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
 tasks.withType(AbstractArchiveTask) {

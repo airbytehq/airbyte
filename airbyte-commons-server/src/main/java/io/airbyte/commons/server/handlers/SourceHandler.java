@@ -57,7 +57,7 @@ public class SourceHandler {
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
   @Inject
-  SourceHandler(final ConfigRepository configRepository,
+  public SourceHandler(final ConfigRepository configRepository,
                 final SecretsRepositoryReader secretsRepositoryReader,
                 final SecretsRepositoryWriter secretsRepositoryWriter,
                 final JsonSchemaValidator integrationSchemaValidation,

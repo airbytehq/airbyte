@@ -96,16 +96,10 @@ temporal:
 
 datasources:
   config:
-    connection-test-query: SELECT 1
-    connection-timeout: 30000
-    maximum-pool-size: 10
-    minimum-idle: 0
-    idle-timeout: 600000
-    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
-    url: jdbc:postgresql://db:5432/airbyte
-    driverClassName: org.postgresql.Driver
-    username: test
-    password: test
+    url: jdbc:h2:mem:default
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""
 
 endpoints:
   beans:

@@ -12,6 +12,9 @@ import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.db.Database;
 import io.micronaut.context.annotation.Replaces;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.env.Environment;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
@@ -23,12 +26,20 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import javax.sql.DataSource;
 
+@Slf4j
 @MicronautTest
+@Requires(property = "mockito.test.enabled",
+        defaultValue = StringUtils.TRUE,
+        value = StringUtils.TRUE)
+// @Requires(env = {Environment.TEST})
 public abstract class BaseControllerTest {
 
   AttemptHandler attemptHandler = Mockito.mock(AttemptHandler.class);
@@ -219,15 +230,20 @@ public abstract class BaseControllerTest {
     return Mockito.mock(TemporalClient.class);
   }
 
+  @Replaces(DSLContext.class)
+  @Named("config")
+  DSLContext mDSLContext() {
+    return Mockito.mock(DSLContext.class);
+  }
+
   @Inject
   EmbeddedServer embeddedServer;
 
-  @Inject
-  @Client("/")
-  HttpClient client;
-
-  void testEndpointStatus(HttpRequest request, HttpStatus expectedStatus) {
-    assertEquals(expectedStatus, client.toBlocking().exchange(request).getStatus());
+  @BeforeEach
+  void init() {
+    log.error(String.valueOf(embeddedServer.getPort()));
   }
+
+
 
 }
