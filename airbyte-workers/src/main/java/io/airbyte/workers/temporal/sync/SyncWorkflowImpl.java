@@ -49,6 +49,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final int NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION = 1;
   private static final String AUTO_DETECT_SCHEMA_TAG = "auto_detect_schema";
   private static final int AUTO_DETECT_SCHEMA_VERSION = 2;
+  private static final String DISCOVERY_OPTIONS_TAG = "discovery_options_version";
+  private static final int DISCOVER_OPTIONS_VERSION = 2;
 
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
@@ -88,7 +90,9 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION,
             AUTO_DETECT_SCHEMA_VERSION);
 
-    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
+    final int discoveryOptionsVersion = Workflow.getVersion(DISCOVERY_OPTIONS_TAG, Workflow.DEFAULT_VERSION, DISCOVER_OPTIONS_VERSION);
+
+    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION && discoveryOptionsVersion >= DISCOVER_OPTIONS_VERSION) {
       final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
 
       if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
