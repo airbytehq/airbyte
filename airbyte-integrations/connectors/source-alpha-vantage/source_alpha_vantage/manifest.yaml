@@ -8,7 +8,7 @@ definitions:
     type: RecordSelector
     extractor:
       class_name: source_alpha_vantage.object_dpath_extractor.ObjectDpathExtractor
-      field_pointer:
+      field_path:
         - "{{ parameters['dpath'] }}"
       inject_key_as_field: "{{ parameters['key_field'] }}"
   requester:

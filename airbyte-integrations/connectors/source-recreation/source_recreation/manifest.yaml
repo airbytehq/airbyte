@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["RECDATA"]
+      field_path: ["RECDATA"]
   requester:
     url_base: "https://ridb.recreation.gov/api/v1/"
     http_method: "GET"

@@ -3,22 +3,22 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   selector_features:
     extractor:
-      field_pointer: ["features"]
+      field_path: ["features"]
   selector_products:
     extractor:
-      field_pointer: ["products"]
+      field_path: ["products"]
   selector_ideas:
     extractor:
-      field_pointer: ["ideas"]
+      field_path: ["ideas"]
   selector_users:
     extractor:
-      field_pointer: ["users"]
+      field_path: ["users"]
   selector_goals:
     extractor:
-      field_pointer: ["goals"]
+      field_path: ["goals"]
   requester:
     url_base: "{{ config['url'] }}/api/v1"
     http_method: "GET"

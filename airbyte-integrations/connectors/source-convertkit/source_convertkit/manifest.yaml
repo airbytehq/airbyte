@@ -2,7 +2,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["{{ parameters['name'] }}"]
+      field_path: ["{{ parameters['name'] }}"]
   requester:
     # API Docs: https://developers.convertkit.com/#overview
     url_base: "https://api.convertkit.com/v3"
@@ -45,7 +45,7 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: ["courses"]
+          field_path: ["courses"]
     $parameters:
       name: "sequences"
       primary_key: "id"

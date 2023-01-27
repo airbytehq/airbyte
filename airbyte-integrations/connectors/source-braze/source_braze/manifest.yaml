@@ -4,10 +4,10 @@ definitions:
   # ----- Selector -----
   base_selector:
     extractor:
-      field_pointer: ["data"]
+      field_path: ["data"]
   list_selector:
     extractor:
-      field_pointer: ["{{ parameters['name'] }}"]
+      field_path: ["{{ parameters['name'] }}"]
 
   # ----- Requester -----
   requester:
@@ -159,7 +159,7 @@ definitions:
       $ref: "#/definitions/sliced_retriever"
       record_selector:
         extractor:
-          field_pointer: ["data", "stats"]
+          field_path: ["data", "stats"]
       stream_slicer:
         type: CartesianProductStreamSlicer
         stream_slicers:

@@ -4,7 +4,7 @@ definitions:
   page_size: 50
   selector:
     extractor:
-      field_pointer: ["data"]
+      field_path: ["data"]
   requester:
     url_base: "{{ config['region']['url_base'] }}"
     http_method: "GET"
