@@ -44,8 +44,6 @@ export const DestinationSettingsPage: React.FC = () => {
     });
   }, [clearFormChange, connectionsWithDestination, deleteDestination, destination, formId]);
 
-  const onDeleteClick = useDeleteModal("destination", onDelete);
-
   const modalAdditionalContent = useMemo<React.ReactNode>(() => {
     if (connectionsWithDestination.length === 0) {
       return null;
@@ -64,6 +62,8 @@ export const DestinationSettingsPage: React.FC = () => {
       </p>
     );
   }, [connectionsWithDestination]);
+
+  const onDeleteClick = useDeleteModal("destination", onDelete, modalAdditionalContent);
 
   return (
     <div className={styles.content}>

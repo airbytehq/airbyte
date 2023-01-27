@@ -53,8 +53,6 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
     await deleteSource({ connectionsWithSource, source: currentSource });
   }, [clearFormChange, connectionsWithSource, currentSource, deleteSource, formId]);
 
-  const onDeleteClick = useDeleteModal("source", onDelete);
-
   const modalAdditionalContent = useMemo<React.ReactNode>(() => {
     if (connectionsWithSource.length === 0) {
       return null;
@@ -70,6 +68,8 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
       </p>
     );
   }, [connectionsWithSource]);
+
+  const onDeleteClick = useDeleteModal("source", onDelete, modalAdditionalContent);
 
   return (
     <div className={styles.content}>
