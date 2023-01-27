@@ -13,7 +13,6 @@ definitions:
       api_token: "{{ config['access_token'] }}"
   offset_paginator:
     type: DefaultPaginator
-    $parameters:
     pagination_strategy:
       type: "OffsetIncrement"
       page_size: 20
