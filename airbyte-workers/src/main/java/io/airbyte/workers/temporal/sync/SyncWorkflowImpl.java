@@ -64,8 +64,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "discoveryActivityOptions")
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private RefreshSchemaActivity refreshSchemaActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "discoveryActivityOptions")
+  private RefreshSchemaActivity refreshSchemaActivityNew;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private ConfigFetchActivity configFetchActivity;
 
@@ -92,12 +94,19 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
     final int discoveryOptionsVersion = Workflow.getVersion(DISCOVERY_OPTIONS_TAG, Workflow.DEFAULT_VERSION, DISCOVER_OPTIONS_VERSION);
 
-    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION && discoveryOptionsVersion >= DISCOVER_OPTIONS_VERSION) {
+    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
       final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
 
-      if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
-        LOGGER.info("Refreshing source schema...");
-        refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+      if (discoveryOptionsVersion >= DISCOVER_OPTIONS_VERSION) {
+        if (!sourceId.isEmpty() && refreshSchemaActivityNew.shouldRefreshSchema(sourceId.get())) {
+          LOGGER.info("Refreshing source schema...");
+          refreshSchemaActivityNew.refreshSchema(sourceId.get(), connectionId);
+        }
+      } else {
+        if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
+          LOGGER.info("Refreshing source schema...");
+          refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+        }
       }
 
       final Optional<ConnectionStatus> status = configFetchActivity.getStatus(connectionId);
