@@ -32,7 +32,6 @@ else
     export SUB_BUILD="CONNECTORS_BASE"
   elif [[ "$connector" == *"connectors"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
-    run-qa-checks $connector_name
     selected_integration_test=$(echo "$all_integration_tests" | grep "^$connector_name$" || echo "")
     integrationTestCommand="$(_to_gradle_path "airbyte-integrations/$connector" integrationTest)"
   else

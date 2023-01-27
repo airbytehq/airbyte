@@ -1,12 +1,12 @@
-@use "../../../../scss/variables" as vars;
+@use "scss/variables";
 
 .container {
-  margin: 34px 0 vars.$spacing-md;
+  margin: 34px 0 variables.$spacing-md;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .button {
-  margin-left: vars.$spacing-md;
+  margin-left: variables.$spacing-md;
 }

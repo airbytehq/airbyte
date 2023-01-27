@@ -1,4 +1,4 @@
-name: Connector Ops CI - Check SAT strictness level
+name: Connector Ops CI - Check acceptance test strictness level
 
 on:
   pull_request:
