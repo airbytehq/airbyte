@@ -120,7 +120,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    this.executors = Executors.newFixedThreadPool(3);
+    this.executors = Executors.newFixedThreadPool(4);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.connectorConfigUpdater = connectorConfigUpdater;
