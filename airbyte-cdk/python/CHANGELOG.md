@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.25.1
+Low-Code CDK: DatetimeStreamSlicer.cursor_format added
+
 ## 0.25.0
 Use dpath.util.values method to parse response with nested lists
 
