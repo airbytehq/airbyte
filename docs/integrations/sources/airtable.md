@@ -26,7 +26,7 @@ This source syncs data from the [Airtable API](https://airtable.com/api).
 3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
 4. Click **Authenticate your Airtable account**.
 5. Proceed with `login` and `grant the permissions` to the target `bases` you need the access to, we recommend to use `All Workspaces and bases`.
-5. Log in and Authorize to the Airtable account and click `Set up source`.
+6. Log in and Authorize to the Airtable account and click `Set up source`.
 
 
 ## Supported sync modes
