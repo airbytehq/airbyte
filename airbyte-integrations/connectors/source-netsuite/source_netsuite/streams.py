@@ -28,7 +28,7 @@ from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
 
 class NetsuiteStream(HttpStream, ABC):
     def __init__(
-            self,
+        self,
         auth: OAuth1,
         object_name: str,
         base_url: str,
@@ -184,7 +184,7 @@ class NetsuiteStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def read_records(
-            self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
 
