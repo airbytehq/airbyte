@@ -18,7 +18,9 @@ BUCKET_WRITE_ROOT=/tmp/bucket_write_root
 LAST_TEN_ROOT=/tmp/last_ten_root
 SUMMARY_WRITE_ROOT=/tmp/summary_write_root
 
+# TODO (ben) what if not found
 DOCKER_VERSION=$(get_connector_version "$CONNECTOR")
+
 GITHUB_ACTION_LINK=https://github.com/$REPOSITORY/actions/runs/$RUN_ID
 
 export AWS_PAGER=""
@@ -43,7 +45,9 @@ function write_job_log() {
   fi
 
   # Generate the JSON for the job log
-  generate_job_log_json "$timestamp" "$outcome" > tests/history/"$CONNECTOR"/"$timestamp".json
+  local job_log_json=$(generate_job_log_json "$timestamp" "$outcome")
+  job_log_json > tests/history/"$CONNECTOR"/"$timestamp".json
+  job_log_json > tests/history/"$CONNECTOR"/"$DOCKER_VERSION"/$timestamp".json
 
   # TODO (ben): Idea, perhaps this is a better location to use for versioning?
   # is it being used elsewhere?
