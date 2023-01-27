@@ -14,6 +14,7 @@ TEST_OUTCOME=$4
 QA_CHECKS_OUTCOME=$5
 
 BUCKET_WRITE_ROOT=/tmp/bucket_write_root
+  # TODO (ben): Question, why last ten?
 LAST_TEN_ROOT=/tmp/last_ten_root
 SUMMARY_WRITE_ROOT=/tmp/summary_write_root
 
@@ -31,6 +32,8 @@ function write_job_log() {
     OUTCOME=success
   fi
   echo "{ \"link\": \"$LINK\", \"outcome\": \"$OUTCOME\" }" > tests/history/"$CONNECTOR"/"$TIMESTAMP".json
+  # TODO (ben): Idea, perhaps this is a better location to use for versioning?
+  # is it being used elsewhere?
   aws s3 sync "$BUCKET_WRITE_ROOT"/tests/history/"$CONNECTOR"/ s3://"$BUCKET"/tests/history/"$CONNECTOR"/
 }
 
@@ -56,9 +59,10 @@ function write_badge_and_summary() {
 
   local docker_version=$(get_connector_version "$CONNECTOR")
 
+  # TODO (ben) remove
   echo "Docker version!!!: $docker_version"
 
-  # TODO (ben) refactor
+  # TODO (ben) refactor, this is a bit unweildly
   while IFS= read -r file; do
     line=$(cat "$LAST_TEN_ROOT/$file")
     outcome=$(echo "$line" | jq -r '.outcome')
@@ -109,20 +113,26 @@ function write_badge_and_summary() {
   HTML="$HTML_TOP $HTML_TABLE $HTML_BOTTOM"
   BADGE="{ \"schemaVersion\": 1, \"label\": \"\", \"labelColor\": \"#c5c4ff\", \"message\": \"$message\", \"color\": \"$color\", \"cacheSeconds\": 300, \"logoSvg\": \"<svg version=\\\"1.0\\\" xmlns=\\\"http://www.w3.org/2000/svg\\\"\\n width=\\\"32.000000pt\\\" height=\\\"32.000000pt\\\" viewBox=\\\"0 0 32.000000 32.000000\\\"\\n preserveAspectRatio=\\\"xMidYMid meet\\\">\\n\\n<g transform=\\\"translate(0.000000,32.000000) scale(0.100000,-0.100000)\\\"\\nfill=\\\"#000000\\\" stroke=\\\"none\\\">\\n<path d=\\\"M136 279 c-28 -22 -111 -157 -102 -166 8 -8 34 16 41 38 8 23 21 25\\n29 3 3 -8 -6 -35 -20 -60 -18 -31 -22 -44 -12 -44 20 0 72 90 59 103 -6 6 -11\\n27 -11 47 0 77 89 103 137 41 18 -23 16 -62 -5 -96 -66 -109 -74 -125 -59\\n-125 24 0 97 140 97 185 0 78 -92 123 -154 74z\\\"/>\\n<path d=\\\"M168 219 c-22 -13 -23 -37 -2 -61 12 -12 14 -22 7 -30 -5 -7 -22 -34\\n-37 -60 -20 -36 -23 -48 -12 -48 13 0 106 147 106 169 0 11 -28 41 -38 41 -4\\n0 -15 -5 -24 -11z m32 -34 c0 -8 -4 -15 -10 -15 -5 0 -10 7 -10 15 0 8 5 15\\n10 15 6 0 10 -7 10 -15z\\\"/>\\n</g>\\n</svg>\\n\" }"
 
+  # TODO (ben) breakout into own file
   rm -r $SUMMARY_WRITE_ROOT || true
   mkdir -p $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"
 
   echo "$BADGE" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/badge.json
   echo "$HTML" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/index.html
 
-  # TODO (ben) write this to a specific versioned folder so that we can see the history of the summary
+  # TODO (ben) either update the badge.json orrrr use a new json file?
+
+  # Add a versioned file output
+  mkdir -p $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$docker_version"
+  echo "$BADGE" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$docker_version"/badge.json
+  echo "$HTML" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$docker_version"/index.html
 
   aws s3 sync "$SUMMARY_WRITE_ROOT"/tests/summary/"$CONNECTOR"/ s3://"$BUCKET"/tests/summary/"$CONNECTOR"/
 }
 
 function main() {
-  # write_job_log
-  # pull_latest_job_logs
+  write_job_log
+  pull_latest_job_logs
   write_badge_and_summary
 }
 

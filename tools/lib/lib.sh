@@ -43,12 +43,16 @@ full_path_to_gradle_path() {
 }
 
 get_connector_path_from_name() {
+  # get the path to a connector from its name
+  # e.g source-postgres -> airbyte-integrations/connectors/source-postgres
   local connector_name=$1
   local connector_dir="airbyte-integrations/connectors"
   echo "$connector_dir/$connector_name"
 }
 
 get_connector_version() {
+  # get the version of a connector from its name
+  # e.g source-postgres -> 0.1.0
   local connector_name=$1
   local connector_path=$(get_connector_path_from_name "$connector_name")
   local dockerfile="$connector_path/Dockerfile"
