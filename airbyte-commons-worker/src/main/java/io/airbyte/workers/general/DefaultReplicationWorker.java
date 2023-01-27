@@ -336,8 +336,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                     final UUID sourceId,
                                                     final boolean fieldSelectionEnabled) {
 
-    final Future<Optional<AirbyteMessage>> future = executors.submit(() -> source.attemptRead());
-
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -356,7 +354,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
 
-          final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved, System.currentTimeMillis());
+          // final Duration durationSinceLast = getDurationSinceLast(lastMessageRecieved, System.currentTimeMillis());
 
           try {
             messageOptional = Mono.fromCallable(() -> source.attemptRead())
