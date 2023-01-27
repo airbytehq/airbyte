@@ -129,8 +129,8 @@ class JobCreationAndStatusUpdateActivityTest {
   private static final Version DESTINATION_PROTOCOL_VERSION = new Version("0.4.0");
   private static final long JOB_ID = 123L;
   private static final long PREVIOUS_JOB_ID = 120L;
-  private static final int ATTEMPT_ID = 0;
-  private static final int ATTEMPT_NUMBER = 1;
+  private static final int ATTEMPT_NUMBER = 0;
+  private static final int ATTEMPT_NUMBER_1 = 1;
   private static final StreamDescriptor STREAM_DESCRIPTOR1 = new StreamDescriptor().withName("stream 1").withNamespace("namespace 1");
   private static final StreamDescriptor STREAM_DESCRIPTOR2 = new StreamDescriptor().withName("stream 2").withNamespace("namespace 2");
   private static final String TEST_EXCEPTION_MESSAGE = "test";
@@ -286,7 +286,7 @@ class JobCreationAndStatusUpdateActivityTest {
           .thenReturn(mPath);
 
       Mockito.when(mJobPersistence.createAttempt(JOB_ID, path))
-          .thenReturn(ATTEMPT_NUMBER);
+          .thenReturn(ATTEMPT_NUMBER_1);
 
       final LogClientSingleton mLogClientSingleton = Mockito.mock(LogClientSingleton.class);
       try (final MockedStatic<LogClientSingleton> utilities = Mockito.mockStatic(LogClientSingleton.class)) {
@@ -297,7 +297,7 @@ class JobCreationAndStatusUpdateActivityTest {
             JOB_ID));
 
         verify(mLogClientSingleton).setJobMdc(mWorkerEnvironment, mLogConfigs, mPath);
-        Assertions.assertThat(output.getAttemptNumber()).isEqualTo(ATTEMPT_NUMBER);
+        Assertions.assertThat(output.getAttemptNumber()).isEqualTo(ATTEMPT_NUMBER_1);
       }
     }
 
@@ -321,10 +321,10 @@ class JobCreationAndStatusUpdateActivityTest {
     @Test
     void setJobSuccess() throws IOException {
       jobCreationAndStatusUpdateActivity.jobSuccessWithAttemptNumber(
-          new JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber(JOB_ID, ATTEMPT_ID, CONNECTION_ID, standardSyncOutput));
+          new JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID, standardSyncOutput));
 
-      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
-      verify(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_ID);
+      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_NUMBER, jobOutput);
+      verify(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_NUMBER);
       verify(mJobNotifier).successJob(Mockito.any());
       verify(mJobtracker).trackSync(Mockito.any(), eq(JobState.SUCCEEDED));
     }
@@ -333,15 +333,15 @@ class JobCreationAndStatusUpdateActivityTest {
     void setJobSuccessWrapException() throws IOException {
       final IOException exception = new IOException(TEST_EXCEPTION_MESSAGE);
       Mockito.doThrow(exception)
-          .when(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_ID);
+          .when(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_NUMBER);
 
       Assertions
           .assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobSuccessWithAttemptNumber(
-              new JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber(JOB_ID, ATTEMPT_ID, CONNECTION_ID, null)))
+              new JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID, null)))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
 
-      verify(mJobtracker, times(1)).trackSyncForInternalFailure(JOB_ID, CONNECTION_ID, ATTEMPT_ID, JobState.SUCCEEDED, exception);
+      verify(mJobtracker, times(1)).trackSyncForInternalFailure(JOB_ID, CONNECTION_ID, ATTEMPT_NUMBER, JobState.SUCCEEDED, exception);
     }
 
     @Test
@@ -378,11 +378,11 @@ class JobCreationAndStatusUpdateActivityTest {
           .when(mJobPersistence).failJob(JOB_ID);
 
       Assertions
-          .assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID, "")))
+          .assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, ATTEMPT_NUMBER_1, CONNECTION_ID, "")))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
 
-      verify(mJobtracker, times(1)).trackSyncForInternalFailure(JOB_ID, CONNECTION_ID, ATTEMPT_NUMBER, JobState.FAILED, exception);
+      verify(mJobtracker, times(1)).trackSyncForInternalFailure(JOB_ID, CONNECTION_ID, ATTEMPT_NUMBER_1, JobState.FAILED, exception);
     }
 
     @Test
@@ -411,36 +411,36 @@ class JobCreationAndStatusUpdateActivityTest {
     @Test
     void setAttemptFailure() throws IOException {
       jobCreationAndStatusUpdateActivity
-          .attemptFailureWithAttemptNumber(new JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID,
+          .attemptFailureWithAttemptNumber(new JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID,
               standardSyncOutput, failureSummary));
 
-      verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
-      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
-      verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
+      verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
+      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_NUMBER, jobOutput);
+      verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_NUMBER, failureSummary);
     }
 
     @Test
     void setAttemptFailureManuallyTerminated() throws IOException {
       jobCreationAndStatusUpdateActivity
           .attemptFailureWithAttemptNumber(
-              new JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID, standardSyncOutput, null));
+              new JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID, standardSyncOutput, null));
 
-      verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
-      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
-      verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, null);
+      verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
+      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_NUMBER, jobOutput);
+      verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_NUMBER, null);
     }
 
     @Test
     void setAttemptFailureWrapException() throws IOException {
       final Exception exception = new IOException(TEST_EXCEPTION_MESSAGE);
       Mockito.doThrow(exception)
-          .when(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
+          .when(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
 
       Assertions
           .assertThatThrownBy(
               () -> jobCreationAndStatusUpdateActivity
                   .attemptFailureWithAttemptNumber(
-                      new JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID, null, failureSummary)))
+                      new JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID, null, failureSummary)))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
     }
@@ -448,12 +448,12 @@ class JobCreationAndStatusUpdateActivityTest {
     @Test
     void setJobCancelled() throws IOException {
       jobCreationAndStatusUpdateActivity.jobCancelledWithAttemptNumber(
-          new JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber(JOB_ID, ATTEMPT_ID, CONNECTION_ID, failureSummary));
+          new JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID, failureSummary));
 
       // attempt must be failed before job is cancelled, or else job state machine is not respected
       final InOrder orderVerifier = Mockito.inOrder(mJobPersistence);
-      orderVerifier.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
-      orderVerifier.verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, failureSummary);
+      orderVerifier.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
+      orderVerifier.verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_NUMBER, failureSummary);
       orderVerifier.verify(mJobPersistence).cancelJob(JOB_ID);
     }
 
@@ -465,11 +465,11 @@ class JobCreationAndStatusUpdateActivityTest {
 
       Assertions
           .assertThatThrownBy(() -> jobCreationAndStatusUpdateActivity.jobCancelledWithAttemptNumber(
-              new JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber(JOB_ID, ATTEMPT_ID, CONNECTION_ID, null)))
+              new JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber(JOB_ID, ATTEMPT_NUMBER, CONNECTION_ID, null)))
           .isInstanceOf(RetryableException.class)
           .hasCauseInstanceOf(IOException.class);
 
-      verify(mJobtracker, times(1)).trackSyncForInternalFailure(JOB_ID, CONNECTION_ID, ATTEMPT_ID, JobState.FAILED, exception);
+      verify(mJobtracker, times(1)).trackSyncForInternalFailure(JOB_ID, CONNECTION_ID, ATTEMPT_NUMBER, JobState.FAILED, exception);
     }
 
     @Test
