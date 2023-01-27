@@ -13,9 +13,6 @@ import { Text } from "components/ui/Text";
 import { useConfig } from "config";
 import { links } from "utils/links";
 
-import { DocsIcon } from "../../../components/icons/DocsIcon";
-import { DropdownMenu } from "../../../components/ui/DropdownMenu";
-import { RoutePaths } from "../../../pages/routePaths";
 import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
@@ -24,6 +21,9 @@ import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
+import { DocsIcon } from "../../../components/icons/DocsIcon";
+import { DropdownMenu } from "../../../components/ui/DropdownMenu";
+import { RoutePaths } from "../../../pages/routePaths";
 
 export const useCalculateSidebarStyles = () => {
   const location = useLocation();
