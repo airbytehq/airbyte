@@ -13,7 +13,6 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-
 class Stream(HttpStream, ABC):
     url_base = "https://www.zopim.com/api/v2/"
     primary_key = "id"
