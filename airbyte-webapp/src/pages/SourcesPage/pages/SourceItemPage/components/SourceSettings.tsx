@@ -1,13 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { FormattedMessage } from "react-intl";
-
-import { DeleteBlock } from "components/common/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
+import { useDeleteModal } from "hooks/useDeleteModal";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
@@ -49,10 +48,12 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
     });
   };
 
-  const onDelete = async () => {
+  const onDelete = useCallback(async () => {
     clearFormChange(formId);
     await deleteSource({ connectionsWithSource, source: currentSource });
-  };
+  }, [clearFormChange, connectionsWithSource, currentSource, deleteSource, formId]);
+
+  const onDeleteClick = useDeleteModal("source", onDelete);
 
   return (
     <div className={styles.content}>
@@ -66,8 +67,8 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         selectedConnectorDefinitionId={sourceDefinitionSpecification.sourceDefinitionId}
         connector={currentSource}
         onSubmit={onSubmit}
+        onDeleteClick={onDeleteClick}
       />
-      <DeleteBlock type="source" onDelete={onDelete} />
     </div>
   );
 };
