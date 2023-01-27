@@ -190,16 +190,15 @@ class Boards(JiraStream):
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         for board in super().read_records(**kwargs):
-            location = board["location"]
+            location = board.get("location", {})
             if not self._projects or location.get("projectKey") in self._projects:
                 yield board
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        if record.get("location"):
-            location = record.get("location")
-            if location:
-                record["projectId"] = str(location.get("projectId"))
-                record["projectKey"] = location.get("projectKey")
+        location = record.get("location")
+        if location:
+            record["projectId"] = str(location.get("projectId"))
+            record["projectKey"] = location.get("projectKey")
         return record
 
 
