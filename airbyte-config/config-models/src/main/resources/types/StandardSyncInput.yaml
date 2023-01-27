@@ -70,3 +70,7 @@ properties:
     description: The id of the workspace associated with this sync
     type: string
     format: uuid
+  connectionId:
+    description: The id of the connection associated with this sync
+    type: string
+    format: uuid
