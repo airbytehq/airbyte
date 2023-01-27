@@ -81,7 +81,7 @@
 - name: Amplitude
   sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
   dockerRepository: airbyte/source-amplitude
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   icon: amplitude.svg
   sourceType: api
@@ -511,6 +511,11 @@
   releaseStage: alpha
   allowedHosts:
     hosts: []
+  suggestedStreams:
+    streams:
+      - users
+      - products
+      - purchases
 - name: Fastbill
   sourceDefinitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
   dockerRepository: airbyte/source-fastbill
@@ -602,6 +607,18 @@
   icon: github.svg
   sourceType: api
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - branches
+      - comments
+      - issues
+      - organizations
+      - pull_requests
+      - repositories
+      - stargazers
+      - tags
+      - teams
+      - users
   allowedHosts:
     hosts:
       - api.github.com
@@ -1349,6 +1366,7 @@
   allowedHosts:
     hosts:
       - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: Postmark App
   sourceDefinitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
   dockerRepository: airbyte/source-postmarkapp
@@ -1686,7 +1704,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.40
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
