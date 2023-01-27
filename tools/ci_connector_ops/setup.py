@@ -12,7 +12,6 @@ MAIN_REQUIREMENTS = [
     "pandas~=1.5.3",
     "pandas-gbq~=0.19.0",
     "pydantic~=1.10.4",
-    "PyGithub"
     "fsspec~=2023.1.0",
     "gcsfs~=2023.1.0"
 ]
@@ -24,7 +23,7 @@ TEST_REQUIREMENTS = [
 
 
 setup(
-    version="0.1.6",
+    version="0.1.9",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",

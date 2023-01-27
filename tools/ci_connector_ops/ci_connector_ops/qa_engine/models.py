@@ -3,9 +3,8 @@
 #
 
 
-from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel
 
@@ -30,8 +29,7 @@ class ConnectorQAReport(BaseModel):
     is_appropriate_for_cloud_use: bool
     latest_build_is_successful: bool
     documentation_is_available: bool
-    is_eligible_for_cloud: bool
-    report_generation_datetime: datetime
+
 
 class QAReport(BaseModel):
     connectors_qa_report: List[ConnectorQAReport]
