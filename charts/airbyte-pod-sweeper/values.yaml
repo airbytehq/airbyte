@@ -223,3 +223,5 @@ extraVolumes: []
 timeToDeletePods:
   completed: 120
   error: 1440
+
+replicaCount: 1

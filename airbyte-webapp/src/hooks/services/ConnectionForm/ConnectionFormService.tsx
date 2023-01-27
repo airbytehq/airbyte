@@ -2,6 +2,14 @@ import React, { createContext, useCallback, useContext, useState } from "react";
 import { useIntl } from "react-intl";
 
 import {
+  ConnectionFormValues,
+  ConnectionValidationSchema,
+  FormikConnectionFormValues,
+  mapFormPropsToOperation,
+  useInitialValues,
+} from "components/connection/ConnectionForm/formConfig";
+
+import {
   ConnectionScheduleType,
   DestinationDefinitionRead,
   DestinationDefinitionSpecificationRead,
@@ -12,13 +20,6 @@ import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignE
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
-import {
-  ConnectionFormValues,
-  FormikConnectionFormValues,
-  mapFormPropsToOperation,
-  useInitialValues,
-  ConnectionValidationSchema,
-} from "views/Connection/ConnectionForm/formConfig";
 
 import { useUniqueFormId } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
