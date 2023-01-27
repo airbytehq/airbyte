@@ -47,7 +47,7 @@ function write_job_log() {
   # Generate the JSON for the job log
   local job_log_json=$(generate_job_log_json "$timestamp" "$outcome")
   job_log_json > tests/history/"$CONNECTOR"/"$timestamp".json
-  job_log_json > tests/history/"$CONNECTOR"/"$DOCKER_VERSION"/$timestamp".json
+  job_log_json > tests/history/"$CONNECTOR"/"$DOCKER_VERSION"/"$timestamp".json
 
   # TODO (ben): Idea, perhaps this is a better location to use for versioning?
   # is it being used elsewhere?
