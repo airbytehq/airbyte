@@ -1,10 +1,14 @@
 import { faDownload, faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useField } from "formik";
+import snakeCase from "lodash/snakeCase";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { downloadFile } from "utils/file";
 
@@ -18,13 +22,21 @@ interface DownloadYamlButtonProps {
 }
 
 export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ className, yaml, yamlIsValid }) => {
+  const analyticsService = useAnalyticsService();
   const { editorView } = useConnectorBuilderFormState();
   const { hasErrors, validateAndTouch } = useBuilderErrors();
+  const [connectorNameField] = useField<string>("global.connectorName");
 
   const downloadYaml = () => {
     const file = new Blob([yaml], { type: "text/plain;charset=utf-8" });
-    // TODO: pull name from connector name input or generate from yaml contents
-    downloadFile(file, "connector_builder.yaml");
+    downloadFile(
+      file,
+      connectorNameField.value ? `${snakeCase(connectorNameField.value)}.yaml` : "connector_builder.yaml"
+    );
+    analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.DOWNLOAD_YAML, {
+      actionDescription: "User clicked the Download Config button to download the YAML manifest",
+      editor_view: editorView,
+    });
   };
 
   const handleClick = () => {

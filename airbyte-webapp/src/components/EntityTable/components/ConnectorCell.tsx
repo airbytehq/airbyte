@@ -12,7 +12,7 @@ interface IProps {
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;
   align-items: center;
-  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
+  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
   font-weight: 500;
 `;
 

@@ -31,7 +31,7 @@ class ConfigException(Exception):
 # Declarative Source
 class SourcePrestashop(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "prestashop.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
         if not config.get("_allow_http"):

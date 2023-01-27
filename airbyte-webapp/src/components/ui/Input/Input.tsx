@@ -5,8 +5,8 @@ import React, { ReactNode, useCallback, useImperativeHandle, useRef, useState } 
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 
-import { Button } from "../Button";
 import styles from "./Input.module.scss";
+import { Button } from "../Button";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
