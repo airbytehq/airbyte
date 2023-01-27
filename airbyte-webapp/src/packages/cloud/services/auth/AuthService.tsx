@@ -169,6 +169,9 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
           authInited();
         }
       }
+      if (!currentUser) {
+        loggedOut();
+      }
     });
   });
 
