@@ -11,6 +11,7 @@ from urllib import parse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
