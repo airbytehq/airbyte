@@ -50,44 +50,56 @@ public class SchemaMigrations {
       // additionalProperties
       // else if oneof, allof, etc
       // but that sounds really verbose for no real benefit
-      final List<JsonNode> subschemas = new ArrayList<>();
-
-      // array schemas
-      findSubschemas(subschemas, schema, "items");
-      findSubschemas(subschemas, schema, "additionalItems");
-      findSubschemas(subschemas, schema, "contains");
-
-      // object schemas
-      if (schema.hasNonNull("properties")) {
-        final ObjectNode propertiesNode = (ObjectNode) schema.get("properties");
-        final Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
-        while (propertiesIterator.hasNext()) {
-          final Entry<String, JsonNode> property = propertiesIterator.next();
-          subschemas.add(property.getValue());
-        }
-      }
-      if (schema.hasNonNull("patternProperties")) {
-        final ObjectNode propertiesNode = (ObjectNode) schema.get("patternProperties");
-        final Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
-        while (propertiesIterator.hasNext()) {
-          final Entry<String, JsonNode> property = propertiesIterator.next();
-          subschemas.add(property.getValue());
-        }
-      }
-      findSubschemas(subschemas, schema, "additionalProperties");
-
-      // combining restrictions - destinations have limited support for these, but we should handle the
-      // schemas correctly anyway
-      findSubschemas(subschemas, schema, "allOf");
-      findSubschemas(subschemas, schema, "oneOf");
-      findSubschemas(subschemas, schema, "anyOf");
-      findSubschemas(subschemas, schema, "not");
+      final List<JsonNode> subschemas = findSubschemas(schema);
 
       // recurse into each subschema
       for (final JsonNode subschema : subschemas) {
         mutateSchemas(matcher, transformer, subschema);
       }
     }
+  }
+
+  /**
+   * Returns a list of all the direct children nodes to consider for subSchemas
+   *
+   * @param schema The JsonSchema node to start
+   * @return a list of the JsonNodes to be considered
+   */
+  public static List<JsonNode> findSubschemas(final JsonNode schema) {
+    final List<JsonNode> subschemas = new ArrayList<>();
+
+    // array schemas
+    findSubschemas(subschemas, schema, "items");
+    findSubschemas(subschemas, schema, "additionalItems");
+    findSubschemas(subschemas, schema, "contains");
+
+    // object schemas
+    if (schema.hasNonNull("properties")) {
+      final ObjectNode propertiesNode = (ObjectNode) schema.get("properties");
+      final Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
+      while (propertiesIterator.hasNext()) {
+        final Entry<String, JsonNode> property = propertiesIterator.next();
+        subschemas.add(property.getValue());
+      }
+    }
+    if (schema.hasNonNull("patternProperties")) {
+      final ObjectNode propertiesNode = (ObjectNode) schema.get("patternProperties");
+      final Iterator<Entry<String, JsonNode>> propertiesIterator = propertiesNode.fields();
+      while (propertiesIterator.hasNext()) {
+        final Entry<String, JsonNode> property = propertiesIterator.next();
+        subschemas.add(property.getValue());
+      }
+    }
+    findSubschemas(subschemas, schema, "additionalProperties");
+
+    // combining restrictions - destinations have limited support for these, but we should handle the
+    // schemas correctly anyway
+    findSubschemas(subschemas, schema, "allOf");
+    findSubschemas(subschemas, schema, "oneOf");
+    findSubschemas(subschemas, schema, "anyOf");
+    findSubschemas(subschemas, schema, "not");
+
+    return subschemas;
   }
 
   /**

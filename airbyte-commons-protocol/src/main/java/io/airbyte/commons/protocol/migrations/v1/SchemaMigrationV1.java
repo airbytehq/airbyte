@@ -48,7 +48,7 @@ public class SchemaMigrationV1 {
    * Detects any schema that looks like a primitive type declaration, e.g.: { "type": "string" } or {
    * "type": ["string", "object"] }
    */
-  private static boolean isPrimitiveTypeDeclaration(final JsonNode schema) {
+  static boolean isPrimitiveTypeDeclaration(final JsonNode schema) {
     if (!schema.isObject() || !schema.hasNonNull(TYPE_KEY)) {
       return false;
     }

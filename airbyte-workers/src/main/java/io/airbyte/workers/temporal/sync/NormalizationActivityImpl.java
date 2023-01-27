@@ -14,6 +14,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.protocol.migrations.v1.CatalogMigrationV1Helper;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.AirbyteConfigValidator;
@@ -105,6 +106,13 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     return temporalUtils.withBackgroundHeartbeat(() -> {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+
+      // This should only be useful for syncs that started before the release that contained v1 migration.
+      // However, we lack the effective way to detect those syncs so this code should remain until we
+      // phase v0 out.
+      // Performance impact should be low considering the nature of the check compared to the time to run
+      // normalization.
+      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(fullInput.getCatalog());
 
       final Supplier<NormalizationInput> inputSupplier = () -> {
         airbyteConfigValidator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
