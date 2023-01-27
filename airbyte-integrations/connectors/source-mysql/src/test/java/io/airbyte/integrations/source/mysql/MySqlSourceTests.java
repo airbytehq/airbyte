@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;

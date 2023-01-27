@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.jdbc.copy;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 
 public interface StreamCopierFactory<T> {
 

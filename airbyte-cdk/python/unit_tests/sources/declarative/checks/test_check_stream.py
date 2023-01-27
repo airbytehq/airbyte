@@ -9,10 +9,11 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
-logger = None
+logger = logging.getLogger("test")
 config = dict()
 
 stream_names = ["s1"]
@@ -57,6 +58,36 @@ def mock_read_records(responses, default_response=None, **kwargs):
     return lambda stream_slice, sync_mode: responses[frozenset(stream_slice)] if frozenset(stream_slice) in responses else default_response
 
 
+def test_check_empty_stream():
+    stream = MagicMock()
+    stream.name = "s1"
+    stream.availability_strategy = None
+    stream.read_records.return_value = iter([])
+    stream.stream_slices.return_value = iter([None])
+
+    source = MagicMock()
+    source.streams.return_value = [stream]
+
+    check_stream = CheckStream(["s1"], options={})
+    stream_is_available, reason = check_stream.check_connection(source, logger, config)
+    assert stream_is_available
+
+
+def test_check_stream_with_no_stream_slices_aborts():
+    stream = MagicMock()
+    stream.name = "s1"
+    stream.availability_strategy = None
+    stream.stream_slices.return_value = iter([])
+
+    source = MagicMock()
+    source.streams.return_value = [stream]
+
+    check_stream = CheckStream(["s1"], options={})
+    stream_is_available, reason = check_stream.check_connection(source, logger, config)
+    assert not stream_is_available
+    assert "no stream slices were found, likely because the parent stream is empty" in reason
+
+
 @pytest.mark.parametrize(
     "test_name, response_code, available_expectation, expected_messages",
     [
@@ -88,6 +119,11 @@ def test_check_http_stream_via_availability_strategy(mocker, test_name, response
             self.resp_counter += 1
             yield stub_resp
         pass
+
+        # TODO (Ella): Remove explicit definition when turning on default
+        @property
+        def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+            return HttpAvailabilityStrategy()
 
     http_stream = MockHttpStream()
     assert isinstance(http_stream, HttpStream)

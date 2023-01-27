@@ -7,7 +7,6 @@ package io.airbyte.workers.helper;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
@@ -18,7 +17,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
-import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
@@ -28,7 +26,6 @@ import javax.annotation.Nullable;
 // todo (cgardens) - we are not getting any value out of instantiating this class. we should just
 // use it as statics. not doing it now, because already in the middle of another refactor.
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConnectionHelper {
 
   private final ConfigRepository configRepository;

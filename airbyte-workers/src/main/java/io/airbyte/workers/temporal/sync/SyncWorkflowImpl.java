@@ -12,12 +12,12 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.OperatorWebhookInput;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -48,7 +48,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final String NORMALIZATION_SUMMARY_CHECK_TAG = "normalization_summary_check";
   private static final int NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION = 1;
   private static final String AUTO_DETECT_SCHEMA_TAG = "auto_detect_schema";
-  private static final int AUTO_DETECT_SCHEMA_VERSION = 1;
+  private static final int AUTO_DETECT_SCHEMA_VERSION = 2;
 
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
@@ -85,7 +85,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final String taskQueue = Workflow.getInfo().getTaskQueue();
 
     final int autoDetectSchemaVersion =
-        Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
+        Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION,
+            AUTO_DETECT_SCHEMA_VERSION);
 
     if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
       final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
@@ -95,8 +96,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
       }
 
-      final Optional<Status> status = configFetchActivity.getStatus(connectionId);
-      if (!status.isEmpty() && Status.INACTIVE == status.get()) {
+      final Optional<ConnectionStatus> status = configFetchActivity.getStatus(connectionId);
+      if (!status.isEmpty() && ConnectionStatus.INACTIVE == status.get()) {
         LOGGER.info("Connection is disabled. Cancelling run.");
         final StandardSyncOutput output =
             new StandardSyncOutput()

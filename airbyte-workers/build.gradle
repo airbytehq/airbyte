@@ -1,3 +1,6 @@
+import groovy.yaml.YamlSlurper
+import groovy.json.JsonBuilder
+
 plugins {
     id 'application'
     id 'airbyte-integration-test-java'
@@ -20,6 +23,16 @@ dependencies {
         force = true
     }
     implementation (libs.jooq) {
+        force = true
+    }
+    implementation(libs.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
+    implementation(libs.aws.java.sdk.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
         force = true
     }
 
@@ -117,8 +130,28 @@ task cloudStorageIntegrationTest(type: Test) {
     }
 }
 
+// Duplicated in :airbyte-container-orchestrator, eventually, this should be handled in :airbyte-protocol
+task generateWellKnownTypes() {
+    doLast {
+        def wellKnownTypesYaml = project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml').text
+        def parsedYaml = new YamlSlurper().parseText(wellKnownTypesYaml)
+        def wellKnownTypesJson = new JsonBuilder(parsedYaml).toPrettyString()
+        def targetFile = project.file("build/docker/WellKnownTypes.json")
+        targetFile.getParentFile().mkdirs()
+        targetFile.text = wellKnownTypesJson
+    }
+}
+
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
+    dependsOn generateWellKnownTypes
+}
+
+// Ideally, we would have buildDockerImage depend on generateWellKnownTypes
+// but some of our actions use copyGeneratedTar as the "set up the docker build context" task
+// so we'll just add it here.
+tasks.named("copyGeneratedTar") {
+    dependsOn generateWellKnownTypes
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

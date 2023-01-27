@@ -41,7 +41,6 @@
   "login.oauth.github": "Continue with GitHub",
   "login.oauth.differentCredentialsError": "Use your email and password to sign in.",
   "login.oauth.unknownError": "An unknown error happened during sign in: {error}",
-  "login.sourceSelector": "Select a source to get started",
 
   "confirmResetPassword.newPassword": "Enter a new password",
   "confirmResetPassword.success": "Your password has been reset. Please log in with the new password.",
@@ -109,9 +108,6 @@
   "settings.generalSettings.changeWorkspace": "Change Workspace",
   "settings.generalSettings.form.name.label": "Workspace name",
   "settings.generalSettings.form.name.placeholder": "Workspace name",
-  "settings.generalSettings.form.advancedMode.label": "Advanced mode",
-  "settings.generalSettings.form.advancedMode.switchLabel": "Enable advanced mode",
-  "settings.generalSettings.form.advancedMode.tooltip": "When Advanced Mode is enabled, certain views will display additional technical information.",
   "settings.generalSettings.deleteLabel": "Delete your workspace",
   "settings.generalSettings.deleteText": "Delete",
   "settings.accessManagementSettings": "Access Management",
@@ -153,6 +149,8 @@
   "credits.emailVerificationRequired": "You need to verify your email address before you can buy credits.",
   "credits.emailVerification.resendConfirmation": "We send you a new verification link.",
   "credits.emailVerification.resend": "Send verification link again",
+  "credits.lowBalance": "Your credit balance is low. You need to add more credits to prevent your syncs from being stopped.",
+  "credits.zeroBalance": "All your syncs have been stopped because your credit balance is 0. Add more credits to enable your syncs again.",
 
   "firebase.auth.error.invalidPassword": "Incorrect password",
   "firebase.auth.error.networkRequestFailed": "There appears to be a network issue. Please try again later.",
@@ -174,5 +172,23 @@
   "webapp.cannotReachServer": "Cannot reach server.",
 
   "inviteUsersHint.message": "Need help from a teammate to set up the {connector}?",
-  "inviteUsersHint.cta": "Invite users"
+  "inviteUsersHint.cta": "Invite users",
+
+  "sidebar.credits": "Credits",
+
+  "freeConnectorProgram.title": "Free Connector Program",
+  "freeConnectorProgram.enrollNow": "Enroll now!",
+  "freeConnectorProgram.enroll.description": "Enroll in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <b>free</b>.",
+  "freeConnectorProgram.enroll.success": "Successfully enrolled in the Free Connector Program",
+  "freeConnectorProgram.enrollmentModal.title": "Free connector program",
+  "freeConnectorProgram.enrollmentModal.free": "<p1>Alpha and Beta Connectors are free while you're in the program.</p1><p2>The whole Connection is free until both Connectors have moved into General Availability (GA)</p2>",
+  "freeConnectorProgram.enrollmentModal.emailNotification": "We will email you before your connection will start being charged.",
+  "freeConnectorProgram.enrollmentModal.cardOnFile": "When both Connectors are in GA, the Connection will no longer be free. You'll need to have a credit card on file to enroll so Airbyte can handle a Connection's transition to paid service.",
+  "freeConnectorProgram.enrollmentModal.unvalidatedEmailWarning": "You need to <b>verify your email</b> address before you can enroll in the Free Connector Program. <resendEmail>Re-send verification email</resendEmail>.",
+  "freeConnectorProgram.enrollmentModal.validationEmailConfirmation": "Verification email sent",
+  "freeConnectorProgram.enrollmentModal.cancelButtonText": "Cancel",
+  "freeConnectorProgram.enrollmentModal.enrollButtonText": "Enroll now!",
+  "freeConnectorProgram.enrollmentModal.unvalidatedEmailButtonText": "Resend email validation",
+  "freeConnectorProgram.releaseStageBadge.free": "Free",
+  "freeConnectorProgram.youCanEnroll": "You can <enrollLink>enroll</enrollLink> in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <freeText>free</freeText>."
 }

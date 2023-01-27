@@ -1,0 +1,51 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: variables.$spacing-sm;
+}
+
+.label {
+  color: colors.$grey-400;
+}
+
+.inputContainer {
+  max-width: 500px;
+  width: 70%;
+  background-color: colors.$grey-100;
+  border-color: colors.$grey-200;
+  border-radius: variables.$border-radius-md;
+
+  &:not(.disabled, .focused):hover {
+    border-color: colors.$blue;
+  }
+
+  &.md {
+    height: 43px;
+  }
+
+  &.lg {
+    height: 50px;
+  }
+}
+
+.input {
+  text-align: center;
+  height: 100%;
+  font-weight: 700;
+
+  &.md {
+    font-size: 19px;
+  }
+
+  &.lg {
+    font-size: 24px;
+  }
+}
+
+.error {
+  color: colors.$red;
+}

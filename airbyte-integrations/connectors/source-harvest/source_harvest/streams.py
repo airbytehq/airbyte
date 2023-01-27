@@ -16,6 +16,7 @@ class HarvestStream(HttpStream, ABC):
     url_base = "https://api.harvestapp.com/v2/"
     per_page = 50
     primary_key = "id"
+    raise_on_http_errors = True
 
     @property
     def data_field(self) -> str:
@@ -70,6 +71,12 @@ class HarvestStream(HttpStream, ABC):
             yield from stream_data
         else:
             yield stream_data
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.FORBIDDEN:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warn(f"Stream `{self.name}` is not available. Please check required permissions. {response.text}")
+        return super().should_retry(response)
 
 
 class IncrementalHarvestStream(HarvestStream, ABC):
@@ -295,16 +302,15 @@ class ReportsBase(HarvestStream, ABC):
         :return: report path suffix
         """
 
-    def __init__(self, from_date: pendulum.date = None, **kwargs):
+    def __init__(self, from_date: Optional[pendulum.date] = None, to_date: Optional[pendulum.date] = None, **kwargs):
         super().__init__(**kwargs)
 
         current_date = pendulum.now().date()
         self._from_date = from_date or current_date.subtract(years=1)
+        self._to_date = to_date or current_date
         # `to` date greater than `from` date causes an exception on Harvest
         if self._from_date > current_date:
             self._to_date = from_date
-        else:
-            self._to_date = current_date
 
     def path(self, **kwargs) -> str:
         return f"reports/{self.report_path}"
@@ -347,7 +353,7 @@ class IncrementalReportsBase(ReportsBase, ABC):
         Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         """
         start_date = self._from_date
-        end_date = pendulum.now().date()
+        end_date = self._to_date
 
         # determine stream_state, if no stream_state we use start_date
         if stream_state:

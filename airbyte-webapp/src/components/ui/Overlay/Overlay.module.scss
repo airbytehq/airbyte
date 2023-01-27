@@ -8,6 +8,6 @@
   bottom: 0;
 
   &.dark {
-    background: rgba(colors.$black, 0.5);
+    background: colors.$overlay-background;
   }
 }

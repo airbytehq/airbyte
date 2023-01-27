@@ -1,0 +1,29 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.connectorLabel {
+  max-width: 328px;
+  margin-right: 20px;
+  vertical-align: top;
+}
+
+.leftFieldCol {
+  flex: 1;
+  max-width: 640px;
+  padding-right: 30px;
+}
+
+.rightFieldCol {
+  flex: 1;
+  max-width: 300px;
+}
+
+.cronZonesDropdown {
+  margin-left: 10px;
+  min-width: 150px;
+}
+
+.errorMessage {
+  color: colors.$red;
+  margin-top: variables.$spacing-sm;
+}

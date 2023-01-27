@@ -1,0 +1,16 @@
+@use "scss/colors";
+
+.message {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.success {
+  color: colors.$green;
+}
+
+.error {
+  color: colors.$red;
+}

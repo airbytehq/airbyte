@@ -123,6 +123,10 @@ image:
 ##
 podAnnotations: {}
 
+##  podSweeper.podLabels [object] Add extra labels to the podSweeper pod
+##
+podLabels: {}
+
 ##  podSweeper.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:
@@ -219,3 +223,5 @@ extraVolumes: []
 timeToDeletePods:
   completed: 120
   error: 1440
+
+replicaCount: 1

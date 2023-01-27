@@ -83,7 +83,16 @@ class TestSpec(BaseTest):
     previous_spec_cache: ConnectorSpecification = None
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner) -> bool:
+    def skip_backward_compatibility_tests_fixture(
+        self,
+        inputs: SpecTestConfig,
+        previous_connector_docker_runner: ConnectorRunner,
+        previous_connector_spec: ConnectorSpecification,
+        actual_connector_spec: ConnectorSpecification,
+    ) -> bool:
+        if actual_connector_spec == previous_connector_spec:
+            pytest.skip("The previous and actual specifications are identical.")
+
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 
@@ -358,8 +367,15 @@ class TestConnection(BaseTest):
 class TestDiscovery(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
-        self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner
+        self,
+        inputs: DiscoveryTestConfig,
+        previous_connector_docker_runner: ConnectorRunner,
+        discovered_catalog: MutableMapping[str, AirbyteStream],
+        previous_discovered_catalog: MutableMapping[str, AirbyteStream],
     ) -> bool:
+        if discovered_catalog == previous_discovered_catalog:
+            pytest.skip("The previous and actual discovered catalogs are identical.")
+
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 

@@ -15,7 +15,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
-from facebook_business.adobjects.adimage import AdImage
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
 from .common import deep_merge
@@ -243,6 +242,9 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         """Don't have classic cursor filtering"""
         return {}
 
+    def get_record_deleted_status(self, record) -> bool:
+        return False
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -261,7 +263,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
             record_cursor_value = pendulum.parse(record[self.cursor_field])
             if self._cursor_value and record_cursor_value < self._cursor_value:
                 break
-            if not self._include_deleted and record[AdImage.Field.status] == AdImage.Status.deleted:
+            if not self._include_deleted and self.get_record_deleted_status(record):
                 continue
 
             self._max_cursor_value = self._max_cursor_value or record_cursor_value

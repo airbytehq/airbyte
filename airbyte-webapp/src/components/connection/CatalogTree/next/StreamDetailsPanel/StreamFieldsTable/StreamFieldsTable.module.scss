@@ -38,6 +38,11 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   line-height: 15px;
   text-transform: capitalize;
 
+  &--syncCell {
+    width: 0; /** Collapses the th to the exact size of its content **/
+    padding-right: variables.$spacing-lg;
+  }
+
   &:first-child {
     padding-left: $cell-left-padding;
     border-radius: 0;
@@ -79,15 +84,10 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   }
 }
 
-.checkboxCell {
+.radioBtnCell {
   display: flex;
   align-items: center;
   height: $cell-height;
   overflow: unset;
   padding-left: 0;
-}
-
-// need to fix styled-component z-index issue
-.checkbox {
-  position: unset !important;
 }

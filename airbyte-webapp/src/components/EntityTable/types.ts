@@ -32,10 +32,11 @@ interface ITableDataItem {
   entityIcon?: string;
 }
 
-enum Status {
+const enum Status {
   ACTIVE = "active",
   INACTIVE = "inactive",
   FAILED = "failed",
+  CANCELLED = "cancelled",
   EMPTY = "empty",
   PENDING = "pending",
 }
