@@ -10,7 +10,10 @@ import io.airbyte.protocol.models.AirbyteStream;
 import java.util.stream.Collectors;
 
 /**
- * Utilities to convert Catalog protocol to Catalog API client.
+ * Utilities to convert Catalog protocol to Catalog API client. This class was similar to existing
+ * logic in CatalogConverter.java; But code can't be shared because the protocol model is
+ * essentially converted to two different api models. Thus, if we need to change logic on either
+ * place we have to take care of the other one too.
  */
 public class CatalogClientConverters {
 

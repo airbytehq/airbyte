@@ -111,16 +111,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       if (catalog.isPresent()) {
         final DiscoverCatalogResult result =
             AirbyteApiClient.retryWithJitter(() -> airbyteApiClient.getSourceApi()
-                .writeDiscoverCatalogResult(new SourceDiscoverSchemaWriteRequestBody().catalog(
-                    CatalogClientConverters.toAirbyteCatalogClientApi(catalog.get())).sourceId(
-                        // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
-                        // it, so we check again here.
-                        discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()))
-                    .connectorVersion(
-                        discoverSchemaInput.getConnectorVersion())
-                    .configurationHash(
-                        discoverSchemaInput.getConfigHash())),
-                "write discover schema result");
+                .writeDiscoverCatalogResult(buildSourceDiscoverSchemaWriteRequestBody(discoverSchemaInput, catalog.get())),
+                "call to write discover schema result");
         jobOutput.setDiscoverCatalogId(result.getCatalogId());
       } else if (failureReason.isEmpty()) {
         WorkerUtils.throwWorkerException("Integration failed to output a catalog struct and did not output a failure reason", process);
@@ -133,6 +125,19 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       ApmTraceUtils.addExceptionToTrace(e);
       throw new WorkerException("Error while discovering schema", e);
     }
+  }
+
+  private SourceDiscoverSchemaWriteRequestBody buildSourceDiscoverSchemaWriteRequestBody(final StandardDiscoverCatalogInput discoverSchemaInput,
+                                                                                         final AirbyteCatalog catalog) {
+    return new SourceDiscoverSchemaWriteRequestBody().catalog(
+        CatalogClientConverters.toAirbyteCatalogClientApi(catalog)).sourceId(
+            // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
+            // it, so we check again here.
+            discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()))
+        .connectorVersion(
+            discoverSchemaInput.getConnectorVersion())
+        .configurationHash(
+            discoverSchemaInput.getConfigHash());
   }
 
   private Map<String, Object> generateTraceTags(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) {
