@@ -12,9 +12,9 @@ import { Text } from "components/ui/Text";
 
 import { SynchronousJobRead } from "core/request/AirbyteClient";
 
-import { TestingConnectionError } from "../../ConnectorForm/components/TestingConnectionError";
 import styles from "./TestCard.module.scss";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
+import { TestingConnectionError } from "../../ConnectorForm/components/TestingConnectionError";
 
 interface IProps {
   formType: "source" | "destination";
