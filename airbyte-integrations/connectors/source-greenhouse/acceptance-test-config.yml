@@ -14,8 +14,8 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
+      - config_path: "secrets/config_users_only.json"
       - config_path: "secrets/config.json"
-#      - config_path: "secrets/config_users_only.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
