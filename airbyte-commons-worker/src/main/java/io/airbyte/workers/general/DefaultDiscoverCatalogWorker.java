@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogWorker.class);
+  private static final String WRITE_DISCOVER_CATALOG_LOGS_TAG = "call to write discover schema result";
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
@@ -112,7 +113,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         final DiscoverCatalogResult result =
             AirbyteApiClient.retryWithJitter(() -> airbyteApiClient.getSourceApi()
                 .writeDiscoverCatalogResult(buildSourceDiscoverSchemaWriteRequestBody(discoverSchemaInput, catalog.get())),
-                "call to write discover schema result");
+                WRITE_DISCOVER_CATALOG_LOGS_TAG);
         jobOutput.setDiscoverCatalogId(result.getCatalogId());
       } else if (failureReason.isEmpty()) {
         WorkerUtils.throwWorkerException("Integration failed to output a catalog struct and did not output a failure reason", process);
