@@ -39,7 +39,6 @@ def discover():
 
 Also, create a file called `incremental_configured_catalog.json` with the following content:
 ```javascript
-{"type": "RECORD", "record": {"stream": "stock_prices", "data": {"date": "2023-01-25", "stock_ticker": "TSLA", "price": 144.43}, "emitted_at": 1674812095000}}
 {
     "streams": [
         {
