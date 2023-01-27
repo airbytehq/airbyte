@@ -1,4 +1,7 @@
+import classNames from "classnames";
 import React from "react";
+
+import { isCloudApp } from "utils/app";
 
 import styles from "./MainPageWithScroll.module.scss";
 
@@ -20,7 +23,7 @@ export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitl
         {pageTitle}
       </div>
       <div className={styles.contentContainer}>
-        <div className={styles.content}>{children}</div>
+        <div className={classNames(styles.content, { [styles.cloud]: isCloudApp() })}>{children}</div>
       </div>
     </div>
   );
