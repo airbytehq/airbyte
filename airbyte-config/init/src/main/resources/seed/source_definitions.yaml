@@ -1349,6 +1349,7 @@
   allowedHosts:
     hosts:
       - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: Postmark App
   sourceDefinitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
   dockerRepository: airbyte/source-postmarkapp
