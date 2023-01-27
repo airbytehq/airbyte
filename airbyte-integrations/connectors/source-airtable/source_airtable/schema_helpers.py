@@ -102,7 +102,7 @@ class SchemaHelpers:
             elif original_type in SIMPLE_AIRTABLE_TYPES.keys():
                 properties.update(**{name: deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))})
             else:
-                # for all unknown types - cast to string
+                # Airtable may add more field types in the future and don't consider it a breaking change
                 properties.update(**{name: SchemaTypes.string})
 
         json_schema: Dict = {

@@ -54,42 +54,42 @@ The `Enterprise` level accounts are not supported yet.
 
 ## Data type map
 
-| Integration Type       | Airbyte Type                                            |
-| :--------------------- | :------------------------------------------------------ |
-| `multipleAttachments`  | `string`                                                |
-| `autoNumber`           | `string`                                                |
-| `barcode`              | `string`                                                |
-| `button`               | `string`                                                |
-| `checkbox`             | `boolean`                                               |
-| `singleCollaborator`   | `string`                                                |
-| `count`                | `number`                                                |
-| `createdBy`            | `string`                                                |
-| `createdTime`          | `datetime`, `format: date-time`                         |
-| `currency`             | `number`                                                |
-| `email`                | `string`                                                |
-| `date`                 | `string`, `format: date`                                |
-| `duration`             | `number`                                                |
-| `lastModifiedBy`       | `string`                                                |
-| `lastModifiedTime`     | `datetime`, `format: date-time`                         |
-| `multipleRecordLinks`  | `array with strings`                                    |
-| `multilineText`        | `string`                                                |
-| `multipleCollaborators`| `array with strings`                                    |
-| `multipleSelects`      | `array with strings`                                    |
-| `number`               | `number`                                                |
-| `percent`              | `number`                                                |
-| `phoneNumber`          | `string`                                                |
-| `rating`               | `number`                                                |
-| `richText`             | `string`                                                |
-| `singleLineText`       | `string`                                                |
-| `externalSyncSource`   | `string`                                                |
-| `url`                  | `string`                                                |
-| `formula`              | `array with any`                                        |
-| `lookup`               | `array with any`                                        |
-| `multipleLookupValues` | `array with any`                                        |
-| `rollup`               | `array with any`                                        |
+| Integration Type       | Airbyte Type                                            | Nullable |
+| :--------------------- | :------------------------------------------------------ | -------- |
+| `multipleAttachments`  | `string`                                                | Yes      |
+| `autoNumber`           | `string`                                                | Yes      |
+| `barcode`              | `string`                                                | Yes      |
+| `button`               | `string`                                                | Yes      |
+| `checkbox`             | `boolean`                                               | Yes      |
+| `singleCollaborator`   | `string`                                                | Yes      |
+| `count`                | `number`                                                | Yes      |
+| `createdBy`            | `string`                                                | Yes      |
+| `createdTime`          | `datetime`, `format: date-time`                         | Yes      |
+| `currency`             | `number`                                                | Yes      |
+| `email`                | `string`                                                | Yes      |
+| `date`                 | `string`, `format: date`                                | Yes      |
+| `duration`             | `number`                                                | Yes      |
+| `lastModifiedBy`       | `string`                                                | Yes      |
+| `lastModifiedTime`     | `datetime`, `format: date-time`                         | Yes      |
+| `multipleRecordLinks`  | `array with strings`                                    | Yes      |
+| `multilineText`        | `string`                                                | Yes      |
+| `multipleCollaborators`| `array with strings`                                    | Yes      |
+| `multipleSelects`      | `array with strings`                                    | Yes      |
+| `number`               | `number`                                                | Yes      |
+| `percent`              | `number`                                                | Yes      |
+| `phoneNumber`          | `string`                                                | Yes      |
+| `rating`               | `number`                                                | Yes      |
+| `richText`             | `string`                                                | Yes      |
+| `singleLineText`       | `string`                                                | Yes      |
+| `externalSyncSource`   | `string`                                                | Yes      |
+| `url`                  | `string`                                                | Yes      |
+| `formula`              | `array with any`                                        | Yes      |
+| `lookup`               | `array with any`                                        | Yes      |
+| `multipleLookupValues` | `array with any`                                        | Yes      |
+| `rollup`               | `array with any`                                        | Yes      |
 
-
-* `array with any` - represents the classic array with one of the other Airtable data types inside, such as:
+* All the fields are `nullable` by default, meaning that the field could be empty.
+* The `array with any` - represents the classic array with one of the other Airtable data types inside, such as:
     - string
     - number/integer
     - nested lists/objects
