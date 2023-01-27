@@ -830,7 +830,7 @@ where 1 = 1
             "fields": self.list_fields(column_names),
             "from_table": from_table,
             "hash_id": self.hash_id(),
-            "incremental_clause": self.get_incremental_clause("this"),
+            "incremental_clause": self.get_incremental_clause_emitted_at("this"),
             "input_data_table": input_data_table,
             "lag_begin": lag_begin,
             "lag_end": lag_end,
@@ -1117,14 +1117,17 @@ where 1 = 1
 {{ incremental_clause }}
     """
         )
-        sql = template.render(sql_query=sql_query, incremental_clause=self.get_incremental_clause("this"))
+        sql = template.render(sql_query=sql_query, incremental_clause=self.get_incremental_clause_emitted_at("this"))
         return sql
 
-    def get_incremental_clause(self, tablename: str) -> Any:
-        return self.get_incremental_clause_for_column(tablename, self.get_emitted_at(in_jinja=True))
+    def get_incremental_clause_emitted_at(self, tablename: str) -> Any:
+        return self.get_incremental_clause_for_column(tablename, self.get_emitted_at(in_jinja=True), ">=")
 
-    def get_incremental_clause_for_column(self, tablename: str, column: str) -> Any:
-        return "{{ incremental_clause(" + column + ", " + tablename + ", '>=') }}"
+    def get_incremental_clause_normalized_at(self, tablename: str) -> Any:
+        return self.get_incremental_clause_for_column(tablename, self.get_normalized_at(in_jinja=True), ">=")
+
+    def get_incremental_clause_for_column(self, tablename: str, column: str, comparisonOperator: str) -> Any:
+        return "{{ incremental_clause(" + column + ", " + tablename + ", '" + comparisonOperator + "') }}"
 
     @staticmethod
     def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
@@ -1245,12 +1248,11 @@ where 1 = 1
                     unique_key=self.get_unique_key(in_jinja=False),
                     quoted_unique_key=self.get_unique_key(in_jinja=True),
                     active_row_column_name=active_row_column_name,
-                    normalized_at_incremental_clause=self.get_incremental_clause_for_column(
+                    normalized_at_incremental_clause=self.get_incremental_clause_normalized_at(
                         "{} + '.' + {}".format(
                             self.name_transformer.apply_quote("this.schema", literal=False),
                             self.name_transformer.apply_quote(final_table_name),
                         ),
-                        self.get_normalized_at(in_jinja=True),
                     ),
                     unique_key_reference=unique_key_reference,
                     clickhouse_nullable_join_setting=clickhouse_nullable_join_setting,
