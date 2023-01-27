@@ -16,7 +16,6 @@ import { useConfig } from "config";
 import { useExperiment } from "hooks/services/Experiment";
 import { links } from "utils/links";
 
-import { RoutePaths } from "../../../pages/routePaths";
 import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
 import BuilderIcon from "./components/BuilderIcon";
 import ConnectionsIcon from "./components/ConnectionsIcon";
@@ -26,6 +25,7 @@ import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
+import { RoutePaths } from "../../../pages/routePaths";
 
 export const useCalculateSidebarStyles = () => {
   const location = useLocation();

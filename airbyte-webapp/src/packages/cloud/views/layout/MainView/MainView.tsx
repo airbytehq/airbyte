@@ -17,9 +17,9 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
-import { CloudSideBar } from "../SideBar/CloudSideBar";
 import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
 import styles from "./MainView.module.scss";
+import { CloudSideBar } from "../SideBar/CloudSideBar";
 
 const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   useIntercom();
