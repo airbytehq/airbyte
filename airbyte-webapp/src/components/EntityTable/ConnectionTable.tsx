@@ -22,10 +22,9 @@ interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
-  onSync: (id: string) => void;
 }
 
-const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync }) => {
+const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow }) => {
   const navigate = useNavigate();
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
@@ -162,7 +161,6 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
             id={row.original.connectionId}
             isSyncing={row.original.isSyncing}
             isManual={row.original.scheduleType === ConnectionScheduleType.manual}
-            onSync={onSync}
             hasBreakingChange={allowAutoDetectSchema && row.original.schemaChange === SchemaChange.breaking}
             allowSync={allowSync}
           />
@@ -175,7 +173,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         Cell: ({ cell }: CellProps<ITableDataItem>) => <ConnectionSettingsCell id={cell.value} />,
       },
     ],
-    [sortBy, sortOrder, entity, onSortClick, onSync, allowSync, allowAutoDetectSchema]
+    [sortBy, sortOrder, entity, onSortClick, allowSync, allowAutoDetectSchema]
   );
 
   return <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows testId="connectionsTable" />;
