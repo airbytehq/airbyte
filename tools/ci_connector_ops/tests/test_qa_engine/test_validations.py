@@ -92,15 +92,15 @@ def test_report_generation_error(enriched_catalog, mocker):
         )
     ]
 )
-def test_is_eligible_for_cloud(connector_qa_data: pd.Series, expected_to_be_eligible: bool):
-    assert validations.is_eligible_for_cloud(connector_qa_data) == expected_to_be_eligible
+def test_is_eligible_for_promotion_to_cloud(connector_qa_data: pd.Series, expected_to_be_eligible: bool):
+    assert validations.is_eligible_for_promotion_to_cloud(connector_qa_data) == expected_to_be_eligible
 
 def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
-    qa_report["is_eligible_for_cloud"] = True
+    qa_report["is_eligible_for_promotion_to_cloud"] = True
     connectors_eligible_for_cloud = list(validations.get_connectors_eligible_for_cloud(qa_report))
     assert len(qa_report) == len(connectors_eligible_for_cloud)
-    assert all([c.is_eligible_for_cloud for c in connectors_eligible_for_cloud])
+    assert all([c.is_eligible_for_promotion_to_cloud for c in connectors_eligible_for_cloud])
 
-    qa_report["is_eligible_for_cloud"] = False
+    qa_report["is_eligible_for_promotion_to_cloud"] = False
     connectors_eligible_for_cloud = list(validations.get_connectors_eligible_for_cloud(qa_report))
     assert len(connectors_eligible_for_cloud) == 0

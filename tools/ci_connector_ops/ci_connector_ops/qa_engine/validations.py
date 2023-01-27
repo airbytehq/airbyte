@@ -29,7 +29,7 @@ def url_is_reachable(url: str) -> bool:
 def is_appropriate_for_cloud_use(definition_id: str) -> bool:
     return definition_id not in INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS
 
-def is_eligible_for_cloud(connector_qa_data: pd.Series) -> bool:
+def is_eligible_for_promotion_to_cloud(connector_qa_data: pd.Series) -> bool:
   if connector_qa_data["is_on_cloud"]:
     return False
   return all([
@@ -68,7 +68,7 @@ def get_qa_report(enriched_catalog: pd.DataFrame) -> pd.DataFrame:
     qa_report["number_of_users"] = 0 # TODO, tracked in https://github.com/airbytehq/airbyte/issues/21721
     qa_report["sync_success_rate"] = .0 # TODO, tracked in https://github.com/airbytehq/airbyte/issues/21721
 
-    qa_report["is_eligible_for_cloud"] = qa_report.apply(is_eligible_for_cloud, axis="columns")
+    qa_report["is_eligible_for_promotion_to_cloud"] = qa_report.apply(is_eligible_for_promotion_to_cloud, axis="columns")
     qa_report["report_generation_datetime"] = datetime.utcnow()
 
     # Only select dataframe columns defined in the ConnectorQAReport model.
@@ -80,5 +80,5 @@ def get_qa_report(enriched_catalog: pd.DataFrame) -> pd.DataFrame:
     return qa_report
 
 def get_connectors_eligible_for_cloud(qa_report: pd.DataFrame) -> Iterable[ConnectorQAReport]:
-    for _, row in qa_report[qa_report["is_eligible_for_cloud"]].iterrows():
+    for _, row in qa_report[qa_report["is_eligible_for_promotion_to_cloud"]].iterrows():
       yield ConnectorQAReport(**row)
