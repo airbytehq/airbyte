@@ -317,9 +317,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private Duration getDurationSinceLast(final long previousMessageTime, final long now) {
-    return Duration.ofMillis(now - previousMessageTime);
-  }
+  // private Duration getDurationSinceLast(final long previousMessageTime, final long now) {
+  // return Duration.ofMillis(now - previousMessageTime);
+  // }
 
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
@@ -350,7 +350,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       populateStreamToAllFields(catalog, streamToAllFields);
       try {
         final Duration MAX_FETCH_SECONDS = Duration.ofHours(30);
-        long lastMessageRecieved = System.currentTimeMillis();
+        // long lastMessageRecieved = System.currentTimeMillis();
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
 
@@ -366,7 +366,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
           if (messageOptional.isPresent()) {
             final AirbyteMessage airbyteMessage = messageOptional.get();
-            lastMessageRecieved = System.currentTimeMillis();
+            // lastMessageRecieved = System.currentTimeMillis();
 
             if (airbyteMessage.getType() == Type.LOG) {
               continue;
