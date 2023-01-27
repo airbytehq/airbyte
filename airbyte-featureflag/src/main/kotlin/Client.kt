@@ -13,6 +13,7 @@ import com.launchdarkly.sdk.LDContext
 import com.launchdarkly.sdk.LDUser
 import com.launchdarkly.sdk.server.LDClient
 import io.micronaut.context.annotation.Property
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.lang.Thread.MIN_PRIORITY
 import java.nio.file.Path
@@ -24,6 +25,7 @@ import kotlin.concurrent.thread
 import kotlin.concurrent.write
 import kotlin.io.path.isRegularFile
 
+internal const val CONFIG_FF_TYPE = "airbyte.feature-flag.type"
 internal const val CONFIG_LD_KEY = "airbyte.feature-flag.api-key"
 internal const val CONFIG_OSS_KEY = "airbyte.feature-flag.path"
 
@@ -47,6 +49,7 @@ sealed interface FeatureFlagClient {
  * If the [config] is provided, it will be watched for changes and the internal representation of the [config] will be updated to match.
  */
 @Singleton
+@Requires(property = CONFIG_FF_TYPE, notEquals = "ld")
 //@Requires(property = CONFIG_LD_KEY, pattern = "^\\s*S")
 class ConfigFileClient(@Property(name = CONFIG_OSS_KEY) config: Path?) : FeatureFlagClient {
     /** [flags] holds the mappings of the flag-name to the flag properties */
@@ -82,6 +85,7 @@ class ConfigFileClient(@Property(name = CONFIG_OSS_KEY) config: Path?) : Feature
  * @param [client] the Launch-Darkly client for interfacing with Launch-Darkly.
  */
 @Singleton
+@Requires(property = CONFIG_FF_TYPE, value = "ld")
 //@Requires(property = CONFIG_LD_KEY, pattern = "^.+$")
 class LaunchDarklyClient(private val client: LDClient) : FeatureFlagClient {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
@@ -99,6 +103,9 @@ class LaunchDarklyClient(private val client: LDClient) : FeatureFlagClient {
  *
  * @param [values] is a map of [Flag.key] to enabled/disabled status.
  */
+//@Prototype
+//@Requires(property = CONFIG_FF_TYPE, value = "test")
+//@Requires(property = CONFIG_OSS_KEY, value = "test")
 class TestClient @JvmOverloads constructor(val values: Map<String, Boolean> = mapOf()) : FeatureFlagClient {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {

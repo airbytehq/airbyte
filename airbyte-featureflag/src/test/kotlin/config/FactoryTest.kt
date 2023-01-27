@@ -18,7 +18,7 @@ package config
 //    lateinit var apiKey: String
 //
 //    @Inject
-//    lateinit var client: Client
+//    lateinit var client: ConnectStrategy.Client
 //
 //    @Test
 //    fun `verify correct api is provided`() {

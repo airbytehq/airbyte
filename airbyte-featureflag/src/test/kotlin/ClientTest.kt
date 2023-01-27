@@ -1,24 +1,23 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
+package io.airbyte.featureflag
 
 import com.launchdarkly.sdk.LDUser
 import com.launchdarkly.sdk.server.LDClient
-import io.airbyte.featureflag.ANONYMOUS
-import io.airbyte.featureflag.ConfigFileClient
-import io.airbyte.featureflag.EnvVar
-import io.airbyte.featureflag.FeatureFlagClient
-import io.airbyte.featureflag.Flag
-import io.airbyte.featureflag.LaunchDarklyClient
-import io.airbyte.featureflag.Temporary
-import io.airbyte.featureflag.TestClient
-import io.airbyte.featureflag.User
-import io.airbyte.featureflag.Workspace
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.micronaut.context.annotation.Bean
+import io.micronaut.context.annotation.Property
+import io.micronaut.context.annotation.Replaces
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import io.mockk.called
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import jakarta.inject.Inject
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -28,7 +27,80 @@ import kotlin.test.Ignore
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class ConfigFileClient {
+@MicronautTest(rebuildContext = true)
+@SuppressFBWarnings(justification = "fails on the @Inject lateinit var line.")
+open class MicronautTest {
+    @get:Bean
+    @get:Replaces(LDClient::class)
+    var ldClient: LDClient = mockk()
+
+    @BeforeEach
+    fun setup() {
+        clearMocks(ldClient)
+    }
+
+    @Inject
+    lateinit var featureFlagClient: FeatureFlagClient
+
+    @Property(name = CONFIG_FF_TYPE, value = "config")
+    @Test
+    fun `ConfigFileClient loads if no api-key`() {
+        val x = when (featureFlagClient) {
+            is LaunchDarklyClient -> "ld"
+            is ConfigFileClient -> "conf"
+            is TestClient -> "test"
+        }
+        println("??? $x")
+        val flag = Temporary(key = "abc", default = true)
+        val enabled = featureFlagClient.enabled(flag, Workspace("1232"))
+        assertTrue { enabled }
+    }
+
+    @Property(name = CONFIG_FF_TYPE, value = "ld")
+    @Test
+    fun `ConfigFileClient loads if no api-key2`() {
+        val x = when (featureFlagClient) {
+            is LaunchDarklyClient -> "ld"
+            is ConfigFileClient -> "conf"
+            is TestClient -> "test"
+        }
+        println("??? $x")
+
+        every { ldClient.boolVariation(any(), any<LDUser>(), any()) } returns true
+        val flag = Temporary(key = "abc", default = true)
+        val enabled = featureFlagClient.enabled(flag, Workspace("1232"))
+        assertTrue { enabled }
+    }
+
+    @Property(name = CONFIG_FF_TYPE, value = "config")
+    @Test
+    fun `TestClient loads if correct property is set`() {
+        val x = when (featureFlagClient) {
+            is LaunchDarklyClient -> "ld"
+            is ConfigFileClient -> "conf"
+            is TestClient -> "test"
+        }
+        println("??? $x")
+        val flag = Temporary(key = "abc", default = true)
+        val enabled = featureFlagClient.enabled(flag, Workspace("1232"))
+        assertTrue { enabled }
+    }
+
+    @Test
+    fun `nothing set loads if correct property is set`() {
+        val x = when (featureFlagClient) {
+            is LaunchDarklyClient -> "ld"
+            is ConfigFileClient -> "conf"
+            is TestClient -> "test"
+        }
+        println("??? $x")
+        val flag = Temporary(key = "abc", default = true)
+        val enabled = featureFlagClient.enabled(flag, Workspace("1232"))
+        assertTrue { enabled }
+    }
+}
+
+class TestConfigFileClient {
     @Test
     fun `verify config-file functionality`() {
         val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
@@ -137,7 +209,7 @@ class ConfigFileClient {
     }
 }
 
-class LaunchDarklyClient {
+class TestLaunchDarklyClient {
     @Test
     fun `verify cloud functionality`() {
         val testTrue = Temporary(key = "test-true")
@@ -213,7 +285,7 @@ class LaunchDarklyClient {
     }
 }
 
-class TestClient {
+class TestTestClient {
     @Test
     fun `verify functionality`() {
         val testTrue = Pair(Temporary(key = "test-true"), true)

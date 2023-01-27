@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 @Factory
 @Slf4j
 public class FeatureFlagFactory {
-
   // private static final String CONFIG_LD_KEY = "airbyte.feature-flag.api-key";
   // private static final String CONFIG_OSS_KEY = "airbyte.feature-flag.path";
 
