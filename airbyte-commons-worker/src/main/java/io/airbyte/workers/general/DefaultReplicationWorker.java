@@ -51,6 +51,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -338,9 +340,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       long recordsRead = 0L;
       final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap<>();
+      final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap<>();
+      final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields = new HashMap<>();
       if (fieldSelectionEnabled) {
         populatedStreamToSelectedFields(catalog, streamToSelectedFields);
       }
+      populateStreamToAllFields(catalog, streamToAllFields);
       try {
         final Duration MAX_FETCH_SECONDS = Duration.ofHours(30);
         long lastMessageRecieved = System.currentTimeMillis();
@@ -369,7 +374,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             if (fieldSelectionEnabled) {
               filterSelectedFields(streamToSelectedFields, airbyteMessage);
             }
-            validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
+            validateSchema(recordSchemaValidator, streamToAllFields, unexpectedFields, validationErrors, airbyteMessage);
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
@@ -412,6 +417,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             metricReporter.trackSchemaValidationError(stream);
           });
         }
+        unexpectedFields.forEach((stream, unexpectedFieldNames) -> {
+          if (!unexpectedFieldNames.isEmpty()) {
+            LOGGER.warn("Source {} has unexpected fields [{}] in stream {}", sourceId, String.join(", ", unexpectedFieldNames), stream);
+            // TODO(mfsiega-airbyte): publish this as a metric.
+          }
+        });
 
         try {
           destination.notifyEndOfInput();
@@ -611,6 +622,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
+                                     Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
+                                     Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
                                      final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
                                      final AirbyteMessage message) {
     if (message.getRecord() == null) {
@@ -625,6 +638,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     if (streamHasLessThenTenErrs) {
       try {
         recordSchemaValidator.validateSchema(record, messageStream);
+        final Set<String> unexpectedFieldNames = unexpectedFields.getOrDefault(messageStream, new HashSet<>());
+        populateUnexpectedFieldNames(record, streamToAllFields.get(messageStream), unexpectedFieldNames);
+        unexpectedFields.put(messageStream, unexpectedFieldNames);
       } catch (final RecordSchemaValidationException e) {
         final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
         if (exceptionWithCount == null) {
@@ -636,8 +652,22 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
         }
       }
-
     }
+  }
+
+  private static void populateUnexpectedFieldNames(AirbyteRecordMessage record, Set<String> fieldsInCatalog, Set<String> unexpectedFieldNames) {
+    final JsonNode data = record.getData();
+    if (data.isObject()) {
+      Iterator<String> fieldNamesInRecord = data.fieldNames();
+      while (fieldNamesInRecord.hasNext()) {
+        final String fieldName = fieldNamesInRecord.next();
+        if (!fieldsInCatalog.contains(fieldName)) {
+          unexpectedFieldNames.add(fieldName);
+        }
+      }
+    }
+    // If it's not an object it's malformed, but we tolerate it here - it will be logged as an error by
+    // the validation.
   }
 
   /**
@@ -659,6 +689,27 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         throw new RuntimeException("No properties node in stream schema");
       }
       streamToSelectedFields.put(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(s), selectedFields);
+    }
+  }
+
+  /**
+   * Populates a map for stream -> all the top-level fields in the catalog. Used to identify any
+   * unexpected top-level fields in the records.
+   *
+   * @param catalog
+   * @param streamToAllFields
+   */
+  private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,
+                                                final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields) {
+    for (final var s : catalog.getStreams()) {
+      final Set<String> fields = new HashSet<>();
+      final JsonNode propertiesNode = s.getStream().getJsonSchema().findPath("properties");
+      if (propertiesNode.isObject()) {
+        propertiesNode.fieldNames().forEachRemaining((fieldName) -> fields.add(fieldName));
+      } else {
+        throw new RuntimeException("No properties node in stream schema");
+      }
+      streamToAllFields.put(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(s), fields);
     }
   }
 

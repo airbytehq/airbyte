@@ -131,11 +131,18 @@ class BigQueryDestinationTest {
 
   private AmazonS3 s3Client;
 
-  private Stream<Arguments> successTestConfigProvider() {
+  /* TODO: Migrate all BigQuery Destination configs (GCS, Denormalized, Normalized) to no longer use
+   * #partitionIfUnpartitioned then recombine Base Provider. The reason for breaking this method into
+   * a base class is because #testWritePartitionOverUnpartitioned is no longer used only in GCS Staging
+   */
+  private Stream<Arguments> successTestConfigProviderBase() {
     return Stream.of(
         Arguments.of("config"),
-        Arguments.of("configWithProjectId"),
-        Arguments.of("gcsStagingConfig"));
+        Arguments.of("configWithProjectId"));
+  }
+
+  private Stream<Arguments> successTestConfigProvider() {
+    return Stream.concat(successTestConfigProviderBase(), Stream.of(Arguments.of("gcsStagingConfig")));
   }
 
   private Stream<Arguments> failCheckTestConfigProvider() {
@@ -154,7 +161,7 @@ class BigQueryDestinationTest {
 
   @BeforeAll
   public static void beforeAll() throws IOException {
-    for (Path path : ALL_PATHS) {
+    for (final Path path : ALL_PATHS) {
       if (!Files.exists(path)) {
         throw new IllegalStateException(
             String.format("Must provide path to a big query credentials file. Please add file with credentials to %s", path.toAbsolutePath()));
@@ -215,11 +222,11 @@ class BigQueryDestinationTest {
     };
   }
 
-  protected void initBigQuery(JsonNode config) throws IOException {
+  protected void initBigQuery(final JsonNode config) throws IOException {
     bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
     try {
       dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
-    } catch (Exception ex) {
+    } catch (final Exception ex) {
       // ignore
     }
   }
@@ -256,8 +263,8 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("successTestConfigProvider")
-  void testCheckSuccess(String configName) throws IOException {
-    JsonNode testConfig = configs.get(configName);
+  void testCheckSuccess(final String configName) throws IOException {
+    final JsonNode testConfig = configs.get(configName);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(testConfig);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
@@ -265,9 +272,9 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("failCheckTestConfigProvider")
-  void testCheckFailures(String configName, String error) {
+  void testCheckFailures(final String configName, final String error) {
     // TODO: this should always throw ConfigErrorException
-    JsonNode testConfig = configs.get(configName);
+    final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
       new BigQueryDestination().check(testConfig);
     });
@@ -276,9 +283,9 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("successTestConfigProvider")
-  void testWriteSuccess(String configName) throws Exception {
+  void testWriteSuccess(final String configName) throws Exception {
     initBigQuery(config);
-    JsonNode testConfig = configs.get(configName);
+    final JsonNode testConfig = configs.get(configName);
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
 
@@ -309,11 +316,11 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("failWriteTestConfigProvider")
-  void testWriteFailure(String configName, String error) throws Exception {
+  void testWriteFailure(final String configName, final String error) throws Exception {
     initBigQuery(config);
-    JsonNode testConfig = configs.get(configName);
+    final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
-      AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
+      final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
       consumer.start();
     });
     assertThat(ex.getMessage()).contains(error);
@@ -374,9 +381,9 @@ class BigQueryDestinationTest {
   }
 
   @ParameterizedTest
-  @MethodSource("successTestConfigProvider")
-  void testWritePartitionOverUnpartitioned(String configName) throws Exception {
-    JsonNode testConfig = configs.get(configName);
+  @MethodSource("successTestConfigProviderBase")
+  void testWritePartitionOverUnpartitioned(final String configName) throws Exception {
+    final JsonNode testConfig = configs.get(configName);
     initBigQuery(config);
     final String raw_table_name = String.format("_airbyte_raw_%s", USERS_STREAM_NAME);
     createUnpartitionedTable(bigquery, dataset, raw_table_name);
