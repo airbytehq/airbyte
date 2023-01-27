@@ -471,6 +471,7 @@
   "tables.destinationConnectWithNum": "{num} sources",
   "tables.progress": "In progress",
   "tables.launch": "Launch",
+  "tables.launchError": "Failed to start sync",
   "tables.overview": "Overview",
   "tables.settings": "Settings",
   "tables.sourceDelete": "Delete this source",
