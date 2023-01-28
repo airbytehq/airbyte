@@ -127,6 +127,7 @@
     "@types/react-widgets": "^4.4.7",
     "@types/sanitize-html": "^2.6.2",
     "@types/styled-components": "^5.1.25",
+    "@types/testing-library__jest-dom": "^5.14.5",
     "@types/unist": "^2.0.5",
     "@typescript-eslint/eslint-plugin": "^5.27.1",
     "@typescript-eslint/parser": "^5.27.1",
