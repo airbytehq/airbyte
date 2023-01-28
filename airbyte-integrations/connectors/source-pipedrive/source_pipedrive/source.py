@@ -33,7 +33,7 @@ class SourcePipedrive(AbstractSource):
             stream_kwargs = self.get_stream_kwargs(config)
             deals = Deals(**stream_kwargs)
             deals_gen = deals.read_records(sync_mode=SyncMode.full_refresh)
-            next(deals_gen)
+            next(deals_gen, None) # default for case of no records
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Pipedrive API with the provided credentials - {repr(error)}"
