@@ -99,6 +99,37 @@ def get_query_reviews(owner, name, first, after, number=None):
     return str(op)
 
 
+def get_query_issue_reactions(owner, name, first, after, number=None):
+    op = sgqlc.operation.Operation(_schema_root.query_type)
+    repository = op.repository(owner=owner, name=name)
+    repository.name()
+    repository.owner.login()
+    if number:
+        issue = repository.issue(number=number)
+    else:
+        kwargs = {"first": first}
+        if after:
+            kwargs["after"] = after
+        issues = repository.issues(**kwargs)
+        issues.page_info.__fields__(has_next_page=True, end_cursor=True)
+        issue = issues.nodes
+
+    issue.__fields__(number=True)
+    kwargs = {"first": first}
+    if number and after:
+        kwargs["after"] = after
+    reactions = issue.reactions(**kwargs)
+    reactions.page_info.__fields__(has_next_page=True, end_cursor=True)
+    reactions.nodes.__fields__(
+        id="node_id",
+        database_id="id",
+        content=True,
+        created_at="created_at",
+    )
+    select_user_fields(reactions.nodes.user())
+    return str(op)
+
+
 class QueryReactions:
 
     # AVERAGE_REVIEWS - optimal number of reviews to fetch inside every pull request.
