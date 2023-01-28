@@ -11,6 +11,8 @@ import io.airbyte.api.model.generated.ConnectionSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleData;
 import io.airbyte.api.model.generated.ConnectionScheduleDataBasicSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleDataCron;
+import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobType;
@@ -53,13 +55,19 @@ public class ApiPojoConverters {
     if (attemptSyncConfig == null) {
       return null;
     }
-    final StateWrapper stateWrapper = StateConverter.toInternal(attemptSyncConfig.getState());
-    final io.airbyte.config.State state = StateMessageHelper.getState(stateWrapper);
 
-    return new io.airbyte.config.AttemptSyncConfig()
+    final io.airbyte.config.AttemptSyncConfig internalAttemptSyncConfig = new io.airbyte.config.AttemptSyncConfig()
         .withSourceConfiguration(attemptSyncConfig.getSourceConfiguration())
-        .withDestinationConfiguration(attemptSyncConfig.getDestinationConfiguration())
-        .withState(state);
+        .withDestinationConfiguration(attemptSyncConfig.getDestinationConfiguration());
+
+    final ConnectionState connectionState = attemptSyncConfig.getState();
+    if (connectionState != null && connectionState.getStateType() != ConnectionStateType.NOT_SET) {
+      final StateWrapper stateWrapper = StateConverter.toInternal(attemptSyncConfig.getState());
+      final io.airbyte.config.State state = StateMessageHelper.getState(stateWrapper);
+      internalAttemptSyncConfig.setState(state);
+    }
+
+    return internalAttemptSyncConfig;
   }
 
   public static io.airbyte.api.client.model.generated.AttemptSyncConfig attemptSyncConfigToClient(final io.airbyte.config.AttemptSyncConfig attemptSyncConfig,
