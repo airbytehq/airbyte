@@ -27,14 +27,14 @@ jobs:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
 
-      - name: pnpm Caching
+      - name: Npm Caching
         uses: actions/cache@v3
         with:
           path: |
             ~/.npm
-          key: ${{ secrets.CACHE_VERSION }}-pnpm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ secrets.CACHE_VERSION }}-pnpm-${{ runner.os }}-
+            ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
 
       # this intentionally does not use restore-keys so we don't mess with gradle caching
       - name: Gradle Caching

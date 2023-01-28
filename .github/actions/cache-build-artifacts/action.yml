@@ -22,12 +22,21 @@ runs:
         restore-keys: |
           ${{ inputs.cache-key }}-pip-${{ runner.os }}-
 
-    - name: pnpm Caching
+    - name: Npm Caching
       uses: actions/cache@v3
       with:
         path: |
           ~/.npm
-        key: ${{ inputs.cache-key }}-pnpm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ inputs.cache-key }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ inputs.cache-key }}-npm-${{ runner.os }}-
+
+    - name: pnpm Caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.pnpm-store
+        key: ${{ inputs.cache-key }}-pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ inputs.cache-key }}-pnpm-${{ runner.os }}-
 

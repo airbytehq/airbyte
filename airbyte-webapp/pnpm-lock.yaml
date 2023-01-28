@@ -54,6 +54,7 @@ specifiers:
   '@types/sanitize-html': ^2.6.2
   '@types/segment-analytics': ^0.0.34
   '@types/styled-components': ^5.1.25
+  '@types/testing-library__jest-dom': ^5.14.5
   '@types/unist': ^2.0.5
   '@types/uuid': ^9.0.0
   '@typescript-eslint/eslint-plugin': ^5.27.1
@@ -245,6 +246,7 @@ devDependencies:
   '@types/react-widgets': 4.4.7
   '@types/sanitize-html': 2.8.0
   '@types/styled-components': 5.1.26
+  '@types/testing-library__jest-dom': 5.14.5
   '@types/unist': 2.0.6
   '@typescript-eslint/eslint-plugin': 5.48.2_caon6io6stgpr7lz2rtbhekxqy
   '@typescript-eslint/parser': 5.48.2_7uibuqfxkfaozanbtbziikiqje
