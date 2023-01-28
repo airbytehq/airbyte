@@ -68,20 +68,19 @@ export const StatusCellControl: React.FC<StatusCellControlProps> = ({
   if (isSyncing) {
     return (
       <div className={styles.inProgressLabel}>
-        <FormattedMessage id="tables.progress" />
+        <FormattedMessage id="connection.syncInProgress" />
       </div>
     );
   }
 
   return (
     <Button
-      size="xs"
       onClick={onRunManualSync}
       isLoading={isSyncStarting}
       disabled={!allowSync || !enabled || hasBreakingChange || isSyncStarting}
       data-testid="manual-sync-button"
     >
-      <FormattedMessage id="tables.launch" />
+      <FormattedMessage id="connection.startSync" />
     </Button>
   );
 };

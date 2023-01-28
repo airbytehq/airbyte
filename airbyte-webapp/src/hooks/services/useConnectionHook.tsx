@@ -104,8 +104,8 @@ export const useSyncConnection = () => {
       onError: (error: Error) => {
         trackError(error);
         notificationService.registerNotification({
-          id: `tables.launchError.${error.message}`,
-          text: `${formatMessage({ id: "tables.launchError" })}: ${error.message}`,
+          id: `tables.startSyncError.${error.message}`,
+          text: `${formatMessage({ id: "connection.startSyncError" })}: ${error.message}`,
           type: ToastType.ERROR,
         });
       },
