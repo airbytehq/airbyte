@@ -246,7 +246,7 @@ export const SignupForm: React.FC = () => {
       >
         {({ isValid, dirty, isSubmitting, status }) => (
           <Form className={styles.form}>
-            <GoogleAuthBtn />
+            <GoogleAuthBtn buttonText="signup_with" />
             <Separator height="28px" />
             <AuthSeperatorContainer>
               <Line />

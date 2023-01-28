@@ -109,6 +109,8 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) 
       .then(() => {
         setChangeRoleLoading(false);
         onCancelChangeRole();
+        setMessageId("user.changeRole.message");
+        setMessageType("info");
       })
       .catch(() => {
         setChangeRoleLoading(false);

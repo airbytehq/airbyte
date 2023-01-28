@@ -18,15 +18,17 @@ const Container = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 100%;
+  // height: 100%;
   background-color: #ffffff;
 `;
 
 const InformationContent = styled.div`
   width: 40%;
+  // height: 100%;
   background: linear-gradient(75.03deg, #313e6a 1.54%, #0e1331 100%);
   position: relative;
 `;
+
 const ImageContent = styled.div`
   position: absolute;
   top: 200px;
@@ -65,6 +67,7 @@ const TitleText = styled.div`
   font-size: 24px;
   color: white;
 `;
+
 const FirstListItem = styled.div`
   display: flex;
   flex-direction: row;
@@ -89,6 +92,7 @@ const ListItem = styled.div`
 
 const FormContent = styled.div`
   width: 60%;
+  // height: 100%;
   background-color: #eff0f5;
 `;
 
