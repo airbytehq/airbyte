@@ -32,9 +32,6 @@ def download_catalog(catalog_url):
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 
 
-
-
-
 class ConnectorInvalidNameError(Exception):
     pass
 
@@ -104,7 +101,7 @@ class Connector:
     @property
     def code_directory(self) -> Path:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
-    
+
     @property
     def version(self) -> str:
         with open(self.code_directory / "Dockerfile") as f:
@@ -112,7 +109,7 @@ class Connector:
                 if "io.airbyte.version" in line:
                     return line.split("=")[1].strip()
         raise ConnectorVersionNotFound("""
-            Could not find the connector version from its Dockerfile. 
+            Could not find the connector version from its Dockerfile.
             The io.airbyte.version tag is missing.
             """)
 

@@ -11,6 +11,7 @@ import requests
 
 from .constants import INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS
 from .models import ConnectorQAReport, QAReport
+from .inputs import fetch_latest_build_status_for_connector_version
 
 TRUTHY_COLUMNS_TO_BE_ELIGIBLE = [
   "documentation_is_available",
@@ -37,7 +38,10 @@ def is_eligible_for_promotion_to_cloud(connector_qa_data: pd.Series) -> bool:
   ])
 
 def latest_build_is_successful(connector_qa_data: pd.Series) -> bool:
-  return True
+    connector_technical_name = connector_qa_data["connector_technical_name"]
+    connector_version = connector_qa_data["connector_version"]
+    latest_build_status = fetch_latest_build_status_for_connector_version(connector_technical_name, connector_version)
+    return latest_build_status == "success"
 
 
 def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd.DataFrame:
@@ -66,7 +70,6 @@ def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd
     qa_report["documentation_is_available"] = qa_report.documentation_url.apply(url_is_reachable)
     qa_report["is_appropriate_for_cloud_use"] = qa_report.connector_definition_id.apply(is_appropriate_for_cloud_use)
 
-    # TODO YET TO IMPLEMENT VALIDATIONS
     qa_report["latest_build_is_successful"] = qa_report.apply(latest_build_is_successful)
 
     qa_report["is_eligible_for_promotion_to_cloud"] = qa_report.apply(is_eligible_for_promotion_to_cloud, axis="columns")

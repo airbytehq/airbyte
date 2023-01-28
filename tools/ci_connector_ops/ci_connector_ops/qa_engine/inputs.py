@@ -8,23 +8,25 @@ import json
 
 from .constants import CONNECTOR_BUILD_OUTPUT_URL
 
-
 from google.oauth2 import service_account
 import requests
 import pandas as pd
+from typing import Optional
 
-def get_connector_build_output_url(connector_id: str, connector_version: str) -> str:
-    return f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector_id}/{connector_version}.json"
+def get_connector_build_output_url(connector_technical_name: str, connector_version: str) -> str:
+    return f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector_technical_name}/{connector_version}.json"
 
-def fetch_latest_build_status_for_connector_version(connector_id: str, connector_version: str) -> str:
+def fetch_latest_build_status_for_connector_version(connector_technical_name: str, connector_version: str) -> Optional[str]:
     """Fetch the latest build status for a given connector version."""
-    connector_build_output_url = get_connector_build_output_url(connector_id, connector_version)
-    connector_build_output = requests.get(connector_build_output_url).json()
-    if connector_build_output:
-        return connector_build_output[-1]["status"]
-    # TODO report pending if no build output
-    return "PENDING"
+    connector_build_output_url = get_connector_build_output_url(connector_technical_name, connector_version)
+    connector_build_output_response = requests.get(connector_build_output_url)
 
+    # if the connector returned successfully, return the outcome
+    if connector_build_output_response.status_code == 200:
+        connector_build_output = connector_build_output_response.json()
+        return connector_build_output["outcome"]
+    else:
+        return None
 
 def fetch_remote_catalog(catalog_url: str) -> pd.DataFrame:
     """Fetch a combined remote catalog and return a single DataFrame
