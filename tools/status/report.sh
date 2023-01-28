@@ -52,7 +52,14 @@ function write_job_log() {
   # Generate the JSON for the job log
   local job_log_json=$(generate_job_log_json "$timestamp" "$outcome")
   echo "$job_log_json" > tests/history/"$CONNECTOR"/"$timestamp".json
-  echo "$job_log_json" > tests/history/"$CONNECTOR"/"$DOCKER_VERSION"/"$timestamp".json
+
+  # if docker version has a value, write it to a file with the docker version as the name
+  # else output an error to the build log
+  if [ -n "$DOCKER_VERSION" ]; then
+    echo "$job_log_json" > tests/history/"$CONNECTOR"/"$DOCKER_VERSION".json
+  else
+    echo "ERROR: Could not find docker version for $CONNECTOR"
+  fi
 
   aws s3 sync "$BUCKET_WRITE_ROOT"/tests/history/"$CONNECTOR"/ s3://"$BUCKET"/tests/history/"$CONNECTOR"/
 }
@@ -138,6 +145,11 @@ function write_badge_and_summary() {
 }
 
 function main() {
+  # echo important variables
+  echo "CONNECTOR: $CONNECTOR"
+  echo "BUCKET: $BUCKET"
+  echo "DOCKER_VERSION: $DOCKER_VERSION"
+
   write_job_log
   pull_latest_job_logs
   write_badge_and_summary

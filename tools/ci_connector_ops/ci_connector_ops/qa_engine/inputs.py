@@ -6,13 +6,28 @@ import os
 from importlib.resources import files
 import json
 
+from .constants import CONNECTOR_BUILD_OUTPUT_URL
+
+
 from google.oauth2 import service_account
 import requests
 import pandas as pd
 
+def get_connector_build_output_url(connector_id: str, connector_version: str) -> str:
+    return f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector_id}/{connector_version}.json"
+
+def fetch_latest_build_status_for_connector_version(connector_id: str, connector_version: str) -> str:
+    """Fetch the latest build status for a given connector version."""
+    connector_build_output_url = get_connector_build_output_url(connector_id, connector_version)
+    connector_build_output = requests.get(connector_build_output_url).json()
+    if connector_build_output:
+        return connector_build_output[-1]["status"]
+    # TODO report pending if no build output
+    return "PENDING"
+
 
 def fetch_remote_catalog(catalog_url: str) -> pd.DataFrame:
-    """Fetch a combined remote catalog and return a single DataFrame 
+    """Fetch a combined remote catalog and return a single DataFrame
     with sources and destinations defined by the connector_type column.
 
     Args:
