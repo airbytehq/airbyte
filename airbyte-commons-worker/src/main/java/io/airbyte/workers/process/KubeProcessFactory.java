@@ -95,7 +95,7 @@ public class KubeProcessFactory implements ProcessFactory {
     try {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, KUBE_NAME_LEN_LIMIT);
-      LOGGER.info("Attempting to start pod = {} for {} with resources {} and allowed hosts {}", podName, imageName, resourceRequirements,
+      LOGGER.info("Attempting to start pod = {} for {} with resources {} and allowedHosts {}", podName, imageName, resourceRequirements,
           allowedHosts);
 
       final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
