@@ -46,7 +46,8 @@ get_connector_path_from_name() {
   # get the path to a connector from its name
   # e.g source-postgres -> airbyte-integrations/connectors/source-postgres
   local connector_name=$1
-  local connector_dir="airbyte-integrations/connectors"
+  local connector_dir="airbyte-integrations"
+
   echo "$connector_dir/$connector_name"
 }
 
