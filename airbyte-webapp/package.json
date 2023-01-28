@@ -4,7 +4,7 @@
   "private": true,
   "engines": {
     "node": "16.18.1",
-    "pnpm": "7.25.0"
+    "pnpm": "7.26.1"
   },
   "scripts": {
     "prepare": "cd .. && husky install airbyte-webapp/.husky",
