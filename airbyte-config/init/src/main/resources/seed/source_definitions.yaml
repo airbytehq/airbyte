@@ -17,7 +17,7 @@
 - name: Airtable
   sourceDefinitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
   dockerRepository: airbyte/source-airtable
-  dockerImageTag: 1.0.2
+  dockerImageTag: 2.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   icon: airtable.svg
   sourceType: api
@@ -488,7 +488,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.83
+  dockerImageTag: 0.2.84
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -832,7 +832,7 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.29
+  dockerImageTag: 0.1.30
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -935,7 +935,7 @@
 - name: LinkedIn Ads
   sourceDefinitionId: 137ece28-5434-455c-8f34-69dc3782f451
   dockerRepository: airbyte/source-linkedin-ads
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   icon: linkedin.svg
   sourceType: api
@@ -1063,7 +1063,7 @@
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
-  dockerImageTag: 0.1.29
+  dockerImageTag: 0.1.30
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   icon: mixpanel.svg
   sourceType: api
@@ -1254,7 +1254,7 @@
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   dockerRepository: airbyte/source-paypal-transaction
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transaction
   icon: paypal.svg
   sourceType: api
@@ -1544,7 +1544,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.29
+  dockerImageTag: 1.0.30
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -1760,7 +1760,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
