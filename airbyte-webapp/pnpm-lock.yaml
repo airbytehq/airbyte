@@ -36,6 +36,7 @@ specifiers:
   '@testing-library/user-event': ^13.5.0
   '@types/diff': ^5.0.2
   '@types/flat': ^5.0.2
+  '@types/history': ^5.0.0
   '@types/jest': ^27.5.2
   '@types/js-yaml': ^4.0.5
   '@types/json-schema': ^7.0.11
@@ -81,6 +82,7 @@ specifiers:
   flat: ^5.0.2
   formik: ^2.2.9
   framer-motion: ^6.3.11
+  history: ^5.3.0
   husky: ^8.0.1
   jest: ^29.3.0
   jest-environment-jsdom: ^29.3.1
@@ -90,7 +92,6 @@ specifiers:
   license-checker: ^25.0.1
   lint-staged: ^12.3.7
   lodash: ^4.17.21
-  mdast: ^3.0.0
   meow: ^9.0.0
   monaco-editor: ^0.34.1
   node-fetch: ^2.6.7
@@ -175,7 +176,6 @@ dependencies:
   json-schema: 0.4.0
   launchdarkly-js-client-sdk: 2.24.2
   lodash: 4.17.21
-  mdast: 3.0.0
   monaco-editor: 0.34.1
   query-string: 6.14.1
   react: 17.0.2
@@ -229,6 +229,7 @@ devDependencies:
   '@testing-library/react-hooks': 7.0.2_sfoxds7t5ydpegc3knd667wn6m
   '@testing-library/user-event': 13.5.0
   '@types/flat': 5.0.2
+  '@types/history': 5.0.0
   '@types/jest': 27.5.2
   '@types/js-yaml': 4.0.5
   '@types/json-schema': 7.0.11
@@ -264,6 +265,7 @@ devDependencies:
   eslint-plugin-prettier: 4.2.1_cn4lalcyadplruoxa5mhp7j3dq
   eslint-plugin-unused-imports: 2.0.0_virssgr5omih4ylyae2gddvmxu
   express: 4.18.2
+  history: 5.3.0
   husky: 8.0.3
   jest: 29.3.1_2263m44mchjafa7bz7l52hbcpa
   jest-environment-jsdom: 29.3.1
@@ -5862,6 +5864,13 @@ packages:
     dependencies:
       '@types/unist': 2.0.6
 
+  /@types/history/5.0.0:
+    resolution: {integrity: sha512-hy8b7Y1J8OGe6LbAjj3xniQrj3v6lsivCcrmf4TzSgPzLkhIeKgc5IZnT7ReIqmEuodjfO8EYAuoFvIrHi/+jQ==}
+    deprecated: This is a stub types definition. history provides its own type definitions, so you do not need this installed.
+    dependencies:
+      history: 5.3.0
+    dev: true
+
   /@types/hoist-non-react-statics/3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
@@ -11305,6 +11314,12 @@ packages:
     resolution: {integrity: sha512-COpmrF2NOg4TBWUJ5UVyaCU2A88wEMkUPK4hNqyCkqHbxT92BbvfjoSozkAIIm6XhicGlJHhFdullInrdhwU8Q==}
     dev: false
 
+  /history/5.3.0:
+    resolution: {integrity: sha512-ZqaKwjjrAYUYfLG+htGaIIZ4nioX2L70ZUMIFysS3xvBsSG4x/n1V6TXV3N8ZYNuFGlDirFg32T7B6WOUPDYcQ==}
+    dependencies:
+      '@babel/runtime': 7.20.7
+    dev: true
+
   /hmac-drbg/1.0.1:
     resolution: {integrity: sha512-Tti3gMqLdZfhOQY1Mzf/AanLiqh1WTiJgEj26ZuYQ9fbkLomzGchCws4FyrSd4VkpBfiNhaE1On+lOz894jvXg==}
     dependencies:
@@ -13587,11 +13602,6 @@ packages:
 
   /mdast-util-to-string/3.1.0:
     resolution: {integrity: sha512-n4Vypz/DZgwo0iMHLQL49dJzlp7YtAJP+N07MZHpjPf/5XJuHUWstviF4Mn2jEiR/GNmtnRRqnwsXExk3igfFA==}
-    dev: false
-
-  /mdast/3.0.0:
-    resolution: {integrity: sha512-xySmf8g4fPKMeC07jXGz971EkLbWAJ83s4US2Tj9lEdnZ142UP5grN73H1Xd3HzrdbU5o9GYYP/y8F9ZSwLE9g==}
-    deprecated: '`mdast` was renamed to `remark`'
     dev: false
 
   /mdn-data/2.0.14:

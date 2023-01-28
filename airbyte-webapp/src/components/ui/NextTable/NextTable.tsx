@@ -3,6 +3,7 @@ import classNames from "classnames";
 import { PropsWithChildren } from "react";
 
 import styles from "./NextTable.module.scss";
+import { ColumnMeta } from "./types";
 
 export interface TableProps<TData> {
   data: TData[];
@@ -26,7 +27,7 @@ export const NextTable = <TData,>({ columns, data, onClickRow, className }: Prop
             {headerGroup.headers.map((header) => (
               <th
                 colSpan={header.colSpan}
-                className={classNames(styles.th, header.column.columnDef.meta?.thClassName)}
+                className={classNames(styles.th, (header.column.columnDef.meta as ColumnMeta | undefined)?.thClassName)}
                 key={`table-column-${headerGroup.id}-${header.id}`}
               >
                 {flexRender(header.column.columnDef.header, header.getContext())}
@@ -40,7 +41,7 @@ export const NextTable = <TData,>({ columns, data, onClickRow, className }: Prop
           <tr className={styles.tr} key={`table-row-${row.id}`} onClick={() => onClickRow?.(row.original)}>
             {row.getVisibleCells().map((cell) => (
               <td
-                className={classNames(styles.td, cell.column.columnDef.meta?.tdClassName)}
+                className={classNames(styles.td, (cell.column.columnDef.meta as ColumnMeta | undefined)?.tdClassName)}
                 key={`table-cell-${row.id}-${cell.id}`}
               >
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
