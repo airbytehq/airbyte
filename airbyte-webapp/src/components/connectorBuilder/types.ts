@@ -99,7 +99,7 @@ export interface BuilderStream {
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   global: {
-    connectorName: "",
+    connectorName: "Untitled",
     urlBase: "",
     authenticator: { type: "NoAuth" },
   },
