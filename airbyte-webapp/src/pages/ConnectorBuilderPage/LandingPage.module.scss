@@ -1,0 +1,14 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.titleContainer {
+  padding-top: variables.$spacing-2xl;
+}
+
+.title {
+  color: colors.$grey-400;
+}
+
+.tile {
+  width: 266px;
+}

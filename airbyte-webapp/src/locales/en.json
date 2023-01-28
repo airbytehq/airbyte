@@ -744,6 +744,11 @@
   "connectorBuilder.inputsButton": "Inputs",
   "connectorBuilder.interUserInputValue": "Insert a user input value",
   "connectorBuilder.yamlUpload.error": "The YAML you provided is invalid: {reason} (line {line})",
+  "connectorBuilder.landingPage.title": "Connector Builder",
+  "connectorBuilder.landingPage.prompt": "How do you want to start building your connector?",
+  "connectorBuilder.landingPage.importYaml.title": "Import a YAML manifest",
+  "connectorBuilder.landingPage.importYaml.description": "Select a YAML manifest from your computer to import into the Connector Builder",
+  "connectorBuilder.landingPage.importYaml.button": "Import a YAML",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
