@@ -44,7 +44,7 @@ full_path_to_gradle_path() {
 
 get_connector_path_from_name() {
   # get the path to a connector from its name
-  # e.g source-postgres -> airbyte-integrations/connectors/source-postgres
+  # e.g connectors/source-postgres -> airbyte-integrations/connectors/source-postgres
   local connector_name=$1
   local connector_dir="airbyte-integrations"
 

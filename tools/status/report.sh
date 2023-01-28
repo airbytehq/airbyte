@@ -13,8 +13,13 @@ RUN_ID=$3
 TEST_OUTCOME=$4
 QA_CHECKS_OUTCOME=$5
 
+# Ensure connector is prefixed with connectors/
+# TODO (ben): In the future we should just hard error if this is not the case
+if [[ $CONNECTOR != *"/"* ]]; then
+    CONNECTOR="connectors/$CONNECTOR"
+fi
+
 BUCKET_WRITE_ROOT=/tmp/bucket_write_root
-  # TODO (ben): Question, why last ten?
 LAST_TEN_ROOT=/tmp/last_ten_root
 SUMMARY_WRITE_ROOT=/tmp/summary_write_root
 
