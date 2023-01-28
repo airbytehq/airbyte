@@ -178,7 +178,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-airtable:1.0.2"
+- dockerImage: "airbyte/source-airtable:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
@@ -3642,7 +3642,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.83"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.84"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -6824,7 +6824,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-intercom:0.1.29"
+- dockerImage: "airbyte/source-intercom:0.1.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -7626,7 +7626,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.12"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -8701,7 +8701,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mixpanel:0.1.29"
+- dockerImage: "airbyte/source-mixpanel:0.1.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
     connectionSpecification:
@@ -13095,7 +13095,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.29"
+- dockerImage: "airbyte/source-salesforce:1.0.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -14923,7 +14923,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:2.0.0"
+- dockerImage: "airbyte/source-tiktok-marketing:2.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
