@@ -14,6 +14,7 @@ import io.airbyte.api.client.generated.AttemptApi;
 import io.airbyte.api.client.generated.StateApi;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionState;
+import io.airbyte.api.client.model.generated.ConnectionStateType;
 import io.airbyte.api.client.model.generated.SaveAttemptSyncConfigRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.features.FeatureFlags;
@@ -49,6 +50,7 @@ import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Singleton
@@ -73,12 +75,16 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
     this.featureFlags = featureFlags;
   }
 
-  private State getCurrentConnectionState(final UUID connectionId) {
+  private Optional<State> getCurrentConnectionState(final UUID connectionId) {
     final ConnectionState state = AirbyteApiClient.retryWithJitter(
         () -> stateApi.getState(new ConnectionIdRequestBody().connectionId(connectionId)),
         "get state");
+
+    if (state.getStateType() == ConnectionStateType.NOT_SET)
+      return Optional.empty();
+
     final StateWrapper internalState = StateConverter.clientToInternal(state);
-    return StateMessageHelper.getState(internalState);
+    return Optional.of(StateMessageHelper.getState(internalState));
   }
 
   private void saveAttemptSyncConfig(final long jobId, final int attemptNumber, final UUID connectionId, final AttemptSyncConfig attemptSyncConfig) {
@@ -108,7 +114,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
       final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig();
-      attemptSyncConfig.withState(getCurrentConnectionState(connectionId));
+      getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::setState);
 
       if (ConfigType.SYNC.equals(jobConfigType)) {
         config = job.getConfig().getSync();
