@@ -36,7 +36,7 @@ function write_job_log() {
   rm -r $BUCKET_WRITE_ROOT || true
   mkdir -p $BUCKET_WRITE_ROOT
   cd $BUCKET_WRITE_ROOT
-  mkdir -p tests/history/"$CONNECTOR"
+  mkdir -p tests/history/"$CONNECTOR"/"$DOCKER_VERSION"
 
   local timestamp="$(date +%s)"
   local outcome=failure
@@ -46,11 +46,9 @@ function write_job_log() {
 
   # Generate the JSON for the job log
   local job_log_json=$(generate_job_log_json "$timestamp" "$outcome")
-  job_log_json > tests/history/"$CONNECTOR"/"$timestamp".json
-  job_log_json > tests/history/"$CONNECTOR"/"$DOCKER_VERSION"/"$timestamp".json
+  echo "$job_log_json" > tests/history/"$CONNECTOR"/"$timestamp".json
+  echo "$job_log_json" > tests/history/"$CONNECTOR"/"$DOCKER_VERSION"/"$timestamp".json
 
-  # TODO (ben): Idea, perhaps this is a better location to use for versioning?
-  # is it being used elsewhere?
   aws s3 sync "$BUCKET_WRITE_ROOT"/tests/history/"$CONNECTOR"/ s3://"$BUCKET"/tests/history/"$CONNECTOR"/
 }
 
@@ -73,9 +71,6 @@ function write_badge_and_summary() {
 
   successes=0
   failures=0
-
-  # TODO (ben) remove
-  echo "Docker version!!!: $DOCKER_VERSION"
 
   # TODO (ben) refactor, this is a bit unweildly
   while IFS= read -r file; do
@@ -133,13 +128,6 @@ function write_badge_and_summary() {
 
   echo "$BADGE" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/badge.json
   echo "$HTML" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/index.html
-
-  # TODO (ben) either update the badge.json orrrr use a new json file?
-
-  # Add a versioned file output
-  mkdir -p $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$DOCKER_VERSION"
-  echo "$BADGE" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$DOCKER_VERSION"/badge.json
-  echo "$HTML" > $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"/"$DOCKER_VERSION"/index.html
 
   aws s3 sync "$SUMMARY_WRITE_ROOT"/tests/summary/"$CONNECTOR"/ s3://"$BUCKET"/tests/summary/"$CONNECTOR"/
 }

@@ -160,7 +160,8 @@ jobs:
         run: |
           run-qa-checks ${{ github.event.inputs.connector }}
       - name: Report Status
-        if: github.ref == 'refs/heads/master' && always()
+        # TODO (ben) uncomment
+        # if: github.ref == 'refs/heads/master' && always()
         run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
