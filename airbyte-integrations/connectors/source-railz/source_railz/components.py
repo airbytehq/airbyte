@@ -110,31 +110,20 @@ class RailzCartesianProductStreamSlicer(CartesianProductStreamSlicer):
         return self._cursor
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        connections_slicer = self.stream_slicers[0]
-        datetime_slicer = self.stream_slicers[1]
+        connections_slicer, datetime_slicer = self.stream_slicers
         for connection_slice in connections_slicer.stream_slices(sync_mode, stream_state):
             businessName = connection_slice["slice_key"]["businessName"]
             serviceName = connection_slice["slice_key"]["serviceName"]
+            datetime_slicer._cursor = None
             for datetime_slice in datetime_slicer.stream_slices(sync_mode, stream_state.get(businessName, {}).get(serviceName, {})):
                 yield connection_slice | datetime_slice
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         datetime_slicer = self.stream_slicers[1]
-        cursor_field = datetime_slicer.cursor_field.eval(datetime_slicer.config)
-
+        datetime_slicer.update_cursor(stream_slice, last_record)
         if last_record:
             businessName = stream_slice["slice_key"]["businessName"]
             serviceName = stream_slice["slice_key"]["serviceName"]
-            self._cursor.setdefault(businessName, {}).setdefault(serviceName, {})[cursor_field] = self.safe_max(
-                self._cursor.get(businessName, {}).get(serviceName, {}).get(cursor_field), last_record[cursor_field]
-            )
+            self._cursor.setdefault(businessName, {}).setdefault(serviceName, {}).update(datetime_slicer.get_stream_state())
         else:
             self._cursor = stream_slice
-
-    @staticmethod
-    def safe_max(arg1, arg2):
-        if arg1 is None:
-            return arg2
-        if arg2 is None:
-            return arg1
-        return max(arg1, arg2)
