@@ -1,14 +1,14 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { useParams } from "react-router-dom";
 
-import { DeleteBlock } from "components/common/DeleteBlock";
 import { StepsTypes } from "components/ConnectorBlocks";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useDeleteDestination, useGetDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
+import { useDeleteModal } from "hooks/useDeleteModal";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
@@ -19,10 +19,7 @@ import styles from "./DestinationSettings.module.scss";
 export const DestinationSettingsPage: React.FC = () => {
   const params = useParams() as { "*": StepsTypes | ""; id: string };
   const destination = useGetDestination(params.id);
-  const { connections } = useConnectionList();
-  const connectionsWithDestination = connections.filter(
-    ({ destination: { destinationId } }) => destinationId === destination.destinationId
-  );
+  const { connections: connectionsWithDestination } = useConnectionList({ destinationId: [destination.destinationId] });
   const destinationSpecification = useGetDestinationDefinitionSpecification(destination.destinationDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
   const { mutateAsync: updateDestination } = useUpdateDestination();
@@ -39,13 +36,15 @@ export const DestinationSettingsPage: React.FC = () => {
     });
   };
 
-  const onDelete = async () => {
+  const onDelete = useCallback(async () => {
     clearFormChange(formId);
     await deleteDestination({
       connectionsWithDestination,
       destination,
     });
-  };
+  }, [clearFormChange, connectionsWithDestination, deleteDestination, destination, formId]);
+
+  const onDeleteClick = useDeleteModal("destination", onDelete);
 
   return (
     <div className={styles.content}>
@@ -59,8 +58,8 @@ export const DestinationSettingsPage: React.FC = () => {
         selectedConnectorDefinitionId={destinationSpecification.destinationDefinitionId}
         connector={destination}
         onSubmit={onSubmitForm}
+        onDeleteClick={onDeleteClick}
       />
-      <DeleteBlock type="destination" onDelete={onDelete} />
     </div>
   );
 };

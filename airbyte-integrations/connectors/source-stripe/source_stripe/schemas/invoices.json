@@ -208,6 +208,35 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "status_transitions": {
+      "type": "object",
+      "properties": {
+        "finalized_at": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "marked_uncollectible_at": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "paid_at": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "voided_at": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        }
+      }
     }
   }
 }

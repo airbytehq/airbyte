@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -72,12 +73,15 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   public ConnectorJobOutput run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
     ApmTraceUtils.addTagsToTrace(generateTraceTags(discoverSchemaInput, jobRoot));
     try {
+      final JsonNode inputConfig = discoverSchemaInput.getConnectionConfiguration();
       process = integrationLauncher.discover(
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-          Jsons.serialize(discoverSchemaInput.getConnectionConfiguration()));
+          Jsons.serialize(inputConfig));
 
-      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID);
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput()
+          .withOutputType(OutputType.DISCOVER_CATALOG_ID);
+
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
       final Map<Type, List<AirbyteMessage>> messagesByType = WorkerUtils.getMessagesByType(process, streamFactory, 30);
@@ -88,10 +92,12 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           .findFirst();
 
       final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getMostRecentConfigControlMessage(messagesByType);
-      optionalConfigMsg.ifPresent(
-          configMessage -> connectorConfigUpdater.updateSource(
-              UUID.fromString(discoverSchemaInput.getSourceId()),
-              configMessage.getConfig()));
+      if (optionalConfigMsg.isPresent() && WorkerUtils.getDidControlMessageChangeConfig(inputConfig, optionalConfigMsg.get())) {
+        connectorConfigUpdater.updateSource(
+            UUID.fromString(discoverSchemaInput.getSourceId()),
+            optionalConfigMsg.get().getConfig());
+        jobOutput.setConnectorConfigurationUpdated(true);
+      }
 
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.DISCOVER_CATALOG_ID, messagesByType);
       failureReason.ifPresent(jobOutput::setFailureReason);

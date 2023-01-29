@@ -7,14 +7,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ConnectionInfoCard } from "components/connection/ConnectionInfoCard";
 import { ConnectionName } from "components/connection/ConnectionName";
 import { Callout } from "components/ui/Callout";
+import { FlexContainer } from "components/ui/Flex";
 import { StepsMenu } from "components/ui/StepsMenu";
 import { Text } from "components/ui/Text";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { useFeature, FeatureItem } from "hooks/services/Feature";
+import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
 
-import { ConnectionRoutePaths } from "../types";
 import styles from "./ConnectionPageTitle.module.scss";
+import { ConnectionRoutePaths } from "../types";
 
 export const ConnectionPageTitle: React.FC = () => {
   const params = useParams<{ id: string; "*": ConnectionRoutePaths }>();
@@ -59,6 +62,8 @@ export const ConnectionPageTitle: React.FC = () => {
     [navigate]
   );
 
+  const fcpEnabled = useFeature(FeatureItem.FreeConnectorProgram);
+
   return (
     <div className={styles.container}>
       {connection.status === ConnectionStatus.deprecated && (
@@ -72,7 +77,10 @@ export const ConnectionPageTitle: React.FC = () => {
       </Text>
       <ConnectionName />
       <div className={styles.statusContainer}>
-        <ConnectionInfoCard />
+        <FlexContainer direction="column" gap="none">
+          <ConnectionInfoCard />
+          {fcpEnabled && <InlineEnrollmentCallout />}
+        </FlexContainer>
       </div>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </div>

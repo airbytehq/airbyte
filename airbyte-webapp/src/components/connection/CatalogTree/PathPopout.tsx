@@ -19,6 +19,7 @@ interface PathPopoutBaseProps {
   paths: Path[];
   pathType: "required" | "sourceDefined";
   placeholder?: React.ReactNode;
+  id?: string;
 }
 
 interface PathMultiProps {
@@ -36,12 +37,21 @@ interface PathProps {
 type PathPopoutProps = PathPopoutBaseProps & (PathMultiProps | PathProps);
 
 export const PathPopout: React.FC<PathPopoutProps> = (props) => {
+  const pathPopoutId = `${props.id}_pathPopout`;
+
   if (props.pathType === "sourceDefined") {
     if (props.path && props.path.length > 0) {
       const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
 
       return (
-        <Tooltip placement="bottom-start" control={<div className={styles.text}>{text}</div>}>
+        <Tooltip
+          placement="bottom-start"
+          control={
+            <div className={styles.text} data-testid={`${pathPopoutId}_text`}>
+              {text}
+            </div>
+          }
+        >
           {text}
         </Tooltip>
       );
@@ -74,8 +84,13 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
       }}
       placeholder={props.placeholder}
       components={props.isMulti ? { MultiValue: () => null } : undefined}
+      id={pathPopoutId}
       targetComponent={({ onOpen }) => (
-        <PathPopoutButton items={props.isMulti ? props.path?.map(pathDisplayName) : props.path} onClick={onOpen}>
+        <PathPopoutButton
+          items={props.isMulti ? props.path?.map(pathDisplayName) : props.path}
+          onClick={onOpen}
+          testId={pathPopoutId}
+        >
           {text}
         </PathPopoutButton>
       )}
