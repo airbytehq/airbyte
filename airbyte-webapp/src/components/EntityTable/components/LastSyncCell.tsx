@@ -6,19 +6,19 @@ const Content = styled.div<{ enabled?: boolean }>`
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
 `;
 
-interface IProps {
-  timeInSecond?: number | null;
+interface Props {
+  timeInSeconds?: number | null;
   enabled?: boolean;
 }
 
-const LastSyncCell: React.FC<IProps> = ({ timeInSecond, enabled }) => {
-  if (!timeInSecond) {
+const LastSyncCell: React.FC<Props> = ({ timeInSeconds, enabled }) => {
+  if (!timeInSeconds) {
     return null;
   }
 
   return (
     <Content enabled={enabled}>
-      <FormattedRelativeTime value={timeInSecond - Date.now() / 1000} updateIntervalInSeconds={60} />
+      <FormattedRelativeTime value={timeInSeconds - Date.now() / 1000} updateIntervalInSeconds={60} />
     </Content>
   );
 };

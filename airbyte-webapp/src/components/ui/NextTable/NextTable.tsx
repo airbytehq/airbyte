@@ -10,7 +10,6 @@ export interface TableProps<T> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   columns: Array<ColumnDef<T, any>>;
   data: T[];
-  erroredRows?: boolean;
   light?: boolean;
   onClickRow?: (data: T) => void;
   columnSort?: ColumnSort[];
@@ -22,7 +21,6 @@ export const NextTable = <T,>({
   className,
   columns,
   data,
-  erroredRows,
   light,
   onClickRow,
 }: PropsWithChildren<TableProps<T>>) => {
@@ -42,10 +40,13 @@ export const NextTable = <T,>({
               return (
                 <th
                   colSpan={header.colSpan}
-                  className={classNames(styles.th, meta?.thClassName, {
-                    [styles.highlighted]: meta?.headerHighlighted,
-                    [styles.light]: light,
-                  })}
+                  className={classNames(
+                    styles.th,
+                    {
+                      [styles.light]: light,
+                    },
+                    meta?.thClassName
+                  )}
                   key={`table-column-${headerGroup.id}-${header.id}`}
                 >
                   {flexRender(header.column.columnDef.header, header.getContext())}
@@ -56,27 +57,24 @@ export const NextTable = <T,>({
         ))}
       </thead>
       <tbody>
-        {table.getRowModel().rows.map((row) => (
-          <tr
-            className={classNames(styles.tr, {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              [styles.withError]: erroredRows && !!row.original.error,
-              [styles.clickable]: !!onClickRow,
-            })}
-            key={`table-row-${row.id}`}
-            onClick={() => onClickRow?.(row.original)}
-          >
-            {row.getVisibleCells().map((cell) => (
-              <td
-                className={classNames(styles.td, cell.column.columnDef.meta?.tdClassName)}
-                key={`table-cell-${row.id}-${cell.id}`}
-              >
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
-            ))}
-          </tr>
-        ))}
+        {table.getRowModel().rows.map((row) => {
+          return (
+            <tr
+              className={classNames(styles.tr, { [styles.clickable]: !!onClickRow })}
+              key={`table-row-${row.id}`}
+              onClick={() => onClickRow?.(row.original)}
+            >
+              {row.getVisibleCells().map((cell) => (
+                <td
+                  className={classNames(styles.td, cell.column.columnDef.meta?.tdClassName)}
+                  key={`table-cell-${row.id}-${cell.id}`}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

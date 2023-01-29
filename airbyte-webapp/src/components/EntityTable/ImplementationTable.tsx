@@ -82,7 +82,6 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         ),
         meta: {
           thClassName: styles.thEntityName,
-          headerHighlighted: true,
         },
         cell: (props) => <NameCell value={props.cell.getValue()} enabled={props.row.original.enabled} />,
       }),
@@ -121,7 +120,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
           </SortableTableHeader>
         ),
         cell: (props) => (
-          <LastSyncCell timeInSecond={props.cell.getValue() || 0} enabled={props.row.original.enabled} />
+          <LastSyncCell timeInSeconds={props.cell.getValue() || 0} enabled={props.row.original.enabled} />
         ),
       }),
       columnHelper.accessor("connectEntities", {
@@ -135,7 +134,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
 
   return (
     <div className={styles.content}>
-      <NextTable columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows testId={`${entity}sTable`} />
+      <NextTable columns={columns} data={sortingData} onClickRow={onClickRow} testId={`${entity}sTable`} />
     </div>
   );
 };

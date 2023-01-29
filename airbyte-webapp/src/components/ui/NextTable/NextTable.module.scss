@@ -24,7 +24,7 @@
 // --------- <th/> ---------
 .th {
   background: colors.$dark-blue;
-  color: colors.$grey;
+  color: colors.$white;
   text-transform: uppercase;
   border-bottom: none;
   text-align: left;
@@ -35,7 +35,8 @@
   padding: variables.$spacing-md variables.$spacing-lg variables.$spacing-md;
 
   &.light {
-    background: none;
+    color: colors.$grey;
+    background-color: colors.$grey-50;
     text-transform: capitalize;
     border-bottom: none;
     text-align: left;
@@ -53,10 +54,6 @@
     padding-left: variables.$spacing-lg;
     border-radius: 0 variables.$spacing-md 0 0;
   }
-
-  &.highlighted {
-    color: colors.$white;
-  }
 }
 
 // --------- <tr/> ---------
@@ -70,10 +67,6 @@
 
   &:hover {
     background-color: colors.$grey-50;
-  }
-
-  &.withError {
-    background: colors.$red-50;
   }
 }
 

@@ -7,7 +7,6 @@ import "@tanstack/react-table";
  */
 declare module "@tanstack/table-core" {
   interface ColumnMeta {
-    headerHighlighted?: boolean;
     tdClassName?: string;
     thClassName?: string;
   }

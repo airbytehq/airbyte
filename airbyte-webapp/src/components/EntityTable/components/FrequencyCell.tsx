@@ -26,7 +26,7 @@ const FrequencyCell: React.FC<FrequencyCellProps> = ({ value, enabled, scheduleT
   return (
     <Content enabled={enabled}>
       <FormattedMessage
-        id={`frequency.${value ? value.basicSchedule?.timeUnit : "manual"}`}
+        id={`frequency.${value?.basicSchedule?.timeUnit ?? "manual"}`}
         values={{ value: value?.basicSchedule?.units }}
       />
     </Content>

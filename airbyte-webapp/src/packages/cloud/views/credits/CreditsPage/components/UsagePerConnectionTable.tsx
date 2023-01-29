@@ -1,4 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
+import classNames from "classnames";
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
@@ -92,8 +93,13 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     [sortBy, sortOrder]
   );
 
-  const sortingData = React.useMemo<FullTableProps[]>(
-    () => creditConsumptionWithPercent.sort(sortData),
+  const sortingData = React.useMemo(
+    // This is temporary solution, since there is an issue with array that
+    // creditConsumptionWithPercent.sort(sortData) returns; when passed into useReactTable
+    // the reference to this array stays the same, so useReactTable is not updating the table,
+    // therefore sorting not working; after implementing native react table sorting mechanism
+    // this problem should be solved
+    () => [...creditConsumptionWithPercent.sort(sortData)],
     [sortData, creditConsumptionWithPercent]
   );
 
@@ -112,7 +118,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
           </SortableTableHeader>
         ),
         meta: {
-          thClassName: styles.thConnection,
+          thClassName: classNames(styles.thConnection, styles.light),
         },
         cell: (props) => (
           <ConnectionCell
@@ -134,7 +140,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
           </SortableTableHeader>
         ),
         meta: {
-          thClassName: styles.thCreditsConsumed,
+          thClassName: classNames(styles.thCreditsConsumed, styles.light),
         },
         cell: (props) => (
           <Text className={styles.usageValue} size="lg">
@@ -145,16 +151,15 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
       columnHelper.accessor("creditsConsumedPercent", {
         header: "",
         meta: {
-          thClassName: styles.thCreditsConsumedPercent,
+          thClassName: classNames(styles.thCreditsConsumedPercent, styles.light),
         },
         cell: (props) => <UsageCell percent={props.cell.getValue()} />,
       }),
-      // TODO: Replace to Grow column
       columnHelper.accessor("connectionId", {
         header: "",
         cell: () => <div />,
         meta: {
-          thClassName: styles.thConnectionId,
+          thClassName: classNames(styles.thConnectionId, styles.light),
         },
       }),
     ],
@@ -163,7 +168,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
 
   return (
     <div className={styles.content}>
-      <NextTable<FullTableProps> columns={columns} data={sortingData} light />
+      <NextTable columns={columns} data={sortingData} light />
     </div>
   );
 };

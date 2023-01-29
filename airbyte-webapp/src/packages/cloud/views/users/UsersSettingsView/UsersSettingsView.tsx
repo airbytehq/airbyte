@@ -77,16 +77,10 @@ export const UsersTable: React.FC = () => {
     () => [
       columnHelper.accessor("name", {
         header: () => <FormattedMessage id="userSettings.table.column.fullname" />,
-        meta: {
-          headerHighlighted: true,
-        },
         cell: (props) => props.cell.getValue(),
       }),
       columnHelper.accessor("email", {
         header: () => <FormattedMessage id="userSettings.table.column.email" />,
-        meta: {
-          headerHighlighted: true,
-        },
         cell: (props) => props.cell.getValue(),
       }),
       // TEMP: Currently all cloud users are admins.
@@ -104,9 +98,6 @@ export const UsersTable: React.FC = () => {
       // },
       columnHelper.accessor("status", {
         header: () => <FormattedMessage id="userSettings.table.column.action" />,
-        meta: {
-          headerHighlighted: true,
-        },
         cell: (props) =>
           [
             user?.userId !== props.row.original.userId ? (
