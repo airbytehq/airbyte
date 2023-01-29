@@ -703,6 +703,10 @@
   "user.signup.privacy": "Privacy Policy",
   "user.signup.and": "and",
   "user.resendInvite.message": "Invite has been sent!",
+  "user.changeRole.message": "User role has been changed!",
 
-  "signup.google": "Sign up with Google"
+  "signup.google": "Sign up with Google",
+
+  "payment.error.text": "Something went wrong in payment",
+  "payment.errorPage.btnText": "Back to payment page"
 }

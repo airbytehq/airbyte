@@ -83,6 +83,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { user } = useUser();
 
   const [messageId, setMessageId] = useState<string>("");
+  const [messageType, setMessageType] = useState<"info" | "error">("info");
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
@@ -90,7 +91,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         {
           path: `${SettingsRoute.UserManagement}`,
           name: <FormattedMessage id="settings.user.management" />,
-          component: <UserManagementPage setMessageId={setMessageId} />,
+          component: <UserManagementPage setMessageId={setMessageId} setMessageType={setMessageType} />,
           show:
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
@@ -106,7 +107,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,
-          component: <PlansBillingPage setMessageId={setMessageId} />,
+          component: <PlansBillingPage setMessageId={setMessageId} setMessageType={setMessageType} />,
           show:
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
@@ -145,7 +146,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               <div style={{ padding: "0 0 0 20px" }}>
                 <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
               </div>
-              <MessageBox message={messageId} onClose={() => setMessageId("")} />
+              <MessageBox message={messageId} onClose={() => setMessageId("")} type={messageType} />
             </PageHeaderContainer>
           }
         >

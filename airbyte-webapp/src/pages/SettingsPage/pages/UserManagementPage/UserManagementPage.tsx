@@ -18,6 +18,7 @@ import UserTable from "./components/UserTable";
 
 interface IProps {
   setMessageId: React.Dispatch<React.SetStateAction<string>>;
+  setMessageType: React.Dispatch<React.SetStateAction<"info" | "error">>;
 }
 
 const HeaderContainer = styled.div`
@@ -47,7 +48,7 @@ const BtnText = styled.div`
   color: #ffffff;
 `;
 
-const UserManagementPage: React.FC<IProps> = ({ setMessageId }) => {
+const UserManagementPage: React.FC<IProps> = ({ setMessageId, setMessageType }) => {
   const roleOptions = useRoleOptions().filter((role) => role.label !== ROLES.Administrator_Owner);
   const users = useListUsers();
   const { onDeleteUser, onResendInvite, onUpdateRole } = useUserAsyncAction();
@@ -84,6 +85,7 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId }) => {
     onResendInvite(userId)
       .then(() => {
         setMessageId("user.resendInvite.message");
+        setMessageType("info");
       })
       .catch((err: any) => {
         console.log(err);
@@ -107,6 +109,8 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId }) => {
       .then(() => {
         setChangeRoleLoading(false);
         onCancelChangeRole();
+        setMessageId("user.changeRole.message");
+        setMessageType("info");
       })
       .catch(() => {
         setChangeRoleLoading(false);
@@ -142,7 +146,14 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId }) => {
         onChangeRole={onChangeRole}
         onResendInvite={resendInvite}
       />
-      {addUserModal && <InviteUserModal roles={roleOptions} onClose={toggleAddUserModal} />}
+      {addUserModal && (
+        <InviteUserModal
+          roles={roleOptions}
+          onClose={toggleAddUserModal}
+          setMessageId={setMessageId}
+          setMessageType={setMessageType}
+        />
+      )}
       {changeRoleModal && (
         <ChangeRoleModal
           onClose={toggleChangeRoleModal}

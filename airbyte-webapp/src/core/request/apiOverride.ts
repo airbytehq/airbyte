@@ -118,5 +118,5 @@ async function parseResponse<T>(
     }
   }
 
-  throw new CommonRequestError(response, resultJsonResponse?.message);
+  throw new CommonRequestError(response, resultJsonResponse?.msg);
 }
