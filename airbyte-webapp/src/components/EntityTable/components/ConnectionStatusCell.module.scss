@@ -1,8 +1,5 @@
-@use "scss/variables";
-@use "scss/colors";
-
-$connector_icon_width: 20px;
-$connector_icon_margin: 10px;
+$connector-icon-width: 20px;
+$connector-icon-margin: 10px;
 
 .content {
   display: flex;
@@ -10,5 +7,5 @@ $connector_icon_margin: 10px;
 }
 
 .text {
-  width: calc(100% - #{$connector_icon_width + $connector_icon_margin});
+  width: calc(100% - #{$connector-icon-width + $connector-icon-margin});
 }

@@ -8,7 +8,7 @@
   border-radius: variables.$border-radius-lg;
   box-shadow: 0 2px 4px rgb(26 25 77 / 12%);
 
-  .light {
+  &.light {
     box-shadow: none;
   }
 }

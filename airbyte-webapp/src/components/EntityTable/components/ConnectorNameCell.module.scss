@@ -1,7 +1,6 @@
 @use "scss/variables";
-@use "scss/colors";
 
-$status_icon_width: 25px;
+$status-icon-width: 25px;
 
 .content {
   display: flex;
@@ -9,6 +8,6 @@ $status_icon_width: 25px;
 }
 
 .text {
-  width: calc(100% - #{$status_icon_width});
+  width: calc(100% - #{$status-icon-width});
   margin-left: variables.$spacing-md;
 }
