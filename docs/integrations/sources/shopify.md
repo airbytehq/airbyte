@@ -5,6 +5,13 @@ description: >-
 
 # Shopify
 
+
+:::note
+
+Our Shopify Source Connector does not support OAuth at this time due to limitations outside of our control. If OAuth for Shopify is critical to your business, [please reach out to us](mailto:product@airbyte.io) to discuss how we may be able to partner on this effort.
+
+:::
+
 ## Sync overview
 
 The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
@@ -82,14 +89,8 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 3. Create a private application.
 4. Select the resources you want to allow access to. Airbyte only needs read-level access.
    * Note: The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource.
-5. The password under the `Admin API` section is what you'll use as the `api_password` for the integration.
+5. The password under the `Admin API` section is what you'll use as the `API PASSWORD` for the integration.
 6. You're ready to set up Shopify in Airbyte!
-
-### Connect using `OAuth 2.0` option
-
-1. Select `OAuth 2.0` in `Shopify Authorization Method`
-2. Click on `authenticate`
-2. Proceed the authentication using your credentials for your Shopify account.
 
 ### Output Streams Schemas
 

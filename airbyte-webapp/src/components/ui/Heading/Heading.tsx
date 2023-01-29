@@ -11,9 +11,14 @@ interface HeadingProps {
   centered?: boolean;
   as: HeadingElementType;
   size?: HeadingSize;
+  inverseColor?: boolean;
 }
 
-const getHeadingClassNames = ({ size, centered }: Required<Pick<HeadingProps, "size" | "centered">>) => {
+const getHeadingClassNames = ({
+  size,
+  centered,
+  inverseColor,
+}: Required<Pick<HeadingProps, "size" | "centered" | "inverseColor">>) => {
   const sizes: Record<HeadingSize, string> = {
     sm: styles.sm,
     md: styles.md,
@@ -21,12 +26,20 @@ const getHeadingClassNames = ({ size, centered }: Required<Pick<HeadingProps, "s
     xl: styles.xl,
   };
 
-  return classNames(styles.heading, sizes[size], centered && styles.centered);
+  return classNames(styles.heading, sizes[size], { [styles.centered]: centered, [styles.inverse]: inverseColor });
 };
 
 export const Heading: React.FC<React.PropsWithChildren<HeadingProps>> = React.memo(
-  ({ as, centered = false, children, className: classNameProp, size = "md", ...remainingProps }) => {
-    const className = classNames(getHeadingClassNames({ centered, size }), classNameProp);
+  ({
+    as,
+    centered = false,
+    children,
+    className: classNameProp,
+    size = "md",
+    inverseColor = false,
+    ...remainingProps
+  }) => {
+    const className = classNames(getHeadingClassNames({ centered, size, inverseColor }), classNameProp);
 
     return React.createElement(as, {
       ...remainingProps,

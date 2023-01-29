@@ -7,7 +7,7 @@ data:
     #!/bin/bash
 
     get_worker_pods () {
-      kubectl -n ${KUBE_NAMESPACE} -L airbyte -l airbyte=worker-pod \
+      kubectl -n ${KUBE_NAMESPACE} -L airbyte -l airbyte=job-pod \
         --field-selector status.phase!=Running get pods \
         -o=jsonpath='{range .items[*]} {.metadata.name} {.status.phase} {.status.conditions[0].lastTransitionTime} {.status.startTime}{"\n"}{end}'
     }

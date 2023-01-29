@@ -1,11 +1,12 @@
 import { Field, FieldProps, setIn } from "formik";
 import React, { useCallback } from "react";
 
+import { FormikConnectionFormValues } from "components/connection/ConnectionForm/formConfig";
+
 import { SyncSchemaStream } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { BulkHeader } from "./BulkHeader";
 import { CatalogSection } from "./CatalogSection";
@@ -31,6 +32,11 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, chang
 
       if (streamNode) {
         const newStreamNode = setIn(streamNode, "config", { ...streamNode.config, ...newConfig });
+
+        // config.selectedFields must be removed if fieldSelection is disabled
+        if (!newStreamNode.config.fieldSelectionEnabled) {
+          delete newStreamNode.config.selectedFields;
+        }
 
         onStreamChanged(newStreamNode);
       }
