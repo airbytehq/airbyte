@@ -158,8 +158,7 @@ definitions:
               datetime_format: "%Y-%m-%d"
             datetime_format: "%Y-%m-%dT%H:%M:%SZ"
             cursor_format: "%a, %d %b %Y %H:%M:%S %z"
-            step: "{{ 'P' + config.slice_step_map[options.name]|string() + 'D' if config.slice_step_map[options.name] else 'P1Y' }}"
-            cursor_granularity: "P1D"
+            step: "{{ 'P' + config.slice_step_map[options.name]|string() + 'D' if config.slice_step_map[options.name] else options.step_default }}"
   # https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources
   calls_stream:
     $ref: "*ref(definitions.base_incremental_nested_stream)"
@@ -168,6 +167,8 @@ definitions:
       cursor_field: "end_time"
       lower_boundary_param: "EndTime>"
       upper_boundary_param: "EndTime<"
+      cursor_granularity: "P1D"
+      step_default: "P1Y"
     stream_cursor_field: "end_time"
   # https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources
   conferences_stream:
@@ -177,6 +178,8 @@ definitions:
       cursor_field: "date_updated"
       lower_boundary_param: "DateUpdated>"
       upper_boundary_param: "DateUpdated<"
+      cursor_granularity: "P1D"
+      step_default: "P1Y"
     stream_cursor_field: "date_updated"
 
 
