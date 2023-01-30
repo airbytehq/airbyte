@@ -24,3 +24,5 @@ connectionSpecification:
     oauth2_token:
       type: string
       description: "Your OAuth access token. See also: https://wiki.awin.com/index.php/API_authentication"
+      airbyte_secret: true
+
