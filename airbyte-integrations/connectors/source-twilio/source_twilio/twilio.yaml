@@ -169,6 +169,15 @@ definitions:
       lower_boundary_param: "EndTime>"
       upper_boundary_param: "EndTime<"
     stream_cursor_field: "end_time"
+  # https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources
+  conferences_stream:
+    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    $options:
+      name: "conferences"
+      cursor_field: "date_updated"
+      lower_boundary_param: "DateUpdated>"
+      upper_boundary_param: "DateUpdated<"
+    stream_cursor_field: "date_updated"
 
 
 streams:
@@ -185,6 +194,7 @@ streams:
   - "*ref(definitions.available_phone_numbers_mobile_stream)"
   - "*ref(definitions.available_phone_numbers_toll_free_stream)"
   - "*ref(definitions.calls_stream)"
+  - "*ref(definitions.conferences_stream)"
 
 check:
   stream_names:
