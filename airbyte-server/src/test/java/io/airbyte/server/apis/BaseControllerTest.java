@@ -28,7 +28,6 @@ import jakarta.inject.Named;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
-import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 @Slf4j
@@ -36,7 +35,7 @@ import org.mockito.Mockito;
 @Requires(property = "mockito.test.enabled",
           defaultValue = StringUtils.TRUE,
           value = StringUtils.TRUE)
-// @Requires(env = {Environment.TEST})
+@SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
 public abstract class BaseControllerTest {
 
   AttemptHandler attemptHandler = Mockito.mock(AttemptHandler.class);
@@ -241,13 +240,6 @@ public abstract class BaseControllerTest {
   @Inject
   @Client("/")
   HttpClient client;
-
-  @BeforeEach
-  void init() {
-    // client =
-    // HttpClient.create(embeddedServer.getURL());//embeddedServer.getApplicationContext().createBean(HttpClient.class,
-    // embeddedServer.getURL());
-  }
 
   void testEndpointStatus(HttpRequest request, HttpStatus expectedStatus) {
     assertEquals(expectedStatus, client.toBlocking().exchange(request).getStatus());
