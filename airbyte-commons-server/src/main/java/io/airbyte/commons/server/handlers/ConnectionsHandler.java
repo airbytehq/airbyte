@@ -519,8 +519,9 @@ public class ConnectionsHandler {
       return Optional.empty();
     }
     final ActorCatalog catalog = configRepository.getActorCatalogById(connection.getSourceCatalogId());
-    return Optional.of(CatalogConverter.toApi(Jsons.object(catalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class)));
+    final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(connection.getSourceId());
+    final io.airbyte.protocol.models.AirbyteCatalog jsonCatalog = Jsons.object(catalog.getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
+    return Optional.of(CatalogConverter.toApi(jsonCatalog, sourceDefinition));
   }
 
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch)
