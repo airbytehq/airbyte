@@ -12,6 +12,7 @@ export interface Experiments {
   "connector.orderOverwrite": Record<string, number>;
   "connector.frequentlyUsedDestinationIds": string[];
   "connector.form.useDatepicker": boolean;
+  "connector.shortSetupGuides": boolean;
   "authPage.rightSideUrl": string | undefined;
   "authPage.hideSelfHostedCTA": boolean;
   "authPage.signup.hideName": boolean;
@@ -21,7 +22,6 @@ export interface Experiments {
   "authPage.oauth.google.signUpPage": boolean;
   "authPage.oauth.github.signUpPage": boolean;
   "onboarding.speedyConnection": boolean;
-  "authPage.signup.sourceSelector": boolean;
   "authPage.oauth.position": "top" | "bottom";
   "connection.onboarding.sources": string;
   "connection.onboarding.destinations": string;
