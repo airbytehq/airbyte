@@ -1,5 +1,5 @@
-import { PillButtonVariant } from "../PillSelect";
 import { InfoTextVariant } from "./InfoText";
+import { PillButtonVariant } from "../PillSelect";
 
 export const INFO_TEXT_VARIANT_BY_PILL_VARIANT: Record<PillButtonVariant, InfoTextVariant> = {
   blue: "blue",

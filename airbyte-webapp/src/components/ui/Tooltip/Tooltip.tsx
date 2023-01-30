@@ -80,7 +80,13 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
           <div
             role="tooltip"
             ref={floating}
-            className={classNames(styles.tooltip, theme === "light" && styles.light, className)}
+            className={classNames(
+              styles.tooltip,
+              {
+                [styles.light]: theme === "light",
+              },
+              className
+            )}
             style={{
               position: strategy,
               top: y ?? 0,
