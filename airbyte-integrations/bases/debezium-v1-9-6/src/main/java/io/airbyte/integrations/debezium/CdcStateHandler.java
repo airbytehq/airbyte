@@ -35,4 +35,5 @@ public interface CdcStateHandler {
    * @return Returns `true` when the record is behind the offset. Otherwise, it returns `false`
    */
   boolean isRecordBehindOffset(Map<String, String> offset, ChangeEvent<String, String> event);
+
 }
