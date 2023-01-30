@@ -11,10 +11,6 @@ import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.nio.file.Path;
 import java.util.Optional;
 
-/**
- * Basic Airbyte Source that emits {@link LimitedAirbyteSource#TOTAL_RECORDS} before finishing.
- * Intended for performance testing.
- */
 public class LimitedAirbyteSource implements AirbyteSource {
 
   private static final int TOTAL_RECORDS = 1_000_000;

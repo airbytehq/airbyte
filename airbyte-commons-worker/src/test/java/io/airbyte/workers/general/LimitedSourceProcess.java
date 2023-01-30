@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ProcessHandle.Info;
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -51,8 +52,8 @@ public class LimitedSourceProcess extends Process {
               var msg = AirbyteMessageUtils.createRecordMessage("s1", "data",
                   "This is a fairly long sentence to provide some bytes here. More bytes is better as it helps us measure performance."
                       + "Random append to prevent dead code generation :");
-              os.write(MAPPER.writeValueAsString(msg).getBytes());
-              os.write(System.getProperty("line.separator").getBytes());
+              os.write(MAPPER.writeValueAsString(msg).getBytes(Charset.defaultCharset()));
+              os.write(System.getProperty("line.separator").getBytes(Charset.defaultCharset()));
               currRecs++;
             }
             os.flush();
