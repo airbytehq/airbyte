@@ -89,7 +89,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     Common base class for report streams
     """
 
-    primary_key = ["profileId", "recordType", "reportDate", "updatedAt", "recordId"]
+    primary_key = ["profileId", "recordType", "reportDate", "recordId"]
     # Amazon ads updates the data for the next 3 days
     LOOK_BACK_WINDOW = 3
     # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
@@ -161,7 +161,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
-                    updatedAt=pendulum.now(tz=profile.timezone).replace(microsecond=0).to_iso8601_string(),
                     recordId=metric_object[self.metrics_type_to_id_map[report_info.record_type]],
                     metric=metric_object,
                 ).dict()

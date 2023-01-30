@@ -9,7 +9,6 @@
           ["profileId"],
           ["recordType"],
           ["reportDate"],
-          ["updatedAt"],
           ["recordId"]
         ]
       },
