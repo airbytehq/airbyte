@@ -83,7 +83,9 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   @Override
   protected Optional<ConfigErrorException> checkForKnownConfigExceptions(Exception e) {
     if (e instanceof SnowflakeSQLException && e.getMessage().contains(NO_PRIVILEGES_ERROR_MESSAGE)) {
-      return Optional.of(new ConfigErrorException("Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges", e));
+      return Optional.of(new ConfigErrorException(
+          "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges",
+          e));
     }
     return Optional.empty();
   }
