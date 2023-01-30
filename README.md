@@ -9,7 +9,7 @@
     <img src="https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000" alt="Test">
 </a>
 <a href="https://github.com/airbytehq/airbyte/releases" target="_blank">
-    <img src="https://img.shields.io/github/v/release/airbytehq/airbyte?color=white" alt="Release">
+    <img src="https://img.shields.io/github/v/release/airbytehq/airbyte?color=white" alt="Release"> 
 </a>
 <a href="https://airbytehq.slack.com/" target="_blank">
     <img src="https://img.shields.io/badge/slack-join-white.svg?logo=slack" alt="Slack">
