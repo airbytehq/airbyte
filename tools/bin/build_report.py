@@ -30,6 +30,7 @@ SOURCE_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/source_definitions.yaml"
 DESTINATION_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/destination_definitions.yaml"
 CONNECTORS_ROOT_PATH = "./airbyte-integrations/connectors"
 RELEVANT_BASE_MODULES = ["base-normalization", "source-acceptance-test"]
+CONNECTOR_BUILD_OUTPUT_URL = "https://dnsgjos7lj2fu.cloudfront.net/tests/history/connectors"
 
 # Global vars
 TESTED_SOURCE = []
@@ -42,8 +43,7 @@ FAILED_2_LAST = []
 
 
 def get_status_page(connector) -> str:
-    # TODO (ben): ensure this is still working as expected
-    response = requests.get(f"https://dnsgjos7lj2fu.cloudfront.net/tests/summary/connectors/{connector}/index.html")
+    response = requests.get(f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector}/index.html")
     if response.status_code == 200:
         return response.text
 

@@ -23,7 +23,6 @@ BUCKET_WRITE_ROOT=/tmp/bucket_write_root
 LAST_TEN_ROOT=/tmp/last_ten_root
 SUMMARY_WRITE_ROOT=/tmp/summary_write_root
 
-# TODO (ben) what if not found
 DOCKER_VERSION=$(get_connector_version "$CONNECTOR")
 
 GITHUB_ACTION_LINK=https://github.com/$REPOSITORY/actions/runs/$RUN_ID
@@ -84,7 +83,6 @@ function write_badge_and_summary() {
   successes=0
   failures=0
 
-  # TODO (ben) refactor, this is a bit unweildly
   while IFS= read -r file; do
     line=$(cat "$LAST_TEN_ROOT/$file")
     outcome=$(echo "$line" | jq -r '.outcome')
@@ -134,7 +132,6 @@ function write_badge_and_summary() {
   HTML="$HTML_TOP $HTML_TABLE $HTML_BOTTOM"
   BADGE="{ \"schemaVersion\": 1, \"label\": \"\", \"labelColor\": \"#c5c4ff\", \"message\": \"$message\", \"color\": \"$color\", \"cacheSeconds\": 300, \"logoSvg\": \"<svg version=\\\"1.0\\\" xmlns=\\\"http://www.w3.org/2000/svg\\\"\\n width=\\\"32.000000pt\\\" height=\\\"32.000000pt\\\" viewBox=\\\"0 0 32.000000 32.000000\\\"\\n preserveAspectRatio=\\\"xMidYMid meet\\\">\\n\\n<g transform=\\\"translate(0.000000,32.000000) scale(0.100000,-0.100000)\\\"\\nfill=\\\"#000000\\\" stroke=\\\"none\\\">\\n<path d=\\\"M136 279 c-28 -22 -111 -157 -102 -166 8 -8 34 16 41 38 8 23 21 25\\n29 3 3 -8 -6 -35 -20 -60 -18 -31 -22 -44 -12 -44 20 0 72 90 59 103 -6 6 -11\\n27 -11 47 0 77 89 103 137 41 18 -23 16 -62 -5 -96 -66 -109 -74 -125 -59\\n-125 24 0 97 140 97 185 0 78 -92 123 -154 74z\\\"/>\\n<path d=\\\"M168 219 c-22 -13 -23 -37 -2 -61 12 -12 14 -22 7 -30 -5 -7 -22 -34\\n-37 -60 -20 -36 -23 -48 -12 -48 13 0 106 147 106 169 0 11 -28 41 -38 41 -4\\n0 -15 -5 -24 -11z m32 -34 c0 -8 -4 -15 -10 -15 -5 0 -10 7 -10 15 0 8 5 15\\n10 15 6 0 10 -7 10 -15z\\\"/>\\n</g>\\n</svg>\\n\" }"
 
-  # TODO (ben) breakout into own file
   rm -r $SUMMARY_WRITE_ROOT || true
   mkdir -p $SUMMARY_WRITE_ROOT/tests/summary/"$CONNECTOR"
 
@@ -145,11 +142,6 @@ function write_badge_and_summary() {
 }
 
 function main() {
-  # echo important variables
-  echo "CONNECTOR: $CONNECTOR"
-  echo "BUCKET: $BUCKET"
-  echo "DOCKER_VERSION: $DOCKER_VERSION"
-
   write_job_log
   pull_latest_job_logs
   write_badge_and_summary
