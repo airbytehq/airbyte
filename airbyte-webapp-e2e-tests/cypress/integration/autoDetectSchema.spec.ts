@@ -41,7 +41,7 @@ describe("Connection - Auto-detect schema changes", () => {
     runDbQuery(dropUsersTableQuery);
     runDbQuery(createUsersTableQuery);
 
-    requestWorkspaceId()?.then(() => {
+    requestWorkspaceId().then(() => {
       const sourceRequestBody = getPostgresCreateSourceBody(appendRandomString("Auto-detect schema Source"));
       const destinationRequestBody = getPostgresCreateDestinationBody(
         appendRandomString("Auto-detect schema Destination")

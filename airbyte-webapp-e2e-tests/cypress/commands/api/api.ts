@@ -1,5 +1,5 @@
 import {
-  ConectionGetBody,
+  ConnectionGetBody,
   Connection,
   ConnectionCreateRequestBody,
   ConnectionsList,
@@ -13,16 +13,6 @@ import { getWorkspaceId, setWorkspaceId } from "./workspace";
 
 const getApiUrl = (path: string): string => `http://localhost:8001/api/v1${path}`;
 
-export const requestWorkspaceId = () =>
-  cy.request("POST", getApiUrl("/workspaces/list")).then((response) => {
-    expect(response.status).to.eq(200);
-    const {
-      workspaces: [{ workspaceId }],
-    } = response.body;
-
-    setWorkspaceId(workspaceId as string);
-  });
-
 const apiRequest = <T = void>(
   method: Cypress.HttpMethod,
   path: string,
@@ -34,6 +24,13 @@ const apiRequest = <T = void>(
     return response.body;
   });
 
+export const requestWorkspaceId = () =>
+  apiRequest<{ workspaces: Array<{ workspaceId: string }> }>("POST", "/workspaces/list").then(
+    ({ workspaces: [{ workspaceId }] }) => {
+      setWorkspaceId(workspaceId);
+    }
+  );
+
 export const requestConnectionsList = () =>
   apiRequest<ConnectionsList>("POST", "/connections/list", { workspaceId: getWorkspaceId() });
 
@@ -43,7 +40,7 @@ export const requestCreateConnection = (body: ConnectionCreateRequestBody) =>
 export const requestUpdateConnection = (body: Record<string, unknown>) =>
   apiRequest<Connection>("POST", "/web_backend/connections/update", body);
 
-export const requestGetConnection = (body: ConectionGetBody) =>
+export const requestGetConnection = (body: ConnectionGetBody) =>
   apiRequest<Connection>("POST", "/web_backend/connections/get", body);
 
 export const requestDeleteConnection = (connectionId: string) =>
