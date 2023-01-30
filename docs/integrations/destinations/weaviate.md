@@ -12,7 +12,7 @@
 
 #### Output Schema
 
-Each stream will be output into its own class in Weaviate. The record fields will be stored as fields
+Each stream will be output into its [own class](https://weaviate.io/developers/weaviate/current/core-knowledge/basics.html#class-collections) in [Weaviate](https://weaviate.io). The record fields will be stored as fields
 in the Weaviate class.
 
 **Uploading Vectors:** Use the vectors configuration if you want to upload

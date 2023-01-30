@@ -63,7 +63,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   @Override
   public StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException {
-    StandardSourceDefinition definition = this.sourceDefinitions.get(definitionId);
+    final StandardSourceDefinition definition = this.sourceDefinitions.get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException(SeedType.STANDARD_SOURCE_DEFINITION.name(), definitionId.toString());
     }
@@ -77,7 +77,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   @Override
   public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
-    StandardDestinationDefinition definition = this.destinationDefinitions.get(definitionId);
+    final StandardDestinationDefinition definition = this.destinationDefinitions.get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException(SeedType.STANDARD_DESTINATION_DEFINITION.name(), definitionId.toString());
     }
@@ -142,7 +142,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
     return definitionJson;
   }
 
-  private static JsonNode addMissingFields(JsonNode element) {
+  private static JsonNode addMissingFields(final JsonNode element) {
     return addMissingPublicField(addMissingCustomField(addMissingTombstoneField(element)));
   }
 

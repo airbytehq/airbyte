@@ -10,7 +10,7 @@ import { useNotificationService } from "hooks/services/Notification";
 import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
-import { CloudRoutes } from "../cloudRoutes";
+import { CloudRoutes } from "../cloudRoutePaths";
 
 const AcceptEmailInvite = React.lazy(() => import("./AcceptEmailInvite"));
 const ResetPasswordConfirmPage = React.lazy(() => import("./auth/ConfirmPasswordResetPage"));

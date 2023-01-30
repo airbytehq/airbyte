@@ -80,6 +80,10 @@ class BootloaderTest {
   private static final String VERSION_0321_ALPHA = "0.32.1-alpha";
   private static final String VERSION_0170_ALPHA = "0.17.0-alpha";
 
+  // ⚠️ This line should change with every new migration to show that you meant to make a new
+  // migration to the prod database
+  private static final String CURRENT_MIGRATION_VERSION = "0.40.28.001";
+
   @BeforeEach
   void setup() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
@@ -146,9 +150,7 @@ class BootloaderTest {
       assertEquals("0.40.26.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
-      // this line should change with every new migration
-      // to show that you meant to make a new migration to the prod database
-      assertEquals("0.40.23.002", configsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals(CURRENT_MIGRATION_VERSION, configsMigrator.getLatestMigration().getVersion().getVersion());
 
       assertEquals(VERSION_0330_ALPHA, jobsPersistence.getVersion().get());
       assertEquals(new Version(PROTOCOL_VERSION_123), jobsPersistence.getAirbyteProtocolVersionMin().get());

@@ -79,7 +79,7 @@ class ApplyDefinitionsHelperTest {
   private ApplyDefinitionsHelper applyDefinitionsHelper;
 
   @BeforeEach
-  void setup() throws JsonValidationException, IOException {
+  void setup() throws IOException {
     configRepository = mock(ConfigRepository.class);
     definitionsProvider = mock(DefinitionsProvider.class);
     jobPersistence = mock(JobPersistence.class);

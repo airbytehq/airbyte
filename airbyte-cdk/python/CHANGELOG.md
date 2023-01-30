@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.25.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.24.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.23.0
+Limiting the number of HTTP requests during a test read
+
+## 0.22.0
+Surface the resolved manifest in the CDK
+
+## 0.21.0
+Add AvailabilityStrategy concept and use check_availability within CheckStream
+
+## 0.20.2
+Add missing package in previous patch release
+
+## 0.20.1
+Handle edge cases for CheckStream - checking connection to empty stream, and checking connection to substream with no parent records
+
 ## 0.20.0
 Low-Code: Refactor low-code to use Pydantic model based manifest parsing and component creation
 
