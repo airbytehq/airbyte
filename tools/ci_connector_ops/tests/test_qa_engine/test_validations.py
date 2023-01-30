@@ -134,7 +134,7 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
         }),
         {
             "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
-            "outcome": "failed",
+            "outcome": "failure",
             "docker_version": "0.1.5",
             "timestamp": "1674872401",
             "connector": "connectors/source-pokeapi"

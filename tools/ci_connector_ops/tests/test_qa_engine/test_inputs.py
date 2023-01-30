@@ -71,30 +71,49 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
             "connector": "connectors/source-pokeapi"
         },
         200,
-        "success"
+        inputs.BUILD_STATUSES.SUCCESS
     ),
     (
         "connectors/source-pokeapi",
         "0.1.5",
         {
             "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
-            "outcome": "failed",
+            "outcome": "failure",
             "docker_version": "0.1.5",
             "timestamp": "1674872401",
             "connector": "connectors/source-pokeapi"
         },
         200,
-        "failed"
+        inputs.BUILD_STATUSES.FAILURE
     ),
     (
         "connectors/source-pokeapi",
         "0.1.5",
         None,
         404,
-        None
+        inputs.BUILD_STATUSES.NOT_FOUND
+    ),
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        {
+            "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+            "docker_version": "0.1.5",
+            "timestamp": "1674872401",
+            "connector": "connectors/source-pokeapi"
+        },
+        200,
+        inputs.BUILD_STATUSES.NOT_FOUND
+    ),
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        None,
+        404,
+        inputs.BUILD_STATUSES.NOT_FOUND
     ),
 ])
-def test_fetch_latest_build_status_for_connector_version_success(mocker, connector_name, connector_version, mocked_json_payload, mocked_status_code, expected_status):
+def test_fetch_latest_build_status_for_connector_version(mocker, connector_name, connector_version, mocked_json_payload, mocked_status_code, expected_status):
     # Mock the api call to get the latest build status for a connector version
     mock_response = MagicMock()
     mock_response.json.return_value = mocked_json_payload
@@ -103,3 +122,22 @@ def test_fetch_latest_build_status_for_connector_version_success(mocker, connect
 
     assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == expected_status
     assert mock_get.call_args == call(f"{constants.CONNECTOR_BUILD_OUTPUT_URL}/{connector_name}/{connector_version}.json")
+
+def test_fetch_latest_build_status_for_connector_version_invalid_status(mocker, caplog):
+    connector_name = "connectors/source-pokeapi"
+    connector_version = "0.1.5"
+    mocked_json_payload = {
+        "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+        "outcome": "unknown_outcome_123",
+        "docker_version": "0.1.5",
+        "timestamp": "1674872401",
+        "connector": "connectors/source-pokeapi"
+    }
+    # Mock the api call to get the latest build status for a connector version
+    mock_response = MagicMock()
+    mock_response.json.return_value = mocked_json_payload
+    mock_response.status_code = 200
+    mocker.patch.object(requests, 'get', return_value=mock_response)
+
+    assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == inputs.BUILD_STATUSES.NOT_FOUND
+    assert 'Error: Unexpected build status value: unknown_outcome_123 for connector connectors/source-pokeapi:0.1.5' in caplog.text

@@ -10,7 +10,7 @@ import requests
 
 from .constants import INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS
 from .models import ConnectorQAReport, QAReport
-from .inputs import fetch_latest_build_status_for_connector_version
+from .inputs import fetch_latest_build_status_for_connector_version, BUILD_STATUSES
 
 TRUTHY_COLUMNS_TO_BE_ELIGIBLE = [
   "documentation_is_available",
@@ -40,7 +40,7 @@ def latest_build_is_successful(connector_qa_data: pd.Series) -> bool:
     connector_technical_name = connector_qa_data["connector_technical_name"]
     connector_version = connector_qa_data["connector_version"]
     latest_build_status = fetch_latest_build_status_for_connector_version(connector_technical_name, connector_version)
-    return latest_build_status == "success"
+    return latest_build_status == BUILD_STATUSES.SUCCESS
 
 def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd.DataFrame:
     """Perform validation steps on top of the enriched catalog.
