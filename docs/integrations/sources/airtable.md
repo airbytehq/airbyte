@@ -26,7 +26,7 @@ This source syncs data from the [Airtable API](https://airtable.com/api).
 3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
 4. Click **Authenticate your Airtable account**.
 5. Proceed with `login` and `grant the permissions` to the target `bases` you need the access to, we recommend to use `All Workspaces and bases`.
-5. Log in and Authorize to the Airtable account and click `Set up source`.
+6. Log in and Authorize to the Airtable account and click `Set up source`.
 
 
 ## Supported sync modes
@@ -54,10 +54,46 @@ The `Enterprise` level accounts are not supported yet.
 
 ## Data type map
 
-| Integration Type       | Airbyte Type |
-| :--------------------- | :----------- |
-| `Any`                  | `string`     |
+| Integration Type       | Airbyte Type                                            | Nullable |
+| :--------------------- | :------------------------------------------------------ | -------- |
+| `multipleAttachments`  | `string`                                                | Yes      |
+| `autoNumber`           | `string`                                                | Yes      |
+| `barcode`              | `string`                                                | Yes      |
+| `button`               | `string`                                                | Yes      |
+| `checkbox`             | `boolean`                                               | Yes      |
+| `singleCollaborator`   | `string`                                                | Yes      |
+| `count`                | `number`                                                | Yes      |
+| `createdBy`            | `string`                                                | Yes      |
+| `createdTime`          | `datetime`, `format: date-time`                         | Yes      |
+| `currency`             | `number`                                                | Yes      |
+| `email`                | `string`                                                | Yes      |
+| `date`                 | `string`, `format: date`                                | Yes      |
+| `duration`             | `number`                                                | Yes      |
+| `lastModifiedBy`       | `string`                                                | Yes      |
+| `lastModifiedTime`     | `datetime`, `format: date-time`                         | Yes      |
+| `multipleRecordLinks`  | `array with strings`                                    | Yes      |
+| `multilineText`        | `string`                                                | Yes      |
+| `multipleCollaborators`| `array with strings`                                    | Yes      |
+| `multipleSelects`      | `array with strings`                                    | Yes      |
+| `number`               | `number`                                                | Yes      |
+| `percent`              | `number`                                                | Yes      |
+| `phoneNumber`          | `string`                                                | Yes      |
+| `rating`               | `number`                                                | Yes      |
+| `richText`             | `string`                                                | Yes      |
+| `singleLineText`       | `string`                                                | Yes      |
+| `externalSyncSource`   | `string`                                                | Yes      |
+| `url`                  | `string`                                                | Yes      |
+| `formula`              | `array with any`                                        | Yes      |
+| `lookup`               | `array with any`                                        | Yes      |
+| `multipleLookupValues` | `array with any`                                        | Yes      |
+| `rollup`               | `array with any`                                        | Yes      |
 
+* All the fields are `nullable` by default, meaning that the field could be empty.
+* The `array with any` - represents the classic array with one of the other Airtable data types inside, such as:
+    - string
+    - number/integer
+    - nested lists/objects
+    - etc
 
 ### Performance Considerations (Airbyte Open-Source)
 
@@ -67,6 +103,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------|
+| 2.0.0   | 2023-01-27 | [21962](https://github.com/airbytehq/airbyte/pull/21962) | Added casting of native Airtable data types to JsonSchema types
 | 1.0.2   | 2023-01-25 | [20934](https://github.com/airbytehq/airbyte/pull/20934) | Added `OAuth2.0` authentication support 
 | 1.0.1   | 2023-01-10 | [21215](https://github.com/airbytehq/airbyte/pull/21215) | Fix field names                                        |
 | 1.0.0   | 2022-12-22 | [20846](https://github.com/airbytehq/airbyte/pull/20846) | Migrated to Metadata API for dynamic schema generation |
