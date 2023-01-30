@@ -13,6 +13,7 @@ import { DropdownMenu } from "components/ui/DropdownMenu";
 import { Text } from "components/ui/Text";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { TrackErrorFn, useAppMonitoringService } from "hooks/services/AppMonitoringService";
 import { DbtCloudJob, isSameJob, useDbtIntegration, useAvailableDbtJobs } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
@@ -25,7 +26,11 @@ interface DbtJobListValues {
   jobs: DbtCloudJob[];
 }
 
-const DbtCloudErrorBoundary = class extends React.Component {
+interface DbtCloudErrorBoundaryProps {
+  trackError: TrackErrorFn;
+  workspaceId: string;
+}
+class DbtCloudErrorBoundary extends React.Component<React.PropsWithChildren<DbtCloudErrorBoundaryProps>> {
   state = { error: null, displayMessage: null };
 
   // TODO parse the error to determine if the source was the upstream network call to
@@ -40,7 +45,8 @@ const DbtCloudErrorBoundary = class extends React.Component {
   }
 
   componentDidCatch(error: Error) {
-    console.log(error);
+    const { trackError, workspaceId } = this.props;
+    trackError(error, { workspaceId });
   }
 
   render() {
@@ -67,7 +73,7 @@ const DbtCloudErrorBoundary = class extends React.Component {
 
     return this.props.children;
   }
-};
+}
 
 export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBackendConnectionRead }) => {
   // Possible render paths:
@@ -81,9 +87,11 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   //        THEN show the jobs list and the "+ Add transformation" button
 
   const { hasDbtIntegration, isSaving, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
+  const { trackError } = useAppMonitoringService();
+  const workspaceId = useCurrentWorkspaceId();
 
   return hasDbtIntegration ? (
-    <DbtCloudErrorBoundary>
+    <DbtCloudErrorBoundary trackError={trackError} workspaceId={workspaceId}>
       <DbtJobsForm saveJobs={saveJobs} isSaving={isSaving} dbtCloudJobs={dbtCloudJobs} />
     </DbtCloudErrorBoundary>
   ) : (
