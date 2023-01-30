@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -15,18 +15,20 @@ import { equal } from "utils/objects";
 import { useTranslateDataType } from "utils/useTranslateDataType";
 
 import DataTypeCell from "./DataTypeCell";
-import { pathDisplayName } from "./PathPopout";
+import { IndexerType, pathDisplayName } from "./PathPopout";
 import { NameContainer, SyncCheckboxContainer } from "./styles";
 
 interface FieldRowProps {
-  isPrimaryKeyEnabled: boolean;
-  isCursorEnabled: boolean;
+  cursorIndexerType: IndexerType;
+  primaryKeyIndexerType: IndexerType;
   isSelected: boolean;
   onPrimaryKeyChange: (pk: string[]) => void;
   onCursorChange: (cs: string[]) => void;
   onToggleFieldSelected: (fieldPath: string[], isSelected: boolean) => void;
   field: SyncSchemaField;
   config: AirbyteStreamConfiguration | undefined;
+  shouldDefinePrimaryKey: boolean;
+  shouldDefineCursor: boolean;
 }
 
 const FirstCell = styled(Cell)`
@@ -43,9 +45,11 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
   onToggleFieldSelected,
   field,
   config,
-  isCursorEnabled,
-  isPrimaryKeyEnabled,
+  cursorIndexerType,
+  primaryKeyIndexerType,
   isSelected,
+  shouldDefinePrimaryKey,
+  shouldDefineCursor,
 }) => {
   const isColumnSelectionEnabled = useExperiment("connection.columnSelection", false);
   const dataType = useTranslateDataType(field);
@@ -54,37 +58,64 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
   const isCursor = equal(config?.cursorField, field.path);
   const isPrimaryKey = !!config?.primaryKey?.some((p) => equal(p, field.path));
   const isNestedField = SyncSchemaFieldObject.isNestedField(field);
+  // The indexer type tells us whether a cursor or pk is user-defined, source-defined or not required (null)
+  const fieldSelectionDisabled =
+    (cursorIndexerType !== null && isCursor) || (primaryKeyIndexerType !== null && isPrimaryKey) || isNestedField;
+
+  const renderDisabledReasonMessage = useCallback(() => {
+    if (isNestedField) {
+      return <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />;
+    }
+    if (primaryKeyIndexerType !== null && isPrimaryKey) {
+      return <FormattedMessage id="form.field.sync.primaryKeyTooltip" />;
+    }
+    if (cursorIndexerType !== null && isCursor) {
+      return <FormattedMessage id="form.field.sync.cursorFieldTooltip" />;
+    }
+    return null;
+  }, [isCursor, isPrimaryKey, isNestedField, field.path, cursorIndexerType, primaryKeyIndexerType]);
 
   return (
     <>
       {isColumnSelectionEnabled && (
         <Cell flex={0}>
           <SyncCheckboxContainer>
-            {!isNestedField && (
-              <Switch small checked={isSelected} onChange={() => onToggleFieldSelected(field.path, !isSelected)} />
-            )}
-            {isNestedField && (
-              <Tooltip control={<Switch small disabled checked={isSelected} />}>
-                <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />
-              </Tooltip>
-            )}
+            <Tooltip
+              disabled={!fieldSelectionDisabled}
+              control={
+                <Switch
+                  size="sm"
+                  disabled={fieldSelectionDisabled}
+                  checked={isSelected}
+                  onChange={() => onToggleFieldSelected(field.path, !isSelected)}
+                />
+              }
+            >
+              {renderDisabledReasonMessage()}
+            </Tooltip>
           </SyncCheckboxContainer>
         </Cell>
       )}
       {isColumnSelectionEnabled && (
         <Cell ellipsis flex={1.5}>
-          <span title={name}>{name}</span>
+          <span title={name} data-testid="nameCell">
+            {name}
+          </span>
         </Cell>
       )}
       {!isColumnSelectionEnabled && (
         <FirstCell ellipsis flex={1.5}>
-          <NameContainer title={name}>{name}</NameContainer>
+          <NameContainer title={name} data-testid="nameCell">
+            {name}
+          </NameContainer>
         </FirstCell>
       )}
-      <DataTypeCell>{dataType}</DataTypeCell>
-      <Cell>{isCursorEnabled && <RadioButton checked={isCursor} onChange={() => onCursorChange(field.path)} />}</Cell>
+      <DataTypeCell data-testid="dataTypeCell">{dataType}</DataTypeCell>
       <Cell>
-        {isPrimaryKeyEnabled && <CheckBox checked={isPrimaryKey} onChange={() => onPrimaryKeyChange(field.path)} />}
+        {shouldDefineCursor && <RadioButton checked={isCursor} onChange={() => onCursorChange(field.path)} />}
+      </Cell>
+      <Cell>
+        {shouldDefinePrimaryKey && <CheckBox checked={isPrimaryKey} onChange={() => onPrimaryKeyChange(field.path)} />}
       </Cell>
       <LastCell ellipsis title={field.cleanedName} flex={1.5}>
         {field.cleanedName}

@@ -32,7 +32,7 @@ public class JsonSchemaReferenceTypes {
    * This is primarily useful for migrating from protocol v0 to v1. It provides a mapping from the old
    * style {airbyte_type: foo} to new style {$ref: WellKnownTypes#/definitions/Foo}.
    */
-  public static final Map<String, String> AIRBYTE_TYPE_TO_REFERENCE_TYPE = ImmutableMap.of(
+  public static final Map<String, String> LEGACY_AIRBYTE_PROPERY_TO_REFERENCE = ImmutableMap.of(
       "timestamp_with_timezone", TIMESTAMP_WITH_TIMEZONE_REFERENCE,
       "timestamp_without_timezone", TIMESTAMP_WITHOUT_TIMEZONE_REFERENCE,
       "time_with_timezone", TIME_WITH_TIMEZONE_REFERENCE,

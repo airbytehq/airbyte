@@ -89,9 +89,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "airbytehq/integration-test": {
-          "11": { "created_at": "2121-12-31T23:59:59Z" }
-        }
+        "airbytehq/integration-test": { "created_at": "2121-12-31T23:59:59Z" }
       },
       "stream_descriptor": { "name": "issue_reactions" }
     }

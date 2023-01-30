@@ -112,7 +112,13 @@ Create a symlink that connects `<connector-directory>/airbyte-cdk` to your local
 ln -s ../../../airbyte-cdk/python airbyte-cdk
 ```
 
-Add the following lines to your connector's `Dockerfile`, before the line that installs dependencies via `pip install -e .`:
+Now that you have a symbolic link in your source, you will nedd to install it in the docker image. Depending on how the docker image is build you will have two possibilities:
+1. If image building process uses a temporary image called `builder`, add the following just after the copy of the installed packages to the folder `/usr/local`: 
+```Dockerfile
+COPY airbyte-cdk airbyte-cdk
+RUN PYTHONUSERBASE=/usr/local pip install -e ./airbyte-cdk
+```
+2. Add the following lines to your connector's `Dockerfile`, before the line that installs dependencies via `pip install -e .`:
 ```Dockerfile
 COPY airbyte-cdk airbyte-cdk
 RUN pip install -e ./airbyte-cdk
@@ -128,15 +134,14 @@ airbyteDocker {
 You should be able to build your connector with
 ```bash
 # from the airbytehq/airbyte base directory
-./gradlew build :airbyte-integrations:connectors:<connector-directory>
+./gradlew :airbyte-integrations:connectors:<connector-directory>:airbyteDocker
 ```
 and the installation should use your local CDK. Note that the local CDK is injected at build time, so if you make changes, you will have to run the build command again to see them reflected.
 **Note:** if your connector uses a `.dockerignore` file, it cannot have `exclude-all` or `exclude-except` patterns, i.e. the `.dockerignore` must specifically say which files to ignore without using any regex. 
 #### Publishing a new version to PyPi
 
-1. Bump the package version in `setup.py`
-2. Open a PR
-3. An Airbyte member must comment `/publish-cdk dry-run=true` to publish the package to test.pypi.org or `/publish-cdk dry-run=false` to publish it to the real index of pypi.org.
+1. Open a PR
+2. Once it is approved and merge, an Airbyte member must run the `Publish CDK Manually` workflow using `release-type=major|manor|patch` and setting the changelog message.
 
 ## Coming Soon
 

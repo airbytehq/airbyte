@@ -169,7 +169,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
     final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
-    BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
+    final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
     return Streams.stream(queryResults.iterateAll())
         .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());

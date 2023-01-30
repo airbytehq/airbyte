@@ -19,6 +19,7 @@ def commonConfigs = [
 node {
     download = true
     version = nodeVersion
+    npmInstallCommand = 'ci'
 }
 
 npm_run_build {
@@ -33,7 +34,7 @@ npm_run_build {
 task test(type: NpmTask) {
     dependsOn assemble
 
-    args = ['run', 'test', '--', '--watchAll=false', '--silent']
+    args = ['run', 'test:ci']
     inputs.files commonConfigs
     inputs.dir 'src'
 }
@@ -105,16 +106,8 @@ task copyNginx(type: Copy) {
     into "build/docker/bin/nginx"
 }
 
-task stylelint(type: NpmTask) {
-    dependsOn npmInstall
-    args = ['run', 'stylelint']
-    inputs.files commonConfigs
-    inputs.file '.stylelintrc'
-    inputs.dir 'src'
-}
-
 // Those tasks should be run as part of the "check" task
-check.dependsOn validateLinks, licenseCheck, test, stylelint
+check.dependsOn validateLinks, licenseCheck, test
 
 build.dependsOn buildStorybook
 

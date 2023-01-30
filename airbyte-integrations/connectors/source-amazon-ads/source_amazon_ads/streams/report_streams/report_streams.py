@@ -90,8 +90,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     """
 
     primary_key = ["profileId", "recordType", "reportDate", "updatedAt"]
-    # Amazon ads updates the data for the next 3 days
-    LOOK_BACK_WINDOW = 3
     # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
     REPORTING_PERIOD = 60
     # (Service limits section)
@@ -108,7 +106,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
         # In theory, it does not have to get such an error because the connector correctly calculates the start date,
         # but from practice, we can still catch such errors from time to time.
-        (406, "Report date is too far in the past."),
+        (406, re.compile(r"^Report date is too far in the past\.")),
     ]
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
@@ -118,6 +116,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._session = requests.Session()
         self._model = self._generate_model()
         self._start_date: Optional[Date] = config.get("start_date")
+        self._look_back_window: int = config["look_back_window"]
         # Timeout duration in minutes for Reports. Default is 180 minutes.
         self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
         # Maximum retries Airbyte will attempt for fetching report data. Default is 5.
@@ -329,7 +328,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def _update_state(self, profile: Profile, report_date: str):
         report_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()
-        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self.LOOK_BACK_WINDOW - 1)
+        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self._look_back_window - 1)
         start_date = self.get_start_date(profile, self._state)
         updated_state = max(min(report_date, look_back_date), start_date).format(self.REPORT_DATE_FORMAT)
 

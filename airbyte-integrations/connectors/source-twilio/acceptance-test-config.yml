@@ -17,14 +17,14 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
         empty_streams:
-            # TODO: SAT should be able to exclude expected records validation on the stream > field level
-            # to avoid exposures such as `auth_token` 
-            # reference: https://github.com/airbytehq/airbyte/pull/20430
+          # TODO: SAT should be able to exclude expected records validation on the stream > field level
+          # to avoid exposures such as `auth_token`
+          # reference: https://github.com/airbytehq/airbyte/pull/20430
           - name: "accounts"
             bypass_reason: "expected records could not be provided without field bypassing, skipping for now. Read #TODO above."
-            # 
+            #
           - name: "alerts"
             bypass_reason: "alerts are transient - they emerge and disappear from time to time"
           - name: "dependent_phone_numbers"
