@@ -39,8 +39,24 @@ data class Multi(val contexts: List<Context>) : Context {
     /** This value MUST be "multi" to properly sync with the LaunchDarkly client. */
     override val kind = "multi"
 
-    /** Multi contexts don't have a key */
-    override val key = ""
+    /**
+     * Multi contexts don't have a key, however for LDv5 reasons, a key must exist.
+     *
+     * Determine what the key should be based on the priority order of:
+     * workspace -> connection -> source -> destination -> user
+     * taking the first value
+     *
+     * When LDv5 support is dropped replace this with: override vale key = ""
+     */
+    override val key = when {
+        /** Intellij is going to recommend replacing .sortedBy with .minByOrNull, ignore this recommendation. */
+        fetchContexts<Workspace>().isNotEmpty() -> fetchContexts<Workspace>().sortedBy { it.key }.first().key
+        fetchContexts<Connection>().isNotEmpty() -> fetchContexts<Connection>().sortedBy { it.key }.first().key
+        fetchContexts<Source>().isNotEmpty() -> fetchContexts<Source>().sortedBy { it.key }.first().key
+        fetchContexts<Destination>().isNotEmpty() -> fetchContexts<Destination>().sortedBy { it.key }.first().key
+        fetchContexts<User>().isNotEmpty() -> fetchContexts<User>().sortedBy { it.key }.first().key
+        else -> throw IllegalArgumentException("unsupported context: ${contexts.joinToString { it.kind }}")
+    }
 
     init {
         // ensure there are no nested contexts (i.e. this Multi does not contain another Multi)

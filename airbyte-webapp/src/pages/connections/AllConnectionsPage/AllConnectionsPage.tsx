@@ -13,8 +13,8 @@ import { PageHeader } from "components/ui/PageHeader";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 
-import { RoutePaths } from "../../routePaths";
 import ConnectionsTable from "./ConnectionsTable";
+import { RoutePaths } from "../../routePaths";
 
 export const AllConnectionsPage: React.FC = () => {
   const navigate = useNavigate();
