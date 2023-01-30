@@ -9,7 +9,7 @@ from source_awin.source import SourceAwin
 
 TEST_CONFIG: dict = {
     "start_date": "2022-01-01T00:00:00Z",
-    "oauth2_token": "222315a4-3620-44cc-a26e-2b7ce812fa0f" # Note: This is a randomly generated GUID.
+    "oauth2_token": "222315a4-3620-44cc-a26e-2b7ce812fa0f"  # Note: This is a randomly generated GUID.
 }
 
 

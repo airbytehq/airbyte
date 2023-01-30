@@ -10,17 +10,17 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import Accounts, Publishers, AdvertiserTransactions
+from .streams import Accounts, AdvertiserTransactions, Publishers
 
 
 class SourceAwin(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        if 'attribution_window' in config and config['attribution_window'] < 1:
-            return False, f"Invalid input for Attribution Window. The attribution window must be 1 or greater."
+        if "attribution_window" in config and config["attribution_window"] < 1:
+            return False, "Invalid input for Attribution Window. The attribution window must be 1 or greater."
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config['oauth2_token'])
+        auth = TokenAuthenticator(token=config["oauth2_token"])
         accounts = config.get("accounts", [])
         start_date = pendulum.parse(config["start_date"])
         attribution_window = config.get("attribution_window", 30)

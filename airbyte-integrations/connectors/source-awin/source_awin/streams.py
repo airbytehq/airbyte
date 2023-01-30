@@ -33,7 +33,7 @@ class AwinStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json()
-    
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
         From the documentation:
@@ -51,6 +51,7 @@ class Accounts(AwinStream):
 
     See https://wiki.awin.com/index.php/API_get_accounts
     """
+
     primary_key = "accountId"
 
     def path(
@@ -59,7 +60,7 @@ class Accounts(AwinStream):
         return "accounts"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get('accounts', [])
+        return response.json().get("accounts", [])
 
 
 class Publishers(AwinStream):
@@ -68,6 +69,7 @@ class Publishers(AwinStream):
 
     See https://wiki.awin.com/index.php/API_get_publishers
     """
+
     primary_key = "id"
 
     def path(
@@ -75,11 +77,18 @@ class Publishers(AwinStream):
     ) -> str:
         return f"advertisers/{stream_slice['account_id']}/publishers"
 
-    def stream_slices(self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         if self._accounts:
             yield from [{"account_id": id} for id in self._accounts]
         else:
-            account_stream = Accounts(accounts=self._accounts, start_date=self._start_date, attribution_window=self._attribution_window, authenticator=self.authenticator)
+            account_stream = Accounts(
+                accounts=self._accounts,
+                start_date=self._start_date,
+                attribution_window=self._attribution_window,
+                authenticator=self.authenticator,
+            )
             for account in account_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
                 if account.get("accountType", None) == "advertiser":
                     yield {"account_id": account["accountId"]}
@@ -113,6 +122,7 @@ class AdvertiserTransactions(IncrementalAwinStream):
 
     See https://wiki.awin.com/index.php/API_get_transactions_list
     """
+
     primary_key = "id"
 
     cursor_field = "transactionDate"
@@ -140,7 +150,12 @@ class AdvertiserTransactions(IncrementalAwinStream):
         if self._accounts:
             yield from [{"account_id": str(id)} for id in self._accounts]
         else:
-            account_stream = Accounts(accounts=self._accounts, start_date=self._start_date, attribution_window=self._attribution_window, authenticator=self.authenticator)
+            account_stream = Accounts(
+                accounts=self._accounts,
+                start_date=self._start_date,
+                attribution_window=self._attribution_window,
+                authenticator=self.authenticator,
+            )
             for account in account_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
                 if account.get("accountType", None) == "advertiser":
                     yield {"account_id": str(account["accountId"])}
@@ -154,25 +169,24 @@ class AdvertiserTransactions(IncrementalAwinStream):
 
             while start <= end:
                 slice_end = start.add(days=self.window_in_days).subtract(seconds=1)
-                slice.update({
-                    "date_from": start,
-                    "date_to": slice_end
-                })
+                slice.update({"date_from": start, "date_to": slice_end})
                 start = start.add(days=self.window_in_days)
 
                 yield slice
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params["startDate"] = stream_slice['date_from'].strftime(self.date_template)
-        params["endDate"] = stream_slice['date_to'].strftime(self.date_template)
+        params["startDate"] = stream_slice["date_from"].strftime(self.date_template)
+        params["endDate"] = stream_slice["date_to"].strftime(self.date_template)
         params["timezone"] = "UTC"
         params["dateType"] = "transaction"
         return params
 
     @property
     def state(self) -> Mapping[str, Any]:
-        account_id = self._current_slice['account_id']
+        account_id = self._current_slice["account_id"]
         if self._cursor_value:
             return {account_id: self._cursor_value[account_id].strftime("%Y-%m-%dT%H:%M:%S")}
         else:
@@ -186,9 +200,15 @@ class AdvertiserTransactions(IncrementalAwinStream):
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"advertisers/{stream_slice['account_id']}/transactions/"
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[StreamData]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
         self._current_slice = stream_slice
-        account_id = stream_slice['account_id']
+        account_id = stream_slice["account_id"]
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if self._cursor_value[account_id]:
                 latest_record_date = pendulum.parse(record[self.cursor_field])
