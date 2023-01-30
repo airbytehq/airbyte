@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 from datetime import datetime
 from typing import Iterable
 
@@ -43,7 +42,6 @@ def latest_build_is_successful(connector_qa_data: pd.Series) -> bool:
     latest_build_status = fetch_latest_build_status_for_connector_version(connector_technical_name, connector_version)
     return latest_build_status == "success"
 
-
 def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd.DataFrame:
     """Perform validation steps on top of the enriched catalog.
     Adds the following columns:
@@ -70,10 +68,7 @@ def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd
     qa_report["documentation_is_available"] = qa_report.documentation_url.apply(url_is_reachable)
     qa_report["is_appropriate_for_cloud_use"] = qa_report.connector_definition_id.apply(is_appropriate_for_cloud_use)
 
-    qa_report["latest_build_is_successful"] = qa_report.apply(latest_build_is_successful)
-
-    qa_report["is_eligible_for_promotion_to_cloud"] = qa_report.apply(is_eligible_for_promotion_to_cloud, axis="columns")
-    qa_report["report_generation_datetime"] = datetime.utcnow()
+    qa_report["latest_build_is_successful"] = qa_report.apply(latest_build_is_successful, axis="columns")
 
     qa_report["is_eligible_for_promotion_to_cloud"] = qa_report.apply(is_eligible_for_promotion_to_cloud, axis="columns")
     qa_report["report_generation_datetime"] = datetime.utcnow()

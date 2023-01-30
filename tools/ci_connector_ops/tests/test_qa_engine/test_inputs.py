@@ -7,6 +7,8 @@ from importlib.resources import files
 
 import pandas as pd
 import pytest
+from unittest.mock import MagicMock, call
+import requests
 
 from ci_connector_ops.qa_engine import inputs, constants
 
@@ -56,3 +58,48 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
         project_id=expected_project_id,
         credentials=inputs.service_account.Credentials.from_service_account_info.return_value
     )
+
+@pytest.mark.parametrize("connector_name, connector_version, mocked_json_payload, mocked_status_code, expected_status", [
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        {
+            "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+            "outcome": "success",
+            "docker_version": "0.1.5",
+            "timestamp": "1674872401",
+            "connector": "connectors/source-pokeapi"
+        },
+        200,
+        "success"
+    ),
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        {
+            "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+            "outcome": "failed",
+            "docker_version": "0.1.5",
+            "timestamp": "1674872401",
+            "connector": "connectors/source-pokeapi"
+        },
+        200,
+        "failed"
+    ),
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        None,
+        404,
+        None
+    ),
+])
+def test_fetch_latest_build_status_for_connector_version_success(mocker, connector_name, connector_version, mocked_json_payload, mocked_status_code, expected_status):
+    # Mock the api call to get the latest build status for a connector version
+    mock_response = MagicMock()
+    mock_response.json.return_value = mocked_json_payload
+    mock_response.status_code = mocked_status_code
+    mock_get = mocker.patch.object(requests, 'get', return_value=mock_response)
+
+    assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == expected_status
+    assert mock_get.call_args == call(f"{constants.CONNECTOR_BUILD_OUTPUT_URL}/{connector_name}/{connector_version}.json")

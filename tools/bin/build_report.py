@@ -42,7 +42,8 @@ FAILED_2_LAST = []
 
 
 def get_status_page(connector) -> str:
-    response = requests.get(f"https://dnsgjos7lj2fu.cloudfront.net/tests/summary/{connector}/index.html")
+    # TODO (ben): ensure this is still working as expected
+    response = requests.get(f"https://dnsgjos7lj2fu.cloudfront.net/tests/summary/connectors/{connector}/index.html")
     if response.status_code == 200:
         return response.text
 
