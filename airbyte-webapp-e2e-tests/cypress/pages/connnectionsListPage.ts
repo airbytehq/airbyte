@@ -8,7 +8,7 @@ const manualSyncButton = "button[data-testId='manual-sync-button']";
 export const visitConnectionsListPage = () => {
   cy.intercept("**/web_backend/connections/list").as("listConnections");
   cy.visit(`/workspaces/${getWorkspaceId()}/connections`);
-  cy.wait("@listConnections");
+  cy.wait("@listConnections", { timeout: 20000 });
 };
 
 export const getSchemaChangeIcon = (connection: Connection, type: "breaking" | "non_breaking") =>

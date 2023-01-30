@@ -1,4 +1,3 @@
-import { toPromise } from "../utils/promise";
 import {
   ConectionGetBody,
   Connection,
@@ -14,35 +13,26 @@ import { getWorkspaceId, setWorkspaceId } from "./workspace";
 
 const getApiUrl = (path: string): string => `http://localhost:8001/api/v1${path}`;
 
-export const requestWorkspaceId = () => {
-  if (!getWorkspaceId()) {
-    return toPromise(
-      cy.request("POST", getApiUrl("/workspaces/list")).then((response) => {
-        expect(response.status).to.eq(200);
-        const {
-          workspaces: [{ workspaceId }],
-        } = response.body;
+export const requestWorkspaceId = () =>
+  cy.request("POST", getApiUrl("/workspaces/list")).then((response) => {
+    expect(response.status).to.eq(200);
+    const {
+      workspaces: [{ workspaceId }],
+    } = response.body;
 
-        setWorkspaceId(workspaceId as string);
-      })
-    );
-  }
-
-  return Promise.resolve();
-};
+    setWorkspaceId(workspaceId as string);
+  });
 
 const apiRequest = <T = void>(
   method: Cypress.HttpMethod,
   path: string,
   payload?: Cypress.RequestBody,
   expectedStatus = 200
-): Promise<T> =>
-  toPromise<T>(
-    cy.request(method, getApiUrl(path), payload).then((response) => {
-      expect(response.status).to.eq(expectedStatus, "response status");
-      return response.body;
-    })
-  );
+) =>
+  cy.request(method, getApiUrl(path), payload).then((response) => {
+    expect(response.status).to.eq(expectedStatus, "response status");
+    return response.body;
+  });
 
 export const requestConnectionsList = () =>
   apiRequest<ConnectionsList>("POST", "/connections/list", { workspaceId: getWorkspaceId() });

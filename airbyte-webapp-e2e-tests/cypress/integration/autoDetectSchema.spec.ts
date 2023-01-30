@@ -36,32 +36,37 @@ describe("Connection - Auto-detect schema changes", () => {
   let destination: Destination;
   let connection: Connection;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     initialSetupCompleted();
-    await requestWorkspaceId();
-
-    const sourceRequestBody = getPostgresCreateSourceBody(appendRandomString("Auto-detect schema Source"));
-    const destinationRequestBody = getPostgresCreateDestinationBody(
-      appendRandomString("Auto-detect schema Destination")
-    );
-
-    source = await requestCreateSource(sourceRequestBody);
-    destination = await requestCreateDestination(destinationRequestBody);
-
     runDbQuery(dropUsersTableQuery);
     runDbQuery(createUsersTableQuery);
 
-    const { catalog, catalogId } = await requestSourceDiscoverSchema(source.sourceId);
+    requestWorkspaceId()?.then(() => {
+      const sourceRequestBody = getPostgresCreateSourceBody(appendRandomString("Auto-detect schema Source"));
+      const destinationRequestBody = getPostgresCreateDestinationBody(
+        appendRandomString("Auto-detect schema Destination")
+      );
 
-    const connectionRequestBody = await getConnectionCreateRequest({
-      name: appendRandomString("Auto-detect schema test connection"),
-      sourceId: source.sourceId,
-      destinationId: destination.destinationId,
-      syncCatalog: catalog,
-      sourceCatalogId: catalogId,
+      requestCreateSource(sourceRequestBody).then((sourceResponse) => {
+        source = sourceResponse;
+        requestCreateDestination(destinationRequestBody).then((destinationResponse) => {
+          destination = destinationResponse;
+        });
+
+        requestSourceDiscoverSchema(source.sourceId).then(({ catalog, catalogId }) => {
+          const connectionRequestBody = getConnectionCreateRequest({
+            name: appendRandomString("Auto-detect schema test connection"),
+            sourceId: source.sourceId,
+            destinationId: destination.destinationId,
+            syncCatalog: catalog,
+            sourceCatalogId: catalogId,
+          });
+          requestCreateConnection(connectionRequestBody).then((connectionResponse) => {
+            connection = connectionResponse;
+          });
+        });
+      });
     });
-
-    connection = await requestCreateConnection(connectionRequestBody);
   });
 
   afterEach(() => {
