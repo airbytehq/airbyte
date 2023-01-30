@@ -431,8 +431,6 @@ jobs:
 
       - name: Build :airbyte-webapp
         uses: Wandalen/wretry.action@master
-        env:
-          NODE_OPTIONS: "--max_old_space_size=4096"
         with:
           command: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
           attempt_limit: 3
