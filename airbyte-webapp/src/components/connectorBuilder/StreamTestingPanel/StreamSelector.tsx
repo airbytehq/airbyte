@@ -33,8 +33,11 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
 export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
   const analyticsService = useAnalyticsService();
   const { formatMessage } = useIntl();
-  const { selectedView, setSelectedView } = useConnectorBuilderFormState();
-  const { streams, testStreamIndex, setTestStreamIndex } = useConnectorBuilderTestState();
+  const { selectedView, setSelectedView, builderFormValues, editorView } = useConnectorBuilderFormState();
+  const { streams: testStreams, testStreamIndex, setTestStreamIndex } = useConnectorBuilderTestState();
+
+  const streams = editorView === "ui" ? builderFormValues.streams : testStreams;
+
   const options = streams.map((stream) => {
     const label =
       stream.name && stream.name.trim() ? capitalize(stream.name) : formatMessage({ id: "connectorBuilder.emptyName" });
@@ -60,7 +63,7 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => 
     <ListBox
       className={classNames(className, styles.container)}
       options={options}
-      selectedValue={streams[testStreamIndex]?.name}
+      selectedValue={streams[testStreamIndex]?.name ?? formatMessage({ id: "connectorBuilder.noStreamSelected" })}
       onSelect={handleStreamSelect}
       buttonClassName={styles.button}
       controlButton={ControlButton}

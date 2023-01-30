@@ -53,6 +53,7 @@ interface TestStateContext {
   setTestStreamIndex: (streamIndex: number) => void;
   testStreamIndex: number;
   streamRead: UseQueryResult<StreamRead, unknown>;
+  isFetchingStreamList: boolean;
 }
 
 export const ConnectorBuilderFormStateContext = React.createContext<FormStateContext | null>(null);
@@ -173,6 +174,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     data: streamListRead,
     isError: isStreamListError,
     error: streamListError,
+    isFetching: isFetchingStreamList,
   } = useListStreams({ manifest, config: testInputJson });
   const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const streamListErrorMessage = isStreamListError
@@ -205,6 +207,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     testStreamIndex,
     setTestStreamIndex,
     streamRead,
+    isFetchingStreamList,
   };
 
   return <ConnectorBuilderTestStateContext.Provider value={ctx}>{children}</ConnectorBuilderTestStateContext.Provider>;
