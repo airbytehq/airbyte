@@ -15,6 +15,8 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -44,6 +46,19 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
   @Override
   public boolean testCatalog() {
     return true;
+  }
+
+  protected String getValueFromJsonNode(final JsonNode jsonNode) throws IOException {
+    if (jsonNode != null) {
+      if (jsonNode.isArray() || jsonNode.isObject()) {
+        return jsonNode.toString();
+      }
+
+      String value = (jsonNode.isBinary() ? Arrays.toString(jsonNode.binaryValue()) : jsonNode.asText());
+      value = (value != null && value.equals("null") ? null : value);
+      return value;
+    }
+    return null;
   }
 
   // Test cases are sorted alphabetically based on the source type
@@ -253,14 +268,10 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("jsonb")
-            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY,
-                JsonSchemaPrimitive.OBJECT,
-                JsonSchemaPrimitive.STRING,
-                JsonSchemaPrimitive.BOOLEAN,
-                JsonSchemaPrimitive.NUMBER)
-                .build())
-            .addInsertValues("null", "'10000'::jsonb", "'true'::jsonb")
-            .addExpectedValues(null, "10000", "true")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.JSONB).build())
+            .addInsertValues("null", "'10000'::jsonb", "'true'::jsonb", "'[1,2,3]'::jsonb",
+                "'{\"Janet\": 1, \"Melissa\": {\"loves\": \"trees\", \"married\": true}}'::jsonb")
+            .addExpectedValues(null, "10000", "true", "[1,2,3]", "{\"Janet\":1,\"Melissa\":{\"loves\":\"trees\",\"married\":true}}")
             .build());
 
     addDataTypeTestData(
