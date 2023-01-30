@@ -2,6 +2,10 @@
 
 This page contains the setup guide and reference information for the Sendgrid source connector.
 
+## Prerequisites
+
+* API Key
+
 ## Setup guide
 ### Step 1: Set up Sendgrid
 
