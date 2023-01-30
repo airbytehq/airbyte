@@ -270,6 +270,40 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "opted_out_subscription_types": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "data": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "id": {
+                "type": ["null", "string"]
+              },
+              "url": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "url": {
+          "type": ["null", "string"]
+        },
+        "total_count": {
+          "type": ["null", "integer"]
+        },
+        "has_more": {
+          "type": ["null", "boolean"]
+        }
+      }
     }
   }
 }
