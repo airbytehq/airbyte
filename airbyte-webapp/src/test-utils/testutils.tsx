@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
-import { ConfigContext, defaultConfig } from "config";
+import { ConfigContext, config } from "config";
 import {
   ConnectionStatus,
   DestinationRead,
@@ -54,7 +54,7 @@ export const TestWrapper: React.FC<React.PropsWithChildren<TestWrapperOptions>> 
 }) => (
   <ThemeProvider theme={{}}>
     <IntlProvider locale="en" messages={en} onError={() => null}>
-      <ConfigContext.Provider value={{ config: defaultConfig }}>
+      <ConfigContext.Provider value={{ config }}>
         <AnalyticsProvider>
           <FeatureService features={features}>
             <ServicesProvider>
