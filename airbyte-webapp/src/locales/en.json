@@ -630,9 +630,12 @@
   "ui.stepIndicator.currentStep": "(current step)",
 
   "airbyte.datatype.string": "String",
+  "airbyte.datatype.binary_data": "Binary Data",
   "airbyte.datatype.date": "Date",
   "airbyte.datatype.timestamp_with_timezone": "Timestamp with Timezone",
   "airbyte.datatype.timestamp_without_timezone": "Datetime",
+  "airbyte.datatype.time_with_timezone": "Time with Timezone",
+  "airbyte.datatype.time_without_timezone": "Time",
   "airbyte.datatype.datetime": "Datetime",
   "airbyte.datatype.integer": "Integer",
   "airbyte.datatype.big_integer": "Big Integer",
