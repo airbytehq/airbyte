@@ -23,6 +23,7 @@
 #
 from .attribution_report import AttributionReportModel
 from .common import CatalogModel, Keywords, MetricsReport, NegativeKeywords
+from .invoices import InvoicePayload
 from .profile import Profile
 from .sponsored_brands import BrandsAdGroup, BrandsCampaign
 from .sponsored_display import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting
@@ -45,4 +46,5 @@ __all__ = [
     "ProductTargeting",
     "Profile",
     "AttributionReportModel",
+    "InvoicePayload",
 ]
