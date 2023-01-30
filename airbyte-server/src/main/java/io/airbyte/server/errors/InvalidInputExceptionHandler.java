@@ -6,6 +6,7 @@ package io.airbyte.server.errors;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.server.errors.InvalidInputExceptionMapper;
+import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
@@ -13,6 +14,7 @@ import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.server.exceptions.ExceptionHandler;
+import io.micronaut.validation.exceptions.ConstraintExceptionHandler;
 import jakarta.inject.Singleton;
 import javax.validation.ConstraintViolationException;
 
@@ -21,6 +23,7 @@ import javax.validation.ConstraintViolationException;
 @Produces
 @Singleton
 @Requires(classes = ConstraintViolationException.class)
+@Replaces(ConstraintExceptionHandler.class)
 public class InvalidInputExceptionHandler implements ExceptionHandler<ConstraintViolationException, HttpResponse> {
 
   @Override
