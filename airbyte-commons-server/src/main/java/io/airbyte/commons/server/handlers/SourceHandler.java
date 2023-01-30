@@ -58,14 +58,14 @@ public class SourceHandler {
 
   @Inject
   public SourceHandler(final ConfigRepository configRepository,
-                final SecretsRepositoryReader secretsRepositoryReader,
-                final SecretsRepositoryWriter secretsRepositoryWriter,
-                final JsonSchemaValidator integrationSchemaValidation,
-                final ConnectionsHandler connectionsHandler,
-                final Supplier<UUID> uuidGenerator,
-                final JsonSecretsProcessor secretsProcessor,
-                final ConfigurationUpdate configurationUpdate,
-                final OAuthConfigSupplier oAuthConfigSupplier) {
+                       final SecretsRepositoryReader secretsRepositoryReader,
+                       final SecretsRepositoryWriter secretsRepositoryWriter,
+                       final JsonSchemaValidator integrationSchemaValidation,
+                       final ConnectionsHandler connectionsHandler,
+                       final Supplier<UUID> uuidGenerator,
+                       final JsonSecretsProcessor secretsProcessor,
+                       final ConfigurationUpdate configurationUpdate,
+                       final OAuthConfigSupplier oAuthConfigSupplier) {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;

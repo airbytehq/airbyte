@@ -11,10 +11,8 @@ import io.airbyte.commons.server.handlers.*;
 import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.db.Database;
-import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
@@ -27,19 +25,17 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-
-import javax.sql.DataSource;
 
 @Slf4j
 @MicronautTest
 @Requires(property = "mockito.test.enabled",
-        defaultValue = StringUtils.TRUE,
-        value = StringUtils.TRUE)
+          defaultValue = StringUtils.TRUE,
+          value = StringUtils.TRUE)
 // @Requires(env = {Environment.TEST})
 public abstract class BaseControllerTest {
 
@@ -212,7 +208,6 @@ public abstract class BaseControllerTest {
     return Mockito.mock(TrackingClient.class);
   }
 
-
   @MockBean(WorkflowClient.class)
   @Replaces(WorkflowClient.class)
   WorkflowClient mWorkflowClient() {
@@ -238,19 +233,24 @@ public abstract class BaseControllerTest {
   }
 
   @Inject
+  HealthApiController healthApiController;
+
+  @Inject
   EmbeddedServer embeddedServer;
 
+  @Inject
+  @Client("/")
   HttpClient client;
 
   @BeforeEach
   void init() {
-
-    client = HttpClient.create(embeddedServer.getURL());//embeddedServer.getApplicationContext().createBean(HttpClient.class, embeddedServer.getURL());
-
-    log.error(String.valueOf(embeddedServer.getURL()));
-    log.error(String.valueOf(embeddedServer.getPort()));
+    // client =
+    // HttpClient.create(embeddedServer.getURL());//embeddedServer.getApplicationContext().createBean(HttpClient.class,
+    // embeddedServer.getURL());
   }
 
-
+  void testEndpointStatus(HttpRequest request, HttpStatus expectedStatus) {
+    assertEquals(expectedStatus, client.toBlocking().exchange(request).getStatus());
+  }
 
 }

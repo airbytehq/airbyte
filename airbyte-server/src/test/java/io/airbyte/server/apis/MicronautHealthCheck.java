@@ -4,35 +4,32 @@
 
 package io.airbyte.server.apis;
 
-import io.airbyte.commons.server.handlers.HealthCheckHandler;
+import io.airbyte.api.model.generated.HealthCheckRead;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
-import io.micronaut.http.client.HttpClient;
-import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import jakarta.inject.Inject;
+import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.mockito.Mockito;
 
 @MicronautTest
 @Requires(property = "mockito.test.enabled",
-        defaultValue = StringUtils.TRUE,
-        value = StringUtils.TRUE)
+          defaultValue = StringUtils.TRUE,
+          value = StringUtils.TRUE)
 @Requires(env = {Environment.TEST})
+@Slf4j
 public class MicronautHealthCheck extends BaseControllerTest {
 
   @Test
-  void testHealth() {
+  void testHealth() throws IOException {
+    Mockito.when(healthApiController.getHealthCheck())
+        .thenReturn(new HealthCheckRead());
     testEndpointStatus(
         HttpRequest.GET("/api/v1/health"), HttpStatus.OK);
-  }
-
-  void testEndpointStatus(HttpRequest request, HttpStatus expectedStatus) {
-    assertEquals(expectedStatus, client.toBlocking().exchange(request).getStatus());
   }
 
 }
