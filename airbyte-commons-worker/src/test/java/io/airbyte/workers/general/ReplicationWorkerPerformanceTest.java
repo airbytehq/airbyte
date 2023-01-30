@@ -7,8 +7,10 @@ package io.airbyte.workers.general;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.protocol.AirbyteMessageMigrator;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
-import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV0;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
+import io.airbyte.commons.protocol.ConfiguredAirbyteCatalogMigrator;
+import io.airbyte.commons.protocol.migrations.v1.AirbyteMessageMigrationV1;
+import io.airbyte.commons.protocol.migrations.v1.ConfiguredAirbyteCatalogMigrationV1;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
 import io.airbyte.commons.version.Version;
@@ -72,7 +74,7 @@ public class ReplicationWorkerPerformanceTest {
   @Fork(1)
   // Within each run, how many iterations to do.
   @Measurement(iterations = 2)
-  public static void executeOneSync() throws InterruptedException {
+  public void executeOneSync() throws InterruptedException {
     final var perDestination = new EmptyAirbyteDestination();
     final var messageTracker = new AirbyteMessageTracker(new EnvVariableFeatureFlags());
     final var connectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
@@ -88,13 +90,19 @@ public class ReplicationWorkerPerformanceTest {
         List.of(new AirbyteMessageV0Serializer()));
     serDeProvider.initialize();
 
-    final var migrator = new AirbyteMessageMigrator(List.of(new AirbyteMessageMigrationV0()));
-    migrator.initialize();
-    final var migratorFactory = new AirbyteMessageVersionedMigratorFactory(migrator);
+    final var msgMigrator = new AirbyteMessageMigrator(List.of(new AirbyteMessageMigrationV1()));
+    msgMigrator.initialize();
+    final ConfiguredAirbyteCatalogMigrator catalogMigrator = new ConfiguredAirbyteCatalogMigrator(
+        List.of(new ConfiguredAirbyteCatalogMigrationV1()));
+    catalogMigrator.initialize();
+    final var migratorFactory = new AirbyteProtocolVersionedMigratorFactory(msgMigrator, catalogMigrator);
 
     final var versionFac =
-        new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, new Version("0.2.0"), Optional.of(RuntimeException.class));
-    final var versionedAbSource = new DefaultAirbyteSource(integrationLauncher, versionFac, new EnvVariableFeatureFlags());
+        new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, new Version("0.2.0"), Optional.empty(),
+            Optional.of(RuntimeException.class));
+    final var versionedAbSource =
+        new DefaultAirbyteSource(integrationLauncher, versionFac, migratorFactory.getProtocolSerializer(new Version("0.2.0")),
+            new EnvVariableFeatureFlags());
 
     final var worker = new DefaultReplicationWorker("1", 0,
         versionedAbSource,
@@ -129,8 +137,7 @@ public class ReplicationWorkerPerformanceTest {
 
   public static void main(final String[] args) throws IOException, InterruptedException {
     // Run this main class to start benchmarking.
-    // org.openjdk.jmh.Main.main(args);
-    executeOneSync();
+    org.openjdk.jmh.Main.main(args);
   }
 
 }
