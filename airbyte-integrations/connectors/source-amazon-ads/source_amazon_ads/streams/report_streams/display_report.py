@@ -165,13 +165,7 @@ METRICS_MAP = {
 }
 
 
-METRICS_TYPE_TO_ID_MAP = {
-    "campaigns": "campaignId",
-    "adGroups": "adGroupId",
-    "productAds": "adId",
-    "targets": "targetId",
-    "asins": "asin"
-}
+METRICS_TYPE_TO_ID_MAP = {"campaigns": "campaignId", "adGroups": "adGroupId", "productAds": "adId", "targets": "targetId", "asins": "asin"}
 
 
 class Tactics(str, Enum):
