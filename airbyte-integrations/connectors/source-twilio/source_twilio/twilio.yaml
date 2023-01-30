@@ -137,8 +137,8 @@ definitions:
         path: "{{ stream_slice.path }}"
         request_options_provider:
           request_parameters:
-            "{{ options.lower_boundary_param }}": "{{ format_datetime(stream_slice.lower_boundary, '%Y-%m-%d') }}"
-            "{{ options.upper_boundary_param }}": "{{ format_datetime(stream_slice.upper_boundary, '%Y-%m-%d') }}"
+            "{{ options.lower_boundary_param }}": "{{ format_datetime(stream_slice.lower_boundary, options.boundary_format) }}"
+            "{{ options.upper_boundary_param }}": "{{ format_datetime(stream_slice.upper_boundary, options.boundary_format) }}"
       stream_slicer:
         type: CustomStreamSlicer
         class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
@@ -167,6 +167,7 @@ definitions:
       cursor_field: "end_time"
       lower_boundary_param: "EndTime>"
       upper_boundary_param: "EndTime<"
+      boundary_format: "%Y-%m-%d"
       cursor_granularity: "P1D"
       step_default: "P1Y"
     stream_cursor_field: "end_time"
@@ -178,6 +179,7 @@ definitions:
       cursor_field: "date_updated"
       lower_boundary_param: "DateUpdated>"
       upper_boundary_param: "DateUpdated<"
+      boundary_format: "%Y-%m-%d"
       cursor_granularity: "P1D"
       step_default: "P1Y"
     stream_cursor_field: "date_updated"
