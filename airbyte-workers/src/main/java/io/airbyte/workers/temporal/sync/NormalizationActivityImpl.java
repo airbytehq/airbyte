@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
+import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -164,6 +165,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         .withResourceRequirements(normalizationResourceRequirements);
   }
 
+  @VisibleForTesting
   static boolean normalizationSupportsV1DataTypes(final IntegrationLauncherConfig destinationLauncherConfig) {
     try {
       final String[] normalizationImage = destinationLauncherConfig.getNormalizationDockerImage().split(":", 2);
