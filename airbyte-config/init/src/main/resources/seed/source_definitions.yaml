@@ -1616,7 +1616,7 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   icon: slack.svg
   sourceType: api
