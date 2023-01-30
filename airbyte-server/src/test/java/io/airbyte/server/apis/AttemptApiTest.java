@@ -32,12 +32,10 @@ class AttemptApiTest extends BaseControllerTest {
         .thenThrow(new NotFoundException());
     final String path = "/api/v1/attempt/save_stats";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new SaveStatsRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new SaveStatsRequestBody())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new SaveStatsRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new SaveStatsRequestBody())),
         HttpStatus.NOT_FOUND);
   }
 
@@ -48,12 +46,10 @@ class AttemptApiTest extends BaseControllerTest {
         .thenThrow(new NotFoundException());
     final String path = "/api/v1/attempt/set_workflow_in_attempt";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new SaveStatsRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new SaveStatsRequestBody())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new SaveStatsRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new SaveStatsRequestBody())),
         HttpStatus.NOT_FOUND);
   }
 

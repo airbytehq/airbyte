@@ -36,12 +36,10 @@ class ConnectionApiTest extends BaseControllerTest {
         .thenThrow(new ConstraintViolationException(new HashSet<>()));
     final String path = "/api/v1/connections/create";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionCreate())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionCreate())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionCreate())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionCreate())),
         HttpStatus.BAD_REQUEST);
   }
 
@@ -53,16 +51,13 @@ class ConnectionApiTest extends BaseControllerTest {
         .thenThrow(new NotFoundException());
     final String path = "/api/v1/connections/update";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionUpdate())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionUpdate())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionUpdate())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionUpdate())),
         HttpStatus.BAD_REQUEST);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionUpdate())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionUpdate())),
         HttpStatus.NOT_FOUND);
   }
 
@@ -73,12 +68,10 @@ class ConnectionApiTest extends BaseControllerTest {
         .thenThrow(new NotFoundException());
     final String path = "/api/v1/connections/list";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new WorkspaceIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new WorkspaceIdRequestBody())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new WorkspaceIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new WorkspaceIdRequestBody())),
         HttpStatus.NOT_FOUND);
   }
 
@@ -89,12 +82,10 @@ class ConnectionApiTest extends BaseControllerTest {
         .thenThrow(new NotFoundException());
     final String path = "/api/v1/connections/list_all";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new WorkspaceIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new WorkspaceIdRequestBody())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new WorkspaceIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new WorkspaceIdRequestBody())),
         HttpStatus.NOT_FOUND);
   }
 
@@ -105,12 +96,10 @@ class ConnectionApiTest extends BaseControllerTest {
         .thenThrow(new NotFoundException());
     final String path = "/api/v1/connections/search";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionSearch())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionSearch())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionSearch())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionSearch())),
         HttpStatus.NOT_FOUND);
   }
 
@@ -121,12 +110,10 @@ class ConnectionApiTest extends BaseControllerTest {
         .thenThrow(new NotFoundException());
     final String path = "/api/v1/connections/get";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
         HttpStatus.NOT_FOUND);
   }
 
@@ -138,12 +125,10 @@ class ConnectionApiTest extends BaseControllerTest {
 
     final String path = "/api/v1/connections/delete";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
         HttpStatus.NO_CONTENT);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
         HttpStatus.NOT_FOUND);
   }
 
@@ -154,12 +139,10 @@ class ConnectionApiTest extends BaseControllerTest {
         .thenThrow(new NotFoundException());
     final String path = "/api/v1/connections/sync";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
         HttpStatus.NOT_FOUND);
   }
 
@@ -170,12 +153,10 @@ class ConnectionApiTest extends BaseControllerTest {
         .thenThrow(new NotFoundException());
     final String path = "/api/v1/connections/reset";
     testEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
         HttpStatus.OK);
     testErrorEndpointStatus(
-        HttpRequest.POST(path,
-            Jsons.serialize(new ConnectionIdRequestBody())),
+        HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
         HttpStatus.NOT_FOUND);
   }
 
