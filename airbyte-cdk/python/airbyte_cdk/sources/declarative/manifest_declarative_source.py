@@ -26,10 +26,12 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.streams.core import Stream
 from dataclasses_jsonschema import JsonSchemaMixin
 from jsonschema.exceptions import ValidationError
@@ -48,15 +50,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "type", "version"}
 
-    def __init__(self):
-        self._debug = True
-        self.construct_using_pydantic_models = True
-        self._new_source_config = None
-        self.logger = logging.getLogger(f"airbyte.{self.name}")
-
-    def _init(
+    def __init__(
         self,
-        source_config,
+        source_config: ConnectionDefinition,
         debug: bool = False,
         component_factory: ModelToComponentFactory = None,
         construct_using_pydantic_models: bool = False,
@@ -65,13 +61,12 @@ class ManifestDeclarativeSource(DeclarativeSource):
         :param source_config(Mapping[str, Any]): The manifest of low-code components that describe the source connector
         :param debug(bool): True if debug mode is enabled
         """
+        self.logger = logging.getLogger(f"airbyte.{self.name}")
 
         # Controls whether we build components using the manual handwritten schema and Pydantic models or the legacy flow
         self.construct_using_pydantic_models = True
 
         # For ease of use we don't require the type to be specified at the top level manifest, but it should be included during processing
-        if isinstance(source_config, str):
-            source_config = yaml.safe_load(source_config)
         manifest = dict(source_config)
         if "type" not in manifest:
             manifest["type"] = "DeclarativeSource"
@@ -116,8 +111,6 @@ class ManifestDeclarativeSource(DeclarativeSource):
             return self._legacy_factory.create_component(check, dict())(source=self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        if not self._new_source_config:
-            self._init(config["manifest"])
         source_config = self._new_source_config if self.construct_using_pydantic_models else self._legacy_source_config
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(source_config)})
 
@@ -144,28 +137,21 @@ class ManifestDeclarativeSource(DeclarativeSource):
         will first attempt to load the spec from the manifest's spec block, otherwise it will load it from "spec.yaml" or "spec.json"
         in the project root.
         """
-        return ConnectorSpecification.parse_raw(
-            json.dumps(
-                {
-                    "documentationUrl": "https://docs.airbyte.com/integrations/sources/posthog",
-                    "connectionSpecification": {
-                        "$schema": "http://json-schema.org/draft-07/schema#",
-                        "title": "PostHog Spec",
-                        "type": "object",
-                        "required": ["manifest"],
-                        "properties": {
-                            "manifest": {
-                                "type": "string",
-                                "airbyte_secret": True,
-                                "title": "API Key",
-                                "description": 'API Key. See the <a href="https://docs.airbyte.com/integrations/sources/posthog">docs</a> for information on how to generate this key.',
-                                "airbyte_hidden": True,
-                            },
-                        },
-                    },
-                }
-            )
-        )
+        self._configure_logger_level(logger)
+        source_config = self._new_source_config if self.construct_using_pydantic_models else self._legacy_source_config
+        self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(source_config)})
+
+        spec = source_config.get("spec")
+        if spec:
+            if "type" not in spec:
+                spec["type"] = "Spec"
+            if self.construct_using_pydantic_models:
+                spec_component = self._constructor.create_component(SpecModel, spec, dict())
+            else:
+                spec_component = self._legacy_factory.create_component(spec, dict())()
+            return spec_component.generate_spec()
+        else:
+            return super().spec(logger)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         self._configure_logger_level(logger)
