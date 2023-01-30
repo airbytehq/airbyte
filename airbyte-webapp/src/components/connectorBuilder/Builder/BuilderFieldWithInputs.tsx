@@ -10,10 +10,10 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { getInferredInputs } from "../types";
 import { BuilderField, BuilderFieldProps } from "./BuilderField";
 import styles from "./BuilderFieldWithInputs.module.scss";
 import { InputForm, newInputInEditing } from "./InputsForm";
+import { getInferredInputs } from "../types";
 
 export const BuilderFieldWithInputs: React.FC<BuilderFieldProps> = (props) => {
   const [field, , helpers] = useField(props.path);
