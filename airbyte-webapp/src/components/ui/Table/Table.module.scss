@@ -1,0 +1,95 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.tableView {
+  border-spacing: 0;
+  width: 100%;
+  max-width: 100%;
+  border-radius: variables.$border-radius-lg;
+  box-shadow: 0 2px 4px rgb(26 25 77 / 12%);
+
+  &.light {
+    box-shadow: none;
+  }
+}
+
+.tableHeader {
+  padding: variables.$spacing-md variables.$spacing-lg;
+  background-color: colors.$dark-blue;
+  text-align: left;
+  font-size: 10px;
+  border-bottom: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: colors.$grey-300;
+
+  &:first-child {
+    padding-left: variables.$spacing-2xl;
+    border-radius: variables.$border-radius-lg 0 0;
+  }
+
+  &:last-child {
+    padding-left: variables.$spacing-lg;
+    border-radius: 0 variables.$border-radius-lg 0 0;
+  }
+
+  &.highlighted {
+    color: colors.$white;
+  }
+
+  &.light {
+    background: none;
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: capitalize;
+
+    &:first-child {
+      padding-left: variables.$spacing-lg;
+    }
+  }
+}
+
+.tableData {
+  max-width: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: normal;
+  color: colors.$dark-blue;
+  padding: variables.$spacing-lg;
+  border-bottom: variables.$border-thin solid colors.$grey-100;
+
+  &.responsive {
+    max-width: 0;
+  }
+}
+
+.tableRow {
+  cursor: auto;
+  background-color: colors.$white;
+
+  &.hasClick {
+    cursor: pointer;
+  }
+
+  &.erroredRows {
+    background-color: colors.$red-50;
+  }
+
+  &:hover {
+    background-color: colors.$grey-50;
+  }
+
+  &:last-child > .tableData {
+    border-bottom: none;
+
+    &:first-child {
+      border-radius: 0 0 0 variables.$border-radius-lg;
+    }
+
+    &:last-child {
+      border-radius: 0 0 variables.$border-radius-lg 0;
+    }
+  }
+}

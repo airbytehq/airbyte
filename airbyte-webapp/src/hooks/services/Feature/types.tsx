@@ -13,6 +13,7 @@ export enum FeatureItem {
   AllowSync = "ALLOW_SYNC",
   AllowChangeDataGeographies = "ALLOW_CHANGE_DATA_GEOGRAPHIES",
   AllowSyncSubOneHourCronExpressions = "ALLOW_SYNC_SUB_ONE_HOUR_CRON_EXPRESSIONS",
+  FreeConnectorProgram = "FREE_CONNECTOR_PROGRAM",
 }
 
 export type FeatureSet = Partial<Record<FeatureItem, boolean>>;
