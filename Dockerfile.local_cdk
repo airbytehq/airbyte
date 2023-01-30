@@ -1,0 +1,12 @@
+FROM python:3.9-slim
+
+COPY airbyte-cdk/python/ ./airbyte-cdk
+
+ARG CONNECTOR_NAME
+COPY airbyte-integrations/connectors/$CONNECTOR_NAME ./$CONNECTOR_NAME
+
+RUN sed -iE 's,"airbyte-cdk[^"]*","airbyte-cdk @ file://localhost/airbyte-cdk",' $CONNECTOR_NAME/setup.py
+
+WORKDIR $CONNECTOR_NAME
+
+RUN pip install .

@@ -1,4 +1,4 @@
-FROM airbyte/airbyte-cdk-sats as base
+FROM python:3.9.11-alpine3.15 as base
 
 # build and load all requirements
 FROM base as builder
@@ -11,8 +11,7 @@ RUN apk --no-cache upgrade \
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
-ARG USE_LOCAL_CDK
-RUN USE_LOCAL_CDK=$USE_LOCAL_CDK LOCAL_CDK_DIR=$LOCAL_CDK_DIR python setup.py egg_info
+RUN python setup.py egg_info
 RUN pip install --prefix=/install -r *.egg-info/requires.txt
 
 # build a clean environment

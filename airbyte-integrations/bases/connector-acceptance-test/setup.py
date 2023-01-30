@@ -2,19 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import os
 
 import setuptools
 
-CDK_VERSION = "airbyte-cdk~=0.2"
-
-if os.getenv("USE_LOCAL_CDK"):
-    AIRBYTE_CDK = f"airbyte-cdk @ file://localhost/{os.getenv('LOCAL_CDK_DIR')}#egg=airbyte-cdk"
-else:
-    AIRBYTE_CDK = CDK_VERSION
-
 MAIN_REQUIREMENTS = [
-    AIRBYTE_CDK,
+    "airbyte-cdk~=0.2",
     "docker~=5.0.3",
     "PyYAML~=5.4",
     "icdiff~=1.9",

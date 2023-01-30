@@ -5,6 +5,7 @@
 
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Iterable, List, Mapping, Optional
 
@@ -28,6 +29,7 @@ class ConnectorRunner:
         self._runs = 0
         self._volume_base = volume
         self._connector_configuration_path = connector_configuration_path
+        self._is_local_cdk = os.getenv("LOCAL_CDK")
 
     @property
     def output_folder(self) -> Path:
@@ -37,9 +39,17 @@ class ConnectorRunner:
     def input_folder(self) -> Path:
         return self._volume_base / f"run_{self._runs}" / "input"
 
+    @property
+    def site_packages_volume_name(self) -> str:
+        name = os.getenv("VOLUME_NAME")
+        if self._is_local_cdk and not name:
+            raise AssertionError("")
+        return name
+
     def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping], catalog: Optional[ConfiguredAirbyteCatalog]):
         self.input_folder.mkdir(parents=True)
         self.output_folder.mkdir(parents=True)
+        self.cdk_volume_destination = "/usr/local/lib/python3.9/site-packages"
 
         # using "is not None" to allow falsey config objects like {} to still write
         if config is not None:
@@ -67,6 +77,14 @@ class ConnectorRunner:
                 "mode": "rw",
             },
         }
+        if self._is_local_cdk:
+            volumes.update(
+                {
+                    str(self.site_packages_volume_name): {
+                        "bind": self.cdk_volume_destination,
+                    }
+                }
+            )
         return volumes
 
     def call_spec(self, **kwargs) -> List[AirbyteMessage]:
