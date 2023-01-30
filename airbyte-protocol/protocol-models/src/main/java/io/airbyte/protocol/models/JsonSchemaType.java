@@ -130,11 +130,6 @@ public class JsonSchemaType {
       schemaPrimitives.forEach(x -> typeList.add(ImmutableMap.builder().put(TYPE, x.name().toLowerCase()).build()));
       typeMapBuilder.put(TYPE, JsonSchemaPrimitive.OBJECT.name().toLowerCase());
       typeMapBuilder.put(ONE_OF, typeList);
-      System.out.println("WRITING NEW LEGACY >>>>>>>>>     ");
-    }
-
-    private boolean hasMultipleTypes(List<JsonSchemaPrimitive> schemaPrimitives) {
-      return schemaPrimitives.size() > 1;
     }
 
     public Builder withFormat(final String value) {
