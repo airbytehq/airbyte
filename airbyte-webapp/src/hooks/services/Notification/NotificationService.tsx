@@ -9,7 +9,7 @@ import { Notification, NotificationServiceApi, NotificationServiceState } from "
 
 const notificationServiceContext = React.createContext<NotificationServiceApi | null>(null);
 
-const NotificationService = ({ children }: { children: React.ReactNode }) => {
+export const NotificationService = React.memo(({ children }: { children: React.ReactNode }) => {
   const [state, { addNotification, clearAll, deleteNotificationById }] = useTypesafeReducer<
     NotificationServiceState,
     typeof actions
@@ -47,7 +47,7 @@ const NotificationService = ({ children }: { children: React.ReactNode }) => {
       ) : null}
     </>
   );
-};
+});
 
 export const useNotificationService: (
   notification?: Notification,
@@ -80,5 +80,3 @@ export const useNotificationService: (
     unregisterAllNotifications: notificationService.clearAll,
   };
 };
-
-export default React.memo(NotificationService);
