@@ -13,9 +13,9 @@ import { DropdownMenu } from "components/ui/DropdownMenu";
 import { Text } from "components/ui/Text";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { DbtCloudJob, isSameJob, useDbtIntegration, useAvailableDbtJobs } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 import dbtLogo from "./dbt-bit_tm.svg";
 import styles from "./DbtCloudTransformationsCard.module.scss";
@@ -92,7 +92,7 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
 };
 
 const NoDbtIntegration = () => {
-  const { workspaceId } = useCurrentWorkspace();
+  const workspaceId = useCurrentWorkspaceId();
   const dbtSettingsPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Settings}/dbt-cloud`;
   return (
     <Card
