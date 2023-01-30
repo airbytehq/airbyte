@@ -153,7 +153,6 @@
     "prettier": "^2.6.2",
     "react-select-event": "^5.5.0",
     "storybook": "^7.0.0-beta.36",
-    "storybook-addon-mock": "^2.4.1",
     "stylelint": "^14.9.1",
     "stylelint-config-css-modules": "^4.1.0",
     "stylelint-config-prettier-scss": "^0.0.1",
