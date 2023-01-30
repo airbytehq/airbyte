@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -78,7 +79,7 @@ class SnowflakeInternalStagingSqlOperationsTest {
   @CsvSource({"TEST,false", "but current role has no privileges on it,true"})
   public void testCreateStageIfNotExists(final String message, final boolean shouldCapture) {
     final JdbcDatabase db = Mockito.mock(JdbcDatabase.class);
-    final var stageName = "foo";
+    final String stageName = "foo";
     try {
       Mockito.doThrow(new SnowflakeSQLException(message)).when(db).execute(Mockito.anyString());
     } catch (SQLException e) {
@@ -87,10 +88,10 @@ class SnowflakeInternalStagingSqlOperationsTest {
     }
     final Exception exception = Assertions.assertThrows(Exception.class, () -> snowflakeStagingSqlOperations.createStageIfNotExists(db, stageName));
     if (shouldCapture) {
-      Assertions.assertInstanceOf(ConfigErrorException.class, exception);
+      assertInstanceOf(ConfigErrorException.class, exception);
     } else {
-      Assertions.assertInstanceOf(SnowflakeSQLException.class, exception);
-      Assertions.assertEquals(exception.getMessage(), message);
+      assertInstanceOf(SnowflakeSQLException.class, exception);
+      assertEquals(exception.getMessage(), message);
     }
   }
 
