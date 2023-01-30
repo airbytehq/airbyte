@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Splitter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
@@ -13,10 +12,12 @@ import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import java.util.Map;
-import java.util.Optional;
+import io.debezium.engine.ChangeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.Optional;
 
 public class PostgresCdcStateHandler implements CdcStateHandler {
 
@@ -63,16 +64,24 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public boolean isRecordBehindOffset(Map<String, String> offset, AirbyteMessage message){
-    String offsetString = offset.size() == 1 ? (String) offset.values().toArray()[0] : null;
-    if (offsetString == null){
+  public boolean isSnapshotEvent(ChangeEvent<String, String> event){
+    JsonNode isSnapshotEvent = Jsons.deserialize(event.value()).get("source").get("snapshot");
+    return isSnapshotEvent != null && !isSnapshotEvent.asBoolean();
+  }
+
+  @Override
+  public boolean isRecordBehindOffset(Map<String, String> offset, ChangeEvent<String, String> event) {
+    if (offset.size() != 1) {
       return false;
     }
-    Integer lsn = Splitter.on(",").withKeyValueSeparator(":").split(offsetString).get("\"lsn_commit\"") != null ?
-        Integer.parseInt(Splitter.on(",").withKeyValueSeparator(":").split(offsetString).get("\"lsn_commit\"")) :
-        Integer.parseInt(Splitter.on(",").withKeyValueSeparator(":").split(offsetString).get("\"lsn\""));
-    return Integer.parseInt(message.getRecord().getData().get("_ab_cdc_lsn").toString())
-        > lsn;
+
+    JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
+
+    String lsn = offsetJson.get("lsn_commit") != null ?
+        String.valueOf(offsetJson.get("lsn_commit")) :
+        String.valueOf(offsetJson.get("lsn"));
+    return Integer.parseInt(String.valueOf(Jsons.deserialize(event.value()).get("source").get("lsn")))
+        > Integer.parseInt(lsn);
   };
 
 }

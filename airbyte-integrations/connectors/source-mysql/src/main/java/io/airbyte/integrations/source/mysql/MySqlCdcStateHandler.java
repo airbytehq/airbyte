@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_CDC_OFFSET;
-import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
@@ -15,11 +12,16 @@ import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.debezium.engine.ChangeEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_CDC_OFFSET;
+import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
 
 public class MySqlCdcStateHandler implements CdcStateHandler {
 
@@ -63,7 +65,13 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public boolean isRecordBehindOffset(Map<String, String> offset, AirbyteMessage message){
+  public boolean isSnapshotEvent(ChangeEvent<String, String> event){
+    // TODO: With this implementation the checkpoint is not going to be saved ever. Add required logic like in Postgres
+    return false;
+  }
+
+  @Override
+  public boolean isRecordBehindOffset(Map<String, String> offset, ChangeEvent<String, String> event){
     // TODO: With this implementation the checkpoint is not going to be saved ever. Add required logic like in Postgres
     return false;
   };

@@ -5,16 +5,20 @@
 package io.airbyte.integrations.debezium.internals;
 
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.debezium.engine.ChangeEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class encapsulates an iterator and adds the required functionality to create checkpoints for
@@ -28,11 +32,13 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
 
-  private final Iterator<AirbyteMessage> messageIterator;
+  private final Iterator<ChangeEvent<String, String>> changeEventIterator;
   private final CdcStateHandler cdcStateHandler;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final boolean trackSchemaHistory;
   private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
+  private final CdcMetadataInjector cdcMetadataInjector;
+  private final Instant emittedAt;
 
   private boolean isSyncFinished;
 
@@ -47,15 +53,15 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    * at {@code SYNC_CHECKPOINT_SECONDS}.
    * <p/>
    */
-  private Duration syncCheckpointDuration;
-  private Integer syncCheckpointRecords;
+  private final Duration syncCheckpointDuration;
+  private final Integer syncCheckpointRecords;
   private OffsetDateTime dateTimeLastSync;
   private Integer recordsLastSync;
   private Map<String, String> checkpointOffset;
   private boolean sendCheckpointMessage;
 
   /**
-   * @param messageIterator Base iterator that we want to enrich with checkpoint messages
+   * @param changeEventIterator Base iterator that we want to enrich with checkpoint messages
    * @param cdcStateHandler Handler to save the offset and schema history
    * @param offsetManager Handler to read and write debezium offset file
    * @param trackSchemaHistory Set true if the schema needs to be tracked
@@ -64,15 +70,19 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    * @param checkpointDuration Duration between syncs
    * @param checkpointRecords Number of records between syncs
    */
-  public DebeziumStateDecoratingIterator(final Iterator<AirbyteMessage> messageIterator,
+  public DebeziumStateDecoratingIterator(final Iterator<ChangeEvent<String, String>> changeEventIterator,
                                          final CdcStateHandler cdcStateHandler,
+                                         final CdcMetadataInjector cdcMetadataInjector,
+                                         final Instant emittedAt,
                                          final AirbyteFileOffsetBackingStore offsetManager,
                                          final boolean trackSchemaHistory,
                                          final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager,
                                          final Duration checkpointDuration,
                                          final Integer checkpointRecords) {
-    this.messageIterator = messageIterator;
+    this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
+    this.cdcMetadataInjector = cdcMetadataInjector;
+    this.emittedAt = emittedAt;
     this.offsetManager = offsetManager;
     this.trackSchemaHistory = trackSchemaHistory;
     this.schemaHistoryManager = schemaHistoryManager;
@@ -107,9 +117,9 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
       return stateMessage;
     }
 
-    if (messageIterator.hasNext()) {
+    if (changeEventIterator.hasNext()) {
       try {
-        AirbyteMessage message = messageIterator.next();
+        ChangeEvent<String, String> event = changeEventIterator.next();
         recordsLastSync++;
 
         if (checkpointOffset == null &&
@@ -118,11 +128,13 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
           checkpointOffset = offsetManager.read();
         }
 
-        if (checkpointOffset != null && cdcStateHandler.isRecordBehindOffset(checkpointOffset, message)) {
+        if (checkpointOffset != null
+            && cdcStateHandler.isRecordBehindOffset(checkpointOffset, event)
+            && !cdcStateHandler.isSnapshotEvent(event)) {
           sendCheckpointMessage = true;
         }
 
-        return message;
+        return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt);
       } catch (final Exception e) {
         LOGGER.error("Message iterator failed to read next record. {}", e.getMessage());
       }

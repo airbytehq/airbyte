@@ -14,13 +14,14 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.engine.ChangeEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
@@ -106,21 +107,19 @@ public class AirbyteDebeziumHandler {
         publisher::close,
         firstRecordWaitTime);
 
-    // convert to airbyte message.
-    final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators
-        .transform(
-            eventIterator,
-            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt));
-
     // TODO: Change to default values when finishing the testing
     return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator(
-        messageIterator,
+        eventIterator,
         cdcStateHandler,
+        cdcMetadataInjector,
+        emittedAt,
         offsetManager,
         trackSchemaHistory,
         schemaHistoryManager,
-        Duration.ofMinutes(1), // DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_DURATION;
-        2)); // DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS;
+        DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_DURATION,
+        DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS));
+        // Duration.ofMinutes(1),
+        // 2));
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
