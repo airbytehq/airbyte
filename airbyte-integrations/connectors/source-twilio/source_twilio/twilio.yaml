@@ -138,8 +138,8 @@ definitions:
         path: "{{ stream_slice.path }}"
         request_options_provider:
           request_parameters:
-            "EndTime>": "{{ format_datetime(stream_slice.lower_boundary, '%Y-%m-%d') }}"
-            "EndTime<": "{{ format_datetime(stream_slice.upper_boundary, '%Y-%m-%d') }}"
+            "{{ options.lower_boundary_param }}": "{{ format_datetime(stream_slice.lower_boundary, '%Y-%m-%d') }}"
+            "{{ options.upper_boundary_param }}": "{{ format_datetime(stream_slice.upper_boundary, '%Y-%m-%d') }}"
       stream_slicer:
         type: CustomStreamSlicer
         class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
@@ -164,6 +164,8 @@ definitions:
     $options:
       name: "calls"
       cursor_field: "end_time"
+      lower_boundary_param: "EndTime>"
+      upper_boundary_param: "EndTime<"
     stream_cursor_field: "end_time"
 
 
