@@ -2,22 +2,11 @@
 
 This page contains the setup guide and reference information for the Sendgrid source connector.
 
-## Prerequisites
-
-**Note:** Sendgrid provides two different kinds of marketing campaigns, "legacy marketing campaigns" and "new marketing campaigns". **Legacy marketing campaigns are not supported by this source connector**. 
-If you are seeing a `403 FORBIDDEN error message for https://api.sendgrid.com/v3/marketing/campaigns`, it might be because your SendGrid account uses legacy marketing campaigns.
-
-Generate an API key using the [Sendgrid documentation](https://sendgrid.com/docs/ui/account-and-settings/api-keys/#creating-an-api-key).
-
-We recommend creating a key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. The API key should be read-only on all resources except Marketing, where it needs Full Access.
-
-To consume Messages resources requires to purchase an extra on Sendgrid. You can read more about this [here](https://docs.sendgrid.com/api-reference/e-mail-activity)
-
 ## Setup guide
 ### Step 1: Set up Sendgrid
 
 * Sendgrid Account
-* Sendgrid API Key with the following permissions:
+* [Create Sendgrid API Key](https://docs.sendgrid.com/ui/account-and-settings/api-keys#creating-an-api-key) with the following permissions:
   * Read-only access to all resources
   * Full access to marketing resources
 
@@ -44,31 +33,33 @@ To consume Messages resources requires to purchase an extra on Sendgrid. You can
 
 The Sendgrid source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                       | Supported?  |
-| :---------------------------- | :---------- |
-| Full Refresh Sync             | Yes         |
-| Incremental Sync              | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 
 ## Supported Streams
 
-* Campaigns 
-* Lists 
-* Contacts 
-* Stats automations 
-* Segments 
-* Single_sends 
-* Templates 
-* Global suppression 
-* Suppression groups 
-* Suppression group members 
-* Blocks 
-* Bounces 
-* Invalid emails 
-* Spam reports 
-* Messages
+* [Campaigns](https://docs.sendgrid.com/api-reference/campaigns-api/retrieve-all-campaigns) 
+* [Lists](https://docs.sendgrid.com/api-reference/lists/get-all-lists) 
+* [Contacts](https://docs.sendgrid.com/api-reference/contacts/export-contacts) 
+* [Stats automations](https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-automation-stats) 
+* [Segments](https://docs.sendgrid.com/api-reference/segmenting-contacts/get-list-of-segments) 
+* [Single Sends](https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats) 
+* [Templates](https://docs.sendgrid.com/api-reference/transactional-templates/retrieve-paged-transactional-templates) 
+* [Global suppression](https://docs.sendgrid.com/api-reference/suppressions-global-suppressions/retrieve-all-global-suppressions) \(Incremental\)
+* [Suppression groups](https://docs.sendgrid.com/api-reference/suppressions-unsubscribe-groups/retrieve-all-suppression-groups-associated-with-the-user)
+* [Suppression group members](https://docs.sendgrid.com/api-reference/suppressions-suppressions/retrieve-all-suppressions) 
+* [Blocks](https://docs.sendgrid.com/api-reference/blocks-api/retrieve-all-blocks) \(Incremental\)
+* [Bounces](https://docs.sendgrid.com/api-reference/bounces-api/retrieve-all-bounces) \(Incremental\)
+* [Invalid emails](https://docs.sendgrid.com/api-reference/invalid-e-mails-api/retrieve-all-invalid-emails) \(Incremental\)
+* [Spam reports](https://docs.sendgrid.com/api-reference/spam-reports-api/retrieve-all-spam-reports)
+
+
+## Connector-specific features & highlights, if any
+
+We recommend creating a key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. The API key should be read-only on all resources except Marketing, where it needs Full Access.
+Sendgrid provides two different kinds of marketing campaigns, "legacy marketing campaigns" and "new marketing campaigns". **Legacy marketing campaigns are not supported by this source connector**. 
+If you are seeing a `403 FORBIDDEN error message for https://api.sendgrid.com/v3/marketing/campaigns`, it might be because your SendGrid account uses legacy marketing campaigns.
 
 ## Performance considerations
 
