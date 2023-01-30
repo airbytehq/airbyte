@@ -44,21 +44,6 @@ describe("SchemaChangesBackdrop", () => {
     expect(buttonSpy).not.toHaveBeenCalled();
   });
 
-  // Replaced with test below. Temporarily removing background for non_breaking change
-  // it("renders if there are non-breaking changes and prevents background interaction", () => {
-  //   mockUseConnectionEditService.mockReturnValue({
-  //     connection: { mockConnection, schemaChange: SchemaChange.non_breaking },
-  //     schemaHasBeenRefreshed: false,
-  //     schemaRefreshing: false,
-  //   });
-
-  //   const { getByTestId } = renderComponent();
-
-  //   expect(getByTestId("schemaChangesBackdrop")).toMatchSnapshot();
-  //   userEvent.click(getByTestId("bg-button"));
-  //   expect(buttonSpy).not.toHaveBeenCalled();
-  // });
-
   it("does not render if there are non-breaking changes", () => {
     mockUseConnectionEditService.mockReturnValue({
       connection: { mockConnection, schemaChange: SchemaChange.non_breaking },
