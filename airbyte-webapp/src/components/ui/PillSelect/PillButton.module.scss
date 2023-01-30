@@ -98,10 +98,6 @@
 }
 
 .labelContainer {
-  &:first-child {
-    max-width: 85px;
-  }
-
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -110,6 +106,10 @@
   flex: 1;
   overflow: hidden;
   white-space: nowrap;
+}
+
+.multi .labelContainer:first-child {
+  max-width: 85px;
 }
 
 .divider {
