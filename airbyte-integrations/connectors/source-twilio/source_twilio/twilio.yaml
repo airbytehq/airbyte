@@ -154,8 +154,7 @@ definitions:
             start_datetime:
               datetime: "{{ config['start_date'] }}"
             end_datetime:
-              datetime: "{{ today_utc() }}"
-              datetime_format: "%Y-%m-%d"
+              datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
             datetime_format: "%Y-%m-%dT%H:%M:%SZ"
             cursor_format: "%a, %d %b %Y %H:%M:%S %z"
             step: "{{ 'P' + config.slice_step_map[options.name]|string() + 'D' if config.slice_step_map[options.name] else options.step_default }}"
