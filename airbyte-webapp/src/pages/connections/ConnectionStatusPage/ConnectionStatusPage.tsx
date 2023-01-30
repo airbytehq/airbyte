@@ -159,7 +159,6 @@ export const ConnectionStatusPage: React.FC = () => {
   return (
     <>
       <Card
-        className={styles.contentCard}
         title={
           <div className={styles.title}>
             <FormattedMessage id="sources.syncHistory" />
@@ -212,7 +211,7 @@ export const ConnectionStatusPage: React.FC = () => {
       </Card>
       {(moreJobPagesAvailable || isJobPageLoading) && (
         <footer className={styles.footer}>
-          <Button isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
+          <Button variant="secondary" isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
             <FormattedMessage id="connection.loadMoreJobs" />
           </Button>
         </footer>
