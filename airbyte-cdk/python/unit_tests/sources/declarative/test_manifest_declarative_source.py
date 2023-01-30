@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from unittest.mock import patch
 
 import pytest
 import yaml
@@ -540,6 +541,94 @@ class TestManifestDeclarativeSource:
         }
         with pytest.raises(ValidationError):
             ManifestDeclarativeSource(source_config=manifest, construct_using_pydantic_models=construct_using_pydantic_models)
+
+    @patch("airbyte_cdk.sources.declarative.declarative_source.DeclarativeSource.read")
+    def test_given_debug_when_read_then_set_log_level(self, declarative_source_read):
+        any_valid_manifest = {
+            "version": "version",
+            "definitions": {
+                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "retriever": {
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"inject_into": "path"},
+                        "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
+                    },
+                    "requester": {
+                        "path": "/v3/marketing/lists",
+                        "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
+                        "request_parameters": {"page_size": 10},
+                    },
+                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                },
+            },
+            "streams": [
+                {
+                    "type": "DeclarativeStream",
+                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ options.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"inject_into": "path"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
+                        },
+                        "requester": {
+                            "path": "/v3/marketing/lists",
+                            "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
+                            "request_parameters": {"page_size": 10},
+                        },
+                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    },
+                },
+                {
+                    "type": "DeclarativeStream",
+                    "$options": {"name": "stream_with_custom_requester", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ options.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"inject_into": "path"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
+                        },
+                        "requester": {
+                            "type": "CustomRequester",
+                            "class_name": "unit_tests.sources.declarative.external_component.SampleCustomComponent",
+                            "path": "/v3/marketing/lists",
+                            "custom_request_parameters": {"page_size": 10},
+                        },
+                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    },
+                },
+            ],
+            "check": {"type": "CheckStream", "stream_names": ["lists"]},
+        }
+        source = ManifestDeclarativeSource(source_config=any_valid_manifest, debug=True, construct_using_pydantic_models=True)
+
+        debug_logger = logging.getLogger("logger.debug")
+        list(source.read(debug_logger, {}, {}, {}))
+
+        assert debug_logger.isEnabledFor(logging.DEBUG)
 
 
 def test_generate_schema():

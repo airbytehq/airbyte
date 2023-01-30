@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { QueryObserverResult, useMutation, useQuery, useQueryClient } from "react-query";
 
+import { MissingConfigError, useConfig } from "config";
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
 import { CloudWorkspace, CloudWorkspaceUsage } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import { useConfig } from "packages/cloud/services/config";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { SCOPE_USER } from "services/Scope";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
@@ -21,6 +21,10 @@ export const workspaceKeys = {
 
 function useGetWorkspaceService(): CloudWorkspacesService {
   const { cloudApiUrl } = useConfig();
+
+  if (!cloudApiUrl) {
+    throw new MissingConfigError("Missing required configuration cloudApiUrl");
+  }
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
