@@ -75,7 +75,8 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| 0.2.5   | 2023-01-27 | [22021](https://github.com/airbytehq/airbyte/pull/22021) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.2.4   | 2022-10-11 | [17822](https://github.com/airbytehq/airbyte/pull/17822) | Do not parse JSON in `should_retry`                                                       |
 | 0.2.3   | 2022-10-11 | [17822](https://github.com/airbytehq/airbyte/pull/17822) | Do not parse JSON in `should_retry`                                                       |
 | 0.2.2   | 2022-10-05 | [17608](https://github.com/airbytehq/airbyte/pull/17608) | Skip stream if we receive 403 error                                                       |
