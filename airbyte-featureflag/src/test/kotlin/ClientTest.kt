@@ -1,24 +1,22 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
+package io.airbyte.featureflag
 
 import com.launchdarkly.sdk.LDUser
 import com.launchdarkly.sdk.server.LDClient
-import io.airbyte.featureflag.ANONYMOUS
-import io.airbyte.featureflag.ConfigFileClient
-import io.airbyte.featureflag.EnvVar
-import io.airbyte.featureflag.FeatureFlagClient
-import io.airbyte.featureflag.Flag
-import io.airbyte.featureflag.LaunchDarklyClient
-import io.airbyte.featureflag.Temporary
-import io.airbyte.featureflag.TestClient
-import io.airbyte.featureflag.User
-import io.airbyte.featureflag.Workspace
+import io.micronaut.context.annotation.Bean
+import io.micronaut.context.annotation.Property
+import io.micronaut.context.annotation.Replaces
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import io.mockk.called
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import jakarta.inject.Inject
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -26,9 +24,10 @@ import kotlin.io.path.createTempFile
 import kotlin.io.path.writeText
 import kotlin.test.Ignore
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ConfigFileClient {
+class ConfigFileClientTest {
     @Test
     fun `verify config-file functionality`() {
         val cfg = Path.of("src", "test", "resources", "feature-flags.yml")
@@ -137,7 +136,7 @@ class ConfigFileClient {
     }
 }
 
-class LaunchDarklyClient {
+class LaunchDarklyClientTest {
     @Test
     fun `verify cloud functionality`() {
         val testTrue = Temporary(key = "test-true")
@@ -213,7 +212,7 @@ class LaunchDarklyClient {
     }
 }
 
-class TestClient {
+class TestClientTest {
     @Test
     fun `verify functionality`() {
         val testTrue = Pair(Temporary(key = "test-true"), true)
@@ -272,5 +271,56 @@ class TestClient {
             assertTrue { enabled(evFalse, ctx) }
             assertFalse("undefined flags should always return false") { enabled(evEmpty, ctx) }
         }
+    }
+}
+
+@MicronautTest(rebuildContext = true)
+class InjectTest {
+    @get:Bean
+    @get:Replaces(LDClient::class)
+    var ldClient: LDClient = mockk()
+
+    private val flag = Temporary(key = "test-flag", default = true)
+    private val context = Workspace("test-context")
+
+    @BeforeEach
+    fun setup() {
+        clearMocks(ldClient)
+    }
+
+    @Inject
+    var featureFlagClient: FeatureFlagClient? = null
+
+    @Test
+    fun `ConfigFileClient loads if no client property defined`() {
+        assertNotNull(featureFlagClient)
+        assertTrue { featureFlagClient is ConfigFileClient }
+        assertTrue { featureFlagClient?.enabled(flag, context) ?: false }
+    }
+
+    @Property(name = CONFIG_FF_CLIENT, value = "")
+    @Test
+    fun `ConfigFileClient loads if client property is empty`() {
+        assertNotNull(featureFlagClient)
+        assertTrue { featureFlagClient is ConfigFileClient }
+        assertTrue { featureFlagClient?.enabled(flag, context) ?: false }
+    }
+
+    @Property(name = CONFIG_FF_CLIENT, value = "not-launchdarkly")
+    @Test
+    fun `ConfigFileClient loads if client property is not ${CONFIG_FF_CLIENT_VAL_LAUNCHDARKLY}`() {
+        assertNotNull(featureFlagClient)
+        assertTrue { featureFlagClient is ConfigFileClient }
+        assertTrue { featureFlagClient?.enabled(flag, context) ?: false }
+    }
+
+    @Property(name = CONFIG_FF_CLIENT, value = CONFIG_FF_CLIENT_VAL_LAUNCHDARKLY)
+    @Test
+    fun `LaunchDarklyClient loads if client is defined as ${CONFIG_FF_CLIENT_VAL_LAUNCHDARKLY}`() {
+        every { ldClient.boolVariation(flag.key, any<LDUser>(), flag.default) } returns flag.default
+
+        assertNotNull(featureFlagClient)
+        assertTrue { featureFlagClient is LaunchDarklyClient }
+        assertTrue { featureFlagClient?.enabled(flag, context) ?: false }
     }
 }
