@@ -28,7 +28,7 @@ const apiRequest = <T = void>(
   path: string,
   payload?: Cypress.RequestBody,
   expectedStatus = 200
-) =>
+): Cypress.Chainable<T> =>
   cy.request(method, getApiUrl(path), payload).then((response) => {
     expect(response.status).to.eq(expectedStatus, "response status");
     return response.body;
