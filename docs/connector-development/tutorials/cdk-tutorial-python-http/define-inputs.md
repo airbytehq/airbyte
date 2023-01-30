@@ -17,11 +17,11 @@ connectionSpecification:
   title: Python Http Tutorial Spec
   type: object
   required:
-    - access_key
+    - apikey
     - start_date
     - base
   properties:
-    access_key:
+    apikey:
       type: string
       description: API access key used to retrieve data from the Exchange Rates API.
       airbyte_secret: true
@@ -39,9 +39,9 @@ connectionSpecification:
       description: "ISO reference currency. See <a href=\"https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html\">here</a>."
 ```
 
-In addition to metadata, we define two inputs:
+In addition to metadata, we define three inputs:
 
-* `access_key`: The API access key used to authenticate requests to the API
+* `apikey`: The API access key used to authenticate requests to the API
 * `start_date`: The beginning date to start tracking currency exchange rates from
 * `base`: The currency whose rates we're interested in tracking
 
