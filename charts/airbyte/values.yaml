@@ -819,6 +819,7 @@ worker:
     enabled: true
     image: ""
 
+  ## current no exist documentations
   activity_max_attempt: ""
   activity_initial_delay_between_attempts_seconds: ""
   activity_max_delay_between_attempts_seconds: ""
