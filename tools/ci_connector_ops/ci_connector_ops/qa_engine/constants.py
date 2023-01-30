@@ -13,3 +13,5 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
 ]
 
 GCS_QA_REPORT_PATH = "gs://prod-airbyte-cloud-connector-metadata-service/qa_report.json"
+AIRBYTE_CLOUD_GITHUB_REPO_URL = "https://github.com/airbytehq/airbyte-cloud.git"
+AIRBYTE_CLOUD_MAIN_BRANCH_NAME = "master"
