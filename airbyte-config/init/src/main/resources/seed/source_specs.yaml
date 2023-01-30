@@ -1845,7 +1845,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.17"
+- dockerImage: "airbyte/source-bing-ads:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
