@@ -20,11 +20,16 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+          extra_fields: yes
+          exact_order: yes
+          extra_records: no
         empty_streams:
           - name: "media"
             bypass_reason: "Floating data"
-          - name: "users"
-            bypass_reason: "Profile picture url is not constant"
+          - name: "media_insights"
+            bypass_reason: "Floating data"
+          - name: "user_insights"
+            bypass_reason: "Floating data"
           - name: "stories"
             bypass_reason: "Stories only live for 24 hours"
           - name: "story_insights"

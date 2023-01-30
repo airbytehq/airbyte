@@ -266,7 +266,7 @@ public class SchedulerHandler {
               connectorVersion,
               new Version(sourceDef.getProtocolVersion()),
               isCustomConnector);
-      final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId);
+      final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId, sourceDef);
 
       if (discoverSchemaRequestBody.getConnectionId() != null) {
         // modify discoveredSchema object to add CatalogDiff, containsBreakingChange, and connectionStatus
@@ -285,7 +285,7 @@ public class SchedulerHandler {
         .logs(new LogRead().logLines(new ArrayList<>()))
         .succeeded(true);
     return new SourceDiscoverSchemaRead()
-        .catalog(CatalogConverter.toApi(airbyteCatalog))
+        .catalog(CatalogConverter.toApi(airbyteCatalog, sourceDef))
         .jobInfo(emptyJob)
         .catalogId(currentCatalog.get().getId());
   }
@@ -312,10 +312,11 @@ public class SchedulerHandler {
         new Version(
             sourceDef.getProtocolVersion()),
         isCustomConnector);
-    return retrieveDiscoveredSchema(response);
+    return retrieveDiscoveredSchema(response, sourceDef);
   }
 
-  private SourceDiscoverSchemaRead retrieveDiscoveredSchema(final SynchronousResponse<UUID> response) throws ConfigNotFoundException, IOException {
+  private SourceDiscoverSchemaRead retrieveDiscoveredSchema(final SynchronousResponse<UUID> response, final StandardSourceDefinition sourceDef)
+      throws ConfigNotFoundException, IOException {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
@@ -323,7 +324,7 @@ public class SchedulerHandler {
       final ActorCatalog catalog = configRepository.getActorCatalogById(response.getOutput());
       final AirbyteCatalog persistenceCatalog = Jsons.object(catalog.getCatalog(),
           io.airbyte.protocol.models.AirbyteCatalog.class);
-      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(persistenceCatalog));
+      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(persistenceCatalog, sourceDef));
       sourceDiscoverSchemaRead.catalogId(response.getOutput());
     }
 

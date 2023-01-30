@@ -7,8 +7,8 @@ import { Tooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { links } from "utils/links";
 
-import { TableStream } from "../StreamFieldsTable";
 import styles from "./CursorCell.module.scss";
+import { TableStream } from "../StreamFieldsTable";
 
 interface CursorCellProps extends CellContext<TableStream, boolean | undefined> {
   isCursorDefinitionSupported: boolean;
@@ -30,7 +30,12 @@ export const CursorCell: React.FC<CursorCellProps> = ({
   const isCursorChecked = isCursor(row.original.path);
 
   const radioButton = (
-    <RadioButton checked={isCursorChecked} onChange={() => onCursorSelect(row.original.path)} disabled={!getValue()} />
+    <RadioButton
+      className={styles.radio}
+      checked={isCursorChecked}
+      onChange={() => onCursorSelect(row.original.path)}
+      disabled={!getValue()}
+    />
   );
 
   return !getValue() && isCursorChecked ? (
