@@ -107,7 +107,6 @@ public class AirbyteDebeziumHandler {
         publisher::close,
         firstRecordWaitTime);
 
-    // TODO: Change to default values when finishing the testing
     return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator(
         eventIterator,
         cdcStateHandler,
@@ -118,8 +117,6 @@ public class AirbyteDebeziumHandler {
         schemaHistoryManager,
         DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_DURATION,
         DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS));
-        // Duration.ofMinutes(1),
-        // 2));
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
