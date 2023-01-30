@@ -169,6 +169,7 @@ definitions:
       boundary_format: "%Y-%m-%d"
       cursor_granularity: "P1D"
       step_default: "P1Y"
+      primary_key: "sid"
     stream_cursor_field: "end_time"
   # https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources
   conferences_stream:
@@ -181,6 +182,7 @@ definitions:
       boundary_format: "%Y-%m-%d"
       cursor_granularity: "P1D"
       step_default: "P1Y"
+      primary_key: "sid"
     stream_cursor_field: "date_updated"
   # https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources
   messages_stream:
@@ -193,7 +195,8 @@ definitions:
       boundary_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: "PT0S"
       step_default: "P1D"
-    stream_cursor_field: "date_updated"
+      primary_key: "sid"
+    stream_cursor_field: "date_sent"
 
 
 streams:
