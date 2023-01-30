@@ -214,6 +214,29 @@ definitions:
       step_default: "P1Y"
       primary_key: "sid"
     stream_cursor_field: "date_created"
+  # https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources
+  alerts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        url_base: "https://monitor.twilio.com/"
+        path: "/v1/Alerts"
+        request_options_provider:
+          $ref: "*ref(definitions.boundary_request_parameters)"
+      stream_slicer:
+        $ref: "*ref(definitions.datetime_slicer)"
+    $options:
+      name: "alerts"
+      cursor_field: "date_generated"
+      lower_boundary_param: "StartDate="
+      upper_boundary_param: "EndDate="
+      boundary_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: "PT0S"
+      step_default: "P1Y"
+      primary_key: "sid"
+    stream_cursor_field: "date_generated"
 
 
 streams:
@@ -233,6 +256,7 @@ streams:
   - "*ref(definitions.conferences_stream)"
   - "*ref(definitions.messages_stream)"
   - "*ref(definitions.recordings_stream)"
+  - "*ref(definitions.alerts_stream)"
 
 check:
   stream_names:
