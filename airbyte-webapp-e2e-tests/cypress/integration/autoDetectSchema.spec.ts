@@ -131,7 +131,7 @@ describe("Connection - Auto-detect schema changes", () => {
       getManualSyncButton(connection).should("be.disabled");
     });
 
-    it.only("shows breaking change that can be saved after refresh and fix", () => {
+    it("shows breaking change that can be saved after refresh and fix", () => {
       visitConnectionPage(connection, "replication");
 
       // Confirm that breaking changes are there
