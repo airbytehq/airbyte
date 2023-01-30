@@ -509,6 +509,8 @@
   icon: faker.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts: []
   suggestedStreams:
     streams:
       - users
