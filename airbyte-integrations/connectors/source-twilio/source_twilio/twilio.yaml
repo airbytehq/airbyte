@@ -128,8 +128,7 @@ definitions:
       name: "available_phone_numbers_toll_free"
       data_field: "available_phone_numbers"
       subresource_uri_key: "toll_free"
-  # https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources
-  calls_stream:
+  base_incremental_nested_stream:
     $ref: "*ref(definitions.base_stream)"
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -161,6 +160,9 @@ definitions:
             cursor_format: "%a, %d %b %Y %H:%M:%S %z"
             step: "{{ 'P' + config.slice_step_map[options.name]|string() + 'D' if config.slice_step_map[options.name] else 'P1Y' }}"
             cursor_granularity: "P1D"
+  # https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources
+  calls_stream:
+    $ref: "*ref(definitions.base_incremental_nested_stream)"
     $options:
       name: "calls"
       cursor_field: "end_time"
