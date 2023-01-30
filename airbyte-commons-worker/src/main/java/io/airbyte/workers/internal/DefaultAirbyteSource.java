@@ -6,7 +6,6 @@ package io.airbyte.workers.internal;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -36,7 +35,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
-  private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
   private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
   public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
@@ -45,7 +43,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
-  private final HeartbeatMonitor heartbeatMonitor;
 
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
@@ -57,16 +54,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
-    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
-  }
-
-  @VisibleForTesting
-  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory,
-                       final HeartbeatMonitor heartbeatMonitor) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
-    this.heartbeatMonitor = heartbeatMonitor;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -87,7 +76,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
     logInitialStateAsJSON(sourceConfig);
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
-        .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE)
         .iterator();
   }
