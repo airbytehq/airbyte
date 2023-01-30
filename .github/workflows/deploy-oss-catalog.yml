@@ -41,9 +41,9 @@ jobs:
           ./tools/bin/find_non_rate_limited_PAT \
             ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
             ${{ secrets.OCTAVIA_PAT }}
-      - name: Trigger Cloud catalog generation
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ env.PAT }}
-          repository: airbytehq/airbyte-cloud
-          event-type: generate-cloud-catalog
+      # - name: Trigger Cloud catalog generation
+      #   uses: peter-evans/repository-dispatch@v2
+      #   with:
+      #     token: ${{ env.PAT }}
+      #     repository: airbytehq/airbyte-cloud
+      #     event-type: generate-cloud-catalog
