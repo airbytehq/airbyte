@@ -117,7 +117,6 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
 
   // handle when user presses keyboard keys in the input
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
-    console.log(inputValue);
     if (!inputValue || !inputValue.length) {
       return;
     }
