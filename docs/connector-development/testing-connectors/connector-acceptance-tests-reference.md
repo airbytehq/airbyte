@@ -28,7 +28,7 @@ acceptance-tests:
       - spec_path: "some_folder/spec.yaml"
 ```
 
-_Note: Not all types of tests work for all connectors, only configure the ones that make sense in your scenario. The `spec` test suite is universal for all sources and destinations, the other test suites are only applicable to sources, and the `incremental` test suite is only applicable if the source connector supports incremental syncs._
+_Note: Not all types of tests work for all connectors, only configure the ones that make sense in your scenario. The `spec` and `check` test suites are universal for all sources and destinations, the other test suites are only applicable to sources, and the `incremental` test suite is only applicable if the source connector supports incremental syncs._
 
 Build your connector image if needed.
 
@@ -244,6 +244,8 @@ This test verifies that sync produces no records when run with the STATE with ab
 
 To enforce maximal coverage of acceptances tests we expose a `test_strictness_level` field at the root of the `acceptance-test-config.yml` configuration.
 The default `test_strictness_level` is `low`, but for generally available connectors it is expected to be eventually set to `high`.
+
+_Note: For now, the strictness level can only be applied for sources, not for destination connectors_
 
 ### Test enforcements in `high` test strictness level
 
