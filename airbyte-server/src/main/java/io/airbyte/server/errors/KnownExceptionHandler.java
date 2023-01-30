@@ -5,6 +5,7 @@
 package io.airbyte.server.errors;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.server.errors.KnownException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;

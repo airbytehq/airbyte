@@ -9,13 +9,13 @@ import { Text } from "components/ui/Text";
 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
-import { StreamHeaderProps } from "../StreamHeader";
 import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
 import styles from "./CatalogTreeTableRow.module.scss";
 import { CatalogTreeTableRowIcon } from "./CatalogTreeTableRowIcon";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
 import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
+import { StreamHeaderProps } from "../StreamHeader";
 
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
