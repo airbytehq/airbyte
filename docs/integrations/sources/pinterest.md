@@ -70,7 +70,8 @@ The connector is restricted by the Pinterest [requests limitation](https://devel
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+|:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.2.2   | 2023-01-27 | [22020](https://github.com/airbytehq/airbyte/pull/22020) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.2.1   | 2022-12-15 | [20532](https://github.com/airbytehq/airbyte/pull/20532) | Bump CDK version|
 | 0.2.0   | 2022-12-13 | [20242](https://github.com/airbytehq/airbyte/pull/20242) | Added data-type normalization up to the schemas declared |
 | 0.1.9   | 2022-09-06 | [15074](https://github.com/airbytehq/airbyte/pull/15074) | Added filter based on statuses |

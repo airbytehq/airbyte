@@ -225,11 +225,12 @@ public class JsonToAvroSchemaConverter {
 
     final Schema fieldSchema;
     switch (fieldType) {
-      case INTEGER_V1, NUMBER_V1, BOOLEAN_V1, STRING_V1, BINARY_DATA_V1 -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case INTEGER_V1, NUMBER_V1, BOOLEAN_V1, STRING_V1, TIME_WITH_TIMEZONE_V1, BINARY_DATA_V1 -> fieldSchema =
+          Schema.create(fieldType.getAvroType());
       case DATE_V1 -> fieldSchema = LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT));
       case TIMESTAMP_WITH_TIMEZONE_V1, TIMESTAMP_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timestampMicros()
           .addToSchema(Schema.create(Schema.Type.LONG));
-      case TIME_WITH_TIMEZONE_V1, TIME_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
+      case TIME_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
       case INTEGER_V0, NUMBER_V0, NUMBER_INT_V0, NUMBER_BIGINT_V0, NUMBER_FLOAT_V0, BOOLEAN_V0 -> fieldSchema =
           Schema.create(fieldType.getAvroType());
       case STRING_V0 -> {
