@@ -29,20 +29,16 @@ $icon-size: 15px;
   // A hard-coded px is bad, but it works.
   // Ideally this table will be converted away from div's and
   // flexbox into react-table and this will go away.
-  flex: 2 1 547px;
-}
-
-.destinationSection {
-  display: flex;
-  flex: 1 1 120px;
-  align-items: center;
+  flex: 2 1 540px;
 }
 
 .destination {
   display: flex;
-  flex: 2 1 217px;
+  flex: 1 1 125px;
+  align-items: center;
+  gap: variables.$spacing-sm;
 }
 
 .arrowContainer {
-  flex: 1 0 20px;
+  width: 20px;
 }
