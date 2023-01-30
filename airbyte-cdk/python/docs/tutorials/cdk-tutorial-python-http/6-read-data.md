@@ -98,9 +98,9 @@ This may look big, but that's just because there are lots of \(unused, for now\)
 Let's also pass the config specified by the user to the stream class:
 
 ```python
-def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-    auth = NoAuth()
-    return [ExchangeRates(authenticator=auth, config=config)]
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        auth = NoAuth()
+        return [ExchangeRates(authenticator=auth, config=config)]
 ```
 
 We're now ready to query the API!
