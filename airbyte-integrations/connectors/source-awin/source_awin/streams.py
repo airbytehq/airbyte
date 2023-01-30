@@ -138,12 +138,12 @@ class AdvertiserTransactions(IncrementalAwinStream):
 
     def stream_slice_accounts(self, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, any]]]:
         if self._accounts:
-            yield from [{"account_id": id} for id in self._accounts]
+            yield from [{"account_id": str(id)} for id in self._accounts]
         else:
             account_stream = Accounts(accounts=self._accounts, start_date=self._start_date, attribution_window=self._attribution_window, authenticator=self.authenticator)
             for account in account_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
                 if account.get("accountType", None) == "advertiser":
-                    yield {"account_id": account["accountId"]}
+                    yield {"account_id": str(account["accountId"])}
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for slice in self.stream_slice_accounts(stream_state=stream_state):
@@ -172,10 +172,11 @@ class AdvertiserTransactions(IncrementalAwinStream):
 
     @property
     def state(self) -> Mapping[str, Any]:
+        account_id = self._current_slice['account_id']
         if self._cursor_value:
-            return {self._current_slice['account_id']: self._cursor_value[self._current_slice['account_id']].strftime("%Y-%m-%dT%H:%M:%S")}
+            return {account_id: self._cursor_value[account_id].strftime("%Y-%m-%dT%H:%M:%S")}
         else:
-            return {self._current_slice['account_id']: self._start_date.strftime("%Y-%m-%dT%H:%M:%S")}
+            return {account_id: self._start_date.strftime("%Y-%m-%dT%H:%M:%S")}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):

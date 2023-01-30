@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
         "id": {
             "type": "integer"
@@ -33,7 +33,7 @@
         },
         "commissionAmount": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "amount": {
                     "type": "number"
@@ -45,7 +45,7 @@
         },
         "saleAmount": {
             "type": ["null","object"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "amount": {
                     "type": "number"
@@ -120,7 +120,7 @@
         },
         "oldSaleAmount": {
             "type": ["null", "object"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "amount": {
                     "type": "number"
@@ -132,7 +132,7 @@
         },
         "oldCommissionAmount": {
             "type": ["null", "object"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "amount": {
                     "type": "number"
@@ -164,7 +164,7 @@
             "type": ["null", "array"],
             "items": {
                 "type": "object",
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                     "key": {
                         "type": "string"
@@ -179,7 +179,7 @@
             "type": "array",
             "items": {
                 "type": "object",
-                "additionalProperties": false,
+                "additionalProperties": true,
                 "properties": {
                     "commissionGroupId": {
                         "type": "integer"
@@ -203,7 +203,7 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": false,
+                            "additionalProperties": true,
                             "properties": {
                                 "code": {
                                     "type": "string"
@@ -231,7 +231,7 @@
         },
         "trackedCurrencyAmount": {
             "type": ["null", "object"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "amount": {
                     "type": "number"
@@ -243,7 +243,7 @@
         },
         "originalSaleAmount": {
             "type": ["null", "object"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "amount": {
                     "type": "number"
@@ -255,7 +255,7 @@
         },
         "advertiserCost": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "amount": {
                     "type": ["null", "number"]
@@ -297,7 +297,7 @@
         },
         "networkFee": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "amount": {
                     "type": ["null", "number"]
