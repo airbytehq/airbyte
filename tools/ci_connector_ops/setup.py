@@ -21,7 +21,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    version="0.1.9",
+    version="0.1.10",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",
@@ -38,6 +38,7 @@ setup(
             "check-test-strictness-level = ci_connector_ops.sat_config_checks:check_test_strictness_level",
             "write-review-requirements-file = ci_connector_ops.sat_config_checks:write_review_requirements_file",
             "print-mandatory-reviewers = ci_connector_ops.sat_config_checks:print_mandatory_reviewers",
+            "allowed-hosts-checks = ci_connector_ops.allowed_hosts_checks:check_allowed_hosts",
             "run-qa-engine = ci_connector_ops.qa_engine.main:main",
             "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks"
         ],

@@ -7,10 +7,14 @@ from dataclasses import dataclass
 import logging
 from pathlib import Path
 from typing import Dict, Optional, Set, Tuple
-
+import os
 import git
 import requests
 import yaml
+
+# ensure we are at the repository root
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir('../../..')
 
 AIRBYTE_REPO = git.Repo(".")
 DIFFED_BRANCH = "origin/master"
