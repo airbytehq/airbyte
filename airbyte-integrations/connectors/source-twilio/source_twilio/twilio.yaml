@@ -182,6 +182,18 @@ definitions:
       cursor_granularity: "P1D"
       step_default: "P1Y"
     stream_cursor_field: "date_updated"
+  # https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources
+  messages_stream:
+    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    $options:
+      name: "messages"
+      cursor_field: "date_sent"
+      lower_boundary_param: "DateSent>"
+      upper_boundary_param: "DateSent<"
+      boundary_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: "PT0S"
+      step_default: "P1D"
+    stream_cursor_field: "date_updated"
 
 
 streams:
@@ -199,6 +211,7 @@ streams:
   - "*ref(definitions.available_phone_numbers_toll_free_stream)"
   - "*ref(definitions.calls_stream)"
   - "*ref(definitions.conferences_stream)"
+  - "*ref(definitions.messages_stream)"
 
 check:
   stream_names:
