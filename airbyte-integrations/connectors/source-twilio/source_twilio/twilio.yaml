@@ -32,6 +32,17 @@ definitions:
       url_base: "*ref(definitions.requester.url_base)"
     requester:
       $ref: "*ref(definitions.requester)"
+  datetime_slicer:
+    type: DatetimeStreamSlicer
+    stream_state_field_start: "lower_boundary"
+    stream_state_field_end: "upper_boundary"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_format: "%a, %d %b %Y %H:%M:%S %z"
+    step: "{{ 'P' + config.slice_step_map[options.name]|string() + 'D' if config.slice_step_map[options.name] else options.step_default }}"
   base_stream:
     type: DeclarativeStream
     retriever:
@@ -148,16 +159,7 @@ definitions:
               - stream: "*ref(definitions.accounts_stream)"
                 parent_key: "/"
                 stream_slice_field: "record"
-          - type: DatetimeStreamSlicer
-            stream_state_field_start: "lower_boundary"
-            stream_state_field_end: "upper_boundary"
-            start_datetime:
-              datetime: "{{ config['start_date'] }}"
-            end_datetime:
-              datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-            datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-            cursor_format: "%a, %d %b %Y %H:%M:%S %z"
-            step: "{{ 'P' + config.slice_step_map[options.name]|string() + 'D' if config.slice_step_map[options.name] else options.step_default }}"
+          - $ref: "*ref(definitions.datetime_slicer)"
   # https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources
   calls_stream:
     $ref: "*ref(definitions.base_incremental_nested_stream)"
