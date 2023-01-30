@@ -214,7 +214,7 @@ export const checkSchemaChangesDetected = ({ breaking }: { breaking: boolean }) 
   cy.get(schemaChangesDetectedBanner)
     .invoke("attr", "class")
     .should("match", breaking ? /\_breaking/ : /nonBreaking/);
-  cy.get(schemaChangesBackdrop).should("exist");
+  cy.get(schemaChangesBackdrop).should(breaking ? "exist" : "not.exist");
 };
 
 export const checkSchemaChangesDetectedCleared = () => {
