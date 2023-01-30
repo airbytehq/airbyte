@@ -66,6 +66,50 @@ public class JsonSchemaValidator {
     this.baseUri = baseUri;
   }
 
+  /**
+   * Create and cache a schema validator for a particular schema. This validator is used when {@link #testInitializedSchema(String, JsonNode)}
+   * and {@link #ensureInitializedSchema(String, JsonNode)} is called.
+   */
+  public void initializeSchemaValidator(String schemaName, JsonNode schemaJson) {
+    schemaToValidators.put(schemaName, getSchemaValidator(schemaJson));
+  }
+
+  public boolean testInitializedSchema(String schemaName, JsonNode objectJson) {
+    final var validate = schemaToValidators.get(schemaName).validate(objectJson);
+    return validate.isEmpty();
+  }
+
+  public void ensureInitializedSchema(final String schemaName, final JsonNode objectNode) throws JsonValidationException {
+    final Set<ValidationMessage> validationMessages = schemaToValidators.get(schemaName).validate(objectNode);
+    if (validationMessages.isEmpty()) {
+      return;
+    }
+
+    throw new JsonValidationException(
+        String.format(
+            "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s", Strings.join(validationMessages,
+                ", "),
+            schemaName));
+  }
+
+  /**
+   * WARNING
+   * <p>
+   * The following methods perform JSON validation **by re-creating a validator each time**. This is both CPU and GC expensive,
+   * and should be used carefully.
+   */
+
+  // todo(davin): Rewrite this section to cache schemas.
+  public boolean test(final JsonNode schemaJson, final JsonNode objectJson) {
+    final Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
+
+    if (!validationMessages.isEmpty()) {
+      LOGGER.info("JSON schema validation failed. \nerrors: {}", Strings.join(validationMessages, ", "));
+    }
+
+    return validationMessages.isEmpty();
+  }
+
   public Set<String> validate(final JsonNode schemaJson, final JsonNode objectJson) {
     return validateInternal(schemaJson, objectJson)
         .stream()
@@ -79,7 +123,6 @@ public class JsonSchemaValidator {
         .map(ValidationMessage::getArguments)
         .collect(Collectors.toList());
   }
-
   public List<String> getValidationMessagePaths(final JsonNode schemaJson, final JsonNode objectJson) {
     return validateInternal(schemaJson, objectJson)
         .stream()
@@ -87,25 +130,39 @@ public class JsonSchemaValidator {
         .collect(Collectors.toList());
   }
 
+  public void ensure(final JsonNode schemaJson, final JsonNode objectJson) throws JsonValidationException {
+    final Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
+    if (validationMessages.isEmpty()) {
+      return;
+    }
+
+    throw new JsonValidationException(String.format(
+        "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
+        Strings.join(validationMessages, ", "),
+        schemaJson.toPrettyString()));
+  }
+
+  public void ensureAsRuntime(final JsonNode schemaJson, final JsonNode objectJson) {
+    try {
+      ensure(schemaJson, objectJson);
+    } catch (final JsonValidationException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   // keep this internal as it returns a type specific to the wrapped library.
   private Set<ValidationMessage> validateInternal(final JsonNode schemaJson, final JsonNode objectJson) {
     Preconditions.checkNotNull(schemaJson);
     Preconditions.checkNotNull(objectJson);
 
-    final JsonSchema schema = getSchema(schemaJson);
+    final JsonSchema schema = getSchemaValidator(schemaJson);
     return schema.validate(objectJson);
   }
 
-  public void initializeSchema(String schemaName, JsonNode schemaJson) {
-    schemaToValidators.put(schemaName, getSchema(schemaJson));
-  }
-
-  public boolean test(String schemaName, JsonNode objectJson) {
-    final var validate = schemaToValidators.get(schemaName).validate(objectJson);
-    return validate.isEmpty();
-  }
-
-  private JsonSchema getSchema(JsonNode schemaJson) {
+  /**
+   * Return a schema validator for a json schema, defaulting to the V7 Json schema.
+   */
+  private JsonSchema getSchemaValidator(JsonNode schemaJson) {
     // Default to draft-07, but have handling for the other metaschemas that networknt supports
     JsonMetaSchema metaschema;
     JsonNode metaschemaNode = schemaJson.get("$schema");
@@ -140,57 +197,6 @@ public class JsonSchemaValidator {
     return schema;
   }
 
-  public boolean test(final JsonNode schemaJson, final JsonNode objectJson) {
-    final Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
-
-    if (!validationMessages.isEmpty()) {
-      LOGGER.info("JSON schema validation failed. \nerrors: {}", Strings.join(validationMessages, ", "));
-    }
-
-    return validationMessages.isEmpty();
-  }
-
-  public void ensure(final String schemaName, final JsonNode objectNode) throws JsonValidationException {
-    final Set<ValidationMessage> validationMessages = schemaToValidators.get(schemaName).validate(objectNode);
-    if (validationMessages.isEmpty()) {
-      return;
-    }
-
-    throw new JsonValidationException(String.format(
-        "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
-        Strings.join(validationMessages, ", "),
-        ""));
-  }
-
-  public void ensure(final JsonNode schemaJson, final JsonNode objectJson) throws JsonValidationException {
-    final Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
-    if (validationMessages.isEmpty()) {
-      return;
-    }
-
-    throw new JsonValidationException(String.format(
-        "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
-        Strings.join(validationMessages, ", "),
-        schemaJson.toPrettyString()));
-  }
-
-  public void ensureAsRuntime(final JsonNode schemaJson, final JsonNode objectJson) {
-    try {
-      ensure(schemaJson, objectJson);
-    } catch (final JsonValidationException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static JsonReferenceProcessor getProcessor() {
-    // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
-    // this.
-    final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
-    jsonReferenceProcessor.setMaxDepth(-1); // no max.
-
-    return jsonReferenceProcessor;
-  }
-
   /**
    * Get JsonNode for an object defined as the main object in a JsonSchema file. Able to create the
    * JsonNode even if the the JsonSchema refers to objects in other files.
@@ -222,6 +228,15 @@ public class JsonSchemaValidator {
     } catch (final IOException | JsonReferenceException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static JsonReferenceProcessor getProcessor() {
+    // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
+    // this.
+    final JsonReferenceProcessor jsonReferenceProcessor = new JsonReferenceProcessor();
+    jsonReferenceProcessor.setMaxDepth(-1); // no max.
+
+    return jsonReferenceProcessor;
   }
 
 }

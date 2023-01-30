@@ -31,12 +31,13 @@ public class RecordSchemaValidator {
     // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema
     this.streams = streamNamesToSchemas;
+    // initialize schema validator to avoid creating validators each time.
     for (final AirbyteStreamNameNamespacePair stream : streamNamesToSchemas.keySet()) {
       // We must choose a JSON validator version for validating the schema
       // Rather than allowing connectors to use any version, we enforce validation using V7
       final var schema = streams.get(stream);
       ((ObjectNode) schema).put("$schema", "http://json-schema.org/draft-07/schema#");
-      validator.initializeSchema(stream.toString(), schema);
+      validator.initializeSchemaValidator(stream.toString(), schema);
     }
 
   }
@@ -55,7 +56,7 @@ public class RecordSchemaValidator {
     final JsonNode matchingSchema = streams.get(messageStream);
 
     try {
-      validator.ensure(messageStream.toString(), messageData);
+      validator.ensureInitializedSchema(messageStream.toString(), messageData);
     } catch (final JsonValidationException e) {
       final List<String[]> invalidRecordDataAndType = validator.getValidationMessageArgs(matchingSchema, messageData);
       final List<String> invalidFields = validator.getValidationMessagePaths(matchingSchema, messageData);
