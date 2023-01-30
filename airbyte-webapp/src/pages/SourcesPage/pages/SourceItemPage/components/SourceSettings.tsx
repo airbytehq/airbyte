@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -53,7 +53,23 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
     await deleteSource({ connectionsWithSource, source: currentSource });
   }, [clearFormChange, connectionsWithSource, currentSource, deleteSource, formId]);
 
-  const onDeleteClick = useDeleteModal("source", onDelete);
+  const modalAdditionalContent = useMemo<React.ReactNode>(() => {
+    if (connectionsWithSource.length === 0) {
+      return null;
+    }
+    return (
+      <p>
+        <FormattedMessage id="tables.affectedConnectionsOnDeletion" values={{ count: connectionsWithSource.length }} />
+        {connectionsWithSource.map((connection) => (
+          <>
+            - <strong>{`${connection.name}\n`}</strong>
+          </>
+        ))}
+      </p>
+    );
+  }, [connectionsWithSource]);
+
+  const onDeleteClick = useDeleteModal("source", onDelete, modalAdditionalContent);
 
   return (
     <div className={styles.content}>
