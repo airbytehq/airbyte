@@ -14,6 +14,7 @@ airbyte:
   deployment-mode: ${DEPLOYMENT_MODE:OSS}
   feature-flag:
     #    client: launchdarkly
+    #    type: incorrect
     path: ${FEATURE_FLAG_PATH:/flags}
     api-key: ${LAUNCHDARKLY_KEY:}
   flyway:

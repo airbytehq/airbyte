@@ -11,6 +11,7 @@ import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
 internal const val CONFIG_LD_KEY = "airbyte.feature-flag.api-key"
+internal const val CONFIG_FF_TYPE = "airbyte.feature-flag.type"
 internal const val CONFIG_OSS_KEY = "airbyte.feature-flag.path"
 
 @Factory
@@ -37,6 +38,7 @@ class Factory {
 //    }
 
     @Singleton
-    @Requires(property = CONFIG_LD_KEY, pattern = "^.+$")
+//    @Requires(property = CONFIG_LD_KEY, pattern = "^.+$")
+    @Requires(property = io.airbyte.featureflag.CONFIG_FF_TYPE, value = "ld")
     fun ldClient(@Property(name = CONFIG_LD_KEY) apiKey: String): LDClient = LDClient(apiKey)
 }
