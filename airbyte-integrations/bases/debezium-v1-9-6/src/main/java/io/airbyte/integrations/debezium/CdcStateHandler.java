@@ -6,13 +6,11 @@ package io.airbyte.integrations.debezium;
 
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.debezium.engine.ChangeEvent;
-
 import java.util.Map;
 
 /**
  * This interface is used to allow connectors to save the offset and schema history in the manner
- * which suits them.
- * Also, it adds some utils to verify CDC event status.
+ * which suits them. Also, it adds some utils to verify CDC event status.
  */
 public interface CdcStateHandler {
 
@@ -29,8 +27,8 @@ public interface CdcStateHandler {
   boolean isSnapshotEvent(ChangeEvent<String, String> event);
 
   /**
-   * This function checks if the event we are processing in the loop is already behind the offset
-   * so we can safety save the state.
+   * This function checks if the event we are processing in the loop is already behind the offse so
+   * the process can safety save the state.
    *
    * @param offset DB CDC offset
    * @param event Event from the CDC load
