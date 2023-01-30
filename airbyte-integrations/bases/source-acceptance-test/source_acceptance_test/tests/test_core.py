@@ -76,6 +76,10 @@ def secret_property_names_fixture():
     )
 
 
+DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
+DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
+
+
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
 
@@ -219,22 +223,15 @@ class TestSpec(BaseTest):
         Some fields can not hold a secret by design, others can.
         Null type as well as boolean can not hold a secret value.
         A string, a number or an integer type can always store secrets.
-        Objects and arrays can hold a secret in case they are generic,
-        meaning their inner structure is not described in details with properties/items.
+        Secret objects and arrays can not be rendered correctly in the UI:
         A field with a constant value can not hold a secret as well.
         """
         unsecure_types = {"string", "integer", "number"}
         type_ = prop["type"]
-        is_property_generic_object = type_ == "object" and not any(
-            [prop.get("properties", {}), prop.get("anyOf", []), prop.get("oneOf", []), prop.get("allOf", [])]
-        )
-        is_property_generic_array = type_ == "array" and not any([prop.get("items", []), prop.get("prefixItems", [])])
         is_property_constant_value = bool(prop.get("const"))
         can_store_secret = any(
             [
                 isinstance(type_, str) and type_ in unsecure_types,
-                is_property_generic_object,
-                is_property_generic_array,
                 isinstance(type_, list) and (set(type_) & unsecure_types),
             ]
         )
@@ -252,7 +249,7 @@ class TestSpec(BaseTest):
         secrets_exposed = []
         non_secrets_hidden = []
         spec_properties = connector_spec_dict["connectionSpecification"]["properties"]
-        for type_path, value in dpath.util.search(spec_properties, "**/type", yielded=True):
+        for type_path, type_value in dpath.util.search(spec_properties, "**/type", yielded=True):
             _, is_property_name_secret = self._is_spec_property_name_secret(type_path, secret_property_names)
             if not is_property_name_secret:
                 continue
@@ -268,7 +265,7 @@ class TestSpec(BaseTest):
 
         if non_secrets_hidden:
             properties = "\n".join(non_secrets_hidden)
-            detailed_logger.warning(
+            pytest.fail(
                 f"""Some properties are marked with `airbyte_secret` although they probably should not be.
                 Please double check them. If they're okay, please fix this test.
                 {properties}"""
@@ -279,6 +276,139 @@ class TestSpec(BaseTest):
                 f"""The following properties should be marked with `airbyte_secret!`
                     {properties}"""
             )
+
+    def _fail_on_errors(self, errors: List[str]):
+        if len(errors) > 0:
+            pytest.fail("\n".join(errors))
+
+    def test_property_type_is_not_array(self, connector_spec: ConnectorSpecification):
+        """
+        Each field has one or multiple types, but the UI only supports a single type and optionally "null" as a second type.
+        """
+        errors = []
+        for type_path, type_value in dpath.util.search(connector_spec.connectionSpecification, "**/properties/*/type", yielded=True):
+            if isinstance(type_value, List):
+                number_of_types = len(type_value)
+                if number_of_types != 2 and number_of_types != 1:
+                    errors.append(
+                        f"{type_path} is not either a simple type or an array of a simple type plus null: {type_value} (for example: type: [string, null])"
+                    )
+                if number_of_types == 2 and type_value[1] != "null":
+                    errors.append(
+                        f"Second type of {type_path} is not null: {type_value}. Type can either be a simple type or an array of a simple type plus null (for example: type: [string, null])"
+                    )
+        self._fail_on_errors(errors)
+
+    def test_object_not_empty(self, connector_spec: ConnectorSpecification):
+        """
+        Each object field needs to have at least one property as the UI won't be able to show them otherwise.
+        If the whole spec is empty, it's allowed to have a single empty object at the top level
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        errors = []
+        for type_path, type_value in dpath.util.search(connector_spec.connectionSpecification, "**/type", yielded=True):
+            if type_path == "type":
+                # allow empty root object
+                continue
+            if type_value == "object":
+                property = schema_helper.get_parent(type_path)
+                if "oneOf" not in property and ("properties" not in property or len(property["properties"]) == 0):
+                    errors.append(
+                        f"{type_path} is an empty object which will not be represented correctly in the UI. Either remove or add specific properties"
+                    )
+        self._fail_on_errors(errors)
+
+    def test_array_type(self, connector_spec: ConnectorSpecification):
+        """
+        Each array has one or multiple types for its items, but the UI only supports a single type which can either be object, string or an enum
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        errors = []
+        for type_path, type_type in dpath.util.search(connector_spec.connectionSpecification, "**/type", yielded=True):
+            property_definition = schema_helper.get_parent(type_path)
+            if type_type != "array":
+                # unrelated "items", not an array definition
+                continue
+            items_value = property_definition.get("items", None)
+            if items_value is None:
+                continue
+            elif isinstance(items_value, List):
+                errors.append(f"{type_path} is not just a single item type: {items_value}")
+            elif items_value.get("type") not in ["object", "string", "number", "integer"] and "enum" not in items_value:
+                errors.append(f"Items of {type_path} has to be either object or string or define an enum")
+        self._fail_on_errors(errors)
+
+    def test_forbidden_complex_types(self, connector_spec: ConnectorSpecification):
+        """
+        not, anyOf, patternProperties, prefixItems, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed
+        """
+        forbidden_keys = [
+            "not",
+            "anyOf",
+            "patternProperties",
+            "prefixItems",
+            "allOf",
+            "if",
+            "then",
+            "else",
+            "dependentSchemas",
+            "dependentRequired",
+        ]
+        found_keys = set()
+        for forbidden_key in forbidden_keys:
+            for path, value in dpath.util.search(connector_spec.connectionSpecification, f"**/{forbidden_key}", yielded=True):
+                found_keys.add(path)
+
+        for forbidden_key in forbidden_keys:
+            # remove forbidden keys if they are used as properties directly
+            for path, _value in dpath.util.search(connector_spec.connectionSpecification, f"**/properties/{forbidden_key}", yielded=True):
+                found_keys.remove(path)
+
+        if len(found_keys) > 0:
+            key_list = ", ".join(found_keys)
+            pytest.fail(f"Found the following disallowed JSON schema features: {key_list}")
+
+    def test_date_pattern(self, connector_spec: ConnectorSpecification, detailed_logger):
+        """
+        Properties with format date or date-time should always have a pattern defined how the date/date-time should be formatted
+        that corresponds with the format the datepicker component is creating.
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for format_path, format in dpath.util.search(connector_spec.connectionSpecification, "**/format", yielded=True):
+            if not isinstance(format, str):
+                # format is not a format definition here but a property named format
+                continue
+            property_definition = schema_helper.get_parent(format_path)
+            pattern = property_definition.get("pattern")
+            if format == "date" and not pattern == DATE_PATTERN:
+                detailed_logger.warning(
+                    f"{format_path} is defining a date format without the corresponding pattern. Consider setting the pattern to {DATE_PATTERN} to make it easier for users to edit this field in the UI."
+                )
+            if format == "date-time" and not pattern == DATETIME_PATTERN:
+                detailed_logger.warning(
+                    f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI."
+                )
+
+    def test_date_format(self, connector_spec: ConnectorSpecification, detailed_logger):
+        """
+        Properties with a pattern that looks like a date should have their format set to date or date-time.
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for pattern_path, pattern in dpath.util.search(connector_spec.connectionSpecification, "**/pattern", yielded=True):
+            if not isinstance(pattern, str):
+                # pattern is not a pattern definition here but a property named pattern
+                continue
+            if pattern == DATE_PATTERN or pattern == DATETIME_PATTERN:
+                property_definition = schema_helper.get_parent(pattern_path)
+                format = property_definition.get("format")
+                if not format == "date" and pattern == DATE_PATTERN:
+                    detailed_logger.warning(
+                        f"{pattern_path} is defining a pattern that looks like a date without setting the format to `date`. Consider specifying the format to make it easier for users to edit this field in the UI."
+                    )
+                if not format == "date-time" and pattern == DATETIME_PATTERN:
+                    detailed_logger.warning(
+                        f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI."
+                    )
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""

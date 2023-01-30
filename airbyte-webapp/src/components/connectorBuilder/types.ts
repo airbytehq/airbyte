@@ -640,12 +640,17 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     type: "Spec",
   };
 
+  const streamNames = values.streams.map((s) => s.name);
+  const validCheckStreamNames = values.checkStreams.filter((checkStream) => streamNames.includes(checkStream));
+  const correctedCheckStreams =
+    validCheckStreamNames.length > 0 ? validCheckStreamNames : streamNames.length > 0 ? [streamNames[0]] : [];
+
   return merge({
     version: values.version,
     type: "DeclarativeSource",
     check: {
       type: "CheckStream",
-      stream_names: values.checkStreams,
+      stream_names: correctedCheckStreams,
     },
     streams: manifestStreams,
     spec,
