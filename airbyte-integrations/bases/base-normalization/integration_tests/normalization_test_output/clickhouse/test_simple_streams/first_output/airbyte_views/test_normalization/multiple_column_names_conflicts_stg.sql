@@ -1,6 +1,6 @@
 
 
-  create view _airbyte_test_normalization.multiple_column_names_conflicts_stg__dbt_tmp 
+  create view _airbyte_test_normalization.multiple_column_names_conflicts_stg 
   
   as (
     
