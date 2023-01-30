@@ -67,8 +67,9 @@ public class JsonSchemaValidator {
   }
 
   /**
-   * Create and cache a schema validator for a particular schema. This validator is used when {@link #testInitializedSchema(String, JsonNode)}
-   * and {@link #ensureInitializedSchema(String, JsonNode)} is called.
+   * Create and cache a schema validator for a particular schema. This validator is used when
+   * {@link #testInitializedSchema(String, JsonNode)} and
+   * {@link #ensureInitializedSchema(String, JsonNode)} is called.
    */
   public void initializeSchemaValidator(String schemaName, JsonNode schemaJson) {
     schemaToValidators.put(schemaName, getSchemaValidator(schemaJson));
@@ -95,8 +96,8 @@ public class JsonSchemaValidator {
   /**
    * WARNING
    * <p>
-   * The following methods perform JSON validation **by re-creating a validator each time**. This is both CPU and GC expensive,
-   * and should be used carefully.
+   * The following methods perform JSON validation **by re-creating a validator each time**. This is
+   * both CPU and GC expensive, and should be used carefully.
    */
 
   // todo(davin): Rewrite this section to cache schemas.
@@ -123,6 +124,7 @@ public class JsonSchemaValidator {
         .map(ValidationMessage::getArguments)
         .collect(Collectors.toList());
   }
+
   public List<String> getValidationMessagePaths(final JsonNode schemaJson, final JsonNode objectJson) {
     return validateInternal(schemaJson, objectJson)
         .stream()

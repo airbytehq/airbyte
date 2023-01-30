@@ -49,7 +49,8 @@ public class ReplicationWorkerPerformanceTest {
 
   /**
    * Hook up the DefaultReplicationWorker to a test harness with an insanely quick Source
-   * {@link LimitedAirbyteSource} and Destination {@link EmptyAirbyteDestination}.
+   * {@link LimitedSourceProcess} via the {@link LimitedIntegrationLauncher} and Destination
+   * {@link EmptyAirbyteDestination}.
    * <p>
    * Harness uses Java Micro Benchmark to run the E2E sync a configured number of times. It then
    * reports a time distribution for the time taken to run the E2E sync.
