@@ -15,7 +15,6 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SER
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.protocol.migrations.v1.CatalogMigrationV1Helper;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorCatalogWithUpdatedAt;
@@ -43,7 +42,6 @@ import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.SuggestedStreams;
 import io.airbyte.config.WorkspaceServiceAccount;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.time.LocalDateTime;
@@ -71,7 +69,8 @@ public class DbConverter {
         .withSourceId(record.get(CONNECTION.SOURCE_ID))
         .withDestinationId(record.get(CONNECTION.DESTINATION_ID))
         .withName(record.get(CONNECTION.NAME))
-        .withCatalog(parseConfiguredAirbyteCatalog(record.get(CONNECTION.CATALOG).data()))
+        .withCatalog(
+            Jsons.deserialize(record.get(CONNECTION.CATALOG).data(), ConfiguredAirbyteCatalog.class))
         .withFieldSelectionData(record.get(CONNECTION.FIELD_SELECTION_DATA) == null ? null
             : Jsons.deserialize(record.get(CONNECTION.FIELD_SELECTION_DATA).data(), FieldSelectionData.class))
         .withStatus(
@@ -93,13 +92,6 @@ public class DbConverter {
         .withNonBreakingChangesPreference(
             Enums.toEnum(record.get(CONNECTION.NON_BREAKING_CHANGE_PREFERENCE, String.class), NonBreakingChangesPreference.class).orElseThrow())
         .withNotifySchemaChanges(record.get(CONNECTION.NOTIFY_SCHEMA_CHANGES));
-  }
-
-  private static ConfiguredAirbyteCatalog parseConfiguredAirbyteCatalog(final String configuredAirbyteCatalogString) {
-    final ConfiguredAirbyteCatalog configuredAirbyteCatalog = Jsons.deserialize(configuredAirbyteCatalogString, ConfiguredAirbyteCatalog.class);
-    // On-the-fly migration of persisted data types related objects (protocol v0->v1)
-    CatalogMigrationV1Helper.upgradeSchemaIfNeeded(configuredAirbyteCatalog);
-    return configuredAirbyteCatalog;
   }
 
   public static StandardWorkspace buildStandardWorkspace(final Record record) {
@@ -234,23 +226,16 @@ public class DbConverter {
   public static ActorCatalog buildActorCatalog(final Record record) {
     return new ActorCatalog()
         .withId(record.get(ACTOR_CATALOG.ID))
-        .withCatalog(Jsons.jsonNode(parseAirbyteCatalog(record.get(ACTOR_CATALOG.CATALOG).toString())))
+        .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
         .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
   }
 
   public static ActorCatalogWithUpdatedAt buildActorCatalogWithUpdatedAt(final Record record) {
     return new ActorCatalogWithUpdatedAt()
         .withId(record.get(ACTOR_CATALOG.ID))
-        .withCatalog(Jsons.jsonNode(parseAirbyteCatalog(record.get(ACTOR_CATALOG.CATALOG).toString())))
+        .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
         .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH))
         .withUpdatedAt(record.get(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC));
-  }
-
-  public static AirbyteCatalog parseAirbyteCatalog(final String airbyteCatalogString) {
-    final AirbyteCatalog airbyteCatalog = Jsons.deserialize(airbyteCatalogString, AirbyteCatalog.class);
-    // On-the-fly migration of persisted data types related objects (protocol v0->v1)
-    CatalogMigrationV1Helper.upgradeSchemaIfNeeded(airbyteCatalog);
-    return airbyteCatalog;
   }
 
   public static ActorCatalogFetchEvent buildActorCatalogFetchEvent(final Record record) {

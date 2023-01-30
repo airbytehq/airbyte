@@ -15,8 +15,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
-import io.airbyte.commons.protocol.DefaultProtocolSerializer;
-import io.airbyte.commons.protocol.ProtocolSerializer;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -51,7 +49,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
   private final AirbyteMessageBufferedWriterFactory messageWriterFactory;
-  private final ProtocolSerializer protocolSerializer;
 
   private final AtomicBoolean inputHasEnded = new AtomicBoolean(false);
 
@@ -61,19 +58,16 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private Integer exitValue = null;
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory(),
-        new DefaultProtocolSerializer());
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory());
 
   }
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher,
                                    final AirbyteStreamFactory streamFactory,
-                                   final AirbyteMessageBufferedWriterFactory messageWriterFactory,
-                                   final ProtocolSerializer protocolSerializer) {
+                                   final AirbyteMessageBufferedWriterFactory messageWriterFactory) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.messageWriterFactory = messageWriterFactory;
-    this.protocolSerializer = protocolSerializer;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -87,7 +81,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
-        protocolSerializer.serialize(destinationConfig.getCatalog()));
+        Jsons.serialize(destinationConfig.getCatalog()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
 

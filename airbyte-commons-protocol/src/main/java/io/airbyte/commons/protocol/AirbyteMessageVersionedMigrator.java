@@ -5,9 +5,7 @@
 package io.airbyte.commons.protocol;
 
 import io.airbyte.commons.version.Version;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.Optional;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 
 /**
  * Wraps message migration from a fixed version to the most recent version
@@ -22,12 +20,12 @@ public class AirbyteMessageVersionedMigrator<OriginalMessageType> {
     this.version = version;
   }
 
-  public OriginalMessageType downgrade(final AirbyteMessage message, final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
-    return migrator.downgrade(message, version, configuredAirbyteCatalog);
+  public OriginalMessageType downgrade(final AirbyteMessage message) {
+    return migrator.downgrade(message, version);
   }
 
-  public AirbyteMessage upgrade(final OriginalMessageType message, final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
-    return migrator.upgrade(message, version, configuredAirbyteCatalog);
+  public AirbyteMessage upgrade(final OriginalMessageType message) {
+    return migrator.upgrade(message, version);
   }
 
   public Version getVersion() {

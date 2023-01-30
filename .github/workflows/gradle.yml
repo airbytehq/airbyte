@@ -308,7 +308,7 @@ jobs:
         if: always()
         run: |
           gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')
+          filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
           echo "$filename"
           gsutil -h "Cache-Control:public" cp connectors_base_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
 
@@ -834,7 +834,7 @@ jobs:
         if: always()
         run: |
           gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')
+          filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
           echo "$filename"
           gsutil -h "Cache-Control:public" cp platform_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
 
@@ -1057,7 +1057,7 @@ jobs:
         if: always()
         run: |
           gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')
+          filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
           echo "$filename"
           gsutil -h "Cache-Control:public" cp kube_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
 

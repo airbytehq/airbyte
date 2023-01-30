@@ -37,7 +37,7 @@ public class JsonSchemaValidator {
   static {
     try {
       DEFAULT_BASE_URI = new URI("file:///app/nonexistent_file.json");
-    } catch (final URISyntaxException e) {
+    } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
   }
@@ -58,7 +58,7 @@ public class JsonSchemaValidator {
    * @param baseUri The base URI for schema resolution
    */
   @VisibleForTesting
-  public JsonSchemaValidator(final URI baseUri) {
+  protected JsonSchemaValidator(URI baseUri) {
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
     this.baseUri = baseUri;
   }
@@ -90,12 +90,12 @@ public class JsonSchemaValidator {
     Preconditions.checkNotNull(objectJson);
 
     // Default to draft-07, but have handling for the other metaschemas that networknt supports
-    final JsonMetaSchema metaschema;
-    final JsonNode metaschemaNode = schemaJson.get("$schema");
+    JsonMetaSchema metaschema;
+    JsonNode metaschemaNode = schemaJson.get("$schema");
     if (metaschemaNode == null || metaschemaNode.asText() == null || metaschemaNode.asText().isEmpty()) {
       metaschema = JsonMetaSchema.getV7();
     } else {
-      final String metaschemaString = metaschemaNode.asText();
+      String metaschemaString = metaschemaNode.asText();
       // We're not using "http://....".equals(), because we want to avoid weirdness with https, etc.
       if (metaschemaString.contains("json-schema.org/draft-04")) {
         metaschema = JsonMetaSchema.getV4();
@@ -110,13 +110,13 @@ public class JsonSchemaValidator {
       }
     }
 
-    final ValidationContext context = new ValidationContext(
+    ValidationContext context = new ValidationContext(
         jsonSchemaFactory.getUriFactory(),
         null,
         metaschema,
         jsonSchemaFactory,
         null);
-    final JsonSchema schema = new JsonSchema(
+    JsonSchema schema = new JsonSchema(
         context,
         baseUri,
         schemaJson);

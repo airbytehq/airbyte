@@ -16,8 +16,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
-import io.airbyte.commons.protocol.DefaultProtocolSerializer;
-import io.airbyte.commons.protocol.ProtocolSerializer;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -53,7 +51,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
-  private final ProtocolSerializer protocolSerializer;
   private final HeartbeatMonitor heartbeatMonitor;
 
   private Process sourceProcess = null;
@@ -62,25 +59,22 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final boolean featureFlagLogConnectorMsgs;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultProtocolSerializer(), featureFlags);
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), featureFlags);
   }
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
                               final AirbyteStreamFactory streamFactory,
-                              final ProtocolSerializer protocolSerializer,
                               final FeatureFlags featureFlags) {
-    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION), protocolSerializer, featureFlags);
+    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION), featureFlags);
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
                        final AirbyteStreamFactory streamFactory,
                        final HeartbeatMonitor heartbeatMonitor,
-                       final ProtocolSerializer protocolSerializer,
                        final FeatureFlags featureFlags) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
-    this.protocolSerializer = protocolSerializer;
     this.heartbeatMonitor = heartbeatMonitor;
     this.featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
   }
@@ -94,9 +88,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
         Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        protocolSerializer.serialize(sourceConfig.getCatalog()),
+        Jsons.serialize(sourceConfig.getCatalog()),
         sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
-        // TODO We should be passing a typed state here and use the protocolSerializer
         sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);

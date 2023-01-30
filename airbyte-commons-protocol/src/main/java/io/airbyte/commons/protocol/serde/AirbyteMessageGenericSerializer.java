@@ -5,7 +5,7 @@
 package io.airbyte.commons.protocol.serde;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.version.Version;
+import io.airbyte.commons.version.AirbyteVersion;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,7 +13,7 @@ import lombok.Getter;
 public class AirbyteMessageGenericSerializer<T> implements AirbyteMessageSerializer<T> {
 
   @Getter
-  private final Version targetVersion;
+  private final AirbyteVersion targetVersion;
 
   @Override
   public String serialize(T message) {

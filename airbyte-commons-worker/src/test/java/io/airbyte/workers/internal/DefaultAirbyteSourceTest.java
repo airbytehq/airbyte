@@ -22,8 +22,6 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
-import io.airbyte.commons.protocol.DefaultProtocolSerializer;
-import io.airbyte.commons.protocol.ProtocolSerializer;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
@@ -100,7 +98,6 @@ class DefaultAirbyteSourceTest {
   private Process process;
   private AirbyteStreamFactory streamFactory;
   private HeartbeatMonitor heartbeatMonitor;
-  private final ProtocolSerializer protocolSerializer = new DefaultProtocolSerializer();
 
   @BeforeEach
   void setup() throws IOException, WorkerException {
@@ -144,7 +141,7 @@ class DefaultAirbyteSourceTest {
 
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, protocolSerializer, featureFlags);
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, featureFlags);
     source.start(SOURCE_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -180,7 +177,7 @@ class DefaultAirbyteSourceTest {
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
     final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory,
-        heartbeatMonitor, protocolSerializer, featureFlags);
+        heartbeatMonitor, featureFlags);
     source.start(SOURCE_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -205,7 +202,7 @@ class DefaultAirbyteSourceTest {
 
   @Test
   void testNonzeroExitCodeThrows() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, protocolSerializer, featureFlags);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, featureFlags);
     tap.start(SOURCE_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
@@ -215,7 +212,7 @@ class DefaultAirbyteSourceTest {
 
   @Test
   void testIgnoredExitCodes() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, protocolSerializer, featureFlags);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, featureFlags);
     tap.start(SOURCE_CONFIG, jobRoot);
     when(process.isAlive()).thenReturn(false);
 
@@ -227,7 +224,7 @@ class DefaultAirbyteSourceTest {
 
   @Test
   void testGetExitValue() throws Exception {
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, protocolSerializer, featureFlags);
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor, featureFlags);
     source.start(SOURCE_CONFIG, jobRoot);
 
     when(process.isAlive()).thenReturn(false);
