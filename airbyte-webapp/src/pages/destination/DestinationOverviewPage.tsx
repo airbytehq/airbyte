@@ -1,23 +1,23 @@
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 
 import { ConnectorIcon } from "components/common/ConnectorIcon";
-import { StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
+import { TableItemTitle } from "components/ConnectorBlocks";
 import { DestinationConnectionTable } from "components/destination/DestinationConnectionTable";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
+import { DestinationRead } from "core/request/AirbyteClient";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useSourceList } from "hooks/services/useSourceHook";
 import { DestinationPaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 
 export const DestinationOverviewPage = () => {
-  const params = useParams() as { "*": StepsTypes | ""; id: string };
   const navigate = useNavigate();
 
-  const destination = useGetDestination(params.id);
+  const { destination } = useOutletContext<{ destination: DestinationRead }>();
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
   // We load only connections attached to this destination to be shown in the connections grid
   const { connections } = useConnectionList({ destinationId: [destination.destinationId] });

@@ -1,13 +1,12 @@
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import { useParams } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 
-import { StepsTypes } from "components/ConnectorBlocks";
-
+import { DestinationRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import { useDeleteDestination, useGetDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
+import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
 import { useDeleteModal } from "hooks/useDeleteModal";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
@@ -17,8 +16,7 @@ import { ConnectorCardValues } from "views/Connector/ConnectorForm/types";
 import styles from "./DestinationSettings.module.scss";
 
 export const DestinationSettingsPage: React.FC = () => {
-  const params = useParams() as { "*": StepsTypes | ""; id: string };
-  const destination = useGetDestination(params.id);
+  const { destination } = useOutletContext<{ destination: DestinationRead }>();
   const { connections: connectionsWithDestination } = useConnectionList({ destinationId: [destination.destinationId] });
   const destinationSpecification = useGetDestinationDefinitionSpecification(destination.destinationDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
