@@ -13,10 +13,10 @@ import {
   useConnectorBuilderTestState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
-import { formatJson } from "../utils";
 import styles from "./PageDisplay.module.scss";
 import { SchemaDiffView } from "./SchemaDiffView";
+import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
+import { formatJson } from "../utils";
 
 interface PageDisplayProps {
   page: StreamReadSlicesItemPagesItem;
@@ -72,41 +72,41 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
   return (
     <div className={classNames(className)}>
       <Tab.Group defaultIndex={defaultTabIndex}>
-        <FlexContainer direction="column">
-          <Tab.List className={styles.tabList}>
-            {tabs.map((tab) => (
-              <Tab className={styles.tab} key={tab.key}>
-                {({ selected }) => (
-                  <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })}>{tab.title}</Text>
-                )}
-              </Tab>
-            ))}
-            {inferredSchema && (
-              <Tab className={styles.tab}>
-                {({ selected }) => (
-                  <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} as="div">
-                    <FlexContainer direction="row" justifyContent="center">
-                      {formatMessage({ id: "connectorBuilder.schemaTab" })}
-                      {editorView === "ui" && field.value !== formattedSchema && <SchemaConflictIndicator />}
-                    </FlexContainer>
-                  </Text>
-                )}
-              </Tab>
-            )}
-          </Tab.List>
-          <Tab.Panels className={styles.tabPanelContainer}>
-            {tabs.map((tab) => (
-              <Tab.Panel className={styles.tabPanel} key={tab.key}>
-                <pre>{tab.content}</pre>
-              </Tab.Panel>
-            ))}
-            {inferredSchema && (
-              <Tab.Panel className={styles.tabPanel}>
-                <SchemaDiffView inferredSchema={inferredSchema} />
-              </Tab.Panel>
-            )}
-          </Tab.Panels>
-        </FlexContainer>
+        <Tab.List className={styles.tabList}>
+          {tabs.map((tab) => (
+            <Tab className={styles.tab} key={tab.key}>
+              {({ selected }) => (
+                <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} size="xs">
+                  {tab.title}
+                </Text>
+              )}
+            </Tab>
+          ))}
+          {inferredSchema && (
+            <Tab className={styles.tab}>
+              {({ selected }) => (
+                <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} as="div" size="xs">
+                  <FlexContainer direction="row" justifyContent="center">
+                    {formatMessage({ id: "connectorBuilder.schemaTab" })}
+                    {editorView === "ui" && field.value !== formattedSchema && <SchemaConflictIndicator />}
+                  </FlexContainer>
+                </Text>
+              )}
+            </Tab>
+          )}
+        </Tab.List>
+        <Tab.Panels className={styles.tabPanelContainer}>
+          {tabs.map((tab) => (
+            <Tab.Panel className={styles.tabPanel} key={tab.key}>
+              <pre>{tab.content}</pre>
+            </Tab.Panel>
+          ))}
+          {inferredSchema && (
+            <Tab.Panel className={styles.tabPanel}>
+              <SchemaDiffView inferredSchema={inferredSchema} />
+            </Tab.Panel>
+          )}
+        </Tab.Panels>
       </Tab.Group>
     </div>
   );

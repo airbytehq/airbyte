@@ -15,12 +15,12 @@ import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDoma
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
-import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 import { CloudRoutes } from "./cloudRoutePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
+import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 
 const MainView = React.lazy(() => import("packages/cloud/views/layout/MainView"));
 const WorkspacesPage = React.lazy(() => import("packages/cloud/views/workspaces"));

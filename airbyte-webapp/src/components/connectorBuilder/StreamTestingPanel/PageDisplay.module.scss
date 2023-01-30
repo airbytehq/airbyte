@@ -5,6 +5,7 @@
   flex: 0 0 auto;
   display: flex;
   overflow-y: auto;
+  margin-bottom: variables.$spacing-sm;
 }
 
 .tab {
@@ -36,4 +37,9 @@
 .tabPanel {
   max-height: 100%;
   overflow-y: auto;
+
+  > pre {
+    margin: 0;
+    padding: 0;
+  }
 }

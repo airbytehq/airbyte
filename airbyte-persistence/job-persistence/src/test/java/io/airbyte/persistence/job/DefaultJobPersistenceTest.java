@@ -152,6 +152,7 @@ class DefaultJobPersistenceTest {
         null,
         status,
         null,
+        null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
         NOW.getEpochSecond());
@@ -164,6 +165,7 @@ class DefaultJobPersistenceTest {
         logPath,
         null,
         status,
+        null,
         null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),

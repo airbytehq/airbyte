@@ -9,9 +9,11 @@ package io.airbyte.workers.general;
  */
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -128,6 +130,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertNull(output.getFailureReason());
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
+    assertFalse(output.getConnectorConfigurationUpdated());
     verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
     verifyNoInteractions(connectorConfigUpdater);
 
@@ -157,8 +160,36 @@ class DefaultDiscoverCatalogWorkerTest {
     assertNull(output.getFailureReason());
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
+    assertTrue(output.getConnectorConfigurationUpdated());
     verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
     verify(connectorConfigUpdater).updateSource(SOURCE_ID, connectorConfig2);
+
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+
+    verify(process).exitValue();
+  }
+
+  @Test
+  void testDiscoverSchemaWithConfigUpdateNoChange() throws Exception {
+    final Config noChangeConfig = new Config().withAdditionalProperty("apiKey", "123");
+    final AirbyteStreamFactory noChangeConfigMsgStreamFactory = noop -> Lists.newArrayList(
+        AirbyteMessageUtils.createConfigControlMessage(noChangeConfig, 1D),
+        new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
+
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, noChangeConfigMsgStreamFactory);
+    final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
+
+    assertNull(output.getFailureReason());
+    assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
+    assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
+    assertFalse(output.getConnectorConfigurationUpdated());
+    verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
+    verifyNoInteractions(connectorConfigUpdater);
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {

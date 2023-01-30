@@ -3,12 +3,13 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 
+import { ConnectionEditFormCard } from "components/connection/ConnectionEditFormCard";
+import { getInitialTransformations } from "components/connection/ConnectionForm/formConfig";
+import { TransformationField } from "components/connection/ConnectionForm/TransformationField";
+
 import { OperationCreate, OperationRead } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FormikOnSubmit } from "types/formik";
-import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
-import { getInitialTransformations } from "views/Connection/ConnectionForm/formConfig";
-import { FormCard } from "views/Connection/FormCard";
 
 export const CustomTransformationsCard: React.FC<{
   operations?: OperationCreate[];
@@ -24,10 +25,9 @@ export const CustomTransformationsCard: React.FC<{
   );
 
   return (
-    <FormCard<{ transformations?: OperationRead[] }>
+    <ConnectionEditFormCard<{ transformations?: OperationRead[] }>
       title={<FormattedMessage id="connection.customTransformations" />}
       collapsible
-      bottomSeparator
       form={{
         initialValues,
         enableReinitialize: true,
@@ -45,6 +45,6 @@ export const CustomTransformationsCard: React.FC<{
           />
         )}
       </FieldArray>
-    </FormCard>
+    </ConnectionEditFormCard>
   );
 };
