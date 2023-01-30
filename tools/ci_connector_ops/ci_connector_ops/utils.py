@@ -6,7 +6,7 @@
 from dataclasses import dataclass
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple, List
 import os
 import git
 import requests
@@ -108,7 +108,7 @@ class Connector:
     @property
     def code_directory(self) -> Path:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
-    
+
     @property
     def version(self) -> str:
         with open(self.code_directory / "Dockerfile") as f:
@@ -116,7 +116,7 @@ class Connector:
                 if "io.airbyte.version" in line:
                     return line.split("=")[1].strip()
         raise ConnectorVersionNotFound("""
-            Could not find the connector version from its Dockerfile. 
+            Could not find the connector version from its Dockerfile.
             The io.airbyte.version tag is missing.
             """)
 
@@ -138,7 +138,15 @@ class Connector:
 
     @property
     def release_stage(self) -> Optional[str]:
-        return self.definition["releaseStage"] if self.definition else None
+        return self.definition["releaseStage"] if self.definition and self.definition.get('releaseStage') else None
+
+    @property
+    def allowed_hosts(self) -> Optional[List[str]]:
+        return self.definition["allowedHosts"] if self.definition and self.definition.get('allowedHosts') else None
+
+    @property
+    def suggested_streams(self) -> Optional[List[str]]:
+        return self.definition["suggestedStreams"] if self.definition and self.definition.get('suggestedStreams') else None
 
     @property
     def acceptance_test_config_path(self) -> Path:
