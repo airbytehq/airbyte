@@ -508,9 +508,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   icon: faker.svg
   sourceType: api
-  releaseStage: alpha
-  allowedHosts:
-    hosts: []
+  releaseStage: beta
   suggestedStreams:
     streams:
       - users
