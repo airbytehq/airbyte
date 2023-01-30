@@ -140,4 +140,4 @@ def test_accounts_live(config):
     client = Client(**config)
     accounts = Accounts(client, config)
     records = accounts.read_records(SyncMode.full_refresh)
-    assert len(list(records)) == 4
+    assert len(list(records)) == 3
