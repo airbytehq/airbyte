@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0
+Re-release of 0.3.0 [#21451](https://github.com/airbytehq/airbyte/pull/21451)
+
+# Renamed image from `airbyte/source-acceptance-test` to `airbyte/connector-acceptance-test` - Older versions are only available under the old name
+
 ## 0.4.0
 Revert 0.3.0
 
