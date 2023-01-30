@@ -167,6 +167,24 @@ class Stages(PipedriveStream):
     """
 
 
+class Notes(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Notes#getNotes,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
+class Products(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Products#getProducts,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+class ProductFields(PipedriveStream):
+    """
+    https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields
+    """
+
 class Users(PipedriveStream):
     """
     API docs: https://developers.pipedrive.com/docs/api/v1/Users#getUsers,

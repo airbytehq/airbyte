@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "deal_id": {
+      "type": ["null", "integer"]
+    },
+    "last_update_user_id":{
+      "type": ["null", "integer"]
+    },
+    "update_time": {
+      "type": ["null", "string"]
+    },
+    "org_id": {
+      "type": ["null", "integer"]
+    },
+    "person_id": {
+      "type": ["null", "integer"]
+    },
+    "add_time": {
+      "type": ["null", "string"]
+    },
+    "content": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -24,6 +24,9 @@ from source_pipedrive.streams import (
     Pipelines,
     Stages,
     Users,
+    Notes,
+    Products,
+    ProductFields,
 )
 
 
@@ -33,7 +36,7 @@ class SourcePipedrive(AbstractSource):
             stream_kwargs = self.get_stream_kwargs(config)
             deals = Deals(**stream_kwargs)
             deals_gen = deals.read_records(sync_mode=SyncMode.full_refresh)
-            next(deals_gen)
+            next(deals_gen, None)
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Pipedrive API with the provided credentials - {repr(error)}"
@@ -57,6 +60,9 @@ class SourcePipedrive(AbstractSource):
             Pipelines(**incremental_kwargs),
             Stages(**incremental_kwargs),
             Users(**incremental_kwargs),
+            Notes(**incremental_kwargs),
+            Products(**incremental_kwargs),
+            ProductFields(**stream_kwargs)
         ]
         return streams
 
