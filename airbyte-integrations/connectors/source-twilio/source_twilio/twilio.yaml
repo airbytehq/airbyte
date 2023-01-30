@@ -197,6 +197,19 @@ definitions:
       step_default: "P1D"
       primary_key: "sid"
     stream_cursor_field: "date_sent"
+  # https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources
+  recordings_stream:
+    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    $options:
+      name: "recordings"
+      cursor_field: "date_created"
+      lower_boundary_param: "DateCreated>"
+      upper_boundary_param: "DateCreated<"
+      boundary_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: "PT0S"
+      step_default: "P1Y"
+      primary_key: "sid"
+    stream_cursor_field: "date_created"
 
 
 streams:
@@ -215,6 +228,7 @@ streams:
   - "*ref(definitions.calls_stream)"
   - "*ref(definitions.conferences_stream)"
   - "*ref(definitions.messages_stream)"
+  - "*ref(definitions.recordings_stream)"
 
 check:
   stream_names:
