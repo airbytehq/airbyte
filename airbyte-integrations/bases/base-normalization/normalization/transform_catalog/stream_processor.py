@@ -258,7 +258,7 @@ class StreamProcessor(object):
             self.get_model_materialization_mode(is_intermediate=True),
             is_intermediate=True,
             suffix="ab1",
-            is_reading_from_raw_table=True,
+            is_reading_from_root_table=True,
         )
         from_table = self.add_to_outputs(
             self.generate_column_typing_model(from_table, column_names),
@@ -403,7 +403,12 @@ select
 {%- endfor %}
     {{ col_ab_id }},
     {{ col_emitted_at }},
-    {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }}
+    {%- if parent_has_normalized_at %}
+    {{ col_normalized_at }}
+    {%- else %}
+    {{ '{{ current_timestamp() }}' }}
+    {%- endif %}
+    as {{ col_normalized_at }}
 from {{ from_table }} {{ table_alias }}
 {{ sql_table_comment }}
 {{ unnesting_from }}
@@ -423,6 +428,7 @@ where 1 = 1
             unnesting_from=self.unnesting_from(),
             unnesting_where=self.unnesting_where(),
             sql_table_comment=self.sql_table_comment(),
+            parent_has_normalized_at=len(self.json_path) > 1,
         )
         return sql
 
@@ -483,7 +489,12 @@ select
 {%- endfor %}
     {{ col_ab_id }},
     {{ col_emitted_at }},
-    {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }}
+    {%- if parent_has_normalized_at %}
+    {{ col_normalized_at }}
+    {%- else %}
+    {{ '{{ current_timestamp() }}' }}
+    {%- endif %}
+    as {{ col_normalized_at }}
 from {{ from_table }}
 {{ sql_table_comment }}
 where 1 = 1
@@ -497,6 +508,7 @@ where 1 = 1
             fields=self.cast_property_types(column_names),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(),
+            parent_has_normalized_at=len(self.json_path) > 1,
         )
         return sql
 
@@ -831,8 +843,7 @@ where 1 = 1
             "fields": self.list_fields(column_names),
             "from_table": from_table,
             "hash_id": self.hash_id(),
-            # The SCD table depends on the _stg table, which has a normalized_at column. So we can use that instead of emitted_at.
-            "incremental_clause": self.get_incremental_clause_normalized_at("this"),
+            "incremental_clause": self.get_incremental_clause_emitted_at("this"),
             "input_data_table": input_data_table,
             "lag_begin": lag_begin,
             "lag_end": lag_end,
@@ -1138,7 +1149,7 @@ where 1 = 1
         unique_key: str = "",
         subdir: str = "",
         partition_by: PartitionScheme = PartitionScheme.DEFAULT,
-        is_reading_from_raw_table: bool = False,
+        is_reading_from_root_table: bool = False,
     ) -> str:
         # Explicit function so that we can have type hints to satisfy the linter
         def wrap_in_quotes(s: str) -> str:
@@ -1268,12 +1279,13 @@ where 1 = 1
             else:
                 # incremental is handled in the SCD SQL already, so we don't need to explicitly add an incremental clause in the previous if-branch.
                 # For all the other models (ab1, ab2, ab3, stg, final model):
-                # The first model in the chain needs to use emitted_at, because the raw tables don't have a normalized_at column
+                # The first model in the chain needs to use emitted_at, because the raw tables don't have a normalized_at column.
+                # However, nested tables also think they're reading from a "root table". So we check for that case explicitly, by checking the length of the json path.
                 # But the rest can use normalized_at.
-                if is_reading_from_raw_table:
-                    sql += self.get_incremental_clause_emitted_at("this")
-                else:
+                if not is_reading_from_root_table or len(self.json_path) > 1:
                     sql += self.get_incremental_clause_normalized_at("this")
+                else:
+                    sql += self.get_incremental_clause_emitted_at("this")
         elif self.destination_sync_mode == DestinationSyncMode.overwrite:
             if suffix == "" and not is_intermediate:
                 # drop SCD table after creating the destination table
