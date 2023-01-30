@@ -16,10 +16,10 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
+import styles from "./LoginPage.module.scss";
 import { OAuthLogin } from "../OAuthLogin";
 import { Separator } from "../SignupPage/components/Separator";
 import { Disclaimer } from "../SignupPage/components/SignupForm";
-import styles from "./LoginPage.module.scss";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
