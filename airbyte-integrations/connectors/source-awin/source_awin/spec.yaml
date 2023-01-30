@@ -9,20 +9,24 @@ connectionSpecification:
   properties:
     accounts:
       type: array
+      title: Accounts
       description: "A list of accounts which shall be synchronized. When not given, all accounts are downloaded."
       example:
         - "546789, 546785"
     attribution_window:
       type: integer
+      title: Attribution Window
       description: "Default: 30. The attribution window in days for stream transactions. Before synchronizing you should make sure that transactions in this timeframe are removed from the destination table or you need to make sure that they are updated based on the primary key."
     start_date:
       type: string
+      title: Start Date
       description: For streams with sync. method incremental the start date time to be used
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
       examples:
         - "%Y-%m-%dT%H:%M:%S"
     oauth2_token:
       type: string
+      title: OAuth2 Token
       description: "Your OAuth access token. See also: https://wiki.awin.com/index.php/API_authentication"
       airbyte_secret: true
 
