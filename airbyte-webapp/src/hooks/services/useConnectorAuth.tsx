@@ -210,7 +210,7 @@ export function useResolveNavigate(): void {
   const query = useQuery();
 
   useEffectOnce(() => {
-    window.opener.postMessage(query);
+    window.opener?.postMessage(query);
     window.close();
   });
 }
