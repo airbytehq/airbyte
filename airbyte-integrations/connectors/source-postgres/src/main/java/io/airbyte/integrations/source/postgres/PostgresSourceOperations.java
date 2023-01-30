@@ -520,12 +520,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
           .withItems(JsonSchemaType.STRING_DATE)
           .build();
-      case JSONB -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY,
-          JsonSchemaPrimitive.OBJECT,
-          JsonSchemaPrimitive.STRING,
-          JsonSchemaPrimitive.BOOLEAN,
-          JsonSchemaPrimitive.NUMBER)
-          .build();
+      // case JSONB -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY,
+      // JsonSchemaPrimitive.OBJECT,
+      // JsonSchemaPrimitive.STRING,
+      // JsonSchemaPrimitive.BOOLEAN,
+      // JsonSchemaPrimitive.NUMBER)
+      // .build();
+      case JSONB -> JsonSchemaType.JSONB;
       case DATE -> JsonSchemaType.STRING_DATE;
       case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
       case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;

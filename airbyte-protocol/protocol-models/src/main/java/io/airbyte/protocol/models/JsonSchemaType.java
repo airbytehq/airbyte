@@ -9,7 +9,6 @@ import static io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.PRIMITIVE_TO_RE
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -91,6 +90,7 @@ public class JsonSchemaType {
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withLegacyAirbyteTypeProperty("big_integer")
           .build();
+  public static final JsonSchemaType JSONB = JsonSchemaType.builder(JsonSchemaPrimitive.JSONB).build();
 
   private final Map<String, Object> jsonSchemaTypeMap;
 
@@ -98,8 +98,8 @@ public class JsonSchemaType {
     this.jsonSchemaTypeMap = jsonSchemaTypeMap;
   }
 
-  public static Builder builder(final JsonSchemaPrimitive... types) {
-    return new Builder(types);
+  public static Builder builder(final JsonSchemaPrimitive type) {
+    return new Builder(type);
   }
 
   public Map<String, Object> getJsonSchemaTypeMap() {
@@ -110,23 +110,27 @@ public class JsonSchemaType {
 
     private final ImmutableMap.Builder<String, Object> typeMapBuilder;
 
-    private Builder(final JsonSchemaPrimitive... types) {
-      final List<JsonSchemaPrimitive> schemaPrimitives = Arrays.asList(types);
-      if (hasMultipleTypes(schemaPrimitives)) {
-        typeMapBuilder = ImmutableMap.builder();
-        final List<ImmutableMap<Object, Object>> typeList = new ArrayList<>();
-        schemaPrimitives.forEach(x -> typeList.add(ImmutableMap.builder().put(TYPE, x.name().toLowerCase()).build()));
-        typeMapBuilder.put(TYPE, JsonSchemaPrimitive.OBJECT.name().toLowerCase());
-        typeMapBuilder.put(ONE_OF, typeList);
-      } else {
-        final JsonSchemaPrimitive type = schemaPrimitives.get(0);
-        typeMapBuilder = ImmutableMap.builder();
-        if (JsonSchemaPrimitiveUtil.isV0Schema(type)) {
-          typeMapBuilder.put(TYPE, type.name().toLowerCase());
+    private Builder(final JsonSchemaPrimitive type) {
+      typeMapBuilder = ImmutableMap.builder();
+      if (JsonSchemaPrimitiveUtil.isV0Schema(type)) {
+        if (type.equals(JsonSchemaPrimitive.JSONB)) {
+          buildJsonbSchema();
         } else {
-          typeMapBuilder.put(REF, PRIMITIVE_TO_REFERENCE_BIMAP.get(type));
+          typeMapBuilder.put(TYPE, type.name().toLowerCase());
         }
+      } else {
+        typeMapBuilder.put(REF, PRIMITIVE_TO_REFERENCE_BIMAP.get(type));
       }
+    }
+
+    private void buildJsonbSchema() {
+      final List<JsonSchemaPrimitive> schemaPrimitives = List.of(JsonSchemaPrimitive.ARRAY, JsonSchemaPrimitive.OBJECT, JsonSchemaPrimitive.NUMBER,
+          JsonSchemaPrimitive.STRING, JsonSchemaPrimitive.BOOLEAN);
+      final List<ImmutableMap<Object, Object>> typeList = new ArrayList<>();
+      schemaPrimitives.forEach(x -> typeList.add(ImmutableMap.builder().put(TYPE, x.name().toLowerCase()).build()));
+      typeMapBuilder.put(TYPE, JsonSchemaPrimitive.OBJECT.name().toLowerCase());
+      typeMapBuilder.put(ONE_OF, typeList);
+      System.out.println("WRITING NEW LEGACY >>>>>>>>>     ");
     }
 
     private boolean hasMultipleTypes(List<JsonSchemaPrimitive> schemaPrimitives) {
