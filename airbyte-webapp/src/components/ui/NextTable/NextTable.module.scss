@@ -1,5 +1,5 @@
 @use "scss/colors";
-@use "scss/variables" as vars;
+@use "scss/variables";
 @use "scss/z-indices";
 
 // ------- <table/> --------
@@ -7,7 +7,7 @@
   border-spacing: 0;
   width: 100%;
   max-width: 100%;
-  border-radius: vars.$border-radius-md;
+  border-radius: variables.$border-radius-md;
 }
 
 .thead {
@@ -28,13 +28,13 @@
   font-weight: 600;
 
   &:first-child {
-    padding-left: calc(vars.$spacing-2xl + vars.$spacing-sm);
-    border-radius: vars.$border-radius-md 0 0;
+    padding-left: calc(variables.$spacing-2xl + variables.$spacing-sm);
+    border-radius: variables.$border-radius-md 0 0;
   }
 
   &:last-child {
-    padding-left: vars.$spacing-lg;
-    border-radius: 0 vars.$border-radius-md 0 0;
+    padding-left: variables.$spacing-lg;
+    border-radius: 0 variables.$border-radius-md 0 0;
   }
 }
 
@@ -51,7 +51,7 @@
 // --------- <td/> ---------
 
 .td {
-  padding: vars.$spacing-lg calc(vars.$spacing-md + vars.$spacing-xs);
+  padding: variables.$spacing-lg calc(variables.$spacing-md + variables.$spacing-xs);
   font-size: 12px;
   line-height: 15px;
   font-weight: normal;
@@ -59,18 +59,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-bottom: vars.$border-thin solid colors.$grey-100;
+  border-bottom: variables.$border-thin solid colors.$grey-100;
   width: auto;
 
   tr:last-child > & {
     border-bottom: none;
 
     &:first-child {
-      border-radius: 0 0 0 vars.$border-radius-md;
+      border-radius: 0 0 0 variables.$border-radius-md;
     }
 
     &:last-child {
-      border-radius: 0 0 vars.$border-radius-md;
+      border-radius: 0 0 variables.$border-radius-md;
     }
   }
 }

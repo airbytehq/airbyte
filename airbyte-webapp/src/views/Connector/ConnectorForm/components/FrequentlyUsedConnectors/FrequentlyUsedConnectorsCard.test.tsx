@@ -1,16 +1,14 @@
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { IntlProvider } from "react-intl";
 import { mockDestinationsData } from "test-utils/mock-data/mockFrequentlyUsedDestinations";
-
-import en from "locales/en.json";
+import { TestWrapper } from "test-utils/testutils";
 
 import { FrequentlyUsedConnectorsCard, FrequentlyUsedConnectorsCardProps } from "./FrequentlyUsedConnectorsCard";
 
 const renderFrequentlyUsedConnectorsComponent = (props: FrequentlyUsedConnectorsCardProps) =>
   render(
-    <IntlProvider locale="en" messages={en}>
+    <TestWrapper>
       <FrequentlyUsedConnectorsCard {...props} />
-    </IntlProvider>
+    </TestWrapper>
   );
 
 describe("<mockFrequentlyUsedConnectors />", () => {

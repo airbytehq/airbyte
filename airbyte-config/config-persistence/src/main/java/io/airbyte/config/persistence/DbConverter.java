@@ -40,6 +40,7 @@ import io.airbyte.config.StandardSync.NonBreakingChangesPreference;
 import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.SuggestedStreams;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -164,7 +165,10 @@ public class DbConverter {
             : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class))
         .withAllowedHosts(record.get(ACTOR_DEFINITION.ALLOWED_HOSTS) == null
             ? null
-            : Jsons.deserialize(record.get(ACTOR_DEFINITION.ALLOWED_HOSTS).data(), AllowedHosts.class));
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.ALLOWED_HOSTS).data(), AllowedHosts.class))
+        .withSuggestedStreams(record.get(ACTOR_DEFINITION.SUGGESTED_STREAMS) == null
+            ? null
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.SUGGESTED_STREAMS).data(), SuggestedStreams.class));
   }
 
   public static StandardDestinationDefinition buildStandardDestinationDefinition(final Record record) {
