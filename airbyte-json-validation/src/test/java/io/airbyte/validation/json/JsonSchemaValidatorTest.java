@@ -140,4 +140,12 @@ class JsonSchemaValidatorTest {
     assertEquals(Set.of("$.prop2: string found, boolean expected"), validationResult);
   }
 
+  @Test
+  void testIntializedMethodsShouldErrorIfNotInitialised() {
+    final var validator = new JsonSchemaValidator();
+
+    assertThrows(NullPointerException.class, () -> validator.testInitializedSchema("uninitialised", Jsons.deserialize("{}")));
+    assertThrows(NullPointerException.class, () -> validator.ensureInitializedSchema("uninitialised", Jsons.deserialize("{}")));
+  }
+
 }

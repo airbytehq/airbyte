@@ -61,7 +61,7 @@ public class JsonSchemaValidator {
    * @param baseUri The base URI for schema resolution
    */
   @VisibleForTesting
-  protected JsonSchemaValidator(URI baseUri) {
+  protected JsonSchemaValidator(final URI baseUri) {
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
     this.baseUri = baseUri;
   }
@@ -71,17 +71,29 @@ public class JsonSchemaValidator {
    * {@link #testInitializedSchema(String, JsonNode)} and
    * {@link #ensureInitializedSchema(String, JsonNode)} is called.
    */
-  public void initializeSchemaValidator(String schemaName, JsonNode schemaJson) {
+  public void initializeSchemaValidator(final String schemaName, final JsonNode schemaJson) {
     schemaToValidators.put(schemaName, getSchemaValidator(schemaJson));
   }
 
-  public boolean testInitializedSchema(String schemaName, JsonNode objectJson) {
-    final var validate = schemaToValidators.get(schemaName).validate(objectJson);
+  /**
+   * Returns true if the object adheres to the given schema and false otherwise.
+   */
+  public boolean testInitializedSchema(final String schemaName, final JsonNode objectJson) {
+    final var schema = schemaToValidators.get(schemaName);
+    Preconditions.checkNotNull(schema, schemaName + " needs to be initialised before calling this method");
+
+    final var validate = schema.validate(objectJson);
     return validate.isEmpty();
   }
 
+  /**
+   * Throws an exception if the object does not adhere to the given schema.
+   */
   public void ensureInitializedSchema(final String schemaName, final JsonNode objectNode) throws JsonValidationException {
-    final Set<ValidationMessage> validationMessages = schemaToValidators.get(schemaName).validate(objectNode);
+    final var schema = schemaToValidators.get(schemaName);
+    Preconditions.checkNotNull(schema, schemaName + " needs to be initialised before calling this method");
+
+    final Set<ValidationMessage> validationMessages = schema.validate(objectNode);
     if (validationMessages.isEmpty()) {
       return;
     }
