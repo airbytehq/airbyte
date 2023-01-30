@@ -1,11 +1,12 @@
 import { faClose, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import { useLocalStorage } from "react-use";
 
 import { Button } from "components/ui/Button";
 import { Callout } from "components/ui/Callout";
+import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { Modal, ModalBody } from "components/ui/Modal";
 import { NumberBadge } from "components/ui/NumberBadge";
 import { Tooltip } from "components/ui/Tooltip";
@@ -27,7 +28,6 @@ interface ConfigMenuProps {
 }
 
 export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJsonErrors, isOpen, setIsOpen }) => {
-  const { formatMessage } = useIntl();
   const { jsonManifest, editorView, setEditorView } = useConnectorBuilderFormState();
 
   const { testInputJson, setTestInputJson } = useConnectorBuilderTestState();
@@ -112,20 +112,36 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, testInputJson
                 <ConnectorForm
                   formType="source"
                   bodyClassName={styles.formContent}
-                  footerClassName={styles.inputFormModalFooter}
                   selectedConnectorDefinitionSpecification={connectorDefinitionSpecification}
                   formValues={{ connectionConfiguration: testInputJson }}
                   onSubmit={async (values) => {
                     setTestInputJson(values.connectionConfiguration as StreamReadRequestBodyConfig);
                     setIsOpen(false);
                   }}
-                  onCancel={() => {
-                    setIsOpen(false);
-                  }}
-                  onReset={() => {
-                    setTestInputJson({});
-                  }}
-                  submitLabel={formatMessage({ id: "connectorBuilder.saveInputsForm" })}
+                  renderFooter={({ dirty, isSubmitting, resetConnectorForm }) => (
+                    <div className={styles.inputFormModalFooter}>
+                      <FlexContainer>
+                        <FlexItem grow>
+                          <Button
+                            onClick={() => {
+                              resetConnectorForm();
+                              setTestInputJson({});
+                            }}
+                            type="button"
+                            variant="danger"
+                          >
+                            <FormattedMessage id="form.reset" />
+                          </Button>
+                        </FlexItem>
+                        <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
+                          <FormattedMessage id="form.cancel" />
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting || !dirty}>
+                          <FormattedMessage id="connectorBuilder.saveInputsForm" />
+                        </Button>
+                      </FlexContainer>
+                    </div>
+                  )}
                 />
               </>
             </ConfigMenuErrorBoundaryComponent>

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.0
+Re-release of 0.3.0 [#21451](https://github.com/airbytehq/airbyte/pull/21451)
+
 ## 0.4.0
 Revert 0.3.0
 

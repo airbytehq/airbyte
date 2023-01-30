@@ -39,6 +39,14 @@ public abstract class BlobStorageOperations {
    */
   public abstract void cleanUpBucketObject(String objectPath, List<String> stagedFiles) throws Exception;
 
+  /**
+   * Deletes all the bucket objects for the specified bucket path
+   *
+   * @param namespace Optional source-defined namespace name
+   * @param streamName Name of the stream
+   * @param objectPath file path to where staging files are stored
+   * @param pathFormat formatted string for the path
+   */
   public abstract void cleanUpBucketObject(String namespace, String streamName, String objectPath, String pathFormat);
 
   public abstract void dropBucketObject(String objectPath);

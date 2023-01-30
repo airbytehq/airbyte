@@ -114,7 +114,13 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
   const [yamlIsValid, setYamlIsValid] = useState(true);
   const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
 
-  const yamlManifest = useMemo(() => dump(derivedJsonManifest), [derivedJsonManifest]);
+  const yamlManifest = useMemo(
+    () =>
+      dump(derivedJsonManifest, {
+        noRefs: true,
+      }),
+    [derivedJsonManifest]
+  );
 
   const lastValidBuilderFormValues = lastValidBuilderFormValuesRef.current;
   /**
