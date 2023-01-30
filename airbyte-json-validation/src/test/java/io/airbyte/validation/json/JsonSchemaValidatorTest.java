@@ -148,4 +148,20 @@ class JsonSchemaValidatorTest {
     assertThrows(NullPointerException.class, () -> validator.ensureInitializedSchema("uninitialised", Jsons.deserialize("{}")));
   }
 
+  @Test
+  void testIntializedMethodsShouldValidateIfInitialised() {
+    final JsonSchemaValidator validator = new JsonSchemaValidator();
+    final var schemaName = "schema_name";
+    final JsonNode goodJson = Jsons.deserialize("{\"host\":\"abc\"}");
+
+    validator.initializeSchemaValidator(schemaName, VALID_SCHEMA);
+
+    assertTrue(validator.testInitializedSchema(schemaName, goodJson));
+    assertDoesNotThrow(() -> validator.ensureInitializedSchema(schemaName, goodJson));
+
+    final JsonNode badJson = Jsons.deserialize("{\"host\":1}");
+    assertFalse(validator.testInitializedSchema(schemaName, badJson));
+    assertThrows(JsonValidationException.class, () -> validator.ensureInitializedSchema(schemaName, badJson));
+  }
+
 }
