@@ -32,6 +32,10 @@ definitions:
       url_base: "*ref(definitions.requester.url_base)"
     requester:
       $ref: "*ref(definitions.requester)"
+  boundary_request_parameters:
+    request_parameters:
+      "{{ options.lower_boundary_param }}": "{{ format_datetime(stream_slice.lower_boundary, options.boundary_format) }}"
+      "{{ options.upper_boundary_param }}": "{{ format_datetime(stream_slice.upper_boundary, options.boundary_format) }}"
   datetime_slicer:
     type: DatetimeStreamSlicer
     stream_state_field_start: "lower_boundary"
@@ -147,9 +151,7 @@ definitions:
         $ref: "*ref(definitions.requester)"
         path: "{{ stream_slice.path }}"
         request_options_provider:
-          request_parameters:
-            "{{ options.lower_boundary_param }}": "{{ format_datetime(stream_slice.lower_boundary, options.boundary_format) }}"
-            "{{ options.upper_boundary_param }}": "{{ format_datetime(stream_slice.upper_boundary, options.boundary_format) }}"
+          $ref: "*ref(definitions.boundary_request_parameters)"
       stream_slicer:
         type: CustomStreamSlicer
         class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
