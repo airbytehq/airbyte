@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.general;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,14 +12,14 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.ProcessHandle.Info;
-import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
 /**
- * Basic Airbyte Source that emits {@link LimitedSourceProcess#TOTAL_RECORDS} before finishing. Intended for performance testing.
+ * Basic Airbyte Source that emits {@link LimitedSourceProcess#TOTAL_RECORDS} before finishing.
+ * Intended for performance testing.
  */
 public class LimitedSourceProcess extends Process {
 
@@ -47,8 +51,8 @@ public class LimitedSourceProcess extends Process {
               var msg = AirbyteMessageUtils.createRecordMessage("s1", "data",
                   "This is a fairly long sentence to provide some bytes here. More bytes is better as it helps us measure performance."
                       + "Random append to prevent dead code generation :");
-              os.write(MAPPER.writeValueAsString(msg).getBytes(Charset.defaultCharset()));
-              os.write(System.getProperty("line.separator").getBytes(Charset.defaultCharset()));
+              os.write(MAPPER.writeValueAsString(msg).getBytes());
+              os.write(System.getProperty("line.separator").getBytes());
               currRecs++;
             }
             os.flush();
@@ -56,8 +60,7 @@ public class LimitedSourceProcess extends Process {
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
-        }
-    );
+        });
 
     return is;
   }
@@ -137,8 +140,9 @@ public class LimitedSourceProcess extends Process {
     public Optional<String> user() {
       return Optional.empty();
     }
+
   }
 
-  public static void main(String[] args) {
-  }
+  public static void main(String[] args) {}
+
 }

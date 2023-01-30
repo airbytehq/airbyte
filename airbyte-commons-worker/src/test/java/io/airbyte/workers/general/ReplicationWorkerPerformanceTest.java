@@ -16,13 +16,10 @@ import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.metrics.lib.NotImplementedMetricClient;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.exception.WorkerException;
@@ -74,7 +71,7 @@ public class ReplicationWorkerPerformanceTest {
   @Fork(1)
   // Within each run, how many iterations to do.
   @Measurement(iterations = 2)
-  public void executeOneSync() throws InterruptedException {
+  public static void executeOneSync() throws InterruptedException {
     final var perDestination = new EmptyAirbyteDestination();
     final var messageTracker = new AirbyteMessageTracker(new EnvVariableFeatureFlags());
     final var connectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
@@ -89,9 +86,13 @@ public class ReplicationWorkerPerformanceTest {
         List.of(new AirbyteMessageV0Deserializer()),
         List.of(new AirbyteMessageV0Serializer()));
     serDeProvider.initialize();
-    final var migratorFactory =new AirbyteMessageVersionedMigratorFactory(new AirbyteMessageMigrator(List.of(new AirbyteMessageMigrationV0())));
 
-    final var versionFac = new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, new Version("0.2.0") , Optional.of(RuntimeException.class));
+    final var migrator = new AirbyteMessageMigrator(List.of(new AirbyteMessageMigrationV0()));
+    migrator.initialize();
+    final var migratorFactory = new AirbyteMessageVersionedMigratorFactory(migrator);
+
+    final var versionFac =
+        new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, new Version("0.2.0"), Optional.of(RuntimeException.class));
     final var versionedAbSource = new DefaultAirbyteSource(integrationLauncher, versionFac, new EnvVariableFeatureFlags());
 
     final var worker = new DefaultReplicationWorker("1", 0,
@@ -106,9 +107,12 @@ public class ReplicationWorkerPerformanceTest {
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     final Thread workerThread = new Thread(() -> {
       try {
-        output.set(worker.run(new StandardSyncInput().withCatalog(new ConfiguredAirbyteCatalog()
-            .withStreams(List.of(new ConfiguredAirbyteStream().withSyncMode(SyncMode.FULL_REFRESH).withStream(new AirbyteStream().withName("s1"))))),
-            Path.of("/")));
+        final var ignoredPath = Path.of("/");
+        final StandardSyncInput testInput = new StandardSyncInput().withCatalog(
+            // The stream fields here are intended to match the records emitted by the LimitedSourceProcess
+            // class.
+            CatalogHelpers.createConfiguredAirbyteCatalog("s1", null, Field.of("data", JsonSchemaType.STRING)));
+        output.set(worker.run(testInput, ignoredPath));
       } catch (final WorkerException e) {
         throw new RuntimeException(e);
       }
@@ -122,9 +126,10 @@ public class ReplicationWorkerPerformanceTest {
     log.info("MBs read: {}, Time taken sec: {}, MB/s: {}", mbRead, timeTakenSec, mbRead / timeTakenSec);
   }
 
-  public static void main(final String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException, InterruptedException {
     // Run this main class to start benchmarking.
-    org.openjdk.jmh.Main.main(args);
+    // org.openjdk.jmh.Main.main(args);
+    executeOneSync();
   }
 
 }

@@ -18,7 +18,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import me.andrz.jackson.JsonContext;
@@ -44,6 +46,7 @@ public class JsonSchemaValidator {
 
   private final JsonSchemaFactory jsonSchemaFactory;
   private final URI baseUri;
+  private final Map<String, JsonSchema> schemaToValidators = new HashMap<>();
 
   public JsonSchemaValidator() {
     this(DEFAULT_BASE_URI);
@@ -89,6 +92,20 @@ public class JsonSchemaValidator {
     Preconditions.checkNotNull(schemaJson);
     Preconditions.checkNotNull(objectJson);
 
+    final JsonSchema schema = getSchema(schemaJson);
+    return schema.validate(objectJson);
+  }
+
+  public void initializeSchema(String schemaName, JsonNode schemaJson) {
+    schemaToValidators.put(schemaName, getSchema(schemaJson));
+  }
+
+  public boolean test(String schemaName, JsonNode objectJson) {
+    final var validate = schemaToValidators.get(schemaName).validate(objectJson);
+    return validate.isEmpty();
+  }
+
+  private JsonSchema getSchema(JsonNode schemaJson) {
     // Default to draft-07, but have handling for the other metaschemas that networknt supports
     JsonMetaSchema metaschema;
     JsonNode metaschemaNode = schemaJson.get("$schema");
@@ -120,7 +137,7 @@ public class JsonSchemaValidator {
         context,
         baseUri,
         schemaJson);
-    return schema.validate(objectJson);
+    return schema;
   }
 
   public boolean test(final JsonNode schemaJson, final JsonNode objectJson) {
@@ -131,6 +148,18 @@ public class JsonSchemaValidator {
     }
 
     return validationMessages.isEmpty();
+  }
+
+  public void ensure(final String schemaName, final JsonNode objectNode) throws JsonValidationException {
+    final Set<ValidationMessage> validationMessages = schemaToValidators.get(schemaName).validate(objectNode);
+    if (validationMessages.isEmpty()) {
+      return;
+    }
+
+    throw new JsonValidationException(String.format(
+        "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
+        Strings.join(validationMessages, ", "),
+        ""));
   }
 
   public void ensure(final JsonNode schemaJson, final JsonNode objectJson) throws JsonValidationException {

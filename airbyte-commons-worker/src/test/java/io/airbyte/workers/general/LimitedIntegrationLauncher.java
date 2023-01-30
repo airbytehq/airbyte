@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.general;
 
 import io.airbyte.workers.exception.WorkerException;
@@ -5,7 +9,8 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
 
 /**
- * Test-only launcher to launch {@link LimitedSourceProcess}. Intended as a convenient test harness for testing.
+ * Test-only launcher to launch {@link LimitedSourceProcess}. Intended as a convenient test harness
+ * for testing.
  */
 public class LimitedIntegrationLauncher implements IntegrationLauncher {
 
@@ -25,14 +30,24 @@ public class LimitedIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public Process read(Path jobRoot, String configFilename, String configContents, String catalogFilename,
-      String catalogContents, String stateFilename, String stateContents) throws WorkerException {
+  public Process read(Path jobRoot,
+                      String configFilename,
+                      String configContents,
+                      String catalogFilename,
+                      String catalogContents,
+                      String stateFilename,
+                      String stateContents)
+      throws WorkerException {
     return new LimitedSourceProcess();
   }
 
   @Override
-  public Process write(Path jobRoot, String configFilename, String configContents, String catalogFilename,
-      String catalogContents) throws WorkerException {
+  public Process write(Path jobRoot,
+                       String configFilename,
+                       String configContents,
+                       String catalogFilename,
+                       String catalogContents)
+      throws WorkerException {
     return null;
   }
 

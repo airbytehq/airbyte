@@ -23,12 +23,22 @@ import java.util.Set;
 
 public class RecordSchemaValidator {
 
+  private static final JsonSchemaValidator validator = new JsonSchemaValidator();
+
   private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
 
   public RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas) {
     // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema
     this.streams = streamNamesToSchemas;
+    for (final AirbyteStreamNameNamespacePair stream : streamNamesToSchemas.keySet()) {
+      // We must choose a JSON validator version for validating the schema
+      // Rather than allowing connectors to use any version, we enforce validation using V7
+      final var schema = streams.get(stream);
+      ((ObjectNode) schema).put("$schema", "http://json-schema.org/draft-07/schema#");
+      validator.initializeSchema(stream.toString(), schema);
+    }
+
   }
 
   /**
@@ -40,17 +50,12 @@ public class RecordSchemaValidator {
    */
   public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream)
       throws RecordSchemaValidationException {
+
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
 
-    final JsonSchemaValidator validator = new JsonSchemaValidator();
-
-    // We must choose a JSON validator version for validating the schema
-    // Rather than allowing connectors to use any version, we enforce validation using V7
-    ((ObjectNode) matchingSchema).put("$schema", "http://json-schema.org/draft-07/schema#");
-
     try {
-      validator.ensure(matchingSchema, messageData);
+      validator.ensure(messageStream.toString(), messageData);
     } catch (final JsonValidationException e) {
       final List<String[]> invalidRecordDataAndType = validator.getValidationMessageArgs(matchingSchema, messageData);
       final List<String> invalidFields = validator.getValidationMessagePaths(matchingSchema, messageData);
@@ -73,6 +78,7 @@ public class RecordSchemaValidator {
       throw new RecordSchemaValidationException(validationMessagesToDisplay,
           String.format("Record schema validation failed for %s", messageStream), e);
     }
+
   }
 
 }
