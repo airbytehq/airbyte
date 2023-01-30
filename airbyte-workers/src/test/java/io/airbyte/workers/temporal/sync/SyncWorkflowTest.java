@@ -116,6 +116,8 @@ class SyncWorkflowTest {
   private NormalizationSummary normalizationSummary;
   private ActivityOptions longActivityOptions;
   private ActivityOptions shortActivityOptions;
+
+  private ActivityOptions discoveryActivityOptions;
   private TemporalProxyHelper temporalProxyHelper;
 
   @BeforeEach
@@ -177,6 +179,9 @@ class SyncWorkflowTest {
             .setMaximumInterval(Duration.ofSeconds(600))
             .build())
         .build();
+    discoveryActivityOptions = ActivityOptions.newBuilder()
+        .setStartToCloseTimeout(Duration.ofSeconds(360))
+        .build();
 
     final BeanIdentifier longActivitiesBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration longActivityOptionsBeanRegistration = mock(BeanRegistration.class);
@@ -188,7 +193,13 @@ class SyncWorkflowTest {
     when(shortActivitiesBeanIdentifier.getName()).thenReturn("shortActivityOptions");
     when(shortActivityOptionsBeanRegistration.getIdentifier()).thenReturn(shortActivitiesBeanIdentifier);
     when(shortActivityOptionsBeanRegistration.getBean()).thenReturn(shortActivityOptions);
-    temporalProxyHelper = new TemporalProxyHelper(List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration));
+    final BeanIdentifier discoveryActivityBeanIdentifier = mock(BeanIdentifier.class);
+    final BeanRegistration discoveryActivityOptionsBeanRegistration = mock(BeanRegistration.class);
+    when(discoveryActivityBeanIdentifier.getName()).thenReturn("discoveryActivityOptions");
+    when(discoveryActivityOptionsBeanRegistration.getIdentifier()).thenReturn(discoveryActivityBeanIdentifier);
+    when(discoveryActivityOptionsBeanRegistration.getBean()).thenReturn(discoveryActivityOptions);
+    temporalProxyHelper = new TemporalProxyHelper(
+        List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration, discoveryActivityOptionsBeanRegistration));
 
     syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
   }
