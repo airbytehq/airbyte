@@ -33,6 +33,11 @@ Python 3.9.11
 
 On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
 
+You need also to install `requests` python library:
+````bash
+pip install requests 
+````
+
 ## Our connector: a stock ticker API
 
 Our connector will output the daily price of a stock since a given date. We'll leverage the free [Polygon.io API](https://polygon.io/pricing) for this. We'll use Python to implement the connector because its syntax is accessible to most programmers, but the process described here can be applied to any language.
@@ -208,7 +213,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec]")
+        log_error("Invalid command. Allowable commands: [spec]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -228,6 +233,8 @@ Some notes on the above code:
 
 1. As described in the [specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout
 2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging
+3. All Airbyte commands can output error messages that take the form `{"type":"TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}}`, so we create a helper method `log_error(message)` to allow error messages
+
 
 Now if we run `python source.py spec` we should see the specification printed out:
 
@@ -262,8 +269,8 @@ Then we'll add the `check_method`:
 
 ```python
 import requests
-import datetime
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 
 def _call_api(ticker, token):
@@ -352,7 +359,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check]")
+        log_error("Invalid command. Allowable commands: [spec, check]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -471,7 +478,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -545,7 +552,7 @@ Then we'll define the `read` method in `source.py`:
 
 ```python
 def log_error(error_message):
-    current_time_in_ms = int(datetime.datetime.now().timestamp()) * 1000
+    current_time_in_ms = int(datetime.now().timestamp()) * 1000
     log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
     print(json.dumps(log_json))
 
@@ -583,7 +590,7 @@ def read(config, catalog):
         results = response.json()["results"]
         for result in results:
             data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
-            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 ```
@@ -615,7 +622,7 @@ elif command == "read":
 and: 
 
 ```python
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
 ```
 
 this yields the following `run` method:
@@ -666,7 +673,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -717,8 +724,8 @@ import json
 import sys
 import os
 import requests
-import datetime
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 
 def read(config, catalog):
@@ -754,7 +761,7 @@ def read(config, catalog):
         results = response.json()["results"]
         for result in results:
             data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
-            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 
@@ -799,7 +806,7 @@ def log(message):
 
 
 def log_error(error_message):
-   current_time_in_ms = int(datetime.datetime.now().timestamp()) * 1000
+   current_time_in_ms = int(datetime.now().timestamp()) * 1000
    log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
    print(json.dumps(log_json))
 
@@ -892,7 +899,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed

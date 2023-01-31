@@ -11,10 +11,10 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useQuery } from "hooks/useQuery";
 
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
-import ConnectorCell from "./components/ConnectorCell";
-import FrequencyCell from "./components/FrequencyCell";
-import LastSyncCell from "./components/LastSyncCell";
-import NameCell from "./components/NameCell";
+import { ConnectionStatusCell } from "./components/ConnectionStatusCell";
+import { ConnectorNameCell } from "./components/ConnectorNameCell";
+import { FrequencyCell } from "./components/FrequencyCell";
+import { LastSyncCell } from "./components/LastSyncCell";
 import { StatusCell } from "./components/StatusCell";
 import { ITableDataItem, SortOrderEnum } from "./types";
 
@@ -86,8 +86,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         headerHighlighted: true,
         accessor: "name",
         customWidth: 30,
+        responsive: true,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <NameCell value={cell.value} enabled={row.original.enabled} status={row.original.lastSyncStatus} />
+          <ConnectionStatusCell
+            status={row.original.lastSyncStatus}
+            value={cell.value}
+            enabled={row.original.enabled}
+          />
         ),
       },
       {
@@ -104,13 +109,10 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         ),
         headerHighlighted: true,
         accessor: "entityName",
+        customWidth: 30,
+        responsive: true,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <NameCell
-            value={cell.value}
-            enabled={row.original.enabled}
-            icon={entity === "connection"}
-            img={row.original.entityIcon}
-          />
+          <ConnectorNameCell value={cell.value} icon={row.original.entityIcon} enabled={row.original.enabled} />
         ),
       },
       {
@@ -124,11 +126,12 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
           </SortableTableHeader>
         ),
         accessor: "connectorName",
+        customWidth: 30,
+        responsive: true,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
-          <ConnectorCell value={cell.value} enabled={row.original.enabled} img={row.original.connectorIcon} />
+          <ConnectorNameCell value={cell.value} icon={row.original.connectorIcon} enabled={row.original.enabled} />
         ),
       },
-
       {
         Header: <FormattedMessage id="tables.frequency" />,
         accessor: "scheduleData",

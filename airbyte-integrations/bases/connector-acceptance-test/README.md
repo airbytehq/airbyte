@@ -1,5 +1,5 @@
 # Connector Acceptance Tests
-This package gathers multiple test suites to assess the sanity of any Airbyte **source** connector. 
+This package gathers multiple test suites to assess the sanity of any Airbyte connector. 
 It is shipped as a [pytest](https://docs.pytest.org/en/7.1.x/) plugin and relies on pytest to discover, configure and execute tests.
 Test-specific documentation can be found [here](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/)).
 
@@ -33,10 +33,10 @@ _Note: this will use the latest docker image for connector-acceptance-test and w
   * When running or `./acceptance-test-docker.sh` in a connector project
 * When running `/test` command on a GitHub pull request.
 * When running `/publish` command on a GitHub pull request.
-* When running ` integration-test` GitHub action that is creating the [connector builds summary](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md).
+* When running ` integration-test` GitHub action that is creating the JSON files linked to from [connector builds summary](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md).
 
 ## Developing on the acceptance tests
-You may want to iterate on the acceptance test project: adding new tests, fixing a bug etc.
+You may want to iterate on the acceptance test project itself: adding new tests, fixing a bug etc.
 These iterations are more conveniently achieved by remaining in the current directory.
 
 1. Create a `virtualenv`: `python -m venv .venv`

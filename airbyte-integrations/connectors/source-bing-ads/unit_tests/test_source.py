@@ -8,7 +8,6 @@ from unittest.mock import patch
 import pytest
 import source_bing_ads
 from airbyte_cdk.models import SyncMode
-from source_bing_ads.client import Client
 from source_bing_ads.source import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, Campaigns, SourceBingAds
 
 
@@ -136,8 +135,8 @@ def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
     }
 
 
-def test_accounts_live(config):
-    client = Client(**config)
-    accounts = Accounts(client, config)
-    records = accounts.read_records(SyncMode.full_refresh)
-    assert len(list(records)) == 4
+@patch.object(source_bing_ads.source, "Client")
+def test_accounts(mocked_client, config):
+    accounts = Accounts(mocked_client, config)
+    _ = list(accounts.read_records(SyncMode.full_refresh))
+    mocked_client.request.assert_called_once()
