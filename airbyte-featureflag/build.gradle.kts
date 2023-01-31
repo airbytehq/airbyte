@@ -43,7 +43,7 @@ publishing {
     repositories {
         publications {
             create<MavenPublication>("${project.name}") {
-                groupId = "{$project.group}"
+                groupId = "${project.group}"
                 artifactId = "${project.name}"
                 version = "${rootProject.version}"
                 repositories.add(rootProject.repositories.getByName("cloudrepo"))
