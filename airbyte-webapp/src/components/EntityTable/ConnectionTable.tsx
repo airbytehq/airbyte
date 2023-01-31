@@ -27,7 +27,7 @@ interface ConnectionTableProps {
   onSync: (id: string) => void;
 }
 
-const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync }) => {
+const ConnectionTable: React.FC<ConnectionTableProps> = ({ data, entity, onClickRow, onSync }) => {
   const navigate = useNavigate();
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
