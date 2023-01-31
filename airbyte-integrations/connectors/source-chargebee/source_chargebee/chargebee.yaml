@@ -229,9 +229,12 @@ definitions:
     retriever:
       $ref: "*ref(definitions.base_incremental_stream.retriever)"
       requester:
-        $ref: "*ref(definitions.retriever.requester)"
+        $ref: "*ref(definitions.base_incremental_stream.retriever.requester)"
         request_options_provider:
-          created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+          request_parameters:
+            sort_by[asc]: created_at
+            include_deleted: "true"
+            created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $options:
       name: "promotional_credit"
       primary_key: "id"
