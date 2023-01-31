@@ -45,7 +45,7 @@ def test_check_connection_invalid_config(config):
     assert not ok and error_msg
 
 
-def test_check_connection_exception(config):
+def test_check_connection_exception(requests_mock, config):
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
     assert not ok and error_msg

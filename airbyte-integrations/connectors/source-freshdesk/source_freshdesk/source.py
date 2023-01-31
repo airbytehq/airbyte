@@ -5,6 +5,7 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
+import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests.auth import HTTPBasicAuth
@@ -55,8 +56,16 @@ class SourceFreshdesk(AbstractSource):
         return {"authenticator": FreshdeskAuth(config["api_key"]), "config": config}
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        stream = Settings(**self._get_stream_kwargs(config=config))
-        return stream.availability_strategy.check_availability(stream, logger, self)
+        try:
+            stream = Settings(**self._get_stream_kwargs(config=config))
+            return stream.availability_strategy.check_availability(stream, logger, self)
+        except requests.HTTPError as error:
+            body = error.response.json()
+            error_msg = f"{body.get('code')}: {body.get('message')}"
+        except Exception as error:
+            error_msg = repr(error)
+
+        return False, error_msg
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
