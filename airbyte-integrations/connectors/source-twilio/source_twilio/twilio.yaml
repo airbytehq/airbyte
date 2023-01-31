@@ -58,19 +58,21 @@ definitions:
       path: "/2010-04-01/Accounts.json"
       data_field: null
       primary_key: "sid"
+  accounts_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.accounts_stream)"
+        parent_key: "/"
+        stream_slice_field: "record"
   base_nested_stream:
     $ref: "*ref(definitions.base_stream)"
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        path: "{{ stream_slice.path }}"
+        path: "{{ stream_slice.record.subresource_uris[options.subresource_uri_key or options.name] }}"
       stream_slicer:
-        type: SubstreamSlicer
-        parent_stream_configs:
-          - stream: "*ref(definitions.accounts_stream)"
-            parent_key: "subresource_uris/{{ options.subresource_uri_key or options.name }}"
-            stream_slice_field: "path"
+        $ref: "*ref(definitions.accounts_slicer)"
   addresses_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     $options:
@@ -156,11 +158,7 @@ definitions:
         type: CustomStreamSlicer
         class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
         stream_slicers:
-          - type: SubstreamSlicer
-            parent_stream_configs:
-              - stream: "*ref(definitions.accounts_stream)"
-                parent_key: "/"
-                stream_slice_field: "record"
+          - $ref: "*ref(definitions.accounts_slicer)"
           - $ref: "*ref(definitions.datetime_slicer)"
   # https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources
   calls_stream:
