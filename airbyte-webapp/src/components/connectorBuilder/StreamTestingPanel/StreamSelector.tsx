@@ -33,10 +33,10 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
 export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
   const analyticsService = useAnalyticsService();
   const { formatMessage } = useIntl();
-  const { selectedView, setSelectedView, builderFormValues, editorView } = useConnectorBuilderFormState();
-  const { streams: testStreams, testStreamIndex, setTestStreamIndex } = useConnectorBuilderTestState();
+  const { selectedView, setSelectedView } = useConnectorBuilderFormState();
+  const { testStreamIndex, setTestStreamIndex } = useConnectorBuilderTestState();
 
-  const streams = editorView === "ui" ? builderFormValues.streams : testStreams;
+  const streams = useStreamNames();
 
   const options = streams.map((stream) => {
     const label =
@@ -70,3 +70,18 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => 
     />
   );
 };
+
+function useStreamNames() {
+  const { builderFormValues, editorView, formValuesValid } = useConnectorBuilderFormState();
+  const { streams: testStreams, isFetchingStreamList, streamListErrorMessage } = useConnectorBuilderTestState();
+
+  let streams: Array<{ name: string }> = editorView === "ui" ? builderFormValues.streams : testStreams;
+
+  const testStreamListUpToDate = formValuesValid && !isFetchingStreamList && !streamListErrorMessage;
+
+  if (editorView === "ui" && testStreamListUpToDate) {
+    streams = streams.map((stream, index) => ({ name: testStreams[index]?.name || stream.name }));
+  }
+
+  return streams;
+}

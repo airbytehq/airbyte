@@ -30,6 +30,7 @@ export type BuilderView = "global" | "inputs" | number;
 
 interface FormStateContext {
   builderFormValues: BuilderFormValues;
+  formValuesValid: boolean;
   jsonManifest: ConnectorManifest;
   lastValidJsonManifest: DeclarativeComponentSchema | undefined;
   yamlManifest: string;
@@ -66,6 +67,8 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
     DEFAULT_BUILDER_FORM_VALUES
   );
 
+  const [formValuesValid, setFormValuesValid] = useState(true);
+
   const lastValidBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
   const currentBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
 
@@ -76,6 +79,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
         lastValidBuilderFormValuesRef.current = values;
       }
       currentBuilderFormValuesRef.current = values;
+      setFormValuesValid(isValid);
       setStoredBuilderFormValues(values);
     },
     [setStoredBuilderFormValues]
@@ -142,6 +146,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
 
   const ctx = {
     builderFormValues,
+    formValuesValid,
     jsonManifest: derivedJsonManifest,
     lastValidJsonManifest,
     yamlManifest,
