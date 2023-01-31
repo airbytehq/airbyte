@@ -218,13 +218,14 @@ public class KubePodProcess implements KubePod {
     final List<ContainerPort> containerPorts = createContainerPortList(internalToExternalPorts);
 
     final List<EnvVar> envVars = envMap.entrySet().stream()
-//        .filter(entry -> isConnectorNeedDatadogSupport(image, entry))
+        // .filter(entry -> isConnectorNeedDatadogSupport(image, entry))
         .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
         .collect(Collectors.toList());
 
-    String ddEnvVar = "-XX:+ExitOnOutOfMemoryError -javaagent:/airbyte/dd-java-agent.jar -Ddd.profiling.enabled=true -XX:FlightRecorderOptions=stackdepth=256 -Ddd.trace.sample.rate=5 -Ddd.trace.request_header.tags=User-Agent:http.useragent";
+    String ddEnvVar =
+        "-XX:+ExitOnOutOfMemoryError -javaagent:/airbyte/dd-java-agent.jar -Ddd.profiling.enabled=true -XX:FlightRecorderOptions=stackdepth=256 -Ddd.trace.sample.rate=5 -Ddd.trace.request_header.tags=User-Agent:http.useragent";
 
-    if(image.contains("source-postgres")){
+    if (image.contains("source-postgres")) {
       envVars.add(new EnvVar("DD_CONNECTOR_JAVA_OPTS", ddEnvVar, null));
     }
 
@@ -245,12 +246,13 @@ public class KubePodProcess implements KubePod {
     return containerBuilder.build();
   }
 
-  private static boolean isConnectorNeedDatadogSupport(String image, Map.Entry<String, String> entry) {
-    if ("DD_CONNECTOR_JAVA_OPTS_ENV_VAR".equals(entry.getKey())) {
-      return CONNECTOR_IMAGE_NAMES_WITH_DD_SUPPORT.contains(image);
-    }
-    return true;
-  }
+  // private static boolean isConnectorNeedDatadogSupport(String image, Map.Entry<String, String>
+  // entry) {
+  // if ("DD_CONNECTOR_JAVA_OPTS_ENV_VAR".equals(entry.getKey())) {
+  // return CONNECTOR_IMAGE_NAMES_WITH_DD_SUPPORT.contains(image);
+  // }
+  // return true;
+  // }
 
   public static List<ContainerPort> createContainerPortList(final Map<Integer, Integer> internalToExternalPorts) {
     return internalToExternalPorts.keySet().stream()
