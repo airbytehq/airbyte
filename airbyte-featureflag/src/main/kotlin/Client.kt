@@ -12,6 +12,9 @@ import com.launchdarkly.sdk.ContextKind
 import com.launchdarkly.sdk.LDContext
 import com.launchdarkly.sdk.LDUser
 import com.launchdarkly.sdk.server.LDClient
+import io.micronaut.context.annotation.Property
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 import java.lang.Thread.MIN_PRIORITY
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
@@ -32,6 +35,18 @@ sealed interface FeatureFlagClient {
     fun enabled(flag: Flag, ctx: Context): Boolean
 }
 
+/** Config key used to determine which [FeatureFlagClient] to expose. */
+internal const val CONFIG_FF_CLIENT = "airbyte.feature-flag.client"
+
+/** If [CONFIG_FF_CLIENT] equals this value, return the [LaunchDarklyClient], otherwise the [ConfigFileClient]. */
+internal const val CONFIG_FF_CLIENT_VAL_LAUNCHDARKLY = "launchdarkly"
+
+/** Config key to provide the api-key as required by the [LaunchDarklyClient]. */
+internal const val CONFIG_FF_APIKEY = "airbyte.feature-flag.api-key"
+
+/** Config key to provided the location of the flags config file used by the [ConfigFileClient]. */
+internal const val CONFIG_FF_PATH = "airbyte.feature-flag.path"
+
 /**
  * Config file based feature-flag client.
  *
@@ -41,7 +56,9 @@ sealed interface FeatureFlagClient {
  * @param [config] optional location of the yaml config file that contains the feature-flag definitions.
  * If the [config] is provided, it will be watched for changes and the internal representation of the [config] will be updated to match.
  */
-class ConfigFileClient(config: Path?) : FeatureFlagClient {
+@Singleton
+@Requires(property = CONFIG_FF_CLIENT, notEquals = CONFIG_FF_CLIENT_VAL_LAUNCHDARKLY)
+class ConfigFileClient(@Property(name = CONFIG_FF_PATH) config: Path?) : FeatureFlagClient {
     /** [flags] holds the mappings of the flag-name to the flag properties */
     private var flags: Map<String, ConfigFileFlag> = config?.let { readConfig(it) } ?: mapOf()
 
@@ -74,6 +91,8 @@ class ConfigFileClient(config: Path?) : FeatureFlagClient {
  *
  * @param [client] the Launch-Darkly client for interfacing with Launch-Darkly.
  */
+@Singleton
+@Requires(property = CONFIG_FF_CLIENT, value = CONFIG_FF_CLIENT_VAL_LAUNCHDARKLY)
 class LaunchDarklyClient(private val client: LDClient) : FeatureFlagClient {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {
