@@ -10,11 +10,10 @@ import { Breadcrumbs } from "components/ui/Breadcrumbs";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useGetDestination } from "hooks/services/useDestinationHook";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
-
-import { useGetDestination } from "../../../hooks/services/useDestinationHook";
 
 export const DestinationItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM);
@@ -48,7 +47,7 @@ export const DestinationItemPage: React.FC = () => {
         />
         <Suspense fallback={<LoadingPage />}>
           <ApiErrorBoundary>
-            <Outlet />
+            <Outlet context={{ destination }} />
           </ApiErrorBoundary>
         </Suspense>
       </ConnectorDocumentationWrapper>
