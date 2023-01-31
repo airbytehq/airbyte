@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.25.1
+Fix issue when trying to log stream slices that are non-JSON-serializable
+
 ## 0.25.0
 Use dpath.util.values method to parse response with nested lists
 
