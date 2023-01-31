@@ -1,0 +1,19 @@
+import type { RHFDatePickerProps } from "./RHFControl";
+
+import { Controller, useFormContext } from "react-hook-form";
+
+import DatePicker from "components/ui/DatePicker";
+
+export const RHFDateWrapper: React.FC<Omit<RHFDatePickerProps, "fieldType">> = ({ name, format = "date" }) => {
+  const { control } = useFormContext();
+
+  return (
+    <Controller
+      name={name}
+      control={control}
+      render={({ field }) => (
+        <DatePicker value={field.value} onChange={field.onChange} withTime={format === "date-time"} />
+      )}
+    />
+  );
+};
