@@ -35,6 +35,9 @@ task validateLockFiles {
 }
 
 pnpmInstall.dependsOn validateLockFiles
+// Make sure `pnpmInstall` always runs, since it's better at determining
+// whether it's needs to do anything than Gradle can
+pnpmInstall.outputs.upToDateWhen { false }
 
 task pnpmBuild(type: PnpmTask) {
     dependsOn pnpmInstall
