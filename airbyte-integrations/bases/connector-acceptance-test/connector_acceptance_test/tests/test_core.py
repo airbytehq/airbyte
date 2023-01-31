@@ -629,7 +629,7 @@ class TestBasicRead(BaseTest):
         there no common pathes then raise an alert.
 
         :param records: List of airbyte record messages gathered from connector instances.
-        :param configured_catalog: CAT testcase parameters parsed from yaml file
+        :param configured_catalog: Testcase parameters parsed from yaml file
         """
         schemas: Dict[str, Set] = {}
         for stream in configured_catalog.streams:

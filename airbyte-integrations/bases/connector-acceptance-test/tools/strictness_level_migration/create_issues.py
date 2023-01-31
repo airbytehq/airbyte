@@ -20,12 +20,12 @@ GITHUB_PROJECT_NAME = "SAT-high-test-strictness-level"
 logging.basicConfig(level=logging.DEBUG)
 environment = Environment(loader=FileSystemLoader(TEMPLATES_FOLDER))
 
-parser = argparse.ArgumentParser(description="Create issues for migration of GA connectors to high test strictness level in SAT")
+parser = argparse.ArgumentParser(description="Create issues for migration of GA connectors to high test strictness level in connector acceptance test")
 parser.add_argument("-d", "--dry", default=True)
 
 
 def get_issue_content(source_definition):
-    issue_title = f"Source {source_definition['name']}: enable `high` test strictness level in SAT"
+    issue_title = f"Source {source_definition['name']}: enable `high` test strictness level in connector acceptance test"
 
     template = environment.get_template("issue.md.j2")
     issue_body = template.render(connector_name=source_definition["name"], release_stage=source_definition["releaseStage"])

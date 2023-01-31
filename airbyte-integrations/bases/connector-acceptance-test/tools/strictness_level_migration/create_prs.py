@@ -23,7 +23,7 @@ AIRBYTE_REPO = Repo(REPO_ROOT)
 environment = Environment(loader=FileSystemLoader("./templates/"))
 PR_TEMPLATE = environment.get_template("pr.md.j2")
 
-parser = argparse.ArgumentParser(description="Create PRs for migration of GA connectors to high test strictness level in SAT")
+parser = argparse.ArgumentParser(description="Create PRs for migration of GA connectors to high test strictness level in connector acceptance test")
 parser.add_argument("-d", "--dry", default=True)
 
 
@@ -56,7 +56,7 @@ def commit_push_migrated_config(config_path, connector_name, new_branch, dry_run
 
 
 def get_pr_content(definition):
-    pr_title = f"Source {definition['name']}: enable `high` test strictness level in SAT"
+    pr_title = f"Source {definition['name']}: enable `high` test strictness level in connector acceptance test"
 
     pr_body = PR_TEMPLATE.render(connector_name=definition["name"], release_stage=definition["releaseStage"])
     file_definition, pr_body_path = tempfile.mkstemp()

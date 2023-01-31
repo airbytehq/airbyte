@@ -348,7 +348,7 @@ def pytest_sessionfinish(session, exitstatus):
         print()  # create a line break
         logger.info(
             # session.startdir gives local path to the connector folder, so we can verify which cnctr was tested
-            f"{session.startdir} - CAT run - "
+            f"{session.startdir} - Connector Acceptance Test run - "
             # using subprocess.check_output to run cmd to get git hash
             f"{check_output('git rev-parse HEAD', stderr=STDOUT, shell=True).decode('ascii').strip()}"
             f" - {result}"

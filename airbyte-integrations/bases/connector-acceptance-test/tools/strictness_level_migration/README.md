@@ -43,7 +43,7 @@ This script will create one PR per GA connectors to migrate to `high` test stric
 3. Locally migrate `acceptance_test_config.yml` to the latest format
 4. Commit and push the changes on this branch
 5. Open a PR for this branch
-6. Run a SAT on this branch by posting a `/test` comment on the PR
+6. Run a connector acceptance test on this branch by posting a `/test` comment on the PR
 
 An example of the PR it creates can be found [here](https://github.com/airbytehq/airbyte/pull/19136)
 
