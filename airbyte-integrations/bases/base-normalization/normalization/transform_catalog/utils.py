@@ -118,7 +118,8 @@ def is_simple_property(definition: dict) -> bool:
 def is_combining_node(properties: dict) -> Set[str]:
     # this case appears when we have analog of old protocol like id: {type:[number, string]} and it's handled separately
     if data_type.ONE_OF_VAR_NAME in properties and any(
-        data_type.WELL_KNOWN_TYPE_VAR_NAME in option[data_type.REF_TYPE_VAR_NAME] for option in properties[data_type.ONE_OF_VAR_NAME]
+        data_type.REF_TYPE_VAR_NAME in option and data_type.WELL_KNOWN_TYPE_VAR_NAME in option[data_type.REF_TYPE_VAR_NAME]
+        for option in properties[data_type.ONE_OF_VAR_NAME]
     ):
         return set()
     else:
