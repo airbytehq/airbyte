@@ -1,3 +1,5 @@
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useFormikContext } from "formik";
 import { load, YAMLException } from "js-yaml";
 import React, { useCallback, useRef, useState } from "react";
@@ -6,6 +8,7 @@ import { FormattedMessage } from "react-intl";
 import { BuilderFormValues, DEFAULT_BUILDER_FORM_VALUES } from "components/connectorBuilder/types";
 import { useManifestToBuilderForm } from "components/connectorBuilder/useManifestToBuilderForm";
 import { Button, ButtonProps } from "components/ui/Button";
+import { Card } from "components/ui/Card";
 import { FlexContainer } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
@@ -17,6 +20,8 @@ import { useConnectorBuilderFormState } from "services/connectorBuilder/Connecto
 
 import styles from "./LandingPage.module.scss";
 import { ReactComponent as AirbyteLogo } from "../../../public/images/airbyte/logo.svg";
+import { ReactComponent as ImportYamlImage } from "../../../public/images/connector-builder/import-yaml.svg";
+import { ReactComponent as StartFromScratchImage } from "../../../public/images/connector-builder/start-from-scratch.svg";
 
 const YAML_UPLOAD_ERROR_ID = "connectorBuilder.yamlUpload.error";
 
@@ -106,7 +111,7 @@ export const LandingPage = React.memo(
         <Heading as="h1" size="lg">
           <FormattedMessage id="connectorBuilder.landingPage.prompt" />
         </Heading>
-        <FlexContainer direction="row">
+        <FlexContainer direction="row" gap="2xl">
           <input
             type="file"
             accept=".yml,.yaml"
@@ -125,7 +130,7 @@ export const LandingPage = React.memo(
             }}
           />
           <Tile
-            image={<AirbyteLogo />}
+            image={<ImportYamlImage />}
             title="connectorBuilder.landingPage.importYaml.title"
             description="connectorBuilder.landingPage.importYaml.description"
             buttonText="connectorBuilder.landingPage.importYaml.button"
@@ -135,15 +140,16 @@ export const LandingPage = React.memo(
               fileInputRef.current?.click();
             }}
           />
-
-          <Button
+          <Tile
+            image={<StartFromScratchImage />}
+            title="connectorBuilder.landingPage.startFromScratch.title"
+            description="connectorBuilder.landingPage.startFromScratch.description"
+            buttonText="connectorBuilder.landingPage.startFromScratch.button"
             onClick={() => {
               switchToUI();
               setShowLandingPage(false);
             }}
-          >
-            Start from scratch
-          </Button>
+          />
         </FlexContainer>
       </FlexContainer>
     );
@@ -161,17 +167,28 @@ interface TileProps {
 
 const Tile: React.FC<TileProps> = ({ image, title, description, buttonText, buttonProps, onClick }) => {
   return (
-    <FlexContainer direction="column" gap="lg" className={styles.tile}>
-      {image}
-      <Text>
-        <FormattedMessage id={title} />
-      </Text>
-      <Text>
-        <FormattedMessage id={description} />
-      </Text>
-      <Button onClick={onClick} {...buttonProps}>
-        <FormattedMessage id={buttonText} />
-      </Button>
-    </FlexContainer>
+    <Card>
+      <FlexContainer direction="column" gap="xl" alignItems="center" className={styles.tile}>
+        <FlexContainer justifyContent="center" className={styles.tileImage}>
+          {image}
+        </FlexContainer>
+        <FlexContainer direction="column" alignItems="center" gap="md" className={styles.tileText}>
+          <Heading as="h2" size="sm" centered>
+            <FormattedMessage id={title} />
+          </Heading>
+          <FlexContainer direction="column" justifyContent="center" className={styles.tileDescription}>
+            <Text centered>
+              <FormattedMessage id={description} />
+            </Text>
+          </FlexContainer>
+        </FlexContainer>
+        <Button onClick={onClick} {...buttonProps}>
+          <FlexContainer direction="row" alignItems="center" gap="md" className={styles.tileButton}>
+            <FontAwesomeIcon icon={faArrowRight} />
+            <FormattedMessage id={buttonText} />
+          </FlexContainer>
+        </Button>
+      </FlexContainer>
+    </Card>
   );
 };
