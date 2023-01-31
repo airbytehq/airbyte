@@ -220,14 +220,13 @@ on:
         description: 'Custom tag (If entered, the image will be build using this tag)'
       
       change_type:
-        description: 'Change type (only applicable when image build from main, choose n/a for resuing latest tag)'
+        description: 'Change type (only applicable when image build from main, ignored when changes are included in latest tag)'
         required: true 
         type: choice 
         default: "minor"
         options:
         - minor
         - patch
-        - n/a
       
       sort_by:
         description: 'Latest tag by'
@@ -272,7 +271,7 @@ jobs:
             exit 0
           fi;
             
-          if [ "${{ github.event.inputs.change_type }}"="n/a" ]; then 
+          if [ "${{ github.event.inputs.change_type }}" = "n/a" ]; then 
             echo "change type is marked n/a, assuming no version bump is required"
             echo "required=false" >> $GITHUB_OUTPUT
             exit 0
@@ -318,7 +317,7 @@ jobs:
           
           source_branch_name="${GITHUB_REF##*/}"
           if [ $source_branch_name = "main" ]; then 
-            if [ "${{ steps.bump.outputs.required }}"="false" ]; then
+            if [ "${{ steps.bump.outputs.required }}" = "false" ]; then
               # return current tag, if no new commits
               echo "no version bump required, proceeding with current version"
               tag=${{ steps.current_tag.outputs.tag }}
