@@ -218,9 +218,15 @@ public class KubePodProcess implements KubePod {
     final List<ContainerPort> containerPorts = createContainerPortList(internalToExternalPorts);
 
     final List<EnvVar> envVars = envMap.entrySet().stream()
-        .filter(entry -> isConnectorNeedDatadogSupport(image, entry))
+//        .filter(entry -> isConnectorNeedDatadogSupport(image, entry))
         .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
         .collect(Collectors.toList());
+
+    String ddEnvVar = "-XX:+ExitOnOutOfMemoryError -javaagent:/airbyte/dd-java-agent.jar -Ddd.profiling.enabled=true -XX:FlightRecorderOptions=stackdepth=256 -Ddd.trace.sample.rate=5 -Ddd.trace.request_header.tags=User-Agent:http.useragent";
+
+    if(image.contains("source-postgres")){
+      envVars.add(new EnvVar("DD_CONNECTOR_JAVA_OPTS", ddEnvVar, null));
+    }
 
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName(MAIN_CONTAINER_NAME)
