@@ -173,11 +173,7 @@ export const ConnectionStatusPage: React.FC = () => {
                       className={styles.syncButton}
                       disabled={!allowSync}
                       onClick={onSyncNowButtonClick}
-                      icon={
-                        <div className={styles.iconRotate}>
-                          <RotateIcon height={styles.syncIconHeight} width={styles.syncIconHeight} />
-                        </div>
-                      }
+                      icon={<RotateIcon height={styles.syncIconHeight} width={styles.syncIconHeight} />}
                     >
                       <FormattedMessage id="connection.startSync" />
                     </Button>
