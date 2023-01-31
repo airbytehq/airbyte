@@ -188,9 +188,8 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
       hasPasswordLogin(): boolean {
         return !!state.providers?.includes("password");
       },
-      hasCorporateEmail(email?: string): boolean {
-        const userEmail = email ?? state.currentUser?.email;
-        return !FREE_EMAIL_SERVICE_PROVIDERS.some((provider) => userEmail?.endsWith(`@${provider}`));
+      hasCorporateEmail(email: string | undefined = state.currentUser?.email): boolean {
+        return !FREE_EMAIL_SERVICE_PROVIDERS.some((provider) => email?.endsWith(`@${provider}`));
       },
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
