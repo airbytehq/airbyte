@@ -56,7 +56,7 @@ function write_job_log() {
   # if docker version has a value, write it to a file with the docker version as the name
   # else output an error to the build log
   if [ -n "$DOCKER_VERSION" ]; then
-    echo "$job_log_json" > tests/history/"$CONNECTOR"/"$DOCKER_VERSION".json
+    echo "$job_log_json" > tests/history/"$CONNECTOR"/"$VERSION_PREFIX""$DOCKER_VERSION".json
   else
     echo "ERROR: Could not find docker version for $CONNECTOR"
   fi
