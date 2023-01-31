@@ -367,8 +367,8 @@ describe("Connection - stream details", () => {
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "users";
 
-    const collectionNames = ["email", "id"];
-    const collectionTypes = ["String", "Integer"];
+    const collectionNames = ["email", "id", "name", "updated_at"];
+    const collectionTypes = ["String", "Integer", "String", "Datetime"];
 
     createTestConnection(sourceName, destName);
 

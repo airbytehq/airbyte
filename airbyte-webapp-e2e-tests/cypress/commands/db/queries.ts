@@ -32,9 +32,9 @@ export const createUsersTableQuery = createTable("public.users", [
   "CONSTRAINT users_pkey PRIMARY KEY (id)",
 ]);
 export const insertUsersTableQuery = insertMultipleIntoTable("public.users", [
-  { name: "Abigail", updated_at: "2022-12-19 00:00:00" },
-  { name: "Andrew", updated_at: "2022-12-19 00:00:00" },
-  { name: "Kat", updated_at: "2022-12-19 00:00:00" },
+  { name: "Abigail", email: "abigail@example.com", updated_at: "2022-12-19 00:00:00" },
+  { name: "Andrew", email: "andrew@example.com", updated_at: "2022-12-19 00:00:00" },
+  { name: "Kat", email: "kat@example.com", updated_at: "2022-12-19 00:00:00" },
 ]);
 
 export const dropUsersTableQuery = dropTable("public.users");
