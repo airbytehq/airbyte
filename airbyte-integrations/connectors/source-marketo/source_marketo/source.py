@@ -374,7 +374,9 @@ class Activities(MarketoExportBase):
             for attr in self.activity["attributes"]:
                 attr_name = clean_string(attr["name"])
 
-                if attr["dataType"] in ["datetime", "date"]:
+                if attr["dataType"] == "date":
+                    field_schema = {"type": "string", "format": "date"}
+                elif attr["dataType"] == "datetime":
                     field_schema = {"type": "string", "format": "date-time"}
                 elif attr["dataType"] in ["integer", "percent", "score"]:
                     field_schema = {"type": "integer"}
