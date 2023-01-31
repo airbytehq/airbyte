@@ -5,14 +5,16 @@
 
 import pandas as pd
 import pytest
+from unittest.mock import MagicMock, call
+import requests
 
 from ci_connector_ops.qa_engine import enrichments, inputs, models, validations
 
 @pytest.fixture
 def enriched_catalog(oss_catalog, cloud_catalog, adoption_metrics_per_connector_version) -> pd.DataFrame:
     return enrichments.get_enriched_catalog(
-        oss_catalog, 
-        cloud_catalog, 
+        oss_catalog,
+        cloud_catalog,
         adoption_metrics_per_connector_version
     )
 
@@ -108,3 +110,53 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
     qa_report["is_eligible_for_promotion_to_cloud"] = False
     connectors_eligible_for_cloud = list(validations.get_connectors_eligible_for_cloud(qa_report))
     assert len(connectors_eligible_for_cloud) == 0
+
+@pytest.mark.parametrize("connector_qa_data, build_file_payload, build_file_status, expected_is_successful", [
+    (
+        pd.Series({
+            "connector_version": "0.1.0",
+            "connector_technical_name": "connectors/source-pokeapi",
+        }),
+        {
+            "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+            "outcome": "success",
+            "docker_version": "0.1.5",
+            "timestamp": "1674872401",
+            "connector": "connectors/source-pokeapi"
+        },
+        200,
+        True
+    ),
+    (
+        pd.Series({
+            "connector_version": "0.1.0",
+            "connector_technical_name": "connectors/source-pokeapi",
+        }),
+        {
+            "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+            "outcome": "failure",
+            "docker_version": "0.1.5",
+            "timestamp": "1674872401",
+            "connector": "connectors/source-pokeapi"
+        },
+        200,
+        False
+    ),
+    (
+        pd.Series({
+            "connector_version": "0.1.0",
+            "connector_technical_name": "connectors/source-pokeapi",
+        }),
+        None,
+        404,
+        False
+    ),
+])
+def test_latest_build_is_successful(mocker, connector_qa_data: pd.Series, build_file_payload: object, build_file_status: int, expected_is_successful: bool):
+    # Mock the api call to get the latest build status for a connector version
+    mock_response = MagicMock()
+    mock_response.json.return_value = build_file_payload
+    mock_response.status_code = build_file_status
+    mocker.patch.object(requests, 'get', return_value=mock_response)
+
+    assert validations.latest_build_is_successful(connector_qa_data) == expected_is_successful

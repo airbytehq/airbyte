@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useParams } from "react-router-dom";
 
@@ -44,7 +44,26 @@ export const DestinationSettingsPage: React.FC = () => {
     });
   }, [clearFormChange, connectionsWithDestination, deleteDestination, destination, formId]);
 
-  const onDeleteClick = useDeleteModal("destination", onDelete);
+  const modalAdditionalContent = useMemo<React.ReactNode>(() => {
+    if (connectionsWithDestination.length === 0) {
+      return null;
+    }
+    return (
+      <p>
+        <FormattedMessage
+          id="tables.affectedConnectionsOnDeletion"
+          values={{ count: connectionsWithDestination.length }}
+        />
+        {connectionsWithDestination.map((connection) => (
+          <>
+            - <strong>{`${connection.name}\n`}</strong>
+          </>
+        ))}
+      </p>
+    );
+  }, [connectionsWithDestination]);
+
+  const onDeleteClick = useDeleteModal("destination", onDelete, modalAdditionalContent);
 
   return (
     <div className={styles.content}>

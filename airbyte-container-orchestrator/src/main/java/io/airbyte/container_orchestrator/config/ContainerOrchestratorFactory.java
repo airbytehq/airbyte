@@ -9,7 +9,7 @@ import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.container_orchestrator.orchestrator.DbtJobOrchestrator;
@@ -17,6 +17,7 @@ import io.airbyte.container_orchestrator.orchestrator.JobOrchestrator;
 import io.airbyte.container_orchestrator.orchestrator.NoOpOrchestrator;
 import io.airbyte.container_orchestrator.orchestrator.NormalizationJobOrchestrator;
 import io.airbyte.container_orchestrator.orchestrator.ReplicationJobOrchestrator;
+import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
@@ -99,14 +100,16 @@ class ContainerOrchestratorFactory {
                                      final EnvConfigs envConfigs,
                                      final ProcessFactory processFactory,
                                      final FeatureFlags featureFlags,
+                                     final FeatureFlagClient featureFlagClient,
                                      final WorkerConfigs workerConfigs,
                                      final AirbyteMessageSerDeProvider serdeProvider,
-                                     final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                     final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                      final JobRunConfig jobRunConfig,
                                      final SourceApi sourceApi,
                                      final DestinationApi destinationApi) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(envConfigs, processFactory, featureFlags, serdeProvider,
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(envConfigs, processFactory, featureFlags, featureFlagClient,
+          serdeProvider,
           migratorFactory, jobRunConfig, sourceApi, destinationApi);
       case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(envConfigs, processFactory, jobRunConfig);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(envConfigs, workerConfigs, processFactory, jobRunConfig);
