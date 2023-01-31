@@ -8,16 +8,17 @@ import { DestinationConnectionTable } from "components/destination/DestinationCo
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
-import { DestinationRead } from "core/request/AirbyteClient";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceList } from "hooks/services/useSourceHook";
 import { DestinationPaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 
+import { DestinationOutletContext } from "./types";
+
 export const DestinationOverviewPage = () => {
   const navigate = useNavigate();
 
-  const { destination } = useOutletContext<{ destination: DestinationRead }>();
+  const { destination } = useOutletContext<DestinationOutletContext>();
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
   // We load only connections attached to this destination to be shown in the connections grid
   const { connections } = useConnectionList({ destinationId: [destination.destinationId] });

@@ -2,7 +2,6 @@ import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { useOutletContext } from "react-router-dom";
 
-import { DestinationRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useConnectionList } from "hooks/services/useConnectionHook";
@@ -14,9 +13,10 @@ import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ConnectorCardValues } from "views/Connector/ConnectorForm/types";
 
 import styles from "./DestinationSettings.module.scss";
+import { DestinationOutletContext } from "../types";
 
 export const DestinationSettingsPage: React.FC = () => {
-  const { destination } = useOutletContext<{ destination: DestinationRead }>();
+  const { destination } = useOutletContext<DestinationOutletContext>();
   const { connections: connectionsWithDestination } = useConnectionList({ destinationId: [destination.destinationId] });
   const destinationSpecification = useGetDestinationDefinitionSpecification(destination.destinationDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
