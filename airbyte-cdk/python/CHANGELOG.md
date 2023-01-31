@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.25.2
+Low-Code: SubstreamSlicer.parent_key - dpath support added
+
+## 0.25.1
+Fix issue when trying to log stream slices that are non-JSON-serializable
+
 ## 0.25.0
 Use dpath.util.values method to parse response with nested lists
 

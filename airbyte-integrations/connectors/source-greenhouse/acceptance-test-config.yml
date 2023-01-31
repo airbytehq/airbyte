@@ -1,6 +1,7 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-greenhouse:dev
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
@@ -13,68 +14,14 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/config.json"
       - config_path: "secrets/config_users_only.json"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-      - config_path: "secrets/config_users_only.json"
-        # test we do not fail when encounter 403 error
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams:
-          - name: "applications"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "applications_demographics_answers"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "applications_interviews"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "candidates"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "close_reasons"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "custom_fields"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "degrees"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "demographics_answers"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "demographics_answer_options"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "questions"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "demographics_answers_answer_options"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "demographics_question_sets"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "demographics_question_sets_questions"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "departments"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "jobs"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "jobs_openings"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "interviews"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "job_posts"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "job_stages"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "jobs_stages"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "offers"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "rejection_reasons"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "scorecards"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "sources"
-            bypass_reason: "Could return 0 records because of rate limits"
-          - name: "demographics_questions"
-            bypass_reason: "Could return 0 records because of rate limits"
+          extra_records: yes
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

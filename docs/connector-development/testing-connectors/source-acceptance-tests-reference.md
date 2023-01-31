@@ -236,7 +236,7 @@ This test verifies that sync produces no records when run with the STATE with ab
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                         |     |
 | `future_state_path`       | string | None                                        | Path to the state file with abnormally large cursor values         |     |
 | `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                  |     |
-| `bypass_reason`           | string | None                                        | Explain why this test is bypassed                                 |     |
+| `bypass_reason`           | string | None                                        | Explain why this test is bypassed                                  |     |
 
 ## Strictness level
 
@@ -358,3 +358,34 @@ acceptance_tests:
 
 We cache discovered catalogs by default for performance and reuse the same discovered catalog through all tests.
 You can disable this behavior by setting `cached_discovered_catalog: False` at the root of the configuration.
+
+## Additional Checks
+
+While not nesciacily related to SAT testing, Airbyte employs a number of additional checks which run on connector Pull Requests which check the following items:
+
+### Allowed Hosts
+
+GA and Beta connectors are required to provide an entry for Allowed Hosts in the Actor Definition for the connector. Actor Definitions are stored in either [source_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml) or [destination_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml) in the codebase. You can provide:
+
+A list of static hosts
+
+```yaml
+allowedHosts:
+  hosts:
+    - "*.hubspot.com"
+```
+
+A list of dynamic hosts which reference values from the connector's configuration
+
+```yaml
+allowedHosts:
+  hosts:
+    - "${subdomain}.vendor.com"
+```
+
+No network access allowed
+
+```yaml
+allowedHosts:
+  hosts: []
+```
