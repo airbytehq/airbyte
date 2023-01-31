@@ -144,6 +144,8 @@ class CatalogProcessor:
                     raise KeyError(f"Stream {stream_name} does not have any properties")
                 # If there are multiple oneOf options, just pick the first one - we don't really support oneOf to begin with
                 properties = options[0]["properties"]
+            else:
+                raise KeyError(f"Stream {stream_name} does not have any properties and no oneOf option with properties")
 
             from_table = dbt_macro.Source(schema_name, raw_table_name)
 
