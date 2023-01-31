@@ -11,7 +11,6 @@ import { match } from "ts-pattern";
 
 import { LoadingPage } from "components";
 import { Markdown } from "components/ui/Markdown";
-import { PageHeader } from "components/ui/PageHeader";
 import { StepsMenu } from "components/ui/StepsMenu";
 
 import { useConfig } from "config";
@@ -65,11 +64,11 @@ export const DocumentationPanel: React.FC = () => {
     setDocumentationPanelOpen(false);
   }, [setDocumentationPanelOpen, location.pathname]);
 
-  const [activeTab, setActiveTab] = useState("docs");
+  const [activeTab, setActiveTab] = useState("setupGuide");
   const tabs = [
     {
-      id: "docs",
-      name: <FormattedMessage id="sources.documentationPanel.tabs.docs" />,
+      id: "setupGuide",
+      name: <FormattedMessage id="sources.documentationPanel.tabs.setupGuide" />,
     },
     {
       id: "schema",
@@ -85,19 +84,14 @@ export const DocumentationPanel: React.FC = () => {
     <LoadingPage />
   ) : (
     <div className={styles.container}>
-      <PageHeader withLine title={<FormattedMessage id="connector.setupGuide" />} />
       {isSource && (
-        <StepsMenu
-          className={styles.stepsContainer}
-          lightMode
-          data={tabs}
-          onSelect={setActiveTab}
-          activeStep={activeTab}
-        />
+        <div className={styles.stepsContainer}>
+          <StepsMenu lightMode data={tabs} onSelect={setActiveTab} activeStep={activeTab} />
+        </div>
       )}
 
       {match(activeTab)
-        .with("docs", () => (
+        .with("setupGuide", () => (
           <Markdown
             className={styles.content}
             content={

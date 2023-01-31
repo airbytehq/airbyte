@@ -280,7 +280,7 @@
   "sources.emptySchema": "Schema is empty",
   "sources.noSources": "Source list is empty",
   "sources.sourceSettings": "Source Settings",
-  "sources.documentationPanel.tabs.docs": "Docs",
+  "sources.documentationPanel.tabs.setupGuide": "Setup Guide",
   "sources.documentationPanel.tabs.schema": "Schema",
   "sources.documentationPanel.tabs.erd": "ERD (Entities Relationship Diagram)",
   "sources.request.button.schema": "Request schema for this source",

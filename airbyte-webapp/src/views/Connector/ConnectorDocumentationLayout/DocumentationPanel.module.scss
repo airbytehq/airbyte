@@ -1,5 +1,5 @@
 @use "scss/colors";
-@use "scss/variables" as vars;
+@use "scss/variables";
 
 .container {
   min-height: 100vh;
@@ -12,7 +12,6 @@
 }
 
 .stepsContainer {
-  justify-content: flex-start;
-  margin-top: vars.$spacing-lg;
-  padding-left: vars.$spacing-lg;
+  padding-top: variables.$spacing-lg;
+  padding-left: variables.$spacing-lg;
 }
