@@ -1206,8 +1206,10 @@ public class ConfigRepository {
 
     final Map<UUID, AirbyteCatalog> result = new HashMap<>();
     for (final Record record : records) {
-      final AirbyteCatalog catalog = Jsons.deserialize(
-          record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
+      // We do not apply the on-the-fly migration here because the only caller is getOrInsertActorCatalog
+      // which is using this to figure out if the catalog has already been inserted. Migrating on the fly
+      // here will cause us to add a duplicate each time we check for existence of a catalog.
+      final AirbyteCatalog catalog = Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
       result.put(record.get(ACTOR_CATALOG.ID), catalog);
     }
     return result;

@@ -10,6 +10,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pendulum as pendulum
 import requests
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -32,6 +33,10 @@ class ZendeskTalkStream(HttpStream, ABC):
     def url_base(self) -> str:
         """API base url based on configured subdomain"""
         return f"https://{self._subdomain}.zendesk.com/api/v2/channels/voice/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """

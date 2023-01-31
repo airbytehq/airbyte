@@ -32,5 +32,5 @@ COPY source_tiktok_marketing ./source_tiktok_marketing
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=2.0.0
+LABEL io.airbyte.version=2.0.1
 LABEL io.airbyte.name=airbyte/source-tiktok-marketing

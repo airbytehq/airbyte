@@ -11,10 +11,10 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useQuery } from "hooks/useQuery";
 
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
-import ConnectorCell from "./components/ConnectorCell";
-import FrequencyCell from "./components/FrequencyCell";
-import LastSyncCell from "./components/LastSyncCell";
-import NameCell from "./components/NameCell";
+import { ConnectionStatusCell } from "./components/ConnectionStatusCell";
+import { ConnectorNameCell } from "./components/ConnectorNameCell";
+import { FrequencyCell } from "./components/FrequencyCell";
+import { LastSyncCell } from "./components/LastSyncCell";
 import { StatusCell } from "./components/StatusCell";
 import styles from "./ConnectionTable.module.scss";
 import { ConnectionTableDataItem, SortOrderEnum } from "./types";
@@ -89,12 +89,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         ),
         meta: {
           thClassName: styles.thName,
+          responsive: true,
         },
         cell: (props) => (
-          <NameCell
+          <ConnectionStatusCell
+            status={props.row.original.lastSyncStatus}
             value={props.cell.getValue()}
             enabled={props.row.original.enabled}
-            status={props.row.original.lastSyncStatus}
           />
         ),
       }),
@@ -110,12 +111,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
             />
           </SortableTableHeader>
         ),
+        meta: {
+          responsive: true,
+        },
         cell: (props) => (
-          <NameCell
+          <ConnectorNameCell
             value={props.cell.getValue()}
+            icon={props.row.original.entityIcon}
             enabled={props.row.original.enabled}
-            icon={entity === "connection"}
-            img={props.row.original.entityIcon}
           />
         ),
       }),
@@ -129,11 +132,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
             <FormattedMessage id={entity === "connection" ? "tables.sourceConnectionToName" : "tables.connector"} />
           </SortableTableHeader>
         ),
+        meta: {
+          responsive: true,
+        },
         cell: (props) => (
-          <ConnectorCell
+          <ConnectorNameCell
             value={props.cell.getValue()}
+            icon={props.row.original.connectorIcon}
             enabled={props.row.original.enabled}
-            img={props.row.original.connectorIcon}
           />
         ),
       }),

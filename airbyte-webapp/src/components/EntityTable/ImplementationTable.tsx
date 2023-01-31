@@ -11,9 +11,9 @@ import { useQuery } from "hooks/useQuery";
 
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
-import ConnectorCell from "./components/ConnectorCell";
-import LastSyncCell from "./components/LastSyncCell";
-import NameCell from "./components/NameCell";
+import { ConnectorNameCell } from "./components/ConnectorNameCell";
+import { EntityNameCell } from "./components/EntityNameCell";
+import { LastSyncCell } from "./components/LastSyncCell";
 import styles from "./ImplementationTable.module.scss";
 import { EntityTableDataItem, SortOrderEnum } from "./types";
 
@@ -83,7 +83,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         meta: {
           thClassName: styles.thEntityName,
         },
-        cell: (props) => <NameCell value={props.cell.getValue()} enabled={props.row.original.enabled} />,
+        cell: (props) => <EntityNameCell value={props.cell.getValue()} enabled={props.row.original.enabled} />,
       }),
       columnHelper.accessor("connectorName", {
         header: () => (
@@ -96,10 +96,10 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
           </SortableTableHeader>
         ),
         cell: (props) => (
-          <ConnectorCell
+          <ConnectorNameCell
             value={props.cell.getValue()}
+            icon={props.row.original.connectorIcon}
             enabled={props.row.original.enabled}
-            img={props.row.original.connectorIcon}
           />
         ),
       }),
