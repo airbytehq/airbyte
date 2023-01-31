@@ -23,16 +23,15 @@ class TwilioCartesianProductStreamSlicer(CartesianProductStreamSlicer):
         accounts_slicer, datetime_slicer = self.stream_slicers
         for account_slice in accounts_slicer.stream_slices(sync_mode, stream_state):
             account_id = account_slice["record"]["sid"]
-            path = account_slice["record"]["subresource_uris"][self._options["name"]]
             datetime_slicer._cursor = None
             for datetime_slice in datetime_slicer.stream_slices(sync_mode, stream_state.get(account_id)):
-                yield {"account_id": account_id, "path": path} | datetime_slice
+                yield account_slice | datetime_slice
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         datetime_slicer = self.stream_slicers[1]
         datetime_slicer.update_cursor(stream_slice, last_record)
         if last_record:
-            account_id = stream_slice["account_id"]
+            account_id = stream_slice["record"]["sid"]
             self._cursor.setdefault(account_id, {}).update(datetime_slicer.get_stream_state())
         else:
             self._cursor = stream_slice

@@ -149,7 +149,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        path: "{{ stream_slice.path }}"
+        path: "{{ stream_slice.record.subresource_uris[options.name] }}"
         request_options_provider:
           $ref: "*ref(definitions.boundary_request_parameters)"
       stream_slicer:
