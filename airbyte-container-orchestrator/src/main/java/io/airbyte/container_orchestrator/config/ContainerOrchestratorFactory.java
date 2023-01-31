@@ -17,6 +17,7 @@ import io.airbyte.container_orchestrator.orchestrator.JobOrchestrator;
 import io.airbyte.container_orchestrator.orchestrator.NoOpOrchestrator;
 import io.airbyte.container_orchestrator.orchestrator.NormalizationJobOrchestrator;
 import io.airbyte.container_orchestrator.orchestrator.ReplicationJobOrchestrator;
+import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
@@ -99,6 +100,7 @@ class ContainerOrchestratorFactory {
                                      final EnvConfigs envConfigs,
                                      final ProcessFactory processFactory,
                                      final FeatureFlags featureFlags,
+                                     final FeatureFlagClient featureFlagClient,
                                      final WorkerConfigs workerConfigs,
                                      final AirbyteMessageSerDeProvider serdeProvider,
                                      final AirbyteProtocolVersionedMigratorFactory migratorFactory,
@@ -106,7 +108,8 @@ class ContainerOrchestratorFactory {
                                      final SourceApi sourceApi,
                                      final DestinationApi destinationApi) {
     return switch (application) {
-      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(envConfigs, processFactory, featureFlags, serdeProvider,
+      case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(envConfigs, processFactory, featureFlags, featureFlagClient,
+          serdeProvider,
           migratorFactory, jobRunConfig, sourceApi, destinationApi);
       case NormalizationLauncherWorker.NORMALIZATION -> new NormalizationJobOrchestrator(envConfigs, processFactory, jobRunConfig);
       case DbtLauncherWorker.DBT -> new DbtJobOrchestrator(envConfigs, workerConfigs, processFactory, jobRunConfig);
