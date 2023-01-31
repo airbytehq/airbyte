@@ -1,4 +1,0 @@
-{ "stream": "sample-data", "emitted_at": "1", "data": { "ref": "337567897171787849", "ts": 1658188683585000, "data": { "a": 5, "nested": { "value": 15 } }, "ttl": null } }
-{ "stream": "sample-data", "emitted_at": "2", "data": { "ref": "337567897172836425", "ts": 1658271973660000, "data": { "a": 6, "nested": { "value": 20 }, "name": "hello world" }, "ttl": null } }
-{ "stream": "sample-data", "emitted_at": "3", "data": { "ref": "337567897172837449", "ts": 1658188683585000, "data": { "a": 7, "nested": { "value": 25 } }, "ttl": null } }
-{ "stream": "sample-data", "emitted_at": "4", "data": { "ref": "337567897173885001", "ts": 1658188683585000, "data": { "a": 8, "nested": { "value": 30 } }, "ttl": null } }

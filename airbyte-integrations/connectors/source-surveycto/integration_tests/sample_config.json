@@ -1,7 +1,0 @@
-{
-  "form_id": ["survey cto form_id"],
-  "server_name": "server name for the survey cto",
-  "username": "username for the surveycto",
-  "password": "password",
-  "start_date": "pulling the data from this date"
-}
