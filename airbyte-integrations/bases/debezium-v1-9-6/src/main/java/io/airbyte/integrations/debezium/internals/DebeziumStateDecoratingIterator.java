@@ -129,7 +129,8 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
 
         if (checkpointOffset != null
             && cdcStateHandler.isRecordBehindOffset(checkpointOffset, event)
-            && !cdcStateHandler.isSnapshotEvent(event)) {
+            && !cdcStateHandler.isSnapshotEvent(event)
+            && changeEventIterator.hasNext()) {
           sendCheckpointMessage = true;
         }
 
