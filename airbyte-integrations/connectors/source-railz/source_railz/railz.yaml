@@ -65,13 +65,6 @@ definitions:
     $options:
       name: "connections_slice"
       path: "/connections"
-    transformations:
-      - type: AddFields
-        fields:
-          - path: ["slice_key", "businessName"]
-            value: "{{ record.businessName }}"
-          - path: ["slice_key", "serviceName"]
-            value: "{{ record.serviceName }}"
 
 # Full Refresh Service
   base_service_stream:
@@ -82,21 +75,21 @@ definitions:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_parameters:
-            businessName: "{{ stream_slice.slice_key.businessName }}"
-            serviceName: "{{ stream_slice.slice_key.serviceName }}"
+            businessName: "{{ stream_slice.connection.businessName }}"
+            serviceName: "{{ stream_slice.connection.serviceName }}"
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "*ref(definitions.connections_slice_stream)"
-            parent_key: "slice_key"
-            stream_slice_field: "slice_key"
+            parent_key: "/"
+            stream_slice_field: "connection"
     transformations:
       - type: AddFields
         fields:
           - path: ["businessName"]
-            value: "{{ stream_slice.slice_key.businessName }}"
+            value: "{{ stream_slice.connection.businessName }}"
           - path: ["serviceName"]
-            value: "{{ stream_slice.slice_key.serviceName }}"
+            value: "{{ stream_slice.connection.serviceName }}"
 
   customers_stream:
     $ref: "*ref(definitions.base_service_stream)"
@@ -157,8 +150,8 @@ definitions:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_parameters:
-            businessName: "{{ stream_slice.slice_key.businessName }}"
-            serviceName: "{{ stream_slice.slice_key.serviceName }}"
+            businessName: "{{ stream_slice.connection.businessName }}"
+            serviceName: "{{ stream_slice.connection.serviceName }}"
             startDate: "{{ format_datetime(stream_slice.start_time, '%Y-%m-%d') }}"
             endDate: "{{ format_datetime(stream_slice.end_time, '%Y-%m-%d') }}"
       stream_slicer:
@@ -168,8 +161,8 @@ definitions:
           - type: SubstreamSlicer
             parent_stream_configs:
               - stream: "*ref(definitions.connections_slice_stream)"
-                parent_key: "slice_key"
-                stream_slice_field: "slice_key"
+                parent_key: "/"
+                stream_slice_field: "connection"
           - type: DatetimeStreamSlicer
             start_datetime:
               datetime: "{{ config['start_date'] }}"
