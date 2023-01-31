@@ -66,7 +66,9 @@ export const NextTable = <T,>({
             >
               {row.getVisibleCells().map((cell) => (
                 <td
-                  className={classNames(styles.td, cell.column.columnDef.meta?.tdClassName)}
+                  className={classNames(styles.td, cell.column.columnDef.meta?.tdClassName, {
+                    [styles.responsive]: cell.column.columnDef.meta?.responsive,
+                  })}
                   key={`table-cell-${row.id}-${cell.id}`}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}

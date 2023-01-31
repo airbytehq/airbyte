@@ -88,7 +88,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
           </SortableTableHeader>
         ),
         meta: {
-          thClassName: styles.thName,
+          thClassName: styles.width30,
           responsive: true,
         },
         cell: (props) => (
@@ -112,6 +112,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
           </SortableTableHeader>
         ),
         meta: {
+          thClassName: styles.width30,
           responsive: true,
         },
         cell: (props) => (
@@ -133,6 +134,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
           </SortableTableHeader>
         ),
         meta: {
+          thClassName: styles.width30,
           responsive: true,
         },
         cell: (props) => (
