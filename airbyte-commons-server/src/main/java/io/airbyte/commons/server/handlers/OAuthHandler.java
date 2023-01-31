@@ -8,6 +8,8 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DEFINITI
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DEFINITION_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.WORKSPACE_ID_KEY;
 
+import com.amazonaws.util.json.Jackson;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -16,6 +18,7 @@ import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
 import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
 import io.airbyte.api.model.generated.DestinationOauthConsentRequest;
 import io.airbyte.api.model.generated.OAuthConsentRead;
+import io.airbyte.api.model.generated.SecretId;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SourceOauthConsentRequest;
@@ -358,8 +361,13 @@ public class OAuthHandler {
     return Jsons.jsonNode(result);
   }
 
-  public SecretCoordinate writeOAuthSecret(final UUID workspaceId, final String payload) {
-    return secretsRepositoryWriter.storeOAuthSecret(workspaceId, payload);
+  public SecretId writeOAuthSecret(final UUID workspaceId, final Map<String, Object> payload) {
+    try {
+      final String payloadString = Jackson.getObjectMapper().writeValueAsString(payload);
+      final SecretCoordinate secretCoordinate = secretsRepositoryWriter.storeOAuthSecret(workspaceId, payloadString);
+      return new SecretId().secretId(secretCoordinate.getFullCoordinate());
+    } catch (final JsonProcessingException e) {
+      throw new RuntimeException("Json object could not be written to string - " + e);
+    }
   }
-
 }
