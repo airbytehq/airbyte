@@ -1,6 +1,6 @@
 version: 2
 sources:
-- name: test_normalization_bhhpj
+- name: test_normalization_spffv
   quoting:
     database: true
     schema: false
