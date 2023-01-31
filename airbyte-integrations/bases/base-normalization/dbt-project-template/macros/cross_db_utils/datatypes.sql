@@ -8,6 +8,14 @@
     string
 {% endmacro %}
 
+{%- macro type_binary() -%}
+  {{ adapter.dispatch('type_binary')() }}
+{%- endmacro -%}
+
+{%- macro default__type_binary() -%}
+    binary
+{%- endmacro -%}
+
 {%- macro redshift__type_json() -%}
   {%- if redshift_super_type() -%}
     super
@@ -70,6 +78,28 @@
 
 {%- macro tidb__type_string() -%}
     char(1000)
+{%- endmacro -%}
+
+{# binary data ------------------------------------------------- #}
+
+{%- macro postgres__type_binary() -%}
+    bytea
+{%- endmacro -%}
+
+{%- macro bigquery__type_binary() -%}
+    bytes
+{%- endmacro -%}
+
+{%- macro mssql__type_binary() -%}
+    VARBINARY(MAX)
+{%- endmacro -%}
+
+{%- macro snowflake__type_binary() -%}
+    VARBINARY
+{%- endmacro -%}
+
+{%- macro clickhouse__type_binary() -%}
+    VARBINARY
 {%- endmacro -%}
 
 {# float ------------------------------------------------- #}

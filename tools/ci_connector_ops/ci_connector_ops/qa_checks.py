@@ -9,7 +9,7 @@ from ci_connector_ops.utils import Connector
 
 
 def check_documentation_file_exists(connector: Connector) -> bool:
-    """Check if a markdown file with connector documentation is available 
+    """Check if a markdown file with connector documentation is available
     in docs/integrations/<connector-type>s/<connector-name>.md
 
     Args:
@@ -38,7 +38,7 @@ def check_documentation_follows_guidelines(connector: Connector) -> bool:
         follows_guidelines = False
 
     expected_sections = [
-        "## Prerequisites", 
+        "## Prerequisites",
         "## Setup guide",
         "## Supported sync modes",
         "## Supported streams",
@@ -112,7 +112,7 @@ def check_connector_has_no_critical_vulnerabilities(connector: Connector) -> boo
 QA_CHECKS = [
     check_documentation_file_exists,
     # Disabling the following check because it's likely to not pass on a lot of connectors.
-    # check_documentation_follows_guidelines, 
+    # check_documentation_follows_guidelines,
     check_changelog_entry_is_updated,
     check_connector_icon_is_available,
     check_connector_https_url_only,

@@ -287,6 +287,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.47  | 2023-01-30 | [\#21912](https://github.com/airbytehq/airbyte/pull/21912) | Catch "Create" Table and Stage Known Permissions and rethrow as ConfigExceptions                                                                      |
 | 0.4.46  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                            |
 | 0.4.45  | 2023-01-25 | [#21087](https://github.com/airbytehq/airbyte/pull/21764)  | Catch Known Permissions and rethrow as ConfigExceptions                                                                                             |
 | 0.4.44  | 2023-01-20 | [#21087](https://github.com/airbytehq/airbyte/pull/21087)  | Wrap Authentication Errors as Config Exceptions                                                                                                     |

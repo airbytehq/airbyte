@@ -131,7 +131,8 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 ## Changelog
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                     |
-| :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------- |
+|:---------| :--------- |:--------------------------------------------------------------------------------------------------------------| :---------------------------------------------------------- |
+| `0.1.19` | 2023-01-27 | [22007](https://github.com/airbytehq/airbyte/pull/22007)                                                      | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | `0.1.18` | 2022-10-27 | [18568](https://github.com/airbytehq/airbyte/pull/18568)                                                      | Improved config validation: custom_reports.dimension        |
 | `0.1.17` | 2022-10-08 | [17751](https://github.com/airbytehq/airbyte/pull/17751)                                                      | Improved config validation: start_date, end_date, site_urls |
 | `0.1.16` | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304)                                                      | Migrate to per-stream state.                                |
