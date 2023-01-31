@@ -209,7 +209,7 @@ class AirbyteMessageMigrationV1Test {
                 "$ref": "WellKnownTypes.json#/definitions/Date"
               },
               "example_binary": {
-                "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+                "$ref": "WellKnownTypes.json#/definitions/String"
               }
             }
           }

@@ -279,12 +279,6 @@ public class SchemaMigrationV1 {
             // If we don't recognize the format, just use a plain string
             default -> JsonSchemaReferenceTypes.STRING_REFERENCE;
           };
-        } else if (schemaNode.hasNonNull("contentEncoding")) {
-          if ("base64".equals(schemaNode.get("contentEncoding").asText())) {
-            yield JsonSchemaReferenceTypes.BINARY_DATA_REFERENCE;
-          } else {
-            yield JsonSchemaReferenceTypes.STRING_REFERENCE;
-          }
         } else {
           yield JsonSchemaReferenceTypes.STRING_REFERENCE;
         }
