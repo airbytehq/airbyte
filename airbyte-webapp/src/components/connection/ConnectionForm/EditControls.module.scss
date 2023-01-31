@@ -6,4 +6,10 @@
   &.cloud {
     margin-right: 68px;
   }
+
+  transition: opacity variables.$transition-out;
+
+  &.hidden {
+    opacity: 0;
+  }
 }

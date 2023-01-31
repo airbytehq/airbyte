@@ -18,6 +18,7 @@ interface EditControlProps {
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   enableControls?: boolean;
+  hidden?: boolean;
 }
 
 const EditControls: React.FC<EditControlProps> = ({
@@ -28,30 +29,23 @@ const EditControls: React.FC<EditControlProps> = ({
   successMessage,
   errorMessage,
   enableControls,
+  hidden,
 }) => {
+  const isButtonDisabled = hidden || isSubmitting || (!dirty && !enableControls);
   return (
     <FlexContainer
       justifyContent="flex-end"
       alignItems="center"
       direction="row"
       gap="lg"
-      className={classNames(styles.container, { [styles.cloud]: isCloudApp() })}
+      className={classNames(styles.container, { [styles.cloud]: isCloudApp(), [styles.hidden]: hidden })}
     >
       <ResponseMessage dirty={dirty} successMessage={successMessage} errorMessage={errorMessage} />
       <FlexContainer gap="md">
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={isSubmitting || (!dirty && !enableControls)}
-          onClick={resetForm}
-        >
+        <Button type="button" variant="secondary" disabled={isButtonDisabled} onClick={resetForm}>
           <FormattedMessage id="form.cancel" />
         </Button>
-        <Button
-          type="submit"
-          isLoading={isSubmitting}
-          disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
-        >
+        <Button type="submit" isLoading={isSubmitting} disabled={isButtonDisabled || submitDisabled}>
           <FormattedMessage id="form.saveChanges" />
         </Button>
       </FlexContainer>

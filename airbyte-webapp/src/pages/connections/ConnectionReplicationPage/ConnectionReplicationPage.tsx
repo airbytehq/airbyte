@@ -188,22 +188,21 @@ export const ConnectionReplicationPage: React.FC = () => {
                   isSubmitting={isSubmitting}
                   dirty={dirty || schemaHasBeenRefreshed}
                 />
-                {status.editControlsVisible && (
-                  <StickyEditControlsContainer>
-                    <EditControls
-                      isSubmitting={isSubmitting}
-                      submitDisabled={!isValid}
-                      dirty={dirty}
-                      resetForm={async () => {
-                        resetForm();
-                        discardRefreshedSchema();
-                      }}
-                      successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
-                      errorMessage={getErrorMessage(isValid, dirty)}
-                      enableControls={schemaHasBeenRefreshed || dirty}
-                    />
-                  </StickyEditControlsContainer>
-                )}
+                <StickyEditControlsContainer>
+                  <EditControls
+                    hidden={!status.editControlsVisible}
+                    isSubmitting={isSubmitting}
+                    submitDisabled={!isValid}
+                    dirty={dirty}
+                    resetForm={async () => {
+                      resetForm();
+                      discardRefreshedSchema();
+                    }}
+                    successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
+                    errorMessage={getErrorMessage(isValid, dirty)}
+                    enableControls={schemaHasBeenRefreshed || dirty}
+                  />
+                </StickyEditControlsContainer>
               </Form>
             </SchemaChangeBackdrop>
           )}
