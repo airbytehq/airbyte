@@ -4,7 +4,10 @@
 
 package io.airbyte.server.apis;
 
-import io.airbyte.api.model.generated.*;
+import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.DestinationOauthConsentRequest;
+import io.airbyte.api.model.generated.OAuthConsentRead;
+import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.validation.json.JsonValidationException;
@@ -14,10 +17,11 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import java.io.IOException;
-import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.util.HashMap;
 
 @MicronautTest
 @Requires(property = "mockito.test.enabled",
@@ -56,7 +60,7 @@ class DestinationOauthApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testDeleteDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testDeleteDestination() throws JsonValidationException, IOException {
     Mockito.doNothing()
         .when(oAuthHandler).setDestinationInstancewideOauthParams(Mockito.any());
 

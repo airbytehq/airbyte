@@ -14,9 +14,10 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.io.IOException;
 
 @MicronautTest
 @Requires(property = "mockito.test.enabled",
@@ -27,7 +28,7 @@ import org.mockito.Mockito;
 class OperationApiTest extends BaseControllerTest {
 
   @Test
-  void testCheckOperation() throws IOException {
+  void testCheckOperation() {
     Mockito.when(operationsHandler.checkOperation(Mockito.any()))
         .thenReturn(new CheckOperationRead());
     final String path = "/api/v1/operations/check";
@@ -47,7 +48,7 @@ class OperationApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testDeleteOperation() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testDeleteOperation() throws IOException {
     Mockito.doNothing()
         .when(operationsHandler).deleteOperation(Mockito.any());
 

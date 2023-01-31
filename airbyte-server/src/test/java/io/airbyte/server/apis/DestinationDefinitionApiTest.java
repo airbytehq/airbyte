@@ -14,9 +14,10 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.io.IOException;
 
 @MicronautTest
 @Requires(property = "mockito.test.enabled",
@@ -27,7 +28,7 @@ import org.mockito.Mockito;
 class DestinationDefinitionApiTest extends BaseControllerTest {
 
   @Test
-  void testCheckConnectionToDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testCheckConnectionToDestination() throws IOException {
     Mockito.when(destinationDefinitionsHandler.createCustomDestinationDefinition(Mockito.any()))
         .thenReturn(new DestinationDefinitionRead());
     final String path = "/api/v1/destination_definitions/create_custom";
@@ -93,7 +94,7 @@ class DestinationDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testListDestinationDefinitions() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testListDestinationDefinitions() throws JsonValidationException, IOException {
     Mockito.when(destinationDefinitionsHandler.listDestinationDefinitions())
         .thenReturn(new DestinationDefinitionReadList());
     final String path = "/api/v1/destination_definitions/list";
@@ -103,7 +104,7 @@ class DestinationDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testListDestinationDefinitionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testListDestinationDefinitionsForWorkspace() throws IOException {
     Mockito.when(destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(Mockito.any()))
         .thenReturn(new DestinationDefinitionReadList());
     final String path = "/api/v1/destination_definitions/list_for_workspace";
@@ -113,7 +114,7 @@ class DestinationDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testListLatestDestinationDefinitions() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testListLatestDestinationDefinitions() {
     Mockito.when(destinationDefinitionsHandler.listLatestDestinationDefinitions())
         .thenReturn(new DestinationDefinitionReadList());
     final String path = "/api/v1/destination_definitions/list_latest";
@@ -123,7 +124,7 @@ class DestinationDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testListPrivateDestinationDefinitions() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testListPrivateDestinationDefinitions() throws IOException {
     Mockito.when(destinationDefinitionsHandler.listPrivateDestinationDefinitions(Mockito.any()))
         .thenReturn(new PrivateDestinationDefinitionReadList());
     final String path = "/api/v1/destination_definitions/list_private";
@@ -133,7 +134,7 @@ class DestinationDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testRevokeDestinationDefinitionFromWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testRevokeDestinationDefinitionFromWorkspace() throws IOException {
     Mockito.doNothing()
         .when(destinationDefinitionsHandler).revokeDestinationDefinitionFromWorkspace(Mockito.any());
     final String path = "/api/v1/destination_definitions/revoke_definition";

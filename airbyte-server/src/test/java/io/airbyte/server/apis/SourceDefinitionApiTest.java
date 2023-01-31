@@ -14,9 +14,10 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.io.IOException;
 
 @MicronautTest
 @Requires(property = "mockito.test.enabled",
@@ -27,7 +28,7 @@ import org.mockito.Mockito;
 class SourceDefinitionApiTest extends BaseControllerTest {
 
   @Test
-  void testCreateCustomSourceDefinition() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testCreateCustomSourceDefinition() throws IOException {
     Mockito.when(sourceDefinitionsHandler.createCustomSourceDefinition(Mockito.any()))
         .thenReturn(new SourceDefinitionRead());
     final String path = "/api/v1/source_definitions/create_custom";
@@ -94,7 +95,7 @@ class SourceDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testListLatestSourceDefinitions() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testListLatestSourceDefinitions() {
     Mockito.when(sourceDefinitionsHandler.listLatestSourceDefinitions())
         .thenReturn(new SourceDefinitionReadList());
     final String path = "/api/v1/source_definitions/list_latest";
@@ -104,7 +105,7 @@ class SourceDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testListPrivateSourceDefinitions() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testListPrivateSourceDefinitions() throws IOException {
     Mockito.when(sourceDefinitionsHandler.listPrivateSourceDefinitions(Mockito.any()))
         .thenReturn(new PrivateSourceDefinitionReadList());
     final String path = "/api/v1/source_definitions/list_private";
@@ -114,7 +115,7 @@ class SourceDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testListSourceDefinitions() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testListSourceDefinitions() throws JsonValidationException, IOException {
     Mockito.when(sourceDefinitionsHandler.listSourceDefinitions())
         .thenReturn(new SourceDefinitionReadList());
     final String path = "/api/v1/source_definitions/list";
@@ -124,7 +125,7 @@ class SourceDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testListSourceDefinitionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testListSourceDefinitionsForWorkspace() throws IOException {
     Mockito.when(sourceDefinitionsHandler.listSourceDefinitionsForWorkspace(Mockito.any()))
         .thenReturn(new SourceDefinitionReadList());
     final String path = "/api/v1/source_definitions/list_for_workspace";
@@ -134,7 +135,7 @@ class SourceDefinitionApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testRevokeSourceDefinitionFromWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testRevokeSourceDefinitionFromWorkspace() throws IOException {
     Mockito.doNothing()
         .when(sourceDefinitionsHandler).revokeSourceDefinitionFromWorkspace(Mockito.any());
 

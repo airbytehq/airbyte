@@ -13,7 +13,6 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -26,7 +25,7 @@ import org.mockito.Mockito;
 class NotificationsApiTest extends BaseControllerTest {
 
   @Test
-  void testTryNotificationConfig() throws IOException {
+  void testTryNotificationConfig() {
     Mockito.when(workspacesHandler.tryNotification(Mockito.any()))
         .thenReturn(new NotificationRead());
     final String path = "/api/v1/notifications/try";

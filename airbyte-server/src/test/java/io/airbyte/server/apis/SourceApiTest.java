@@ -14,9 +14,10 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.io.IOException;
 
 @MicronautTest
 @Requires(property = "mockito.test.enabled",
@@ -126,7 +127,7 @@ class SourceApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testGetMostRecentSourceActorCatalog() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testGetMostRecentSourceActorCatalog() throws IOException {
     Mockito.when(sourceHandler.getMostRecentSourceActorCatalogWithUpdatedAt(Mockito.any()))
         .thenReturn(new ActorCatalogWithUpdatedAt());
     final String path = "/api/v1/sources/most_recent_source_actor_catalog";
@@ -178,7 +179,7 @@ class SourceApiTest extends BaseControllerTest {
   }
 
   @Test
-  void testWriteDiscoverCatalogResult() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testWriteDiscoverCatalogResult() throws JsonValidationException, IOException {
     Mockito.when(sourceHandler.writeDiscoverCatalogResult(Mockito.any()))
         .thenReturn(new DiscoverCatalogResult());
     final String path = "/api/v1/sources/write_discover_catalog_result";
