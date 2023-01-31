@@ -36,11 +36,11 @@ jobs:
           github-token: ${{ env.PAT }}
 
   generate-tags:
-    name: "Generate Dev and Master Tags"
+    name: "Generate Dev and Main Tags"
     runs-on: ubuntu-latest
     outputs:
       dev_tag: ${{ steps.set-outputs.outputs.dev_tag }}
-      master_tag: ${{ steps.set-outputs.outputs.master_tag }}
+      main_tag: ${{ steps.set-outputs.outputs.main_tag }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -58,9 +58,9 @@ jobs:
           # AirbyteVersion.java allows versions that have a prefix of 'dev'
           echo "dev_tag=dev-${commit_sha}" >> $GITHUB_OUTPUT
 
-          # If this commit is on the master branch, also set master_tag
-          if $(git merge-base --is-ancestor "${commit_sha}" master); then
-            echo "master_tag=${commit_sha}" >> $GITHUB_OUTPUT
+          # If this commit is on the main branch, also set main_tag
+          if $(git merge-base --is-ancestor "${commit_sha}" main); then
+            echo "main_tag=${commit_sha}" >> $GITHUB_OUTPUT
           fi
           cat $GITHUB_OUTPUT || true # for the sake of investigation
 
@@ -96,12 +96,12 @@ jobs:
         run: VERSION=${{ needs.generate-tags.outputs.dev_tag }} SUB_BUILD=PLATFORM ./gradlew publish
         shell: bash
 
-      - name: Publish Master Jars
-        if: needs.generate-tags.outputs.master_tag != ''
+      - name: Publish main Jars
+        if: needs.generate-tags.outputs.main_tag != ''
         env:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
-        run: VERSION=${{ needs.generate-tags.outputs.master_tag }} SUB_BUILD=PLATFORM ./gradlew publish
+        run: VERSION=${{ needs.generate-tags.outputs.main_tag }} SUB_BUILD=PLATFORM ./gradlew publish
         shell: bash
 
   docker-push:
@@ -118,7 +118,7 @@ jobs:
       - oss-branch-build
     runs-on: ${{ needs.start-runner.outputs.label }}
     steps:
-      - name: Login to Docker (on Master)
+      - name: Login to Docker (on main)
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -149,7 +149,7 @@ jobs:
       - name: Push Docker Images
         env:
           VERSION: ${{ needs.generate-tags.outputs.dev_tag }}
-          ALT_TAG: ${{ needs.generate-tags.outputs.master_tag }}
+          ALT_TAG: ${{ needs.generate-tags.outputs.main_tag }}
         run: GIT_REVISION=$GIT_REVISION docker buildx bake -f docker-compose-cloud.buildx.yaml --push
         shell: bash
 
