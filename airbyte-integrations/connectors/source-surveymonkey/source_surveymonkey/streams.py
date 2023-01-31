@@ -11,6 +11,7 @@ import pendulum
 import requests
 import vcr
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 cache_file = tempfile.NamedTemporaryFile()
@@ -26,6 +27,10 @@ class SurveymonkeyStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self._start_date = start_date
         self._survey_ids = survey_ids
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()

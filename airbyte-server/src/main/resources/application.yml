@@ -81,7 +81,7 @@ airbyte:
     root: ${WORKSPACE_ROOT}
   protocol:
     min-version: ${AIRBYTE_PROTOCOL_VERSION_MIN:0.0.0}
-    max-version: ${AIRBYTE_PROTOCOL_VERSION_MAX:0.3.0}
+    max-version: ${AIRBYTE_PROTOCOL_VERSION_MAX:1.0.0}
 
 temporal:
   cloud:

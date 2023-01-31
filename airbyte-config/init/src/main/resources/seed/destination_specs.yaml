@@ -6109,7 +6109,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.46"
+- dockerImage: "airbyte/destination-snowflake:0.4.47"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
