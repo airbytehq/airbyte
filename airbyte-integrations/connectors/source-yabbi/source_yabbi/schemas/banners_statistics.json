@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "date_from": {
+      "type": ["null", "string"]
+    },
+    "date_to": {
+      "type": ["null", "string"]
+    },
+    "budget": {
+      "type": ["null", "number"]
+    },
+    "win": {
+      "type": ["null", "integer"]
+    },
+    "click": {
+      "type": ["null", "integer"]
+    },
+    "clickPlus": {
+      "type": ["null", "integer"]
+    },
+    "clickExtra": {
+      "type": ["null", "integer"]
+    },
+    "clickReached": {
+      "type": ["null", "integer"]
+    },
+    "show": {
+      "type": ["null", "integer"]
+    },
+    "load": {
+      "type": ["null", "integer"]
+    },
+    "bid": {
+      "type": ["null", "integer"]
+    },
+    "auction": {
+      "type": ["null", "integer"]
+    },
+    "clickWhisla": {
+      "type": ["null", "integer"]
+    },
+    "dayBudget": {
+      "type": ["null", "number"]
+    },
+    "dayClick": {
+      "type": ["null", "integer"]
+    },
+    "dayClickPlus": {
+      "type": ["null", "integer"]
+    },
+    "bot": {
+      "type": ["null", "string"]
+    },
+    "start": {
+      "type": ["null", "string"]
+    },
+    "firstQuartile": {
+      "type": ["null", "string"]
+    },
+    "midpoint": {
+      "type": ["null", "integer"]
+    },
+    "thirdQuartile": {
+      "type": ["null", "integer"]
+    },
+    "complete": {
+      "type": ["null", "integer"]
+    },
+    "mute": {
+      "type": ["null", "string"]
+    },
+    "unmute": {
+      "type": ["null", "string"]
+    },
+    "close": {
+      "type": ["null", "string"]
+    },
+    "appInstall": {
+      "type": ["null", "string"]
+    },
+    "view": {
+      "type": ["null", "integer"]
+    },
+    "conversion": {
+      "type": ["null", "string"]
+    }
+  }
+}

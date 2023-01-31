@@ -1,6 +1,5 @@
 {
   "type": "object",
-  "additionalProperties": true,
   "properties": {
     "assigned_location_id": {
       "type": ["null", "integer"]

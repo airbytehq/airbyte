@@ -1,0 +1,508 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "date_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gclid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ua_client_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ym_client_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "yclid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ef_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ymclid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "engine": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cm_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "referrer_domain": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "referrer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "search_engine": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "search_query": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "entrance_page": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "duration": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "site_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "site_domain_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "camapign_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "campaign_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "channel": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_device": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "visitor_country": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_city": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_ip_address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_browser_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_browser_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_os_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_os_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_provider": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_screen": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_language": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "utm_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "utm_medium": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "utm_term": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "utm_content": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "utm_campaign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openstat_ad": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openstat_campaign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openstat_service": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openstat_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hits_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "integrated_campaign_data": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "adv_system": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ext_campaign_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ext_campaign_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "keyword_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "keyword": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "banner_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "banner_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "group_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "auditory_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "auditory_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "placement_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "yandex_placement_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "campaign_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "device_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "position_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "yandex_region_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "yandex_region_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "yandex_region_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "visitor_custom_properties": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "segment_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "segment_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "hist": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "hit_time": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hit_duration": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hit_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "segments": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "segment_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "segment_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "communications": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "communication_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "communication_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "communication_date_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

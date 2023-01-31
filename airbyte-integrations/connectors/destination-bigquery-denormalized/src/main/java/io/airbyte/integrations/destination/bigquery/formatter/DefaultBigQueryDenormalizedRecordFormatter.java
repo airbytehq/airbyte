@@ -4,19 +4,16 @@
 
 package io.airbyte.integrations.destination.bigquery.formatter;
 
-import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.TYPE_FIELD;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Builder;
 import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.FieldList;
-import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
@@ -29,9 +26,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaFormat;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
-import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.ArrayFormatter;
-import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.DefaultArrayFormatter;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,7 +35,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,39 +42,85 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultBigQueryDenormalizedRecordFormatter.class);
 
-  public static final String PROPERTIES_FIELD = "properties";
+  public static final String NESTED_ARRAY_FIELD = "big_query_array";
+  protected static final String PROPERTIES_FIELD = "properties";
+  private static final String TYPE_FIELD = "type";
   private static final String ALL_OF_FIELD = "allOf";
   private static final String ANY_OF_FIELD = "anyOf";
+  private static final String ARRAY_ITEMS_FIELD = "items";
   private static final String FORMAT_FIELD = "format";
   private static final String AIRBYTE_TYPE = "airbyte_type";
   private static final String REF_DEFINITION_KEY = "$ref";
   private static final ObjectMapper mapper = new ObjectMapper();
 
-  protected ArrayFormatter arrayFormatter;
-
   public DefaultBigQueryDenormalizedRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
   }
 
-  private ArrayFormatter getArrayFormatter() {
-    if (arrayFormatter == null) {
-      arrayFormatter = new DefaultArrayFormatter();
-    }
-    return arrayFormatter;
-  }
-
-  public void setArrayFormatter(final ArrayFormatter arrayFormatter) {
-    this.arrayFormatter = arrayFormatter;
-    this.jsonSchema = formatJsonSchema(this.originalJsonSchema.deepCopy());
-    this.bigQuerySchema = getBigQuerySchema(jsonSchema);
-  }
-
   @Override
   protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
-    final var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #5912 is reopened (PR #11166) formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
-    getArrayFormatter().populateEmptyArrays(modifiedJsonSchema);
-    getArrayFormatter().surroundArraysByObjects(modifiedJsonSchema);
+    var modifiedJsonSchema = formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
+    populateEmptyArrays(modifiedJsonSchema);
+    surroundArraysByObjects(modifiedJsonSchema);
     return modifiedJsonSchema;
+  }
+
+  private JsonNode formatAllOfAndAnyOfFields(final StandardNameTransformer namingResolver, final JsonNode jsonSchema) {
+    LOGGER.info("getSchemaFields : " + jsonSchema + " namingResolver " + namingResolver);
+    final JsonNode modifiedSchema = jsonSchema.deepCopy();
+    Preconditions.checkArgument(modifiedSchema.isObject() && modifiedSchema.has(PROPERTIES_FIELD));
+    ObjectNode properties = (ObjectNode) modifiedSchema.get(PROPERTIES_FIELD);
+    Jsons.keys(properties).stream()
+        .peek(addToRefList(properties))
+        .forEach(key -> properties.replace(key, getFileDefinition(properties.get(key))));
+    return modifiedSchema;
+  }
+
+  private List<JsonNode> findArrays(final JsonNode node) {
+    if (node != null) {
+      return node.findParents(TYPE_FIELD).stream()
+          .filter(
+              jsonNode -> {
+                final JsonNode type = jsonNode.get(TYPE_FIELD);
+                if (type.isArray()) {
+                  final ArrayNode typeNode = (ArrayNode) type;
+                  for (final JsonNode arrayTypeNode : typeNode) {
+                    if (arrayTypeNode.isTextual() && arrayTypeNode.textValue().equals("array")) {
+                      return true;
+                    }
+                  }
+                } else if (type.isTextual()) {
+                  return jsonNode.asText().equals("array");
+                }
+                return false;
+              })
+          .collect(Collectors.toList());
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
+  private void populateEmptyArrays(final JsonNode node) {
+    findArrays(node).forEach(jsonNode -> {
+      if (!jsonNode.has(ARRAY_ITEMS_FIELD)) {
+        final ObjectNode nodeToChange = (ObjectNode) jsonNode;
+        nodeToChange.putObject(ARRAY_ITEMS_FIELD).putArray(TYPE_FIELD).add("string");
+      }
+    });
+  }
+
+  private void surroundArraysByObjects(final JsonNode node) {
+    findArrays(node).forEach(
+        jsonNode -> {
+          final JsonNode arrayNode = jsonNode.deepCopy();
+
+          final ObjectNode newNode = (ObjectNode) jsonNode;
+          newNode.removeAll();
+          newNode.putArray(TYPE_FIELD).add("object");
+          newNode.putObject(PROPERTIES_FIELD).set(NESTED_ARRAY_FIELD, arrayNode);
+
+          surroundArraysByObjects(arrayNode.get(ARRAY_ITEMS_FIELD));
+        });
   }
 
   @Override
@@ -113,32 +153,25 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
   }
 
-  private JsonNode formatData(final FieldList fields, final JsonNode root) {
+  protected JsonNode formatData(final FieldList fields, final JsonNode root) {
     // handles empty objects and arrays
     if (fields == null) {
       return root;
     }
-    final JsonNode formattedData;
+    formatDateTimeFields(fields, root);
     if (root.isObject()) {
-      formattedData = getObjectNode(fields, root);
+      return getObjectNode(fields, root);
     } else if (root.isArray()) {
-      formattedData = getArrayNode(fields, root);
+      return getArrayNode(fields, root);
     } else {
-      formattedData = root;
+      return root;
     }
-    formatDateTimeFields(fields, formattedData);
-
-    return formattedData;
   }
 
   protected void formatDateTimeFields(final FieldList fields, final JsonNode root) {
     final List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
     if (!dateTimeFields.isEmpty() && !root.isNull()) {
-      if (root.isArray()) {
-        root.forEach(jsonNode -> BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, jsonNode));
-      } else {
-        BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, root);
-      }
+      BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
     }
   }
 
@@ -152,26 +185,15 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     } else {
       subFields = arrayField.getSubFields();
     }
-    final List<JsonNode> arrayItems = MoreIterators.toList(root.elements()).stream()
+    final JsonNode items = Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
         .map(p -> formatData(subFields, p))
-        .toList();
+        .collect(Collectors.toList()));
 
-    return getArrayFormatter().formatArrayItems(arrayItems);
+    return Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, items));
   }
 
   private JsonNode getObjectNode(final FieldList fields, final JsonNode root) {
     final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
-
-    fields.stream()
-        .filter(f -> f.getType().equals(LegacySQLTypeName.STRING))
-        .filter(field -> root.get(field.getName()) != null)
-        .filter(f -> root.get(f.getName()).isObject())
-        .forEach(f -> {
-          final String value = root.get(f.getName()).toString();
-          ((ObjectNode) root).remove(f.getName());
-          ((ObjectNode) root).put(f.getName(), new TextNode(value));
-        });
-
     return Jsons.jsonNode(Jsons.keys(root).stream()
         .filter(key -> {
           final boolean validKey = fieldNames.contains(namingResolver.getIdentifier(key));
@@ -246,15 +268,15 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   }
 
   private static JsonNode allOfAndAnyOfFieldProcessing(final String fieldName, final JsonNode fieldDefinition) {
-    final ObjectReader reader = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
-    final List<JsonNode> list;
+    ObjectReader reader = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
+    List<JsonNode> list;
     try {
       list = reader.readValue(fieldDefinition.get(fieldName));
-    } catch (final IOException e) {
+    } catch (IOException e) {
       throw new IllegalStateException(
           String.format("Failed to read and process the following field - %s", fieldDefinition));
     }
-    final ObjectNode objectNode = mapper.createObjectNode();
+    ObjectNode objectNode = mapper.createObjectNode();
     list.forEach(field -> {
       objectNode.set("big_query_" + field.get("type").asText(), field);
     });
@@ -269,9 +291,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   private static Builder getField(final StandardNameTransformer namingResolver, final String key, final JsonNode fieldDefinition) {
     final String fieldName = namingResolver.getIdentifier(key);
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
-    final JsonNode updatedFileDefinition = getFileDefinition(fieldDefinition);
-    final JsonNode type = updatedFileDefinition.get(TYPE_FIELD);
-    final JsonNode airbyteType = updatedFileDefinition.get(AIRBYTE_TYPE);
+    JsonNode updatedFileDefinition = getFileDefinition(fieldDefinition);
+    JsonNode type = updatedFileDefinition.get(TYPE_FIELD);
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, type);
     for (int i = 0; i < fieldTypes.size(); i++) {
       final JsonSchemaType fieldType = fieldTypes.get(i);
@@ -285,17 +306,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
           case NULL -> {
             builder.setType(StandardSQLTypeName.STRING);
           }
-          case STRING, INTEGER, BOOLEAN -> {
+          case STRING, NUMBER, INTEGER, BOOLEAN -> {
             builder.setType(primaryType.getBigQueryType());
-          }
-          case NUMBER -> {
-            if (airbyteType != null
-                && StringUtils.equalsAnyIgnoreCase(airbyteType.asText(),
-                "big_integer", "integer")) {
-              builder.setType(StandardSQLTypeName.INT64);
-            } else {
-              builder.setType(primaryType.getBigQueryType());
-            }
           }
           case ARRAY -> {
             final JsonNode items;
@@ -336,6 +348,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
     // If a specific format is defined, use their specific type instead of the JSON's one
     final JsonNode fieldFormat = updatedFileDefinition.get(FORMAT_FIELD);
+    final JsonNode airbyteType = updatedFileDefinition.get(AIRBYTE_TYPE);
     if (fieldFormat != null) {
       final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText(),
           (airbyteType != null ? airbyteType.asText() : null));

@@ -58,6 +58,6 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "List of security schemes."
 }

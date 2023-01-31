@@ -4,11 +4,9 @@
       "stream": {
         "name": "admins",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
       "destination_sync_mode": "append"
     },
     {
@@ -17,23 +15,19 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "primary_key": [["id"]],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "company_attributes",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["name"]]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "primary_key": [["name"]],
       "destination_sync_mode": "append"
     },
     {
@@ -42,12 +36,10 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "primary_key": [["id"]],
       "destination_sync_mode": "append"
     },
     {
@@ -56,11 +48,9 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
+      "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "append"
     },
@@ -70,23 +60,19 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "contact_attributes",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["name"]]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "primary_key": [["name"]],
       "destination_sync_mode": "append"
     },
     {
@@ -95,13 +81,11 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -109,34 +93,28 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "tags",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["name"]]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "primary_key": [["name"]],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "teams",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["name"]]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "primary_key": [["name"]],
       "destination_sync_mode": "append"
     }
   ]

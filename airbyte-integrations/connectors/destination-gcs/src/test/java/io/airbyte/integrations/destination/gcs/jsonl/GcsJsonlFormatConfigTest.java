@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.gcs.jsonl;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
-import static io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import alex.mojaki.s3upload.StreamTransferManager;
@@ -13,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.util.ConfigTestUtils;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -26,7 +26,8 @@ public class GcsJsonlFormatConfigTest {
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
     final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
+        + "  \"format_type\": \"JSONL\",\n"
+        + "  \"part_size_mb\": 6\n"
         + "}"));
 
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
@@ -35,14 +36,16 @@ public class GcsJsonlFormatConfigTest {
 
     final S3FormatConfig formatConfig = gcsDestinationConfig.getFormatConfig();
     assertEquals("JSONL", formatConfig.getFormat().name());
+    assertEquals(6, formatConfig.getPartSize());
 
     // Assert that is set properly in config
     final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
         .create(gcsDestinationConfig.getBucketName(), "objectKey", null)
+        .setPartSize(gcsDestinationConfig.getFormatConfig().getPartSize())
         .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
+    assertEquals(MB * 6, partSizeBytes);
   }
 
   @Test
@@ -58,10 +61,11 @@ public class GcsJsonlFormatConfigTest {
 
     final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
         .create(gcsDestinationConfig.getBucketName(), "objectKey", null)
+        .setPartSize(gcsDestinationConfig.getFormatConfig().getPartSize())
         .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
+    assertEquals(MB * S3DestinationConstants.DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
 }

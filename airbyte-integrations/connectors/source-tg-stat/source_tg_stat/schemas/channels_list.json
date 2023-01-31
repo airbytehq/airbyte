@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": ["null", "string"] },
+    "link": { "type": ["null", "string"] },
+    "title": { "type": ["null", "string"] },
+    "about": { "type": ["null", "string"] },
+    "category": { "type": ["null", "string"] },
+    "country": { "type": ["null", "string"] },
+    "language": { "type": ["null", "string"] },
+    "image100": { "type": ["null", "string"] },
+    "image640": { "type": ["null", "string"] },
+    "participants_count": { "type": ["null", "integer"] },
+    "tgstat_restrictions": {
+      "type": ["null", "object"],
+      "properties": {
+        "red_label": { "type": ["null", "boolean"] },
+        "black_label": { "type": ["null", "boolean"] }
+      }
+    }
+  }
+}

@@ -64,7 +64,7 @@
       "type": "integer"
     },
     "count": {
-      "type": ["integer", "null"]
+      "type": "integer"
     },
     "is_static": {
       "type": "boolean"

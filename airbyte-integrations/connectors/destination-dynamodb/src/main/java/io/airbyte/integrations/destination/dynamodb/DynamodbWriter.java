@@ -13,9 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
@@ -69,7 +69,7 @@ public class DynamodbWriter {
       final var table = createTableIfNotExists(amazonDynamodb, outputTableName);
       table.waitForActive();
     } catch (final Exception e) {
-      LOGGER.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage());
     }
 
     this.tableWriteItems = new TableWriteItems(outputTableName);
@@ -134,7 +134,7 @@ public class DynamodbWriter {
           LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
         }
       } catch (final Exception e) {
-        LOGGER.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage());
       }
     }
   }
@@ -156,7 +156,7 @@ public class DynamodbWriter {
           }
         }
       } catch (final Exception e) {
-        LOGGER.error(e.getMessage(), e);
+        LOGGER.error(e.getMessage());
       }
       LOGGER.info("Data writing completed for DynamoDB.");
     }

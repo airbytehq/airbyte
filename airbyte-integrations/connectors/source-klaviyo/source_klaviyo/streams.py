@@ -8,9 +8,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from source_klaviyo.schemas import Campaign, Event, Flow, GlobalExclusion, Metric, PersonList
 
 
 class KlaviyoStream(HttpStream, ABC):
@@ -20,26 +19,14 @@ class KlaviyoStream(HttpStream, ABC):
     primary_key = "id"
     page_size = 100
 
-    transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
-
     def __init__(self, api_key: str, **kwargs):
         super().__init__(**kwargs)
         self._api_key = api_key
-        transform_function = self.get_custom_transform()
-        self.transformer.registerCustomTransform(transform_function)
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
-    def get_custom_transform(self):
-        def custom_transform_date_rfc3339(original_value, field_schema):
-            if original_value and "format" in field_schema and field_schema["format"] == "date-time":
-                transformed_value = pendulum.parse(original_value).to_rfc3339_string()
-                return transformed_value
-            return original_value
-
-        return custom_transform_date_rfc3339
+    @abstractmethod
+    def schema(self):
+        """Pydantic model that represents stream schema"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -72,6 +59,10 @@ class KlaviyoStream(HttpStream, ABC):
         response_json = response.json()
         for record in response_json.get("data", []):  # API returns records in a container array "data"
             yield record
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Use Pydantic schema"""
+        return self.schema.schema()
 
 
 class IncrementalKlaviyoStream(KlaviyoStream, ABC):
@@ -212,6 +203,8 @@ class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
 class Campaigns(KlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get-campaigns"""
 
+    schema = Campaign
+
     def path(self, **kwargs) -> str:
         return "campaigns"
 
@@ -219,7 +212,7 @@ class Campaigns(KlaviyoStream):
 class Lists(KlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get-lists"""
 
-    max_retries = 10
+    schema = PersonList
 
     def path(self, **kwargs) -> str:
         return "lists"
@@ -228,6 +221,7 @@ class Lists(KlaviyoStream):
 class GlobalExclusions(ReverseIncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get-global-exclusions"""
 
+    schema = GlobalExclusion
     page_size = 5000  # the maximum value allowed by API
     cursor_field = "timestamp"
     primary_key = "email"
@@ -239,6 +233,8 @@ class GlobalExclusions(ReverseIncrementalKlaviyoStream):
 class Metrics(KlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get-metrics"""
 
+    schema = Metric
+
     def path(self, **kwargs) -> str:
         return "metrics"
 
@@ -246,6 +242,7 @@ class Metrics(KlaviyoStream):
 class Events(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/metrics-timeline"""
 
+    schema = Event
     cursor_field = "timestamp"
 
     def path(self, **kwargs) -> str:
@@ -268,6 +265,7 @@ class Events(IncrementalKlaviyoStream):
 
 
 class Flows(ReverseIncrementalKlaviyoStream):
+    schema = Flow
     cursor_field = "created"
 
     def path(self, **kwargs) -> str:

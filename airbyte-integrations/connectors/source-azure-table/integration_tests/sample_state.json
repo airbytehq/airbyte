@@ -1,5 +1,5 @@
 {
-  "Test": {
-    "PartitionKey": "1"
+  "books": {
+    "timestamp": "2021-10-16T14:28:23.708585Z"
   }
 }

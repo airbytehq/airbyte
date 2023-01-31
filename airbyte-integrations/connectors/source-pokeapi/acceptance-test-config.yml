@@ -1,23 +1,15 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
 connector_image: airbyte/source-pokeapi:dev
-test_strictness_level: high
-acceptance_tests:
-  spec:
-    bypass_reason: "The spec is currently invalid: it has additionalProperties set to false"
+tests:
   connection:
-    tests:
-      - config_path: "integration_tests/config.json"
-        status: "succeed"
+    - config_path: "integration_tests/config.json"
+      status: "succeed"
   discovery:
-    tests:
-      - config_path: "integration_tests/config.json"
+    - config_path: "integration_tests/config.json"
   basic_read:
-    tests:
-      - config_path: "integration_tests/config.json"
-        expect_records:
-          bypass_reason: "We should create an expected_records file"
+    - config_path: "integration_tests/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
   full_refresh:
-    tests:
-      - config_path: "integration_tests/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-  incremental:
-    bypass_reason: "This connector does not support incremental syncs."
+    - config_path: "integration_tests/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"

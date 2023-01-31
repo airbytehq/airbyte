@@ -5,12 +5,12 @@
 package io.airbyte.integrations.destination.pulsar;
 
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,9 +38,10 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
   private final NamingConventionTransformer nameTransformer;
   private final PulsarClient client;
 
+  private AirbyteMessage lastStateMessage = null;
+
   public PulsarRecordConsumer(final PulsarDestinationConfig pulsarDestinationConfig,
                               final ConfiguredAirbyteCatalog catalog,
-                              final PulsarClient pulsarClient,
                               final Consumer<AirbyteMessage> outputRecordCollector,
                               final NamingConventionTransformer nameTransformer) {
     this.config = pulsarDestinationConfig;
@@ -48,7 +49,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
     this.nameTransformer = nameTransformer;
-    this.client = pulsarClient;
+    this.client = PulsarUtils.buildClient(this.config.getServiceUrl());
   }
 
   @Override
@@ -59,7 +60,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
   @Override
   protected void acceptTracked(final AirbyteMessage airbyteMessage) {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
-      outputRecordCollector.accept(airbyteMessage);
+      lastStateMessage = airbyteMessage;
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
       final Producer<GenericRecord> producer = producerMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
@@ -80,7 +81,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
 
   Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> buildProducerMap() {
     return catalog.getStreams().stream()
-        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
+        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
         .collect(Collectors.toMap(Function.identity(), pair -> {
           String topic = nameTransformer.getIdentifier(config.getTopicPattern()
               .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
@@ -99,6 +100,9 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
         LOGGER.error("Error sending message to topic.", e);
         throw new RuntimeException("Cannot send message to Pulsar. Error: " + e.getMessage(), e);
       }
+      if (lastStateMessage != null) {
+        outputRecordCollector.accept(lastStateMessage);
+      }
     }
   }
 
@@ -109,6 +113,10 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
       Exceptions.swallow(producer::close);
     });
     Exceptions.swallow(client::close);
+
+    if (lastStateMessage != null) {
+      outputRecordCollector.accept(lastStateMessage);
+    }
   }
 
 }

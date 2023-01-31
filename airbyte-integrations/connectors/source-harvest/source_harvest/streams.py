@@ -9,7 +9,6 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -17,7 +16,6 @@ class HarvestStream(HttpStream, ABC):
     url_base = "https://api.harvestapp.com/v2/"
     per_page = 50
     primary_key = "id"
-    raise_on_http_errors = True
 
     @property
     def data_field(self) -> str:
@@ -25,17 +23,6 @@ class HarvestStream(HttpStream, ABC):
         :return: Default field name to get data from response
         """
         return self.name
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
-    def backoff_time(self, response: requests.Response):
-        if "Retry-After" in response.headers:
-            return int(response.headers["Retry-After"])
-        else:
-            self.logger.info("Retry-after header not found. Using default backoff value")
-            return super().backoff_time(response)
 
     def path(self, **kwargs) -> str:
         return self.name
@@ -77,12 +64,6 @@ class HarvestStream(HttpStream, ABC):
         else:
             yield stream_data
 
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.FORBIDDEN:
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.warn(f"Stream `{self.name}` is not available. Please check required permissions. {response.text}")
-        return super().should_retry(response)
-
 
 class IncrementalHarvestStream(HarvestStream, ABC):
     cursor_field = "updated_at"
@@ -113,7 +94,7 @@ class IncrementalHarvestStream(HarvestStream, ABC):
         return params
 
 
-class HarvestSubStream(HarvestStream, ABC):
+class HarvestSubStream(HarvestStream):
     @property
     @abstractmethod
     def path_template(self) -> str:
@@ -135,11 +116,6 @@ class HarvestSubStream(HarvestStream, ABC):
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return self.path_template.format(parent_id=stream_slice["parent_id"])
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, stream_slice=stream_slice, **kwargs):
-            record["parent_id"] = stream_slice["parent_id"]
-            yield record
 
 
 class Contacts(IncrementalHarvestStream):
@@ -307,15 +283,24 @@ class ReportsBase(HarvestStream, ABC):
         :return: report path suffix
         """
 
-    def __init__(self, from_date: Optional[pendulum.date] = None, to_date: Optional[pendulum.date] = None, **kwargs):
+    def __init__(self, from_date: pendulum.date = None, **kwargs):
         super().__init__(**kwargs)
 
         current_date = pendulum.now().date()
         self._from_date = from_date or current_date.subtract(years=1)
-        self._to_date = to_date or current_date
         # `to` date greater than `from` date causes an exception on Harvest
         if self._from_date > current_date:
             self._to_date = from_date
+        else:
+            self._to_date = current_date
+
+    def request_params(self, stream_state, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, **kwargs)
+        current_date = pendulum.now()
+        # `from` and `to` params are required for reports calls
+        # min `from` value is current_date - 1 year
+        params.update({"from": self._from_date.strftime("%Y%m%d"), "to": current_date.strftime("%Y%m%d")})
+        return params
 
     def path(self, **kwargs) -> str:
         return f"reports/{self.report_path}"
@@ -338,9 +323,26 @@ class IncrementalReportsBase(ReportsBase, ABC):
             )
             yield record
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
         params = super().request_params(stream_state, **kwargs)
-        params = {**params, **stream_slice} if stream_slice else params
+
+        # subtract `from` date by 1 year to avoid Harvest exception
+        # `from` date may not be less than `to` - 1 year
+        if stream_state.get(self.cursor_field):
+            cursor_date = pendulum.parse(stream_state[self.cursor_field]).date()
+            dates_diff = cursor_date - self._from_date
+            if dates_diff.years > 0 or dates_diff.years == 0 and dates_diff.remaining_days > 0:
+                self._from_date = cursor_date.subtract(years=1)
+
+        # `from` and `to` params are required for reports calls
+        # min `from` value is current_date - 1 year
+        params.update(
+            {
+                "from": self._from_date.strftime(self.date_param_template),
+                "to": stream_state.get(self.cursor_field, self._to_date.strftime(self.date_param_template)),
+            }
+        )
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
@@ -352,27 +354,6 @@ class IncrementalReportsBase(ReportsBase, ABC):
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
-
-    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
-        """
-        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
-        """
-        start_date = self._from_date
-        end_date = self._to_date
-
-        # determine stream_state, if no stream_state we use start_date
-        if stream_state:
-            start_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
-
-        while start_date < end_date:
-            # Max size of date chunks is 1 year
-            # Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/
-            end_date_slice = end_date if start_date >= end_date.subtract(years=1) else start_date.add(years=1)
-            date_slice = {"from": start_date.strftime(self.date_param_template), "to": end_date_slice.strftime(self.date_param_template)}
-
-            start_date = end_date_slice
-
-            yield date_slice
 
 
 class ExpensesClients(IncrementalReportsBase):
@@ -407,9 +388,11 @@ class ExpensesTeam(IncrementalReportsBase):
     report_path = "expenses/team"
 
 
-class Uninvoiced(IncrementalReportsBase):
+class Uninvoiced(ReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/
+
+    TODO: `from`/`to` pagination does not work for `uninvoiced` stream. Look like a bug on Harvest side. Check out later.
     """
 
     report_path = "uninvoiced"
@@ -441,7 +424,7 @@ class TimeTasks(IncrementalReportsBase):
 
 class TimeTeam(IncrementalReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Team Report)
     """
 
     report_path = "time/team"
@@ -449,7 +432,7 @@ class TimeTeam(IncrementalReportsBase):
 
 class ProjectBudget(ReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/#project-budget-report
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#team-report
     """
 
     report_path = "project_budget"

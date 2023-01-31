@@ -11,8 +11,7 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "cursor_field": ["bounced_at"],
-      "primary_key": [["person_id"]]
+      "cursor_field": ["bounced_at"]
     },
     {
       "stream": {
@@ -25,8 +24,7 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "cursor_field": ["created_at"],
-      "primary_key": [["id"]]
+      "cursor_field": ["created_at"]
     },
     {
       "stream": {
@@ -39,8 +37,7 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "cursor_field": ["updated_at"],
-      "primary_key": [["id"]]
+      "cursor_field": ["updated_at"]
     },
     {
       "stream": {
@@ -53,8 +50,7 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "cursor_field": ["unsubscribed_at"],
-      "primary_key": [["person_id"]]
+      "cursor_field": ["unsubscribed_at"]
     }
   ]
 }

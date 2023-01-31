@@ -10,14 +10,13 @@ import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
+import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteStateMessage;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,17 +41,8 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
 
     final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);
-    /*
-     * Namespace pair is ignored by global state manager, but is needed for satisfy the API contract.
-     * Therefore, provide an empty optional.
-     */
-    final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
+    final AirbyteStateMessage stateMessage = stateManager.emit();
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
-  }
-
-  @Override
-  public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
-    throw new RuntimeException("Snapshot of individual tables is not implemented in MSSQL");
   }
 
 }

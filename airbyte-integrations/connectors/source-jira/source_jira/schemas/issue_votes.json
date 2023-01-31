@@ -255,6 +255,6 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "The details of votes on an issue."
 }

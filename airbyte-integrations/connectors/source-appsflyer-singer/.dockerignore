@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!Dockerfile.test
+!source_appsflyer_singer
+!setup.py
+!secrets

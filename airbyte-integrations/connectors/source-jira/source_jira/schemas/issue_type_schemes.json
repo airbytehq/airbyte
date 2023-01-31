@@ -23,6 +23,6 @@
       "description": "Whether the issue type scheme is the default."
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details of an issue type scheme."
 }

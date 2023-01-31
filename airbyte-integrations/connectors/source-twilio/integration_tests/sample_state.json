@@ -1,79 +1,23 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "end_time": "2022-06-11T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "calls"
-      }
-    }
+{
+  "calls": {
+    "end_time": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_updated": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "conferences"
-      }
-    }
+  "conferences": {
+    "date_updated": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_created": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "recordings"
-      }
-    }
+  "recordings": {
+    "date_created": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_sent": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "messages"
-      }
-    }
+  "messages": {
+    "date_sent": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_created": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "message_media"
-      }
-    }
+  "message_media": {
+    "date_created": "2020-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "start_date": "2020-01-01"
-      },
-      "stream_descriptor": {
-        "name": "usage_records"
-      }
-    }
+  "usage_records": {
+    "start_date": "2020-01-01"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_updated": "2020-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "alerts"
-      }
-    }
+  "alerts": {
+    "date_updated": "2020-01-01T00:00:00Z"
   }
-]
+}

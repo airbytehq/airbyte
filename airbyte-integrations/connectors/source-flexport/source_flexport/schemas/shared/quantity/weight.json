@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "_object": {
       "type": "string",
@@ -14,7 +15,7 @@
     "unit": {
       "type": "string",
       "description": "Specifies the unit of measure for this quantity.",
-      "enum": ["kg", "lbs", "t"]
+      "enum": ["kg", "lbs"]
     }
   }
 }

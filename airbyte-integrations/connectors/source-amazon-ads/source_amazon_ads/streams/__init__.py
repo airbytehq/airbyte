@@ -1,12 +1,6 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from .attribution_report import (
-    AttributionReportPerformanceAdgroup,
-    AttributionReportPerformanceCampaign,
-    AttributionReportPerformanceCreative,
-    AttributionReportProducts,
-)
 from .profiles import Profiles
 from .report_streams import (
     SponsoredBrandsReportStream,
@@ -44,8 +38,4 @@ __all__ = [
     "SponsoredProductsReportStream",
     "SponsoredBrandsReportStream",
     "SponsoredBrandsVideoReportStream",
-    "AttributionReportPerformanceAdgroup",
-    "AttributionReportPerformanceCampaign",
-    "AttributionReportPerformanceCreative",
-    "AttributionReportProducts",
 ]

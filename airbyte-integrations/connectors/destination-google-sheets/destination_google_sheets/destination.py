@@ -1,83 +1,77 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Mapping
+
+from typing import Mapping, Any, Iterable
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
-from google.auth.exceptions import RefreshError
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 
-from .client import GoogleSheetsClient
-from .helpers import ConnectionTest, get_spreadsheet_id, get_streams_from_catalog
-from .spreadsheet import GoogleSheets
-from .writer import GoogleSheetsWriter
+from .writer import GoogleSheetsDestinationWriter
+
+logger = AirbyteLogger()
 
 
 class DestinationGoogleSheets(Destination):
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Connection check method for Google Spreadsheets.
-        Info:
-            Checks whether target spreadsheet_id is available using provided credentials.
-        Returns:
-            :: Status.SUCCEEDED - if creadentials are valid, token is refreshed, target spreadsheet is available.
-            :: Status.FAILED - if could not obtain new token, target spreadsheet is not available or other exception occured (with message).
-        """
-        spreadsheet_id = get_spreadsheet_id(config["spreadsheet_id"])
-        try:
-            client = GoogleSheetsClient(config).authorize()
-            spreadsheet = GoogleSheets(client, spreadsheet_id)
-            check_result = ConnectionTest(spreadsheet).perform_connection_test()
-            if check_result:
-                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except RefreshError as token_err:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{token_err}")
-        except Exception as err:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(err)}")
-
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
+        writer = GoogleSheetsDestinationWriter(
+            **config, configured_catalog=configured_catalog
+        )
 
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
-        """
-        spreadsheet_id = get_spreadsheet_id(config["spreadsheet_id"])
-
-        client = GoogleSheetsClient(config).authorize()
-        spreadsheet = GoogleSheets(client, spreadsheet_id)
-        writer = GoogleSheetsWriter(spreadsheet)
-
-        # get streams from catalog up to the limit
-        configured_streams = get_streams_from_catalog(configured_catalog)
-        # getting stream names explicitly
-        configured_stream_names = [stream.stream.name for stream in configured_streams]
-
-        for configured_stream in configured_streams:
-            writer.init_buffer_stream(configured_stream)
+        for configured_stream in configured_catalog.streams:
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 writer.delete_stream_entries(configured_stream.stream.name)
 
         for message in input_messages:
-            if message.type == Type.RECORD:
-                record = message.record
-                # process messages for available streams only
-                if record.stream in configured_stream_names:
-                    writer.add_to_buffer(record.stream, record.data)
-                    writer.queue_write_operation(record.stream)
-            elif message.type == Type.STATE:
-                # yielding a state message indicates that all preceding records have been persisted to the destination
-                writer.write_whats_left()
+            if message.type == Type.STATE:
+                # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
+                # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
+                writer.flush()
                 yield message
+            elif message.type == Type.RECORD:
+                record = message.record
+                writer.queue_write_operation(record)
             else:
+                # ignore other message types for now
                 continue
 
-        # if there are any records left in buffer
-        writer.write_whats_left()
+        # Make sure to flush any records still in the queue
+        writer.flush()
 
-        # deduplicating records for `append_dedup` sync-mode
-        for configured_stream in configured_streams:
-            if configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
-                writer.deduplicate_records(configured_stream)
+    def check(
+        self, logger: AirbyteLogger, config: Mapping[str, Any]
+    ) -> AirbyteConnectionStatus:
+        """
+        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
+            e.g: if a provided API token or password can be used to connect and write to the destination.
+
+        :param logger: Logging object to display debug/info/error to the logs
+            (logs will not be accessible via airbyte UI if they are not passed to this logger)
+        :param config: Json object containing the configuration of this destination, content of this json is as specified in
+        the properties of the spec.json file
+
+        :return: AirbyteConnectionStatus indicating a Success or Failure
+        """
+        try:
+            writer = GoogleSheetsDestinationWriter(**config, configured_catalog=None)
+            test_worksheet = writer.get_worksheet_if_exists_or_create("__airbyte_test")
+            writer.spreadsheet.del_worksheet(test_worksheet)
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        except Exception as e:
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
+            )

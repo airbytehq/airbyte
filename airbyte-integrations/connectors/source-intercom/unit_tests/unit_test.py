@@ -134,80 +134,58 @@ def test_streams(config):
 
 
 @pytest.mark.parametrize(
-    "stream, http_method, endpoint, response, expected",
+    "stream, endpoint, response, expected",
     [
-        (Admins, "GET", "/admins", {"type": "admin.list", "admins": [{"type": "admin", "id": "id"}]}, [{"id": "id", "type": "admin"}]),
+        (Admins, "/admins", {"type": "admin.list", "admins": [{"type": "admin", "id": "id"}]}, [{"id": "id", "type": "admin"}]),
         (
             Companies,
-            "GET",
             "/companies/scroll",
             {"type": "company.list", "data": [{"type": "company", "id": "id"}]},
             [{"id": "id", "type": "company"}],
         ),
         (
             CompanySegments,
-            "GET",
             "/companies/id/segments",
-            {"type": "list", "data": [{"type": "segment", "id": "id", "updated_at": 123}]},
-            [{"id": "id", "type": "segment", "updated_at": 123}],
+            {"type": "list", "data": [{"type": "segment", "id": "id"}]},
+            [{"id": "id", "type": "segment"}],
         ),
-        (
-            Contacts,
-            "POST",
-            "/contacts/search",
-            {"type": "list", "data": [{"type": "contact", "id": "id"}]},
-            [{"id": "id", "type": "contact"}],
-        ),
+        (Contacts, "/contacts", {"type": "list", "data": [{"type": "contact", "id": "id"}]}, [{"id": "id", "type": "contact"}]),
         (
             Conversations,
-            "POST",
-            "/conversations/search",
+            "/conversations",
             {"type": "conversation.list", "conversations": [{"type": "conversation", "id": "id"}]},
             [{"id": "id", "type": "conversation"}],
         ),
         (
             ConversationParts,
-            "GET",
             "/conversations/id",
             {"id": "id", "conversation_parts": {"conversation_parts": [{"type": "conversation_part", "id": "id"}]}},
             [{"conversation_id": "id", "id": "id", "type": "conversation_part"}],
         ),
         (
             CompanyAttributes,
-            "GET",
             "/data_attributes",
             {"type": "list", "data": [{"type": "data_attribute", "id": "id"}]},
             [{"id": "id", "type": "data_attribute"}],
         ),
         (
             ContactAttributes,
-            "GET",
             "/data_attributes",
             {"type": "list", "data": [{"type": "data_attribute", "id": "id"}]},
             [{"id": "id", "type": "data_attribute"}],
         ),
-        (
-            Segments,
-            "GET",
-            "/segments",
-            {"type": "segment.list", "segments": [{"type": "segment", "id": "id"}]},
-            [{"id": "id", "type": "segment"}],
-        ),
-        (Tags, "GET", "/tags", {"type": "list", "data": [{"type": "tag", "id": "id"}]}, [{"id": "id", "type": "tag"}]),
-        (Teams, "GET", "/teams", {"teams": [{"type": "team", "id": "id"}]}, [{"id": "id", "type": "team"}]),
+        (Segments, "/segments", {"type": "segment.list", "segments": [{"type": "segment", "id": "id"}]}, [{"id": "id", "type": "segment"}]),
+        (Tags, "/tags", {"type": "list", "data": [{"type": "tag", "id": "id"}]}, [{"id": "id", "type": "tag"}]),
+        (Teams, "/teams", {"teams": [{"type": "team", "id": "id"}]}, [{"id": "id", "type": "team"}]),
     ],
 )
-def test_read(stream, http_method, endpoint, response, expected, requests_mock):
-    def get_mock(http_method, endpoint, response):
-        if http_method == "POST":
-            requests_mock.post(endpoint, json=response)
-        elif http_method == "GET":
-            requests_mock.get(endpoint, json=response)
-        requests_mock.post("https://api.intercom.io/conversations/search", json=response)
-        requests_mock.get("/companies/scroll", json=response)
+def test_read(stream, endpoint, response, expected, requests_mock):
+    requests_mock.get("/conversations", json=response)
+    requests_mock.get("/companies/scroll", json=response)
+    requests_mock.get(endpoint, json=response)
 
-    get_mock(http_method, endpoint, response)
-    stream = stream(authenticator=NoAuth(), start_date=0)
+    stream = stream(authenticator=NoAuth())
+
     records = []
 
     for slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
@@ -216,8 +194,8 @@ def test_read(stream, http_method, endpoint, response, expected, requests_mock):
     assert records == expected
 
 
-def build_conversations_response_body(conversations, next_page=None):
-    return {"type": "conversation.list", "pages": {"next": next_page} if next_page else {}, "conversations": conversations}
+def build_conversations_response_body(conversations, next_url=None):
+    return {"type": "conversation.list", "pages": {"next": next_url} if next_url else {}, "conversations": conversations}
 
 
 def build_conversation_response_body(conversation_id, conversation_parts):
@@ -254,17 +232,13 @@ def single_conversation_response():
 def conversation_parts_responses():
     return [
         (
-            "POST",
-            "https://api.intercom.io/conversations/search",
+            "https://api.intercom.io/conversations",
             build_conversations_response_body(
-                conversations=[
-                    {"id": "151272900026677", "updated_at": 1650988600},
-                    {"id": "151272900026666", "updated_at": 1650988500},
-                ],
+                conversations=[{"id": "151272900026677", "updated_at": 1650988600}, {"id": "151272900026666", "updated_at": 1650988500}],
+                next_url="https://api.intercom.io/conversations?per_page=2&page=2",
             ),
         ),
         (
-            "GET",
             "https://api.intercom.io/conversations?per_page=2&page=2",
             build_conversations_response_body(
                 conversations=[
@@ -274,25 +248,23 @@ def conversation_parts_responses():
             ),
         ),
         (
-            "GET",
             "https://api.intercom.io/conversations/151272900026677",
             build_conversation_response_body(
                 conversation_id="151272900026677",
-                conversation_parts=[
-                    {"id": "1", "updated_at": 1650988300},
-                    {"id": "2", "updated_at": 1650988450},
-                ],
+                conversation_parts=[{"id": "13740311961", "updated_at": 1650988300}, {"id": "13740311962", "updated_at": 1650988450}],
             ),
         ),
         (
-            "GET",
             "https://api.intercom.io/conversations/151272900026666",
             build_conversation_response_body(
                 conversation_id="151272900026666",
-                conversation_parts=[
-                    {"id": "3", "updated_at": 1650988150},
-                    {"id": "4", "updated_at": 1650988151},
-                ],
+                conversation_parts=[{"id": "13740311955", "updated_at": 1650988150}, {"id": "13740312056", "updated_at": 1650988500}],
+            ),
+        ),
+        (
+            "https://api.intercom.io/conversations/151272900026466",
+            build_conversation_response_body(
+                conversation_id="151272900026466", conversation_parts=[{"id": "13740311970", "updated_at": 1650988600}]
             ),
         ),
     ]
@@ -320,19 +292,16 @@ def test_conversation_part_filtering_based_on_conversation(requests_mock, conver
     """
     Test shows that conversation_parts filters conversations (from parent stream) correctly
     """
-    cursor_value = 1650988200
-    state = {"updated_at": cursor_value}
+    updated_at = 1650988200
+    state = {"updated_at": updated_at}
     expected_record_ids = set()
     for response_tuple in conversation_parts_responses:
-        http_method = response_tuple[0]
-        url = response_tuple[1]
-        response = response_tuple[2]
-        requests_mock.register_uri(http_method, url, json=response)
-        if "conversation_parts" in response:
-            expected_record_ids.update([cp["id"] for cp in response["conversation_parts"]["conversation_parts"]])
+        requests_mock.register_uri("GET", response_tuple[0], json=response_tuple[1])
+        if "conversation_parts" in response_tuple[1]:
+            expected_record_ids.update([cp["id"] for cp in response_tuple[1]["conversation_parts"]["conversation_parts"]])
 
     records = []
-    conversation_parts = ConversationParts(authenticator=NoAuth(), start_date=0)
+    conversation_parts = ConversationParts(authenticator=NoAuth())
     for slice in conversation_parts.stream_slices(sync_mode=SyncMode.incremental, stream_state=state):
         records.extend(list(conversation_parts.read_records(sync_mode=SyncMode.incremental, stream_slice=slice, stream_state=state)))
 

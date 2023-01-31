@@ -8,7 +8,7 @@
       "type": ["null", "string"]
     },
     "date_updated": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "api_version": {
@@ -37,7 +37,7 @@
     },
     "subresource_uris": {
       "type": ["null", "object"],
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "participants": {
           "type": ["null", "string"]
@@ -49,5 +49,5 @@
     }
   },
   "type": "object",
-  "additionalProperties": true
+  "additionalProperties": false
 }

@@ -2,14 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
 from unittest import mock
 
 import pendulum
 import pytest
 import requests
 from pydantic import BaseModel
-from source_klaviyo.streams import Events, IncrementalKlaviyoStream, KlaviyoStream, ReverseIncrementalKlaviyoStream
+from source_klaviyo.streams import IncrementalKlaviyoStream, KlaviyoStream, ReverseIncrementalKlaviyoStream
 
 START_DATE = pendulum.datetime(2020, 10, 10)
 
@@ -43,6 +42,16 @@ def response_fixture(mocker):
 
 
 class TestKlaviyoStream:
+    def test_schema_is_required_property(self):
+        with pytest.raises(TypeError, match="Can't instantiate abstract class KlaviyoStream with abstract methods path, schema"):
+            KlaviyoStream(api_key="some_key")
+
+    def test_get_json_schema(self):
+        stream = SomeStream(api_key="some_key")
+        result = stream.get_json_schema()
+
+        assert result == SomeStream.schema.schema.return_value
+
     @pytest.mark.parametrize(
         ["response_json", "next_page_token"],
         [
@@ -82,7 +91,7 @@ class TestKlaviyoStream:
 class TestIncrementalKlaviyoStream:
     def test_cursor_field_is_required(self):
         with pytest.raises(
-            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStream with abstract methods cursor_field, path"
+            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStream with abstract methods cursor_field, path, schema"
         ):
             IncrementalKlaviyoStream(api_key="some_key", start_date=START_DATE.isoformat())
 
@@ -131,11 +140,6 @@ class TestIncrementalKlaviyoStream:
             ({}, {"updated_at": 10, "some_field": 100}, {"updated_at": 10}),
             ({"updated_at": 11}, {"updated_at": 10, "some_field": 100}, {"updated_at": 11}),
             ({"updated_at": 11}, {"updated_at": 12, "some_field": 100}, {"updated_at": 12}),
-            (
-                {"updated_at": 12},
-                {"updated_at": "2021-04-03 17:15:12", "some_field": 100},
-                {"updated_at": datetime.strptime("2021-04-03 17:15:12", "%Y-%m-%d %H:%M:%S").timestamp()},
-            ),
         ],
     )
     def test_get_updated_state(self, current_state, latest_record, expected_state):
@@ -163,7 +167,7 @@ class TestReverseIncrementalKlaviyoStream:
     def test_cursor_field_is_required(self):
         with pytest.raises(
             TypeError,
-            match="Can't instantiate abstract class ReverseIncrementalKlaviyoStream with abstract methods cursor_field, path",
+            match="Can't instantiate abstract class ReverseIncrementalKlaviyoStream with abstract methods cursor_field, path, schema",
         ):
             ReverseIncrementalKlaviyoStream(api_key="some_key", start_date=START_DATE.isoformat())
 
@@ -193,21 +197,13 @@ class TestReverseIncrementalKlaviyoStream:
     @pytest.mark.parametrize(
         ["current_state", "latest_record", "expected_state"],
         [
-            ({}, {"updated_at": "2021-01-02T12:13:14", "some_field": 100}, {"updated_at": "2021-01-02T12:13:14+00:00"}),
-            (
-                {"updated_at": "2021-02-03T13:14:15"},
-                {"updated_at": "2021-01-02T12:13:14", "some_field": 100},
-                {"updated_at": "2021-02-03T13:14:15+00:00"},
-            ),
-            (
-                {"updated_at": "2021-02-03T13:14:15"},
-                {"updated_at": "2021-03-04T14:15:16", "some_field": 100},
-                {"updated_at": "2021-03-04T14:15:16+00:00"},
-            ),
+            ({}, {"updated_at": 10, "some_field": 100}, {"updated_at": 10}),
+            ({"updated_at": 11}, {"updated_at": 10, "some_field": 100}, {"updated_at": 11}),
+            ({"updated_at": 11}, {"updated_at": 12, "some_field": 100}, {"updated_at": 12}),
         ],
     )
     def test_get_updated_state(self, current_state, latest_record, expected_state):
-        stream = SomeReverseIncrementalStream(api_key="some_key", start_date=START_DATE.isoformat())
+        stream = SomeIncrementalStream(api_key="some_key", start_date=START_DATE.isoformat())
         result = stream.get_updated_state(current_stream_state=current_state, latest_record=latest_record)
 
         assert result == expected_state
@@ -263,31 +259,3 @@ class TestReverseIncrementalKlaviyoStream:
         result = list(stream.parse_response(response))
 
         assert result == response.json.return_value["data"][2:], "should all records younger then start_datetime"
-
-
-class TestEventsStream:
-    def test_parse_response(self, mocker):
-        stream = Events(api_key="some_key", start_date=START_DATE.isoformat())
-        json = {
-            "data": [
-                {"event_properties": {"$flow": "ordinary", "$message": "hello"}, "some_key": "some_value"},
-                {"event_properties": {"$flow": "advanced", "$message": "nice to meet you"}, "another_key": "another_value"},
-            ]
-        }
-        records = list(stream.parse_response(mocker.Mock(json=mocker.Mock(return_value=json))))
-        assert records == [
-            {
-                "campaign_id": None,
-                "event_properties": {"$flow": "ordinary", "$message": "hello"},
-                "flow_id": "ordinary",
-                "flow_message_id": "hello",
-                "some_key": "some_value",
-            },
-            {
-                "another_key": "another_value",
-                "campaign_id": None,
-                "event_properties": {"$flow": "advanced", "$message": "nice to meet you"},
-                "flow_id": "advanced",
-                "flow_message_id": "nice to meet you",
-            },
-        ]

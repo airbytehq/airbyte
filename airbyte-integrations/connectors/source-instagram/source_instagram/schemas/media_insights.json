@@ -36,21 +36,6 @@
     },
     "carousel_album_saved": {
       "type": ["null", "integer"]
-    },
-    "comments": {
-      "type": ["null", "integer"]
-    },
-    "likes": {
-      "type": ["null", "integer"]
-    },
-    "shares": {
-      "type": ["null", "integer"]
-    },
-    "total_interactions": {
-      "type": ["null", "integer"]
-    },
-    "plays": {
-      "type": ["null", "integer"]
     }
   }
 }

@@ -1,0 +1,79 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Bitrix24 Crm Spec",
+    "type": "object",
+    "required": [
+      "webhook_endpoint"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "webhook_endpoint": {
+        "title": "Webhook Endpoint URL",
+        "type": "string",
+        "description": "Webhook Endpoint URL",
+        "order": 0
+      },
+      "date_from": {
+        "description": "Start date for the reporting period in YYYY/MM/DDThh:mm:ss format, if not set – last 30 days or \"Load last n days\" parameter (if it was set) will be used",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+        "type": "string",
+        "examples": [
+          "2021-10-01T00:00:00"
+        ],
+        "order": 1
+      },
+      "date_to": {
+        "description": "End date for the reporting period in YYYY/MM/DDThh:mm:ss format, if not set – last 30 days or \"Load last n days\" parameter (if it was set) will be used",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+        "type": "string",
+        "examples": [
+          "2021-10-30T23:59:59"
+        ],
+        "order": 2
+      },
+      "last_days": {
+        "type": "integer",
+        "title": "Load last n days",
+        "description": "If not set – last 30 days will be used",
+        "minimum": 0,
+        "maximum": 365,
+        "examples": [
+          "30"
+        ],
+        "order": 3
+      },
+      "client_name": {
+        "title": "Client Name Constant",
+        "description": "Constant that will be used in record __clientName property",
+        "type": "string",
+        "examples": [
+          "abcd"
+        ],
+        "order": 4,
+        "default": ""
+      },
+      "product_name": {
+        "title": "Product Name Constant",
+        "description": "Constant that will be used in record __productName property",
+        "type": "string",
+        "examples": [
+          "abcd"
+        ],
+        "default": "",
+        "order": 5
+      },
+      "custom_json": {
+        "title": "Custom JSON",
+        "description": "Custom JSON for additional record properties. Must be string of JSON object with first-level properties",
+        "type": "string",
+        "examples": [
+          "{\"abc\": \"123\", \"cde\": \"132\"}"
+        ],
+        "default": "{}",
+        "order": 6
+      }
+    }
+  }
+}

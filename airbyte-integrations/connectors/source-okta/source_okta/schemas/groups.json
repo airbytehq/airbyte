@@ -1,22 +1,25 @@
 {
   "properties": {
     "_links": {
+      "additionalProperties": {
+        "type": ["array", "object", "null"]
+      },
       "type": ["object", "null"]
     },
     "created": {
       "format": "date-time",
-      "type": ["string", "null"]
+      "type": "string"
     },
     "id": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "lastMembershipUpdated": {
       "format": "date-time",
-      "type": ["string", "null"]
+      "type": "string"
     },
     "lastUpdated": {
       "format": "date-time",
-      "type": ["string", "null"]
+      "type": "string"
     },
     "objectClass": {
       "items": {
@@ -33,11 +36,12 @@
           "type": ["string", "null"]
         }
       },
-      "type": ["object", "null"]
+      "type": "object"
     },
     "type": {
-      "type": ["string", "null"]
+      "enum": ["OKTA_GROUP", "APP_GROUP", "BUILT_IN"],
+      "type": "string"
     }
   },
-  "type": ["object", "null"]
+  "type": "object"
 }

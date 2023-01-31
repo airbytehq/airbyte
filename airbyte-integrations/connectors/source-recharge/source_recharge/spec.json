@@ -5,7 +5,7 @@
     "title": "Recharge Spec",
     "type": "object",
     "required": ["start_date", "access_token"],
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "start_date": {
         "type": "string",

@@ -3,31 +3,60 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "name": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "url_title": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "order_nr": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "active": {
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "deal_probability": {
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "add_time": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
     },
     "update_time": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
     },
     "selected": {
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     }
   }
 }

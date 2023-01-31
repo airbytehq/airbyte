@@ -19,6 +19,6 @@
       "description": "Whether the option is disabled."
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details of the custom field options for a context."
 }

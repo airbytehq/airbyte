@@ -28,7 +28,7 @@ class RedisHCacheTest {
     var jsonConfig = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());
-    redisCache = new RedisHCache(jsonConfig);
+    redisCache = new RedisHCache(new RedisConfig(jsonConfig));
   }
 
   @AfterEach

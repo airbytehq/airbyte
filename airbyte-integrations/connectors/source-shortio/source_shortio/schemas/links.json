@@ -2,6 +2,9 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
+    "id": {
+      "type": "integer"
+    },
     "path": {
       "type": ["null", "string"]
     },

@@ -4,9 +4,7 @@
 
 package io.airbyte.integrations.destination.rockset;
 
-import static io.airbyte.integrations.destination.rockset.RocksetUtils.API_KEY_ID;
-import static io.airbyte.integrations.destination.rockset.RocksetUtils.API_SERVER_ID;
-import static io.airbyte.integrations.destination.rockset.RocksetUtils.ROCKSET_WORKSPACE_ID;
+import static io.airbyte.integrations.destination.rockset.RocksetUtils.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,10 +15,10 @@ import com.rockset.client.model.AddDocumentsRequest;
 import com.rockset.client.model.AddDocumentsResponse;
 import com.rockset.client.model.DocumentStatus;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -37,7 +35,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsumer {
+public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RocksetWriteApiConsumer.class);
   private static final ObjectMapper mapper = new ObjectMapper();
@@ -55,8 +53,10 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
 
   // records to be sent per collection
   private final Map<String, List<Object>> records;
-  private final RocksetSQLNameTransformer nameTransformer = new RocksetSQLNameTransformer();
   private long lastSentDocumentMicroSeconds = 0L;
+
+  private final RocksetSQLNameTransformer nameTransformer = new RocksetSQLNameTransformer();
+
   private ApiClient client;
 
   public RocksetWriteApiConsumer(
@@ -73,7 +73,7 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
   }
 
   @Override
-  protected void startTracked() throws Exception {
+  public void start() throws Exception {
     this.client = RocksetUtils.apiClient(apiKey, apiServer);
     LOGGER.info("Creating workspace");
     RocksetUtils.createWorkspaceIfNotExists(client, workspace);
@@ -107,7 +107,7 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage message) throws Exception {
+  public void accept(AirbyteMessage message) throws Exception {
     if (message.getType() == AirbyteMessage.Type.RECORD) {
       String cname = nameTransformer.convertStreamName(message.getRecord().getStream());
 
@@ -130,7 +130,7 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
   }
 
   @Override
-  protected void close(boolean hasFailed) throws Exception {
+  public void close() throws Exception {
     // Nothing to do
     LOGGER.info("Shutting down!");
     LOGGER.info("Sending final batch of records if any remain!");

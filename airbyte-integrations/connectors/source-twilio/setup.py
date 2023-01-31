@@ -6,12 +6,14 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "pendulum",
-    "requests",
+    "airbyte-cdk~=0.1",
+    "pendulum~=2.1",
+    "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "requests_mock", "freezegun"]
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+]
 
 setup(
     name="source_twilio",

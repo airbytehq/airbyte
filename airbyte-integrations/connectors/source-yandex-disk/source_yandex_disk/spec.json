@@ -1,0 +1,146 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Yandex Disk Spec",
+    "type": "object",
+    "required": ["credentials"],
+    "additionalProperties": true,
+    "properties": {
+      "credentials": {
+        "title": "Authorization Method",
+        "default": {},
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Access Token Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "access_token_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "Long-term Authorized Access Token.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["auth_type"]
+          },
+          {
+            "title": "CredentialsCraft Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "credentials_craft_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "credentials_craft_host": {
+                "title": "CredentialsCraft Host",
+                "description": "CredentialsCraft Host.",
+                "examples": ["https://credentialscraft.mysite.com"],
+                "type": "string"
+              },
+              "credentials_craft_token": {
+                "title": "CredentialsCraft Token",
+                "description": "Long-term CredentialsCraft Access Token (NOT Yandex token).",
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "credentials_craft_token_id": {
+                "title": "CredentialsCraft Yandex Token ID",
+                "desctiption": "Yandex Token ID in CredentialsCraft",
+                "examples": [3345435],
+                "type": "integer"
+              }
+            },
+            "required": ["auth_type"]
+          }
+        ]
+      },
+      "streams": {
+        "type": "array",
+        "title": "Streams",
+        "order": 1,
+        "items": {
+          "type": "object",
+          "required": ["name", "path", "files_pattern", "files_type"],
+          "properties": {
+            "name": {
+              "title": "Stream Name",
+              "type": "string"
+            },
+            "path": {
+              "title": "Files Path",
+              "type": "string",
+              "description": "Files path directory on Yandex Disk",
+              "examples": ["disk:/foo/bar", "/foo/bar", "app:/foo/bar"]
+            },
+            "files_pattern": {
+              "title": "Files Pattern",
+              "description": "Stream files pattern (must contain regular expression)",
+              "examples": ["^foobar_\\d{4}-\\d{2}-\\d{2}_\\d+\\.csv$"]
+            },
+            "no_header": {
+              "title": "CSV No Header",
+              "description": "Select for files without header. User specified fields required for this option",
+              "type": "boolean"
+            },
+            "user_specified_fields": {
+              "title": "User Specified Fields",
+              "description": "Coma-separated user-specified fields that must replace files headers. The field count must equal the column count.",
+              "type": "string",
+              "examples": ["field1,field2,cool field,поле1"]
+            },
+            "csv_delimiter": {
+              "title": "Csv Delimiter",
+              "description": "Leave empty for autodetect.",
+              "type": "string"
+            },
+            "files_type": {
+              "title": "Files Type",
+              "type": "string",
+              "description": "File parse engine. CSV supports .csv files, Excel supports .xls, .xlsx, .xlsm, .xlsb, .odf, .ods and .odt files",
+              "enum": ["CSV", "Excel"],
+              "default": "CSV"
+            },
+            "excel_sheet_name": {
+              "title": "Excel Sheet Name",
+              "description": "Name of sheet in excel file. Only for Excel files type. First sheet will be taken if not specified."
+            }
+          }
+        }
+      },
+      "client_name_constant": {
+        "title": "Client Name Constant",
+        "description": "Constant that will be used in record __clientName property",
+        "type": "string",
+        "examples": ["abcd"],
+        "order": 2,
+        "default": ""
+      },
+      "product_name_constant": {
+        "title": "Product Name Constant",
+        "description": "Constant that will be used in record __productName property",
+        "type": "string",
+        "examples": ["abcd"],
+        "order": 3,
+        "default": ""
+      },
+      "custom_constants_json": {
+        "title": "Custom JSON",
+        "description": "Custom JSON for additional record properties. Must be string of JSON object with first-level properties",
+        "type": "string",
+        "examples": ["{\"abc\": \"123\", \"cde\": \"132\"}"],
+        "order": 4
+      }
+    }
+  }
+}

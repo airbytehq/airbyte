@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "modelId": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "currency": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "bid": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "cbid": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "price": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "feedId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "shopCategoryId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "marketCategoryId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "cutPrice": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "campaignId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

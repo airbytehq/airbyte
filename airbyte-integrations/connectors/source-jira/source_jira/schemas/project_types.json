@@ -28,6 +28,6 @@
       "readOnly": true
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details about a project type."
 }

@@ -20,7 +20,7 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
@@ -50,10 +50,10 @@ class SqlOperationsUtilsTest {
 
     database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            config.get("username").asText(),
+            config.get("password").asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            config.get(JdbcUtils.JDBC_URL_KEY).asText()));
+            config.get("jdbc_url").asText()));
 
     uuidSupplier = mock(Supplier.class);
   }
@@ -113,10 +113,10 @@ class SqlOperationsUtilsTest {
 
   private JsonNode createConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put(JdbcUtils.SCHEMA_KEY, SCHEMA_NAME)
-        .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:postgresql://%s:%s/%s",
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .put("schema", SCHEMA_NAME)
+        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
             container.getHost(),
             container.getFirstMappedPort(),
             container.getDatabaseName()))

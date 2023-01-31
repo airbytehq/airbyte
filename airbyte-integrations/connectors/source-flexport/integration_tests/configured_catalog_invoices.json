@@ -6,6 +6,7 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "_object": {
               "type": "string",
@@ -33,6 +34,7 @@
             "total": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -52,6 +54,7 @@
             "balance": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -96,6 +99,7 @@
             "recipient": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -110,10 +114,6 @@
                   "type": "string",
                   "description": "Name of the company entity."
                 },
-                "ref": {
-                  "type": "string",
-                  "description": "Your reference for this company entity, as set in the Network tab."
-                },
                 "mailing_address": {
                   "description": "Address of the company entity.",
                   "oneOf": [
@@ -123,6 +123,7 @@
                     {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -157,21 +158,25 @@
                           "type": ["null", "string"],
                           "description": "ZIP or postal code."
                         },
-                        "timezone": {
+                        "unlocode": {
                           "type": ["null", "string"],
+                          "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                        },
+                        "timezone": {
+                          "type": "string",
                           "description": "Timezone for this address"
                         },
                         "ref": {
                           "type": ["null", "string"],
                           "description": "Your reference for the address, as set in your network tab"
-                        },
-                        "unlocode": {
-                          "type": ["null", "string"],
-                          "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                         }
                       }
                     }
                   ]
+                },
+                "ref": {
+                  "type": "string",
+                  "description": "Your reference for this company entity, as set in the Network tab."
                 },
                 "vat_numbers": {
                   "type": "array",
@@ -179,6 +184,7 @@
                   "items": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -201,6 +207,7 @@
             "issuer": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -215,10 +222,6 @@
                   "type": "string",
                   "description": "Name of the company entity."
                 },
-                "ref": {
-                  "type": "string",
-                  "description": "Your reference for this company entity, as set in the Network tab."
-                },
                 "mailing_address": {
                   "description": "Address of the company entity.",
                   "oneOf": [
@@ -228,6 +231,7 @@
                     {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -262,21 +266,25 @@
                           "type": ["null", "string"],
                           "description": "ZIP or postal code."
                         },
-                        "timezone": {
+                        "unlocode": {
                           "type": ["null", "string"],
+                          "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                        },
+                        "timezone": {
+                          "type": "string",
                           "description": "Timezone for this address"
                         },
                         "ref": {
                           "type": ["null", "string"],
                           "description": "Your reference for the address, as set in your network tab"
-                        },
-                        "unlocode": {
-                          "type": ["null", "string"],
-                          "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                         }
                       }
                     }
                   ]
+                },
+                "ref": {
+                  "type": "string",
+                  "description": "Your reference for this company entity, as set in the Network tab."
                 },
                 "vat_numbers": {
                   "type": "array",
@@ -284,6 +292,7 @@
                   "items": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -309,6 +318,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -330,6 +340,7 @@
                   "amount": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -355,6 +366,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -382,6 +394,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -409,6 +422,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -418,6 +432,7 @@
                   "amount": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -434,24 +449,18 @@
                       }
                     }
                   },
+                  "category": {
+                    "type": "string",
+                    "description": "Category of the credit memo"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Why the credit was applied to the invoice"
+                  },
                   "credited_at": {
                     "type": "string",
                     "description": "When the credit was applied. In ISO8601 UTC format with timezone denoted by Z.",
                     "format": "date-time"
-                  },
-                  "categories": {
-                    "type": "array",
-                    "description": "Category of the credit memo",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "reasons": {
-                    "type": "array",
-                    "description": "Why the credit was applied to the invoice",
-                    "items": {
-                      "type": ["null", "string"]
-                    }
                   }
                 }
               }
@@ -466,6 +475,7 @@
             "shipments": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",

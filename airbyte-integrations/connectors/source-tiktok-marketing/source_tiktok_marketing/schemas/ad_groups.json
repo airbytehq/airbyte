@@ -1,36 +1,51 @@
 {
-  "type": ["null", "object"],
+  "type": [
+    "null",
+    "object"
+  ],
   "properties": {
     "adgroup_id": {
-      "type": "integer"
+      "type": "string"
     },
     "campaign_id": {
-      "type": "integer"
+      "type": "string"
     },
     "advertiser_id": {
-      "type": "integer"
+      "type": "string"
     },
     "adgroup_name": {
       "type": "string"
     },
     "placement_type": {
       "type": "string",
-      "enum": ["PLACEMENT_TYPE_AUTOMATIC", "PLACEMENT_TYPE_NORMAL"]
+      "enum": [
+        "PLACEMENT_TYPE_AUTOMATIC",
+        "PLACEMENT_TYPE_NORMAL"
+      ]
     },
     "placement": {
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "string"
       }
     },
     "enable_inventory_filter": {
-      "type": ["null", "boolean"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "is_comment_disable": {
       "type": "integer"
     },
     "app_id": {
-      "type": ["integer", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "external_type": {
       "type": "string",
@@ -43,19 +58,34 @@
       ]
     },
     "app_download_url": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "package": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "pixel_id": {
-      "type": ["integer", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "external_action": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "deep_external_action": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "creative_material_mode": {
       "type": "string"
@@ -79,7 +109,10 @@
       }
     },
     "audience_type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "location": {
       "type": "array",
@@ -103,13 +136,19 @@
       }
     },
     "age": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "string"
       }
     },
     "gender": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "languages": {
       "type": "array",
@@ -130,25 +169,40 @@
       }
     },
     "device_price": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "number"
       }
     },
     "android_osv": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "ios_target_device": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "device_models": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "integer"
       }
     },
     "ios_osv": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "budget_mode": {
       "type": "string"
@@ -168,28 +222,46 @@
       "format": "date-time"
     },
     "dayparting": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "optimize_goal": {
       "type": "string"
     },
     "cpv_video_duration": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "conversion_window": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "pacing": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "billing_event": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "skip_learning_phase": {
       "type": "integer"
     },
     "bid_type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "bid": {
       "type": "number"
@@ -198,7 +270,10 @@
       "type": "number"
     },
     "deep_bid_type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "deep_cpabid": {
       "type": "number"
@@ -210,22 +285,37 @@
       "type": "string"
     },
     "frequency": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "frequency_schedule": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "statistic_type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "carriers_v2": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "integer"
       }
     },
     "carriers": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "string"
       }
@@ -234,49 +324,82 @@
       "type": "string"
     },
     "pangle_block_app_list_id": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "string"
       }
     },
     "action_categories": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "string"
       }
     },
     "action_days": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "video_actions": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "string"
       }
     },
     "rf_buy_type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "buy_impression": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "buy_reach": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "rf_predict_cpr": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "rf_predict_frequency": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "pangle_audience_package_include": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "number"
       }
     },
     "pangle_audience_package_exclude": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "number"
       }
@@ -285,72 +408,129 @@
       "type": "boolean"
     },
     "catalog_id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "product_set_id": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "catalog_authorized_bc": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "audience_rule": {
-      "type": ["object", "null"]
+      "type": [
+        "object",
+        "null"
+      ]
     },
     "include_custom_actions": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "object"
       }
     },
     "exclude_custom_actions": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "object"
       }
     },
     "dpa_retargeting_type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "split_test_adgroup_ids": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
         "type": "number"
       }
     },
     "brand_safety": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "brand_safety_partner": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "promotion_website_type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "ios_quota_type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "roas_bid": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "action_v2": {
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
-        "type": ["object", "null"],
+        "type": [
+          "object",
+          "null"
+        ],
         "properties": {
           "action_categories": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
               "type": "integer"
             }
           },
           "action_period": {
-            "type": ["number", "null"]
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "action_scene": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "user_actions ": {
-            "type": ["array", "null"],
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
               "type": "string"
             }
@@ -359,13 +539,19 @@
       }
     },
     "targeting_expansion": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "enable_expansion": {
           "type": "boolean"
         },
         "expansion_types": {
-          "type": ["array", "null"],
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "type": "string"
           }

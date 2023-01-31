@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,13 +20,8 @@ import java.util.Map;
 
 public class GcsJsonlDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
-  public GcsJsonlDestinationAcceptanceTest() {
+  protected GcsJsonlDestinationAcceptanceTest() {
     super(S3Format.JSONL);
-  }
-
-  @Override
-  public ProtocolVersion getProtocolVersion() {
-    return ProtocolVersion.V1;
   }
 
   @Override

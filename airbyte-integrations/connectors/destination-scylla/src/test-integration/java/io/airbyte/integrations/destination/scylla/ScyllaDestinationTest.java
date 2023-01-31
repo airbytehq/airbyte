@@ -7,8 +7,7 @@ package io.airbyte.integrations.destination.scylla;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.airbyte.integrations.destination.scylla.ScyllaContainerInitializr.ScyllaContainer;
-import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -30,8 +29,8 @@ class ScyllaDestinationTest {
   void testCheckWithStatusSucceeded() {
 
     var jsonConfiguration = TestDataFactory.jsonConfig(
-        HostPortResolver.resolveHost(scyllaContainer),
-        HostPortResolver.resolvePort(scyllaContainer));
+        scyllaContainer.getHost(),
+        scyllaContainer.getFirstMappedPort());
 
     var connectionStatus = scyllaDestination.check(jsonConfiguration);
 

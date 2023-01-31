@@ -1,0 +1,272 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Yandex Metrika Report Spec
+  type: object
+  required:
+    - credentials
+    - tables
+    - date
+  additionalProperties: false
+  properties:
+    credentials:
+      title: Authorization Method
+      order: 0
+      type: object
+      oneOf:
+        - title: Access Token Auth
+          type: object
+          properties:
+            auth_type:
+              title: Auth Type
+              const: access_token_auth
+              order: 0
+              type: string
+            access_token:
+              title: Access Token
+              description: Long-term Authorized Access Token.
+              airbyte_secret: true
+              type: string
+          required:
+            - access_token
+        - title: CredentialsCraft Auth
+          type: object
+          properties:
+            auth_type:
+              title: Auth Type
+              const: credentials_craft_auth
+              order: 0
+              type: string
+            credentials_craft_host:
+              title: CredentialsCraft Host
+              description: CredentialsCraft Host.
+              examples:
+                - https://credentialscraft.mysite.com
+              type: string
+            credentials_craft_token:
+              title: CredentialsCraft Token
+              description: Long-term CredentialsCraft Access Token (NOT Yandex token).
+              type: string
+              airbyte_secret: true
+            credentials_craft_token_id:
+              title: CredentialsCraft Yandex Token ID
+              desctiption: Yandex Token ID in CredentialsCraft
+              examples:
+                - 3345435
+              type: integer
+          required:
+            - auth_type
+            - credentials_craft_host
+            - credentials_craft_token
+            - credentials_craft_token_id
+    global_counter_ids:
+      title: Counter IDs
+      description: Counter IDs list used for all Reports data replication.
+      type: array
+      items:
+        type:
+          - string
+          - integer
+      order: 1
+    global_direct_client_logins:
+      title: Yandex.Direct Client Logins (Optional)
+      description: List of logins of Yandex.Direct clients. Can be used to generate a Direct Costs report. See https://yandex.ru/dev/metrika/doc/api2/api_v1/direct-clicks.html
+      type: array
+      items:
+        type: string
+      order: 2
+    tables:
+      title: Tables
+      type: array
+      description: Aggregated tables list declared with Preset name or Custom Report Fields. Filters allowed.
+      items:
+        type: object
+        additionalProperties: false
+        required:
+          - name
+        properties:
+          name:
+            type: string
+            title: Table Title In Destination
+            order: 0
+          preset_name:
+            type: string
+            title: Preset Name
+            desctiption: See https://yandex.ru/dev/metrika/doc/api2/api_v1/presets/presets.html. Leave empty for Custom Report type
+            order: 1
+          metrics:
+            type: array
+            title: Metrics List
+            description: See https://yandex.ru/dev/metrika/doc/api2/api_v1/attrandmetr/dim_all.html. Max count - 20
+            maxItems: 20
+            items:
+              type: string
+            order: 2
+          dimensions:
+            type: array
+            title: Dimensions List
+            description: See https://yandex.ru/dev/metrika/doc/api2/api_v1/attrandmetr/dim_all.html. Max count - 10
+            maxItems: 10
+            items:
+              type: string
+            order: 3
+          filters:
+            type: string
+            title: Report Filters (Optional)
+            examples:
+              - ym:s:regionCityName=='Санкт-Петербург'
+              - EXISTS(ym:s:paramsLevel1=='client_id')
+              - NOT(ym:s:age!=18)
+              - ym:s:regionCityName=='Москва' OR ym:s:regionCityName=='Санкт-Петербург'
+            order: 4
+          specific_counter_ids:
+            title: Specific Counter IDs (Optional)
+            description: Specific Counter IDs list that will be applied only for this Report. Leave empty if you want to apply global counter_ids list for this table.
+            type: array
+            items:
+              type: integer
+            order: 5
+          specific_direct_client_logins:
+            title: Specific Yandex.Direct Client Logins (Optional)
+            description: Specific list of logins of Yandex.Direct clients that will be applied only for this Report. Leave empty if you want to apply global counter_ids list for this table. Can be used to generate a Direct Costs report. See https://yandex.ru/dev/metrika/doc/api2/api_v1/direct-clicks.html
+            type: array
+            items:
+              type: string
+            order: 6
+          goal_id:
+            title: Goal ID (Optional)
+            description: Goal ID used for some groupings. I.e. used for ym:s:goal&lt;goal_id&gt;revenue.
+            type:
+              - integer
+              - string
+            order: 7
+          date_group:
+            title: Date Group Parameter
+            description: Grouping by date for some groupings. I.e. used for ym:s:datePeriod&lt;group&gt;.
+            type: string
+            enum:
+              - day
+              - week
+              - month
+              - quarter
+              - year
+            default: day
+            order: 8
+          attribution:
+            title: Attribution Model
+            description: "Attribution model used for some groupings. I.e. used for ym:ad:&lt;attribution&gt;Currency. Default: lastsign"
+            type: string
+            enum:
+              - default
+              - first
+              - last
+              - lastsign
+              - last_yandex_direct_click
+              - cross_device_first
+              - cross_device_last
+              - cross_device_last_significant
+              - cross_device_last_yandex_direct_click
+            default: default
+            order: 9
+          currency:
+            title: Currency (Optional)
+            description: Some groupings allow you to customize the currency (i.e. ym:ad:&lt;currency&gt;ConvertedAdCost). Default depends on counter settings
+            type: string
+            enum:
+              - default
+              - RUB
+              - USD
+              - EUR
+              - YND
+            default: default
+            order: 10
+          experiment_ab_id:
+            title: A/B Experiment ID (Optional)
+            description: "Experiment ID in Yandex.Direct or Audiences. I.e. used for ym:s:experimentAB&lt;experiment_ab&gt;. See: https://yandex.ru/support/metrica/sources/direct-experiment.html"
+            type:
+              - integer
+              - string
+            order: 11
+      order: 3
+    date:
+      title: Replication Date Range
+      type: object
+      oneOf:
+        - type: object
+          title: Date Range
+          properties:
+            date_range_type:
+              type: string
+              const: date_range
+            date_from:
+              title: Date From
+              description: Replication start date in YYYY-MM-DD format.
+              pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+              examples:
+                - "2022-05-01"
+              type: string
+            date_to:
+              title: Date To
+              description: Replication end date in YYYY-MM-DD format.
+              pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+              examples:
+                - "2022-05-01"
+              type: string
+        - type: object
+          title: Last Days
+          properties:
+            date_range_type:
+              type: string
+              const: last_days
+            last_days_count:
+              title: Last Days Count
+              description: Load last N days count
+              examples:
+                - 6
+                - 30
+              type: integer
+              minimum: 0
+              maximum: 365
+            load_today:
+              title: Load Today
+              type: boolean
+              default: false
+        - type: object
+          title: Day Enum
+          properties:
+            date_range_type:
+              type: string
+              const: day_enum
+            day:
+              title: Day
+              description: Today or yesterday
+              enum:
+                - today
+                - yesterday
+              default: yesterday
+              type: string
+      order: 4
+    client_name:
+      title: Client Name (Constant)
+      description: Client name - constant that will be used in record __clientName property
+      type: string
+      examples:
+        - abcde
+      order: 5
+      default: ""
+    product_name:
+      title: Product Name (Constant)
+      description: Product name - constant that will be used in record __productName property
+      type: string
+      examples:
+        - abcde
+      order: 6
+      default: ""
+    custom_constants:
+      title: Custom Constants
+      description: Custom constants for additional record properties
+      type: string
+      examples:
+        - '{"abc": "123", "cde": "132"}'
+      order: 7
+      default: "{}"

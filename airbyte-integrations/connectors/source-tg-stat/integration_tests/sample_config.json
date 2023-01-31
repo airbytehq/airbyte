@@ -1,0 +1,17 @@
+{
+  "access_token": "aaaaaabbbbbccccc",
+  "channels_list": [
+    1234,
+    "@username",
+    "t.me/username",
+    "t.me/joinchat/AAAAABbbbbcccc"
+  ],
+  "date_range": {
+    "date_range_type": "custom_date",
+    "date_from": "2022-01-01",
+    "date_to": "2022-01-30"
+  },
+  "client_name": "CoolClient123",
+  "product_name": "CoolProduct123",
+  "custom_constants_json": "{\"abc123\": \"ABC123\", \"cde123\": \"CDE123\"}"
+}

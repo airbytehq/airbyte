@@ -1,0 +1,492 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "adomain": {
+      "type": "string"
+    },
+    "application": {
+      "type": "string"
+    },
+    "approved": {
+      "type": "string"
+    },
+    "banner": {
+      "type": "string"
+    },
+    "campaign": {
+      "type": "string"
+    },
+    "confirmClick": {
+      "type": "boolean"
+    },
+    "cpm": {
+      "type": "integer"
+    },
+    "cpmBySSP": {
+      "type": "string"
+    },
+    "cpmRate": {
+      "type": "number"
+    },
+    "created": {
+      "type": "string"
+    },
+    "lastUpdate": {
+      "type": "string"
+    },
+    "ctrEffect": {
+      "type": "number"
+    },
+    "deals": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "extraURL": {
+      "type": "string"
+    },
+    "forAdriver": {
+      "type": "boolean"
+    },
+    "fileType": {
+      "type": "string"
+    },
+    "forSizmek": {
+      "type": "boolean"
+    },
+    "forWeborama": {
+      "type": "boolean"
+    },
+    "height": {
+      "type": "number"
+    },
+    "isOwnClickControl": {
+      "type": "boolean"
+    },
+    "isVertical": {
+      "type": "boolean"
+    },
+    "links": {
+      "type": "string"
+    },
+    "loadBannerOnView": {
+      "type": "boolean"
+    },
+    "maxWin": {
+      "type": "number"
+    },
+    "maxComplete": {
+      "type": "number"
+    },
+    "maxClick": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "reasonOfDisapproved": {
+      "type": "string"
+    },
+    "state": {
+      "type": "object",
+      "properties": {
+        "budget": {
+          "type": "number"
+        },
+        "win": {
+          "type": "number"
+        },
+        "click": {
+          "type": "number"
+        },
+        "clickPlus": {
+          "type": "number"
+        },
+        "clickExtra": {
+          "type": "string"
+        },
+        "clickReached": {
+          "type": "integer"
+        },
+        "show": {
+          "type": "integer"
+        },
+        "load": {
+          "type": "integer"
+        },
+        "bid": {
+          "type": "integer"
+        },
+        "auction": {
+          "type": "integer"
+        },
+        "clickWhisla": {
+          "type": "integer"
+        },
+        "dayBudget": {
+          "type": "integer"
+        },
+        "dayClick": {
+          "type": "integer"
+        },
+        "dayClickPlus": {
+          "type": "integer"
+        },
+        "bot": {
+          "type": "integer"
+        },
+        "start": {
+          "type": "integer"
+        },
+        "firstQuartile": {
+          "type": "integer"
+        },
+        "midpoint": {
+          "type": "integer"
+        },
+        "thirdQuartile": {
+          "type": "integer"
+        },
+        "complete": {
+          "type": "integer"
+        },
+        "mute": {
+          "type": "integer"
+        },
+        "unmute": {
+          "type": "integer"
+        },
+        "close": {
+          "type": "integer"
+        },
+        "appInstall": {
+          "type": "integer"
+        },
+        "view": {
+          "type": "integer"
+        },
+        "conversion": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "title": {
+      "type": "string"
+    },
+    "tracking": {
+      "type": "object",
+      "properties": {
+        "trackingClick": {
+          "type": "null"
+        },
+        "trackingShow": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "additionalItems": false
+        },
+        "firstQuartile": {
+          "type": "null"
+        },
+        "midpoint": {
+          "type": "null"
+        },
+        "thirdQuartile": {
+          "type": "null"
+        },
+        "complete": {
+          "type": "null"
+        },
+        "mute": {
+          "type": "null"
+        },
+        "unmute": {
+          "type": "null"
+        }
+      },
+      "additionalProperties": false
+    },
+    "trackingClick": {
+      "type": "string"
+    },
+    "trackingShow": {
+      "type": "string"
+    },
+    "apiType": {
+      "type": "integer"
+    },
+    "url": {
+      "type": "string"
+    },
+    "validCPM": {
+      "type": "boolean"
+    },
+    "videoDuration": {
+      "type": "integer"
+    },
+    "vpaidjs": {
+      "type": "string"
+    },
+    "width": {
+      "type": "integer"
+    },
+    "wrapperURL": {
+      "type": "string"
+    },
+    "rewarded": {
+      "type": "string"
+    },
+    "subtitles": {
+      "type": "string"
+    },
+    "videoConfig": {
+      "type": "object",
+      "properties": {
+        "subtitles": {
+          "type": "boolean"
+        },
+        "progressBar": {
+          "type": "boolean"
+        },
+        "subs": {
+          "type": "string"
+        },
+        "buttonAd": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "buttonLayoutText": {
+              "type": "string"
+            },
+            "logoID": {
+              "type": "string"
+            },
+            "trackClickEvents": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "quizName": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "logoButtonTextColor": {
+              "type": "string"
+            },
+            "logoButtonTextBackgroundColor": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "overlayAd": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "overlayBackgroundColor": {
+              "type": "string"
+            },
+            "mainText": {
+              "type": "string"
+            },
+            "buttonText": {
+              "type": "string"
+            },
+            "trackClickEvents": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "quizName": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "overlayMainTextColor": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "packshot": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "visibleTime": {
+              "type": "integer"
+            },
+            "packshotID": {
+              "type": "string"
+            },
+            "interactive": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "clickThruBtnText": {
+          "type": "string"
+        },
+        "soundControl": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "position": {
+              "type": "integer"
+            },
+            "size": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "skipAdButton": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "unskippableTime": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        },
+        "header": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "logoID": {
+              "type": "string"
+            },
+            "adMessage": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "overlay": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "buttonText": {
+              "type": "string"
+            },
+            "mainText": {
+              "type": "string"
+            },
+            "backgroundColor": {
+              "type": "string"
+            },
+            "mainTextColor": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "logoButton": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "mainText": {
+              "type": "string"
+            },
+            "textColor": {
+              "type": "string"
+            },
+            "textBackgroundColor": {
+              "type": "string"
+            },
+            "logoID": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tabs": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "hideArrows": {
+              "type": "boolean"
+            },
+            "tabButtonColors": {
+              "type": "object",
+              "properties": {
+                "originColor": {
+                  "type": "string"
+                },
+                "activeColor": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "homeTabButtonText": {
+              "type": "string"
+            },
+            "extraTabs": {
+              "type": "null"
+            }
+          },
+          "additionalProperties": false
+        },
+        "cart": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "configID": {
+      "type": "string"
+    },
+    "ias": {
+      "type": "string"
+    },
+    "moat": {
+      "type": "string"
+    },
+    "targetBanner": {
+      "type": "string"
+    },
+    "storageType": {
+      "type": "string"
+    },
+    "adParameters": {
+      "type": "string"
+    },
+    "erirId": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

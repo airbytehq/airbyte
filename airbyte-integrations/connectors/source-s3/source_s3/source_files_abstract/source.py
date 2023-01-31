@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
 from abc import ABC, abstractmethod
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
@@ -40,7 +41,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
     @abstractmethod
     def documentation_url(self) -> str:
         """
-        :return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
+        :return: link to docs page for this source e.g. "https://docs.airbyte.io/integrations/sources/s3"
         """
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -58,9 +59,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         The error object will be cast to string to display the problem to the user.
         """
         try:
-            stream = self.stream_class(**config)
-            stream.fileformatparser_class(stream._format)._validate_config(config)
-            for file_info in stream.filepath_iterator():
+            for file_info in self.stream_class(**config).filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
                 globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)

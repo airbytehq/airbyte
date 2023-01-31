@@ -20,7 +20,7 @@
       "type": ["null", "string"]
     },
     "imap": {
-      "type": ["null", "object"]
+      "type": ["null", "string"]
     }
   }
 }

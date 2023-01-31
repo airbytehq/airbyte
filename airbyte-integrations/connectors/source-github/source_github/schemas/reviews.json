@@ -12,7 +12,7 @@
       "type": ["null", "string"]
     },
     "user": {
-      "$ref": "user_graphql.json"
+      "$ref": "user.json"
     },
     "body": {
       "type": ["null", "string"]
@@ -51,11 +51,7 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "created_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "updated_at": {
+    "pull_request_updated_at": {
       "type": "string",
       "format": "date-time"
     },

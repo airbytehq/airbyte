@@ -11,14 +11,13 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.SQLException;
 import java.util.HashMap;
 import org.jooq.DSLContext;
@@ -43,19 +42,19 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:postgresql://%s:%s/%s",
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
             container.getHost(),
             container.getFirstMappedPort(),
             container.getDatabaseName()))
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        config.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        config.get("jdbc_url").asText(),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
 

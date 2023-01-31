@@ -15,10 +15,10 @@
       "type": ["array", "null"]
     },
     "fr_escalated": {
-      "type": ["null", "boolean"]
+      "type": "boolean"
     },
     "spam": {
-      "type": ["null", "boolean"]
+      "type": "boolean"
     },
     "email_config_id": {
       "type": ["integer", "null"]
@@ -27,25 +27,25 @@
       "type": ["integer", "null"]
     },
     "priority": {
-      "type": ["integer", "null"]
+      "type": "integer"
     },
     "requester_id": {
-      "type": ["integer", "null"]
+      "type": "integer"
     },
     "responder_id": {
       "type": ["integer", "null"]
     },
     "source": {
-      "type": ["integer", "null"]
+      "type": "integer"
     },
     "company_id": {
       "type": ["integer", "null"]
     },
     "status": {
-      "type": ["integer", "null"]
+      "type": "integer"
     },
     "subject": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "association_type": {
       "type": ["integer", "null"]
@@ -53,59 +53,59 @@
     "to_emails": {
       "type": ["array", "null"],
       "items": {
-        "type": ["string", "null"]
+        "type": "string"
       }
     },
     "product_id": {
       "type": ["integer", "null"]
     },
     "id": {
-      "type": ["integer", "null"]
+      "type": "integer"
     },
     "type": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "due_by": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "fr_due_by": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "is_escalated": {
-      "type": ["boolean", "null"]
+      "type": "boolean"
     },
     "custom_fields": {
-      "type": ["object", "null"]
+      "type": "object"
     },
     "created_at": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "updated_at": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "associated_tickets_count": {
       "type": ["integer", "null"]
     },
     "tags": {
-      "type": ["array", "null"]
+      "type": "array"
     },
     "nr_due_by": {
       "type": ["string", "null"]
     },
     "nr_escalated": {
-      "type": ["boolean", "null"]
+      "type": "boolean"
     },
     "description": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "description_text": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "requester": {
-      "type": ["object", "null"]
+      "type": "object"
     },
     "stats": {
-      "type": ["object", "null"]
+      "type": "object"
     }
   }
 }

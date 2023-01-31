@@ -14,6 +14,6 @@
       "description": "The name of the screen tab. The maximum length is 255 characters."
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "A screen tab."
 }

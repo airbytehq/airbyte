@@ -1,0 +1,107 @@
+{
+    "type": "object",
+    "properties": {
+        "date": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date"
+        },
+        "af_c_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "ecpi": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "c": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "af_ad": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "pid": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "measures": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": "object",
+                "properties": {
+                    "event_name_sum": {
+                        "type": [
+                            "null",
+                            "integer"
+                        ]
+                    },
+                    "event_name_count": {
+                        "type": [
+                            "null",
+                            "integer"
+                        ]
+                    },
+                    "event_name_unique_users": {
+                        "type": [
+                            "null",
+                            "integer"
+                        ]
+                    },
+                    "period": {
+                        "type": [
+                            "null",
+                            "integer"
+                        ]
+                    },
+                    "event_name_conversion_rate": {
+                        "type": [
+                            "null",
+                            "number"
+                        ]
+                    }
+                }
+            }
+        },
+        "cost": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "af_channel": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "af_ad_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "users": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}

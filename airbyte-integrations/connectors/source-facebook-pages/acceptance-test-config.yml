@@ -1,42 +1,27 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-facebook-pages:dev
-acceptance_tests:
+tests:
   spec:
-    tests:
-      - spec_path: "source_facebook_pages/spec.yaml"
+    - spec_path: "source_facebook_pages/spec.json"
   connection:
-    tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
   discovery:
-    tests:
-      - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.1.6"
+    - config_path: "secrets/config.json"
   basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams:
-          - name: page
-            bypass_reason: "This stream has access_token inside"
-          - name: post
-            bypass_reason: "Data is not permanent"
-          - name: page_insights
-            bypass_reason: "Data is not permanent"
-          - name: post_insights
-            bypass_reason: "Data is not permanent"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: []
   full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        ignored_fields:
-          # Since we generating new Page access token for each connector run this
-          # field would containt different values.
-          page:
-            - "posts/paging/next"
-            - "published_posts/paging/next"
-            - "feed/paging/next"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      ignored_fields:
+        # Since we generating new Page access token for each connector run this
+        # field would containt different values.
+        page:
+          - "posts/paging/next"
+          - "published_posts/paging/next"
+          - "feed/paging/next"

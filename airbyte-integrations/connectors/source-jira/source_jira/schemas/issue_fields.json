@@ -173,7 +173,9 @@
         },
         "configuration": {
           "type": "object",
-          "additionalProperties": true,
+          "additionalProperties": {
+            "readOnly": true
+          },
           "description": "If the field is a custom field, the configuration of the field.",
           "readOnly": true
         }

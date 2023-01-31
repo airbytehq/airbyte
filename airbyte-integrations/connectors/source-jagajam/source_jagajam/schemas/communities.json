@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "soctype": { "type": ["null", "string"] },
+    "cid": { "type": "string" },
+    "name": { "type": ["null", "string"] },
+    "image": { "type": ["null", "string"] },
+    "url": { "type": ["null", "string"] },
+    "users_count": { "type": ["null", "integer"] },
+    "tags": {
+      "type": ["null", "array"],
+      "items": { "type": ["integer", "null"] }
+    },
+    "color": { "type": ["null", "string"] },
+    "timezone": { "type": ["null", "string"] },
+    "sharedInEmails": {
+      "type": ["null", "array"],
+      "items": { "type": "string" }
+    },
+    "sharedOutEmails": {
+      "type": ["null", "array"],
+      "items": { "type": "string" }
+    },
+    "is_insights": { "type": ["null", "boolean"] },
+    "active": { "type": ["null", "boolean"] },
+    "status": { "type": ["null", "string"] },
+    "hidden": { "type": ["null", "boolean"] },
+    "is_demo": { "type": ["null", "boolean"] },
+    "retrospectiveStart": { "type": ["null", "string"] },
+    "retrospectiveFinish": { "type": ["null", "string"] },
+    "access_retrospective": { "type": ["null", "string"] }
+  }
+}

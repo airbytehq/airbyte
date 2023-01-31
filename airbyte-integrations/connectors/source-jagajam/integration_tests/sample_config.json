@@ -1,0 +1,11 @@
+{
+  "auth_token": "123456-asfdsagsdgsgsgsgsgsgsggasgagg",
+  "date_range": {
+    "date_range_type": "last_n_days",
+    "last_days_count": 20,
+    "should_load_today": true
+  },
+  "client_name_constant": "CoolClient123",
+  "product_name_constant": "CoolProduct123",
+  "custom_constants_json": "{\"aConstant\": \"aConstant123\", \"bConstant\": \"bConstant123\"}"
+}

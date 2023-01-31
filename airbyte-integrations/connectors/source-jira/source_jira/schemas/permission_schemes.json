@@ -175,6 +175,6 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "List of all permission schemes."
 }

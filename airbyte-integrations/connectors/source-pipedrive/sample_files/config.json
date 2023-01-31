@@ -1,0 +1,10 @@
+{
+    "authorization": {
+        "api_token": "TOKEN",
+        "auth_type": "Token"
+    },
+    "replication_start_date": "2021-12-31T00:00:01Z",
+    "client_name": "",
+    "product_name": "",
+    "custom_json": "{\"abc\": \"123\"}"
+}

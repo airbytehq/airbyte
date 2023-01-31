@@ -3,66 +3,72 @@
   "type": "object",
   "properties": {
     "address_line_1": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "address_line_2": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "alternate_emails": {
       "type": ["null", "array"]
     },
     "city": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "country": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "email": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "first_name": {
-      "type": ["string", "null"]
+      "type": "string"
     },
-    "contact_id": {
-      "type": ["string", "null"]
+    "id": {
+      "type": "string"
     },
     "last_name": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "postal_code": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "state_province_region": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "list_ids": {
       "type": ["null", "array"]
     },
     "created_at": {
-      "type": ["string", "null"],
-      "format": "date-time"
+      "type": "string"
     },
     "updated_at": {
-      "type": ["string", "null"],
-      "format": "date-time"
+      "type": "string"
+    },
+    "_metadata": {
+      "type": "object",
+      "properties": {
+        "self": {
+          "type": "string"
+        }
+      }
     },
     "custom_fields": {
-      "type": ["object", "null"]
+      "type": "object"
     },
     "phone_number": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "whatsapp": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "line": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "facebook": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "unique_name": {
-      "type": ["string", "null"]
+      "type": "string"
     }
   }
 }

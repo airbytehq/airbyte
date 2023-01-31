@@ -1,0 +1,46 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "t2",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "Target": { "type": "string" },
+            "Price": { "type": "number" },
+            "Currency": { "type": "string" },
+            "Yclid": { "type": "number" },
+            "DateTime": { "type": "number", "airbyte_type": "integer" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "yandex_offline_conv_test_dataset"
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "t3",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "Target": { "type": "string" },
+            "Price": { "type": "number" },
+            "Currency": { "type": "string" },
+            "ClientId": { "type": "number", "airbyte_type": "integer" },
+            "DateTime": { "type": "number", "airbyte_type": "integer" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "yandex_offline_conv_test_dataset"
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

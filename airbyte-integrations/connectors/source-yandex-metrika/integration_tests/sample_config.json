@@ -1,0 +1,31 @@
+{
+  "credentials": {
+    "auth_type": "access_token_auth",
+    "access_token": ""
+  },
+  "counter_id": "",
+  "log_source": "visits",
+  "fields": [
+    "ym:s:visitID",
+    "ym:s:dateTime",
+    "ym:s:UTMSource",
+    "ym:s:UTMMedium",
+    "ym:s:UTMCampaign",
+    "ym:s:UTMContent",
+    "ym:s:visitDuration",
+    "ym:s:pageViews",
+    "ym:s:bounce",
+    "ym:s:isNewUser",
+    "ym:s:productsCurrency"
+  ],
+  "date_from": "2021-01-01",
+  "date_to": "2021-01-20",
+  "clean_on_every_slice": false,
+  "chunk_reports": {
+    "split_mode_type": "split_date_mode",
+    "split_range_days_count": 3
+  },
+  "client_name": "CoolClien123",
+  "product_name": "CoolProduct123",
+  "custom_data_json": "{}"
+}

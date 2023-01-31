@@ -1,37 +1,17 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updatedAt": "2025-07-15T07:41:30Z" },
-      "stream_descriptor": { "name": "programs" }
-    }
+{
+  "programs": {
+    "updatedAt": "2025-07-15T07:41:30Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "createdAt": "2025-07-15T07:41:30Z" },
-      "stream_descriptor": { "name": "campaigns" }
-    }
+  "campaigns": {
+    "createdAt": "2025-07-15T07:41:30Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "createdAt": "2025-07-15T07:41:30Z" },
-      "stream_descriptor": { "name": "lists" }
-    }
+  "lists": {
+    "createdAt": "2025-07-15T07:41:30Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updatedAt": "2025-07-15T07:41:30Z" },
-      "stream_descriptor": { "name": "leads" }
-    }
+  "leads": {
+    "updatedAt": "2025-07-15T07:41:30Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "activityDate": "2025-07-15T07:41:30Z" },
-      "stream_descriptor": { "name": "activities_visit_webpage" }
-    }
+  "activities_visit_webpage": {
+    "activityDate": "2025-07-15T07:41:30Z"
   }
-]
+}

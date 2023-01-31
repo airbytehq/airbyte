@@ -6,15 +6,13 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.1",
     "pendulum==1.2.0",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "source-acceptance-test",
-    "pytest-mock~=3.6.1",
-    "requests-mock",
 ]
 
 setup(

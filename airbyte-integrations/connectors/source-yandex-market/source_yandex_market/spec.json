@@ -1,0 +1,188 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Yandex Market Spec",
+    "type": "object",
+    "required": [
+      "credentials",
+      "client_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "credentials": {
+        "title": "Authorization Method",
+        "default": {},
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Access Token Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "access_token_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "OAuth Access Token",
+                "description": "Long-term Authorized Access Token.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "access_token"
+            ]
+          },
+          {
+            "title": "CredentialsCraft Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "credentials_craft_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "credentials_craft_host": {
+                "title": "CredentialsCraft Host",
+                "description": "CredentialsCraft Host.",
+                "examples": [
+                  "https://credentialscraft.mysite.com"
+                ],
+                "type": "string"
+              },
+              "credentials_craft_token": {
+                "title": "CredentialsCraft Token",
+                "description": "Long-term CredentialsCraft Access Token (NOT Yandex token).",
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "credentials_craft_token_id": {
+                "title": "CredentialsCraft Yandex Token ID",
+                "desctiption": "Yandex Token ID in CredentialsCraft",
+                "examples": [
+                  3345435
+                ],
+                "type": "integer"
+              }
+            },
+            "required": [
+              "auth_type",
+              "credentials_craft_host",
+              "credentials_craft_token",
+              "credentials_craft_token_id"
+            ]
+          }
+        ]
+      },
+      "client_id": {
+        "type": "string",
+        "title": "Client ID",
+        "description": "Yandex Client ID",
+        "order": 2
+      },
+      "date_range": {
+        "title": "Date Range",
+        "description": "Choose date period that must be loaded",
+        "type": "object",
+        "order": 3,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Custom Date Range",
+            "properties": {
+              "date_from": {
+                "title": "Start Date",
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "description": "Start date in format YYYY-MM-DD. If not set, last 30 days or last_days setting will be used.",
+                "pattern": "^$|^[0-9]{2}-[0-9]{2}-[0-9]{4}$",
+                "examples": [
+                  "2021-12-01"
+                ],
+                "order": 0
+              },
+              "date_to": {
+                "title": "End Date",
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "description": "End date in format YYYY-MM-DD. If not set, last 30 days or last_days setting will be used.",
+                "pattern": "^$|^[0-9]{2}-[0-9]{2}-[0-9]{4}$",
+                "examples": [
+                  "2021-12-30"
+                ],
+                "order": 1
+              },
+              "data_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Custom Date",
+                "const": "custom_date"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Last N Days",
+            "properties": {
+              "last_days_count": {
+                "title": "Last Days Count",
+                "type": "integer",
+                "description": "Count of last days exclude today.",
+                "minimum": 0,
+                "maximum": 365,
+                "examples": [
+                  "30"
+                ]
+              },
+              "data_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Last N Days",
+                "const": "last_n_days"
+              }
+            }
+          }
+        ]
+      },
+      "client_name": {
+        "title": "Client Name Constant",
+        "description": "Constant that will be used in record __clientName property",
+        "type": "string",
+        "examples": [
+          "abcd"
+        ],
+        "order": 6,
+        "default": ""
+      },
+      "product_name": {
+        "title": "Product Name Constant",
+        "description": "Constant that will be used in record __productName property",
+        "type": "string",
+        "examples": [
+          "abcd"
+        ],
+        "default": "",
+        "order": 7
+      },
+      "custom_json": {
+        "title": "Custom JSON",
+        "description": "Custom JSON for additional record properties. Must be string of JSON object with first-level properties",
+        "type": "string",
+        "examples": [
+          "{\"abc\": \"123\", \"cde\": \"132\"}"
+        ],
+        "default": "{}",
+        "order": 8
+      }
+    }
+  }
+}

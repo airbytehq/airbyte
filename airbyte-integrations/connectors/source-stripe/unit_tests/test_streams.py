@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from source_stripe.streams import (
@@ -16,9 +15,6 @@ from source_stripe.streams import (
     Customers,
     Disputes,
     Events,
-    ExternalAccount,
-    ExternalAccountBankAccounts,
-    ExternalAccountCards,
     InvoiceItems,
     InvoiceLineItems,
     Invoices,
@@ -129,9 +125,8 @@ def test_sub_stream(requests_mock):
             "url": "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines",
         },
     )
-    # make start date a recent date so there's just one slice in a parent stream
-    start_date = pendulum.today().subtract(days=3).int_timestamp
-    stream = InvoiceLineItems(start_date=start_date, account_id="None")
+
+    stream = InvoiceLineItems(start_date=1641008947, account_id="None")
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
     assert list(records) == [
         {"id": "il_1", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
@@ -142,7 +137,7 @@ def test_sub_stream(requests_mock):
 
 @pytest.fixture(name="config")
 def config_fixture():
-    config = {"authenticator": "authenticator", "account_id": "<account_id>", "start_date": 1596466368}
+    config = {"authenticator": "authenticator", "account_id": "<account_id>", "start_date": 1652783086}
     return config
 
 
@@ -171,7 +166,6 @@ def config_fixture():
         (CheckoutSessions, {}, "checkout/sessions"),
         (CheckoutSessionsLineItems, {"stream_slice": {"checkout_session_id": "CS1"}}, "checkout/sessions/CS1/line_items"),
         (PromotionCodes, {}, "promotion_codes"),
-        (ExternalAccount, {}, "accounts/<account_id>/external_accounts"),
     ],
 )
 def test_path(
@@ -186,32 +180,14 @@ def test_path(
 @pytest.mark.parametrize(
     "stream, kwargs, expected",
     [
-        (
-            CustomerBalanceTransactions,
-            {"stream_state": {}, "stream_slice": {"created[gte]": 1596466368, "created[lte]": 1596552768}},
-            {"limit": 100, "created[gte]": 1596466368, "created[lte]": 1596552768},
-        ),
-        (
-            Customers,
-            {"stream_state": {}, "stream_slice": {"created[gte]": 1596466368, "created[lte]": 1596552768}},
-            {"created[gte]": 1596466368, "created[lte]": 1596552768, "limit": 100},
-        ),
+        (CustomerBalanceTransactions, {"stream_state": {}}, {"limit": 100}),
+        (Customers, {}, {"created[gte]": 1652783086, "limit": 100}),
         (InvoiceLineItems, {"stream_state": {}, "stream_slice": {"starting_after": "2030"}}, {"limit": 100, "starting_after": "2030"}),
-        (
-            Subscriptions,
-            {"stream_slice": {"created[gte]": 1596466368, "created[lte]": 1596552768}},
-            {"created[gte]": 1596466368, "limit": 100, "status": "all", "created[lte]": 1596552768},
-        ),
+        (Subscriptions, {}, {"created[gte]": 1652783086, "limit": 100, "status": "all"}),
         (SubscriptionItems, {"stream_state": {}, "stream_slice": {"subscription_id": "SI"}}, {"limit": 100, "subscription": "SI"}),
         (BankAccounts, {"stream_state": {}, "stream_slice": {"subscription_id": "SI"}}, {"limit": 100, "object": "bank_account"}),
-        (CheckoutSessions, {"stream_state": None, "stream_slice": {}}, {"limit": 100}),
-        (
-            CheckoutSessionsLineItems,
-            {"stream_state": None, "stream_slice": {}},
-            {"limit": 100, "expand[]": ["data.discounts", "data.taxes"]},
-        ),
-        (ExternalAccountBankAccounts, {"stream_state": None, "stream_slice": {}}, {"limit": 100, "object": "bank_account"}),
-        (ExternalAccountCards, {"stream_state": None, "stream_slice": {}}, {"limit": 100, "object": "card"}),
+        (CheckoutSessions, {"stream_state": None}, {"limit": 100}),
+        (CheckoutSessionsLineItems, {"stream_state": None}, {"limit": 100, "expand[]": ["data.discounts", "data.taxes"]}),
     ],
 )
 def test_request_params(

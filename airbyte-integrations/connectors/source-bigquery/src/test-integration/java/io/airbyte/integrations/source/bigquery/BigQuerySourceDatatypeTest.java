@@ -87,7 +87,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int64")
-            .airbyteType(JsonSchemaType.INTEGER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .createTablePatternSql(CREATE_SQL_PATTERN)
             .addInsertValues("null", "-128", "127", "9223372036854775807", "-9223372036854775808")
             .addExpectedValues(null, "-128", "127", "9223372036854775807", "-9223372036854775808")
@@ -284,7 +284,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
             .addInsertValues("['a', 'b']")
-            .addExpectedValues("[\"a\",\"b\"]")
+            .addExpectedValues("[{\"test_column\":\"a\"},{\"test_column\":\"b\"}]")
             .build());
 
     addDataTypeTestData(

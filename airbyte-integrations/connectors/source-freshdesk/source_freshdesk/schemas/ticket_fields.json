@@ -85,10 +85,10 @@
       }
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": "string"
     }
   }
 }

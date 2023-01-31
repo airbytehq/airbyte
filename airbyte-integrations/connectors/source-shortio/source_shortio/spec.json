@@ -5,6 +5,7 @@
     "title": "Shortio Spec",
     "type": "object",
     "required": ["domain_id", "secret_key", "start_date"],
+    "additionalProperties": false,
     "properties": {
       "domain_id": {
         "type": "string",

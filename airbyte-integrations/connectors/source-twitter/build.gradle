@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_twitter'
+    moduleDirectory 'source_twitter_singer'
 }

@@ -1,0 +1,184 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Appmetrica Spec",
+    "type": "object",
+    "required": ["credentials", "application_id", "datetime_range"],
+    "additionalProperties": false,
+    "properties": {
+      "credentials": {
+        "title": "Authorization Method",
+        "default": {},
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Access Token Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "access_token_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "Long-term Authorized Access Token.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["access_token"]
+          },
+          {
+            "title": "CredentialsCraft Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "credentials_craft_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "credentials_craft_host": {
+                "title": "CredentialsCraft Host",
+                "description": "CredentialsCraft Host.",
+                "examples": ["https://credentialscraft.mysite.com"],
+                "type": "string"
+              },
+              "credentials_craft_token": {
+                "title": "CredentialsCraft Token",
+                "description": "Long-term CredentialsCraft Access Token (NOT Yandex token).",
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "credentials_craft_token_id": {
+                "title": "CredentialsCraft Yandex Token ID",
+                "desctiption": "Yandex Token ID in CredentialsCraft",
+                "examples": [3345435],
+                "type": "integer"
+              }
+            },
+            "required": [
+              "auth_type",
+              "credentials_craft_host",
+              "credentials_craft_token",
+              "credentials_craft_token_id"
+            ]
+          }
+        ]
+      },
+      "application_id": {
+        "type": "integer",
+        "title": "Application ID",
+        "description": "Appmetrica application identifier",
+        "order": 1
+      },
+      "datetime_range": {
+        "title": "Datetime Range",
+        "description": "Choose datetime period that must be loaded",
+        "type": "object",
+        "order": 7,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Custom Datetime Range",
+            "required": ["datetime_from", "datetime_to", "datetime_range_type"],
+            "properties": {
+              "datetime_from": {
+                "title": "Start Datetime",
+                "type": "string",
+                "description": "Start datetime in format yyyy-mm-ddThh:mm:ss.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+                "examples": ["2021-12-01T00:00:00"],
+                "order": 0
+              },
+              "datetime_to": {
+                "title": "End Datetime",
+                "type": "string",
+                "description": "End datetime in format yyyy-mm-ddThh:mm:ss.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+                "examples": ["2021-12-07T00:00:00"],
+                "order": 1
+              },
+              "datetime_range_type": {
+                "type": "string",
+                "title": "Datetime Range Type",
+                "description": "Custom Datetime Range",
+                "const": "custom_datetime",
+                "order": 2
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Last N Days",
+            "required": [
+              "last_days_count",
+              "datetime_range_type",
+              "should_load_today"
+            ],
+            "properties": {
+              "last_days_count": {
+                "title": "Last Days Count",
+                "type": "integer",
+                "description": "Count of last days exclude today.",
+                "minimum": 0,
+                "maximum": 3650,
+                "examples": [30],
+                "order": 0
+              },
+              "should_load_today": {
+                "title": "Load Today?",
+                "type": "boolean",
+                "description": "Should connector load today as End Datetime? If not, End Datetime will be yesterday.",
+                "order": 1
+              },
+              "datetime_range_type": {
+                "type": "string",
+                "title": "Datetime Range Type",
+                "description": "Last N Days",
+                "const": "last_n_days",
+                "order": 1
+              }
+            }
+          }
+        ]
+      },
+      "client_name": {
+        "title": "Client Name Constant",
+        "description": "Constant that will be used in record __clientName property",
+        "type": "string",
+        "examples": ["abcd"],
+        "order": 8,
+        "default": ""
+      },
+      "product_name": {
+        "title": "Product Name Constant",
+        "description": "Constant that will be used in record __productName property",
+        "type": "string",
+        "examples": ["abcd"],
+        "default": "",
+        "order": 9
+      },
+      "custom_constants_json": {
+        "title": "Custom Constants JSON",
+        "description": "Custom Constants JSON for additional record properties. Must be string of JSON object with first-level properties",
+        "type": "string",
+        "examples": ["{\"abc\": \"123\", \"cde\": \"132\"}"],
+        "default": "{}",
+        "multiline": true,
+        "order": 10
+      },
+      "multithreading_threads_count": {
+        "title": "Multithreading Threads Count",
+        "type": "integer",
+        "min": 0,
+        "max": 10,
+        "default": 10
+      }
+    }
+  }
+}

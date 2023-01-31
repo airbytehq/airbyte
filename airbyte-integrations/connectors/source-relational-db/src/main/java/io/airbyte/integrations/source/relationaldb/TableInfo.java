@@ -19,6 +19,5 @@ public class TableInfo<T> {
   private final String name;
   private final List<T> fields;
   private final List<String> primaryKeys;
-  private final List<String> cursorFields;
 
 }

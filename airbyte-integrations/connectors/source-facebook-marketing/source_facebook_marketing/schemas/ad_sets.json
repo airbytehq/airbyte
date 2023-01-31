@@ -88,20 +88,6 @@
         }
       }
     },
-    "bid_strategy": {
-      "type": ["null", "string"]
-    },
-    "bid_amount": {
-      "type": ["null", "number"]
-    },
-    "bid_constraints": {
-      "type": ["null", "object"],
-      "properties": {
-        "roas_average_floor": {
-          "type": ["null", "integer"]
-        }
-      }
-    },
     "adlabels": {
       "type": ["null", "array"],
       "items": {

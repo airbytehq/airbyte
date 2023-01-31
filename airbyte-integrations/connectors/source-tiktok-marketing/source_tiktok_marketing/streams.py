@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -15,15 +15,14 @@ import pendulum
 import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
-DEFAULT_END_DATE = str(datetime.now().date())
 NOT_AUDIENCE_METRICS = [
     "reach",
     "cost_per_1000_reached",
@@ -31,26 +30,6 @@ NOT_AUDIENCE_METRICS = [
     "secondary_goal_result",
     "cost_per_secondary_goal_result",
     "secondary_goal_result_rate",
-    "cash_spend",
-    "voucher_spend",
-    "video_play_actions",
-    "video_watched_2s",
-    "video_watched_6s",
-    "average_video_play",
-    "average_video_play_per_user",
-    "video_views_p25",
-    "video_views_p50",
-    "video_views_p75",
-    "video_views_p100",
-    "profile_visits",
-    "likes",
-    "comments",
-    "shares",
-    "follows",
-    "clicks_on_music_disc",
-    "real_time_app_install",
-    "real_time_app_install_cost",
-    "app_install",
 ]
 
 T = TypeVar("T")
@@ -58,23 +37,18 @@ T = TypeVar("T")
 
 # Hierarchy of classes
 # TiktokStream
-# ├─AdvertiserIds AdvertiserIds
-# └─FullRefreshTiktokStream
-#   ├─Advertisers                             (1 advertisers)
-#   └─IncrementalTiktokStream
-#     ├─AdGroups                              (2 ad_groups)
-#     ├─Ads                                   (3 ads)
-#     ├─Campaigns                             (4 campaigns)
-#     └─BasicReports
-#       ├─AdsReports                          (5 ads_reports)
-#       ├─AdvertisersReports                  (6 advertisers_reports)
-#       ├─CampaignsReports                    (7 campaigns_reports)
-#       ├─AdGroupsReports                     (8 ad_groups_reports)
-#       └─AudienceReport
-#         ├─AdGroupAudienceReports            (9 ad_group_audience_reports)
-#         ├─AdsAudienceReports                (10 ads_audience_reports)
-#         ├─AdvertisersAudienceReports        (11 advertisers_audience_reports)
-#         └─CampaignsAudienceReportsByCountry (12 campaigns_audience_reports_by_country)
+# ├── ListAdvertiserIdsStream
+# └── FullRefreshTiktokStream
+#     ├── Advertisers
+#     └── IncrementalTiktokStream
+#         ├── AdGroups
+#         ├── Ads
+#         ├── Campaigns
+#         └── BasicReports
+#             ├── AdsReports
+#             ├── AdvertisersReports
+#             ├── CampaignsReports
+#             └── AdGroupsReports
 
 
 @total_ordering
@@ -123,20 +97,8 @@ class ReportGranularity(str, Enum):
         return cls.DAY
 
 
-class Hourly:
-    report_granularity = ReportGranularity.HOUR
-
-
-class Daily:
-    report_granularity = ReportGranularity.DAY
-
-
-class Lifetime:
-    report_granularity = ReportGranularity.LIFETIME
-
-
 class TiktokException(Exception):
-    """default exception for custom Tiktok logic"""
+    """default exception of custom Tiktok logic"""
 
 
 class TiktokStream(HttpStream, ABC):
@@ -145,18 +107,6 @@ class TiktokStream(HttpStream, ABC):
 
     # max value of page
     page_size = 1000
-
-    def __init__(self, **kwargs):
-        super().__init__(authenticator=kwargs.get("authenticator"))
-
-        self._advertiser_id = kwargs.get("advertiser_id")
-
-        # only sandbox has non-empty self._advertiser_id
-        self.is_sandbox = bool(self._advertiser_id)
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """All responses have the similar structure:
@@ -180,6 +130,7 @@ class TiktokStream(HttpStream, ABC):
         data = response.json()
         if data["code"]:
             raise TiktokException(data)
+            raise TiktokException(data["message"])
         data = data["data"]
         if self.response_list_field in data:
             data = data[self.response_list_field]
@@ -203,14 +154,13 @@ class TiktokStream(HttpStream, ABC):
         """
         Once the rate limit is met, the server returns "code": 40100
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890997610497
-        Retry 50002 as well - it's a server error.
         """
         try:
             data = response.json()
         except Exception:
             self.logger.error(f"Incorrect JSON response: {response.text}")
             raise
-        if data["code"] in (40100, 50002):
+        if data["code"] == 40100:
             return True
         return super().should_retry(response)
 
@@ -226,25 +176,55 @@ class TiktokStream(HttpStream, ABC):
         return 0.6
 
 
-class AdvertiserIds(TiktokStream):
-    """Loading of all possible advertiser ids"""
+class ListAdvertiserIdsStream(TiktokStream):
+    """Loading of all possible advertisers"""
 
     primary_key = "advertiser_id"
-    use_cache = True  # it is used in all streams
 
-    def __init__(self, app_id: int, secret: str, access_token: str, **kwargs):
-        super().__init__(advertiser_id=0, authenticator=None)
+    def __init__(self, advertiser_id: int, app_id: int, secret: str, access_token: str, advertisers_ids_filter: List[int]):
+        super().__init__(authenticator=NoAuth())
+        self._advertiser_ids = []
+        # for Sandbox env
+        self._advertiser_id = advertiser_id
+        if not self._advertiser_id:
+            # for Production env
+            self._secret = secret
+            self._app_id = app_id
+            self._access_token = access_token
+            self._advertisers_ids_filter = advertisers_ids_filter
+        else:
+            self._advertiser_ids.append(self._advertiser_id)
 
-        # for Production env
-        self._secret = secret
-        self._app_id = app_id
-        self._access_token = access_token
+    @property
+    def is_sandbox(self) -> bool:
+        """
+        the config parameter advertiser_id is required for Sandbox
+        """
+        # only sandbox has a not empty self._advertiser_id value
+        return self._advertiser_id > 0
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+
         return {"access_token": self._access_token, "secret": self._secret, "app_id": self._app_id}
 
     def path(self, *args, **kwargs) -> str:
         return "oauth2/advertiser/get/"
+
+    @property
+    def advertiser_ids(self):
+        if not self._advertiser_ids:
+            available_advertisers = list(self.read_records(SyncMode.full_refresh))
+            for advertiser in available_advertisers:
+                if self._advertisers_ids_filter:
+                    if advertiser["advertiser_id"] in self._advertisers_ids_filter:
+                        self._advertiser_ids.append(advertiser["advertiser_id"])
+                else:
+                    self._advertiser_ids.append(advertiser["advertiser_id"])
+            if self._advertisers_ids_filter and available_advertisers and not self._advertiser_ids:
+                raise Exception("Available advertisers doesn't match advertisers_ids_filter. Available advertisers:", available_advertisers)
+        return self._advertiser_ids
 
 
 class FullRefreshTiktokStream(TiktokStream, ABC):
@@ -262,46 +242,55 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
             return Decimal(original_value)
         return original_value
 
-    def __init__(self, start_date: str, end_date: str, **kwargs):
+    def __init__(
+        self,
+        advertiser_id: int,
+        app_id: int,
+        secret: str,
+        start_date: str,
+        end_date: str = None,
+        last_n_days: int = None,
+        backward_dates_campatibility_mode: bool = False,
+        advertisers_ids_filter: List[int] = [],
+        **kwargs,
+    ):
         super().__init__(**kwargs)
-        self.kwargs = kwargs
-        # convert a start date to TikTok format
+        # convert a start date and end_date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
-        self._start_time = pendulum.parse(start_date or DEFAULT_START_DATE).strftime("%Y-%m-%d 00:00:00")
-        # convert end date to TikTok format
-        # example:  "2021-08-24" => "2021-08-24 00:00:00"
-        self._end_time = pendulum.parse(end_date or DEFAULT_END_DATE).strftime("%Y-%m-%d 00:00:00")
+        self._backward_dates_campatibility_mode = backward_dates_campatibility_mode
+        self._start_time = pendulum.parse(start_date).strftime("%Y-%m-%d 00:00:00")
+        if end_date:
+            self._end_time = pendulum.parse(end_date).strftime("%Y-%m-%d 00:00:00")
+        else:
+            self._end_time = datetime.now().date().strftime("%Y-%m-%d 00:00:00")
+
+        self._advertiser_storage = ListAdvertiserIdsStream(
+            advertiser_id=advertiser_id,
+            app_id=app_id,
+            secret=secret,
+            access_token=self.authenticator.token,
+            advertisers_ids_filter=advertisers_ids_filter,
+        )
         self.max_cursor_date = None
-        self._advertiser_ids = []
+        self._advertiser_ids = self._advertiser_storage.advertiser_ids
+
+    @property
+    def is_sandbox(self):
+        return self._advertiser_storage.is_sandbox
 
     @staticmethod
     def convert_array_param(arr: List[Union[str, int]]) -> str:
         return json.dumps(arr)
 
-    def get_advertiser_ids(self) -> Iterable[int]:
-        if self.is_sandbox:
-            # for sandbox: just return advertiser_id provided in spec
-            ids = [self._advertiser_id]
-        else:
-            # for prod: return list of all available ids from AdvertiserIds stream:
-            advertiser_ids = AdvertiserIds(**self.kwargs).read_records(sync_mode=SyncMode.full_refresh)
-            ids = [advertiser["advertiser_id"] for advertiser in advertiser_ids]
-
-        self._advertiser_ids = ids
-        return ids
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """Each stream slice is for separate advertiser id"""
-        self.get_advertiser_ids()
-        while self._advertiser_ids:
-            # self._advertiser_ids need to be exhausted so that JsonUpdatedState knows
-            # when all stream slices are processed (stream.is_finished)
-            advertiser_id = self._advertiser_ids.pop(0)
-            yield {"advertiser_id": advertiser_id}
-
     @property
     def is_finished(self):
         return len(self._advertiser_ids) == 0
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Loads all updated tickets after last stream state"""
+        while self._advertiser_ids:
+            advertiser_id = self._advertiser_ids.pop(0)
+            yield {"advertiser_id": advertiser_id}
 
     def request_params(
         self,
@@ -352,35 +341,18 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             return None
 
         cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
-
-        # backward capability to support old state objects
-        if "dimensions" in data:
-            cursor_field_path = self.deprecated_cursor_field
-
         result = data
         for key in cursor_field_path:
             result = result.get(key)
         return result
-
-    @staticmethod
-    def unnest_field(record: Mapping[str, Any], unnest_from: str, fields: Iterable[str]):
-        """
-        Unnest cursor_field to the root level of the record.
-        """
-        if unnest_from in record:
-            prop = record.get(unnest_from, {})
-            for field in fields:
-                if field in prop:
-                    record[field] = prop.get(field)
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
+
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
-            # unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
-            self.unnest_field(record, "dimensions", [self.cursor_field, self.primary_key])
             updated = self.select_cursor_field_value(record, stream_slice)
             if updated is None:
                 yield record
@@ -414,7 +386,7 @@ class Advertisers(FullRefreshTiktokStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["advertiser_ids"] = self.convert_array_param(self.get_advertiser_ids())
+        params["advertiser_ids"] = self.convert_array_param(self._advertiser_ids)
         return params
 
     def path(self, *args, **kwargs) -> str:
@@ -425,6 +397,18 @@ class Advertisers(FullRefreshTiktokStream):
         yield None
 
 
+class VideoCreatives(IncrementalTiktokStream):
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1709477013957634"""
+
+    page_size = 100
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/video/ad/search/"
+
+    def parse_response(self, *args, **kwargs) -> Iterable[Mapping]:
+        return TiktokStream.parse_response(self, *args, **kwargs)
+
+
 class Campaigns(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708582970809346"""
 
@@ -432,6 +416,9 @@ class Campaigns(IncrementalTiktokStream):
 
     def path(self, *args, **kwargs) -> str:
         return "campaign/get/"
+
+    def parse_response(self, *args, **kwargs) -> Iterable[Mapping]:
+        return TiktokStream.parse_response(self, *args, **kwargs)
 
 
 class AdGroups(IncrementalTiktokStream):
@@ -442,6 +429,9 @@ class AdGroups(IncrementalTiktokStream):
     def path(self, *args, **kwargs) -> str:
         return "adgroup/get/"
 
+    def parse_response(self, *args, **kwargs) -> Iterable[Mapping]:
+        return TiktokStream.parse_response(self, *args, **kwargs)
+
 
 class Ads(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708572923161602"""
@@ -451,23 +441,14 @@ class Ads(IncrementalTiktokStream):
     def path(self, *args, **kwargs) -> str:
         return "ad/get/"
 
+    def parse_response(self, *args, **kwargs) -> Iterable[Mapping]:
+        return TiktokStream.parse_response(self, *args, **kwargs)
+
 
 class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
 
-    primary_key = "ad_id"
-    schema_name = "basic_reports"
-    report_granularity = None
-
-    def __init__(self, **kwargs):
-        report_granularity = kwargs.pop("report_granularity", None)
-        super().__init__(**kwargs)
-
-        # Important:
-        # for >= 0.1.13 - granularity is set via inheritance
-        # for < 0.1.13 - granularity is set via init param
-        if report_granularity:
-            self.report_granularity = report_granularity
+    primary_key = None
 
     @property
     @abstractmethod
@@ -476,40 +457,44 @@ class BasicReports(IncrementalTiktokStream, ABC):
         Returns a necessary level value
         """
 
-    @property
-    def deprecated_cursor_field(self):
-        if self.report_granularity == ReportGranularity.DAY:
-            return ["dimensions", "stat_time_day"]
-        if self.report_granularity == ReportGranularity.HOUR:
-            return ["dimensions", "stat_time_hour"]
-        if self.report_granularity == ReportGranularity.LIFETIME:
-            return ["dimensions", "stat_time_day"]
+    def __init__(self, report_granularity: ReportGranularity, **kwargs):
+        super().__init__(**kwargs)
+        self.report_granularity = report_granularity
 
     @property
     def cursor_field(self):
         if self.report_granularity == ReportGranularity.DAY:
-            return "stat_time_day"
+            return ["dimensions", "stat_time_day"]
         if self.report_granularity == ReportGranularity.HOUR:
-            return "stat_time_hour"
-        if self.report_granularity == ReportGranularity.LIFETIME:
-            return "stat_time_day"
+            return ["dimensions", "stat_time_hour"]
+        return []
 
     @staticmethod
     def _get_time_interval(
-        start_date: Union[datetime, str], ending_date: Union[datetime, str], granularity: ReportGranularity
+        start_date: Union[datetime, str],
+        granularity: ReportGranularity,
+        end_date: Union[datetime, str] = None,
+        backward_dates_campatibility_mode: bool = False,
     ) -> Iterable[Tuple[datetime, datetime]]:
         """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
         to get the desired time range.
         Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513
         :param start_date - Timestamp from which we should start the report
+        :param end_date - Timestamp at which we should stop the report
+        :param backward_dates_campatibility_mode - Should stream use original connector logic with incremental based on stream_state
         :param granularity - Level of granularity of the report; one of [HOUR, DAY, LIFETIME]
         :return Iterator for pair of start_date and end_date that can be used as request parameters
         """
         if isinstance(start_date, str):
             start_date = pendulum.parse(start_date)
-        end_date = pendulum.parse(ending_date) if ending_date else pendulum.now()
 
-        # TikTok API only allows certain amount of days of data based on the reporting granularity
+        if isinstance(end_date, str):
+            end_date = pendulum.parse(end_date)
+
+        if backward_dates_campatibility_mode:
+            end_date = pendulum.now()
+
+        # Snapchat API only allows certain amount of days of data based on the reporting granularity
         if granularity == ReportGranularity.DAY:
             max_interval = 30
         elif granularity == ReportGranularity.HOUR:
@@ -517,15 +502,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
         elif granularity == ReportGranularity.LIFETIME:
             max_interval = 364
         else:
-            raise ValueError(f"Unsupported reporting granularity: {granularity}, must be one of DAY, HOUR, LIFETIME")
-
-        # for incremental sync with abnormal state produce at least one state message
-        # by producing at least one stream slice from today
-        if end_date < start_date:
-            start_date = end_date
+            raise ValueError("Unsupported reporting granularity, must be one of DAY, HOUR, LIFETIME")
 
         total_date_diff = end_date - start_date
-
         iterations = total_date_diff.days // max_interval
 
         for i in range(iterations + 1):
@@ -541,13 +520,10 @@ class BasicReports(IncrementalTiktokStream, ABC):
             ReportLevel.ADGROUP: "adgroup_id",
             ReportLevel.AD: "ad_id",
         }
+        spec_time_dimensions = {ReportGranularity.DAY: "stat_time_day", ReportGranularity.HOUR: "stat_time_hour"}
         if self.report_level and self.report_level in spec_id_dimensions:
             result.append(spec_id_dimensions[self.report_level])
 
-        spec_time_dimensions = {
-            ReportGranularity.DAY: "stat_time_day",
-            ReportGranularity.HOUR: "stat_time_hour",
-        }
         if self.report_granularity and self.report_granularity in spec_time_dimensions:
             result.append(spec_time_dimensions[self.report_granularity])
 
@@ -555,38 +531,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def _get_metrics(self):
         # common metrics for all reporting levels
-        result = [
-            "spend",
-            "cpc",
-            "cpm",
-            "impressions",
-            "clicks",
-            "ctr",
-            "reach",
-            "cost_per_1000_reached",
-            "frequency",
-            "video_play_actions",
-            "video_watched_2s",
-            "video_watched_6s",
-            "average_video_play",
-            "average_video_play_per_user",
-            "video_views_p25",
-            "video_views_p50",
-            "video_views_p75",
-            "video_views_p100",
-            "profile_visits",
-            "likes",
-            "comments",
-            "shares",
-            "follows",
-            "clicks_on_music_disc",
-            "real_time_app_install",
-            "real_time_app_install_cost",
-            "app_install",
-        ]
+        result = ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency"]
 
         if self.report_level == ReportLevel.ADVERTISER and self.report_granularity == ReportGranularity.DAY:
-            # https://ads.tiktok.com/marketing_api/docs?id=1707957200780290
             result.extend(["cash_spend", "voucher_spend"])
 
         if self.report_level in (ReportLevel.CAMPAIGN, ReportLevel.ADGROUP, ReportLevel.AD):
@@ -632,16 +579,17 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return result
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_start = self.select_cursor_field_value(stream_state) or self._start_time
-        stream_end = self._end_time
+        if self._backward_dates_campatibility_mode:
+            stream_start = self.select_cursor_field_value(stream_state) or self._start_time
+        else:
+            stream_start = self._start_time
 
-        for slice_adv_id in super().stream_slices(**kwargs):
-            for start_date, end_date in self._get_time_interval(stream_start, stream_end, self.report_granularity):
-                slice = {
-                    "advertiser_id": slice_adv_id["advertiser_id"],
-                    "start_date": start_date.strftime("%Y-%m-%d"),
-                    "end_date": end_date.strftime("%Y-%m-%d"),
-                }
+        for slice in super().stream_slices(**kwargs):
+            for start_date, end_date in self._get_time_interval(
+                stream_start, self.report_granularity, self._end_time, self._backward_dates_campatibility_mode
+            ):
+                slice["start_date"] = start_date.strftime("%Y-%m-%d")
+                slice["end_date"] = end_date.strftime("%Y-%m-%d")
                 self.logger.debug(
                     f'name: {self.name}, advertiser_id: {slice["advertiser_id"]}, slice: {slice["start_date"]} - {slice["end_date"]}'
                 )
@@ -671,7 +619,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """All reports have same schema"""
-        return ResourceSchemaLoader(package_name_from_class(AdvertiserIds)).get_schema(self.schema_name)
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("basic_reports")
 
     def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
         if stream_slice:
@@ -688,23 +636,17 @@ class AdsReports(BasicReports):
 class AdvertisersReports(BasicReports):
     """Custom reports for advertiser"""
 
-    primary_key = "advertiser_id"
-
     report_level = ReportLevel.ADVERTISER
 
 
 class CampaignsReports(BasicReports):
     """Custom reports for campaigns"""
 
-    primary_key = "campaign_id"
-
     report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupsReports(BasicReports):
     """Custom reports for adgroups"""
-
-    primary_key = "adgroup_id"
 
     report_level = ReportLevel.ADGROUP
 
@@ -713,7 +655,10 @@ class AudienceReport(BasicReports):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957217727489"""
 
     audience_dimensions: List = ["gender", "age"]
-    schema_name = "audience_reports"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """All reports have same schema"""
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("audience_reports")
 
     def _get_metrics(self):
         result = super()._get_metrics()
@@ -734,9 +679,6 @@ class AudienceReport(BasicReports):
 
 
 class AdGroupAudienceReports(AudienceReport):
-
-    primary_key = "adgroup_id"
-
     report_level = ReportLevel.ADGROUP
 
 
@@ -747,15 +689,11 @@ class AdsAudienceReports(AudienceReport):
 
 class AdvertisersAudienceReports(AudienceReport):
 
-    primary_key = "advertiser_id"
-
     report_level = ReportLevel.ADVERTISER
 
 
 class CampaignsAudienceReportsByCountry(AudienceReport):
     """Custom reports for campaigns by country"""
-
-    primary_key = "campaign_id"
 
     report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["country_code"]

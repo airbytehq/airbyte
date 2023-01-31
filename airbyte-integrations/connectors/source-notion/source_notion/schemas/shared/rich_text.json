@@ -1,78 +1,78 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "type": {
-      "type": ["null", "string"]
+      "enum": ["text", "mention", "equation"]
     },
     "text": {
-      "type": ["null", "object"],
-      "additionalProperties": true,
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
         "content": {
-          "type": ["null", "string"]
+          "type": "string"
         },
         "link": {
           "type": ["null", "object"],
-          "additionalProperties": true,
+          "additionalProperties": false,
           "properties": {
             "type": {
               "enum": ["url"]
             },
             "url": {
-              "type": ["null", "string"]
-            }
-          }
-        }
-      }
-    },
-    "rich_text": {
-      "type": ["null", "object"],
-      "additionalProperties": true,
-      "properties": {
-        "content": {
-          "type": ["null", "string"]
-        },
-        "link": {
-          "type": ["null", "object"],
-          "additionalProperties": true,
-          "properties": {
-            "type": {
-              "enum": ["url"]
-            },
-            "url": {
-              "type": ["null", "string"]
+              "type": "string"
             }
           }
         }
       }
     },
     "annotations": {
-      "type": ["null", "object"],
-      "additionalProperties": true,
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
         "bold": {
-          "type": ["null", "boolean"]
+          "type": "boolean"
         },
         "italic": {
-          "type": ["null", "boolean"]
+          "type": "boolean"
         },
         "strikethrough": {
-          "type": ["null", "boolean"]
+          "type": "boolean"
         },
         "underline": {
-          "type": ["null", "boolean"]
+          "type": "boolean"
         },
         "code": {
-          "type": ["null", "boolean"]
+          "type": "boolean"
         },
         "color": {
-          "type": ["null", "string"]
+          "enum": [
+            "default",
+            "gray",
+            "brown",
+            "orange",
+            "yellow",
+            "green",
+            "blue",
+            "purple",
+            "pink",
+            "red",
+            "gray_background",
+            "brown_background",
+            "orange_background",
+            "yellow_background",
+            "green_background",
+            "blue_background",
+            "purple_background",
+            "pink_background",
+            "red_background"
+          ]
         }
       }
     },
     "plain_text": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "href": {
       "type": ["null", "string"]

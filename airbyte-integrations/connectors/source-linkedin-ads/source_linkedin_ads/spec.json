@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/linkedin-ads",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/linkedin-ads",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Linkedin Ads Spec",
@@ -8,7 +8,7 @@
     "additionalProperties": true,
     "properties": {
       "credentials": {
-        "title": "Authentication",
+        "title": "Authentication *",
         "type": "object",
         "oneOf": [
           {
@@ -67,13 +67,66 @@
         "examples": ["2021-05-17"]
       },
       "account_ids": {
-        "title": "Account IDs",
+        "title": "Account IDs (Optional)",
         "type": "array",
         "description": "Specify the account IDs separated by a space, to pull the data from. Leave empty, if you want to pull the data from all associated accounts. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn Ads docs</a> for more info.",
         "items": {
           "type": "integer"
         },
         "default": []
+      },
+      "proxy": {
+        "title": "Proxy Configuration",
+        "order": 13,
+        "oneOf": [
+          {
+            "title": "No Proxy",
+            "type": "object",
+            "properties": {
+              "use_proxy_type": {
+                "title": "Use Proxy Type",
+                "const": "no_proxy",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "title": "Use Proxy",
+            "type": "object",
+            "properties": {
+              "use_proxy_type": {
+                "title": "Use Proxy Type",
+                "const": "use_proxy",
+                "type": "string"
+              },
+              "protocol": {
+                "title": "Proxy Protocol",
+                "default": "https",
+                "order": 1,
+                "enum": ["http", "https"]
+              },
+              "host": {
+                "title": "Proxy Host",
+                "examples": ["proxy.mysite.com", "127.0.0.1"],
+                "type": "string"
+              },
+              "port": {
+                "title": "Proxy Port",
+                "minimum": 1,
+                "examples": [8000],
+                "type": "integer"
+              },
+              "login": { "title": "Proxy Login", "type": "string" },
+              "password": {
+                "title": "Proxy Password",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["protocol", "host", "port"]
+          }
+        ],
+        "type": "object"
       }
     }
   },

@@ -8,10 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeV
 import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-
-from .utils import transform_properties
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
@@ -28,15 +25,6 @@ class NotionStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.start_date = config["start_date"]
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        retry_after = response.headers.get("retry-after")
-        if retry_after:
-            return float(retry_after)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)
@@ -136,7 +124,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
             if not stream_state or record_lmd >= state_lmd:
-                yield from transform_properties(record)
+                yield record
 
     def get_updated_state(
         self,

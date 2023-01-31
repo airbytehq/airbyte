@@ -20,7 +20,7 @@
           "type": ["null", "string"]
         },
         "CurrencyAmount": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         }
       }
     },
@@ -31,7 +31,7 @@
           "type": ["null", "string"]
         },
         "CurrencyAmount": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         }
       }
     },
@@ -51,7 +51,7 @@
           "type": ["null", "string"]
         },
         "CurrencyAmount": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         }
       }
     },

@@ -7,7 +7,11 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "source-acceptance-test", "requests_mock~=1.8"]
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "pytest-mock",
+    "source-acceptance-test",
+]
 
 setup(
     name="source_klaviyo",

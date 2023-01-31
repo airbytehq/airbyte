@@ -1,105 +1,53 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "modify_time": "2030-08-30 09:16:10" },
-      "stream_descriptor": { "name": "ads" }
+{
+  "ads": {
+    "modify_time": "2030-08-30 09:16:10"
+  },
+  "ad_groups": {
+    "modify_time": "2030-08-30 09:16:10"
+  },
+  "campaigns": {
+    "modify_time": "2030-08-30 09:16:10"
+  },
+
+  "ads_reports": {
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
     }
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "modify_time": "2030-08-30 09:16:10" },
-      "stream_descriptor": { "name": "ad_groups" }
+  "advertisers_reports": {
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
     }
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "modify_time": "2030-08-30 09:16:10" },
-      "stream_descriptor": { "name": "campaigns" }
+  "ad_groups_reports": {
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
     }
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "stat_time_day": "2030-01-01",
-        "dimensions": { "stat_time_day": "2030-01-01" }
-      },
-      "stream_descriptor": { "name": "ads_reports" }
+  "campaigns_reports": {
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
     }
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "stat_time_day": "2030-01-01",
-        "dimensions": { "stat_time_day": "2030-01-01" }
-      },
-      "stream_descriptor": { "name": "advertisers_reports" }
+
+  "ads_audience_reports": {
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
     }
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "stat_time_day": "2030-01-01",
-        "dimensions": { "stat_time_day": "2030-01-01" }
-      },
-      "stream_descriptor": { "name": "ad_groups_reports" }
+  "advertisers_audience_reports": {
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
     }
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "stat_time_day": "2030-01-01",
-        "dimensions": { "stat_time_day": "2030-01-01" }
-      },
-      "stream_descriptor": { "name": "campaigns_reports" }
+  "ad_group_audience_reports": {
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
     }
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "stat_time_day": "2030-01-01",
-        "dimensions": { "stat_time_day": "2030-01-01" }
-      },
-      "stream_descriptor": { "name": "ads_audience_reports" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "stat_time_day": "2030-01-01",
-        "dimensions": { "stat_time_day": "2030-01-01" }
-      },
-      "stream_descriptor": { "name": "advertisers_audience_reports" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "stat_time_day": "2030-01-01",
-        "dimensions": { "stat_time_day": "2030-01-01" }
-      },
-      "stream_descriptor": { "name": "ad_group_audience_reports" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "stat_time_day": "2030-01-01",
-        "dimensions": { "stat_time_day": "2030-01-01" }
-      },
-      "stream_descriptor": {
-        "name": "campaigns_audience_reports_by_country"
-      }
+  "campaigns_audience_reports_by_country": {
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
     }
   }
-]
+}

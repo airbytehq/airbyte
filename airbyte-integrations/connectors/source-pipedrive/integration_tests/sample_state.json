@@ -1,68 +1,20 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "deals"
-      }
-    }
+{
+  "deals": {
+    "update_time": "2021-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "activities"
-      }
-    }
+  "activities": {
+    "update_time": "2021-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "persons"
-      }
-    }
+  "persons": {
+    "update_time": "2021-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "pipelines"
-      }
-    }
+  "pipelines": {
+    "update_time": "2021-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "update_time": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "stages"
-      }
-    }
+  "stages": {
+    "update_time": "2021-06-01 10:10:10"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "modified": "2021-06-01 10:10:10"
-      },
-      "stream_descriptor": {
-        "name": "users"
-      }
-    }
+  "users": {
+    "modified": "2021-06-01 10:10:10"
   }
-]
+}

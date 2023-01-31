@@ -12,7 +12,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
-import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -35,11 +34,6 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
   }
 
   @Override
-  public ProtocolVersion getProtocolVersion() {
-    return ProtocolVersion.V1;
-  }
-
-  @Override
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
@@ -56,9 +50,7 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
     final Iterator<Entry<String, JsonNode>> iterator = fieldDefinitions.fields();
     while (iterator.hasNext()) {
       final Map.Entry<String, JsonNode> entry = iterator.next();
-      JsonNode fieldValue = entry.getValue();
-      JsonNode typeValue = fieldValue.get("type") == null ? fieldValue.get("$ref") : fieldValue.get("type");
-      fieldTypes.put(entry.getKey(), typeValue.asText());
+      fieldTypes.put(entry.getKey(), entry.getValue().get("type").asText());
     }
     return fieldTypes;
   }

@@ -6,6 +6,7 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "_object": {
               "type": "string",
@@ -34,6 +35,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -48,10 +50,6 @@
                     "type": "string",
                     "description": "Name of the company entity."
                   },
-                  "ref": {
-                    "type": "string",
-                    "description": "Your reference for this company entity, as set in the Network tab."
-                  },
                   "mailing_address": {
                     "description": "Address of the company entity.",
                     "oneOf": [
@@ -61,6 +59,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -95,21 +94,25 @@
                             "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
-                          "timezone": {
+                          "unlocode": {
                             "type": ["null", "string"],
+                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                          },
+                          "timezone": {
+                            "type": "string",
                             "description": "Timezone for this address"
                           },
                           "ref": {
                             "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
-                          },
-                          "unlocode": {
-                            "type": ["null", "string"],
-                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           }
                         }
                       }
                     ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "description": "Your reference for this company entity, as set in the Network tab."
                   },
                   "vat_numbers": {
                     "type": "array",
@@ -117,6 +120,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -140,6 +144,7 @@
             "locations": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -159,6 +164,7 @@
             "contacts": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",

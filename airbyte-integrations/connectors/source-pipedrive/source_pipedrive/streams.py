@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -19,7 +19,15 @@ class PipedriveStream(HttpStream, ABC):
     data_field = "data"
     page_size = 50
 
-    def __init__(self, authenticator, replication_start_date=None, **kwargs):
+    def __init__(
+        self,
+        authenticator,
+        replication_start_date=None,
+        product_name=None,
+        client_name=None,
+        custom_constants={},
+        **kwargs,
+    ):
         if isinstance(authenticator, Oauth2Authenticator):
             super().__init__(authenticator=authenticator, **kwargs)
         else:
@@ -27,6 +35,9 @@ class PipedriveStream(HttpStream, ABC):
             self._api_token = authenticator["api_token"]
 
         self._replication_start_date = replication_start_date
+        self._client_name = client_name
+        self._product_name = product_name
+        self._custom_constants = custom_constants
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -45,20 +56,50 @@ class PipedriveStream(HttpStream, ABC):
     def path_param(self):
         return self.name[:-1]
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
         """
         :param response: the most recent response from the API
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query
                 the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        pagination_data = response.json().get("additional_data", {}).get("pagination", {})
-        if pagination_data.get("more_items_in_collection") and pagination_data.get("start") is not None:
+        pagination_data = (
+            response.json().get("additional_data", {}).get("pagination", {})
+        )
+        if (
+            pagination_data.get("more_items_in_collection")
+            and pagination_data.get("start") is not None
+        ):
             start = pagination_data.get("start") + self.page_size
             return {"start": start}
 
+    def add_constants_to_record(self, record):
+        constants = {
+            "__productName": self._product_name,
+            "__clientName": self._client_name,
+        }
+        constants.update(self._custom_constants)
+        record.update(constants)
+        return record
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        schema = super().get_json_schema()
+
+        extra_properties = ["__productName", "__clientName"]
+        custom_keys = self._custom_constants.keys()
+        extra_properties.extend(custom_keys)
+        for key in extra_properties:
+            schema["properties"][key] = {"type": ["null", "string"]}
+
+        return schema
+
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
         params = {"limit": self.page_size, **next_page_token}
@@ -69,18 +110,25 @@ class PipedriveStream(HttpStream, ABC):
         replication_start_date = self._replication_start_date
         if replication_start_date:
             if stream_state.get(self.cursor_field):
-                replication_start_date = max(pendulum.parse(stream_state[self.cursor_field]), replication_start_date)
+                replication_start_date = max(
+                    pendulum.parse(stream_state[self.cursor_field]),
+                    replication_start_date,
+                )
 
             params.update(
                 {
                     "items": self.path_param,
-                    "since_timestamp": replication_start_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "since_timestamp": replication_start_date.strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
                 }
             )
 
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
         """
@@ -90,16 +138,30 @@ class PipedriveStream(HttpStream, ABC):
             if self.primary_key in record and record[self.primary_key] is None:
                 # Convert "id: null" fields to "id: 0" since id is primary key and SAT checks if it is not null.
                 record[self.primary_key] = 0
+
+            if isinstance(record, list) and len(record) > 0:
+                record = record[0]
+
+            record = self.add_constants_to_record(record)
+
             yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_benchmark = latest_record[self.cursor_field]
         if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+            return {
+                self.cursor_field: max(
+                    latest_benchmark, current_stream_state[self.cursor_field]
+                )
+            }
         return {self.cursor_field: latest_benchmark}
 
 
@@ -175,7 +237,44 @@ class Users(PipedriveStream):
 
     cursor_field = "modified"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
         record_gen = super().parse_response(response=response, **kwargs)
         for records in record_gen:
             yield from records
+
+
+class DealFields(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
+class Notes(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Notes#getNotes,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
+class OrganizationFields(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
+class PersonFields(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
+class ProductFields(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """

@@ -11,9 +11,6 @@
     "email": {
       "type": ["null", "string"]
     },
-    "phone_number": {
-      "type": ["null", "string"]
-    },
     "created_at": {
       "type": "integer"
     },

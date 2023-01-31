@@ -11,6 +11,6 @@
       "description": "The issue navigator column value."
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details of an issue navigator column item."
 }

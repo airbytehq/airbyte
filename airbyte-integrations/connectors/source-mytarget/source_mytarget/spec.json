@@ -1,0 +1,135 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Mytarget Spec",
+    "type": "object",
+    "required": [
+      "credentials"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "credentials": {
+        "title": "Authorization Method",
+        "default": {},
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Access Token Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "access_token_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "Long-term Authorized Access Token.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "auth_type"
+            ]
+          },
+          {
+            "title": "CredentialsCraft Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "credentials_craft_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "credentials_craft_host": {
+                "title": "CredentialsCraft Host",
+                "description": "CredentialsCraft Host.",
+                "examples": [
+                  "https://credentialscraft.mysite.com"
+                ],
+                "type": "string"
+              },
+              "credentials_craft_token": {
+                "title": "CredentialsCraft Token",
+                "description": "Long-term CredentialsCraft Access Token (NOT MyTarget token).",
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "credentials_craft_mytarget_token_id": {
+                "title": "CredentialsCraft MyTarget Token ID",
+                "desctiption": "MyTarget Token ID in CredentialsCraft",
+                "examples": [
+                  3345435
+                ],
+                "type": "integer"
+              }
+            },
+            "required": [
+              "auth_type"
+            ]
+          }
+        ]
+      },
+      "date_from": {
+        "title": "Replication Start Date",
+        "description": "Replication start date in YYYY-MM-DD format. Statistics data will be replicated since this date including yesterday. Today statistics data will not be included because of it's incomplition",
+        "default": "2020-01-01",
+        "order": 1,
+        "type": "string"
+      },
+      "date_to": {
+        "title": "Replication End Date",
+        "description": "Replication end date in YYYY-MM-DD format. Statistics data will be replicated since date_from including this date.",
+        "default": "2020-01-01",
+        "order": 2,
+        "type": "string"
+      },
+      "last_days": {
+        "title": "Load Last Days Count",
+        "description": "Load last N days. Statistics data will be replicated since N days before including yesterday. Used in incremental (at first, load data from start date, then load data from last sync date minus last days, must be useful because of data corrections) and full refresh (start date is not used, load only last N days).",
+        "minimum": 1,
+        "maximum": 365,
+        "examples": [
+          "30"
+        ],
+        "order": 3,
+        "type": "integer"
+      },
+      "client_name": {
+        "title": "Client Name Constant",
+        "description": "Constant that will be used in record __clientName property",
+        "type": "string",
+        "examples": [
+          "abcd"
+        ],
+        "order": 4,
+        "default": ""
+      },
+      "product_name": {
+        "title": "Product Name Constant",
+        "description": "Constant that will be used in record __productName property",
+        "type": "string",
+        "examples": [
+          "abcd"
+        ],
+        "order": 5,
+        "default": ""
+      },
+      "custom_json": {
+        "title": "Custom JSON",
+        "description": "Custom JSON for additional record properties. Must be string of JSON object with first-level properties",
+        "type": "string",
+        "examples": [
+          "{\"abc\": \"123\", \"cde\": \"132\"}"
+        ],
+        "order": 6,
+        "default": "{}"
+      }
+    }
+  }
+}

@@ -21,10 +21,9 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -40,6 +39,7 @@ class RedshiftStreamCopierTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStreamCopierTest.class);
 
+  private static final int PART_SIZE = 5;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   // The full path would be something like
@@ -71,6 +71,7 @@ class RedshiftStreamCopierTest {
         "fake-region")
         .withEndpoint("fake-endpoint")
         .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
+        .withPartSize(PART_SIZE)
         .get();
 
     copier = new RedshiftStreamCopier(
@@ -87,7 +88,6 @@ class RedshiftStreamCopierTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
                 .withName("fake-stream")
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
                 .withNamespace("fake-namespace")));
   }
 

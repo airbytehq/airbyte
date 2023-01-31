@@ -35,6 +35,10 @@ class InstagramStream(Stream, ABC):
         fields = list(self.get_json_schema().get("properties", {}).keys())
         return list(set(fields) - set(non_object_fields))
 
+    def upgrade_state_to_latest_format(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Upgrade state to latest format and return new state object"""
+        return copy.deepcopy(state)
+
     def request_params(
         self,
         stream_slice: Mapping[str, Any] = None,
@@ -218,8 +222,6 @@ class UserInsights(InstagramIncrementalStream):
             state_value = stream_state.get(account_id, {}).get(self.cursor_field)
             start_date = pendulum.parse(state_value) if state_value else self._start_date
             start_date = max(start_date, self._start_date, pendulum.now().subtract(days=self.buffer_days))
-            if start_date > pendulum.now():
-                continue
             for since in pendulum.period(start_date, self._end_date).range("days", self.days_increment):
                 until = since.add(days=self.days_increment)
                 self.logger.info(f"Reading insights between {since.date()} and {until.date()}")
@@ -248,6 +250,14 @@ class UserInsights(InstagramIncrementalStream):
             if not isinstance(value, Mapping):
                 return True
         return False
+
+    def upgrade_state_to_latest_format(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Upgrade state to latest format and return new state object"""
+        if self._state_has_legacy_format(state):
+            self.logger.info(f"The {self.name} state has old format, converting...")
+            return {account_id: {self.cursor_field: str(cursor_value)} for account_id, cursor_value in state.items()}
+
+        return super().upgrade_state_to_latest_format(state)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
@@ -310,7 +320,6 @@ class MediaInsights(Media):
 
     MEDIA_METRICS = ["engagement", "impressions", "reach", "saved"]
     CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
-    REELS_METRICS = ["comments", "likes", "reach", "saved", "shares", "total_interactions", "plays"]
 
     def read_records(
         self,
@@ -321,7 +330,7 @@ class MediaInsights(Media):
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
-        media = ig_account.get_media(params=self.request_params(), fields=["media_type", "media_product_type"])
+        media = ig_account.get_media(params=self.request_params(), fields=["media_type"])
         for ig_media in media:
             account_id = ig_account.get("id")
             insights = self._get_insights(ig_media, account_id)
@@ -335,13 +344,10 @@ class MediaInsights(Media):
 
     def _get_insights(self, item, account_id) -> Optional[MutableMapping[str, Any]]:
         """Get insights for specific media"""
-        if item.get("media_product_type") == "REELS":
-            metrics = self.REELS_METRICS
-        elif item.get("media_type") == "VIDEO":
+        if item.get("media_type") == "VIDEO":
             metrics = self.MEDIA_METRICS + ["video_views"]
         elif item.get("media_type") == "CAROUSEL_ALBUM":
             metrics = self.CAROUSEL_ALBUM_METRICS
-
         else:
             metrics = self.MEDIA_METRICS
 

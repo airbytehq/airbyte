@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "CATEGORY_ID": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "COLOR": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "ENTITY_ID": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "ID": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "NAME": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "NAME_INIT": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "SEMANTICS": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "SORT": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "STATUS_ID": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "SYSTEM": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

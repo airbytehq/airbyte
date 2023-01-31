@@ -4,29 +4,112 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Appsflyer Spec",
     "type": "object",
-    "required": ["app_id", "api_token", "start_date"],
+    "required": ["app_id", "api_token_v1"],
     "additionalProperties": false,
     "properties": {
       "app_id": {
+        "order": 0,
         "type": "string",
         "description": "App identifier as found in AppsFlyer."
       },
-      "api_token": {
+      "api_token_v1": {
+        "order": 1,
         "type": "string",
-        "description": "Pull API token for authentication. If you change the account admin, the token changes, and you must update scripts with the new token. <a href=\"https://support.appsflyer.com/hc/en-us/articles/360004562377\">Get the API token in the Dashboard</a>.",
+        "description": "Pull API token for authentication V1. If you change the account admin, the token changes, and you must update scripts with the new token. <a href=\"https://support.appsflyer.com/hc/en-us/articles/360004562377\">Get the API token in the Dashboard</a>.",
+        "airbyte_secret": true
+      },
+      "api_token_v2": {
+        "order": 2,
+        "type": "string",
+        "description": "Pull API token for authentication V2. Only used for Cohorts Report. Cohorts report will not be available if you'll leave this field blank.",
         "airbyte_secret": true
       },
       "start_date": {
+        "order": 3,
         "type": "string",
-        "description": "The default value to use if no bookmark exists for an endpoint. Raw Reports historical lookback is limited to 90 days.",
+        "description": "Start replication date in format YYYY-MM-DD or YYYY-MM-DD hh:mm:ss",
         "examples": ["2021-11-16", "2021-11-16 15:00:00"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}:[0-9]{2})?$"
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}:[0-9]{2})?$"
+      },
+      "end_date": {
+        "order": 4,
+        "type": "string",
+        "description": "End replication date in format YYYY-MM-DD or YYYY-MM-DD hh:mm:ss",
+        "examples": ["2021-11-16", "2021-11-16 15:00:00"],
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}:[0-9]{2})?$"
+      },
+      "last_days": {
+        "order": 5,
+        "type": "integer",
+        "title": "Load last N days",
+        "description": "If not set – last 30 days will be used",
+        "minimum": 0,
+        "maximum": 3650,
+        "examples": ["30"]
+      },
+      "chunked_reports_config": {
+        "title": "Split Download Into Chunks",
+        "description": "Connector can split data replication into several logs instead of only one. You can choice days count on every chunk.",
+        "default": {},
+        "type": "object",
+        "order": 6,
+        "oneOf": [
+          {
+            "title": "Don't Split",
+            "type": "object",
+            "properties": {
+              "split_mode_type": {
+                "const": "do_not_split_mode",
+                "order": 0,
+                "type": "string"
+              }
+            },
+            "required": ["split_mode_type"]
+          },
+          {
+            "title": "Split Logs",
+            "type": "object",
+            "properties": {
+              "split_mode_type": {
+                "const": "split_date_mode",
+                "order": 0,
+                "type": "string"
+              },
+              "unit": {
+                "type": "string",
+                "title": "Unit",
+                "order": 1,
+                "enum": ["Hours", "Days"],
+                "default": "Hours"
+              },
+              "split_range_units_count": {
+                "title": "Unit Count",
+                "description": "E.g. if you choose 4 hours, whole logs will be split into several reports by every 4 hours (6 parts for every day). It can increase replication time, so don't set too small range. Minimum - 1",
+                "minimum": 1,
+                "maximum": 3650,
+                "type": "integer",
+                "default": 4,
+                "order": 1
+              }
+            },
+            "required": ["split_mode_type", "unit", "split_range_units_count"]
+          }
+        ]
       },
       "timezone": {
+        "order": 5,
         "type": "string",
         "description": "Time zone in which date times are stored. The project timezone may be found in the App settings in the AppsFlyer console.",
         "default": "UTC",
         "examples": ["US/Pacific", "UTC"]
+      },
+      "in_app_events_event_name_filter": {
+        "order": 6,
+        "type": "string",
+        "title": "In-App Events Filter",
+        "description": "Filter in-app events by specified events. Select multiple events by using a comma-separated list.",
+        "examples": ["af_purchase,ftd"],
+        "pattern": "^$|^[0-9a-zA-Z_]+(,[0-9a-zA-Z_]+)*$"
       }
     }
   }

@@ -2,27 +2,31 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
+
 import sys
 import time
+import urllib.parse
 from abc import ABC, abstractmethod
-from functools import cached_property, lru_cache
+from functools import lru_cache
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
-from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
-from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
+from source_hubspot.helpers import GroupByKey, IRecordPostProcessor, StoreAsIs
+
+# The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
+# so it was decided to limit the length of the `properties` parameter to 15000 characters.
+PROPERTIES_PARAM_MAX_LENGTH = 15000
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -54,6 +58,29 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 }
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
+
+
+def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
+    summary_length = 0
+    local_properties = []
+    for property_ in properties_list:
+        if len(property_) + summary_length + len(urllib.parse.quote(",")) >= PROPERTIES_PARAM_MAX_LENGTH:
+            yield local_properties
+            local_properties = []
+            summary_length = 0
+
+        local_properties.append(property_)
+        summary_length += len(property_) + len(urllib.parse.quote(","))
+
+    if local_properties:
+        yield local_properties
+
+
+def too_many_properties(properties_list: List[str]) -> bool:
+    # Do not iterate over the generator until the end. Here we need to know if it produces more than one record
+    generator = split_properties(properties_list)
+    _ = next(generator)
+    return next(generator, None) is not None
 
 
 def retry_connection_handler(**kwargs):
@@ -113,12 +140,7 @@ class API:
     def is_oauth2(self) -> bool:
         credentials_title = self.credentials.get("credentials_title")
 
-        return credentials_title == OAUTH_CREDENTIALS
-
-    def is_private_app(self) -> bool:
-        credentials_title = self.credentials.get("credentials_title")
-
-        return credentials_title == PRIVATE_APP_CREDENTIALS
+        return credentials_title == "OAuth Credentials"
 
     def get_authenticator(self) -> Optional[Oauth2Authenticator]:
         if self.is_oauth2():
@@ -128,17 +150,18 @@ class API:
                 client_secret=self.credentials["client_secret"],
                 refresh_token=self.credentials["refresh_token"],
             )
-        elif self.is_private_app():
-            return TokenAuthenticator(token=self.credentials["access_token"])
         else:
             return None
 
     def __init__(self, credentials: Mapping[str, Any]):
         self._session = requests.Session()
         self.credentials = credentials
+        credentials_title = credentials.get("credentials_title")
 
-        if self.is_oauth2() or self.is_private_app():
+        if self.is_oauth2():
             self._session.auth = self.get_authenticator()
+        elif credentials_title == "API Key Credentials":
+            self._session.params["hapikey"] = credentials.get("api_key")
         else:
             raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
 
@@ -206,13 +229,6 @@ class Stream(HttpStream, ABC):
     primary_key = None
     filter_old_records: bool = True
     denormalize_records: bool = False  # one record from API response can result in multiple records emitted
-    raise_on_http_errors: bool = True
-    granted_scopes: Set = None
-    properties_scopes: Set = None
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     @property
     @abstractmethod
@@ -220,7 +236,6 @@ class Stream(HttpStream, ABC):
         """Set of required scopes. Users need to grant at least one of the scopes for the stream to be avaialble to them"""
 
     def scope_is_granted(self, granted_scopes: Set[str]) -> bool:
-        self.granted_scopes = set(granted_scopes)
         if not self.scopes:
             return True
         else:
@@ -244,30 +259,13 @@ class Stream(HttpStream, ABC):
     ) -> str:
         return self.url
 
-    @cached_property
-    def _property_wrapper(self) -> IURLPropertyRepresentation:
-        properties = list(self.properties.keys())
-        if "v1" in self.url:
-            return APIv1Property(properties)
-        return APIv3Property(properties)
-
-    def __init__(self, api: API, start_date: Union[str, pendulum.datetime], credentials: Mapping[str, Any] = None, **kwargs):
+    def __init__(self, api: API, start_date: str = None, credentials: Mapping[str, Any] = None, **kwargs):
         super().__init__(**kwargs)
         self._api: API = api
-        self._credentials = credentials
+        self._start_date = pendulum.parse(start_date)
 
-        self._start_date = start_date
-        if isinstance(self._start_date, str):
-            self._start_date = pendulum.parse(self._start_date)
-        creds_title = self._credentials["credentials_title"]
-        if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
-            self._authenticator = api.get_authenticator()
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == HTTPStatus.FORBIDDEN:
-            setattr(self, "raise_on_http_errors", False)
-            logger.warning("You have not permission to API for this stream. " "Please check your scopes for Hubspot account.")
-        return super().should_retry(response)
+        if credentials["credentials_title"] == "API Key Credentials":
+            self._session.params["hapikey"] = credentials.get("api_key")
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == codes.too_many_requests:
@@ -292,12 +290,12 @@ class Stream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-        properties: IURLPropertyRepresentation = None,
+        params: Mapping[str, Any] = None,
     ) -> requests.Response:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if properties:
-            request_params.update(properties.as_url_param())
+        if params:
+            request_params.update(params)
 
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -323,6 +321,7 @@ class Stream(HttpStream, ABC):
 
     def _read_stream_records(
         self,
+        properties_list: List[str],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -338,10 +337,10 @@ class Stream(HttpStream, ABC):
         post_processor: IRecordPostProcessor = GroupByKey(self.primary_key) if group_by_pk else StoreAsIs()
         response = None
 
-        properties = self._property_wrapper
-        for chunk in properties.split():
+        for properties in split_properties(properties_list):
+            params = {"property": properties}
             response = self.handle_request(
-                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, properties=chunk
+                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, params=params
             )
             for record in self._transform(self.parse_response(response, stream_state=stream_state)):
                 post_processor.add_record(record)
@@ -360,42 +359,41 @@ class Stream(HttpStream, ABC):
 
         next_page_token = None
         try:
-            while not pagination_complete:
+            with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
+                while not pagination_complete:
 
-                properties = self._property_wrapper
-                if properties and properties.too_many_properties:
-                    records, response = self._read_stream_records(
-                        stream_slice=stream_slice,
-                        stream_state=stream_state,
-                        next_page_token=next_page_token,
-                    )
-                else:
-                    response = self.handle_request(
-                        stream_slice=stream_slice,
-                        stream_state=stream_state,
-                        next_page_token=next_page_token,
-                        properties=properties,
-                    )
-                    records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+                    properties_list = list(self.properties.keys())
+                    if properties_list and too_many_properties(properties_list):
+                        records, response = self._read_stream_records(
+                            properties_list=properties_list,
+                            stream_slice=stream_slice,
+                            stream_state=stream_state,
+                            next_page_token=next_page_token,
+                        )
+                    else:
+                        response = self.handle_request(
+                            stream_slice=stream_slice,
+                            stream_state=stream_state,
+                            next_page_token=next_page_token,
+                            params={"property": properties_list},
+                        )
+                        records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
-                if self.filter_old_records:
-                    records = self._filter_old_records(records)
-                yield from records
+                    if self.filter_old_records:
+                        records = self._filter_old_records(records)
+                    yield from records
 
-                next_page_token = self.next_page_token(response)
-                if not next_page_token:
-                    pagination_complete = True
+                    next_page_token = self.next_page_token(response)
+                    if not next_page_token:
+                        pagination_complete = True
 
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+                # Always return an empty generator just in case no records were ever yielded
+                yield from []
         except requests.exceptions.HTTPError as e:
             raise e
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
-        try:
-            body = response.json()
-        except json.decoder.JSONDecodeError:
-            return response.text
+        body = response.json()
         if body.get("category") == "MISSING_SCOPES":
             if "errors" in body:
                 errors = body["errors"]
@@ -492,13 +490,6 @@ class Stream(HttpStream, ABC):
         properties = properties or self.properties
 
         for field_name, field_value in record["properties"].items():
-            if field_name not in properties:
-                self.logger.info(
-                    "Property discarded: not maching with properties schema: record id:{}, property_value: {}".format(
-                        record.get("id"), field_name
-                    )
-                )
-                continue
             declared_field_types = properties[field_name].get("type", [])
             if not isinstance(declared_field_types, Iterable):
                 declared_field_types = [declared_field_types]
@@ -634,23 +625,15 @@ class Stream(HttpStream, ABC):
     @lru_cache()
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
-        props = {}
         if not self.entity:
-            return props
-        if not self.properties_scope_is_granted():
-            logger.warning(
-                f"Check your API key has the following permissions granted: {self.properties_scopes}, "
-                f"to be able to fetch all properties available."
-            )
-            return props
+            return {}
+
+        props = {}
         data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
 
         return props
-
-    def properties_scope_is_granted(self):
-        return not self.properties_scopes - self.granted_scopes if self.properties_scopes and self.granted_scopes else True
 
     def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
         """When result has associations we prefer to have it flat, so we transform this:
@@ -673,51 +656,6 @@ class Stream(HttpStream, ABC):
             yield record
 
 
-class AssociationsStream(Stream):
-    """
-    Designed to read associations of CRM objects during incremental syncs, since Search API does not support
-    retrieving associations.
-    """
-
-    http_method = "POST"
-    filter_old_records = False
-
-    def __init__(self, parent_stream: Stream, identifiers: Iterable[Union[int, str]], *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.parent_stream = parent_stream
-        self.identifiers = identifiers
-
-    @property
-    def url(self):
-        """
-        although it is not used, it needs to be implemented because it is an abstract property
-        """
-        return ""
-
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        return f"/crm/v4/associations/{self.parent_stream.entity}/{stream_slice}/batch/read"
-
-    def scopes(self) -> Set[str]:
-        return self.parent_stream.scopes
-
-    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[str]:
-        return self.parent_stream.associations
-
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
-        return {"inputs": [{"id": str(id_)} for id_ in self.identifiers]}
-
-
 class IncrementalStream(Stream, ABC):
     """Stream that supports state and incremental read"""
 
@@ -727,7 +665,6 @@ class IncrementalStream(Stream, ABC):
     # False -> chunk size is max (only one slice), True -> chunk_size is 30 days
     need_chunk = True
     state_checkpoint_interval = 500
-    last_slice = None
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -751,11 +688,7 @@ class IncrementalStream(Stream, ABC):
             cursor = self._field_to_datetime(record[self.updated_at_field])
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
             yield record
-
-        is_last_slice = False
-        if self.last_slice:
-            is_last_slice = stream_slice == self.last_slice
-        self._update_state(latest_cursor=latest_cursor, is_last_record=is_last_slice)
+        self._update_state(latest_cursor=latest_cursor)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         return self.state
@@ -786,24 +719,14 @@ class IncrementalStream(Stream, ABC):
         super().__init__(*args, **kwargs)
         self._state = None
         self._sync_mode = None
-        self._init_sync = pendulum.now("utc")
 
-    def _update_state(self, latest_cursor, is_last_record=False):
-        """
-        The first run uses an endpoint that is not sorted by updated_at but is
-        sorted by id because of this instead of updating the state by reading
-        the latest cursor the state will set it at the end with the time the synch
-        started. With the proposed `state strategy`, it would capture all possible
-        updated entities in incremental synch.
-        """
+    def _update_state(self, latest_cursor):
         if latest_cursor:
             new_state = max(latest_cursor, self._state) if self._state else latest_cursor
             if new_state != self._state:
                 logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
                 self._state = new_state
                 self._start_date = self._state
-        if is_last_record:
-            self._state = self._init_sync
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -825,9 +748,6 @@ class IncrementalStream(Stream, ABC):
                     "endTimestamp": end_ts,
                 }
             )
-        # Save the last slice to ensure we save the lastest state as the initial sync date
-        if len(slices) > 0:
-            self.last_slice = slices[-1]
 
         return slices
 
@@ -876,12 +796,12 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     def _process_search(
         self,
+        properties_list: List[str],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Tuple[List, requests.Response]:
         stream_records = {}
-        properties_list = list(self.properties.keys())
         payload = (
             {
                 "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
@@ -901,24 +821,6 @@ class CRMSearchStream(IncrementalStream, ABC):
 
         return list(stream_records.values()), raw_response
 
-    def _read_associations(self, records: Iterable) -> Iterable[Mapping[str, Any]]:
-        records_by_pk = {record[self.primary_key]: record for record in records}
-        identifiers = list(map(lambda x: x[self.primary_key], records))
-        associations_stream = AssociationsStream(
-            api=self._api, start_date=self._start_date, credentials=self._credentials, parent_stream=self, identifiers=identifiers
-        )
-        slices = associations_stream.stream_slices(sync_mode=SyncMode.full_refresh)
-
-        for _slice in slices:
-            logger.info(f"Reading {_slice} associations of {self.entity}")
-            associations = associations_stream.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
-            for group in associations:
-                current_record = records_by_pk[group["from"]["id"]]
-                associations_list = current_record.get(_slice, [])
-                associations_list.extend(association["toObjectId"] for association in group["to"])
-                current_record[_slice] = associations_list
-        return records_by_pk.values()
-
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -931,44 +833,47 @@ class CRMSearchStream(IncrementalStream, ABC):
         next_page_token = None
 
         latest_cursor = None
-        while not pagination_complete:
-            if self.state:
-                records, raw_response = self._process_search(
-                    next_page_token=next_page_token,
-                    stream_state=stream_state,
-                    stream_slice=stream_slice,
-                )
-                records = self._read_associations(records)
-            else:
-                records, raw_response = self._read_stream_records(
-                    stream_slice=stream_slice,
-                    stream_state=stream_state,
-                    next_page_token=next_page_token,
-                )
+        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
+            while not pagination_complete:
+                properties_list = list(self.properties.keys())
+
+                if self.state:
+                    records, raw_response = self._process_search(
+                        properties_list,
+                        next_page_token=next_page_token,
+                        stream_state=stream_state,
+                        stream_slice=stream_slice,
+                    )
+
+                else:
+                    records, raw_response = self._read_stream_records(
+                        properties_list=properties_list,
+                        stream_slice=stream_slice,
+                        stream_state=stream_state,
+                        next_page_token=next_page_token,
+                    )
+                records = self._filter_old_records(records)
                 records = self._flat_associations(records)
-            records = self._filter_old_records(records)
 
-            for record in records:
-                cursor = self._field_to_datetime(record[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                yield record
+                for record in records:
+                    cursor = self._field_to_datetime(record[self.updated_at_field])
+                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                    yield record
 
-            next_page_token = self.next_page_token(raw_response)
-            if not next_page_token:
-                pagination_complete = True
-            elif self.state and next_page_token["payload"]["after"] >= 10000:
-                # Hubspot documentation states that the search endpoints are limited to 10,000 total results
-                # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
-                # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
-                # start a new search query with the latest state that has been collected.
-                self._update_state(latest_cursor=latest_cursor)
-                next_page_token = None
+                next_page_token = self.next_page_token(raw_response)
+                if not next_page_token:
+                    pagination_complete = True
+                elif self.state and next_page_token["payload"]["after"] >= 10000:
+                    # Hubspot documentation states that the search endpoints are limited to 10,000 total results
+                    # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
+                    # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
+                    # start a new search query with the latest state that has been collected.
+                    self._update_state(latest_cursor=latest_cursor)
+                    next_page_token = None
 
-        # Since Search stream does not have slices is safe to save the latest
-        # state as the initial sync date
-        self._update_state(latest_cursor=latest_cursor, is_last_record=True)
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
+            self._update_state(latest_cursor=latest_cursor)
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
 
     def request_params(
         self,
@@ -995,17 +900,8 @@ class CRMSearchStream(IncrementalStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self.set_sync(sync_mode, stream_state)
+        self.set_sync(sync_mode)
         return [None]
-
-    def set_sync(self, sync_mode: SyncMode, stream_state):
-        self._sync_mode = sync_mode
-        if self._sync_mode == SyncMode.incremental:
-            if stream_state:
-                if not self._state:
-                    self._state = self._start_date
-                else:
-                    self._state = self._start_date = max(self._state, self._start_date)
 
 
 class CRMObjectStream(Stream):
@@ -1138,7 +1034,6 @@ class ContactsListMemberships(Stream):
     page_field = "vid-offset"
     primary_key = "canonical-vid"
     scopes = {"crm.objects.contacts.read"}
-    properties_scopes = {"crm.schemas.contacts.read"}
 
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
@@ -1283,35 +1178,35 @@ class Engagements(IncrementalStream):
 
         next_page_token = None
         latest_cursor = None
+        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
+            while not pagination_complete:
+                response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
-        while not pagination_complete:
-            response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-            records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+                if self.filter_old_records:
+                    records = self._filter_old_records(records)
 
-            if self.filter_old_records:
-                records = self._filter_old_records(records)
+                for record in records:
+                    cursor = self._field_to_datetime(record[self.updated_at_field])
+                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                    yield record
 
-            for record in records:
-                cursor = self._field_to_datetime(record[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                yield record
+                next_page_token = self.next_page_token(response)
+                if self.state and next_page_token and next_page_token["offset"] >= 10000:
+                    # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
+                    # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
+                    # descending order, we stop getting records if we have already reached 10,000. Attempting
+                    # to get more than 10K will result in a HTTP 400 error.
+                    # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
+                    next_page_token = None
 
-            next_page_token = self.next_page_token(response)
-            if self.state and next_page_token and next_page_token["offset"] >= 10000:
-                # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
-                # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
-                # descending order, we stop getting records if we have already reached 10,000. Attempting
-                # to get more than 10K will result in a HTTP 400 error.
-                # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
-                next_page_token = None
+                if not next_page_token:
+                    pagination_complete = True
 
-            if not next_page_token:
-                pagination_complete = True
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
 
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
-
-        self._update_state(latest_cursor=latest_cursor, is_last_record=True)
+        self._update_state(latest_cursor=latest_cursor)
 
 
 class Forms(Stream):
@@ -1414,7 +1309,7 @@ class Owners(Stream):
     scopes = {"crm.objects.owners.read"}
 
 
-class PropertyHistory(Stream):
+class PropertyHistory(IncrementalStream):
     """Contacts Endpoint, API v1
     Is used to get all Contacts and the history of their respective
     Properties. Whenever a property is changed it is added here.
@@ -1422,7 +1317,7 @@ class PropertyHistory(Stream):
     """
 
     more_key = "has-more"
-    url = "/contacts/v1/lists/all/contacts/all"
+    url = "/contacts/v1/lists/recently_updated/contacts/recent"
     updated_at_field = "timestamp"
     created_at_field = "timestamp"
     entity = "contacts"
@@ -1430,10 +1325,8 @@ class PropertyHistory(Stream):
     page_field = "vid-offset"
     page_filter = "vidOffset"
     denormalize_records = True
-    limit_field = "count"
     limit = 100
     scopes = {"crm.objects.contacts.read"}
-    properties_scopes = {"crm.schemas.contacts.read"}
 
     def request_params(
         self,
@@ -1441,9 +1334,8 @@ class PropertyHistory(Stream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {self.limit_field: self.limit, "propertyMode": "value_and_history"}
-        if next_page_token:
-            params.update(next_page_token)
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update(propertyMode="value_and_history")
         return params
 
     def _transform(self, records: Iterable) -> Iterable:
@@ -1548,7 +1440,6 @@ class EngagementsTasks(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
-# this stream uses a beta endpoint thus is unstable and disabled
 class FeedbackSubmissions(CRMObjectIncrementalStream):
     entity = "feedback_submissions"
     associations = ["contacts"]
@@ -1568,9 +1459,15 @@ class Products(CRMObjectIncrementalStream):
     scopes = {"e-commerce"}
 
 
-class Tickets(CRMSearchStream):
+class Tickets(CRMObjectIncrementalStream):
     entity = "ticket"
     associations = ["contacts", "deals", "companies"]
     primary_key = "id"
     scopes = {"tickets"}
-    last_modified_field = "hs_lastmodifieddate"
+
+
+class Quotes(CRMObjectIncrementalStream):
+    entity = "quote"
+    associations = ["deals"]
+    primary_key = "id"
+    scopes = {"e-commerce"}

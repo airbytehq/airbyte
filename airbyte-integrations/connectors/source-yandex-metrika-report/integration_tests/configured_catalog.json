@@ -1,0 +1,32 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "SessionStatistics",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "ym:s:UTMSource": { "type": ["string", "null"] },
+            "ym:s:UTMMedium": { "type": ["string", "null"] },
+            "ym:s:UTMCampaign": { "type": ["string", "null"] },
+            "ym:s:UTMContent": { "type": ["string", "null"] },
+            "ym:s:counterID": { "type": ["string", "null"] },
+            "ym:s:date": { "type": ["string", "null"] },
+            "ym:s:trafficSource": { "type": ["string", "null"] },
+            "ym:s:visits": { "type": ["integer", "null"] },
+            "ym:s:users": { "type": ["integer", "null"] },
+            "ym:s:pageviews": { "type": ["integer", "null"] },
+            "ym:s:bounceRate": { "type": ["number", "null"] },
+            "ym:s:percentNewVisitors": { "type": ["number", "null"] },
+            "__productName": { "type": ["null", "string"] },
+            "__clientName": { "type": ["null", "string"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -1,0 +1,597 @@
+{
+  "streams": [
+    {
+      "name": "campaigns",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "StartDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "State": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "StatusPayment": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "StatusClarification": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "SourceId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_primary_key": [
+        [
+          "Id"
+        ]
+      ]
+    },
+    {
+      "name": "ads",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "CampaignId": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "AdGroupId": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "Status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "State": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "StatusClarification": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "AdCategories": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "AgeLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Subtype": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "TextAd": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "Text": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "Title": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "Title2": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "Href": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "Mobile": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "DisplayDomain": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "DisplayUrlPath": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "DisplayUrlPathModeration": {
+                "type": "object",
+                "properties": {
+                  "Status": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "StatusClarification": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              },
+              "VideoExtension": {
+                "type": "object",
+                "properties": {
+                  "CreativeId": {
+                    "type": [
+                      "null",
+                      "integer"
+                    ]
+                  },
+                  "Status": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "ThumbnailUrl": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "PreviewUrl": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              },
+              "PriceExtension": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "TurboPageId": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "TurboPageModeration": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "BusinessId": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "VCardId": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "AdImageHash": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "SitelinkSetId": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "VCardModeration": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "SitelinksModeration": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "AdImageModeration": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "AdExtensions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "AdExtensionId": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ]
+                    },
+                    "Type": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "DynamicTextAd": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "Text": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "VCardId": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "AdImageHash": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "SitelinkSetId": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "VCardModeration": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "SitelinksModeration": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "AdImageModeration": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "AdExtensions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "AdExtensionId": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ]
+                    },
+                    "Type": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "MobileAppAd": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "Title": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "Text": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "TrackingUrl": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "Action": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "AdImageHash": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "Features": {
+                "type": [
+                  "null",
+                  "array"
+                ],
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "Feature": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "Enabled": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "IsAvailable": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  }
+                }
+              },
+              "AdImageModeration": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "VideoExtension": {
+                "type": "object",
+                "properties": {
+                  "CreativeId": {
+                    "type": [
+                      "null",
+                      "integer"
+                    ]
+                  },
+                  "Status": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "ThumbnailUrl": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "PreviewUrl": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "TextImageAd": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "AdImageHash": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "Href": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "TurboPageId": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              },
+              "TurboPageModeration": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_primary_key": [
+        [
+          "Id"
+        ]
+      ]
+    },
+    {
+      "name": "ad_images",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "AdImageHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "OriginalUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "PreviewUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Subtype": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "Associated": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_primary_key": [
+        [
+          "AdImageHash"
+        ]
+      ]
+    }
+  ]
+}

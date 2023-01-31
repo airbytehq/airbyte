@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "day_limit": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "all_limit": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "start_time": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "stop_time": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

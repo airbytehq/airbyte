@@ -14,17 +14,7 @@ from bingads.service_client import ServiceClient
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
-from source_bing_ads.reports import (
-    ALL_CONVERSION_FIELDS,
-    ALL_REVENUE_FIELDS,
-    AVERAGE_FIELDS,
-    BUDGET_FIELDS,
-    CONVERSION_FIELDS,
-    HISTORICAL_FIELDS,
-    LOW_QUALITY_FIELDS,
-    REVENUE_FIELDS,
-    ReportsMixin,
-)
+from source_bing_ads.reports import ReportsMixin
 from suds import sudsobject
 
 CACHE: VcrCache = VcrCache()
@@ -202,19 +192,11 @@ class Campaigns(BingAdsStream):
     data_field: str = "Campaign"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetCampaignsByAccountId"
-    additional_fields: Iterable[str] = [
-        "AdScheduleUseSearcherTimeZone",
-        "BidStrategyId",
-        "CpvCpmBiddingScheme",
-        "DynamicDescriptionSetting",
-        "DynamicFeedSetting",
-        "MaxConversionValueBiddingScheme",
-        "MultimediaAdsBidAdjustment",
-        "TargetImpressionShareBiddingScheme",
-        "TargetSetting",
-        "VerifiedTrackingSetting",
-    ]
-    campaign_types: Iterable[str] = ["Audience", "DynamicSearchAds", "Search", "Shopping"]
+    additional_fields: str = (
+        "AdScheduleUseSearcherTimeZone BidStrategyId CpvCpmBiddingScheme DynamicDescriptionSetting"
+        " DynamicFeedSetting MaxConversionValueBiddingScheme MultimediaAdsBidAdjustment"
+        " TargetImpressionShareBiddingScheme TargetSetting VerifiedTrackingSetting"
+    )
 
     def request_params(
         self,
@@ -223,8 +205,7 @@ class Campaigns(BingAdsStream):
     ) -> MutableMapping[str, Any]:
         return {
             "AccountId": stream_slice["account_id"],
-            "CampaignType": " ".join(self.campaign_types),
-            "ReturnAdditionalFields": " ".join(self.additional_fields),
+            "ReturnAdditionalFields": self.additional_fields,
         }
 
     def stream_slices(
@@ -351,48 +332,24 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "campaign_performance_report"
-    primary_key = [
-        "AccountId",
-        "CampaignId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Network",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-    ]
 
     report_columns = [
-        *primary_key,
-        "CampaignStatus",
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "TimePeriod",
+        "CampaignId",
+        "CampaignName",
+        "DeviceType",
+        "Network",
         "Impressions",
         "Clicks",
         "Ctr",
+        "AverageCpc",
         "Spend",
-        "CostPerConversion",
-        "QualityScore",
-        "AdRelevance",
-        "LandingPageExperience",
-        "PhoneImpressions",
-        "PhoneCalls",
-        "Ptr",
-        "Assists",
         "ReturnOnAdSpend",
-        "CostPerAssist",
-        "CustomParameters",
-        "ViewThroughConversions",
-        "AllCostPerConversion",
-        "AllReturnOnAdSpend",
-        *ALL_CONVERSION_FIELDS,
-        *ALL_REVENUE_FIELDS,
-        *AVERAGE_FIELDS,
-        *CONVERSION_FIELDS,
-        *LOW_QUALITY_FIELDS,
-        *REVENUE_FIELDS,
-        *BUDGET_FIELDS,
+        "RevenuePerConversion",
+        "ConversionRate",
     ]
 
 
@@ -402,26 +359,14 @@ class CampaignPerformanceReportHourly(CampaignPerformanceReport):
 
 class CampaignPerformanceReportDaily(CampaignPerformanceReport):
     report_aggregation = "Daily"
-    report_columns = [
-        *CampaignPerformanceReport.report_columns,
-        *HISTORICAL_FIELDS,
-    ]
 
 
 class CampaignPerformanceReportWeekly(CampaignPerformanceReport):
     report_aggregation = "Weekly"
-    report_columns = [
-        *CampaignPerformanceReport.report_columns,
-        *HISTORICAL_FIELDS,
-    ]
 
 
 class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
     report_aggregation = "Monthly"
-    report_columns = [
-        *CampaignPerformanceReport.report_columns,
-        *HISTORICAL_FIELDS,
-    ]
 
 
 class AdPerformanceReport(ReportsMixin, BingAdsStream):
@@ -432,47 +377,29 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "ad_performance_report"
-    primary_key = [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "AdId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Language",
-        "Network",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-        "DeliveredMatchType",
-    ]
 
     report_columns = [
-        *primary_key,
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "TimePeriod",
+        "CampaignId",
+        "CampaignName",
+        "DeviceType",
+        "Network",
         "Impressions",
         "Clicks",
-        "Ctr",
         "Spend",
-        "CostPerConversion",
-        "DestinationUrl",
-        "Assists",
+        "Ctr",
+        "AverageCpc",
         "ReturnOnAdSpend",
-        "CostPerAssist",
-        "CustomParameters",
-        "FinalAppUrl",
-        "AdDescription",
-        "AdDescription2",
-        "ViewThroughConversions",
-        "ViewThroughConversionsQualified",
-        "AllCostPerConversion",
-        "AllReturnOnAdSpend",
-        *CONVERSION_FIELDS,
-        *AVERAGE_FIELDS,
-        *ALL_CONVERSION_FIELDS,
-        *ALL_REVENUE_FIELDS,
-        *REVENUE_FIELDS,
+        "RevenuePerConversion",
+        "ConversionRate",
+        "AdGroupName",
+        "AdGroupId",
+        "AdTitle",
+        "AdId",
+        "AdType",
     ]
 
 
@@ -501,48 +428,25 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
     cursor_field = "TimePeriod"
     report_schema_name = "ad_group_performance_report"
 
-    primary_key = [
+    report_columns = [
+        "AccountName",
+        "AccountNumber",
         "AccountId",
-        "CampaignId",
-        "AdGroupId",
         "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
+        "CampaignId",
+        "CampaignName",
         "DeviceType",
         "Network",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-        "Language",
-    ]
-
-    report_columns = [
-        *primary_key,
         "Impressions",
         "Clicks",
         "Ctr",
+        "AverageCpc",
         "Spend",
-        "CostPerConversion",
-        "QualityScore",
-        "ExpectedCtr",
-        "AdRelevance",
-        "LandingPageExperience",
-        "PhoneImpressions",
-        "PhoneCalls",
-        "Ptr",
-        "Assists",
-        "CostPerAssist",
-        "CustomParameters",
-        "FinalUrlSuffix",
-        "ViewThroughConversions",
-        "AllCostPerConversion",
-        "AllReturnOnAdSpend",
-        *ALL_CONVERSION_FIELDS,
-        *ALL_REVENUE_FIELDS,
-        *AVERAGE_FIELDS,
-        *CONVERSION_FIELDS,
-        *REVENUE_FIELDS,
+        "ReturnOnAdSpend",
+        "RevenuePerConversion",
+        "ConversionRate",
+        "AdGroupName",
+        "AdGroupId",
     ]
 
 
@@ -552,26 +456,14 @@ class AdGroupPerformanceReportHourly(AdGroupPerformanceReport):
 
 class AdGroupPerformanceReportDaily(AdGroupPerformanceReport):
     report_aggregation = "Daily"
-    report_columns = [
-        *AdGroupPerformanceReport.report_columns,
-        *HISTORICAL_FIELDS,
-    ]
 
 
 class AdGroupPerformanceReportWeekly(AdGroupPerformanceReport):
     report_aggregation = "Weekly"
-    report_columns = [
-        *AdGroupPerformanceReport.report_columns,
-        *HISTORICAL_FIELDS,
-    ]
 
 
 class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
     report_aggregation = "Monthly"
-    report_columns = [
-        *AdGroupPerformanceReport.report_columns,
-        *HISTORICAL_FIELDS,
-    ]
 
 
 class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
@@ -582,57 +474,33 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "keyword_performance_report"
-    primary_key = [
-        "AccountId",
-        "CampaignId",
-        "AdGroupId",
-        "KeywordId",
-        "AdId",
-        "TimePeriod",
-        "CurrencyCode",
-        "DeliveredMatchType",
-        "AdDistribution",
-        "DeviceType",
-        "Language",
-        "Network",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-    ]
 
     report_columns = [
-        *primary_key,
-        "Keyword",
-        "KeywordStatus",
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "TimePeriod",
+        "CampaignId",
+        "CampaignName",
+        "DeviceType",
+        "Network",
         "Impressions",
         "Clicks",
         "Ctr",
-        "CurrentMaxCpc",
+        "AverageCpc",
         "Spend",
-        "CostPerConversion",
-        "QualityScore",
-        "ExpectedCtr",
-        "AdRelevance",
-        "LandingPageExperience",
-        "QualityImpact",
-        "Assists",
         "ReturnOnAdSpend",
-        "CostPerAssist",
-        "CustomParameters",
-        "FinalAppUrl",
-        "Mainline1Bid",
-        "MainlineBid",
-        "FirstPageBid",
-        "FinalUrlSuffix",
-        "ViewThroughConversions",
-        "ViewThroughConversionsQualified",
-        "AllCostPerConversion",
-        "AllReturnOnAdSpend",
-        *CONVERSION_FIELDS,
-        *AVERAGE_FIELDS,
-        *ALL_CONVERSION_FIELDS,
-        *ALL_REVENUE_FIELDS,
-        *REVENUE_FIELDS,
+        "RevenuePerConversion",
+        "ConversionRate",
+        "AdGroupName",
+        "AdGroupId",
+        "AdId",
+        "AdType",
+        "Keyword",
+        "KeywordId",
+        "QualityScore",
+        "BidMatchType",
+        "AbsoluteTopImpressionRatePercent",
     ]
 
 
@@ -642,10 +510,6 @@ class KeywordPerformanceReportHourly(KeywordPerformanceReport):
 
 class KeywordPerformanceReportDaily(KeywordPerformanceReport):
     report_aggregation = "Daily"
-    report_columns = [
-        *KeywordPerformanceReport.report_columns,
-        *HISTORICAL_FIELDS,
-    ]
 
 
 class KeywordPerformanceReportWeekly(KeywordPerformanceReport):
@@ -664,36 +528,22 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "account_performance_report"
-    primary_key = [
-        "AccountId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Network",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
-    ]
 
     report_columns = [
-        *primary_key,
-        "PhoneImpressions",
-        "PhoneCalls",
-        "Clicks",
-        "Ctr",
-        "Spend",
+        "AccountName",
+        "AccountNumber",
+        "AccountId",
+        "TimePeriod",
+        "DeviceType",
+        "Network",
         "Impressions",
-        "CostPerConversion",
-        "Ptr",
-        "Assists",
+        "Clicks",
+        "Spend",
+        "Ctr",
+        "AverageCpc",
         "ReturnOnAdSpend",
-        "CostPerAssist",
-        *AVERAGE_FIELDS,
-        *CONVERSION_FIELDS,
-        *LOW_QUALITY_FIELDS,
-        *REVENUE_FIELDS,
+        "RevenuePerConversion",
+        "ConversionRate",
     ]
 
 
@@ -747,11 +597,16 @@ class SourceBingAds(AbstractSource):
             Campaigns(client, config),
         ]
 
-        streams.append(BudgetSummaryReport(client, config))
+        if config["hourly_reports"] or config["daily_reports"] or config["weekly_reports"] or config["monthly_reports"]:
+            streams.append(BudgetSummaryReport(client, config))
 
-        streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
-        streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
-        streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
-        streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
+        if config["hourly_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
+        if config["daily_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
+        if config["weekly_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
+        if config["monthly_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
 
         return streams

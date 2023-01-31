@@ -3,7 +3,6 @@ plugins {
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
     id 'airbyte-performance-test-java'
-    id 'airbyte-source-acceptance-test'
 }
 
 application {
@@ -11,23 +10,39 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+configurations {
+    /*
+     * For some reason, the MySQL testcontainer does not start properly on
+     * newer versions of the testcontainers library.  Therefore, pin the version
+     * to the known working version to ensure that the tests continue to work.
+     */
+    testRuntimeClasspath {
+        resolutionStrategy.force 'org.testcontainers:testcontainers:1.15.3'
+        resolutionStrategy.force 'org.testcontainers:jdbc:1.15.3'
+        resolutionStrategy.force 'org.testcontainers:mysql:1.15.3'
+    }
+    integrationTestRuntimeClasspath {
+        resolutionStrategy.force 'org.testcontainers:testcontainers:1.15.3'
+        resolutionStrategy.force 'org.testcontainers:jdbc:1.15.3'
+        resolutionStrategy.force 'org.testcontainers:mysql:1.15.3'
+    }
+}
+
 dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium-v1-9-6')
+    implementation project(':airbyte-integrations:bases:debezium')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
-    implementation 'mysql:mysql-connector-java:8.0.30'
+    implementation 'mysql:mysql-connector-java:8.0.22'
     implementation 'org.apache.commons:commons-lang3:3.11'
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-6'))
+    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation libs.junit.jupiter.system.stubs
-    testImplementation libs.connectors.testcontainers.mysql
+    testImplementation 'org.testcontainers:mysql:1.15.3'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')

@@ -11,7 +11,7 @@
     },
     "subresource_uris": {
       "type": ["null", "object"],
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "yesterday": {
           "type": ["null", "string"]
@@ -62,7 +62,7 @@
       "type": ["null", "number"]
     },
     "start_date": {
-      "format": "date-time",
+      "format": "date",
       "type": ["null", "string"]
     },
     "count_unit": {
@@ -76,5 +76,5 @@
     }
   },
   "type": "object",
-  "additionalProperties": true
+  "additionalProperties": false
 }

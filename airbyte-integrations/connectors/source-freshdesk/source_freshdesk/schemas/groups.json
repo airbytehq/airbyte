@@ -3,13 +3,13 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "name": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "description": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "escalate_to": {
       "type": ["integer", "null"]
@@ -21,13 +21,13 @@
       "type": ["integer", "null"]
     },
     "group_type": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "auto_ticket_assign": {
       "type": ["integer", "null"]

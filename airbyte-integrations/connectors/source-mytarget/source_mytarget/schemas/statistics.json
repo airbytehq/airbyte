@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "base": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "shows": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "clicks": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "goals": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "spent": {
+          "type": [
+            "null",
+            "number"
+          ]
+        },
+        "cpm": {
+          "type": [
+            "null",
+            "number"
+          ]
+        },
+        "cpc": {
+          "type": [
+            "null",
+            "number"
+          ]
+        },
+        "cpa": {
+          "type": [
+            "null",
+            "number"
+          ]
+        },
+        "ctr": {
+          "type": [
+            "null",
+            "number"
+          ]
+        },
+        "cr": {
+          "type": [
+            "null",
+            "number"
+          ]
+        }
+      }
+    }
+  }
+}

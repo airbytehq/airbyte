@@ -5,8 +5,14 @@
 package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
+/**
+ * Currently only S3 is supported. So the data source config is always {@link S3DestinationConfig}.
+ */
 public class DatabricksDestinationConfig {
 
   static final String DEFAULT_DATABRICKS_PORT = "443";
@@ -19,7 +25,7 @@ public class DatabricksDestinationConfig {
   private final String databricksPersonalAccessToken;
   private final String databaseSchema;
   private final boolean purgeStagingData;
-  private final DatabricksStorageConfig storageConfig;
+  private final S3DestinationConfig s3DestinationConfig;
 
   public DatabricksDestinationConfig(final String databricksServerHostname,
                                      final String databricksHttpPath,
@@ -27,14 +33,14 @@ public class DatabricksDestinationConfig {
                                      final String databricksPersonalAccessToken,
                                      final String databaseSchema,
                                      final boolean purgeStagingData,
-                                     DatabricksStorageConfig storageConfig) {
+                                     final S3DestinationConfig s3DestinationConfig) {
     this.databricksServerHostname = databricksServerHostname;
     this.databricksHttpPath = databricksHttpPath;
     this.databricksPort = databricksPort;
     this.databricksPersonalAccessToken = databricksPersonalAccessToken;
     this.databaseSchema = databaseSchema;
     this.purgeStagingData = purgeStagingData;
-    this.storageConfig = storageConfig;
+    this.s3DestinationConfig = s3DestinationConfig;
   }
 
   public static DatabricksDestinationConfig get(final JsonNode config) {
@@ -49,7 +55,19 @@ public class DatabricksDestinationConfig {
         config.get("databricks_personal_access_token").asText(),
         config.has("database_schema") ? config.get("database_schema").asText() : DEFAULT_DATABASE_SCHEMA,
         config.has("purge_staging_data") ? config.get("purge_staging_data").asBoolean() : DEFAULT_PURGE_STAGING_DATA,
-        DatabricksStorageConfig.getDatabricksStorageConfig(config.get("data_source")));
+        getDataSource(config.get("data_source")));
+  }
+
+  public static S3DestinationConfig getDataSource(final JsonNode dataSource) {
+    return S3DestinationConfig.create(
+        dataSource.get("s3_bucket_name").asText(),
+        dataSource.get("s3_bucket_path").asText(),
+        dataSource.get("s3_bucket_region").asText())
+        .withAccessKeyCredential(
+            dataSource.get("s3_access_key_id").asText(),
+            dataSource.get("s3_secret_access_key").asText())
+        .withFormatConfig(new S3ParquetFormatConfig(new ObjectMapper().createObjectNode()))
+        .get();
   }
 
   public String getDatabricksServerHostname() {
@@ -76,8 +94,8 @@ public class DatabricksDestinationConfig {
     return purgeStagingData;
   }
 
-  public DatabricksStorageConfig getStorageConfig() {
-    return storageConfig;
+  public S3DestinationConfig getS3DestinationConfig() {
+    return s3DestinationConfig;
   }
 
 }

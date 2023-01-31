@@ -20,15 +20,6 @@
     },
     {
       "stream": {
-        "name": "survey_groups",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "answers_survey_group",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
@@ -38,7 +29,7 @@
     },
     {
       "stream": {
-        "name": "properties",
+        "name": "survey_groups",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

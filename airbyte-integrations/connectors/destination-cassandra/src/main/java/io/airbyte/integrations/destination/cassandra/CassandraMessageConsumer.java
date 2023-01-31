@@ -5,10 +5,10 @@
 package io.airbyte.integrations.destination.cassandra;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -27,13 +27,14 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final CassandraCqlProvider cassandraCqlProvider;
 
-  public CassandraMessageConsumer(final CassandraConfig cassandraConfig,
-                                  final ConfiguredAirbyteCatalog configuredCatalog,
-                                  final CassandraCqlProvider provider,
-                                  final Consumer<AirbyteMessage> outputRecordCollector) {
+  private AirbyteMessage lastMessage = null;
+
+  public CassandraMessageConsumer(CassandraConfig cassandraConfig,
+                                  ConfiguredAirbyteCatalog configuredCatalog,
+                                  Consumer<AirbyteMessage> outputRecordCollector) {
     this.cassandraConfig = cassandraConfig;
     this.outputRecordCollector = outputRecordCollector;
-    this.cassandraCqlProvider = provider;
+    this.cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
     var nameTransformer = new CassandraNameTransformer(cassandraConfig);
     this.cassandraStreams = configuredCatalog.getStreams().stream()
         .collect(Collectors.toUnmodifiableMap(
@@ -54,7 +55,7 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(final AirbyteMessage message) {
+  protected void acceptTracked(AirbyteMessage message) {
     if (message.getType() == AirbyteMessage.Type.RECORD) {
       var messageRecord = message.getRecord();
       var streamConfig =
@@ -65,14 +66,14 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
       var data = Jsons.serialize(messageRecord.getData());
       cassandraCqlProvider.insert(streamConfig.getKeyspace(), streamConfig.getTempTableName(), data);
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
-      outputRecordCollector.accept(message);
+      this.lastMessage = message;
     } else {
       LOGGER.warn("Unsupported airbyte message type: {}", message.getType());
     }
   }
 
   @Override
-  protected void close(final boolean hasFailed) {
+  protected void close(boolean hasFailed) {
     if (!hasFailed) {
       cassandraStreams.forEach((k, v) -> {
         try {
@@ -87,16 +88,17 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
             }
             default -> throw new UnsupportedOperationException();
           }
-        } catch (final Exception e) {
+        } catch (Exception e) {
           LOGGER.error("Error while copying data to table {}: : ", v.getTableName(), e);
         }
       });
+      outputRecordCollector.accept(lastMessage);
     }
 
     cassandraStreams.forEach((k, v) -> {
       try {
         cassandraCqlProvider.dropTableIfExists(v.getKeyspace(), v.getTempTableName());
-      } catch (final Exception e) {
+      } catch (Exception e) {
         LOGGER.error("Error while deleting temp table {} with reason: ", v.getTempTableName(), e);
       }
     });

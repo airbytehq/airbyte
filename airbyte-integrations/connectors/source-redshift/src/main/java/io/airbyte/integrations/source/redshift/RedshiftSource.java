@@ -27,34 +27,33 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
+public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
-  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
-
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
+  private static final String SCHEMAS = "schemas";
   private List<String> schemas;
 
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.
   public RedshiftSource() {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new RedshiftSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode redshiftConfig) {
     final List<String> additionalProperties = new ArrayList<>();
     final ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-            redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
-            redshiftConfig.get(JdbcUtils.PORT_KEY).asInt(),
-            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+        .put("username", redshiftConfig.get("username").asText())
+        .put("password", redshiftConfig.get("password").asText())
+        .put("jdbc_url", String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+            redshiftConfig.get("host").asText(),
+            redshiftConfig.get("port").asInt(),
+            redshiftConfig.get("database").asText()));
 
-    if (redshiftConfig.has(JdbcUtils.SCHEMAS_KEY) && redshiftConfig.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
+    if (redshiftConfig.has(SCHEMAS) && redshiftConfig.get(SCHEMAS).isArray()) {
       schemas = new ArrayList<>();
-      for (final JsonNode schema : redshiftConfig.get(JdbcUtils.SCHEMAS_KEY)) {
+      for (final JsonNode schema : redshiftConfig.get(SCHEMAS)) {
         schemas.add(schema.asText());
       }
 
@@ -65,11 +64,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
 
     addSsl(additionalProperties);
 
-    if (redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      additionalProperties.addAll(List.of(redshiftConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().split("&")));
-    }
-
-    builder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, String.join("&", additionalProperties));
+    builder.put("connection_properties", String.join("&", additionalProperties));
 
     return Jsons.jsonNode(builder
         .build());
@@ -123,11 +118,6 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
               .tableName(json.get("tablename").asText())
               .build();
         }));
-  }
-
-  @Override
-  protected int getStateEmissionFrequency() {
-    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   public static void main(final String[] args) throws Exception {

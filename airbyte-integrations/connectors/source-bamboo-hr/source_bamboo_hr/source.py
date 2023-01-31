@@ -15,9 +15,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-from .exception import AvailableFieldsAccessDeniedError, CustomFieldsAccessDeniedError, NullFieldsError
-from .utils import convert_custom_reports_fields_to_list, validate_custom_fields
-
 
 class BambooHrStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any]) -> None:
@@ -75,10 +72,7 @@ class CustomReportsStream(BambooHrStream):
 
     def _get_json_schema_from_config(self):
         if self.config.get("custom_reports_fields"):
-            properties = {
-                field.strip(): {"type": ["null", "string"]}
-                for field in convert_custom_reports_fields_to_list(self.config.get("custom_reports_fields", ""))
-            }
+            properties = {field.strip(): {"type": ["null", "string"]} for field in self.config.get("custom_reports_fields").split(",")}
         else:
             properties = {}
         return {
@@ -147,25 +141,17 @@ class SourceBambooHr(AbstractSource):
         Verifies the config and attempts to fetch the fields from the meta/fields endpoint.
         """
         config = SourceBambooHr.add_authenticator_to_config(config)
-
         if not config.get("custom_reports_fields") and not config.get("custom_reports_include_default_fields"):
-            return False, NullFieldsError()
-
-        available_fields = MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh)
-        custom_fields = convert_custom_reports_fields_to_list(config.get("custom_reports_fields", ""))
-        denied_fields = validate_custom_fields(custom_fields, available_fields)
-
-        if denied_fields:
-            return False, CustomFieldsAccessDeniedError(denied_fields)
-
+            return False, AttributeError("`custom_reports_fields` cannot be empty if `custom_reports_include_default_fields` is false")
         try:
-            next(available_fields)
+            next(MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh))
             return True, None
-        except StopIteration:
-            return False, AvailableFieldsAccessDeniedError()
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = SourceBambooHr.add_authenticator_to_config(config)
         return [
+            EmployeesDirectoryStream(config),
             CustomReportsStream(config),
         ]

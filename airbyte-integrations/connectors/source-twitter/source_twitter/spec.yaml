@@ -4,24 +4,99 @@ connectionSpecification:
   title: Twitter Spec
   type: object
   required:
-    - api_key
-    - query
-  additionalProperties: true
+    - proxy
+    - credentials
+    - twitter_account_id
+  additionalProperties: false
   properties:
-    api_key:
-      title: API Key Token
-      description: API Key
+    proxy:
+        title: Http proxy for Twitter
+        type: object
+        required:
+          - protocol
+          - host
+          - port
+          - login
+          - password
+        properties:
+          protocol:
+            title: Proxy protocol
+            type: string
+            enum:
+              - http
+              - https
+          host:
+            title: Proxy host
+            type: string
+            examples:
+              - proxy.mysite.com
+              - 127.0.0.1
+          port:
+            title: Proxy port
+            type: integer
+            minimum: 1
+            examples:
+              - 8000
+          login:
+            title: Proxy login
+            type: string
+          password:
+            title: Proxy password
+            type: string
+            airbyte_secret: true
+    credentials:
+      title: Authorization Method
+      type: object
+      oneOf:
+        - title: CredentialsCraft Auth
+          type: object
+          required:
+            - auth_type
+            - credentials_craft_host
+            - credentials_craft_token
+            - credentials_craft_twitter_token_id
+          properties:
+            auth_type:
+              title: Auth Type
+              type: string
+              const: credentials_craft_auth
+            credentials_craft_host:
+              title: CredentialsCraft Host
+              type: string
+              examples:
+                - https://credentialscraft.mysite.com
+            credentials_craft_token:
+              title: CredentialsCraft Bearer token
+              type: string
+              airbyte_secret: true
+              description: Bearer token for CredentialsCraft API
+            credentials_craft_twitter_token_id:
+              title: CredentialsCraft TwitterToken ID
+              type: integer
+              description: TwitterToken ID in CredentialsCraft
+              examples:
+                - 100
+    twitter_account_id:
+      title: Twitter advertising account ID
       type: string
-      airbyte_secret: true
-    query:
-      title: Twitter Search Query
-      description: Twitter Search query
+    date_from:
+      title: Date from
       type: string
-    start_date:
-      title: Start Date
-      description: From what date you want to start retrieving dta
+      description: Start replication date in format YYYY-MM-DD
+      pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - 2022-01-01
+    date_to:
+      title: Date to
       type: string
-    end_date:
-      title: End Date
-      description: End data to retrieve data
-      type: string
+      description: End replication date in format YYYY-MM-DD
+      pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - 2022-01-01
+    last_days:
+      title: Load last N days
+      type: integer
+      minimum: 0
+      maximum: 7
+      examples:
+        - 7

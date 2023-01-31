@@ -15,7 +15,6 @@ import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfigs;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
-import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfigs;
 
@@ -34,18 +33,15 @@ public class GcsDestinationConfig extends S3DestinationConfig {
                               final String bucketRegion,
                               final GcsCredentialConfig credentialConfig,
                               final S3FormatConfig formatConfig) {
-
     super(GCS_ENDPOINT,
         bucketName,
         bucketPath,
         bucketRegion,
         S3DestinationConstants.DEFAULT_PATH_FORMAT,
         credentialConfig.getS3CredentialConfig().orElseThrow(),
+        S3DestinationConstants.DEFAULT_PART_SIZE_MB,
         formatConfig,
-        null,
-        null,
-        false,
-        S3StorageOperations.DEFAULT_UPLOAD_THREADS);
+        null);
 
     this.credentialConfig = credentialConfig;
   }

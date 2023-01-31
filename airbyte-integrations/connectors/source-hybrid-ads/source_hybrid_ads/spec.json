@@ -1,0 +1,95 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Hybrid Ads Spec",
+    "type": "object",
+    "required": ["client_id", "client_secret", "date_range"],
+    "additionalProperties": true,
+    "properties": {
+      "service": {
+        "title": "Service",
+        "type": "string",
+        "enum": ["VOX", "HYBRID"]
+      },
+      "client_id": { "title": "Client ID", "type": "string", "order": 0 },
+      "client_secret": {
+        "title": "Client Secret",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 1
+      },
+      "date_range": {
+        "title": "Date Range",
+        "description": "Choose date period that must be loaded",
+        "type": "object",
+        "order": 2,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Custom Date Range",
+            "required": ["date_from", "date_to", "date_range_type"],
+            "properties": {
+              "date_from": {
+                "title": "Start Date",
+                "type": "string",
+                "description": "Start date in format YYYY-MM-DD. If not set, last 30 days or last_days setting will be used.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples": ["2021-12-01"],
+                "order": 0
+              },
+              "date_to": {
+                "title": "End Date",
+                "type": "string",
+                "description": "End date in format YYYY-MM-DD. If not set, last 30 days or last_days setting will be used.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples": ["2021-12-30"],
+                "order": 1
+              },
+              "date_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Custom Date",
+                "const": "custom_date",
+                "order": 2
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Last N Days",
+            "required": [
+              "last_days_count",
+              "should_load_today",
+              "date_range_type"
+            ],
+            "properties": {
+              "last_days_count": {
+                "title": "Last Days Count",
+                "type": "integer",
+                "description": "Count of last days exclude today.",
+                "minimum": 0,
+                "maximum": 3650,
+                "examples": [30],
+                "order": 0
+              },
+              "should_load_today": {
+                "title": "Load Today?",
+                "type": "boolean",
+                "description": "Should connector load today time as End Time? If not, End Time will be yesterday.",
+                "order": 1
+              },
+              "date_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Last N Days",
+                "const": "last_n_days",
+                "order": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

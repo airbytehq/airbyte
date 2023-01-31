@@ -1,0 +1,822 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ad_plan": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ad_plan_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "age_restrictions": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "audit_pixels": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "audit_viewability": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "autobidding_mode": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "banner_uniq_shows_limit": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "budget_limit": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "budget_limit_day": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "conversion_funnel_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "created": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "date_end": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "date_start": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "delivery": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "dynamic_banners_use_storelink": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "dynamic_without_remarketing": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "enable_clickid": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "enable_offline_goals": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "enable_recombination": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "enable_utm": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "interface_read_only": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "issues": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "arguments": {
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    },
+    "language": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "marketplace_app_client_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "mask": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "max_price": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "mixing": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "objective": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "package_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "package_priced_event_type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "panel_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "price": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "read_only": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "shows_limit": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "sk_ad_campaign_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "status": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "targetings": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "age": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "properties": {
+            "age_list": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "expand": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            }
+          }
+        },
+        "birthday": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "properties": {
+            "days_after": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "days_before": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            }
+          }
+        },
+        "fulltime": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "properties": {
+            "flags": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "fri": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "mon": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "sat": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "sun": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "thu": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "tue": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "wed": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            }
+          }
+        },
+        "geo": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "properties": {
+            "regions": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "local_geo": {
+              "type": [
+                "null",
+                "object"
+              ],
+              "properties": {
+                "loc_type": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                },
+                "locations": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": [
+                      "null",
+                      "object"
+                    ],
+                    "properties": {
+                      "address": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "label": {
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      "lat": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "lng": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "radius": {
+                        "type": [
+                          "null",
+                          "integer"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "visit_type": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "group_members": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "interests": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "interests_soc_dem": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "interests_stable": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "local_geo": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "properties": {
+            "loc_type": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "locations": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "object"
+                ],
+                "properties": {
+                  "address": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "label": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "lat": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "lng": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "radius": {
+                    "type": [
+                      "null",
+                      "integer"
+                    ]
+                  }
+                }
+              }
+            },
+            "visit_type": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        },
+        "mobile_apps": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "mobile_operation_systems": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "mobile_operators": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "mobile_prefix": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "mobile_types": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "mobile_vendors": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "pad_category": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "properties": {
+            "Android": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            },
+            "iOS": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            }
+          }
+        },
+        "pads": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "regions": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "segments": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "sex": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "mobile_operation_systems_sk_ad_network": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "properties": {
+            "app_url_id": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "mobile_operation_systems_ids": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "uniq_shows_limit": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "uniq_shows_period": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "updated": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "user_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utm": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

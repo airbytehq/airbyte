@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.snowflake;
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
@@ -19,6 +20,7 @@ import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -77,27 +79,31 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
                                      final String schemaName,
                                      final String stageName,
                                      final String stagingPath) {
-    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
+    return AirbyteSentry.queryWithTracing("UploadRecordsToStage",
+        () -> s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath),
+        Map.of("stage", stageName, "path", stagingPath));
   }
 
   @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) {
-    s3StorageOperations.createBucketIfNotExists();
+    AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
+        () -> s3StorageOperations.createBucketObjectIfNotExists(stageName),
+        Map.of("stage", stageName));
   }
 
   @Override
-  public void copyIntoTableFromStage(final JdbcDatabase database,
+  public void copyIntoTmpTableFromStage(final JdbcDatabase database,
                                         final String stageName,
                                         final String stagingPath,
                                         final List<String> stagedFiles,
-                                        final String tableName,
+                                        final String dstTableName,
                                         final String schemaName) {
-    LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
-        tableName, stagingPath, schemaName);
+    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
     // Print actual SQL query if user needs to manually force reload from staging
-    Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles,
-        tableName, schemaName)));
-    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, tableName);
+    AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
+        () -> Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles, dstTableName, schemaName))),
+        Map.of("schema", schemaName, "path", stagingPath, "table", dstTableName));
+    LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
   }
 
   protected String getCopyQuery(final String stagingPath,
@@ -125,12 +131,16 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   @Override
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) {
-    s3StorageOperations.dropBucketObject(stageName);
+    AirbyteSentry.executeWithTracing("DropStageIfExists",
+        () -> s3StorageOperations.dropBucketObject(stageName),
+        Map.of("stage", stageName));
   }
 
   @Override
   public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) {
-    s3StorageOperations.cleanUpBucketObject(stageName, stagedFiles);
+    AirbyteSentry.executeWithTracing("CleanStage",
+        () -> s3StorageOperations.cleanUpBucketObject(stageName, stagedFiles),
+        Map.of("stage", stageName));
   }
 
 }

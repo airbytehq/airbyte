@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "campaignId": {
+      "type": ["null", "string"]
+    },
+    "SplitName": {
+      "type": ["null", "string"]
+    },
+    "Day": {
+      "type": ["null", "string"]
+    },
+    "SumSegmentsPrice": {
+      "type": ["null", "number"]
+    },
+    "TotalSum": {
+      "type": ["null", "number"]
+    },
+    "ImpressionCount": {
+      "type": ["null", "integer"]
+    },
+    "ClickCount": {
+      "type": ["null", "integer"]
+    },
+    "Reach": {
+      "type": ["null", "integer"]
+    },
+    "CTR": {
+      "type": ["null", "number"]
+    },
+    "ECPM": {
+      "type": ["null", "number"]
+    },
+    "ECPC": {
+      "type": ["null", "number"]
+    },
+    "Viewability": {
+      "type": ["null", "number"]
+    },
+    "Frequency": {
+      "type": ["null", "number"]
+    }
+  }
+}

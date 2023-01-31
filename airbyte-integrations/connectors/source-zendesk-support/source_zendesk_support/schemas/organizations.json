@@ -19,7 +19,6 @@
     },
     "organization_fields": {
       "type": ["null", "object"],
-      "properties": {},
       "additionalProperties": true
     },
     "notes": {

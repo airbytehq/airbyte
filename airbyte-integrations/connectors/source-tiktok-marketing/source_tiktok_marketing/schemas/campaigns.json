@@ -1,8 +1,11 @@
 {
-  "type": ["null", "object"],
+  "type": [
+    "null",
+    "object"
+  ],
   "properties": {
     "campaign_id": {
-      "type": "integer"
+      "type": "string"
     },
     "campaign_name": {
       "type": "string"
@@ -11,7 +14,7 @@
       "type": "string"
     },
     "advertiser_id": {
-      "type": "integer"
+      "type": "string"
     },
     "budget": {
       "type": "number"
@@ -23,28 +26,46 @@
       "type": "string"
     },
     "opt_status": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "objective": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "objective_type": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "budget_optimize_switch": {
-      "type": ["null", "number"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "bid_type": {
-      "type": ["null", "string"]
-    },
-    "deep_bid_type": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "optimize_goal": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "split_test_variable": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "is_new_structure": {
       "type": "boolean"

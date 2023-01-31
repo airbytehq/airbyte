@@ -4,12 +4,11 @@
 
 package io.airbyte.integrations.destination.redis;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.time.Instant;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -33,7 +32,7 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastMessage = null;
 
-  public RedisMessageConsumer(JsonNode redisConfig,
+  public RedisMessageConsumer(RedisConfig redisConfig,
                               ConfiguredAirbyteCatalog configuredCatalog,
                               Consumer<AirbyteMessage> outputRecordCollector) {
     this.configuredCatalog = configuredCatalog;

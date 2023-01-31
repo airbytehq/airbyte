@@ -6,6 +6,7 @@ import json
 import logging
 from dataclasses import dataclass
 from time import sleep
+from typing import Optional
 
 import backoff
 import pendulum
@@ -23,7 +24,8 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(
+    backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
@@ -56,8 +58,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
         usage_header_ad_account = headers.get("x-ad-account-usage")
 
         if usage_header_ad_account:
-            usage_header_ad_account_loaded = json.loads(usage_header_ad_account)
-            usage = max(usage, usage_header_ad_account_loaded.get("acc_id_util_pct"))
+            usage_header_ad_account_loaded = json.loads(
+                usage_header_ad_account)
+            usage = max(usage, usage_header_ad_account_loaded.get(
+                "acc_id_util_pct"))
 
         if usage_header_app:
             usage_header_app_loaded = json.loads(usage_header_app)
@@ -72,7 +76,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
             usage_header_business_loaded = json.loads(usage_header_business)
             for business_object_id in usage_header_business_loaded:
-                usage_limits = usage_header_business_loaded.get(business_object_id)[0]
+                usage_limits = usage_header_business_loaded.get(business_object_id)[
+                    0]
                 usage = max(
                     usage,
                     usage_limits.get("call_count"),
@@ -81,7 +86,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 )
                 pause_interval = max(
                     pause_interval,
-                    pendulum.duration(minutes=usage_limits.get("estimated_time_to_regain_access", 0)),
+                    pendulum.duration(minutes=usage_limits.get(
+                        "estimated_time_to_regain_access", 0)),
                 )
 
         return usage, pause_interval
@@ -103,8 +109,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
             # in case it is failed inner request the headers might not be present
             if "headers" not in record:
                 continue
-            headers = {header["name"].lower(): header["value"] for header in record["headers"]}
-            usage_from_response, pause_interval_from_response = self._parse_call_rate_header(headers)
+            headers = {header["name"].lower(): header["value"]
+                       for header in record["headers"]}
+            usage_from_response, pause_interval_from_response = self._parse_call_rate_header(
+                headers)
             usage = max(usage, usage_from_response)
             pause_interval = max(pause_interval_from_response, pause_interval)
         return usage, pause_interval
@@ -112,14 +120,17 @@ class MyFacebookAdsApi(FacebookAdsApi):
     def _handle_call_rate_limit(self, response, params):
         if "batch" in params:
             records = response.json()
-            usage, pause_interval = self._get_max_usage_pause_interval_from_batch(records)
+            usage, pause_interval = self._get_max_usage_pause_interval_from_batch(
+                records)
         else:
             headers = response.headers()
             usage, pause_interval = self._parse_call_rate_header(headers)
 
         if usage >= self.MIN_RATE:
-            sleep_time = self._compute_pause_interval(usage=usage, pause_interval=pause_interval)
-            logger.warning(f"Utilization is too high ({usage})%, pausing for {sleep_time}")
+            sleep_time = self._compute_pause_interval(
+                usage=usage, pause_interval=pause_interval)
+            logger.warning(
+                f"Utilization is too high ({usage})%, pausing for {sleep_time}")
             sleep(sleep_time.total_seconds())
 
     def _update_insights_throttle_limit(self, response: FacebookResponse):
@@ -133,7 +144,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
         if ads_insights_throttle:
             ads_insights_throttle = json.loads(ads_insights_throttle)
             self._ads_insights_throttle = self.Throttle(
-                per_application=ads_insights_throttle.get("app_id_util_pct", 0),
+                per_application=ads_insights_throttle.get(
+                    "app_id_util_pct", 0),
                 per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
             )
 
@@ -149,7 +161,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
         api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
-        response = super().call(method, path, params, headers, files, url_override, api_version)
+        response = super().call(method, path, params, headers,
+                                files, url_override, api_version)
         self._update_insights_throttle_limit(response)
         self._handle_call_rate_limit(response, params)
         return response
@@ -158,10 +171,12 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str):
+    def __init__(self, account_id: str, access_token: str, proxies: Optional[dict]):
         self._account_id = account_id
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
-        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        print('proxies', proxies)
+        self.api = MyFacebookAdsApi.init(
+            access_token=access_token, crash_log=False, proxies=proxies)
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
@@ -175,4 +190,5 @@ class API:
         try:
             return AdAccount(f"act_{account_id}").api_get()
         except FacebookRequestError as exc:
-            raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+            raise FacebookAPIException(
+                f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc

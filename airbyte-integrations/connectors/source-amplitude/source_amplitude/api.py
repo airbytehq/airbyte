@@ -15,27 +15,15 @@ from urllib.parse import parse_qs
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .errors import HTTP_ERROR_CODES, error_msg_from_status
 
 
 class AmplitudeStream(HttpStream, ABC):
+
+    url_base = "https://amplitude.com/api/"
     api_version = 2
-
-    def __init__(self, data_region: str, **kwargs):
-        self.data_region = data_region
-        super().__init__(**kwargs)
-
-    @property
-    def url_base(self) -> str:
-        subdomain = "analytics.eu." if self.data_region == "EU Residency Server" else ""
-        return f"https://{subdomain}amplitude.com/api/"
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -72,7 +60,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = pendulum.parse(start_date) if isinstance(start_date, str) else start_date
+        self._start_date = pendulum.parse(start_date)
 
     @property
     @abstractmethod
@@ -93,19 +81,14 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
                 result.append(key)
         return result
 
-    def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def _date_time_to_rfc3339(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Transform 'date-time' items to RFC3339 format
         """
         date_time_fields = self._get_date_time_items_from_schema()
         for item in record:
             if item in date_time_fields:
-                dt_value = record[item]
-                if not dt_value:
-                    # either null or empty string, leave it as it
-                    record[item] = dt_value
-                else:
-                    record[item] = pendulum.parse(dt_value).to_rfc3339_string()
+                record[item] = pendulum.parse(record[item]).to_rfc3339_string()
         return record
 
     def _get_end_date(self, current_date: pendulum, end_date: pendulum = pendulum.now()):
@@ -118,7 +101,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
         if self.compare_date_template:
             latest_state = pendulum.parse(latest_record[self.cursor_field]).strftime(self.compare_date_template)
         else:
-            latest_state = latest_record.get(self.cursor_field, "")
+            latest_state = latest_record[self.cursor_field]
         return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -148,7 +131,6 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
                     "end": self._get_end_date(start_datetime).strftime(self.date_template),
                 }
             )
-
         return params
 
 
@@ -158,27 +140,18 @@ class Events(IncrementalAmplitudeStream):
     compare_date_template = "%Y-%m-%d %H:%M:%S.%f"
     primary_key = "uuid"
     state_checkpoint_interval = 1000
-    time_interval = {"days": 1}
+    time_interval = {"days": 3}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
-        try:
-            zip_file = zipfile.ZipFile(io.BytesIO(response.content))
-        except zipfile.BadZipFile as e:
-            self.logger.exception(e)
-            self.logger.error(
-                f"Received an invalid zip file in response to URL: {response.request.url}."
-                f"The size of the response body is: {len(response.content)}"
-            )
-            return []
-
+        zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         for gzip_filename in zip_file.namelist():
             with zip_file.open(gzip_filename) as file:
                 for record in self._parse_zip_file(file):
                     if record[self.cursor_field] >= state_value:
                         yield self._date_time_to_rfc3339(record)  # transform all `date-time` to RFC3339
 
-    def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[MutableMapping]:
+    def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[Mapping]:
         with gzip.open(zip_file) as file:
             for record in file:
                 yield json.loads(record)
@@ -191,11 +164,10 @@ class Events(IncrementalAmplitudeStream):
             slices.append(
                 {
                     "start": start.strftime(self.date_template),
-                    "end": start.add(**self.time_interval).subtract(hours=1).strftime(self.date_template),
+                    "end": self._get_end_date(start).strftime(self.date_template),
                 }
             )
             start = start.add(**self.time_interval)
-
         return slices
 
     def read_records(
@@ -215,8 +187,7 @@ class Events(IncrementalAmplitudeStream):
         # https://developers.amplitude.com/docs/export-api#status-codes
         try:
             self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
-            records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-            yield from records
+            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         except requests.exceptions.HTTPError as error:
             status = error.response.status_code
             if status in HTTP_ERROR_CODES.keys():
@@ -231,9 +202,6 @@ class Events(IncrementalAmplitudeStream):
         params["start"] = pendulum.parse(stream_slice["start"]).strftime(self.date_template)
         params["end"] = pendulum.parse(stream_slice["end"]).strftime(self.date_template)
         return params
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/export"
@@ -251,7 +219,7 @@ class ActiveUsers(IncrementalAmplitudeStream):
         if response_data:
             series = list(map(list, zip(*response_data["series"])))
             for i, date in enumerate(response_data["xValues"]):
-                yield from [{"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}] if series else []
+                yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/users"
@@ -269,11 +237,9 @@ class AverageSessionLength(IncrementalAmplitudeStream):
             # From the Amplitude documentation it follows that "series" is an array with one element which is itself
             # an array that contains the average session length for each day.
             # https://developers.amplitude.com/docs/dashboard-rest-api#returns-2
-            series = response_data.get("series", [])
-            if len(series) > 0:
-                series = series[0]  # get the nested list
-                for i, date in enumerate(response_data["xValues"]):
-                    yield {"date": date, "length": series[i]}
+            series = response_data["series"][0]
+            for i, date in enumerate(response_data["xValues"]):
+                yield {"date": date, "length": series[i]}
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/sessions/average"

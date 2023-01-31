@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "channel_id": {
+      "type": ["null", "string"]
+    },
+    "period": {
+      "type": ["null", "string"]
+    },
+    "err": {
+      "type": ["null", "number"]
+    }
+  }
+}

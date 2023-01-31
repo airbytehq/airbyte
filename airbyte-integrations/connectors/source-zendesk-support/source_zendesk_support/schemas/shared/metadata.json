@@ -2,9 +2,7 @@
   "type": ["null", "object"],
   "properties": {
     "custom": {
-      "type": ["null", "object"],
-      "properties": {},
-      "additionalProperties": true
+      "type": ["null", "object"]
     },
     "trusted": {
       "type": ["null", "boolean"]

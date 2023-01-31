@@ -59,6 +59,7 @@
     },
     "version": {
       "type": ["null", "object"],
+      "additionalProperties": false,
       "properties": {
         "versionTag": {
           "type": ["null", "string"]

@@ -46,8 +46,7 @@ class GoogleSheets:
         Sets headers belonging to the input stream
         """
         stream: Worksheet = self.open_worksheet(stream_name)
-        if headers_list:
-            stream.update_row(1, headers_list)
+        stream.update_row(1, headers_list)
 
     def index_cols(self, stream: Worksheet) -> Mapping[str, int]:
         """

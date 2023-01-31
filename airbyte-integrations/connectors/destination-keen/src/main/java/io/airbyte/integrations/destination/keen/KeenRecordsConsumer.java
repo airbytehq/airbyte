@@ -11,13 +11,13 @@ import static io.airbyte.integrations.destination.keen.KeenDestination.INFER_TIM
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +41,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private String projectId;
   private String apiKey;
   private KafkaProducer<String, String> kafkaProducer;
+  private AirbyteMessage lastStateMessage;
   private Set<String> streamNames;
 
   public KeenRecordsConsumer(final JsonNode config,
@@ -51,6 +52,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.outputRecordCollector = outputRecordCollector;
     this.kafkaProducer = null;
     this.streamNames = Set.of();
+    this.lastStateMessage = null;
     LOGGER.info("initializing consumer.");
   }
 
@@ -70,7 +72,8 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage msg) {
     if (msg.getType() == Type.STATE) {
-      outputRecordCollector.accept(msg);
+      lastStateMessage = msg;
+      outputRecordCollector.accept(lastStateMessage);
       return;
     } else if (msg.getType() != Type.RECORD) {
       return;
@@ -125,6 +128,9 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void close(final boolean hasFailed) {
     kafkaProducer.flush();
     kafkaProducer.close();
+    if (!hasFailed) {
+      outputRecordCollector.accept(lastStateMessage);
+    }
   }
 
 }

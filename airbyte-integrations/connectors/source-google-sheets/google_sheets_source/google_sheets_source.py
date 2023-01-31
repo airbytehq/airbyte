@@ -5,14 +5,13 @@
 
 import json
 import socket
-from typing import Any, Generator, List, MutableMapping, Union
+from typing import Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
-    AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     Status,
     Type,
@@ -126,18 +125,13 @@ class GoogleSheetsSource(Source):
             raise Exception(f"Could not run discovery: {reason}")
 
     def read(
-        self,
-        logger: AirbyteLogger,
-        config: json,
-        catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         client = GoogleSheetsClient(self.get_credentials(config))
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
-        row_batch_size = config.get("row_batch_size", ROW_BATCH_SIZE)
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
@@ -152,13 +146,13 @@ class GoogleSheetsSource(Source):
             # if the last row of the interval goes outside the sheet - this is normal, we will return
             # only the real data of the sheet and in the next iteration we will loop out.
             while row_cursor <= sheet_row_counts[sheet]:
-                range = f"{sheet}!{row_cursor}:{row_cursor + row_batch_size}"
+                range = f"{sheet}!{row_cursor}:{row_cursor + ROW_BATCH_SIZE}"
                 logger.info(f"Fetching range {range}")
                 row_batch = SpreadsheetValues.parse_obj(
                     client.get_values(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS")
                 )
 
-                row_cursor += row_batch_size + 1
+                row_cursor += ROW_BATCH_SIZE + 1
                 # there should always be one range since we requested only one
                 value_ranges = row_batch.valueRanges[0]
 

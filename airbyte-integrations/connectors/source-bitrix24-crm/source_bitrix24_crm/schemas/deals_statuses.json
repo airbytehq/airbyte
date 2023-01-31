@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "NAME": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "STATUS_ID": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "SORT": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "CATEGORY_ID": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "CATEGORY_NAME": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}

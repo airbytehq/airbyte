@@ -5,10 +5,10 @@
 package io.airbyte.integrations.destination.scylla;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -26,6 +26,8 @@ public class ScyllaMessageConsumer extends FailureTrackingAirbyteMessageConsumer
   private final Map<AirbyteStreamNameNamespacePair, ScyllaStreamConfig> scyllaStreams;
 
   private final ScyllaCqlProvider scyllaCqlProvider;
+
+  private AirbyteMessage lastMessage = null;
 
   public ScyllaMessageConsumer(ScyllaConfig scyllaConfig,
                                ConfiguredAirbyteCatalog configuredCatalog,
@@ -64,7 +66,7 @@ public class ScyllaMessageConsumer extends FailureTrackingAirbyteMessageConsumer
       var data = Jsons.serialize(messageRecord.getData());
       scyllaCqlProvider.insert(streamConfig.getKeyspace(), streamConfig.getTempTableName(), data);
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
-      outputRecordCollector.accept(message);
+      this.lastMessage = message;
     } else {
       LOGGER.warn("Unsupported airbyte message type: {}", message.getType());
     }
@@ -90,6 +92,7 @@ public class ScyllaMessageConsumer extends FailureTrackingAirbyteMessageConsumer
           LOGGER.error("Error while copying data to table {}: ", v.getTableName(), e);
         }
       });
+      outputRecordCollector.accept(lastMessage);
     }
 
     scyllaStreams.forEach((k, v) -> {

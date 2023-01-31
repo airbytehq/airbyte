@@ -1,0 +1,33 @@
+{
+  "date_range": {
+    "date_range_type": "auto"
+  },
+  "chunk_reports": {
+    "split_mode_type": "do_not_split_mode"
+  },
+  "credentials": {
+    "auth_type": "credentials_craft_auth",
+    "credentials_craft_host": "https://credentialscraft.example.ru",
+    "credentials_craft_token": "CC_TOKEN",
+    "credentials_craft_token_id": 1234
+  },
+  "fields": [
+    "Date",
+    "AdId",
+    "CampaignId",
+    "CampaignName",
+    "AdGroupId",
+    "AdGroupName",
+    "CriterionId",
+    "Criterion",
+    "LocationOfPresenceName",
+    "Cost",
+    "Impressions",
+    "Clicks"
+  ],
+  "client_name": "CLIENT_NAME_CONST",
+  "custom_json": "{}",
+  "filters_json": "[]",
+  "product_name": "PRODUCT_NAME_CONST",
+  "client_login": "CLIENT_LOGIN"
+}

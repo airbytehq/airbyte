@@ -3,10 +3,10 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["integer", "null"]
+      "type": "integer"
     },
     "name": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "description": {
       "type": ["string", "null"]
@@ -15,19 +15,19 @@
       "type": ["string", "null"]
     },
     "domains": {
-      "type": ["array", "null"],
+      "type": "array",
       "items": {
-        "type": ["string", "null"]
+        "type": "string"
       }
     },
     "created_at": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "updated_at": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "custom_fields": {
-      "type": ["object", "null"]
+      "type": "object"
     },
     "health_score": {
       "type": ["string", "null"]

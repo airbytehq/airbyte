@@ -2,7 +2,6 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
-    id 'airbyte-source-acceptance-test'
 }
 
 application {
@@ -24,14 +23,12 @@ dependencies {
     implementation "com.oracle.database.jdbc:ojdbc8-production:19.7.0.0"
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.connectors.source.testcontainers.oracle.xe
+    testImplementation 'org.testcontainers:oracle-xe:1.16.0'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-oracle')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)

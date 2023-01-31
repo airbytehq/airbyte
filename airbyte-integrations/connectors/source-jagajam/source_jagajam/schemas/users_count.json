@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date_from": { "type": ["string", "null"] },
+    "date_to": { "type": ["string", "null"] },
+    "last_users_count_a": { "type": ["null", "integer"] },
+    "last_users_count_b": { "type": ["null", "integer"] },
+    "sum_subscribed_a": { "type": ["null", "integer"] },
+    "sum_subscribed_b": { "type": ["null", "integer"] },
+    "sum_unsubscribed_a": { "type": ["null", "integer"] },
+    "sum_unsubscribed_b": { "type": ["null", "integer"] },
+    "sum_delta_users_count_a": { "type": ["null", "integer"] },
+    "sum_delta_users_count_b": { "type": ["null", "integer"] },
+    "pct_users_count_a": { "type": ["null", "integer"] },
+    "pct_users_count_b": { "type": ["null", "integer"] }
+  }
+}

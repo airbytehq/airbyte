@@ -3,25 +3,25 @@
   "type": "object",
   "properties": {
     "available": {
-      "type": ["boolean", "null"]
+      "type": "boolean"
     },
     "occasional": {
-      "type": ["boolean", "null"]
+      "type": "boolean"
     },
     "id": {
-      "type": ["integer", "null"]
+      "type": "integer"
     },
     "signature": {
       "type": ["string", "null"]
     },
     "ticket_scope": {
-      "type": ["integer", "null"]
+      "type": "integer"
     },
     "created_at": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "updated_at": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "last_active_at": {
       "type": ["string", "null"]
@@ -30,43 +30,43 @@
       "type": ["string", "null"]
     },
     "type": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "contact": {
-      "type": ["null", "object"],
+      "type": "object",
       "properties": {
         "active": {
-          "type": ["boolean", "null"]
+          "type": "boolean"
         },
         "email": {
-          "type": ["string", "null"]
+          "type": "string"
         },
         "job_title": {
           "type": ["string", "null"]
         },
         "language": {
-          "type": ["string", "null"]
+          "type": "string"
         },
         "last_login_at": {
           "type": ["string", "null"]
         },
         "mobile": {
-          "type": ["string", "null"]
+          "type": ["string", "integer", "null"]
         },
         "name": {
-          "type": ["string", "null"]
+          "type": "string"
         },
         "phone": {
-          "type": ["string", "null"]
+          "type": ["string", "integer", "null"]
         },
         "time_zone": {
-          "type": ["string", "null"]
+          "type": "string"
         },
         "created_at": {
-          "type": ["string", "null"]
+          "type": "string"
         },
         "updated_at": {
-          "type": ["string", "null"]
+          "type": "string"
         }
       }
     }

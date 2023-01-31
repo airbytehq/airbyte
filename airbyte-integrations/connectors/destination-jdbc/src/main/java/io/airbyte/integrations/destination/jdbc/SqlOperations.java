@@ -6,23 +6,14 @@ package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * todo (cgardens) - is it necessary to expose so much configurability in this interface. review if we can narrow the surface area.
- *
- * SQL queries required for successfully syncing to a destination connector. These operations include the ability to:
- * <ul>
- *   <li>Write - insert records from source connector</li>
- *   <li>Create - overloaded function but primarily to create tables if they don't exist (e.g. tmp tables to "stage" records before finalizing
- *   to final table</li>
- *   <li>Drop - removes a table from the schema</li>
- *   <li>Insert - move data from one table to another table - usually used for inserting data from tmp to final table (aka airbyte_raw)</li>
- * </ul>
- */
+// todo (cgardens) - is it necessary to expose so much configurability in this interface. review if
+// we can narrow the surface area.
 public interface SqlOperations {
 
   Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
@@ -98,18 +89,16 @@ public interface SqlOperations {
   void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
 
   /**
-   * Query to insert all records from source table to destination table. Both tables must be in the
+   * Query to copy all records from source table to destination table. Both tables must be in the
    * specified schema. Assumes both table exist.
-   *
-   * <p>NOTE: this is an append-only operation meaning that data can be duplicated</p>
    *
    * @param database Database that the connector is syncing
    * @param schemaName Name of schema
    * @param sourceTableName Name of source table
    * @param destinationTableName Name of destination table
-   * @return SQL Query string
+   * @return Query
    */
-  String insertTableQuery(JdbcDatabase database, String schemaName, String sourceTableName, String destinationTableName);
+  String copyTableQuery(JdbcDatabase database, String schemaName, String sourceTableName, String destinationTableName);
 
   /**
    * Given an arbitrary number of queries, execute a transaction.
@@ -141,10 +130,10 @@ public interface SqlOperations {
    * Redshift destination:
    *
    * @param database - Database that the connector is interacting with
-   * @param writeConfigs - schemas and tables (streams) will be discovered
+   * @param schemaNames - schemas will be discovered
    * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationCloseOperations
    */
-  default void onDestinationCloseOperations(final JdbcDatabase database, final List<WriteConfig> writeConfigs) {
+  default void onDestinationCloseOperations(JdbcDatabase database, Set<String> schemaNames) {
     // do nothing
     LOGGER.info("No onDestinationCloseOperations required for this destination.");
   }

@@ -63,7 +63,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "status_callback": {
       "type": ["null", "string"]
@@ -94,5 +94,5 @@
     }
   },
   "type": "object",
-  "additionalProperties": true
+  "additionalProperties": false
 }

@@ -60,33 +60,37 @@
       "type": ["null", "string"]
     },
     "available_date": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": "string",
+      "format": "date-time"
     },
     "associations": {
       "type": "object",
       "properties": {
         "product_option_values": {
           "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
               }
             }
-          }
+          ]
         },
         "images": {
           "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
               }
             }
-          }
+          ]
         }
       }
     }

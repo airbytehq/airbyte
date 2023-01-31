@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "campaign_id": {
+      "type": ["null", "integer"]
+    },
+    "ad_format": {
+      "type": ["null", "integer"]
+    },
+    "cost_type": {
+      "type": ["null", "integer"]
+    },
+    "goal_type": {
+      "type": ["null", "integer"]
+    },
+    "video": {
+      "type": ["null", "integer"]
+    },
+    "repeat_video": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "link_url": {
+      "type": ["null", "string"]
+    },
+    "link_domain": {
+      "type": ["null", "string"]
+    },
+    "link_title": {
+      "type": ["null", "string"]
+    },
+    "link_button": {
+      "type": ["null", "string"]
+    },
+    "preview_link": {
+      "type": ["null", "string"]
+    },
+    "image_src": {
+      "type": ["null", "string"]
+    },
+    "image_src_2x": {
+      "type": ["null", "string"]
+    },
+    "icon_src": {
+      "type": ["null", "string"]
+    },
+    "icon_src_2x": {
+      "type": ["null", "string"]
+    },
+    "age_restriction": {
+      "type": ["null", "integer"]
+    },
+    "link_type": {
+      "type": ["null", "integer"]
+    },
+    "video_src_240": {
+      "type": ["null", "string"]
+    },
+    "video_src_360": {
+      "type": ["null", "string"]
+    },
+    "video_src_480": {
+      "type": ["null", "string"]
+    },
+    "video_src_720": {
+      "type": ["null", "string"]
+    },
+    "video_src_1080": {
+      "type": ["null", "string"]
+    },
+    "video_image_src": {
+      "type": ["null", "string"]
+    },
+    "video_image_src_2x": {
+      "type": ["null", "string"]
+    },
+    "stories_data": {
+      "type": ["object", "null"],
+      "properties": {
+        "stories": {
+          "type": ["array", "null"],
+          "items": {
+            "id": { "type": ["integer", "null"] },
+            "owner_id": { "type": ["integer", "null"] },
+            "raw_id": { "type": ["string", "null"] },
+            "date": { "type": ["string", "null"] },
+            "time": { "type": ["integer", "null"] },
+            "story_type": { "type": ["string", "null"] },
+            "unread": { "type": ["boolean", "null"] },
+            "canLike": { "type": ["boolean", "null"] },
+            "can_comment": { "type": ["boolean", "null"] },
+            "can_share": { "type": ["boolean", "null"] },
+            "can_remove": { "type": ["boolean", "null"] },
+            "can_manage": { "type": ["boolean", "null"] },
+            "can_ask": { "type": ["boolean", "null"] },
+            "can_ask_anonymous": { "type": ["boolean", "null"] },
+            "reaction_set_id": { "type": ["string", "null"] },
+            "isProfileQuestion": { "type": ["boolean", "null"] },
+            "stats": {
+              "type": ["object", "null"],
+              "properties": {
+                "follow": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "event_type": { "type": ["string", "null"] },
+                    "rhash": { "type": ["string", "null"] }
+                  }
+                },
+                "url_view": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "event_type": { "type": ["string", "null"] },
+                    "rhash": { "type": ["string", "null"] }
+                  }
+                }
+              }
+            },
+            "isLiked": { "type": ["boolean", "null"] },
+            "likeHash": { "type": ["string", "null"] },
+            "preview_url": { "type": ["string", "null"] },
+            "track_code": { "type": ["string", "null"] },
+            "link": {
+              "type": ["object", "null"],
+              "properties": {
+                "key": { "type": ["string", "null"] },
+                "text": { "type": ["string", "null"] },
+                "url": { "type": ["string", "null"] }
+              }
+            },
+            "isPartOfNarrative": { "type": ["boolean", "null"] },
+            "report_hash": { "type": ["string", "null"] },
+            "isAds": { "type": ["boolean", "null"] },
+            "video_url": { "type": ["string", "null"] },
+            "first_frame": { "type": ["string", "null"] },
+            "small_preview": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "owner": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": { "type": ["integer", "null"] },
+        "href": { "type": ["string", "null"] },
+        "name": { "type": ["string", "null"] },
+        "photo": { "type": ["string", "null"] },
+        "verify": { "type": ["string", "null"] },
+        "gender": { "type": ["string", "null"] },
+        "name_get": { "type": ["string", "null"] },
+        "firstName": { "type": ["string", "null"] },
+        "first_name_gen": { "type": ["string", "null"] },
+        "first_name_ins": { "type": ["string", "null"] },
+        "can_follow": { "type": ["boolean", "null"] },
+        "hash": { "type": ["string", "null"] }
+      }
+    },
+    "clips_list": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "video_id": { "type": ["integer", "null"] },
+          "preview_url": { "type": ["string", "null"] },
+          "link": {
+            "type": ["object", "null"],
+            "properties": {
+              "text": { "type": ["string", "null"] },
+              "key": { "type": ["string", "null"] },
+              "url": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

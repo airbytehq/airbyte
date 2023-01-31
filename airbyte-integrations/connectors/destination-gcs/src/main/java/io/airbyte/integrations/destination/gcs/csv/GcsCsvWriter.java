@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.gcs.csv;
 
-import static io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
-
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
@@ -17,8 +15,8 @@ import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -60,7 +58,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements DestinationFileWriter
 
     this.uploadManager = StreamTransferManagerFactory
         .create(config.getBucketName(), objectKey, s3Client)
-        .setPartSize((long) DEFAULT_PART_SIZE_MB)
+        .setPartSize(config.getFormatConfig().getPartSize())
         .get();
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);

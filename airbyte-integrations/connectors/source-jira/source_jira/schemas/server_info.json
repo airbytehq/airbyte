@@ -67,6 +67,6 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details about the Jira instance."
 }

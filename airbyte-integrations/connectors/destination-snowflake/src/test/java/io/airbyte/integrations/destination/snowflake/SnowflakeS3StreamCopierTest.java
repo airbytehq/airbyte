@@ -16,10 +16,9 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,6 +29,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SnowflakeS3StreamCopierTest {
+
+  private static final int PART_SIZE = 5;
 
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
   private static final Timestamp UPLOAD_TIME = Timestamp.from(Instant.ofEpochMilli(1639077474000L));
@@ -51,6 +52,7 @@ class SnowflakeS3StreamCopierTest {
         "fake-region")
         .withEndpoint("fake-endpoint")
         .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
+        .withPartSize(PART_SIZE)
         .get();
 
     copier = (SnowflakeS3StreamCopier) new SnowflakeS3StreamCopierFactory().create(
@@ -66,7 +68,6 @@ class SnowflakeS3StreamCopierTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
                 .withName("fake-stream")
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
                 .withNamespace("fake-namespace")));
   }
 

@@ -3,11 +3,12 @@
 #
 
 import json
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import source_bing_ads
 from airbyte_cdk.models import SyncMode
+from source_bing_ads.client import Client
 from source_bing_ads.source import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, Campaigns, SourceBingAds
 
 
@@ -27,6 +28,12 @@ def logger_mock_fixture():
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = SourceBingAds().streams(config)
+    assert len(streams) == 15
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_streams_all(mocked_client):
+    streams = SourceBingAds().streams(MagicMock())
     assert len(streams) == 25
 
 
@@ -50,7 +57,6 @@ def test_campaigns_request_params(mocked_client, config):
     request_params = campaigns.request_params(stream_slice={"account_id": "account_id"})
     assert request_params == {
         "AccountId": "account_id",
-        "CampaignType": "Audience DynamicSearchAds Search Shopping",
         "ReturnAdditionalFields": "AdScheduleUseSearcherTimeZone BidStrategyId CpvCpmBiddingScheme DynamicDescriptionSetting DynamicFeedSetting MaxConversionValueBiddingScheme MultimediaAdsBidAdjustment TargetImpressionShareBiddingScheme TargetSetting VerifiedTrackingSetting",
     }
 
@@ -135,8 +141,8 @@ def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
     }
 
 
-@patch.object(source_bing_ads.source, "Client")
-def test_accounts(mocked_client, config):
-    accounts = Accounts(mocked_client, config)
-    _ = list(accounts.read_records(SyncMode.full_refresh))
-    mocked_client.request.assert_called_once()
+def test_accounts_live(config):
+    client = Client(**config)
+    accounts = Accounts(client, config)
+    records = accounts.read_records(SyncMode.full_refresh)
+    assert len(list(records)) == 4

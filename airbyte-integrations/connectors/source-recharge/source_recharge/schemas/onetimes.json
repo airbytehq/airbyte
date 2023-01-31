@@ -6,21 +6,21 @@
       "type": ["null", "integer"]
     },
     "address_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer", "string"]
     },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "customer_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer", "string"]
     },
     "next_charge_scheduled_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "price": {
-      "type": ["null", "string"]
+      "type": ["null", "integer", "string", "number"]
     },
     "product_title": {
       "type": ["null", "string"]

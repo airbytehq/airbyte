@@ -23,6 +23,9 @@
   "products": {
     "updatedAt": "2021-02-23T00:00:00Z"
   },
+  "quotes": {
+    "updatedAt": "2021-02-23T00:00:00Z"
+  },
   "subscription_changes": {
     "timestamp": "2021-02-23T00:00:00Z"
   },

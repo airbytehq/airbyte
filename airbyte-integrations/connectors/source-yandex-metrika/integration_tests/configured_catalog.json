@@ -1,0 +1,32 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "yandex_metrika_stream",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "ym:s:visitID": { "type": ["null", "string"] },
+            "ym:s:dateTime": { "type": ["null", "string"] },
+            "ym:s:UTMSource": { "type": ["null", "string"] },
+            "ym:s:UTMMedium": { "type": ["null", "string"] },
+            "ym:s:UTMCampaign": { "type": ["null", "string"] },
+            "ym:s:UTMContent": { "type": ["null", "string"] },
+            "ym:s:visitDuration": { "type": ["null", "string"] },
+            "ym:s:pageViews": { "type": ["null", "string"] },
+            "ym:s:bounce": { "type": ["null", "string"] },
+            "ym:s:isNewUser": { "type": ["null", "string"] },
+            "ym:s:productsCurrency": { "type": ["null", "string"] },
+            "__productName": { "type": ["null", "string"] },
+            "__clientName": { "type": ["null", "string"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["ym:s:visitID"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

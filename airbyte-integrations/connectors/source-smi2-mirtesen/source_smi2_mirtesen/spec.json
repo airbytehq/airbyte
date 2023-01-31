@@ -1,0 +1,216 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/connector-development",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Smi2 Mirtesen Spec",
+    "type": "object",
+    "required": ["credentials"],
+    "additionalProperties": false,
+    "properties": {
+      "credentials": {
+        "title": "Authorization Method",
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Username&Password Auth",
+            "required": ["username", "password", "client_id"],
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "username_password_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "username": {
+                "title": "Username",
+                "type": "string"
+              },
+              "password": {
+                "title": "Password",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "agency_id": {
+        "title": "Agency ID (Optional)",
+        "type": "integer",
+        "order": 1
+      },
+      "rates_date_range": {
+        "title": "Date Range",
+        "description": "Choose date period that must be loaded",
+        "type": "object",
+        "order": 2,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Rates Custom Date Range",
+            "required": [
+              "rates_date_from",
+              "rates_date_to",
+              "rates_date_range_type"
+            ],
+            "properties": {
+              "rates_date_from": {
+                "title": "Rates Start Date",
+                "type": "string",
+                "description": "Start date in format YYYY-MM-DD.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples": ["2021-12-01"],
+                "order": 0
+              },
+              "rates_date_to": {
+                "title": "Rates End Date",
+                "type": "string",
+                "description": "End date in format YYYY-MM-DD.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples": ["2021-12-30"],
+                "order": 1
+              },
+              "rates_date_range_type": {
+                "type": "string",
+                "title": "Rates Date Range Type",
+                "description": "Custom Date",
+                "const": "custom_date",
+                "order": 2
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Rates Last N Days",
+            "required": ["last_days_count", "rates_date_range_type"],
+            "properties": {
+              "last_days_count": {
+                "title": "Last Days Count",
+                "type": "integer",
+                "description": "Count of last days exclude today.",
+                "minimum": 0,
+                "maximum": 3650,
+                "examples": [30],
+                "order": 0
+              },
+              "rates_date_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Last N Days",
+                "const": "last_n_days",
+                "order": 1
+              }
+            }
+          }
+        ]
+      },
+      "campaigns_filter_json": {
+        "title": "Campaigns Filter JSON",
+        "description": "Filter in JSON format that will be applied for Campaigns stream. Conditional operators: and, or; Comparison operators: eq/=, neq/!=/<>, lt/<, lte/<=, gt/>, gte/>=, in, notIn, like, notLike, between",
+        "type": "string",
+        "examples": [
+          "[\"status\", \"paused\"] => status = \"paused\"",
+          "[\"in\", \"status\", [\"paused\", \"stopped\"]] => status IN (\"paused\", \"stopped\")",
+          "[\"and\", [\"between\", \"id\", [100, 200]], [\"or\", [\"like\", \"title\", \"%or%\"], [\"gte\", \"dt\", \"2014-01-01\"]]] => (id BETWEEN 100 AND 200) AND (title LIKE \"%or%\" OR dt >= \"2014-01-01\")"
+        ],
+        "order": 3,
+        "default": ""
+      },
+      "campaigns_news_filter_json": {
+        "title": "Campaigns News Filter JSON",
+        "description": "Filter in JSON format that will be applied for Campaigns News stream. Conditional operators: and, or; Comparison operators: eq/=, neq/!=/<>, lt/<, lte/<=, gt/>, gte/>=, in, notIn, like, notLike, between",
+        "type": "string",
+        "examples": [
+          "[\"status\", \"paused\"] => status = \"paused\"",
+          "[\"in\", \"status\", [\"paused\", \"stopped\"]] => status IN (\"paused\", \"stopped\")",
+          "[\"and\", [\"between\", \"id\", [100, 200]], [\"or\", [\"like\", \"title\", \"%or%\"], [\"gte\", \"dt\", \"2014-01-01\"]]] => (id BETWEEN 100 AND 200) AND (title LIKE \"%or%\" OR dt >= \"2014-01-01\")"
+        ],
+        "order": 4,
+        "default": ""
+      },
+      "campaigns_rates_filter_json": {
+        "title": "Campaigns Rates Filter JSON",
+        "description": "Filter in JSON format that will be applied for Campaigns Rates stream. Conditional operators: and, or; Comparison operators: eq/=, neq/!=/<>, lt/<, lte/<=, gt/>, gte/>=, in, notIn, like, notLike, between",
+        "type": "string",
+        "examples": [
+          "[\"status\", \"paused\"] => status = \"paused\"",
+          "[\"in\", \"status\", [\"paused\", \"stopped\"]] => status IN (\"paused\", \"stopped\")",
+          "[\"and\", [\"between\", \"id\", [100, 200]], [\"or\", [\"like\", \"title\", \"%or%\"], [\"gte\", \"dt\", \"2014-01-01\"]]] => (id BETWEEN 100 AND 200) AND (title LIKE \"%or%\" OR dt >= \"2014-01-01\")"
+        ],
+        "order": 4,
+        "default": ""
+      },
+      "campaigns_news_rates_filter_json": {
+        "title": "Campaigns News Rates Filter JSON",
+        "description": "Filter in JSON format that will be applied for Campaigns News Rates stream. Conditional operators: and, or; Comparison operators: eq/=, neq/!=/<>, lt/<, lte/<=, gt/>, gte/>=, in, notIn, like, notLike, between",
+        "type": "string",
+        "examples": [
+          "[\"status\", \"paused\"] => status = \"paused\"",
+          "[\"in\", \"status\", [\"paused\", \"stopped\"]] => status IN (\"paused\", \"stopped\")",
+          "[\"and\", [\"between\", \"id\", [100, 200]], [\"or\", [\"like\", \"title\", \"%or%\"], [\"gte\", \"dt\", \"2014-01-01\"]]] => (id BETWEEN 100 AND 200) AND (title LIKE \"%or%\" OR dt >= \"2014-01-01\")"
+        ],
+        "order": 4,
+        "default": ""
+      },
+      "rates_time_granularity": {
+        "title": "Rates Time Granularity",
+        "type": "string",
+        "enum": ["hour", "day", "week", "month", "quarter", "year"],
+        "default": "day"
+      },
+      "client_name_constant": {
+        "title": "Client Name Constant",
+        "description": "Constant that will be used in record __clientName property",
+        "type": "string",
+        "examples": ["abcd"],
+        "order": 5,
+        "default": ""
+      },
+      "product_name_constant": {
+        "title": "Product Name Constant",
+        "description": "Constant that will be used in record __productName property",
+        "type": "string",
+        "examples": ["abcd"],
+        "order": 6,
+        "default": ""
+      },
+      "custom_constants_json": {
+        "title": "Custom Data JSON",
+        "description": "Custom Data JSON for additional record properties. Must be string of JSON object with first-level properties",
+        "type": "string",
+        "examples": ["{\"abc\": \"123\", \"cde\": \"132\"}"],
+        "order": 7
+      },
+      "campaigns_with_active_news_count": {
+        "title": "Campaigns withActiveNewsCount",
+        "type": "boolean",
+        "default": true,
+        "order": 8
+      },
+      "campaigns_with_connected_site_clicks": {
+        "title": "Campaigns withConnectedSiteClicks",
+        "type": "boolean",
+        "default": true,
+        "order": 9
+      },
+      "with_count": {
+        "title": "withCount",
+        "type": "boolean",
+        "default": true,
+        "order": 10
+      },
+      "with_rates": {
+        "title": "withRates",
+        "type": "boolean",
+        "default": true,
+        "order": 11
+      }
+    }
+  }
+}

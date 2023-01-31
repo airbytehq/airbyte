@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ac_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "ac_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dt_ratio": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "is_static": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_dynamic": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "calls_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "is_reserve_pool": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "active_numbers_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "non_session_calls_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

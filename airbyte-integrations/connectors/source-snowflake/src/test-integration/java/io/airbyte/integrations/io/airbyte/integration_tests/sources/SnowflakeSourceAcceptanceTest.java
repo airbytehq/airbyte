@@ -20,14 +20,14 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,7 +75,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("ID"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME1, SCHEMA_NAME,
+                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
                 Field.of("ID", JsonSchemaType.NUMBER),
                 Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
@@ -84,7 +84,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2, SCHEMA_NAME,
+                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
                 Field.of("ID", JsonSchemaType.NUMBER),
                 Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
@@ -136,24 +136,24 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   protected DataSource createDataSource() {
     config = Jsons.clone(getStaticConfig());
     return DataSourceFactory.create(
-        config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("credentials").get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("credentials").get("username").asText(),
+        config.get("credentials").get("password").asText(),
         SnowflakeSource.DRIVER_CLASS,
-        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get(JdbcUtils.HOST_KEY).asText()),
+        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
         Map.of("role", config.get("role").asText(),
             "warehouse", config.get("warehouse").asText(),
-            JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText()));
+            "database", config.get("database").asText()));
   }
 
   @Test
   public void testBackwardCompatibilityAfterAddingOAuth() throws Exception {
     final JsonNode deprecatedStyleConfig = Jsons.clone(config);
-    final JsonNode password = deprecatedStyleConfig.get("credentials").get(JdbcUtils.PASSWORD_KEY);
-    final JsonNode username = deprecatedStyleConfig.get("credentials").get(JdbcUtils.USERNAME_KEY);
+    final JsonNode password = deprecatedStyleConfig.get("credentials").get("password");
+    final JsonNode username = deprecatedStyleConfig.get("credentials").get("username");
 
     ((ObjectNode) deprecatedStyleConfig).remove("credentials");
-    ((ObjectNode) deprecatedStyleConfig).set(JdbcUtils.PASSWORD_KEY, password);
-    ((ObjectNode) deprecatedStyleConfig).set(JdbcUtils.USERNAME_KEY, username);
+    ((ObjectNode) deprecatedStyleConfig).set("password", password);
+    ((ObjectNode) deprecatedStyleConfig).set("username", username);
 
     assertEquals("SUCCEEDED", runCheckAndGetStatusAsString(deprecatedStyleConfig).toUpperCase());
   }

@@ -1,0 +1,36 @@
+{
+  "date": {
+    "date_from": "2021-01-01",
+    "date_to": "2021-05-01",
+    "date_range_type": "date_range"
+  },
+  "token": "TOKEN",
+  "tables": [
+    {
+      "name": "SessionStatistics",
+      "metrics": [
+        "ym:s:visits",
+        "ym:s:users",
+        "ym:s:pageviews",
+        "ym:s:bounceRate",
+        "ym:s:percentNewVisitors"
+      ],
+      "currency": "default",
+      "date_group": "day",
+      "dimensions": [
+        "ym:s:UTMSource",
+        "ym:s:UTMMedium",
+        "ym:s:UTMCampaign",
+        "ym:s:UTMContent",
+        "ym:s:counterID",
+        "ym:s:date",
+        "ym:s:TrafficSource"
+      ],
+      "attribution": "default"
+    }
+  ],
+  "client_name": "CLIENT_NAME_CONST",
+  "product_name": "PRODUCT_NAME_CONST",
+  "custom_constants": "{}",
+  "global_counter_ids": ["1234", "5678"]
+}

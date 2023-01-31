@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/harvest",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/harvest",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Harvest Spec",
@@ -22,30 +22,23 @@
         "type": "string",
         "order": 1
       },
-      "replication_end_date": {
-        "title": "End Date",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data after this date will not be replicated.",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": ["2017-01-25T00:00:00Z"],
-        "type": "string",
-        "airbyte_hidden": true,
-        "order": 2
-      },
       "credentials": {
         "title": "Authentication mechanism",
         "description": "Choose how to authenticate to Harvest.",
         "type": "object",
-        "order": 3,
+        "order": 2,
         "oneOf": [
           {
             "type": "object",
             "title": "Authenticate via Harvest (OAuth)",
             "required": ["client_id", "client_secret", "refresh_token"],
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
                 "order": 0
               },
               "client_id": {
@@ -71,11 +64,13 @@
             "type": "object",
             "title": "Authenticate with Personal Access Token",
             "required": ["api_token"],
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "Token",
+                "enum": ["Token"],
+                "default": "Token",
                 "order": 0
               },
               "api_token": {
@@ -107,7 +102,7 @@
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "properties": {
           "refresh_token": {
             "type": "string",
@@ -117,7 +112,7 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string"
@@ -129,7 +124,7 @@
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string",

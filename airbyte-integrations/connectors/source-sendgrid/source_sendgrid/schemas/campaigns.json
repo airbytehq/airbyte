@@ -9,15 +9,13 @@
       "type": "string"
     },
     "created_at": {
-      "type": ["string", "null"],
-      "format": "date-time"
+      "type": "string"
     },
     "status": {
       "type": "string"
     },
     "updated_at": {
-      "type": ["string", "null"],
-      "format": "date-time"
+      "type": "string"
     },
     "is_abtest": {
       "type": "boolean"

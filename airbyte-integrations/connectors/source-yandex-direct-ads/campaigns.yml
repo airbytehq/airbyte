@@ -1,0 +1,55 @@
+interactions:
+- request:
+    body: '{"method": "get", "params": {"SelectionCriteria": {}, "FieldNames": ["Id",
+      "Name", "StartDate", "Type", "Status", "State", "StatusPayment", "StatusClarification",
+      "SourceId", "Currency"], "Page": {"Limit": 10000, "Offset": 0}}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer AQAAAAAetS50AAaOkXL8_k7a90LKrgpfjNcX3tM
+      Client-Login:
+      - raiffeisenmedia
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '227'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.28.1
+    method: POST
+    uri: https://api.direct.yandex.com/json/v5/campaigns
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWKkotLs0pUbKqrq0FAEwE7g4NAAAA
+    headers:
+      Content-Encoding:
+      - gzip
+      Content-Security-Policy:
+      - default-src 'none'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Thu, 21 Jul 2022 00:54:24 GMT
+      RequestId:
+      - '6387160210582266519'
+      Transfer-Encoding:
+      - chunked
+      Units:
+      - 10/1099706/1100000
+      Units-Used-Login:
+      - raiffeisenmedia
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

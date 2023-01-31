@@ -1,0 +1,116 @@
+{
+    "type": [
+        "null",
+        "object"
+    ],
+    "properties": {
+        "width": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "poster_url": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "bit_rate": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "format": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "url": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "duration": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "height": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "signature": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "video_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "material_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "size": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "file_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "modify_time": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "displayable": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "allowed_placements": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            }
+        },
+        "allow_download": {
+            "type": [
+                "null",
+                "boolean"
+            ]
+        }
+    }
+}

@@ -8,10 +8,6 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "metadata": {
-              "type": "object",
-              "description": "Set of custom key-values specific to the object. The keys are strings and values are arrays of strings. The set of valid keys is always the consignee's list of keys, even if call was made by a different party."
-            },
             "_object": {
               "type": "string",
               "description": "String representing the object's type. Always /shipment for this object.",
@@ -34,6 +30,7 @@
                 {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
+                  "additionalProperties": false,
                   "properties": {
                     "_object": {
                       "type": "string",
@@ -58,17 +55,7 @@
             },
             "transportation_mode": {
               "type": "string",
-              "description": "Transportation mode of the main carriage of the shipment.",
-              "enum": [
-                "ocean",
-                "air",
-                "truck",
-                "rail",
-                "unknown_transportation",
-                "ocean_air",
-                "truck_intl",
-                "warehouse_storage"
-              ]
+              "description": "Transportation mode of the main carriage of the shipment. This can be either Ocean or Air."
             },
             "freight_type": {
               "type": "string",
@@ -80,6 +67,11 @@
                 "door_to_port"
               ]
             },
+            "updated_at": {
+              "type": "string",
+              "description": "Date when the shipment object was last updated. In ISO8601 UTC format with timezone denoted by Z.",
+              "format": "date-time"
+            },
             "archived_at": {
               "type": ["null", "string"],
               "description": "Date when the shipment was archived, if applicable. In ISO8601 UTC format with timezone denoted by Z.",
@@ -87,25 +79,12 @@
             },
             "incoterm": {
               "type": "string",
-              "description": "The Incoterm of your shipment.",
-              "enum": [
-                "EXW",
-                "FOB",
-                "FAS",
-                "FCA",
-                "CPT",
-                "CFR",
-                "CIF",
-                "CIP",
-                "DAT",
-                "DAP",
-                "DDP",
-                "DPU"
-              ]
+              "description": "The Incoterm of your shipment. This can be EXW, FCA, FAS, FOB, CPT, CFR, CIF, CIP, DAT, DAP, DDP, or DPU."
             },
             "calculated_weight": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -119,13 +98,14 @@
                 "unit": {
                   "type": "string",
                   "description": "Specifies the unit of measure for this quantity.",
-                  "enum": ["kg", "lbs", "t"]
+                  "enum": ["kg", "lbs"]
                 }
               }
             },
             "calculated_volume": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -143,17 +123,29 @@
                 }
               }
             },
-            "pieces": {
-              "type": ["null", "integer"],
-              "description": "Total number of pieces in the shipment."
-            },
-            "it_number": {
+            "estimated_departure_date": {
               "type": ["null", "string"],
-              "description": "Inbond Transit number used for US Customs"
+              "description": "Estimated departure date from the first port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+              "format": "date-time"
             },
-            "created_date": {
-              "type": "string",
-              "description": "Date the user confirmed the Flexport quote for this Shipment.",
+            "actual_departure_date": {
+              "type": ["null", "string"],
+              "description": "Actual departure date from the first port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+              "format": "date-time"
+            },
+            "target_delivery_date": {
+              "type": ["null", "string"],
+              "description": "Target date for when the shipment will be fully delivered. This date is set when the shipment''s booking is confirmed. This value may be different from estimated_delivered_in_full_date, which is updated when there is new information about the progress of a shipment. Date only.",
+              "format": "date"
+            },
+            "estimated_arrival_date": {
+              "type": ["null", "string"],
+              "description": "Estimated arrival date to the last port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+              "format": "date-time"
+            },
+            "actual_arrival_date": {
+              "type": ["null", "string"],
+              "description": "Actual arrival date to the last port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
             "status": {
@@ -170,33 +162,39 @@
               ]
             },
             "priority": {
+              "type": "string"
+            },
+            "pieces": {
+              "type": ["null", "integer"],
+              "description": "Total number of pieces in the shipment."
+            },
+            "it_number": {
+              "type": ["null", "string"],
+              "description": "Inbond Transit number used for US Customs"
+            },
+            "created_date": {
               "type": "string",
-              "description": "The level of attention Flexport should give to this shipment.",
-              "enum": ["standard", "high"]
-            },
-            "updated_at": {
-              "type": "string",
-              "description": "Date when the shipment object was last updated. In ISO8601 UTC format with timezone denoted by Z.",
+              "description": "Date the user has confirmed Flexport quote and cargo is getting ready to ship.",
               "format": "date-time"
             },
-            "estimated_departure_date": {
+            "estimated_picked_up_in_full_date": {
               "type": ["null", "string"],
-              "description": "Estimated departure date from the first port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+              "description": "Estimated pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
-            "actual_departure_date": {
+            "actual_picked_up_in_full_date": {
               "type": ["null", "string"],
-              "description": "Actual departure date from the first port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+              "description": "Actual pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
-            "estimated_arrival_date": {
+            "estimated_delivered_in_full_date": {
               "type": ["null", "string"],
-              "description": "Estimated arrival date to the last port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+              "description": "Estimated delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
-            "actual_arrival_date": {
+            "actual_delivered_in_full_date": {
               "type": ["null", "string"],
-              "description": "Actual arrival date to the last port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+              "description": "Actual delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container. In ISO8601 format with timezone denoted by +/-HH:MM.",
               "format": "date-time"
             },
             "cargo_ready_date": {
@@ -212,17 +210,13 @@
               "type": "boolean",
               "description": "Determines if a shipment is using Flexport services for a combination of import customs clearance or final leg delivery."
             },
-            "wants_commercial_invoice_transcription": {
-              "type": "boolean"
+            "wants_export_customs_service": {
+              "type": "boolean",
+              "description": "Determines if the shipment requires Flexport to provide export customs service."
             },
-            "wants_flexport_insurance": {
-              "type": "boolean"
-            },
-            "wants_pickup_service": {
-              "type": "boolean"
-            },
-            "wants_trade_declaration_service": {
-              "type": ["null", "boolean"]
+            "wants_import_customs_service": {
+              "type": "boolean",
+              "description": "Determines if the shipment requires Flexport to provide import customs service."
             },
             "visibility_only": {
               "type": "boolean",
@@ -232,38 +226,87 @@
               "type": "boolean",
               "description": "Determines if Flexport is responsible for door delivery on a shipment."
             },
-            "estimated_picked_up_in_full_date": {
-              "type": ["null", "string"],
-              "description": "Estimated pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container. In ISO8601 format with timezone denoted by +/-HH:MM.",
-              "format": "date-time"
+            "wants_flexport_insurance": {
+              "type": "boolean"
             },
-            "actual_picked_up_in_full_date": {
-              "type": ["null", "string"],
-              "description": "Actual pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container. In ISO8601 format with timezone denoted by +/-HH:MM.",
-              "format": "date-time"
+            "wants_pickup_service": {
+              "type": "boolean"
             },
-            "target_delivery_date": {
-              "type": ["null", "string"],
-              "description": "Target date for when the shipment will be fully delivered. This date is set when the shipment''s booking is confirmed. This value may be different from estimated_delivered_in_full_date, which is updated when there is new information about the progress of a shipment. Date only.",
-              "format": "date"
+            "wants_commercial_invoice_transcription": {
+              "type": "boolean"
             },
-            "estimated_delivered_in_full_date": {
-              "type": ["null", "string"],
-              "description": "Estimated delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container. In ISO8601 format with timezone denoted by +/-HH:MM.",
-              "format": "date-time"
+            "wants_trade_declaration_service": {
+              "type": ["null", "boolean"]
             },
-            "actual_delivered_in_full_date": {
-              "type": ["null", "string"],
-              "description": "Actual delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container. In ISO8601 format with timezone denoted by +/-HH:MM.",
-              "format": "date-time"
-            },
-            "wants_export_customs_service": {
-              "type": "boolean",
-              "description": "Determines if the shipment requires Flexport to provide export customs service."
-            },
-            "wants_import_customs_service": {
-              "type": "boolean",
-              "description": "Determines if the shipment requires Flexport to provide import customs service."
+            "air_shipment": {
+              "description": "Air-specific Shipment information. Available only if this is an air shipment. null otherwise.",
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "_object": {
+                      "type": "string",
+                      "description": "String representing the object`s type. Always /air/shipment for this object.",
+                      "pattern": "^/air/shipment$"
+                    },
+                    "house_airway_bill": {
+                      "type": "string",
+                      "description": "House air waybill number"
+                    },
+                    "master_airway_bill": {
+                      "type": "string",
+                      "description": "Master air waybill number"
+                    },
+                    "chargeable_weight": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "_object": {
+                          "type": "string",
+                          "description": "String representing the object's type. Always /quantity/weight for this object.",
+                          "pattern": "^/quantity/weight"
+                        },
+                        "value": {
+                          "type": "number",
+                          "description": "Specifies the quantity of units as a float."
+                        },
+                        "unit": {
+                          "type": "string",
+                          "description": "Specifies the unit of measure for this quantity.",
+                          "enum": ["kg", "lbs"]
+                        }
+                      }
+                    },
+                    "chargeable_volume": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "_object": {
+                          "type": "string",
+                          "description": "String representing the object's type. Always /quantity/volume for this object.",
+                          "pattern": "^/quantity/volume"
+                        },
+                        "value": {
+                          "type": "number",
+                          "description": "Specifies the quantity of units as a float."
+                        },
+                        "unit": {
+                          "type": "string",
+                          "description": "Specifies the unit of measure for this quantity.",
+                          "enum": ["cbm", "cbft"]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
             },
             "ocean_shipment": {
               "description": "Ocean-specific Shipment information. Available only if this is an ocean shipment. null otherwise.",
@@ -274,6 +317,7 @@
                 {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
+                  "additionalProperties": false,
                   "properties": {
                     "_object": {
                       "type": "string",
@@ -303,6 +347,7 @@
                     "containers": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -323,76 +368,10 @@
                 }
               ]
             },
-            "air_shipment": {
-              "description": "Air-specific Shipment information. Available only if this is an air shipment. null otherwise.",
-              "oneOf": [
-                {
-                  "type": "null"
-                },
-                {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
-                  "type": "object",
-                  "properties": {
-                    "_object": {
-                      "type": "string",
-                      "description": "String representing the object`s type. Always /air/shipment for this object.",
-                      "pattern": "^/air/shipment$"
-                    },
-                    "house_airway_bill": {
-                      "type": "string",
-                      "description": "House air waybill number"
-                    },
-                    "master_airway_bill": {
-                      "type": "string",
-                      "description": "Master air waybill number"
-                    },
-                    "chargeable_weight": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
-                      "type": "object",
-                      "properties": {
-                        "_object": {
-                          "type": "string",
-                          "description": "String representing the object's type. Always /quantity/weight for this object.",
-                          "pattern": "^/quantity/weight"
-                        },
-                        "value": {
-                          "type": "number",
-                          "description": "Specifies the quantity of units as a float."
-                        },
-                        "unit": {
-                          "type": "string",
-                          "description": "Specifies the unit of measure for this quantity.",
-                          "enum": ["kg", "lbs", "t"]
-                        }
-                      }
-                    },
-                    "chargeable_volume": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
-                      "type": "object",
-                      "properties": {
-                        "_object": {
-                          "type": "string",
-                          "description": "String representing the object's type. Always /quantity/volume for this object.",
-                          "pattern": "^/quantity/volume"
-                        },
-                        "value": {
-                          "type": "number",
-                          "description": "Specifies the quantity of units as a float."
-                        },
-                        "unit": {
-                          "type": "string",
-                          "description": "Specifies the unit of measure for this quantity.",
-                          "enum": ["cbm", "cbft"]
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
-            },
             "dangerous_goods": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -413,6 +392,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -427,10 +407,6 @@
                     "type": "string",
                     "description": "Name of the company entity."
                   },
-                  "ref": {
-                    "type": "string",
-                    "description": "Your reference for this company entity, as set in the Network tab."
-                  },
                   "mailing_address": {
                     "description": "Address of the company entity.",
                     "oneOf": [
@@ -440,6 +416,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -474,21 +451,25 @@
                             "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
-                          "timezone": {
+                          "unlocode": {
                             "type": ["null", "string"],
+                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                          },
+                          "timezone": {
+                            "type": "string",
                             "description": "Timezone for this address"
                           },
                           "ref": {
                             "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
-                          },
-                          "unlocode": {
-                            "type": ["null", "string"],
-                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           }
                         }
                       }
                     ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "description": "Your reference for this company entity, as set in the Network tab."
                   },
                   "vat_numbers": {
                     "type": "array",
@@ -496,6 +477,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -522,6 +504,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -536,10 +519,6 @@
                     "type": "string",
                     "description": "Name of the company entity."
                   },
-                  "ref": {
-                    "type": "string",
-                    "description": "Your reference for this company entity, as set in the Network tab."
-                  },
                   "mailing_address": {
                     "description": "Address of the company entity.",
                     "oneOf": [
@@ -549,6 +528,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -583,21 +563,25 @@
                             "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
-                          "timezone": {
+                          "unlocode": {
                             "type": ["null", "string"],
+                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                          },
+                          "timezone": {
+                            "type": "string",
                             "description": "Timezone for this address"
                           },
                           "ref": {
                             "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
-                          },
-                          "unlocode": {
-                            "type": ["null", "string"],
-                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           }
                         }
                       }
                     ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "description": "Your reference for this company entity, as set in the Network tab."
                   },
                   "vat_numbers": {
                     "type": "array",
@@ -605,6 +589,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -631,6 +616,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -645,10 +631,6 @@
                     "type": "string",
                     "description": "Name of the company entity."
                   },
-                  "ref": {
-                    "type": "string",
-                    "description": "Your reference for this company entity, as set in the Network tab."
-                  },
                   "mailing_address": {
                     "description": "Address of the company entity.",
                     "oneOf": [
@@ -658,6 +640,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -692,21 +675,25 @@
                             "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
-                          "timezone": {
+                          "unlocode": {
                             "type": ["null", "string"],
+                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                          },
+                          "timezone": {
+                            "type": "string",
                             "description": "Timezone for this address"
                           },
                           "ref": {
                             "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
-                          },
-                          "unlocode": {
-                            "type": ["null", "string"],
-                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           }
                         }
                       }
                     ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "description": "Your reference for this company entity, as set in the Network tab."
                   },
                   "vat_numbers": {
                     "type": "array",
@@ -714,6 +701,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -740,6 +728,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -754,10 +743,6 @@
                     "type": "string",
                     "description": "Name of the company entity."
                   },
-                  "ref": {
-                    "type": "string",
-                    "description": "Your reference for this company entity, as set in the Network tab."
-                  },
                   "mailing_address": {
                     "description": "Address of the company entity.",
                     "oneOf": [
@@ -767,6 +752,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -801,21 +787,25 @@
                             "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
-                          "timezone": {
+                          "unlocode": {
                             "type": ["null", "string"],
+                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                          },
+                          "timezone": {
+                            "type": "string",
                             "description": "Timezone for this address"
                           },
                           "ref": {
                             "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
-                          },
-                          "unlocode": {
-                            "type": ["null", "string"],
-                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           }
                         }
                       }
                     ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "description": "Your reference for this company entity, as set in the Network tab."
                   },
                   "vat_numbers": {
                     "type": "array",
@@ -823,6 +813,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -849,6 +840,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -863,10 +855,6 @@
                     "type": "string",
                     "description": "Name of the company entity."
                   },
-                  "ref": {
-                    "type": "string",
-                    "description": "Your reference for this company entity, as set in the Network tab."
-                  },
                   "mailing_address": {
                     "description": "Address of the company entity.",
                     "oneOf": [
@@ -876,6 +864,7 @@
                       {
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                           "_object": {
                             "type": "string",
@@ -910,21 +899,25 @@
                             "type": ["null", "string"],
                             "description": "ZIP or postal code."
                           },
-                          "timezone": {
+                          "unlocode": {
                             "type": ["null", "string"],
+                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                          },
+                          "timezone": {
+                            "type": "string",
                             "description": "Timezone for this address"
                           },
                           "ref": {
                             "type": ["null", "string"],
                             "description": "Your reference for the address, as set in your network tab"
-                          },
-                          "unlocode": {
-                            "type": ["null", "string"],
-                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                           }
                         }
                       }
                     ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "description": "Your reference for this company entity, as set in the Network tab."
                   },
                   "vat_numbers": {
                     "type": "array",
@@ -932,6 +925,7 @@
                     "items": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
+                      "additionalProperties": false,
                       "properties": {
                         "_object": {
                           "type": "string",
@@ -958,6 +952,7 @@
               "items": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                   "_object": {
                     "type": "string",
@@ -975,6 +970,7 @@
                   "total_weight": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -988,13 +984,14 @@
                       "unit": {
                         "type": "string",
                         "description": "Specifies the unit of measure for this quantity.",
-                        "enum": ["kg", "lbs", "t"]
+                        "enum": ["kg", "lbs"]
                       }
                     }
                   },
                   "total_volume": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -1019,6 +1016,7 @@
                   "product": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                       "_object": {
                         "type": "string",
@@ -1059,6 +1057,7 @@
                         "items": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
+                          "additionalProperties": false,
                           "properties": {
                             "_object": {
                               "type": "string",
@@ -1082,6 +1081,7 @@
                         "items": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
+                          "additionalProperties": false,
                           "properties": {
                             "_object": {
                               "type": "string",
@@ -1109,6 +1109,7 @@
                         "items": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
+                          "additionalProperties": false,
                           "properties": {
                             "_object": {
                               "type": "string",
@@ -1135,6 +1136,7 @@
                         "items": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
+                          "additionalProperties": false,
                           "properties": {
                             "_object": {
                               "type": "string",
@@ -1166,6 +1168,7 @@
             "legs": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -1185,6 +1188,7 @@
             "customs_entries": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -1204,6 +1208,7 @@
             "commercial_invoices": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -1223,6 +1228,7 @@
             "documents": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -1238,6 +1244,10 @@
                   "description": "The _object value of each individual element of the list that link points to."
                 }
               }
+            },
+            "metadata": {
+              "type": "object",
+              "description": "User defined metadata attached to the shipment."
             },
             "departure_date": {
               "$comment": "deprecated",

@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.bigquery.formatter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Schema;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,11 +23,10 @@ public abstract class BigQueryRecordFormatter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordFormatter.class);
 
-  protected Schema bigQuerySchema;
-  protected final Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
+  private Schema bigQuerySchema;
+  private final Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
   protected final StandardNameTransformer namingResolver;
-  protected final JsonNode originalJsonSchema;
-  protected JsonNode jsonSchema;
+  protected final JsonNode jsonSchema;
 
   /**
    * These parameters are required for the correct operation of denormalize version of the connector.
@@ -37,7 +36,6 @@ public abstract class BigQueryRecordFormatter {
 
   public BigQueryRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     this.namingResolver = namingResolver;
-    this.originalJsonSchema = jsonSchema.deepCopy();
     this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());
   }
 

@@ -50,24 +50,6 @@ class Germany(RkiCovidStream):
         return "germany/"
 
 
-# class that contains main source states | full-refresh
-class GermanyStates(RkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/states"""
-
-    primary_key = None
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json():
-            for key, value in response.json().get("data").items():
-                yield value
-        return [{}]
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "states/"
-
-
 # class that contains source age-groups in germany. | full-refresh
 class GermanyAgeGroups(RkiCovidStream):
     """Docs: https://api.corona-zahlen.org/germany/age-groups"""
@@ -81,27 +63,6 @@ class GermanyAgeGroups(RkiCovidStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "germany/age-groups"
-
-
-# class that contains main source states | full-refresh
-class GermanyStatesAgeGroups(RkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/states/age-groups"""
-
-    primary_key = None
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json():
-            for key, value in response.json().get("data").items():
-                record = {"abbreviation": key}
-                for grp, data in value.items():
-                    record.update({grp: data})
-                yield record
-        return [{}]
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "states/age-groups"
 
 
 # Basic incremental stream
@@ -148,7 +109,7 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
+        if diff.days == 0:
             return 1
         return diff.days
 
@@ -167,9 +128,7 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json().get("data"):
-            return response.json().get("data")
-        return [{}]
+        return response.json().get("data")
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -199,7 +158,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
+        if diff.days == 0:
             return 1
         return diff.days
 
@@ -220,7 +179,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.json().get("data"):
             return response.json().get("data")
-        return [{}]
+        pass
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -250,7 +209,7 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
+        if diff.days == 0:
             return 1
         return diff.days
 
@@ -269,9 +228,7 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json().get("data"):
-            return response.json().get("data")
-        return [{}]
+        return response.json().get("data")
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -301,7 +258,7 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
+        if diff.days == 0:
             return 1
         return diff.days
 
@@ -320,9 +277,7 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json().get("data"):
-            return response.json().get("data")
-        return [{}]
+        return response.json().get("data")
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -352,7 +307,7 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
+        if diff.days == 0:
             return 1
         return diff.days
 
@@ -371,9 +326,7 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json().get("data"):
-            return response.json().get("data").get("history")
-        return [{}]
+        return response.json().get("data").get("history")
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -403,7 +356,7 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
+        if diff.days == 0:
             return 1
         return diff.days
 
@@ -422,9 +375,7 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
             yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json().get("data"):
-            return response.json().get("data")
-        return [{}]
+        return response.json().get("data")
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -432,161 +383,6 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
         if self.start_date:
             return "germany/history/hospitalization/" + str(self.date_to_int(self.start_date))
         return "germany/history/hospitalization/"
-
-
-# STATES FULL-REFRESH.
-# source: states/history/cases/:days | FULL-REFRESH
-class ByStateRkiCovidStream(RkiCovidStream, ABC):
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json().get("data"):
-            for key, value in response.json().get("data").items():
-                for record in value.get("history"):
-                    record.update({"name": value.get("name"), "abbreviation": key})
-                    yield record
-        return [{}]
-
-
-class StatesHistoryCases(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/cases/:days"""
-
-    primary_key = None
-
-    def __init__(self, config, **kwargs):
-        super().__init__(**kwargs)
-        self.start_date = config.get("start_date")
-
-    def date_to_int(self, start_date) -> int:
-        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
-            return 1
-        return diff.days
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        if self.start_date:
-            return "states/history/cases/" + str(self.date_to_int(self.start_date))
-        return "states/history/cases/"
-
-
-# source: states/history/incidence/:days | FULL-REFRESH
-class StatesHistoryIncidence(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/incidence/:days"""
-
-    primary_key = None
-
-    def __init__(self, config, **kwargs):
-        super().__init__(**kwargs)
-        self.start_date = config.get("start_date")
-
-    def date_to_int(self, start_date) -> int:
-        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
-            return 1
-        return diff.days
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        if self.start_date:
-            return "states/history/incidence/" + str(self.date_to_int(self.start_date))
-        return "states/history/incidence/"
-
-
-# source: states/history/frozen-incidence/:days | FULL-REFRESH
-class StatesHistoryFrozenIncidence(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/frozen-incidence/:days"""
-
-    primary_key = None
-
-    def __init__(self, config, **kwargs):
-        super().__init__(**kwargs)
-        self.start_date = config.get("start_date")
-
-    def date_to_int(self, start_date) -> int:
-        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
-            return 1
-        return diff.days
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        if self.start_date:
-            return "states/history/frozen-incidence/" + str(self.date_to_int(self.start_date))
-        return "states/history/frozen-incidence/"
-
-
-# source: states/history/deaths/:days | FULL-REFRESH
-class StatesHistoryDeaths(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/deaths/:days"""
-
-    primary_key = None
-
-    def __init__(self, config, **kwargs):
-        super().__init__(**kwargs)
-        self.start_date = config.get("start_date")
-
-    def date_to_int(self, start_date) -> int:
-        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
-            return 1
-        return diff.days
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        if self.start_date:
-            return "states/history/deaths/" + str(self.date_to_int(self.start_date))
-        return "states/history/deaths/"
-
-
-# source: states/history/recovered/:days | FULL-REFRESH
-class StatesHistoryRecovered(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/recovered/:days"""
-
-    primary_key = None
-
-    def __init__(self, config, **kwargs):
-        super().__init__(**kwargs)
-        self.start_date = config.get("start_date")
-
-    def date_to_int(self, start_date) -> int:
-        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
-            return 1
-        return diff.days
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        if self.start_date:
-            return "states/history/recovered/" + str(self.date_to_int(self.start_date))
-        return "states/history/recovered/"
-
-
-# source: states/history/hospitalization/:days | FULL-REFRESH
-class StatesHistoryHospitalization(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/hospitalization/:days"""
-
-    primary_key = None
-
-    def __init__(self, config, **kwargs):
-        super().__init__(**kwargs)
-        self.start_date = config.get("start_date")
-
-    def date_to_int(self, start_date) -> int:
-        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-        if diff.days <= 0:
-            return 1
-        return diff.days
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        if self.start_date:
-            return "states/history/hospitalization/" + str(self.date_to_int(self.start_date))
-        return "states/history/hospitalization/"
 
 
 # Source
@@ -611,8 +407,8 @@ class SourceRkiCovid(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # Streams For Germany
-        streams = [
+
+        return [
             Germany(),
             GermanyAgeGroups(),
             GermanyHistoryCases(config=config),
@@ -622,19 +418,3 @@ class SourceRkiCovid(AbstractSource):
             GermanHistoryFrozenIncidence(config=config),
             GermanHistoryHospitalization(config=config),
         ]
-
-        # Streams For States Of Germany
-        streams.extend(
-            [
-                GermanyStates(),
-                GermanyStatesAgeGroups(),
-                StatesHistoryCases(config=config),
-                StatesHistoryIncidence(config=config),
-                StatesHistoryFrozenIncidence(config=config),
-                StatesHistoryDeaths(config=config),
-                StatesHistoryRecovered(config=config),
-                StatesHistoryHospitalization(config=config),
-            ]
-        )
-
-        return streams

@@ -273,7 +273,9 @@
                         },
                         "configuration": {
                           "type": "object",
-                          "additionalProperties": true,
+                          "additionalProperties": {
+                            "readOnly": true
+                          },
                           "description": "If the field is a custom field, the configuration of the field.",
                           "readOnly": true
                         }
@@ -694,6 +696,6 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details about a notification scheme."
 }

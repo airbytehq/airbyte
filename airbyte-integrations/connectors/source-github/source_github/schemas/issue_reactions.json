@@ -16,7 +16,7 @@
       "format": "date-time"
     },
     "user": {
-      "$ref": "user_graphql.json"
+      "$ref": "user.json"
     },
     "repository": {
       "type": "string"

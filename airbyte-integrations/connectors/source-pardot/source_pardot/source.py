@@ -34,6 +34,8 @@ class SourcePardot(AbstractSource):
         auth = TokenAuthenticator(pardot.access_token)
         args = {"authenticator": auth, "config": config}
 
+        visitors = Visitors(**args)
+
         return [
             EmailClicks(**args),
             Campaigns(**args),
@@ -43,6 +45,6 @@ class SourcePardot(AbstractSource):
             Prospects(**args),
             Users(**args),
             VisitorActivities(**args),
-            Visitors(**args),
-            Visits(parent_stream=Visitors(**args), **args),
+            visitors,
+            Visits(parent_stream=visitors, **args),
         ]

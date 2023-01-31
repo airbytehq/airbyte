@@ -1674,7 +1674,11 @@
               },
               "roles": {
                 "type": "object",
-                "additionalProperties": true,
+                "additionalProperties": {
+                  "type": "string",
+                  "format": "uri",
+                  "readOnly": true
+                },
                 "description": "The name and self URL for each role defined in the project. For more information, see [Create project role](#api-rest-api-3-role-post).",
                 "readOnly": true
               },
@@ -1824,7 +1828,9 @@
               },
               "properties": {
                 "type": "object",
-                "additionalProperties": true,
+                "additionalProperties": {
+                  "readOnly": true
+                },
                 "description": "Map of project properties",
                 "readOnly": true
               },
@@ -2856,6 +2862,6 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details of a filter."
 }

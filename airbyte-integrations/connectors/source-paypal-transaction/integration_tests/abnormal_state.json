@@ -1,24 +1,8 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date": "2023-06-09T00:00:00+00:00"
-      },
-      "stream_descriptor": {
-        "name": "balances"
-      }
-    }
+{
+  "transactions": {
+    "date": "2021-07-11T23:00:00+00:00"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date": "2023-06-09T00:00:00+00:00"
-      },
-      "stream_descriptor": {
-        "name": "transactions"
-      }
-    }
+  "balances": {
+    "date": "2021-07-11T23:00:00+00:00"
   }
-]
+}

@@ -20,7 +20,7 @@ import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,18 +38,16 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
    * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
    */
 
-  public static final String SSL_MODE = "sslmode=none";
-  public static final String HTTPS_PROTOCOL = "https";
-  public static final String HTTP_PROTOCOL = "http";
-
-  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+  public static final List<String> SSL_PARAMETERS = List.of(
+      "ssl=true",
+      "sslmode=none");
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
                                                           final List<TableInfo<CommonField<JDBCType>>> tableInfos) {
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
+            tableInfo -> sourceOperations.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
               try {
                 return database.queryStrings(connection -> {
@@ -69,7 +67,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
   public static Source getWrappedSource() {
-    return new SshWrappedSource(new ClickHouseSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedSource(new ClickHouseSource(), List.of("host"), List.of("port"));
   }
 
   /**
@@ -84,35 +82,22 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final boolean isSsl = !config.has("ssl") || config.get("ssl").asBoolean();
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse:%s://%s:%s/%s",
-        isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
-        config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get(JdbcUtils.PORT_KEY).asText(),
-        config.get(JdbcUtils.DATABASE_KEY).asText()));
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse://%s:%s/%s",
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get("database").asText()));
 
-    final boolean isAdditionalParamsExists =
-        config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
-    final List<String> params = new ArrayList<>();
     // assume ssl if not explicitly mentioned.
-    if (isSsl) {
-      params.add(SSL_MODE);
-    }
-    if (isAdditionalParamsExists) {
-      params.add(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
-    }
-
-    if (isSsl || isAdditionalParamsExists) {
-      jdbcUrl.append("?");
-      jdbcUrl.append(String.join("&", params));
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
+      jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
+        .put("username", config.get("username").asText())
+        .put("jdbc_url", jdbcUrl.toString());
 
-    if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    if (config.has("password")) {
+      configBuilder.put("password", config.get("password").asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -120,12 +105,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    return Set.of("system", "information_schema", "INFORMATION_SCHEMA");
-  }
-
-  @Override
-  protected int getStateEmissionFrequency() {
-    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+    return Collections.singleton("system");
   }
 
   public static void main(final String[] args) throws Exception {

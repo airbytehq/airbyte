@@ -13,16 +13,17 @@
       "description": "The ID of the tempo worklog.",
       "readOnly": true
     },
+    "jiraWorklogId": {
+      "type": "integer",
+      "description": "The ID of the jira worklog.",
+      "readOnly": true
+    },
     "issue": {
       "type": "object",
       "description": "Details of the issue",
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "self": {
-          "type": "string"
-        }
+      "additionalProperties": {
+        "type": ["string", "integer"],
+        "readOnly": true
       },
       "readOnly": true
     },
@@ -37,12 +38,12 @@
       "readOnly": true
     },
     "startTime": {
-      "type": ["null", "string"],
+      "type": "string",
       "description": "Start time of the worklog",
       "readOnly": true
     },
     "description": {
-      "type": ["null", "string"],
+      "type": "string",
       "description": "Description of the worklog",
       "readOnly": true
     },
@@ -59,43 +60,22 @@
     "author": {
       "type": "object",
       "description": "Author of the worklog",
-      "properties": {
-        "accountId": {
-          "type": "string"
-        },
-        "self": {
-          "type": ["null", "string"]
-        }
-      },
-      "readOnly": true
+      "readOnly": true,
+      "additionalProperties": {
+        "type": "string",
+        "readOnly": true
+      }
     },
     "attributes": {
       "type": "object",
-      "properties": {
-        "self": {
-          "type": "string"
-        },
-        "values": {
-          "type": ["null", "array"],
-          "items": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "type": "string"
-              },
-              "value": {
-                "type": ["null", "string"]
-              }
-            }
-          }
-        }
-      },
       "description": "Additional attribute of the worklog",
-      "readOnly": true
+      "readOnly": true,
+      "additionalProperties": true
     },
     "billableSeconds": {
       "type": ["null", "integer"],
       "description": "Billable time spent working"
     }
-  }
+  },
+  "additionalProperties": false
 }

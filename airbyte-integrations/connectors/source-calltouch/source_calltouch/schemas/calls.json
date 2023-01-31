@@ -1,0 +1,614 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "callId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "callphase": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "attribution": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "callTags": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "names": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "duration": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "callerNumber": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "redirectNumber": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "phoneNumber": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "manager": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "successful": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "uniqueCall": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "targetCall": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "uniqTargetCall": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "callbackCall": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "city": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "source": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "medium": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "keyword": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "url": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "callUrl": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ref": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "hostname": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utmSource": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utmMedium": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utmCampaign": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utmContent": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utmTerm": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "sessionId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ctCallerId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "clientId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "yaClientId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "sipCallId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "userAgent": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ip": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "waitingConnect": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "callReferenceId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "mapVisits": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "utmSource": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sessionDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "array"
+            ]
+          },
+          "ip": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "utmTerm": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "utmContent": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "userAgent": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "source": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "medium": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "utmCampaign": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ref": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "additionalTags": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "utmMedium": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "keyword": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    },
+    "attrs": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "comments": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "commentId": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "callId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "comment": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "partyId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "partyName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    },
+    "phrases": {
+      "type": "null"
+    },
+    "additionalTags": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "callClientUniqueId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "device": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "os": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "browser": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "timestamp": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "sessionDate": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "time-stamp"
+    },
+    "orders": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "order": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "yandexDirect": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "campaignId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "adGroupId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "adId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "criteriaId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "googleAdWords": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "campaignId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "adGroupId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "adId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "criteriaId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "siteId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "siteName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "callbackInfo": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "fields": {
+          "type": [
+            "null",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": [
+                  "string",
+                  "integer",
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "ctClientId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "dcm": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "phonesInText": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ctGlobalId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "subPoolName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "statusDetails": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

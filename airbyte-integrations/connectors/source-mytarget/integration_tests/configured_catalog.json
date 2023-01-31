@@ -1,0 +1,209 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "campaigns",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "package_id": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "banners",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "campaign_id": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "moderation_status": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "pads_trees",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": { "type": ["null", "string"] },
+            "tree": { "type": ["null", "string"] },
+            "__productName": { "type": ["null", "string"] },
+            "__clientName": { "type": ["null", "string"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "packages_pads",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": { "type": ["null", "string"] },
+            "description": { "type": ["null", "string"] },
+            "eye_url": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": { "type": ["null", "string"] },
+                "url": { "type": ["null", "string"] },
+                "description": { "type": ["null", "string"] }
+              }
+            },
+            "name": { "type": ["string", "null"] },
+            "__productName": { "type": ["null", "string"] },
+            "__clientName": { "type": ["null", "string"] }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "campaigns_statistics",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": ["null", "string"]
+            },
+            "base": {
+              "type": ["null", "object"],
+              "properties": {
+                "shows": {
+                  "type": ["null", "integer"]
+                },
+                "clicks": {
+                  "type": ["null", "integer"]
+                },
+                "goals": {
+                  "type": ["null", "integer"]
+                },
+                "spent": {
+                  "type": ["null", "number"]
+                },
+                "cpm": {
+                  "type": ["null", "number"]
+                },
+                "cpc": {
+                  "type": ["null", "number"]
+                },
+                "cpa": {
+                  "type": ["null", "number"]
+                },
+                "ctr": {
+                  "type": ["null", "integer"]
+                },
+                "cr": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "campaign_id": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["campaign_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "banners_statistic",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": ["null", "string"]
+            },
+            "base": {
+              "type": ["null", "object"],
+              "properties": {
+                "shows": {
+                  "type": ["null", "integer"]
+                },
+                "clicks": {
+                  "type": ["null", "integer"]
+                },
+                "goals": {
+                  "type": ["null", "integer"]
+                },
+                "spent": {
+                  "type": ["null", "number"]
+                },
+                "cpm": {
+                  "type": ["null", "number"]
+                },
+                "cpc": {
+                  "type": ["null", "number"]
+                },
+                "cpa": {
+                  "type": ["null", "number"]
+                },
+                "ctr": {
+                  "type": ["null", "integer"]
+                },
+                "cr": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "banner_id": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["banner_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+.venv/
+.vscode/
+secrets/
+*.egg-info
+*.txt

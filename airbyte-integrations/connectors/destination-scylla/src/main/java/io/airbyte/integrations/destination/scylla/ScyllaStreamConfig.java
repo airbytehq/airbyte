@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.scylla;
 
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.DestinationSyncMode;
 
 /*
  * Immutable configuration class for storing destination stream config.

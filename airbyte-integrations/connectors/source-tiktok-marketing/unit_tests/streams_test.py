@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pendulum
 import pytest
-from source_tiktok_marketing.source import get_report_stream
 from source_tiktok_marketing.streams import (
     AdGroupsReports,
     Ads,
@@ -17,9 +16,6 @@ from source_tiktok_marketing.streams import (
     AdvertisersReports,
     BasicReports,
     CampaignsReports,
-    Daily,
-    Hourly,
-    Lifetime,
     ReportGranularity,
 )
 
@@ -99,14 +95,14 @@ def test_stream_slices_basic_sandbox(advertiser_ids, config_name, slices_expecte
     "granularity, slices_expected",
     [
         (
-            Lifetime,
+            ReportGranularity.LIFETIME,
             [
                 {"advertiser_id": 1, "end_date": END_DATE, "start_date": START_DATE},
                 {"advertiser_id": 2, "end_date": END_DATE, "start_date": START_DATE},
             ],
         ),
         (
-            Daily,
+            ReportGranularity.DAY,
             [
                 {"advertiser_id": 1, "end_date": "2020-01-30", "start_date": "2020-01-01"},
                 {"advertiser_id": 1, "end_date": "2020-02-29", "start_date": "2020-01-31"},
@@ -119,38 +115,41 @@ def test_stream_slices_basic_sandbox(advertiser_ids, config_name, slices_expecte
     ],
 )
 def test_stream_slices_report(advertiser_ids, granularity, slices_expected, pendulum_now_mock):
-    slices = get_report_stream(AdsReports, granularity)(**CONFIG).stream_slices()
+    config = {**{"report_granularity": granularity}, **CONFIG}
+    slices = AdsReports(**config).stream_slices()
     assert list(slices) == slices_expected
 
 
 @pytest.mark.parametrize(
     "stream, metrics_number",
     [
-        (AdsReports, 54),
-        (AdGroupsReports, 51),
-        (AdvertisersReports, 29),
-        (CampaignsReports, 28),
+        (AdsReports, 36),
+        (AdGroupsReports, 33),
+        (AdvertisersReports, 11),
+        (CampaignsReports, 10),
         (AdvertisersAudienceReports, 6),
         (AdsAudienceReports, 30),
     ],
 )
 def test_basic_reports_get_metrics_day(stream, metrics_number):
-    metrics = get_report_stream(stream, Daily)(**CONFIG)._get_metrics()
+    config = {**{"report_granularity": ReportGranularity.DAY}, **CONFIG}
+    metrics = stream(**config)._get_metrics()
     assert len(metrics) == metrics_number
 
 
 @pytest.mark.parametrize(
     "stream, metrics_number",
     [
-        (AdsReports, 54),
-        (AdGroupsReports, 51),
-        (AdvertisersReports, 27),
-        (CampaignsReports, 28),
+        (AdsReports, 36),
+        (AdGroupsReports, 33),
+        (AdvertisersReports, 9),
+        (CampaignsReports, 10),
         (AdvertisersAudienceReports, 6),
     ],
 )
 def test_basic_reports_get_metrics_lifetime(stream, metrics_number):
-    metrics = get_report_stream(stream, Lifetime)(**CONFIG)._get_metrics()
+    config = {**{"report_granularity": ReportGranularity.LIFETIME}, **CONFIG}
+    metrics = stream(**config)._get_metrics()
     assert len(metrics) == metrics_number
 
 
@@ -165,7 +164,8 @@ def test_basic_reports_get_metrics_lifetime(stream, metrics_number):
     ],
 )
 def test_basic_reports_get_reporting_dimensions_lifetime(stream, dimensions_expected):
-    dimensions = get_report_stream(stream, Lifetime)(**CONFIG)._get_reporting_dimensions()
+    config = {**{"report_granularity": ReportGranularity.LIFETIME}, **CONFIG}
+    dimensions = stream(**config)._get_reporting_dimensions()
     assert dimensions == dimensions_expected
 
 
@@ -180,27 +180,30 @@ def test_basic_reports_get_reporting_dimensions_lifetime(stream, dimensions_expe
     ],
 )
 def test_basic_reports_get_reporting_dimensions_day(stream, dimensions_expected):
-    dimensions = get_report_stream(stream, Daily)(**CONFIG)._get_reporting_dimensions()
+    config = {**{"report_granularity": ReportGranularity.DAY}, **CONFIG}
+    dimensions = stream(**config)._get_reporting_dimensions()
     assert dimensions == dimensions_expected
 
 
 @pytest.mark.parametrize(
     "granularity, cursor_field_expected",
     [
-        (Daily, "stat_time_day"),
-        (Hourly, "stat_time_hour"),
-        (Lifetime, "stat_time_day"),
+        (ReportGranularity.DAY, ["dimensions", "stat_time_day"]),
+        (ReportGranularity.HOUR, ["dimensions", "stat_time_hour"]),
+        (ReportGranularity.LIFETIME, []),
     ],
 )
 def test_basic_reports_cursor_field(granularity, cursor_field_expected):
-    ads_reports = get_report_stream(AdsReports, granularity)(**CONFIG)
+    config = {**{"report_granularity": granularity}, **CONFIG}
+    ads_reports = AdvertisersReports(**config)
     cursor_field = ads_reports.cursor_field
     assert cursor_field == cursor_field_expected
 
 
 def test_request_params():
     stream_slice = {"advertiser_id": 1, "start_date": "2020", "end_date": "2021"}
-    params = get_report_stream(AdvertisersAudienceReports, Daily)(**CONFIG).request_params(stream_slice=stream_slice)
+    config = {**{"report_granularity": ReportGranularity.DAY}, **CONFIG}
+    params = AdvertisersAudienceReports(**config).request_params(stream_slice=stream_slice)
     assert params == {
         "advertiser_id": 1,
         "data_level": "AUCTION_ADVERTISER",

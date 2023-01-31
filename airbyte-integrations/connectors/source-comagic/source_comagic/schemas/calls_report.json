@@ -1,0 +1,656 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "start_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "finish_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "virtual_phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_transfer": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "finish_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "direction": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "communication_number": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "communication_page_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "communication_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "communication_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_lost": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "cpn_region_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "cpn_region_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "wait_duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "total_wait_duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "lost_call_processing_duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "talk_duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "clean_talk_duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "total_duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "postprocess_duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "ua_client_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ym_client_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sale_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sale_cost": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "search_query": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "search_engine": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "referrer_domain": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "referrer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "entrance_page": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gclid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "yclid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ymclid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ef_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "channel": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "site_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "site_domain_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "campaign_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "campaign_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visit_other_campaign": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "visitor_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "person_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "visitor_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_session_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "visits_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "visitor_first_campaign_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "visitor_first_campaign_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_city": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_region": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_country": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visitor_device": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_answered_employee_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "last_answered_employee_full_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_answered_employee_rating": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "first_answered_employee_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "first_answered_employee_full_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scenario_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "scenario_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "call_api_external_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "call_api_request_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "contact_phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "contact_full_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "contact_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "utm_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "utm_medium": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "utm_term": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "utm_content": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "utm_campaign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openstat_ad": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openstat_campaign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openstat_service": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "openstat_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "eq_utm_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "eq_utm_medium": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "eq_utm_term": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "eq_utm_content": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "eq_utm_campaign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "eq_utm_referrer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "eq_utm_expid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "attributes": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "call_records": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "voice_mail_records": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "tag_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "tag_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tag_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tag_change_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tag_user_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tag_user_login": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tag_employee_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tag_employee_full": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "visitor_custom_properties": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "segment_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "segment_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "employees": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "employee_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "employee_full_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_answered": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "scenario_operations": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

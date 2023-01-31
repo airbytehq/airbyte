@@ -1,0 +1,112 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Yandex Direct Ads Spec",
+    "type": "object",
+    "required": ["credentials"],
+    "additionalProperties": false,
+    "properties": {
+      "credentials": {
+        "title": "Authorization Method",
+        "default": {},
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Access Token Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "access_token_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "Long-term Authorized Access Token.",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["access_token"]
+          },
+          {
+            "title": "CredentialsCraft Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "credentials_craft_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "credentials_craft_host": {
+                "title": "CredentialsCraft Host",
+                "description": "CredentialsCraft Host.",
+                "examples": ["https://credentialscraft.mysite.com"],
+                "type": "string"
+              },
+              "credentials_craft_token": {
+                "title": "CredentialsCraft Token",
+                "description": "Long-term CredentialsCraft Access Token (NOT Yandex token).",
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "credentials_craft_token_id": {
+                "title": "CredentialsCraft Yandex Token ID",
+                "desctiption": "Yandex Token ID in CredentialsCraft",
+                "examples": [3345435],
+                "type": "integer"
+              }
+            },
+            "required": [
+              "auth_type",
+              "credentials_craft_host",
+              "credentials_craft_token",
+              "credentials_craft_token_id"
+            ]
+          }
+        ]
+      },
+      "client_login": {
+        "title": "Client Login (Optional)",
+        "type": "string",
+        "description": "Advertiser login. Specify if required (for agency)",
+        "order": 1
+      },
+      "client_name": {
+        "description": "Client name - constant that will be used in record __clientName property",
+        "title": "Client Name (Constant)",
+        "type": "string",
+        "examples": ["abcde"],
+        "order": 2,
+        "default": ""
+      },
+      "product_name": {
+        "description": "Product name - constant that will be used in record __productName property",
+        "title": "Product Name (Constant)",
+        "type": "string",
+        "examples": ["abcde"],
+        "order": 3,
+        "default": ""
+      },
+      "custom_constants": {
+        "description": "Custom constants for additional record properties",
+        "title": "Custom Constants",
+        "type": "string",
+        "examples": ["{\"abc\": \"123\", \"cde\": \"132\"}"],
+        "default": "{}",
+        "order": 4
+      },
+      "adimages_use_simple_loader": {
+        "description": "Use simple AdImages stream load mode. SelectionCriteria for AdImages will be empty if set to true. This means that stream will load all available AdImages records. The problem is it will not always get all the records, so you can set it to false and load based on AdImageHref property of Ads stream (not that efficiently as simple method and can cause problems on too big Ads stream data).",
+        "title": "Use Simple AdImages Stream Load Mode",
+        "type": "boolean",
+        "default": true,
+        "order": 5
+      }
+    }
+  }
+}

@@ -10,7 +10,6 @@ from urllib.parse import parse_qs, urlparse
 
 import pendulum as pendulum
 import requests
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -32,11 +31,7 @@ class ZendeskTalkStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         """API base url based on configured subdomain"""
-        return f"https://{self._subdomain}.zendesk.com/api/v2/channels/voice/"
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+        return f"https://{self._subdomain}.zendesk.com/api/v2/channels/voice"
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -167,7 +162,7 @@ class PhoneNumbers(ZendeskTalkStream):
     data_field = "phone_numbers"
 
     def path(self, **kwargs) -> str:
-        return "phone_numbers"
+        return "/phone_numbers"
 
 
 class Addresses(ZendeskTalkStream):
@@ -178,7 +173,7 @@ class Addresses(ZendeskTalkStream):
     data_field = "addresses"
 
     def path(self, **kwargs) -> str:
-        return "addresses"
+        return "/addresses"
 
 
 class GreetingCategories(ZendeskTalkStream):
@@ -189,7 +184,7 @@ class GreetingCategories(ZendeskTalkStream):
     data_field = "greeting_categories"
 
     def path(self, **kwargs) -> str:
-        return "greeting_categories"
+        return "/greeting_categories"
 
 
 class Greetings(ZendeskTalkStream):
@@ -200,7 +195,7 @@ class Greetings(ZendeskTalkStream):
     data_field = "greetings"
 
     def path(self, **kwargs) -> str:
-        return "greetings"
+        return "/greetings"
 
 
 class IVRs(ZendeskTalkStream):
@@ -214,7 +209,7 @@ class IVRs(ZendeskTalkStream):
     cache_filename = "ivrs.yml"
 
     def path(self, **kwargs) -> str:
-        return "ivr.json"
+        return "/ivr.json"
 
 
 class IVRMenus(IVRs):
@@ -256,7 +251,7 @@ class AccountOverview(ZendeskTalkSingleRecordStream):
     data_field = "account_overview"
 
     def path(self, **kwargs) -> str:
-        return "stats/account_overview"
+        return "/stats/account_overview"
 
 
 class AgentsActivity(ZendeskTalkStream):
@@ -268,7 +263,7 @@ class AgentsActivity(ZendeskTalkStream):
     primary_key = "agent_id"
 
     def path(self, **kwargs) -> str:
-        return "stats/agents_activity"
+        return "/stats/agents_activity"
 
 
 class AgentsOverview(ZendeskTalkSingleRecordStream):
@@ -279,7 +274,7 @@ class AgentsOverview(ZendeskTalkSingleRecordStream):
     data_field = "agents_overview"
 
     def path(self, **kwargs) -> str:
-        return "stats/agents_overview"
+        return "/stats/agents_overview"
 
 
 class CurrentQueueActivity(ZendeskTalkSingleRecordStream):
@@ -290,7 +285,7 @@ class CurrentQueueActivity(ZendeskTalkSingleRecordStream):
     data_field = "current_queue_activity"
 
     def path(self, **kwargs) -> str:
-        return "stats/current_queue_activity"
+        return "/stats/current_queue_activity"
 
 
 class Calls(ZendeskTalkIncrementalStream):
@@ -302,7 +297,7 @@ class Calls(ZendeskTalkIncrementalStream):
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
-        return "stats/incremental/calls"
+        return "/stats/incremental/calls"
 
 
 class CallLegs(ZendeskTalkIncrementalStream):
@@ -314,4 +309,4 @@ class CallLegs(ZendeskTalkIncrementalStream):
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
-        return "stats/incremental/legs"
+        return "/stats/incremental/legs"

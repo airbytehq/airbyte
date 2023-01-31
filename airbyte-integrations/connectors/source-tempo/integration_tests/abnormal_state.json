@@ -1,9 +1,0 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "startDate": "2031-04-14" },
-      "stream_descriptor": { "name": "worklogs" }
-    }
-  }
-]

@@ -1,0 +1,12 @@
+{
+  "credentials": {
+    "auth_type": "access_token_auth",
+    "access_token": "TOKEN"
+  },
+  "application_id": 12345,
+  "datetime_range": {
+    "datetime_range_type": "last_n_days",
+    "last_days_count": 1,
+    "should_load_today": true
+  }
+}

@@ -33,9 +33,7 @@ def get_stream(input_config: Mapping[str, Any], stream_name: str) -> Stream:
     stream_cls = type("a", (object,), {"name": stream_name})
     configured_stream_cls = type("b", (object,), {"stream": stream_cls()})
     catalog_cls = type("c", (object,), {"streams": [configured_stream_cls()]})
-    source = SourceSalesforce()
-    source.catalog = catalog_cls()
-    return source.streams(input_config)[0]
+    return SourceSalesforce().streams(input_config, catalog_cls())[0]
 
 
 def get_any_real_stream(input_config: Mapping[str, Any]) -> Stream:

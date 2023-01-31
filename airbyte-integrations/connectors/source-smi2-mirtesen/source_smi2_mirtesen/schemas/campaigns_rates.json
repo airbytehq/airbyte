@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": { "type": ["null", "string"] },
+    "dateGroup": { "type": ["null", "string"] },
+    "viewsAll": { "type": ["null", "integer"] },
+    "viewsNotIgnored": { "type": ["null", "integer"] },
+    "clicksSocial": { "type": ["null", "integer"] },
+    "clicksSocialFree": { "type": ["null", "integer"] },
+    "clicksPayable": { "type": ["null", "integer"] },
+    "clicksPayableNotIgnored": { "type": ["null", "integer"] },
+    "userExpenses": { "type": ["null", "integer"] },
+    "ctr": { "type": ["null", "integer"] },
+    "ctrOld": { "type": ["null", "integer"] },
+    "viewsAllOld": { "type": ["null", "integer"] },
+    "campaign_id": { "type": ["null", "string"] }
+  }
+}

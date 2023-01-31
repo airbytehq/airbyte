@@ -3,20 +3,17 @@
 #
 
 
-import logging
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, List, Mapping, Tuple
 
-import pendulum
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 from .schemas import Profile
+from .spec import AmazonAdsConfig, advanced_auth
 from .streams import (
-    AttributionReportPerformanceAdgroup,
-    AttributionReportPerformanceCampaign,
-    AttributionReportPerformanceCreative,
-    AttributionReportProducts,
     Profiles,
     SponsoredBrandsAdGroups,
     SponsoredBrandsCampaigns,
@@ -39,34 +36,16 @@ from .streams import (
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
-CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
 class SourceAmazonAds(AbstractSource):
-    def _validate_and_transform(self, config: Mapping[str, Any]):
-        start_date = config.get("start_date")
-        if start_date:
-            config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
-        else:
-            config["start_date"] = None
-        if not config.get("region"):
-            source_spec = self.spec(logging.getLogger("airbyte"))
-            config["region"] = source_spec.connectionSpecification["properties"]["region"]["default"]
-        if not config.get("look_back_window"):
-            source_spec = self.spec(logging.getLogger("airbyte"))
-            config["look_back_window"] = source_spec.connectionSpecification["properties"]["look_back_window"]["default"]
-        return config
-
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        try:
-            config = self._validate_and_transform(config)
-        except Exception as e:
-            return False, str(e)
+        config = AmazonAdsConfig(**config)
         # Check connection by sending list of profiles request. Its most simple
         # request, not require additional parameters and usually has few data
         # in response body.
@@ -80,7 +59,7 @@ class SourceAmazonAds(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return list of streams for current source
         """
-        config = self._validate_and_transform(config)
+        config = AmazonAdsConfig(**config)
         auth = self._make_authenticator(config)
         stream_args = {"config": config, "authenticator": auth}
         # All data for individual Amazon Ads stream divided into sets of data for
@@ -109,24 +88,27 @@ class SourceAmazonAds(AbstractSource):
             SponsoredBrandsKeywords,
             SponsoredBrandsReportStream,
             SponsoredBrandsVideoReportStream,
-            AttributionReportPerformanceAdgroup,
-            AttributionReportPerformanceCampaign,
-            AttributionReportPerformanceCreative,
-            AttributionReportProducts,
         ]
         return [profiles_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
 
-    @staticmethod
-    def _make_authenticator(config: Mapping[str, Any]):
-        return Oauth2Authenticator(
-            token_refresh_endpoint=TOKEN_URL,
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
+    def spec(self, *args) -> ConnectorSpecification:
+        return ConnectorSpecification(
+            documentationUrl="https://docs.airbyte.com/integrations/sources/amazon-ads",
+            connectionSpecification=AmazonAdsConfig.schema(),
+            advanced_auth=advanced_auth,
         )
 
     @staticmethod
-    def _choose_profiles(config: Mapping[str, Any], profiles: List[Profile]):
-        if not config.get("profiles"):
+    def _make_authenticator(config: AmazonAdsConfig):
+        return Oauth2Authenticator(
+            token_refresh_endpoint=TOKEN_URL,
+            client_id=config.client_id,
+            client_secret=config.client_secret,
+            refresh_token=config.refresh_token,
+        )
+
+    @staticmethod
+    def _choose_profiles(config: AmazonAdsConfig, profiles: List[Profile]):
+        if not config.profiles:
             return profiles
-        return list(filter(lambda profile: profile.profileId in config["profiles"], profiles))
+        return list(filter(lambda profile: profile.profileId in config.profiles, profiles))

@@ -12,18 +12,17 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -104,12 +103,12 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
     }
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put("host", db.getHost())
+        .put("port", db.getMappedPort(50000))
         .put("db", db.getDatabaseName())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
+        .put("username", db.getUsername())
+        .put("password", db.getPassword())
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "encrypted_verify_certificate")
             .put("ssl_certificate", certificate)
             .put("key_store_password", TEST_KEY_STORE_PASS)
@@ -117,14 +116,14 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         .build());
 
     final String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
-        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get("host").asText(),
         db.getMappedPort(50000),
         config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
         ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
     dataSource = DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         Db2Source.DRIVER_CLASS,
         jdbcUrl);
 

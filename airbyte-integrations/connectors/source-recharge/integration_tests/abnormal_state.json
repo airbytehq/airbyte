@@ -1,51 +1,23 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
-      "stream_descriptor": { "name": "addresses" }
-    }
+{
+  "addresses": {
+    "updated_at": "2050-05-18T00:00:00"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
-      "stream_descriptor": { "name": "charges" }
-    }
+  "charges": {
+    "updated_at": "2050-05-18T00:00:00"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
-      "stream_descriptor": { "name": "customers" }
-    }
+  "customers": {
+    "updated_at": "2050-05-18T00:00:00"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
-      "stream_descriptor": { "name": "discounts" }
-    }
+  "discounts": {
+    "updated_at": "2050-05-18T00:00:00"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
-      "stream_descriptor": { "name": "onetimes" }
-    }
+  "onetimes": {
+    "updated_at": "2050-05-18T00:00:00"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
-      "stream_descriptor": { "name": "orders" }
-    }
+  "orders": {
+    "updated_at": "2050-05-18T00:00:00"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2050-05-18T00:00:00" },
-      "stream_descriptor": { "name": "subscriptions" }
-    }
+  "subscriptions": {
+    "updated_at": "2050-05-18T00:00:00"
   }
-]
+}

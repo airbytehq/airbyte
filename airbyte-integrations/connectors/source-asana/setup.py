@@ -6,10 +6,10 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.2",
+    "airbyte-cdk~=0.1",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "requests-mock~=1.9.3", "source-acceptance-test"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "requests-mock~=1.9.3"]
 
 setup(
     name="source_asana",

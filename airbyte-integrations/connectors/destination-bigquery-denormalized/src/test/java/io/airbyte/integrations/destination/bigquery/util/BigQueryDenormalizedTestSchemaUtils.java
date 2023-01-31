@@ -26,10 +26,6 @@ public class BigQueryDenormalizedTestSchemaUtils {
     return getTestDataFromResourceJson("schemaWithDateTime.json");
   }
 
-  public static JsonNode getSchemaWithBigInteger() {
-    return getTestDataFromResourceJson("schemaWithBigInteger.json");
-  }
-
   public static JsonNode getSchemaWithInvalidArrayType() {
     return getTestDataFromResourceJson("schemaWithInvalidArrayType.json");
   }
@@ -40,10 +36,6 @@ public class BigQueryDenormalizedTestSchemaUtils {
 
   public static JsonNode getSchemaWithNestedDatetimeInsideNullObject() {
     return getTestDataFromResourceJson("schemaWithNestedDatetimeInsideNullObject.json");
-  }
-
-  public static JsonNode getSchemaArrays() {
-    return getTestDataFromResourceJson("schemaArrays.json");
   }
 
   public static JsonNode getExpectedSchema() {
@@ -68,18 +60,6 @@ public class BigQueryDenormalizedTestSchemaUtils {
 
   public static JsonNode getExpectedSchemaWithNestedDatetimeInsideNullObject() {
     return getTestDataFromResourceJson("expectedSchemaWithNestedDatetimeInsideNullObject.json");
-  }
-
-  public static JsonNode getExpectedSchemaArrays() {
-    return getTestDataFromResourceJson("expectedSchemaArrays.json");
-  }
-
-  public static JsonNode getExpectedSchemaArraysLegacy() {
-    return getTestDataFromResourceJson("expectedSchemaArraysLegacy.json");
-  }
-
-  public static JsonNode getSchemaWithAllOf() {
-    return getTestDataFromResourceJson("schemaAllOf.json");
   }
 
   private static JsonNode getTestDataFromResourceJson(final String fileName) {

@@ -55,6 +55,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": false,
             "properties": {
               "taxRegistrationType": {
                 "type": ["null", "string"]
@@ -156,6 +157,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": false,
             "properties": {
               "taxRegistrationType": {
                 "type": ["null", "string"]
@@ -216,6 +218,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": false,
         "properties": {
           "packageIdentifier": {
             "type": ["null", "string"]

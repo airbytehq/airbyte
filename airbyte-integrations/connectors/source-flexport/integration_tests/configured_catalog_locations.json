@@ -6,6 +6,7 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "_object": {
               "type": "string",
@@ -23,6 +24,7 @@
             "address": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -57,17 +59,17 @@
                   "type": ["null", "string"],
                   "description": "ZIP or postal code."
                 },
-                "timezone": {
+                "unlocode": {
                   "type": ["null", "string"],
+                  "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                },
+                "timezone": {
+                  "type": "string",
                   "description": "Timezone for this address"
                 },
                 "ref": {
                   "type": ["null", "string"],
                   "description": "Your reference for the address, as set in your network tab"
-                },
-                "unlocode": {
-                  "type": ["null", "string"],
-                  "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
                 }
               }
             },
@@ -78,6 +80,7 @@
             "contacts": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",
@@ -97,6 +100,7 @@
             "company": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "_object": {
                   "type": "string",

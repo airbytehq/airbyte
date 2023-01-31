@@ -102,8 +102,7 @@ Customize `acceptance-test-config.yml` file to configure tests. See [Source Acce
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run
 ```
-docker build . --no-cache -t airbyte/source-pinterest:dev \
-&& python -m pytest -p source_acceptance_test.plugin
+python -m pytest integration_tests -p integration_tests.acceptance
 ```
 To run your integration tests with docker
 

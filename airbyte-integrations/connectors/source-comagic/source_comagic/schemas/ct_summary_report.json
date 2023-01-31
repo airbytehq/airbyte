@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "dt_ratio": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "calls_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "site_domain": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "active_numbers_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reserve_numbers_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "non_session_calls_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

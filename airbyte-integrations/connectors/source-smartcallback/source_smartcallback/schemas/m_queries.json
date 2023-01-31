@@ -1,0 +1,240 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "query_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "title": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "type": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "code": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "title": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "phone": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "domen_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "people_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "domen": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_create": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "date_of_last_update": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "application": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "visitor_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "personal_data_processing": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "news_subscribe": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "tag_id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "tag_title": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "tags": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": [
+                    "null",
+                    "object"
+                ],
+                "properties": {
+                    "id": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "title": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                }
+            }
+        },
+        "utm_source": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "utm_medium": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "utm_campaign": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "utm_content": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "utm_term": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "link_source": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "source_visit": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "page_start": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "session_start": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "city": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "trafficSource": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "gclid": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "yclid": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "count_messages_from_operator": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "count_messages_from_client": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}

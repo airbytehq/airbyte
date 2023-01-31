@@ -15,13 +15,13 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.List;
 import javax.sql.DataSource;
@@ -31,12 +31,12 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
 
-  protected AirbyteOracleTestContainer container;
+  protected OracleContainer container;
   protected JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new AirbyteOracleTestContainer()
+    container = new OracleContainer()
         .withUsername("test")
         .withPassword("oracle")
         .usingSid();
@@ -45,9 +45,7 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("connection_data", ImmutableMap.builder()
-            .put("service_name", container.getSid())
-            .put("connection_type", "service_name").build())
+        .put("sid", container.getSid())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("JDBC_SPACE"))
@@ -63,7 +61,7 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("connection_data").get("service_name").asText()));
+            config.get("sid").asText()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

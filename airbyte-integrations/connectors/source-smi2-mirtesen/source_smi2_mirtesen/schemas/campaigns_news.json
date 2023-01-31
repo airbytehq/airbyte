@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "dt": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "text": {
+      "type": ["null", "string"]
+    },
+    "topic": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "link": {
+      "type": ["null", "string"]
+    },
+    "plannedPauseDt": {
+      "type": ["null", "string"]
+    },
+    "campaign": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "status": {
+          "type": ["null", "string"]
+        },
+        "partnerType": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "rates": {
+      "type": ["null", "object"],
+      "properties": {
+        "viewsAll": {
+          "type": ["null", "integer"]
+        },
+        "viewsNotIgnored": {
+          "type": ["null", "integer"]
+        },
+        "clicksSocial": {
+          "type": ["null", "integer"]
+        },
+        "clicksSocialFree": {
+          "type": ["null", "integer"]
+        },
+        "clicksPayable": {
+          "type": ["null", "integer"]
+        },
+        "clicksPayableNotIgnored": {
+          "type": ["null", "integer"]
+        },
+        "userExpenses": {
+          "type": ["null", "integer"]
+        },
+        "ctr": {
+          "type": ["null", "integer"]
+        },
+        "ctrOld": {
+          "type": ["null", "integer"]
+        },
+        "viewsAllOld": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "efficiency": {
+      "type": ["null", "string"]
+    },
+    "imageId": {
+      "type": ["null", "string"]
+    },
+    "imageType": {
+      "type": ["null", "string"]
+    },
+    "userPricePerClickValue": {
+      "type": ["null", "integer"]
+    }
+  }
+}

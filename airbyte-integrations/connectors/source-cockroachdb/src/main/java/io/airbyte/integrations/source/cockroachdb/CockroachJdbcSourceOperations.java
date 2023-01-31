@@ -4,15 +4,12 @@
 
 package io.airbyte.integrations.source.cockroachdb;
 
-import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.OffsetTime;
 import java.util.Collections;
 
 /**
@@ -48,7 +45,7 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
       try {
         queryContext.getObject(i);
         if (!queryContext.wasNull()) {
-          copyToJsonField(queryContext, i, jsonNode);
+          setJsonField(queryContext, i, jsonNode);
         }
       } catch (final SQLException e) {
         putCockroachSpecialDataType(queryContext, i, jsonNode);
@@ -64,9 +61,6 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
       if ("numeric".equalsIgnoreCase(columnType)) {
         final double value = resultSet.getDouble(index);
         node.put(columnName, value);
-      } else if ("timetz".equalsIgnoreCase(columnType)) {
-        final OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
-        node.put(columnName, timetz.format(TIMETZ_FORMATTER));
       } else {
         node.put(columnName, (Double) null);
       }

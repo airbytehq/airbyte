@@ -1,6 +1,6 @@
 {
   "type": ["object", "null"],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "id": {
       "type": ["integer", "null"]

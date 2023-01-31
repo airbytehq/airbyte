@@ -1,0 +1,9 @@
+{
+  "credentials": {
+    "auth_type": "access_token_auth",
+    "access_token": "TOKEN"
+  },
+  "date_from": "2022-01-01",
+  "campaigns_included_fields": "id,package_id",
+  "banners_included_fields": "id"
+}

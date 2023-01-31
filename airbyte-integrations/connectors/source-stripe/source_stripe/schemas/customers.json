@@ -841,7 +841,8 @@
               "type": ["null", "integer"]
             },
             "redeem_by": {
-              "type": ["null", "integer"]
+              "type": ["null", "string"],
+              "format": "date-time"
             },
             "duration_in_months": {
               "type": ["null", "integer"]

@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "call_session_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "call_records": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "start_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "connect_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "total_duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "finish_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "finish_reason_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "virtual_phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "calling_phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "called_phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "direction": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_transfered": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_operator": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "employee_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "employee_full_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "employee_phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "employee_rating": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "scenario_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "scenario_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_coach": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "release_cause_code": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "release_cause_description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_failed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_talked": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "contact_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "contact_full_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "contact_phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "action_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "action_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "group_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "group_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

@@ -4,18 +4,16 @@
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from copy import deepcopy
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.exceptions import HTTPError
 
-from .graphql import CursorStorage, QueryReactions, get_query_issue_reactions, get_query_pull_requests, get_query_reviews
 from .utils import getter
 
 DEFAULT_PAGE_SIZE = 100
@@ -43,10 +41,6 @@ class GithubStream(HttpStream, ABC):
         self._session.mount("https://", adapter)
         self._session.mount("http://", adapter)
 
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
 
@@ -62,72 +56,38 @@ class GithubStream(HttpStream, ABC):
             page = dict(parse.parse_qsl(parsed_link.query)).get("page")
             return {"page": page}
 
-    def check_graphql_rate_limited(self, response_json) -> bool:
-        errors = response_json.get("errors")
-        if errors:
-            for error in errors:
-                if error.get("type") == "RATE_LIMITED":
-                    return True
-        return False
-
     def should_retry(self, response: requests.Response) -> bool:
-        if super().should_retry(response):
-            return True
-
-        retry_flag = (
-            # The GitHub GraphQL API has limitations
-            # https://docs.github.com/en/graphql/overview/resource-limitations
-            (response.headers.get("X-RateLimit-Resource") == "graphql" and self.check_graphql_rate_limited(response.json()))
-            # Rate limit HTTP headers
-            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-            or (response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0")
-            # Secondary rate limits
-            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-            or "Retry-After" in response.headers
+        # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
+        # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
+        retry_flag = response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
+            requests.codes.SERVER_ERROR,
+            requests.codes.BAD_GATEWAY,
         )
         if retry_flag:
-            headers = [
-                "X-RateLimit-Resource",
-                "X-RateLimit-Remaining",
-                "X-RateLimit-Reset",
-                "X-RateLimit-Limit",
-                "X-RateLimit-Used",
-                "Retry-After",
-            ]
-            headers = ", ".join([f"{h}: {response.headers[h]}" for h in headers if h in response.headers])
-            if headers:
-                headers = f"HTTP headers: {headers},"
-
             self.logger.info(
-                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code, {headers} with message: {response.text}"
+                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
             )
 
+        # Handling secondary rate limits for Github
+        # Additional information here: https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
+        elif response.headers.get("Retry-After"):
+            time_delay = int(response.headers["Retry-After"])
+            self.logger.info(f"Handling Secondary Rate limits, setting sync delay for {time_delay} second(s)")
+            time.sleep(time_delay)
         return retry_flag
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    def backoff_time(self, response: requests.Response) -> Union[int, float]:
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        min_backoff_time = 60.0
-
-        retry_after = response.headers.get("Retry-After")
-        if retry_after is not None:
-            return max(float(retry_after), min_backoff_time)
+        if response.status_code == requests.codes.SERVER_ERROR:
+            return None
 
         reset_time = response.headers.get("X-RateLimit-Reset")
-        if reset_time:
-            return max(float(reset_time) - time.time(), min_backoff_time)
+        backoff_time = float(reset_time) - time.time() if reset_time else 60
 
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        if (
-            isinstance(exception, DefaultBackoffException)
-            and exception.response.status_code == requests.codes.BAD_GATEWAY
-            and self.large_stream
-            and self.page_size > 1
-        ):
-            return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
-        return super().get_error_display_message(exception)
+        return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
 
     def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get out the stream_slice parts for later use.
@@ -137,6 +97,7 @@ class GithubStream(HttpStream, ABC):
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
+            error_msg = str(e.response.json().get("message"))
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
@@ -149,7 +110,6 @@ class GithubStream(HttpStream, ABC):
                 else:
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
             elif e.response.status_code == requests.codes.FORBIDDEN:
-                error_msg = str(e.response.json().get("message"))
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
@@ -174,13 +134,8 @@ class GithubStream(HttpStream, ABC):
                     f"Syncing `{self.name}` stream isn't available for repository "
                     f"`{stream_slice['repository']}`, it seems like this repository is empty."
                 )
-            elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
-                error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e.response.status_code == requests.codes.BAD_GATEWAY:
-                error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
             else:
-                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
-                self.logger.error(f"Undefined error while reading records: {e.response.text}")
+                self.logger.error(f"Undefined error while reading records: {error_msg}")
                 raise e
 
             self.logger.warn(error_msg)
@@ -236,7 +191,7 @@ class SemiIncrementalMixin:
     # records we can just stop and not process other record. This will increase speed of each incremental stream
     # which supports those 2 request parameters. Currently only `IssueMilestones` and `PullRequests` streams are
     # supporting this.
-    is_sorted = False
+    is_sorted_descending = False
 
     def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
@@ -256,8 +211,9 @@ class SemiIncrementalMixin:
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        if self.is_sorted == "asc":
+        if not self.is_sorted_descending:
             return self.page_size
+        return None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
@@ -281,10 +237,9 @@ class SemiIncrementalMixin:
         return self._start_date
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
-        slice_value = stream_slice[self.__slice_key]
-        if slice_value not in self._starting_point_cache:
-            self._starting_point_cache[slice_value] = self._get_starting_point(stream_state, stream_slice)
-        return self._starting_point_cache[slice_value]
+        if self.__slice_key not in self._starting_point_cache:
+            self._starting_point_cache[self.__slice_key] = self._get_starting_point(stream_state, stream_slice)
+        return self._starting_point_cache[self.__slice_key]
 
     def read_records(
         self,
@@ -300,7 +255,7 @@ class SemiIncrementalMixin:
             cursor_value = self.convert_cursor_value(record[self.cursor_field])
             if cursor_value > start_point:
                 yield record
-            elif self.is_sorted == "desc" and cursor_value < start_point:
+            elif self.is_sorted_descending and cursor_value < start_point:
                 break
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -397,7 +352,7 @@ class Repositories(SemiIncrementalMixin, Organizations):
     API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
     """
 
-    is_sorted = "desc"
+    is_sorted_descending = True
     stream_base_params = {
         "sort": "updated",
         "direction": "desc",
@@ -481,11 +436,12 @@ class Events(SemiIncrementalMixin, GithubStream):
 
 class PullRequests(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/pulls/pulls#list-pull-requests
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     """
 
     use_cache = True
     large_stream = True
+    first_read_override_key = "first_read_override"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -495,7 +451,7 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
         """
         Decide if this a first read or not by the presence of the state object
         """
-        self._first_read = not bool(stream_state)
+        self._first_read = not bool(stream_state) or stream_state.get(self.first_read_override_key, False)
         yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -514,18 +470,16 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
         base_params = super().request_params(**kwargs)
         # The very first time we read this stream we want to read ascending so we can save state in case of
         # a halfway failure. But if there is state, we read descending to allow incremental behavior.
-        params = {"state": "all", "sort": "updated", "direction": self.is_sorted}
+        params = {"state": "all", "sort": "updated", "direction": "desc" if self.is_sorted_descending else "asc"}
 
         return {**base_params, **params}
 
     @property
-    def is_sorted(self) -> str:
+    def is_sorted_descending(self) -> bool:
         """
         Depending if there any state we read stream in ascending or descending order.
         """
-        if self._first_read:
-            return "asc"
-        return "desc"
+        return not self._first_read
 
 
 class CommitComments(SemiIncrementalMixin, GithubStream):
@@ -544,7 +498,7 @@ class IssueMilestones(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
     """
 
-    is_sorted = "desc"
+    is_sorted_descending = True
     stream_base_params = {
         "state": "all",
         "sort": "updated",
@@ -621,7 +575,6 @@ class Comments(IncrementalMixin, GithubStream):
 
     use_cache = True
     large_stream = True
-    max_retries = 7
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
@@ -702,12 +655,11 @@ class Commits(IncrementalMixin, GithubStream):
 
 class Issues(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/issues/issues#list-repository-issues
+    API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
     """
 
     use_cache = True
     large_stream = True
-    is_sorted = "asc"
 
     stream_base_params = {
         "state": "all",
@@ -728,164 +680,91 @@ class ReviewComments(IncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/pulls/comments"
 
 
-class PullRequestStats(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
-    """
-
-    is_sorted = "asc"
-    http_method = "POST"
-
-    def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "graphql"
-
-    def raise_error_from_response(self, response_json):
-        if "errors" in response_json:
-            raise Exception(str(response_json["errors"]))
-
-    def _get_name(self, repository):
-        return repository["owner"]["login"] + "/" + repository["name"]
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.raise_error_from_response(response_json=response.json())
-        repository = response.json()["data"]["repository"]
-        if repository:
-            nodes = repository["pullRequests"]["nodes"]
-            for record in nodes:
-                record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
-                record["comments"] = record["comments"]["totalCount"]
-                record["commits"] = record["commits"]["totalCount"]
-                record["repository"] = self._get_name(repository)
-                if record["merged_by"]:
-                    record["merged_by"]["type"] = record["merged_by"].pop("__typename")
-                yield record
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        repository = response.json()["data"]["repository"]
-        if repository:
-            pageInfo = repository["pullRequests"]["pageInfo"]
-            if pageInfo["hasNextPage"]:
-                return {"after": pageInfo["endCursor"]}
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
-
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
-        organization, name = stream_slice["repository"].split("/")
-        if next_page_token:
-            next_page_token = next_page_token["after"]
-        query = get_query_pull_requests(
-            owner=organization, name=name, first=self.page_size, after=next_page_token, direction=self.is_sorted.upper()
-        )
-        return {"query": query}
-
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        base_headers = super().request_headers(**kwargs)
-        # https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
-        headers = {"Accept": "application/vnd.github.merge-info-preview+json"}
-        return {**base_headers, **headers}
+# Pull request substreams
 
 
-class Reviews(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequestreview
-    """
+class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, ABC):
+    def __init__(self, parent: PullRequests, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
-    is_sorted = False
-    http_method = "POST"
-    cursor_field = "updated_at"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.pull_requests_cursor = {}
-        self.reviews_cursors = {}
-
-    def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "graphql"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
-
-    def raise_error_from_response(self, response_json):
-        if "errors" in response_json:
-            raise Exception(str(response_json["errors"]))
-
-    def _get_records(self, pull_request, repository_name):
-        "yield review records from pull_request"
-        for record in pull_request["reviews"]["nodes"]:
-            record["repository"] = repository_name
-            record["pull_request_url"] = pull_request["url"]
-            if record["commit"]:
-                record["commit_id"] = record.pop("commit")["oid"]
-            if record["user"]:
-                record["user"]["type"] = record["user"].pop("__typename")
-            # for backward compatibility with REST API response
-            record["_links"] = {
-                "html": {"href": record["html_url"]},
-                "pull_request": {"href": record["pull_request_url"]},
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Override the parent PullRequests stream configuration to always fetch records in ascending order
+        """
+        parent_state = deepcopy(stream_state) or {}
+        parent_state[PullRequests.first_read_override_key] = True
+        parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_state)
+        for parent_stream_slice in parent_stream_slices:
+            yield {
+                "pull_request_updated_at": parent_stream_slice["parent"]["updated_at"],
+                "pull_request_number": parent_stream_slice["parent"]["number"],
+                "repository": parent_stream_slice["parent"]["repository"],
             }
-            yield record
 
-    def _get_name(self, repository):
-        return repository["owner"]["login"] + "/" + repository["name"]
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.raise_error_from_response(response_json=response.json())
-        repository = response.json()["data"]["repository"]
-        if repository:
-            repository_name = self._get_name(repository)
-            if "pullRequests" in repository:
-                for pull_request in repository["pullRequests"]["nodes"]:
-                    yield from self._get_records(pull_request, repository_name)
-            elif "pullRequest" in repository:
-                yield from self._get_records(repository["pullRequest"], repository_name)
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        repository = response.json()["data"]["repository"]
-        if repository:
-            repository_name = self._get_name(repository)
-            reviews_cursors = self.reviews_cursors.setdefault(repository_name, {})
-            if "pullRequests" in repository:
-                if repository["pullRequests"]["pageInfo"]["hasNextPage"]:
-                    self.pull_requests_cursor[repository_name] = repository["pullRequests"]["pageInfo"]["endCursor"]
-                for pull_request in repository["pullRequests"]["nodes"]:
-                    if pull_request["reviews"]["pageInfo"]["hasNextPage"]:
-                        pull_request_number = pull_request["number"]
-                        reviews_cursors[pull_request_number] = pull_request["reviews"]["pageInfo"]["endCursor"]
-            elif "pullRequest" in repository:
-                if repository["pullRequest"]["reviews"]["pageInfo"]["hasNextPage"]:
-                    pull_request_number = repository["pullRequest"]["number"]
-                    reviews_cursors[pull_request_number] = repository["pullRequest"]["reviews"]["pageInfo"]["endCursor"]
-            if reviews_cursors:
-                number, after = reviews_cursors.popitem()
-                return {"after": after, "number": number}
-            if repository_name in self.pull_requests_cursor:
-                return {"after": self.pull_requests_cursor.pop(repository_name)}
-
-    def request_body_json(
+    def read_records(
         self,
-        stream_state: Mapping[str, Any],
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
-        organization, name = stream_slice["repository"].split("/")
-        if not next_page_token:
-            next_page_token = {"after": None}
-        query = get_query_reviews(owner=organization, name=name, first=self.page_size, **next_page_token)
-        return {"query": query}
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        We've already determined the list of pull requests to run the stream against.
+        Skip the start_point_map and cursor_field logic in SemiIncrementalMixin.read_records.
+        """
+        yield from super(SemiIncrementalMixin, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )
+
+
+class PullRequestStats(PullRequestSubstream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    """
+
+    @property
+    def record_keys(self) -> List[str]:
+        return list(self.get_json_schema()["properties"].keys())
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        yield self.transform(record=response.json(), stream_slice=stream_slice)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        return {key: value for key, value in record.items() if key in self.record_keys}
+
+
+class Reviews(PullRequestSubstream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
+    """
+
+    cursor_field = "pull_request_updated_at"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
+
+    # Set the parent stream state's cursor field before fetching its records
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_state = deepcopy(stream_state) or {}
+        for repository in self.repositories:
+            if repository in parent_state and self.cursor_field in parent_state[repository]:
+                parent_state[repository][self.parent.cursor_field] = parent_state[repository][self.cursor_field]
+        yield from super().stream_slices(stream_state=parent_state, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record[self.cursor_field] = stream_slice[self.cursor_field]
+        return record
 
 
 class PullRequestCommits(GithubStream):
@@ -1007,223 +886,27 @@ class IssueCommentReactions(ReactionStream):
     parent_entity = Comments
 
 
-class IssueReactions(SemiIncrementalMixin, GithubStream):
+class IssueReactions(ReactionStream):
     """
-    https://docs.github.com/en/graphql/reference/objects#issue
-    https://docs.github.com/en/graphql/reference/objects#reaction
-    """
-
-    http_method = "POST"
-    cursor_field = "created_at"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.issues_cursor = {}
-        self.reactions_cursors = {}
-
-    def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "graphql"
-
-    def raise_error_from_response(self, response_json):
-        if "errors" in response_json:
-            raise Exception(str(response_json["errors"]))
-
-    def _get_name(self, repository):
-        return repository["owner"]["login"] + "/" + repository["name"]
-
-    def _get_reactions_from_issue(self, issue, repository_name):
-        for reaction in issue["reactions"]["nodes"]:
-            reaction["repository"] = repository_name
-            reaction["issue_number"] = issue["number"]
-            reaction["user"]["type"] = "User"
-            yield reaction
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.raise_error_from_response(response_json=response.json())
-        repository = response.json()["data"]["repository"]
-        if repository:
-            repository_name = self._get_name(repository)
-            if "issues" in repository:
-                for issue in repository["issues"]["nodes"]:
-                    yield from self._get_reactions_from_issue(issue, repository_name)
-            elif "issue" in repository:
-                yield from self._get_reactions_from_issue(repository["issue"], repository_name)
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        repository = response.json()["data"]["repository"]
-        if repository:
-            repository_name = self._get_name(repository)
-            reactions_cursors = self.reactions_cursors.setdefault(repository_name, {})
-            if "issues" in repository:
-                if repository["issues"]["pageInfo"]["hasNextPage"]:
-                    self.issues_cursor[repository_name] = repository["issues"]["pageInfo"]["endCursor"]
-                for issue in repository["issues"]["nodes"]:
-                    if issue["reactions"]["pageInfo"]["hasNextPage"]:
-                        issue_number = issue["number"]
-                        reactions_cursors[issue_number] = issue["reactions"]["pageInfo"]["endCursor"]
-            elif "issue" in repository:
-                if repository["issue"]["reactions"]["pageInfo"]["hasNextPage"]:
-                    issue_number = repository["issue"]["number"]
-                    reactions_cursors[issue_number] = repository["issue"]["reactions"]["pageInfo"]["endCursor"]
-            if reactions_cursors:
-                number, after = reactions_cursors.popitem()
-                return {"after": after, "number": number}
-            if repository_name in self.issues_cursor:
-                return {"after": self.issues_cursor.pop(repository_name)}
-
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
-        organization, name = stream_slice["repository"].split("/")
-        if not next_page_token:
-            next_page_token = {"after": None}
-        query = get_query_issue_reactions(owner=organization, name=name, first=self.page_size, **next_page_token)
-        return {"query": query}
-
-
-class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
-    """
-    API docs:
-    https://docs.github.com/en/graphql/reference/objects#pullrequestreviewcomment
-    https://docs.github.com/en/graphql/reference/objects#reaction
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue
     """
 
-    http_method = "POST"
-    cursor_field = "created_at"
+    parent_entity = Issues
+    parent_key = "number"
+    copy_parent_key = "issue_number"
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.cursor_storage = CursorStorage(["PullRequest", "PullRequestReview", "PullRequestReviewComment", "Reaction"])
-        self.query_reactions = QueryReactions()
 
-    def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "graphql"
+class PullRequestCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment
+    """
 
-    def raise_error_from_response(self, response_json):
-        if "errors" in response_json:
-            raise Exception(str(response_json["errors"]))
-
-    def _get_name(self, repository):
-        return repository["owner"]["login"] + "/" + repository["name"]
-
-    def _get_reactions_from_comment(self, comment, repository):
-        for reaction in comment["reactions"]["nodes"]:
-            reaction["repository"] = self._get_name(repository)
-            reaction["comment_id"] = comment["id"]
-            if reaction["user"]:
-                reaction["user"]["type"] = "User"
-            yield reaction
-
-    def _get_reactions_from_review(self, review, repository):
-        for comment in review["comments"]["nodes"]:
-            yield from self._get_reactions_from_comment(comment, repository)
-
-    def _get_reactions_from_pull_request(self, pull_request, repository):
-        for review in pull_request["reviews"]["nodes"]:
-            yield from self._get_reactions_from_review(review, repository)
-
-    def _get_reactions_from_repository(self, repository):
-        for pull_request in repository["pullRequests"]["nodes"]:
-            yield from self._get_reactions_from_pull_request(pull_request, repository)
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.raise_error_from_response(response_json=response.json())
-        data = response.json()["data"]
-        repository = data.get("repository")
-        if repository:
-            yield from self._get_reactions_from_repository(repository)
-
-        node = data.get("node")
-        if node:
-            if node["__typename"] == "PullRequest":
-                yield from self._get_reactions_from_pull_request(node, node["repository"])
-            elif node["__typename"] == "PullRequestReview":
-                yield from self._get_reactions_from_review(node, node["repository"])
-            elif node["__typename"] == "PullRequestReviewComment":
-                yield from self._get_reactions_from_comment(node, node["repository"])
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        data = response.json()["data"]
-        repository = data.get("repository")
-        if repository:
-            self._add_cursor(repository, "pullRequests")
-            for pull_request in repository["pullRequests"]["nodes"]:
-                self._add_cursor(pull_request, "reviews")
-                for review in pull_request["reviews"]["nodes"]:
-                    self._add_cursor(review, "comments")
-                    for comment in review["comments"]["nodes"]:
-                        self._add_cursor(comment, "reactions")
-
-        node = data.get("node")
-        if node:
-            if node["__typename"] == "PullRequest":
-                self._add_cursor(node, "reviews")
-                for review in node["reviews"]["nodes"]:
-                    self._add_cursor(review, "comments")
-                    for comment in review["comments"]["nodes"]:
-                        self._add_cursor(comment, "reactions")
-            elif node["__typename"] == "PullRequestReview":
-                self._add_cursor(node, "comments")
-                for comment in node["comments"]["nodes"]:
-                    self._add_cursor(comment, "reactions")
-            elif node["__typename"] == "PullRequestReviewComment":
-                self._add_cursor(node, "reactions")
-
-        return self.cursor_storage.get_cursor()
-
-    def _add_cursor(self, node, link):
-        link_to_object = {
-            "reactions": "Reaction",
-            "comments": "PullRequestReviewComment",
-            "reviews": "PullRequestReview",
-            "pullRequests": "PullRequest",
-        }
-
-        pageInfo = node[link]["pageInfo"]
-        if pageInfo["hasNextPage"]:
-            self.cursor_storage.add_cursor(
-                link_to_object[link], pageInfo["endCursor"], node[link]["totalCount"], parent_id=node.get("node_id")
-            )
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
-
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping]:
-        organization, name = stream_slice["repository"].split("/")
-        if next_page_token:
-            after = next_page_token["cursor"]
-            page_size = min(self.page_size, next_page_token["total_count"])
-            if next_page_token["typename"] == "PullRequest":
-                query = self.query_reactions.get_query_root_repository(owner=organization, name=name, first=page_size, after=after)
-            elif next_page_token["typename"] == "PullRequestReview":
-                query = self.query_reactions.get_query_root_pull_request(node_id=next_page_token["parent_id"], first=page_size, after=after)
-            elif next_page_token["typename"] == "PullRequestReviewComment":
-                query = self.query_reactions.get_query_root_review(node_id=next_page_token["parent_id"], first=page_size, after=after)
-            elif next_page_token["typename"] == "Reaction":
-                query = self.query_reactions.get_query_root_comment(node_id=next_page_token["parent_id"], first=page_size, after=after)
-        else:
-            query = self.query_reactions.get_query_root_repository(owner=organization, name=name, first=self.page_size)
-
-        return {"query": query}
+    parent_entity = ReviewComments
 
 
 class Deployments(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/deployments/deployments#list-deployments
+    API docs: https://docs.github.com/en/rest/reference/deployments#list-deployments
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1373,7 +1056,7 @@ class ProjectCards(GithubStream):
 class Workflows(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
-    API documentation: https://docs.github.com/en/rest/actions/workflows#list-repository-workflows
+    API documentation: https://docs.github.com/en/rest/reference/actions#workflows
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1390,15 +1073,12 @@ class Workflows(SemiIncrementalMixin, GithubStream):
 
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
-    Get all workflow runs for a GitHub repository
-    API documentation: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
+    Get all workflows of a GitHub repository
+    API documentation: https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository
     """
 
     # key for accessing slice value from record
     record_slice_key = ["repository", "full_name"]
-
-    # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
-    re_run_period = 32  # days
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/actions/runs"
@@ -1407,86 +1087,6 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         response = response.json().get("workflow_runs")
         for record in response:
             yield record
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        # Records in the workflows_runs stream are naturally descending sorted by `created_at` field.
-        # On first sight this is not big deal because cursor_field is `updated_at`.
-        # But we still can use `created_at` as a breakpoint because after 30 days period
-        # https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs
-        # workflows_runs records cannot be updated. It means if we initially fully synced stream on subsequent incremental sync we need
-        # only to look behind on 30 days to find all records which were updated.
-        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
-        for record in super(SemiIncrementalMixin, self).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            cursor_value = record[self.cursor_field]
-            created_at = record["created_at"]
-            if cursor_value > start_point:
-                yield record
-            if created_at < break_point:
-                break
-
-
-class WorkflowJobs(SemiIncrementalMixin, GithubStream):
-    """
-    Get all workflow jobs for a workflow run
-    API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
-    """
-
-    cursor_field = "completed_at"
-
-    def __init__(self, parent: WorkflowRuns, **kwargs):
-        super().__init__(**kwargs)
-        self.parent = parent
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/actions/runs/{stream_slice['run_id']}/jobs"
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        parent_stream_state = None
-        if stream_state is not None:
-            parent_stream_state = {repository: {self.parent.cursor_field: v[self.cursor_field]} for repository, v in stream_state.items()}
-        parent_stream_slices = self.parent.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_stream_state)
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=parent_stream_state
-            )
-            for record in parent_records:
-                stream_slice["run_id"] = record["id"]
-                yield from super().read_records(
-                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-                )
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        for record in response.json()["jobs"]:
-            if record.get(self.cursor_field):
-                yield self.transform(record=record, stream_slice=stream_slice)
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["filter"] = "all"
-        return params
 
 
 class TeamMembers(GithubStream):

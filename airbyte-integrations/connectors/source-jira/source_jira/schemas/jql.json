@@ -89,6 +89,6 @@
       }
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Lists of JQL reference data."
 }

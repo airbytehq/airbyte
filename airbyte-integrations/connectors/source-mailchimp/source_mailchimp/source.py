@@ -63,9 +63,4 @@ class SourceMailchimp(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = MailChimpAuthenticator().get_auth(config)
-        campaign_id = config.get("campaign_id")
-        return [
-            Lists(authenticator=authenticator),
-            Campaigns(authenticator=authenticator),
-            EmailActivity(authenticator=authenticator, campaign_id=campaign_id),
-        ]
+        return [Lists(authenticator=authenticator), Campaigns(authenticator=authenticator), EmailActivity(authenticator=authenticator)]

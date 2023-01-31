@@ -10,13 +10,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
-import java.util.Objects;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -37,28 +35,24 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(container.getContainerInfo()
-            .getNetworkSettings()
-            .getNetworks()
-            .entrySet().stream()
-            .findFirst()
-            .get().getValue().getIpAddress()))
-        .put(JdbcUtils.PORT_KEY, container.getExposedPorts().get(1))
-        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put(JdbcUtils.SSL_KEY, false)
+        .put("host", container.getHost())
+        // by some reason it return not a port number as exposed and mentioned in logs
+        .put("port", container.getFirstMappedPort() - 1)
+        .put("database", container.getDatabaseName())
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .put("ssl", false)
         .build());
     LOGGER.warn("PPP:config:" + config);
 
     dslContext = DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("database").asText()),
         SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 
@@ -217,7 +211,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'1999-01-08'", "null")
-            .addExpectedValues("1999-01-08", null)
+            .addExpectedValues("1999-01-08T00:00:00Z", null)
             .build());
 
     addDataTypeTestData(
@@ -313,12 +307,14 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
+    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
+    // Time (04:05:06) would be represented like "1970-01-01T04:05:06Z"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'04:05:06'", null)
-            .addExpectedValues("04:05:06.000000")
+            .addExpectedValues("1970-01-01T04:05:06Z")
             .addNullExpectedValue()
             .build());
 
@@ -328,7 +324,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("timetz")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'04:05:06Z'", null)
-            .addExpectedValues("04:05:06.000000Z")
+            .addExpectedValues("1970-01-01T04:05:06Z")
             .addNullExpectedValue()
             .build());
 

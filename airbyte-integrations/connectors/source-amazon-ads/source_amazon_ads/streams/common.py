@@ -7,7 +7,6 @@ from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
@@ -15,6 +14,7 @@ from pydantic import BaseModel, ValidationError
 from source_amazon_ads.constants import URL_MAPPING
 from source_amazon_ads.schemas import CatalogModel
 from source_amazon_ads.schemas.profile import Profile
+from source_amazon_ads.spec import AmazonAdsConfig
 
 """
 This class hierarchy may seem overcomplicated so here is a visualization of
@@ -74,10 +74,10 @@ class BasicAmazonAdsStream(Stream, ABC):
     Base class for all Amazon Ads streams.
     """
 
-    def __init__(self, config: Mapping[str, Any], profiles: List[Profile] = None):
+    def __init__(self, config: AmazonAdsConfig, profiles: List[Profile] = None):
         self._profiles = profiles or []
-        self._client_id = config["client_id"]
-        self._url = URL_MAPPING[config["region"]]
+        self._client_id = config.client_id
+        self._url = URL_MAPPING[config.region]
 
     @property
     @abstractmethod
@@ -91,10 +91,6 @@ class BasicAmazonAdsStream(Stream, ABC):
         expand_refs(schema)
         return schema
 
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
 
 # Basic full refresh stream
 class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
@@ -102,9 +98,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
     Class for getting data from streams that based on single http request.
     """
 
-    data_field = ""
-
-    def __init__(self, config: Mapping[str, Any], *args, profiles: List[Profile] = None, **kwargs):
+    def __init__(self, config: AmazonAdsConfig, *args, profiles: List[Profile] = None, **kwargs):
         # Each AmazonAdsStream instance are dependant on list of profiles.
         BasicAmazonAdsStream.__init__(self, config, profiles=profiles)
         HttpStream.__init__(self, *args, **kwargs)
@@ -128,10 +122,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
         :return an object representing single record in the response
         """
         if response.status_code == HTTPStatus.OK:
-            if self.data_field:
-                yield from response.json().get(self.data_field, [])
-            else:
-                yield from response.json()
+            yield from response.json()
             return
 
         """
@@ -161,7 +152,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
             response.raise_for_status()
             raise Exception(response.text)
 
-        self.logger.warning(
+        self.logger.warn(
             f"Unexpected error {resp.code} when processing request {response.request.url} for "
             f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {resp.details}"
         )

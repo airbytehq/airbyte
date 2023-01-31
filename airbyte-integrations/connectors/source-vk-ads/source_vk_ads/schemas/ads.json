@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "campaign_id": {
+      "type": ["null", "integer"]
+    },
+    "status": {
+      "type": ["null", "integer"]
+    },
+    "approved": {
+      "type": ["null", "integer"]
+    },
+    "create_time": {
+      "type": ["null", "integer"]
+    },
+    "update_time": {
+      "type": ["null", "integer"]
+    },
+    "goal_type": {
+      "type": ["null", "integer"]
+    },
+    "cost_type": {
+      "type": ["null", "integer"]
+    },
+    "day_limit": {
+      "type": ["null", "string"]
+    },
+    "all_limit": {
+      "type": ["null", "string"]
+    },
+    "start_time": {
+      "type": ["null", "integer"]
+    },
+    "stop_time": {
+      "type": ["null", "integer"]
+    },
+    "category1_id": {
+      "type": ["null", "integer"]
+    },
+    "category2_id": {
+      "type": ["null", "integer"]
+    },
+    "age_restriction": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "events_retargeting_groups": {
+      "type": ["null", "string"]
+    },
+    "conversion_pixel_id": {
+      "type": ["null", "integer"]
+    },
+    "conversion_event_id": {
+      "type": ["null", "integer"]
+    },
+    "weekly_schedule_hours": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "weekly_schedule_use_holidays": {
+      "type": ["null", "integer"]
+    },
+    "ad_format": {
+      "type": ["null", "integer"]
+    },
+    "autobidding_max_cost": {
+      "type": ["null", "string"]
+    },
+    "cpm": {
+      "type": ["null", "string"]
+    },
+    "ocpm": {
+      "type": ["null", "string"]
+    },
+    "cpc": {
+      "type": ["null", "string"]
+    },
+    "impressions_limit": {
+      "type": ["null", "integer"]
+    },
+    "impressions_limit_period": {
+      "type": ["null", "integer"]
+    },
+    "ad_platform": {
+      "type": ["null", "string"]
+    },
+    "publisher_platforms": {
+      "type": ["null", "string"]
+    },
+    "publisher_platforms_auto": {
+      "type": ["null", "integer"]
+    },
+    "ad_platform_no_ad_network": {
+      "type": ["null", "integer"]
+    },
+    "autobidding": {
+      "type": ["null", "integer"]
+    },
+    "has_campaign_budget_optimization": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

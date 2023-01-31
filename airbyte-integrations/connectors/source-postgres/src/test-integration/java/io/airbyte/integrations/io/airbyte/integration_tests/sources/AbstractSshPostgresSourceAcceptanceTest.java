@@ -6,76 +6,36 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.List;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String STREAM_NAME = "id_and_name";
-  private static final String STREAM_NAME2 = "starships";
-  private static final String SCHEMA_NAME = "public";
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
-  private static final Network network = Network.newNetwork();
-  private static JsonNode config;
-  private final SshBastionContainer bastion = new SshBastionContainer();
+  private static final String STREAM_NAME = "public.id_and_name";
+  private static final String STREAM_NAME2 = "public.starships";
   private PostgreSQLContainer<?> db;
-
-  private static void populateDatabaseTestData() throws Exception {
-    SshTunnel.sshWrap(
-        config,
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
-            .query(ctx -> {
-              ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-              ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-              ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-              ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-              return null;
-            }));
-  }
-
-  private static Database getDatabaseFromConfig(final JsonNode config) {
-    return new Database(
-        DSLContextFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()),
-            SQLDialect.POSTGRES));
-  }
+  private final SshBastionContainer bastion = new SshBastionContainer();
+  private static JsonNode config;
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -83,7 +43,6 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     startTestContainers();
     config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")));
     populateDatabaseTestData();
@@ -91,13 +50,35 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion(network);
+    bastion.initAndStartBastion();
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine").withNetwork(network);
+    db = new PostgreSQLContainer<>("postgres:13-alpine").withNetwork(bastion.getNetWork());
     db.start();
+  }
+
+  private static void populateDatabaseTestData() throws Exception {
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("database").asText()),
+        SQLDialect.POSTGRES)) {
+      final Database database = new Database(dslContext);
+
+      database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+        ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        return null;
+      });
+    }
   }
 
   @Override
@@ -128,31 +109,24 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME, SCHEMA_NAME,
-                Field.of("id", JsonSchemaType.INTEGER),
+                STREAM_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2, SCHEMA_NAME,
-                Field.of("id", JsonSchemaType.INTEGER),
+                STREAM_NAME2,
+                Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

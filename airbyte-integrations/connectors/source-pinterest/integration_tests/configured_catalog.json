@@ -2,44 +2,18 @@
   "streams": [
     {
       "stream": {
-        "name": "ad_account_analytics",
+        "name": "boards",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "ad_accounts",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "ad_analytics",
+        "name": "ad_accounts",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "boards",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -48,9 +22,7 @@
       "stream": {
         "name": "board_sections",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -59,9 +31,7 @@
       "stream": {
         "name": "board_pins",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -70,9 +40,7 @@
       "stream": {
         "name": "board_section_pins",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -80,6 +48,17 @@
     {
       "stream": {
         "name": "user_account_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_account_analytics",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
@@ -124,6 +103,17 @@
     {
       "stream": {
         "name": "campaign_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_group_analytics",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,

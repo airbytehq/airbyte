@@ -1,8 +1,9 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
+from ast import excepthandler
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -22,13 +23,23 @@ from source_pipedrive.streams import (
     PersonFields,
     Persons,
     Pipelines,
+    ProductFields,
     Stages,
     Users,
+    Notes,
 )
+import json
 
 
 class SourcePipedrive(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        try:
+            custom_constants = json.loads(config.get("custom_json", "{}"))
+            if not isinstance(custom_constants, dict):
+                raise Exception("Custom Constants must be text of JSON objects")
+        except Exception as e:
+            return False, e
+
         try:
             stream_kwargs = self.get_stream_kwargs(config)
             deals = Deals(**stream_kwargs)
@@ -36,14 +47,23 @@ class SourcePipedrive(AbstractSource):
             next(deals_gen)
             return True, None
         except Exception as error:
-            return False, f"Unable to connect to Pipedrive API with the provided credentials - {repr(error)}"
+            return (
+                False,
+                f"Unable to connect to Pipedrive API with the provided credentials - {repr(error)}",
+            )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         stream_kwargs = self.get_stream_kwargs(config)
-        incremental_kwargs = {**stream_kwargs, "replication_start_date": pendulum.parse(config["replication_start_date"])}
+        incremental_kwargs = {
+            **stream_kwargs,
+            "replication_start_date": pendulum.parse(config["replication_start_date"]),
+            "client_name": config.get("client_name", ""),
+            "product_name": config.get("product_name", ""),
+            "custom_constants": json.loads(config.get("custom_json", "{}")),
+        }
         streams = [
             Activities(**incremental_kwargs),
             ActivityFields(**stream_kwargs),
@@ -57,6 +77,8 @@ class SourcePipedrive(AbstractSource):
             Pipelines(**incremental_kwargs),
             Stages(**incremental_kwargs),
             Users(**incremental_kwargs),
+            Notes(**incremental_kwargs),
+            ProductFields(**stream_kwargs),
         ]
         return streams
 

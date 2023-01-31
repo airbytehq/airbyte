@@ -3,10 +3,10 @@
 #
 
 import concurrent.futures
-import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from requests import adapters as request_adapters
 from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
@@ -127,56 +127,26 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
     "UserRecordAccess",
 ]
 
-# The following objects are not supported by the Bulk API. Listed objects are version specific.
 UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AcceptedEventRelation",
     "AssetTokenEvent",
-    "Attachment",
     "AttachedContentNote",
+    "Attachment",
     "CaseStatus",
     "ContractStatus",
     "DeclinedEventRelation",
     "EventWhoRelation",
     "FieldSecurityClassification",
-    "KnowledgeArticle",
-    "KnowledgeArticleVersion",
-    "KnowledgeArticleVersionHistory",
-    "KnowledgeArticleViewStat",
-    "KnowledgeArticleVoteStat",
     "OrderStatus",
     "PartnerRole",
     "QuoteTemplateRichTextData",
     "RecentlyViewed",
     "ServiceAppointmentStatus",
-    "ShiftStatus",
     "SolutionStatus",
     "TaskPriority",
     "TaskStatus",
     "TaskWhoRelation",
     "UndecidedEventRelation",
-    "WorkOrderLineItemStatus",
-    "WorkOrderStatus",
-    "UserRecordAccess",
-    "OwnedContentDocument",
-    "OpenActivity",
-    "NoteAndAttachment",
-    "Name",
-    "LookedUpFromActivity",
-    "FolderedContentDocument",
-    "ContractStatus",
-    "ContentFolderItem",
-    "CombinedAttachment",
-    "CaseTeamTemplateRecord",
-    "CaseTeamTemplateMember",
-    "CaseTeamTemplate",
-    "CaseTeamRole",
-    "CaseTeamMember",
-    "AttachedContentDocument",
-    "AggregateResult",
-    "ChannelProgramLevelShare",
-    "AccountBrandShare",
-    "AccountFeed",
-    "AssetFeed",
 ]
 
 UNSUPPORTED_FILTERING_STREAMS = [
@@ -203,12 +173,9 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 
 class Salesforce:
-    logger = logging.getLogger("airbyte")
+    logger = AirbyteLogger()
     version = "v52.0"
     parallel_tasks_size = 100
-    # https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm
-    # Request Size Limits
-    REQUEST_SIZE_LIMITS = 16_384
 
     def __init__(
         self,
@@ -256,13 +223,10 @@ class Salesforce:
         """
         stream_objects = {}
         for stream_object in self.describe()["sobjects"]:
-            if stream_object["name"].lower() == "activitymetric":
-                self.logger.warning(f"Stream {stream_object['name']} can not be used without object ID therefore will be ignored.")
-                continue
             if stream_object["queryable"]:
                 stream_objects[stream_object.pop("name")] = stream_object
             else:
-                self.logger.warning(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
 
         if catalog:
             return {
@@ -346,7 +310,7 @@ class Salesforce:
         stream_schemas = {}
         for i in range(0, len(stream_names), self.parallel_tasks_size):
             chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
-            with concurrent.futures.ThreadPoolExecutor() as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(chunk_stream_names)) as executor:
                 for stream_name, schema, err in executor.map(
                     lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
                 ):

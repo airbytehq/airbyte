@@ -18,8 +18,8 @@ import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -54,6 +54,7 @@ public class GcsJsonlWriter extends BaseGcsWriter implements DestinationFileWrit
 
     this.uploadManager = StreamTransferManagerFactory
         .create(config.getBucketName(), objectKey, s3Client)
+        .setPartSize(config.getFormatConfig().getPartSize())
         .get();
 
     // We only need one output stream as we only have one input stream. This is reasonably performant.

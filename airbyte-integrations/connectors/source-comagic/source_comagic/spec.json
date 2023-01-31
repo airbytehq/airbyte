@@ -1,0 +1,93 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/connector-development",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Comagic Spec",
+    "type": "object",
+    "required": [],
+    "additionalProperties": true,
+    "properties": {
+      "login": {
+        "type": "string",
+        "description": "Comagic account login",
+        "order": 0
+      },
+      "password": {
+        "type": "string",
+        "description": "Comagic account password",
+        "airbyte_secret": true,
+        "order": 1
+      },
+      "site_id": {
+        "title": "Site ID",
+        "description": "Used only in CampaignDailyStat and CtAcSummaryReport streams.",
+        "type": "integer",
+        "examples": [
+          "22334"
+        ],
+        "order": 2
+      },
+      "start_datetime": {
+        "description": "Start datetime for the reporting period in YYYY-MM-DD hh:mm:ss format, if not set – last 30 days or \"Load last n days\" parameter (if it was set) will be used Max value of requested date interval is 90 days.",
+        "title": "Start Date and time",
+        "type": "string",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$",
+        "examples": [
+          "2021-05-01 00:00:00"
+        ],
+        "order": 3
+      },
+      "end_datetime": {
+        "description": "End datetime for the reporting period in YYYY-MM-DD hh:mm:ss format, if not set – last 30 days or \"Load last n days\" parameter (if it was set) will be used Max value of requested date interval is 90 days.",
+        "title": "End Date and time",
+        "type": "string",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$",
+        "examples": [
+          "2021-05-01 00:00:00"
+        ],
+        "order": 4
+      },
+      "last_days": {
+        "type": "integer",
+        "title": "Load last n days",
+        "description": "If not set – last 30 days or start_time and end_time will be used",
+        "minimum": 0,
+        "maximum": 90,
+        "examples": [
+          "30"
+        ],
+        "order": 5
+      },
+      "client_name": {
+        "description": "Client name - constant that will be used in record __clientName property",
+        "title": "Client Name (Constant)",
+        "type": "string",
+        "examples": [
+          "abcde"
+        ],
+        "order": 6,
+        "default": ""
+      },
+      "product_name": {
+        "description": "Product name - constant that will be used in record __productName property",
+        "title": "Product Name (Constant)",
+        "type": "string",
+        "examples": [
+          "abcde"
+        ],
+        "order": 7,
+        "default": ""
+      },
+      "custom_constants": {
+        "description": "Custom constants for additional record properties",
+        "title": "Custom Constants",
+        "type": "string",
+        "examples": [
+          "{\"abc\": \"123\", \"cde\": \"132\"}"
+        ],
+        "default": "{}",
+        "order": 8
+      }
+    }
+  }
+}

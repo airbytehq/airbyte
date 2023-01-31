@@ -46,9 +46,8 @@ def _get_s3_client_args(provider: dict, config: Config) -> dict:
         # endpoint could be None or empty string, set to default Amazon endpoint in
         # this case.
         client_kv_args["endpoint_url"] = endpoint
-        client_kv_args["use_ssl"] = provider.get("use_ssl", True)
-        client_kv_args["verify"] = provider.get("verify_ssl_cert", True)
-        client_kv_args["config"] = Config(s3={"addressing_style": provider.get("addressing_style", "auto")})
+        client_kv_args["use_ssl"] = provider.get("use_ssl")
+        client_kv_args["verify"] = provider.get("verify_ssl_cert")
 
     return client_kv_args
 

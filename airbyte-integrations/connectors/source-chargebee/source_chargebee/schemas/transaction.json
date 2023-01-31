@@ -19,6 +19,10 @@
       "type": ["string", "null"],
       "max-length": 50
     },
+    "gateway_account_id": {
+      "type": ["string", "null"],
+      "max-length": 50
+    },
     "payment_source_id": {
       "type": ["string", "null"],
       "max-length": 40
@@ -87,7 +91,7 @@
       "type": ["integer", "null"]
     },
     "exchange_rate": {
-      "type": ["number", "null"]
+      "type": ["integer", "null"]
     },
     "currency_code": {
       "type": ["string", "null"]
@@ -327,19 +331,11 @@
         }
       }
     },
-    "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+    "amount": {
+      "type": ["integer", "null"]
+    },
+    "date": {
+      "type": ["integer", "null"]
     }
   }
 }

@@ -4,10 +4,8 @@
       "stream": {
         "name": "accounts",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "primary_key": [["id"]],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
@@ -15,10 +13,8 @@
       "stream": {
         "name": "customers",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "primary_key": [["id"]],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
@@ -26,10 +22,8 @@
       "stream": {
         "name": "workload-schemes",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "primary_key": [["id"]],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
@@ -37,14 +31,9 @@
       "stream": {
         "name": "worklogs",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["startDate"],
-        "source_defined_primary_key": [["tempoWorklogId"]]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "primary_key": [["tempoWorklogId"]],
-      "cursor_field": ["startDate"],
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     }
   ]

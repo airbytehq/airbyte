@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "day": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "month": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "overall": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "spent": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "impressions": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "clicks": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "reach": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "join_rate": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "uniq_views_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "ctr": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "effective_cost_per_click": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "effective_cost_per_mille": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "effective_cpf": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "effective_cost_per_message": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "message_sends": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "video_plays_unique_started": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "video_plays_unique_3_seconds": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "video_plays_unique_25_percents": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "video_plays_unique_50_percents": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "video_plays_unique_75_percents": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "video_plays_unique_100_percents": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "conversion_count": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "conversion_sum": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "conversion_cr": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "conversion_roas": {
+      "type": [
+        "null",
+        "number"
+      ]
+    }
+  }
+}

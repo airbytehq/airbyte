@@ -6,9 +6,8 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.1",
     "pendulum~=2.1.2",
-    "python-dateutil~=2.8.2",
     "requests~=2.25",
 ]
 

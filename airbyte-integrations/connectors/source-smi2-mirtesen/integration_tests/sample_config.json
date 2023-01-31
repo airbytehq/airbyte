@@ -1,0 +1,18 @@
+{
+  "credentials": {
+    "username": "username",
+    "password": "password",
+    "client_id": "client_id",
+    "auth_type": "username_password_auth"
+  },
+  "campaigns_filter_json": "[\"neq\", \"status\", \"paused\"]",
+  "campaigns_news_filter_json": "[\"neq\", \"status\", \"paused\"]",
+  "client_name_constant": "CoolClient123",
+  "product_name_constant": "CoolClient123",
+  "date_range": {
+    "date_range_type": "custom_date",
+    "date_from": "2022-01-01",
+    "date_to": "2022-03-30"
+  },
+  "custom_constants_json": "{\"abc\": \"123\", \"cde\": \"132\"}"
+}

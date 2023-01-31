@@ -1,0 +1,274 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "site_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "site_domain_name": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "campaign_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign_ext_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "campaign_ext_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "engine": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "banner_group_id": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "banner_group_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "keyword_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "keyword": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "cost_sum": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "shows_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "clicks_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "chats_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "calls_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "goals_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "offline_messages_count": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "current_banner_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "old_banner_ids": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "string"
+        ]
+      }
+    },
+    "visits_count": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "current_banner_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "daily_budget": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "weekly_budget": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "currency": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "session_ids": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "communications": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "communication_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "communication_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "attributes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "tags": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "tag_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tag_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tag_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tag_change_time": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tag_user_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tag_user_login": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tag_employee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tag_employee_full": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

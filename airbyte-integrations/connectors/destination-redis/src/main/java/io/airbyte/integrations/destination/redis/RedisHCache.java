@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.redis;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +16,8 @@ public class RedisHCache implements RedisCache {
 
   private final Jedis jedis;
 
-  public RedisHCache(JsonNode jsonConfig) {
-    this.jedis = RedisPoolManager.initConnection(jsonConfig);
+  public RedisHCache(RedisConfig redisConfig) {
+    this.jedis = RedisPoolManager.initConnection(redisConfig);
   }
 
   @Override

@@ -30,26 +30,24 @@ class SnowflakeDataSourceUtilsTest {
                                 }
                                 """;
   private final String expectedJdbcUrl =
-      "jdbc:snowflake://host/?role=role&warehouse=WAREHOUSE&database=DATABASE"
-          + "&JDBC_QUERY_RESULT_FORMAT=JSON&CLIENT_SESSION_KEEP_ALIVE=true&application=airbyte_oss"
-          + "&schema=SOURCE_SCHEMA&CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX=true";
+      "jdbc:snowflake://host/?role=role&warehouse=WAREHOUSE&database=DATABASE&schema=SOURCE_SCHEMA&JDBC_QUERY_RESULT_FORMAT=JSON&CLIENT_SESSION_KEEP_ALIVE=true";
 
   @Test
   void testBuildJDBCUrl() {
-    final JsonNode expectedConfig = Jsons.deserialize(config);
+    JsonNode expectedConfig = Jsons.deserialize(config);
 
-    final String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig, SnowflakeDataSourceUtils.AIRBYTE_OSS);
+    String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig);
 
     assertEquals(expectedJdbcUrl, jdbcURL);
   }
 
   @Test
   void testBuildJDBCUrlWithParams() {
-    final JsonNode expectedConfig = Jsons.deserialize(config);
-    final String params = "someParameter1&param2=someParameter2";
+    JsonNode expectedConfig = Jsons.deserialize(config);
+    String params = "someParameter1&param2=someParameter2";
     ((ObjectNode) expectedConfig).put("jdbc_url_params", params);
 
-    final String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig, SnowflakeDataSourceUtils.AIRBYTE_OSS);
+    String jdbcURL = SnowflakeDataSourceUtils.buildJDBCUrl(expectedConfig);
 
     assertEquals(expectedJdbcUrl + "&" + params, jdbcURL);
   }

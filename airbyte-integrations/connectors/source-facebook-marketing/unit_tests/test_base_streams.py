@@ -11,6 +11,7 @@ from facebook_business import FacebookSession
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookRequest
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.base_streams import FBMarketingStream
+from source_facebook_marketing.streams.common import MAX_BATCH_SIZE
 
 
 @pytest.fixture(name="mock_batch_responses")
@@ -63,7 +64,7 @@ class TestBaseStream:
         )
 
         stream = SomeTestStream(api=api)
-        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(50 + 1)]
+        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(MAX_BATCH_SIZE + 1)]
 
         result = list(stream.execute_in_batch(requests))
 
@@ -127,43 +128,3 @@ class TestBaseStream:
 
         assert batch.add_request.call_count == len(requests)
         assert batch.execute.call_count == 1
-
-    def test_execute_in_batch_retry_batch_error(self, api, batch, mock_batch_responses):
-        """Should retry without exception when any request returns 960 error code"""
-        mock_batch_responses(
-            [
-                {
-                    "json": [
-                        {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
-                        {
-                            "body": json.dumps(
-                                {
-                                    "error": {
-                                        "message": "Request aborted. This could happen if a dependent request failed or the entire request timed out.",
-                                        "type": "FacebookApiException",
-                                        "code": 960,
-                                        "fbtrace_id": "AWuyQlmgct0a_n64b-D1AFQ",
-                                    }
-                                }
-                            ),
-                            "code": 500,
-                            "headers": {},
-                        },
-                        {"body": json.dumps({"name": "creative 3"}), "code": 200, "headers": {}},
-                    ],
-                },
-                {
-                    "json": [
-                        {"body": json.dumps({"name": "creative 2"}), "code": 200, "headers": {}},
-                    ],
-                },
-            ]
-        )
-
-        stream = SomeTestStream(api=api)
-        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(3)]
-        result = list(stream.execute_in_batch(requests))
-
-        assert batch.add_request.call_count == len(requests) + 1
-        assert batch.execute.call_count == 2
-        assert len(result) == len(requests)

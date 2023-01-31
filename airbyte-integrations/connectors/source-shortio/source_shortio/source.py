@@ -3,7 +3,6 @@
 #
 
 
-import contextlib
 import datetime
 import json
 from abc import ABC
@@ -25,7 +24,7 @@ class Links(HttpStream, ABC):
 
     url_base = "https://api.short.io/api/"
     limit = 150
-    primary_key = "idString"
+    primary_key = "id"
     before_id = None
     domain_id = None
 
@@ -78,16 +77,18 @@ class Links(HttpStream, ABC):
             "utmContent": "utm_content",
         }
         links = json.loads(response.text)["links"]
-        for item in links:
+        for index, item in enumerate(links):
             for resp_field, param in utm_response_fields_to_utm_params.items():
                 if resp_field not in item.keys():
-                    param = f"{param}="
+                    param = param + "="
                     original_url = item["originalURL"]
                     param_value = None
-                    with contextlib.suppress(IndexError):
+                    try:
                         # Extracting parameter value from original URL
                         # i.e "talent" from http://airbyte.io/?utm_source=talent
                         param_value = original_url.split(param, 2)[1].split("&", 1)[0]
+                    except IndexError:
+                        pass
                     item[resp_field] = param_value
             yield item
 
@@ -141,7 +142,10 @@ class Clicks(HttpStream, ABC):
         clicks = json.loads(response.text)
         try:
             before_dt = sorted(clicks, key=lambda k: k["dt"], reverse=False)[0]["dt"]
-            return None if self.limit > len(clicks) else before_dt
+            if self.limit > len(clicks):
+                return None
+            else:
+                return before_dt
         except IndexError:
             return None
 
@@ -177,12 +181,18 @@ class Clicks(HttpStream, ABC):
 
         :return dict: json body for the request
         """
-        return {
+        payload = {
             "limit": self.limit,
             "include": {"human": True},
             "beforeDate": next_page_token or self.before_dt,
-            "afterDate": stream_state["dt"] if stream_state and "dt" in stream_state.keys() else self.start_date,
         }
+
+        if stream_state and "dt" in stream_state.keys():
+            payload["afterDate"] = stream_state["dt"]
+        else:
+            payload["afterDate"] = self.start_date
+
+        return payload
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from json.loads(response.text)

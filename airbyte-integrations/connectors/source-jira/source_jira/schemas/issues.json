@@ -28,19 +28,26 @@
     },
     "renderedFields": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": {
+        "readOnly": true
+      },
       "description": "The rendered value of each field present on the issue.",
       "readOnly": true
     },
     "properties": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": {
+        "readOnly": true
+      },
       "description": "Details of the issue properties identified in the request.",
       "readOnly": true
     },
     "names": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": {
+        "type": "string",
+        "readOnly": true
+      },
       "description": "The ID and name of each field present on the issue.",
       "readOnly": true
     },
@@ -68,7 +75,13 @@
     },
     "versionedRepresentations": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "readOnly": true
+        },
+        "readOnly": true
+      },
       "description": "The versions of each field on the issue.",
       "readOnly": true
     },
@@ -89,7 +102,7 @@
           "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd. Updated may be absent. Added to solve the #4341"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": {}
     },
     "projectId": {
       "type": "string",
@@ -100,19 +113,7 @@
       "type": "string",
       "description": "The key of the project containing the issue.",
       "readOnly": true
-    },
-    "created": {
-      "type": ["string", "null"],
-      "format": "date-time",
-      "description": "This field transformed from fields attr",
-      "readOnly": true
-    },
-    "updated": {
-      "type": ["string", "null"],
-      "format": "date-time",
-      "description": "This field transformed from fields attr",
-      "readOnly": true
     }
   },
-  "additionalProperties": true
+  "additionalProperties": false
 }

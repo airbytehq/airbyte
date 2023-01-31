@@ -12,20 +12,20 @@
       "type": "string"
     },
     "stats_date_from": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": "string",
+      "format": "date-time"
     },
     "stats_date_to": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": "string",
+      "format": "date-time"
     },
     "stats_compare_from": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": "string",
+      "format": "date-time"
     },
     "stats_compare_to": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": "string",
+      "format": "date-time"
     },
     "passwd": {
       "type": "string"
@@ -52,10 +52,10 @@
       "type": "string"
     },
     "bo_theme": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "bo_css": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "bo_width": {
       "type": "string"
@@ -82,8 +82,7 @@
       "type": ["null", "string"]
     },
     "reset_password_validity": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": "string"
     }
   }
 }

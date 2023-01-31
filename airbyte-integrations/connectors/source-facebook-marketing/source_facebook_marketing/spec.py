@@ -3,10 +3,11 @@
 #
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Union
 
+import pendulum
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
 from pydantic import BaseModel, Field, PositiveInt
@@ -16,9 +17,9 @@ logger = logging.getLogger("airbyte")
 
 ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
-ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
-DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-EMPTY_PATTERN = "^$"
+ValidActionBreakdowns = Enum(
+    "ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
+DATE_TIME_PATTERN = "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 
 
 class InsightConfig(BaseModel):
@@ -60,14 +61,14 @@ class InsightConfig(BaseModel):
         default=1,
     )
 
-    start_date: Optional[datetime] = Field(
+    start_date: Optional[str] = Field(
         title="Start Date",
         description="The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z.",
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
     )
 
-    end_date: Optional[datetime] = Field(
+    end_date: Optional[str] = Field(
         title="End Date",
         description=(
             "The date until which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. "
@@ -86,15 +87,59 @@ class InsightConfig(BaseModel):
     )
 
 
+class ProxyConfig(BaseModel):
+
+    class Config:
+        title = "Use Proxy"
+
+    use_proxy_type: str = Field(
+        'use_proxy',
+        const=True
+    )
+
+    protocol: str = Field(
+        title="Proxy Protocol",
+        default="https",
+        enum=["http", "https"],
+        order=1
+    )
+
+    host: str = Field(
+        title="Proxy Host",
+        examples=["proxy.mysite.com", "127.0.0.1"]
+    )
+
+    port: int = Field(
+        title="Proxy Port",
+        minimum=1,
+        examples=[8000]
+    )
+
+    login: Optional[str] = Field(
+        title="Proxy Login",
+    )
+
+    password: Optional[str] = Field(
+        title="Proxy Password",
+        airbyte_secret=True,
+    )
+
+
+class NoProxyConfig(BaseModel):
+    class Config:
+        title = "No Proxy"
+
+    use_proxy_type: str = Field(
+        'no_proxy',
+        const=True
+    )
+
+
 class ConnectorConfig(BaseConfig):
     """Connector config"""
 
     class Config:
         title = "Source Facebook Marketing"
-
-        @staticmethod
-        def schema_extra(schema: Dict[str, Any], model: Type["ConnectorConfig"]) -> None:
-            schema["properties"]["end_date"].pop("format")
 
     account_id: str = Field(
         title="Account ID",
@@ -103,7 +148,7 @@ class ConnectorConfig(BaseConfig):
         examples=["111111111111111"],
     )
 
-    start_date: datetime = Field(
+    start_date: Optional[str] = Field(
         title="Start Date",
         order=1,
         description=(
@@ -114,7 +159,7 @@ class ConnectorConfig(BaseConfig):
         examples=["2017-01-25T00:00:00Z"],
     )
 
-    end_date: Optional[datetime] = Field(
+    end_date: Optional[str] = Field(
         title="End Date",
         order=2,
         description=(
@@ -122,38 +167,50 @@ class ConnectorConfig(BaseConfig):
             "All data generated between start_date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
-        pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
-        examples=["2017-01-26T00:00:00Z"],
-        default_factory=lambda: datetime.now(tz=timezone.utc),
+        pattern=DATE_TIME_PATTERN,
+        examples=["2017-01-26T00:00:00Z"]
+    )
+
+    last_n_days: Optional[int] = Field(
+        title="Load last N days",
+        description=(
+            "Today (0:00) minus N days date range will be used. You must specify either "
+            "Last N Days or Start Date + End Date. If you specify none of this fields, "
+            "last 5 days will be used."
+        ),
+        order=3,
+        minimum=0,
+        maximum=3650,
+        examples=[30]
     )
 
     access_token: str = Field(
         title="Access Token",
-        order=3,
+        order=4,
         description=(
             "The value of the access token generated. "
-            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information'
+            'See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information'
         ),
         airbyte_secret=True,
     )
 
     include_deleted: bool = Field(
         title="Include Deleted",
-        order=4,
+        order=5,
         default=False,
         description="Include data from deleted Campaigns, Ads, and AdSets",
     )
 
     fetch_thumbnail_images: bool = Field(
         title="Fetch Thumbnail Images",
-        order=5,
+        order=6,
         default=False,
         description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url",
     )
 
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
-        order=6,
+        order=7,
         description=(
             "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
         ),
@@ -161,7 +218,7 @@ class ConnectorConfig(BaseConfig):
 
     page_size: Optional[PositiveInt] = Field(
         title="Page Size of Requests",
-        order=7,
+        order=8,
         default=100,
         description=(
             "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
@@ -170,22 +227,57 @@ class ConnectorConfig(BaseConfig):
 
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Insights Lookback Window",
-        order=8,
+        order=9,
         description="The attribution window",
         maximum=28,
         mininum=1,
         default=28,
     )
 
-    max_batch_size: Optional[PositiveInt] = Field(
-        title="Maximum size of Batched Requests",
-        order=9,
-        description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
-        default=50,
+    client_name: str = Field(
+        title="Client Name Constant",
+        order=10,
+        description="Constant that will be used in record __clientName property",
+        default="",
+        examples=["abcd"],
     )
 
-    action_breakdowns_allow_empty: bool = Field(
-        description="Allows action_breakdowns to be an empty list",
-        default=True,
-        airbyte_hidden=True,
+    product_name: str = Field(
+        title="Product Name Constant",
+        order=11,
+        description="Constant that will be used in record __productName property",
+        default="",
+        examples=["abcd"],
     )
+
+    custom_json: str = Field(
+        title="Custom JSON",
+        order=12,
+        description="Custom JSON for additional record properties. Must be string of JSON object with first-level properties",
+        default="{}",
+        examples=["{\"abc\": \"123\", \"cde\": \"132\"}"],
+    )
+
+    proxy: Union[NoProxyConfig, ProxyConfig] = Field(
+        title="Proxy Configuration",
+        order=13,
+        default="no_proxy"
+    )
+
+    @staticmethod
+    def change_format_to_oneOf(schema: dict) -> dict:
+        props_to_change = ["proxy"]
+        for prop in props_to_change:
+            schema["properties"][prop]["type"] = "object"
+            if "oneOf" in schema["properties"][prop]:
+                continue
+            schema["properties"][prop]["oneOf"] = schema["properties"][prop].pop(
+                "anyOf")
+        return schema
+
+    @classmethod
+    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        """we're overriding the schema classmethod to enable some post-processing"""
+        schema = super().schema(*args, **kwargs)
+        schema = cls.change_format_to_oneOf(schema)
+        return schema

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
@@ -19,7 +20,6 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final String IMAGE_NAME = "docker.elastic.co/elasticsearch/elasticsearch:8.3.3";
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestinationAcceptanceTest.class);
 
   private ObjectMapper mapper = new ObjectMapper();
@@ -27,14 +27,14 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
 
   @BeforeAll
   public static void beforeAll() {
-    container = new ElasticsearchContainer(IMAGE_NAME)
+    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.15.1")
+        .withEnv("ES_JAVA_OPTS", "-Xms512m -Xms512m")
         .withEnv("discovery.type", "single-node")
         .withEnv("network.host", "0.0.0.0")
         .withEnv("logger.org.elasticsearch", "INFO")
         .withEnv("ingest.geoip.downloader.enabled", "false")
-        .withPassword("s3cret")
-        .withExposedPorts(9200)
         .withEnv("xpack.security.enabled", "false")
+        .withExposedPorts(9200)
         .withStartupTimeout(Duration.ofSeconds(60));
     container.start();
   }
@@ -61,14 +61,18 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
+  protected boolean supportsNormalization() {
+    return false;
+  }
+
+  @Override
   protected boolean supportBasicDataTypeTest() {
     return true;
   }
 
   @Override
   protected boolean supportArrayDataTypeTest() {
-    // TODO: Enable supportArrayDataTypeTest after ticket 14568 will be done
-    return false;
+    return true;
   }
 
   @Override
@@ -82,18 +86,16 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected JsonNode getConfig() throws Exception {
+  protected JsonNode getConfig() {
     var configJson = mapper.createObjectNode();
     configJson.put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
     return configJson;
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() throws Exception {
+  protected JsonNode getFailCheckConfig() {
     // should result in a failed connection check
-    var configJson = mapper.createObjectNode();
-    configJson.put("endpoint", String.format("htp::/%s:-%s", container.getHost(), container.getMappedPort(9200)));
-    return configJson;
+    return mapper.createObjectNode();
   }
 
   @Override
@@ -101,7 +103,7 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema)
-      throws Exception {
+      throws IOException {
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
     final String indexName = new ElasticsearchWriteConfig()
@@ -114,13 +116,12 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {}
+  protected void setup(TestDestinationEnv testEnv) {}
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(TestDestinationEnv testEnv) {
     ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     connection.allIndices().forEach(connection::deleteIndexIfPresent);
-    connection.close();
   }
 
 }

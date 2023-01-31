@@ -1,0 +1,194 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "dt": {
+      "type": ["null", "string"]
+    },
+    "user": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        },
+        "email": {
+          "type": ["null", "string"]
+        },
+        "enabled": {
+          "type": ["null", "boolean"]
+        },
+        "firstName": {
+          "type": ["null", "string"]
+        },
+        "lastName": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "dayClickLimit": {
+      "type": ["null", "integer"]
+    },
+    "connectedSite": {
+      "type": ["null", "string"]
+    },
+    "connectedSiteFactor": {
+      "type": ["null", "integer"]
+    },
+    "connectedSiteClicks": {
+      "type": ["null", "string"]
+    },
+    "priority": {
+      "type": ["null", "string"]
+    },
+    "weight": {
+      "type": ["null", "number"]
+    },
+    "pricePerClick": {
+      "type": ["null", "number"]
+    },
+    "dayAdpreview2moreClickLimit": {
+      "type": ["null", "integer"]
+    },
+    "dayBlindClickLimit": {
+      "type": ["null", "integer"]
+    },
+    "totalClickLimit": {
+      "type": ["null", "integer"]
+    },
+    "dateLimit": {
+      "type": ["null", "string"]
+    },
+    "partnerType": {
+      "type": ["null", "string"]
+    },
+    "shameLevel": {
+      "type": ["null", "integer"]
+    },
+    "userPricePerClick": {
+      "type": ["null", "number"]
+    },
+    "userPriceReadonly": {
+      "type": ["null", "boolean"]
+    },
+    "isDirectExchange": {
+      "type": ["null", "boolean"]
+    },
+    "articlesNews": {
+      "type": ["null", "string"]
+    },
+    "userPriceHide": {
+      "type": ["null", "boolean"]
+    },
+    "newsExtendedLink": {
+      "type": ["null", "string"]
+    },
+    "debt": {
+      "type": ["null", "string"]
+    },
+    "rates": {
+      "type": ["null", "object"],
+      "properties": {
+        "viewsAll": {
+          "type": ["null", "integer"]
+        },
+        "viewsNotIgnored": {
+          "type": ["null", "integer"]
+        },
+        "clicksSocial": {
+          "type": ["null", "integer"]
+        },
+        "clicksSocialFree": {
+          "type": ["null", "integer"]
+        },
+        "clicksPayable": {
+          "type": ["null", "integer"]
+        },
+        "clicksPayableNotIgnored": {
+          "type": ["null", "integer"]
+        },
+        "userExpenses": {
+          "type": ["null", "integer"]
+        },
+        "ctr": {
+          "type": ["null", "integer"]
+        },
+        "ctrOld": {
+          "type": ["null", "integer"]
+        },
+        "viewsAllOld": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "geoExclusion": {
+      "type": ["null", "boolean"]
+    },
+    "isTransitExchange": {
+      "type": ["null", "boolean"]
+    },
+    "domains": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "geoTargets": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "integer"
+          },
+          "priority": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "taxonomyTargets": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "objectReachableRoles": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "activeNewsCount": {
+      "type": ["null", "integer"]
+    },
+    "userPricePerClickValue": {
+      "type": ["null", "number"]
+    },
+    "imageId": {
+      "type": ["null", "string"]
+    },
+    "imageType": {
+      "type": ["null", "string"]
+    }
+  }
+}

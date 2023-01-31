@@ -1,0 +1,300 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "conversation_duration": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "city": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "date_callback": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "date_create": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "date_of_last_update": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "direct_call_form": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "domen": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "domen_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "duration": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "email": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "gclid": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "is_updated_times": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "last_page": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "last_page_info": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "link_sourse": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "manager_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "manager_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "newsletter": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "page_from": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "page_start": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "personalDataProcessing": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "phone": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "queryType": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "query_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "query_number_by_client": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "query_number_by_domain": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "record_url": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "session_start": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "source_visit": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "status": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "code": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "title": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "tags": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    },
+    "trafficSource": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "twoLineCall": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "code": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "title": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "utm_campaign": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utm_content": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utm_medium": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utm_source": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utm_term": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "utm_updated": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "yclid": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

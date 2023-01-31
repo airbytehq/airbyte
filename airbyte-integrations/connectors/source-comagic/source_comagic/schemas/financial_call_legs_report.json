@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "start_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "direction": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "call_session_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "leg_id": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "calling_phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "called_phone_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "chargeable_duration": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "direction_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cost_per_minute": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "total_charge": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "bonuses_charge": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,2 @@
+class UserDefinedSliceSkipException(Exception):
+    pass

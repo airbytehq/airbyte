@@ -11,9 +11,18 @@ import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited
-from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, Companies, Deals, Engagements, Products, Stream, Workflows
+from source_hubspot.streams import (
+    API,
+    PROPERTIES_PARAM_MAX_LENGTH,
+    Companies,
+    Deals,
+    Engagements,
+    Products,
+    Stream,
+    Workflows,
+    split_properties,
+)
 
 from .utils import read_full_refresh, read_incremental
 
@@ -50,7 +59,7 @@ def test_check_connection_empty_config(config):
 def test_check_connection_invalid_config(config):
     config.pop("start_date")
 
-    with pytest.raises(KeyError):
+    with pytest.raises(TypeError):
         SourceHubspot().check_connection(logger, config=config)
 
 
@@ -64,7 +73,7 @@ def test_check_connection_exception(config):
 def test_streams(config):
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 25
+    assert len(streams) == 27
 
 
 def test_check_credential_title_exception(config):
@@ -142,11 +151,15 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, 
     """
 
     # Mapping tipical response for mocker
-    json = {
-        "status": "error",
-        "message": f'This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
-        "correlationId": "2fe0a9af-3609-45c9-a4d7-83a1774121aa",
-    }
+    responses = [
+        {
+            "json": {
+                "status": "error",
+                "message": f'This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
+                "correlationId": "2fe0a9af-3609-45c9-a4d7-83a1774121aa",
+            }
+        }
+    ]
 
     # We expect something like this
     expected_warining_message = {
@@ -161,12 +174,11 @@ def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, 
     test_stream = Workflows(**common_params)
 
     # Mocking Request
-    requests_mock.register_uri("GET", test_stream.url, json=json, status_code=403)
-    records = list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
+    requests_mock.register_uri("GET", test_stream.url, responses)
+    list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
 
     # match logged expected logged warning message with output given from preudo-output
     assert expected_warining_message["log"]["message"] in caplog.text
-    assert not records
 
 
 class TestSplittingPropertiesFunctionality:
@@ -194,13 +206,21 @@ class TestSplittingPropertiesFunctionality:
         response = api._session.get(api.BASE_URL + url, params=params)
         return api._parse_and_handle_errors(response)
 
+    def test_splitting_properties(self, fake_properties_list):
+        """
+        Check that properties are split into multiple arrays
+        """
+        for slice_property in split_properties(fake_properties_list):
+            slice_length = [len(item) for item in slice_property]
+            assert sum(slice_length) <= PROPERTIES_PARAM_MAX_LENGTH
+
     def test_stream_with_splitting_properties(self, requests_mock, api, fake_properties_list, common_params):
         """
         Check working stream `companies` with large list of properties using new functionality with splitting properties
         """
         test_stream = Companies(**common_params)
 
-        parsed_properties = list(APIv3Property(fake_properties_list).split())
+        parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/company/properties", fake_properties_list)
 
         record_ids_paginated = [list(map(str, range(100))), list(map(str, range(100, 150, 1)))]
@@ -216,7 +236,7 @@ class TestSplittingPropertiesFunctionality:
                     {
                         "json": {
                             "results": [
-                                {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
+                                {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice}}}
                                 for id in id_list
                             ],
                             "paging": {"next": {"after": id_list[-1]}} if len(id_list) == 100 else {},
@@ -224,10 +244,10 @@ class TestSplittingPropertiesFunctionality:
                         "status_code": 200,
                     }
                 ]
-                prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
+                property_param_set = "&".join([f"property={prop}" for prop in property_slice])
                 requests_mock.register_uri(
                     "GET",
-                    f"{test_stream_url}?limit=100&{prop_key}={prop_val}{f'&after={after_id}' if after_id else ''}",
+                    f"{test_stream_url}?limit=100&{property_param_set}{f'&after={after_id}' if after_id else ''}",
                     record_responses,
                 )
             after_id = id_list[-1]
@@ -245,7 +265,7 @@ class TestSplittingPropertiesFunctionality:
         Check working stream `products` with large list of properties using new functionality with splitting properties
         """
 
-        parsed_properties = list(APIv3Property(fake_properties_list).split())
+        parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
 
         test_stream = Products(**common_params)
@@ -255,7 +275,7 @@ class TestSplittingPropertiesFunctionality:
                 {
                     "json": {
                         "results": [
-                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
+                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice}}}
                             for id in ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
                         ],
                         "paging": {},
@@ -263,8 +283,8 @@ class TestSplittingPropertiesFunctionality:
                     "status_code": 200,
                 }
             ]
-            prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
-            requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
+            property_param_set = "&".join([f"property={prop}" for prop in property_slice])
+            requests_mock.register_uri("GET", f"{test_stream.url}?{property_param_set}", record_responses)
 
         stream_records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
 
@@ -277,7 +297,7 @@ class TestSplittingPropertiesFunctionality:
         Check working stream `workflows` with large list of properties using new functionality with splitting properties
         """
 
-        parsed_properties = list(APIv3Property(fake_properties_list).split())
+        parsed_properties = list(split_properties(fake_properties_list))
         self.set_mock_properties(requests_mock, "/properties/v2/deal/properties", fake_properties_list)
 
         test_stream = Deals(**common_params)
@@ -288,7 +308,7 @@ class TestSplittingPropertiesFunctionality:
                 {
                     "json": {
                         "results": [
-                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice.properties}}}
+                            {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice}}}
                             for id in ids_list
                         ],
                         "paging": {},
@@ -297,8 +317,8 @@ class TestSplittingPropertiesFunctionality:
                 }
             ]
             test_stream._sync_mode = SyncMode.full_refresh
-            prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
-            requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
+            property_param_set = "&".join([f"property={prop}" for prop in property_slice])
+            requests_mock.register_uri("GET", f"{test_stream.url}?{property_param_set}", record_responses)
             test_stream._sync_mode = None
             ids_list.append("1092593513")
 
@@ -351,7 +371,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                 "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(100)],
                 "paging": {
                     "next": {
-                        "after": f"{x * 100}",
+                        "after": f"{x*100}",
                     }
                 },
             },
@@ -367,7 +387,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                     "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
                     "paging": {
                         "next": {
-                            "after": f"{x * 100}",
+                            "after": f"{x*100}",
                         }
                     },
                 },
@@ -396,7 +416,6 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
 
     # Create test_stream instance with some state
     test_stream = Companies(**common_params)
-    test_stream._init_sync = pendulum.parse("2022-02-24T16:43:11Z")
     test_stream.state = {"updatedAt": "2022-02-24T16:43:11Z"}
 
     # Mocking Request
@@ -404,13 +423,11 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     requests_mock.register_uri("POST", test_stream.url, responses)
     test_stream._sync_mode = None
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
-    requests_mock.register_uri("POST", "/crm/v4/associations/company/contacts/batch/read", [{"status_code": 200, "json": {"results": []}}])
-
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
-    assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
+    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00Z"
 
 
 def test_engagements_stream_pagination_works(requests_mock, common_params):
@@ -422,7 +439,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     # Mocking Request
     requests_mock.register_uri(
         "GET",
-        "/engagements/v1/engagements/paged?count=250",
+        "/engagements/v1/engagements/paged?hapikey=test_api_key&count=250",
         [
             {
                 "json": {
@@ -452,7 +469,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
 
     requests_mock.register_uri(
         "GET",
-        "/engagements/v1/engagements/recent/modified?count=100",
+        "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100",
         [
             {
                 "json": {
@@ -486,13 +503,12 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
-    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
+    assert test_stream.state["lastUpdated"] == 1641234595251
 
-    test_stream = Engagements(**common_params)
     records, _ = read_incremental(test_stream, {})
-    # The stream should handle pagination correctly and output 250 records.
+    # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 250
-    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
+    assert test_stream.state["lastUpdated"] == 1641234595252
 
 
 def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, common_params, fake_properties_list):
@@ -516,9 +532,10 @@ def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, comm
     # Create test_stream instance with some state
     test_stream = Engagements(**common_params)
     test_stream.state = {"lastUpdated": 1641234595251}
+
     # Mocking Request
-    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?count=100", responses)
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     assert len(records) == 10000
-    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
+    assert test_stream.state["lastUpdated"] == +1641234595252

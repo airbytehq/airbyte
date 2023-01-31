@@ -4,20 +4,16 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.AIRBYTE_COLUMNS;
-import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.CONFIG_PROJECT_ID;
-import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.NAME_TRANSFORMER;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.configureBigQuery;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.createCommonConfig;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getBigQueryDataSet;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.tearDownBigQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.ConnectionProperty;
 import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.FieldValue;
@@ -27,23 +23,29 @@ import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.bigquery.BigQueryResultSet;
 import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -59,9 +61,19 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationAcceptanceTest.class);
+  private static final BigQuerySQLNameTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
+
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+
+  private static final String CONFIG_DATASET_ID = "dataset_id";
+  protected static final String CONFIG_PROJECT_ID = "project_id";
+  private static final String CONFIG_DATASET_LOCATION = "dataset_location";
+  private static final String CONFIG_CREDS = "credentials_json";
+  private static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
 
   private BigQuery bigquery;
   private Dataset dataset;
+  private boolean tornDown;
   private JsonNode config;
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
@@ -79,6 +91,11 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   protected JsonNode getFailCheckConfig() {
     ((ObjectNode) config).put(CONFIG_PROJECT_ID, "fake");
     return config;
+  }
+
+  @Override
+  protected boolean supportsDBT() {
+    return true;
   }
 
   @Override
@@ -109,7 +126,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   // #13154 Normalization issue
   @Override
   protected boolean supportArrayDataTypeTest() {
-    return true;
+    return false;
   }
 
   @Override
@@ -133,7 +150,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    return BigQueryUtils.getDatasetId(config);
+    return config.get(CONFIG_DATASET_ID).asText();
   }
 
   @Override
@@ -169,7 +186,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
     final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
-    final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
+    BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
     return Streams.stream(queryResults.iterateAll())
         .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
@@ -199,19 +216,70 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   protected JsonNode createConfig() throws IOException {
-    return createCommonConfig();
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
+    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
+    final String datasetLocation = "US";
+    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(CONFIG_PROJECT_ID, projectId)
+        .put(CONFIG_CREDS, credentialsJson.toString())
+        .put(CONFIG_DATASET_ID, datasetId)
+        .put(CONFIG_DATASET_LOCATION, datasetLocation)
+        .build());
   }
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
+    if (!Files.exists(CREDENTIALS_PATH)) {
+      throw new IllegalStateException(
+          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
+    }
+
     config = createConfig();
-    bigquery = configureBigQuery(config);
-    dataset = getBigQueryDataSet(config, bigquery);
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes(StandardCharsets.UTF_8)));
+
+    bigquery = BigQueryOptions.newBuilder()
+        .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
+        .setCredentials(credentials)
+        .build()
+        .getService();
+
+    final DatasetInfo datasetInfo =
+        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+    dataset = bigquery.create(datasetInfo);
+
+    tornDown = false;
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  if (!tornDown) {
+                    tearDownBigQuery();
+                  }
+                }));
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    tearDownBigQuery(dataset, bigquery);
+    tearDownBigQuery();
+  }
+
+  protected void tearDownBigQuery() {
+    // allows deletion of a dataset that has contents
+    final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
+
+    final boolean success = bigquery.delete(dataset.getDatasetId(), option);
+    if (success) {
+      LOGGER.info("BQ Dataset " + dataset + " deleted...");
+    } else {
+      LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
+    }
+
+    tornDown = true;
   }
 
   // todo (cgardens) - figure out how to share these helpers. they are currently copied from

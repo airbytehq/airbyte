@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date_from": { "type": ["string", "null"] },
+    "date_to": { "type": ["string", "null"] },
+    "community_cid": { "type": ["string", "null"] },
+    "sum_posts_count_a": { "type": ["null", "integer"] },
+    "sum_posts_count_b": { "type": ["null", "integer"] },
+    "sum_posts_organic_reach_a": { "type": ["null", "integer"] },
+    "sum_posts_organic_reach_b": { "type": ["null", "integer"] },
+    "sum_posts_total_reach_a": { "type": ["null", "integer"] },
+    "sum_posts_total_reach_b": { "type": ["null", "integer"] },
+    "sum_posts_ads_reach_a": { "type": ["null", "integer"] },
+    "sum_posts_ads_reach_b": { "type": ["null", "integer"] },
+    "sum_posts_viral_reach_a": { "type": ["null", "integer"] },
+    "sum_posts_viral_reach_b": { "type": ["null", "integer"] },
+    "avgw_posts_total_reach_a": { "type": ["null", "integer"] },
+    "avgw_posts_total_reach_b": { "type": ["null", "integer"] },
+    "avgw_posts_organic_reach_a": { "type": ["null", "integer"] },
+    "avgw_posts_organic_reach_b": { "type": ["null", "integer"] },
+    "avgw_posts_viral_reach_a": { "type": ["null", "integer"] },
+    "avgw_posts_viral_reach_b": { "type": ["null", "integer"] },
+    "avgw_posts_ads_reach_a": { "type": ["null", "integer"] },
+    "avgw_posts_ads_reach_b": { "type": ["null", "integer"] },
+    "chain_sum_posts_total_reach_a": { "type": ["null", "integer"] }
+  }
+}

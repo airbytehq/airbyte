@@ -19,7 +19,7 @@ class ExchangeRates(HttpStream):
     date_field_name = "date"
 
     # HttpStream related fields
-    url_base = "https://api.apilayer.com/exchangerates_data/"
+    url_base = "http://api.exchangeratesapi.io/v1/"
     cursor_field = date_field_name
     primary_key = ""
 
@@ -39,17 +39,12 @@ class ExchangeRates(HttpStream):
         return None
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = {}
+        params = {"access_key": self.access_key}
 
         if self._base is not None:
             params["base"] = self._base
 
         return params
-
-    def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
-        headers = {"apikey": self.access_key}
-
-        return headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -87,13 +82,12 @@ def chunk_date_range(start_date: DateTime, ignore_weekends: bool) -> Iterable[Ma
 class SourceExchangeRates(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            headers = {"apikey": config["access_key"]}
-            params = {}
+            params = {"access_key": config["access_key"]}
             base = config.get("base")
             if base is not None:
                 params["base"] = base
 
-            resp = requests.get(f"{ExchangeRates.url_base}{config['start_date']}", params=params, headers=headers)
+            resp = requests.get(f"{ExchangeRates.url_base}{config['start_date']}", params=params)
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
             if status == 200:
@@ -101,7 +95,7 @@ class SourceExchangeRates(AbstractSource):
             # When API requests is sent but the requested data is not available or the API call fails
             # for some reason, a JSON error is returned.
             # https://exchangeratesapi.io/documentation/#errors
-            error = resp.json().get("error", resp.json())
+            error = resp.json().get("error")
             code = error.get("code")
             message = error.get("message") or error.get("info")
             # If code is base_currency_access_restricted, error is caused by switching base currency while using free

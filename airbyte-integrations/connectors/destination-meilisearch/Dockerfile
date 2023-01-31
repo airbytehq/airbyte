@@ -1,38 +1,20 @@
-FROM python:3.9.11-alpine3.15 as base
+FROM airbyte/integration-base-java:dev AS build
 
-# build and load all requirements
-FROM base as builder
-WORKDIR /airbyte/integration_code
+WORKDIR /airbyte
 
-# upgrade pip to the latest version
-RUN apk --no-cache upgrade \
-    && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
+ENV APPLICATION destination-meilisearch
 
+COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
-COPY setup.py ./
-# install necessary packages to a temporary folder
-RUN pip install --prefix=/install .
+RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
 
-# build a clean environment
-FROM base
-WORKDIR /airbyte/integration_code
+FROM airbyte/integration-base-java:dev
 
-# copy all loaded and built libraries to a pure basic image
-COPY --from=builder /install /usr/local
-# add default timezone settings
-COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
-RUN echo "Etc/UTC" > /etc/timezone
+WORKDIR /airbyte
 
-# bash is installed for more convenient debugging.
-RUN apk --no-cache add bash
+ENV APPLICATION destination-meilisearch
 
-# copy payload code only
-COPY main.py ./
-COPY destination_meilisearch ./destination_meilisearch
+COPY --from=build /airbyte /airbyte
 
-ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
-
-LABEL io.airbyte.version=1.0.0
+LABEL io.airbyte.version=0.2.12
 LABEL io.airbyte.name=airbyte/destination-meilisearch

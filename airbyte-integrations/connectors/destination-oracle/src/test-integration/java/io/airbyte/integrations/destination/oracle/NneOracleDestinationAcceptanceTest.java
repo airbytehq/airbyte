@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.oracle;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -20,7 +18,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestinationAcceptanceTest {
 
@@ -50,7 +48,7 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertThat(collect.get(2).get("NETWORK_SERVICE_BANNER").asText(),
-        is(equalTo("AES256 Encryption service adapter for Linux: Version 18.0.0.0.0 - Production")));
+        equals("Oracle Advanced Security: " + algorithm + " encryption"));
   }
 
   private Map<String, String> getAdditionalProperties(final String algorithm) {

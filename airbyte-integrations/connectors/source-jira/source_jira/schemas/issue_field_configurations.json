@@ -20,6 +20,6 @@
       "description": "Whether the field configuration is the default."
     }
   },
-  "additionalProperties": true,
+  "additionalProperties": false,
   "description": "Details of a field configuration."
 }

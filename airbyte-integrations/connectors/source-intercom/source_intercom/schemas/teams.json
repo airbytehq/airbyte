@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "admin_ids": {
       "anyOf": [

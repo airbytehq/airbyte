@@ -15,18 +15,17 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -90,7 +89,7 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
       }
 
-      final Writer writer = new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), isAppendMode);
+      final Writer writer = new FileWriter(tmpPath.toFile(), isAppendMode);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(writer, tmpPath, finalPath));
     }
 

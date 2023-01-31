@@ -12,7 +12,6 @@ from pydantic import BaseModel, Field
 
 from .formats.avro_spec import AvroFormat
 from .formats.csv_spec import CsvFormat
-from .formats.jsonl_spec import JsonlFormat
 from .formats.parquet_spec import ParquetFormat
 
 # To implement your provider specific spec, inherit from SourceFilesAbstractSpec and add provider-specific settings e.g.:
@@ -61,12 +60,12 @@ class SourceFilesAbstractSpec(BaseModel):
         order=10,
     )
 
-    format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat] = Field(
+    format: Union[CsvFormat, ParquetFormat, AvroFormat] = Field(
         default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20
     )
 
     user_schema: str = Field(
-        title="Manually enforced data schema",
+        title="Manually enforced data schema (Optional)",
         alias="schema",
         default="{}",
         description="Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of "
@@ -85,21 +84,6 @@ class SourceFilesAbstractSpec(BaseModel):
             if "oneOf" in schema["properties"][prop]:
                 continue
             schema["properties"][prop]["oneOf"] = schema["properties"][prop].pop("anyOf")
-        return schema
-
-    @staticmethod
-    def remove_enum_allOf(schema: dict) -> dict:
-        """
-        allOfs are not supported by the UI, but pydantic is automatically writing them for enums.
-        Unpack them into the root
-        """
-        objects_to_check = schema["properties"]["format"]["oneOf"]
-        for object in objects_to_check:
-            for key in object["properties"]:
-                property = object["properties"][key]
-                if "allOf" in property and "enum" in property["allOf"][0]:
-                    property["enum"] = property["allOf"][0]["enum"]
-                    property.pop("allOf")
         return schema
 
     @staticmethod
@@ -125,5 +109,4 @@ class SourceFilesAbstractSpec(BaseModel):
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)
         schema = cls.resolve_refs(schema)
-        schema = cls.remove_enum_allOf(schema)
         return schema

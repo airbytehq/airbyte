@@ -17,9 +17,9 @@ import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -94,11 +94,12 @@ public abstract class S3StreamCopier implements StreamCopier {
   @Override
   public String prepareStagingFile() {
     if (partsAddedToCurrentFile == 0) {
+      LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
 
       try {
         // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
         // pass in null.
-        final S3FormatConfig csvFormatConfig = new S3CsvFormatConfig(null, CompressionType.NO_COMPRESSION);
+        final S3FormatConfig csvFormatConfig = new S3CsvFormatConfig(null, (long) s3Config.getPartSize(), CompressionType.NO_COMPRESSION);
         final S3DestinationConfig writerS3Config = S3DestinationConfig.create(s3Config).withFormatConfig(csvFormatConfig).get();
         final S3CsvWriter writer = new S3CsvWriter.Builder(
             writerS3Config,
@@ -189,7 +190,7 @@ public abstract class S3StreamCopier implements StreamCopier {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
-    queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName));
+    queries.append(sqlOperations.copyTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
   }
 

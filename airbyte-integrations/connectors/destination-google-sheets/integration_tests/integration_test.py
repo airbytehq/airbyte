@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-# fixture for the _customIntegrationTest test.
-def test_fixture():
-    assert True
+
+def integration_test():
+    # TODO write integration tests
+    pass

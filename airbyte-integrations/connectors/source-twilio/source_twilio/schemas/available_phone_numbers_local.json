@@ -52,9 +52,9 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": true
+      "additionalProperties": false
     }
   },
   "type": "object",
-  "additionalProperties": true
+  "additionalProperties": false
 }

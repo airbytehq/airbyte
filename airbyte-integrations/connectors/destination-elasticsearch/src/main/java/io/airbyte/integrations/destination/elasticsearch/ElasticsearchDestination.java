@@ -10,12 +10,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.ssh.SshWrappedDestination;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,14 +25,10 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
   private final ObjectMapper mapper = new ObjectMapper();
 
   public static void main(String[] args) throws Exception {
-    final var destination = sshWrappedDestination();
+    final var destination = new ElasticsearchDestination();
     LOGGER.info("starting destination: {}", ElasticsearchDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", ElasticsearchDestination.class);
-  }
-
-  public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new ElasticsearchDestination(), "endpoint");
   }
 
   @Override

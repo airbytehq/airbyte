@@ -1,0 +1,533 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "RequestTags": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": [
+                    "object",
+                    "null"
+                ],
+                "properties": {
+                    "category": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "type": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "names": {
+                        "type": [
+                            "null",
+                            "array"
+                        ],
+                        "items": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "date": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "comments": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": "object",
+                "properties": {
+                    "commentId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "requestId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "comment": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "partyId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "partyName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            }
+        },
+        "requestNumber": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "requestType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "requestUrl": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "dateStr": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "manager": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mapVisits": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "session": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "additionalTags": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "attribution": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "attrs": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "browser": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "city": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ctGlobalId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "guaClientId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ip": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "keywords": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "medium": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ref": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "sessionDate": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "sessionId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "source": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "utmCampaign": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "utmContent": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "utmMedium": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "utmSource": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "utmTerm": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "yaClientId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "requestId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "siteId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "subject": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "status": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "uniqTargetRequest": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "uniqueRequest": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "client": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "fio": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "clientId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "phones": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "phoneNumber": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "phoneType": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "contacts": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "contactType": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "contactValue": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "targetRequest": {
+            "type": [
+                "boolean",
+                "null"
+            ]
+        },
+        "orders": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": "object",
+                "properties": {
+                    "orderId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "dateCreated": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "status": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "sum": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "orderNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            }
+        },
+        "order": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "yandexDirect": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "campaignId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "adGroupId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "adId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "criteriaId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "googleAdWords": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "campaignId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "adGroupId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "creativeId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "criteriaId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "dcm": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": "object",
+                "properties": {
+                    "profileIdDCM": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "floodlightConfigurationId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "floodlightActivityId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "requestStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "requestErrors": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            }
+        },
+        "ctClientId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "ctGlobalId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    }
+}

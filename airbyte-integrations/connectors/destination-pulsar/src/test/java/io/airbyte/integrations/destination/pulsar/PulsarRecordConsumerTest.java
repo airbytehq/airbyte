@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.pulsar;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -14,19 +15,17 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.net.InetAddresses;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -42,40 +41,21 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.pulsar.client.api.Producer;
-import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.schema.GenericRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.containers.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @DisplayName("PulsarRecordConsumer")
-@ExtendWith(MockitoExtension.class)
-public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
-
-  @Mock
-  private Consumer<AirbyteMessage> outputRecordCollector;
-
-  private PulsarRecordConsumer consumer;
-
-  @Mock
-  private PulsarDestinationConfig config;
-
-  @Mock
-  private ConfiguredAirbyteCatalog catalog;
-
-  @Mock
-  private PulsarClient pulsarClient;
+public class PulsarRecordConsumerTest {
 
   private static final StandardNameTransformer NAMING_RESOLVER = new StandardNameTransformer();
 
@@ -95,8 +75,8 @@ public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
         .collect(Collectors.joining(","));
     final PulsarDestinationConfig config = PulsarDestinationConfig
         .getPulsarDestinationConfig(getConfig(brokers, topicPattern));
-    final PulsarClient pulsarClient = PulsarUtils.buildClient(config.getServiceUrl());
-    final PulsarRecordConsumer recordConsumer = new PulsarRecordConsumer(config, catalog, pulsarClient, outputRecordCollector, NAMING_RESOLVER);
+
+    final PulsarRecordConsumer recordConsumer = new PulsarRecordConsumer(config, catalog, mock(Consumer.class), NAMING_RESOLVER);
     final Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> producerMap = recordConsumer.buildProducerMap();
     assertEquals(Sets.newHashSet(catalog.getStreams()).size(), producerMap.size());
 
@@ -118,8 +98,7 @@ public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
             namespace,
             Field.of("id", JsonSchemaType.NUMBER),
             Field.of("name", JsonSchemaType.STRING))));
-    final PulsarClient pulsarClient = PulsarUtils.buildClient(config.getServiceUrl());
-    final PulsarRecordConsumer consumer = new PulsarRecordConsumer(config, catalog, pulsarClient, outputRecordCollector, NAMING_RESOLVER);
+    final PulsarRecordConsumer consumer = new PulsarRecordConsumer(config, catalog, mock(Consumer.class), NAMING_RESOLVER);
     final List<AirbyteMessage> expectedRecords = getNRecords(10, streamName, namespace);
 
     assertThrows(RuntimeException.class, consumer::start);
@@ -232,22 +211,10 @@ public class PulsarRecordConsumerTest extends PerStreamStateMessageTest {
 
   }
 
-  @Override
-  protected Consumer<AirbyteMessage> getMockedConsumer() {
-    return outputRecordCollector;
-  }
-
-  @Override
-  protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
-    return consumer;
-  }
-
   @BeforeEach
   void setup() {
-    // TODO: Unit tests should not use Testcontainers
     PULSAR = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:2.8.1"));
     PULSAR.start();
-    consumer = new PulsarRecordConsumer(config, catalog, pulsarClient, outputRecordCollector, NAMING_RESOLVER);
   }
 
   @AfterEach

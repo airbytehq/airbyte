@@ -9,9 +9,9 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ class CassandraDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
+  public AirbyteConnectionStatus check(JsonNode config) {
     var cassandraConfig = new CassandraConfig(config);
     // add random uuid to avoid conflicts with existing tables.
     String tableName = "table_" + UUID.randomUUID().toString().replace("-", "");
@@ -55,12 +55,10 @@ class CassandraDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    final CassandraConfig cassandraConfig = new CassandraConfig(config);
-    final CassandraCqlProvider cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
-    return new CassandraMessageConsumer(cassandraConfig, configuredCatalog, cassandraCqlProvider, outputRecordCollector);
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog configuredCatalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector) {
+    return new CassandraMessageConsumer(new CassandraConfig(config), configuredCatalog, outputRecordCollector);
   }
 
 }

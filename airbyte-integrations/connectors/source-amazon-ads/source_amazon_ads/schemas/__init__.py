@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from .attribution_report import AttributionReportModel
 from .common import CatalogModel, Keywords, MetricsReport, NegativeKeywords
 from .profile import Profile
 from .sponsored_brands import BrandsAdGroup, BrandsCampaign
@@ -44,5 +43,4 @@ __all__ = [
     "ProductCampaign",
     "ProductTargeting",
     "Profile",
-    "AttributionReportModel",
 ]

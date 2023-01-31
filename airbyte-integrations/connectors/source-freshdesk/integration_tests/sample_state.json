@@ -1,123 +1,35 @@
-[
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-01-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "agents"
-      }
-    }
+{
+  "agents": {
+    "updated_at": "2021-01-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "companies"
-      }
-    }
+  "companies": {
+    "updated_at": "2021-11-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "contacts"
-      }
-    }
+  "contacts": {
+    "updated_at": "2021-11-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "conversations"
-      }
-    }
+  "conversations": {
+    "updated_at": "2021-11-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "groups"
-      }
-    }
+  "groups": {
+    "updated_at": "2021-11-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "roles"
-      }
-    }
+  "roles": {
+    "updated_at": "2021-11-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "satisfaction_ratings"
-      }
-    }
+  "satisfaction_ratings": {
+    "updated_at": "2021-11-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "skills"
-      }
-    }
+  "skills": {
+    "updated_at": "2021-11-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "surveys"
-      }
-    }
+  "surveys": {
+    "updated_at": "2021-11-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "tickets"
-      }
-    }
+  "tickets": {
+    "updated_at": "2021-11-01T00:00:00Z"
   },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "updated_at": "2021-11-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "time_entries"
-      }
-    }
+  "time_entries": {
+    "updated_at": "2021-11-01T00:00:00Z"
   }
-]
+}

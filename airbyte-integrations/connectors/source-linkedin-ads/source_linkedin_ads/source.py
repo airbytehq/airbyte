@@ -3,26 +3,21 @@
 #
 
 
-import logging
 from abc import ABC, abstractproperty
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode
 
-import backoff
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
 from .utils import get_parent_stream_values, transform_data
-
-logger = logging.getLogger("airbyte")
+from .auth import Oauth2AuthenticatorWithProxy
 
 
 class LinkedinAdsStream(HttpStream, ABC):
@@ -37,15 +32,15 @@ class LinkedinAdsStream(HttpStream, ABC):
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))
         self.config = config
+        if self.config.get('proxy', {}).get('use_proxy_type') == 'use_proxy':
+            self._session.proxies.update(
+                SourceLinkedinAds.get_proxies_dict_from_proxies_config(self.config.get('proxy', {}))
+            )
 
     @property
     def accounts(self):
         """Property to return the list of the user Account Ids from input"""
         return ",".join(map(str, self.config.get("account_ids")))
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def path(self, **kwargs) -> str:
         """Returns the API endpoint path for stream, from `endpoint` class attribute."""
@@ -83,7 +78,7 @@ class LinkedinAdsStream(HttpStream, ABC):
                 f"Stream {self.name}: LinkedIn API requests are rate limited. "
                 f"Rate limits specify the maximum number of API calls that can be made in a 24 hour period. "
                 f"These limits reset at midnight UTC every day. "
-                f"You can find more information here https://docs.airbyte.com/integrations/sources/linkedin-ads. "
+                f"You can find more information here https://docs.airbyte.io/integrations/sources/linkedin-ads. "
                 f"Also quotas and usage are here: https://www.linkedin.com/developers/apps."
             )
             self.logger.error(error_message)
@@ -259,24 +254,6 @@ class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
         params["q"] = self.search_param
         return params
 
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {}
-        parent_stream = self.parent_stream(config=self.config)
-        for record in parent_stream.read_records(**kwargs):
-
-            if record.get("reference", "").startswith("urn:li:person"):
-                self.logger.warn(
-                    f'Skip {record.get("name")} account, ORGANIZATION permissions required, but referenced to PERSON {record.get("reference")}'
-                )
-                continue
-
-            child_stream_slice = super(LinkedInAdsStreamSlicing, self).read_records(
-                stream_slice=get_parent_stream_values(record, self.parent_values_map), **kwargs
-            )
-            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
-
 
 class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
     """
@@ -307,9 +284,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
         parent_stream = self.parent_stream(config=self.config)
         for record in parent_stream.read_records(**kwargs):
             result_chunks = []
-            for analytics_slice in make_analytics_slices(
-                record, self.parent_values_map, stream_state.get(self.cursor_field), self.config.get("end_date")
-            ):
+            for analytics_slice in make_analytics_slices(record, self.parent_values_map, stream_state.get(self.cursor_field)):
                 child_stream_slice = super().read_records(stream_slice=analytics_slice, **kwargs)
                 result_chunks.append(child_stream_slice)
             yield from merge_chunks(result_chunks, self.cursor_field)
@@ -341,34 +316,6 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     pivot_by = "CREATIVE"
 
 
-class LinkedinAdsOAuth2Authenticator(Oauth2Authenticator):
-    @backoff.on_exception(
-        backoff.expo,
-        DefaultBackoffException,
-        on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
-        ),
-        max_time=300,
-    )
-    def refresh_access_token(self) -> Tuple[str, int]:
-        try:
-            response = requests.request(
-                method="POST",
-                url=self.token_refresh_endpoint,
-                data=self.get_refresh_request_body(),
-                headers=self.get_refresh_access_token_headers(),
-            )
-            response.raise_for_status()
-            response_json = response.json()
-            return response_json["access_token"], response_json["expires_in"]
-        except requests.exceptions.RequestException as e:
-            if e.response.status_code == 429 or e.response.status_code >= 500:
-                raise DefaultBackoffException(request=e.response.request, response=e.response)
-            raise
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
-
-
 class SourceLinkedinAds(AbstractSource):
     """
     Abstract Source inheritance, provides:
@@ -391,13 +338,29 @@ class SourceLinkedinAds(AbstractSource):
             access_token = config["credentials"]["access_token"] if auth_method else config["access_token"]
             return TokenAuthenticator(token=access_token)
         elif auth_method == "oAuth2.0":
-            return LinkedinAdsOAuth2Authenticator(
+            return Oauth2AuthenticatorWithProxy(
                 token_refresh_endpoint="https://www.linkedin.com/oauth/v2/accessToken",
                 client_id=config["credentials"]["client_id"],
                 client_secret=config["credentials"]["client_secret"],
                 refresh_token=config["credentials"]["refresh_token"],
+                proxies=SourceLinkedinAds.get_proxies_dict_from_proxies_config(
+                    config.get('proxy')
+                )
             )
         raise Exception("incorrect input parameters")
+    
+    @staticmethod
+    def get_proxies_dict_from_proxies_config(proxies_config: Dict[str, Any]) -> Dict[str, Any]:
+        proxies = None
+        if proxies_config.get('use_proxy_type') == 'use_proxy':
+            proxies_auth = ''
+            if proxies_config['login'] and proxies_config['password']:
+                proxies_auth = f'{proxies_config["login"]}:{proxies_config["password"]}@'
+            proxies = {
+                proxies_config['protocol']: f'{proxies_config["protocol"]}://' + \
+                    f'{proxies_auth}{proxies_config["host"]}:{proxies_config["port"]}'
+            }
+        return proxies
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """

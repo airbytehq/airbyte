@@ -109,14 +109,16 @@
       "properties": {
         "groups": {
           "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
               }
             }
-          }
+          ]
         }
       }
     }
