@@ -33,7 +33,7 @@ class BUILD_STATUSES(str, Enum):
 
 
 def get_connector_build_output_url(connector_technical_name: str, connector_version: str) -> str:
-    return f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector_technical_name}/{connector_version}.json"
+    return f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector_technical_name}/version-{connector_version}.json"
 
 def fetch_latest_build_status_for_connector_version(connector_technical_name: str, connector_version: str) ->BUILD_STATUSES:
     """Fetch the latest build status for a given connector version."""
