@@ -27,33 +27,44 @@ airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/Co
 airbyte-integrations/connectors/**/build.gradle # ignore gradle files for individual connectors.
 
 # Normalization
-/airbyte-integrations/bases/base-normalization/ @airbytehq/normalization
+/airbyte-integrations/bases/base-normalization/ @airbytehq/destinations
 
-# JDBC-based connectors
+# Java-based connectors
 /airbyte-integrations/bases/base-java/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-jdbc/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-alloydb/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-bigquery/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-clickhouse/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-cockroachdb/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-db2/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-mssql/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-mysql/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-oracle/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-postgres/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-redshift/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-snowflake/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-tidb/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-jdbc/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-clickhouse/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-databricks/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-gcs/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-mariadb-columnstore/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-mysql/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-mssql/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-oracle/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-postgres/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-redshift/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/destination-rockset/ @airbytehq/jdbc-connectors
-/airbyte-integrations/connectors/source-snowflake/ @airbytehq/jdbc-connectors
+
+# Java-based source connectors
+/airbyte-integrations/bases/debezium-v1-4-2/ @airbytehq/dbsources
+/airbyte-integrations/bases/debezium-v1-9-6/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-jdbc/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-alloydb/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-bigquery/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-clickhouse/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-cockroachdb/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-db2/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-mssql/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-mysql/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-oracle/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-postgres/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-redshift/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-snowflake/ @airbytehq/dbsources
+/airbyte-integrations/connectors/source-tidb/ @airbytehq/dbsources
+
+# Java-based destination connectors
+/airbyte-integrations/bases/standard-destination-test/ @airbytehq/destinations
+/airbyte-integrations/bases/base-java-s3/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-jdbc/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-bigquery/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-bigquery-denormalized/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-clickhouse/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-databricks/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-gcs/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-mariadb-columnstore/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-mysql/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-mssql/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-oracle/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-postgres/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-rockset/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations

@@ -21,6 +21,7 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
@@ -115,6 +116,10 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         self._start_date = start_date
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
