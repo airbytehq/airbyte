@@ -181,7 +181,7 @@ class Subscriptions(IncrementalOrbStream):
 
 
 # helpers for working with pendulum dates and strings
-def to_datetime(time) -> pendulum.DateTime:
+def to_datetime(time) -> Optional[pendulum.DateTime]:
     if time is None:
         return None
     elif isinstance(time, pendulum.DateTime):
@@ -192,7 +192,7 @@ def to_datetime(time) -> pendulum.DateTime:
         raise TypeError(f"Cannot convert input of type {type(time)} to DateTime")
 
 
-def to_utc_isoformat(time) -> str:
+def to_utc_isoformat(time) -> Optional[str]:
     if time is None:
         return None
     elif isinstance(time, pendulum.DateTime):
@@ -217,6 +217,8 @@ def chunk_date_range(start_date: pendulum.DateTime, end_date: Optional[pendulum.
         chunk_end_date = min(chunk_start_date + one_day, end_date)
         yield pendulum.period(chunk_start_date, chunk_end_date)
         chunk_start_date = chunk_end_date
+    # yield from empty list to avoid returning None in case chunk_start_date >= end_date
+    yield from []
 
 
 class SubscriptionUsage(IncrementalOrbStream):
@@ -230,14 +232,18 @@ class SubscriptionUsage(IncrementalOrbStream):
         self,
         subscription_usage_grouping_key: Optional[str] = None,
         plan_id: Optional[str] = None,
+        start_date: Optional[pendulum.DateTime] = None,
         end_date: Optional[pendulum.DateTime] = None,
         **kwargs,
     ):
 
+        super().__init__(**kwargs)
         self.subscription_usage_grouping_key = subscription_usage_grouping_key
         self.plan_id = plan_id
-        self.end_date = end_date
-        super().__init__(**kwargs)
+        # default to 30 days ago if start_date is unspecified
+        self.start_date = start_date if start_date else pendulum.now().subtract(days=30)
+        # default to current time if end_date is unspecified
+        self.end_date = end_date if end_date else pendulum.now()
 
     @property
     def primary_key(self) -> Iterable[str]:
@@ -249,75 +255,78 @@ class SubscriptionUsage(IncrementalOrbStream):
 
         return key
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # use a regex capture group to extract the subscription ID from the request URL
-        # so that we can include it in the returned record
-        subscription_id = re.search("/subscriptions/(.*)/usage", response.request.url).group(1)
-        self.logger.debug("parsed subscription id from url: %s", subscription_id)
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        subscription_id = stream_slice["subscription_id"]
 
         # Records are in a container array called data
         response_json = response.json()
         records = response_json.get("data", [])
         for record in records:
-            # for each top level record, there can be multiple sub-records depending
-            # on granularity and other input params. Oftentimes there will just
-            # be a single subrecord, but this approach creates one resulting
-            # record for each regardless of how many subrecords exist.
-            subrecords = record.get("usage", [])
-            del record["usage"]
-            for subrecord in subrecords:
-                # skip records that don't contain any actual usage
-                if subrecord.get("quantity", 0) > 0:
-                    yield self.transform_record(record, subrecord, subscription_id)
+            self.yield_transformed_subrecords(record, subscription_id)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # This API endpoint is not paginated, so there will never be a next page
         return None
 
-    def transform_record(self, parent_record, sub_record, subscription_id):
-        self.logger.debug("incoming subscription usage record: %s", parent_record)
+    def yield_transformed_subrecords(self, record, subscription_id):
+        # for each top level response record, there can be multiple sub-records depending
+        # on granularity and other input params. This function yields one transformed record
+        # for each subrecord in the response.
 
-        # Merge the parent record with the sub record
-        record = {**parent_record, **sub_record}
+        subrecords = record.get("usage", [])
+        del record["usage"]
+        for subrecord in subrecords:
+            # skip records that don't contain any actual usage
+            if subrecord.get("quantity", 0) > 0:
+                # Merge the parent record with the sub record
+                output = {**record, **subrecord}
 
-        # Add the subscription ID to the record
-        record["subscription_id"] = subscription_id
+                # Add the subscription ID to the output
+                output["subscription_id"] = subscription_id
 
-        # Un-nest billable_metric -> name,id into billable_metric_name and billable_metric_id
-        nested_billable_metric_name = record["billable_metric"]["name"]
-        nested_billable_metric_id = record["billable_metric"]["id"]
-        del record["billable_metric"]
-        record["billable_metric_name"] = nested_billable_metric_name
-        record["billable_metric_id"] = nested_billable_metric_id
+                # Un-nest billable_metric -> name,id into billable_metric_name and billable_metric_id
+                nested_billable_metric_name = output["billable_metric"]["name"]
+                nested_billable_metric_id = output["billable_metric"]["id"]
+                del output["billable_metric"]
+                output["billable_metric_name"] = nested_billable_metric_name
+                output["billable_metric_id"] = nested_billable_metric_id
 
-        # If a group_by key is specified, un-nest it
-        if self.subscription_usage_grouping_key:
-            nested_key = record["metric_group"]["property_key"]
-            nested_value = record["metric_group"]["property_value"]
-            del record["metric_group"]
-            record[nested_key] = nested_value
-
-        self.logger.debug("transformed subscription usage record: %s", record)
-        return record
+                # If a group_by key is specified, un-nest it
+                if self.subscription_usage_grouping_key:
+                    nested_key = output["metric_group"]["property_key"]
+                    nested_value = output["metric_group"]["property_value"]
+                    del output["metric_group"]
+                    output[nested_key] = nested_value
+                yield output
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, **kwargs) -> MutableMapping[str, Any]:
         """
         This is a non-paginated API that operates on specified timeframe_start/timeframe_end
-        windows. This function handles incremental fetching by applying a new
-        timeframe_start based on the timeframe_end of the previous state.
+        windows.
 
         Request params are based on the specific slice (i.e. subscription_id) we are requesting for,
         and so we need to pull out relevant slice state from the stream state.
 
+        Force granularity to 'day' so that this stream can be used incrementally,
+        with a day-based "cursor" based on timeframe_start and timeframe_end
+
+        If a subscription_usage_grouping_key is present, adds a `group_by` param
+        and `billable_metric_id` param from the stream slice. This is because
+        the API requires a specific `billable_metric_id` to be set when using a
+        `group_by` key.
         """
-        # force granularity to 'day' so that this stream can be used incrementally,
-        # with a day-based "cursor" based on timeframe_start and timeframe_end
-        # self.logger.warning("request_params called with stream_state %s and stream_slice %s", stream_state, stream_slice)
 
         params = {
             "granularity": "day",
-            "timeframe_start": stream_slice["timeframe_start"].in_timezone("UTC").isoformat(),
-            "timeframe_end": stream_slice["timeframe_end"].in_timezone("UTC").isoformat(),
+            "timeframe_start": to_utc_isoformat(stream_slice["timeframe_start"]),
+            "timeframe_end": to_utc_isoformat(stream_slice["timeframe_end"])
         }
 
         if self.subscription_usage_grouping_key:
@@ -326,11 +335,9 @@ class SubscriptionUsage(IncrementalOrbStream):
             # if a group_by key is specified, assume the stream slice contains a billable_metric_id
             params["billable_metric_id"] = stream_slice["billable_metric_id"]
 
-        # self.logger.warning("new request_params are: %s", params)
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        # self.logger.warning("calling get_updated_state with current_stream_state %s and latest_record %s", current_stream_state, latest_record)
         current_stream_state = current_stream_state or {}
         current_subscription_id = latest_record["subscription_id"]
         current_subscription_state = current_stream_state.get(current_subscription_id, {})
@@ -374,7 +381,7 @@ class SubscriptionUsage(IncrementalOrbStream):
         """
         schema = super().get_json_schema()
         if self.subscription_usage_grouping_key:
-            schema[self.subscription_usage_grouping_key] = {"type": "string"}
+            schema["properties"][self.subscription_usage_grouping_key] = {"type": "string"}
 
         return schema
 
@@ -385,7 +392,6 @@ class SubscriptionUsage(IncrementalOrbStream):
         single billable_metric_id per API call when using a group_by param.
 
         """
-        # self.logger.warning("called stream_slices with stream_state %s, self.cursor_field is %s and self.start_date is %s", stream_state, self.cursor_field, self.start_date)
         stream_state = stream_state or {}
         slice_yielded = False
         subscriptions_stream = Subscriptions(authenticator=self._session.auth)
@@ -409,7 +415,7 @@ class SubscriptionUsage(IncrementalOrbStream):
 
             # create one slice for each day of usage between the start and end date
             for period in chunk_date_range(start_date=start_date, end_date=end_date):
-                slice = {"subscription_id": subscription_id, "timeframe_start": period.start, "timeframe_end": period.end}
+                slice = {"subscription_id": subscription_id, "timeframe_start": to_utc_isoformat(period.start), "timeframe_end": to_utc_isoformat(period.end)}
 
                 # if using a group_by key, yield one slice per billable_metric_id.
                 # otherwise, yield slices without a billable_metric_id because
@@ -686,16 +692,13 @@ class SourceOrb(AbstractSource):
         numeric_event_properties_keys = config.get("numeric_event_properties_keys")
         subscription_usage_grouping_key = config.get("subscription_usage_grouping_key")
         plan_id = config.get("plan_id")
-
+        start_date = config.get("start_date")
         # this field is not exposed to spec, used only for testing purposes
         end_date = config.get("end_date")
-        end_date = end_date and pendulum.parse(end_date)
 
         if not self.input_keys_mutually_exclusive(string_event_properties_keys, numeric_event_properties_keys):
             raise ValueError("Supplied property keys for string and numeric valued property values must be mutually exclusive.")
 
-        start_date_str = config.get("start_date")
-        start_date = pendulum.parse(start_date_str) if start_date_str else None
         return [
             Customers(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Subscriptions(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
