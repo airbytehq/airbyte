@@ -367,23 +367,25 @@ While not nesciacily related to SAT testing, Airbyte employs a number of additio
 
 GA and Beta connectors are required to provide an entry for Allowed Hosts in the Actor Definition for the connector. Actor Definitions are stored in either [source_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml) or [destination_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml) in the codebase. You can provide:
 
-A list of static hosts
+A list of static hostnames or IP addresses. Wildcards are valid. 
 
 ```yaml
 allowedHosts:
   hosts:
+    - "api.github.com"
     - "*.hubspot.com"
 ```
 
-A list of dynamic hosts which reference values from the connector's configuration
+A list of dynamic hostnames or IP addresses which reference values from the connector's configuration.  The variable names need to match the connector's config exactly.  In this example, `subdomain` is a required option defined by the connector's SPEC response.  It is also possible to refrence sub-fields with dot-notation, e.g. `networking_options.tunnel_host`.
 
 ```yaml
 allowedHosts:
   hosts:
     - "${subdomain}.vendor.com"
+    - "${networking_options.tunnel_host}"
 ```
 
-No network access allowed
+or prevent network access for this connector entirely
 
 ```yaml
 allowedHosts:
