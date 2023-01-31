@@ -8,7 +8,7 @@ import pytest
 import responses
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_orb.source import CreditsLedgerEntries, Customers, IncrementalOrbStream, OrbStream, Subscriptions, SubscriptionUsage, Plans
+from source_orb.source import CreditsLedgerEntries, Customers, IncrementalOrbStream, OrbStream, Plans, Subscriptions, SubscriptionUsage
 
 
 @fixture
@@ -326,7 +326,7 @@ def test_subscription_usage_stream_slices(mocker):
         Subscriptions, "read_records", return_value=iter([
             {"id": "1", "plan_id": "2"},
             {"id": "11", "plan_id": "2"},
-            {"id": "111", "plan_id": "3"} # should be ignored because plan_id set to 2
+            {"id": "111", "plan_id": "3"}  # should be ignored because plan_id set to 2
         ])
     )
     stream = SubscriptionUsage(plan_id="2", start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00")
@@ -343,7 +343,7 @@ def test_subscription_usage_stream_slices_with_grouping_key(mocker):
         Subscriptions, "read_records", return_value=iter([
             {"id": "1", "plan_id": "2"},
             {"id": "11", "plan_id": "2"},
-            {"id": "111", "plan_id": "3"} # should be ignored because plan_id set to 2
+            {"id": "111", "plan_id": "3"}  # should be ignored because plan_id set to 2
         ])
     )
 
@@ -353,7 +353,7 @@ def test_subscription_usage_stream_slices_with_grouping_key(mocker):
                 {"billable_metric": {"id": "billableMetricIdA"}},
                 {"billable_metric": {"id": "billableMetricIdB"}}
             ]},
-            {"id": "3", "prices": [ # should be ignored because plan_id is set to 2
+            {"id": "3", "prices": [  # should be ignored because plan_id is set to 2
                 {"billable_metric": {"id": "billableMetricIdC"}}
             ]}
         ])
@@ -372,7 +372,6 @@ def test_subscription_usage_stream_slices_with_grouping_key(mocker):
         {"subscription_id": "11", "billable_metric_id": "billableMetricIdB", "timeframe_start": "2022-01-25T12:00:00+00:00", "timeframe_end": "2022-01-26T12:00:00+00:00"},
     ]
     assert list(stream.stream_slices(**inputs)) == expected_stream_slice
-
 
 
 @pytest.mark.parametrize(
@@ -499,6 +498,7 @@ def test_subscription_usage_yield_transformed_subrecords(mocker):
 
     assert actual_output == expected
 
+
 def test_subscription_usage_yield_transformed_subrecords_with_grouping(mocker):
     stream = SubscriptionUsage(start_date="2022-01-25T12:00:00+00:00", end_date="2022-01-26T12:00:00+00:00", subscription_usage_grouping_key="grouping_key")
 
@@ -566,6 +566,7 @@ def test_subscription_usage_yield_transformed_subrecords_with_grouping(mocker):
     actual_output = list(stream.yield_transformed_subrecords(subscription_usage_response, subscription_id))
 
     assert actual_output == expected
+
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalOrbStream, "cursor_field", "dummy_field")

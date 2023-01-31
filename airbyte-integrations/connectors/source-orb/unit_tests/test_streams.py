@@ -71,6 +71,7 @@ def test_credit_ledger_entries_schema(patch_base_class, mocker, event_properties
         for property_key in event_properties_keys:
             assert property_key in json_schema["properties"]["event"]["properties"]["properties"]["properties"]
 
+
 @pytest.mark.parametrize("group_by_key", ["foo-key", None])
 def test_subscription_usage_schema(patch_base_class, mocker, group_by_key):
     stream = SubscriptionUsage(subscription_usage_grouping_key=group_by_key)

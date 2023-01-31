@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import re
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -327,7 +326,7 @@ class SubscriptionUsage(IncrementalOrbStream):
         params = {
             "granularity": "day",
             "timeframe_start": to_utc_isoformat(stream_slice["timeframe_start"]),
-            "timeframe_end": to_utc_isoformat(stream_slice["timeframe_end"])
+            "timeframe_end": to_utc_isoformat(stream_slice["timeframe_end"]),
         }
 
         if self.subscription_usage_grouping_key:
@@ -416,7 +415,11 @@ class SubscriptionUsage(IncrementalOrbStream):
 
             # create one slice for each day of usage between the start and end date
             for period in chunk_date_range(start_date=start_date, end_date=end_date):
-                slice = {"subscription_id": subscription_id, "timeframe_start": to_utc_isoformat(period.start), "timeframe_end": to_utc_isoformat(period.end)}
+                slice = {
+                    "subscription_id": subscription_id,
+                    "timeframe_start": to_utc_isoformat(period.start),
+                    "timeframe_end": to_utc_isoformat(period.end),
+                }
 
                 # if using a group_by key, yield one slice per billable_metric_id.
                 # otherwise, yield slices without a billable_metric_id because
