@@ -1,4 +1,5 @@
 import { dump } from "js-yaml";
+import isEqual from "lodash/isEqual";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { UseQueryResult } from "react-query";
@@ -29,12 +30,14 @@ interface FormStateContext {
   yamlIsValid: boolean;
   selectedView: BuilderView;
   editorView: EditorView;
+  showLandingPage: boolean;
   setBuilderFormValues: (values: BuilderFormValues, isInvalid: boolean) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedView: (view: BuilderView) => void;
   setEditorView: (editorView: EditorView) => void;
+  setShowLandingPage: (value: boolean) => void;
 }
 
 interface TestStateContext {
@@ -92,6 +95,11 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
   const manifestRef = useRef(derivedJsonManifest);
   manifestRef.current = derivedJsonManifest;
 
+  const [showLandingPage, setShowLandingPage] = useState(
+    isEqual(builderFormValues, DEFAULT_BUILDER_FORM_VALUES) &&
+      isEqual(derivedJsonManifest, DEFAULT_JSON_MANIFEST_VALUES)
+  );
+
   const setEditorView = useCallback(
     (view: EditorView) => {
       if (view === "yaml") {
@@ -139,6 +147,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
     yamlEditorIsMounted,
     yamlIsValid,
     selectedView,
+    showLandingPage,
     editorView: editorView || "ui",
     setBuilderFormValues,
     setJsonManifest,
@@ -146,6 +155,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
     setYamlEditorIsMounted,
     setSelectedView,
     setEditorView,
+    setShowLandingPage,
   };
 
   return <ConnectorBuilderFormStateContext.Provider value={ctx}>{children}</ConnectorBuilderFormStateContext.Provider>;

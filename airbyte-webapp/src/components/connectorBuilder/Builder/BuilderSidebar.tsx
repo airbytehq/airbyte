@@ -63,7 +63,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
   const { formatMessage } = useIntl();
   const { hasErrors } = useBuilderErrors();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { yamlManifest, selectedView, setSelectedView } = useConnectorBuilderFormState();
+  const { yamlManifest, selectedView, setSelectedView, setShowLandingPage } = useConnectorBuilderFormState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
   const handleResetForm = () => {
     openConfirmationModal({
@@ -73,6 +73,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
       onSubmit: () => {
         setValues(DEFAULT_BUILDER_FORM_VALUES);
         setSelectedView("global");
+        setShowLandingPage(true);
         closeConfirmationModal();
         analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.RESET_ALL, {
           actionDescription: "Connector Builder UI reset back to blank slate",
@@ -174,7 +175,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
       </div>
 
       <DownloadYamlButton className={styles.downloadButton} yamlIsValid yaml={yamlManifest} />
-      <Button className={styles.resetButton} full variant="clear" onClick={() => handleResetForm()}>
+      <Button className={styles.resetButton} full variant="clear" onClick={handleResetForm}>
         <FormattedMessage id="connectorBuilder.resetAll" />
       </Button>
     </div>

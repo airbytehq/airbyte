@@ -1,16 +1,11 @@
 import classnames from "classnames";
 import { Formik } from "formik";
-import isEqual from "lodash/isEqual";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useIntl } from "react-intl";
 
 import { Builder } from "components/connectorBuilder/Builder/Builder";
 import { StreamTestingPanel } from "components/connectorBuilder/StreamTestingPanel";
-import {
-  builderFormValidationSchema,
-  BuilderFormValues,
-  DEFAULT_BUILDER_FORM_VALUES,
-} from "components/connectorBuilder/types";
+import { builderFormValidationSchema, BuilderFormValues } from "components/connectorBuilder/types";
 import { YamlEditor } from "components/connectorBuilder/YamlEditor";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 
@@ -20,7 +15,6 @@ import {
   ConnectorBuilderTestStateProvider,
   ConnectorBuilderFormStateProvider,
   useConnectorBuilderFormState,
-  DEFAULT_JSON_MANIFEST_VALUES,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./ConnectorBuilderPage.module.scss";
@@ -30,7 +24,8 @@ import { LandingPage } from "./LandingPage";
 const noop = function () {};
 
 const ConnectorBuilderPageInner: React.FC = React.memo(() => {
-  const { builderFormValues, jsonManifest, editorView, setEditorView } = useConnectorBuilderFormState();
+  const { builderFormValues, editorView, setEditorView, showLandingPage, setShowLandingPage } =
+    useConnectorBuilderFormState();
   const analyticsService = useAnalyticsService();
 
   useEffect(() => {
@@ -41,10 +36,7 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
 
   const switchToUI = useCallback(() => setEditorView("ui"), [setEditorView]);
   const switchToYaml = useCallback(() => setEditorView("yaml"), [setEditorView]);
-
-  const [showLandingPage, setShowLandingPage] = useState(
-    isEqual(builderFormValues, DEFAULT_BUILDER_FORM_VALUES) && isEqual(jsonManifest, DEFAULT_JSON_MANIFEST_VALUES)
-  );
+  const hideLandingPage = useCallback(() => setShowLandingPage(false), [setShowLandingPage]);
 
   const initialFormValues = useRef(builderFormValues);
   return useMemo(
@@ -60,11 +52,7 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
         {(props) => {
           if (showLandingPage) {
             return (
-              <LandingPage
-                hideLandingPage={() => setShowLandingPage(false)}
-                switchToUI={switchToUI}
-                switchToYaml={switchToYaml}
-              />
+              <LandingPage hideLandingPage={hideLandingPage} switchToUI={switchToUI} switchToYaml={switchToYaml} />
             );
           }
           return (
@@ -79,7 +67,7 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
         }}
       </Formik>
     ),
-    [editorView, showLandingPage, switchToUI, switchToYaml]
+    [editorView, hideLandingPage, showLandingPage, switchToUI, switchToYaml]
   );
 });
 
