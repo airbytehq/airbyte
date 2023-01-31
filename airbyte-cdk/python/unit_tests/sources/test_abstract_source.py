@@ -331,6 +331,7 @@ def test_valid_full_refresh_read_with_slices(mocker):
 
     assert expected == messages
 
+
 @pytest.mark.parametrize(
     "slices",
     [
