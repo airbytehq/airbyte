@@ -4,17 +4,32 @@
 
 .nav {
   z-index: z-indices.$sidebar;
-  display: flex;
   position: relative;
-  flex-direction: column;
-  justify-content: space-between;
   height: 100%;
   width: 100px;
   min-width: 65px;
-  background-color: colors.$white;
+  background-color: greenyellow;
   padding: 23px 4px 15px;
   text-align: center;
   box-shadow: variables.$box-shadow-sidebar;
+
+  ul {
+    width: 100%;
+    padding: 0;
+    margin: variables.$spacing-xl 0 0;
+
+    li {
+      list-style-type: none;
+    }
+  }
+}
+
+.menuContent {
+  height: 100%;
+}
+
+.bottomMenu {
+  background-color: orange;
 }
 
 .text {
@@ -24,16 +39,6 @@
 .helpIcon {
   font-size: 21px;
   line-height: 21px;
-}
-
-.menu {
-  width: 100%;
-  padding: 0;
-  margin: variables.$spacing-xl 0 0;
-
-  li {
-    margin-top: 7px;
-  }
 }
 
 .dropdownMenuButton {
@@ -95,7 +100,7 @@
 
     &:hover,
     &:focus-visible {
-      background: colors.$blue-100;
+      background: colors.$blue-30;
     }
   }
 
