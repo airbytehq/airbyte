@@ -41,6 +41,7 @@ public class SourceOauthApiController implements SourceOauthApi {
   }
 
   @Post("/complete_oauth_return_secret")
+  @Secured({EDITOR})
   @Override
   public SecretId completeSourceOAuthReturnSecret(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
     Map<String, Object> oAuthTokens = ApiHelper
