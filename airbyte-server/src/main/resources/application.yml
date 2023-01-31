@@ -2,23 +2,16 @@ micronaut:
   application:
     name: airbyte-server
   security:
-    intercept-url-map:
-      - pattern: /**
-        httpMethod: GET
-        access:
-          - isAnonymous()
-      - pattern: /**
-        httpMethod: POST
-        access:
-          - isAnonymous()
-      - pattern: /**
-        httpMethod: HEAD
-        access:
-          - isAnonymous()
+    authentication-provider-strategy: ALL
+    enabled: ${API_AUTHORIZATION_ENABLED:false}
   server:
     port: 8001
     cors:
       enabled: true
+      configurations:
+        web:
+          allowedOrigins:
+            - ^.*$
 airbyte:
   cloud:
     storage:
@@ -88,7 +81,7 @@ airbyte:
     root: ${WORKSPACE_ROOT}
   protocol:
     min-version: ${AIRBYTE_PROTOCOL_VERSION_MIN:0.0.0}
-    max-version: ${AIRBYTE_PROTOCOL_VERSION_MAX:0.3.0}
+    max-version: ${AIRBYTE_PROTOCOL_VERSION_MAX:1.0.0}
 
 temporal:
   cloud:
@@ -114,6 +107,32 @@ datasources:
     username: ${DATABASE_USER}
     password: ${DATABASE_PASSWORD}
 
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  env:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true
+
 flyway:
   enabled: true
   datasources:
@@ -134,3 +153,10 @@ jooq:
     jobs:
       jackson-converter-enabled: true
       sql-dialect: POSTGRES
+
+logger:
+  levels:
+  # Uncomment to help resolve issues with conditional beans
+  #    io.micronaut.context.condition: DEBUG
+  # Uncomment to help resolve issues with security beans
+  #    io.micronaut.security: DEBUG

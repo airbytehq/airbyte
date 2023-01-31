@@ -23,7 +23,7 @@ jest.doMock("services/connector/DestinationDefinitionService", () => ({
   useDestinationDefinition: () => mockDestinationDefinitionSpecification,
 }));
 
-jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty", () => ({
+jest.doMock("components/connection/ConnectionForm/refreshSourceSchemaWithConfirmationOnDirty", () => ({
   useRefreshSourceSchemaWithConfirmationOnDirty: jest.fn(),
 }));
 

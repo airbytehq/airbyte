@@ -38,18 +38,9 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
     return "airbyte/destination-tidb:dev";
   }
 
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
 
   @Override
   protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
     return true;
   }
 

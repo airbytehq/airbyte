@@ -1,0 +1,37 @@
+@use "scss/variables";
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  position: relative;
+}
+
+.readonly {
+  pointer-events: none;
+}
+
+.leftFieldCol {
+  flex: 1;
+  max-width: 640px;
+  padding-right: 30px;
+}
+
+.rightFieldCol {
+  flex: 1;
+  max-width: 300px;
+}
+
+.namespaceFormatLabel {
+  flex: 5 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tryArrow {
+  margin: 0 variables.$spacing-md -1px 0;
+
+  // used to control svg size
+  font-size: 14px;
+}

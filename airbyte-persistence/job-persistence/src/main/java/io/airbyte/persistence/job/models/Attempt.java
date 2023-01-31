@@ -17,6 +17,7 @@ public class Attempt {
   private final long jobId;
   private final JobOutput output;
   private final AttemptStatus status;
+  private final String processingTaskQueue;
   private final AttemptFailureSummary failureSummary;
   private final Path logPath;
   private final long updatedAtInSecond;
@@ -28,6 +29,7 @@ public class Attempt {
                  final Path logPath,
                  final @Nullable JobOutput output,
                  final AttemptStatus status,
+                 final String processingTaskQueue,
                  final @Nullable AttemptFailureSummary failureSummary,
                  final long createdAtInSecond,
                  final long updatedAtInSecond,
@@ -36,6 +38,7 @@ public class Attempt {
     this.jobId = jobId;
     this.output = output;
     this.status = status;
+    this.processingTaskQueue = processingTaskQueue;
     this.failureSummary = failureSummary;
     this.logPath = logPath;
     this.updatedAtInSecond = updatedAtInSecond;
@@ -57,6 +60,10 @@ public class Attempt {
 
   public AttemptStatus getStatus() {
     return status;
+  }
+
+  public String getProcessingTaskQueue() {
+    return processingTaskQueue;
   }
 
   public Optional<AttemptFailureSummary> getFailureSummary() {
