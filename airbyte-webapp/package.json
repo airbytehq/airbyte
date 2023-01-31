@@ -89,6 +89,7 @@
     "typesafe-actions": "^5.1.0",
     "unified": "^10.1.2",
     "unist-util-visit": "^4.1.0",
+    "url": "^0.11.0",
     "uuid": "^9.0.0",
     "yup": "^0.32.11"
   },
