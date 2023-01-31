@@ -43,7 +43,7 @@ class OperationApiTest extends BaseControllerTest {
     final String path = "/api/v1/operations/create";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new OperationCreate())),
-        HttpStatus.OK);;
+        HttpStatus.OK);
   }
 
   @Test

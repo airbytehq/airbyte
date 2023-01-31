@@ -7,7 +7,6 @@ package io.airbyte.server.apis;
 import io.airbyte.api.model.generated.InternalOperationResult;
 import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
