@@ -36,9 +36,6 @@ def download_catalog(catalog_url):
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 
 
-
-
-
 class ConnectorInvalidNameError(Exception):
     pass
 

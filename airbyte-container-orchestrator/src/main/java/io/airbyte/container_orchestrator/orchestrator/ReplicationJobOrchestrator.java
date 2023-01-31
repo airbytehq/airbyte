@@ -23,6 +23,7 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
@@ -61,6 +62,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final ProcessFactory processFactory;
   private final Configs configs;
   private final FeatureFlags featureFlags;
+  private final FeatureFlagClient featureFlagClient;
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
   private final JobRunConfig jobRunConfig;
@@ -70,6 +72,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   public ReplicationJobOrchestrator(final Configs configs,
                                     final ProcessFactory processFactory,
                                     final FeatureFlags featureFlags,
+                                    final FeatureFlagClient featureFlagClient,
                                     final AirbyteMessageSerDeProvider serDeProvider,
                                     final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                     final JobRunConfig jobRunConfig,
@@ -78,6 +81,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
+    this.featureFlagClient = featureFlagClient;
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
     this.jobRunConfig = jobRunConfig;
@@ -166,7 +170,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
                 Optional.of(syncInput.getCatalog())),
             migratorFactory.getProtocolSerializer(destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(featureFlags),
-        new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
+        new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
         new ConnectorConfigUpdater(sourceApi, destinationApi),
         FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
