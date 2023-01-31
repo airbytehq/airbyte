@@ -111,6 +111,7 @@ REPORT_FIELD_TYPES = {
     "ExactMatchImpressionSharePercent": "number",
     "Impressions": "integer",
     "ImpressionSharePercent": "number",
+    "Keyword": "string",
     "KeywordId": "integer",
     "LandingPageExperience": "number",
     "PhoneCalls": "integer",
