@@ -22,6 +22,7 @@ fi
 BUCKET_WRITE_ROOT=/tmp/bucket_write_root
 LAST_TEN_ROOT=/tmp/last_ten_root
 SUMMARY_WRITE_ROOT=/tmp/summary_write_root
+VERSION_PREFIX="version-"
 
 DOCKER_VERSION=$(get_connector_version "$CONNECTOR")
 
@@ -65,8 +66,11 @@ function write_job_log() {
 
 function pull_latest_job_logs() {
   # pull the logs for the latest ten jobs for this connector
+  # note this is done by key as each log has a timestamp in the filename
+  # ensuring that the version specific runs are filtered out.
   LAST_TEN_FILES=$(aws s3api list-objects-v2 --bucket "$BUCKET"  \
-    --query "reverse(sort_by(Contents[?contains(Key, \`tests/history/$CONNECTOR\`)], &LastModified))[:10].Key" \
+    --prefix "tests/history/$CONNECTOR" \
+    --query "reverse(sort_by(Contents[?!contains(Key, \`$VERSION_PREFIX\`)], &Key))[:10].Key" \
     --output=text)
 
   rm -r $LAST_TEN_ROOT || true
