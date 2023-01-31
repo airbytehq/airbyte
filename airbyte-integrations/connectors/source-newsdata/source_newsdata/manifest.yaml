@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["results"]
+      field_path: ["results"]
   base_requester:
     url_base: "https://newsdata.io/api/1"
     http_method: "GET"

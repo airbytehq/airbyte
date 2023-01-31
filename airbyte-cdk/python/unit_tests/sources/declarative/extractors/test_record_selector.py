@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
 
 
 @pytest.mark.parametrize(
-    "test_name, field_pointer, filter_template, body, expected_records",
+    "test_name, field_path, filter_template, body, expected_records",
     [
         (
             "test_with_extractor_and_filter",
@@ -59,7 +59,7 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
         ),
     ],
 )
-def test_record_filter(test_name, field_pointer, filter_template, body, expected_records):
+def test_record_filter(test_name, field_path, filter_template, body, expected_records):
     config = {"response_override": "stop_if_you_see_me"}
     parameters = {"parameters_field": "data", "created_at": "06-07-21"}
     stream_state = {"created_at": "06-06-21"}
@@ -68,7 +68,7 @@ def test_record_filter(test_name, field_pointer, filter_template, body, expected
 
     response = create_response(body)
     decoder = JsonDecoder(parameters={})
-    extractor = DpathExtractor(field_pointer=field_pointer, decoder=decoder, config=config, parameters=parameters)
+    extractor = DpathExtractor(field_path=field_path, decoder=decoder, config=config, parameters=parameters)
     if filter_template is None:
         record_filter = None
     else:

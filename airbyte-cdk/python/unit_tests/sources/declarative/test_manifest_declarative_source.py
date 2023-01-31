@@ -79,7 +79,7 @@ class TestManifestDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": "{{ 10 }}"},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 },
                 {
@@ -107,7 +107,7 @@ class TestManifestDeclarativeSource:
                             "path": "/v3/marketing/lists",
                             "custom_request_parameters": {"page_size": 10},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 },
             ],
@@ -144,7 +144,7 @@ class TestManifestDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": "{{ 10 }}"},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
@@ -168,7 +168,7 @@ class TestManifestDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": "{{ 10 }}"},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -223,7 +223,7 @@ class TestManifestDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": "{{ 10 }}"},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
@@ -247,7 +247,7 @@ class TestManifestDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": "{{ 10 }}"},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -281,7 +281,7 @@ class TestManifestDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": 10},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
@@ -305,7 +305,7 @@ class TestManifestDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": 10},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -336,7 +336,7 @@ class TestManifestDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": 10},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
@@ -360,7 +360,7 @@ class TestManifestDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": 10},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -394,7 +394,7 @@ class TestManifestDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": 10},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
@@ -418,7 +418,7 @@ class TestManifestDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": 10},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -472,7 +472,7 @@ class TestManifestDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": "{{ 10 }}"},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
@@ -496,7 +496,7 @@ class TestManifestDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": "{{ 10 }}"},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -529,7 +529,7 @@ class TestManifestDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": 10},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [],
@@ -560,7 +560,7 @@ class TestManifestDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": "10"},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
@@ -588,7 +588,7 @@ class TestManifestDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": "{{ 10 }}"},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 },
                 {
@@ -616,7 +616,7 @@ class TestManifestDeclarativeSource:
                             "path": "/v3/marketing/lists",
                             "custom_request_parameters": {"page_size": 10},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 },
             ],

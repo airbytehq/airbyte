@@ -3,7 +3,7 @@ version: "0.3.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["{{ parameters['data_key'] }}"]
+      field_path: ["{{ parameters['data_key'] }}"]
   requester:
     url_base: "{{ config['url'] }}/api/"
     http_method: "GET"

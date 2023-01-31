@@ -3,11 +3,11 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
 
   user_field_selector:
     extractor:
-      field_pointer: ["user"]
+      field_path: ["user"]
 
   requester:
     url_base: "https://api.instatus.com/"

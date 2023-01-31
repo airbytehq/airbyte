@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["results"]
+      field_path: ["results"]
     record_filter:
       condition: "{{ record['bounce_rate'] is not none }}"
   requester:

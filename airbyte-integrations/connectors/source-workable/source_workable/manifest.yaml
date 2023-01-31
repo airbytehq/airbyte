@@ -7,7 +7,7 @@ definitions:
     file_path: "./source_sentry/schemas/{{ parameters.name }}.json"
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   requester:
     url_base: "https://{{ config['account_subdomain'] }}.workable.com"
     http_method: "GET"
@@ -45,28 +45,28 @@ definitions:
       name: "jobs"
       primary_key: "id"
       path: "/spi/v3/jobs"
-      field_pointer: ["jobs"]
+      field_path: ["jobs"]
   candidates_stream: # https://workable.readme.io/reference/job-candidates-index
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "candidates"
       primary_key: "id"
       path: "/spi/v3/candidates"
-      field_pointer: ["candidates"]
+      field_path: ["candidates"]
   stages_stream: # https://workable.readme.io/reference/stages
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "stages"
       primary_key: "slug"
       path: "/spi/v3/stages"
-      field_pointer: ["stages"]
+      field_path: ["stages"]
   recruiters_stream: # https://workable.readme.io/reference/recruiters
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "recruiters"
       primary_key: "id"
       path: "/spi/v3/recruiters"
-      field_pointer: ["recruiters"]
+      field_path: ["recruiters"]
 
 streams:
   - "#/definitions/jobs_stream"

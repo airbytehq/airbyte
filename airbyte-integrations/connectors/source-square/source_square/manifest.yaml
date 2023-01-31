@@ -17,7 +17,7 @@ definitions:
     api_token: "{{ config['api_key'] }}"
   selector:
     extractor:
-      field_pointer: ["{{ parameters['name'] }}"]
+      field_path: ["{{ parameters['name'] }}"]
 
   requester:
     url_base: "{{ 'https://connect.squareupsandbox.com/v2' if config['is_sandbox'] else 'https://connect.squareup.com/v2' }}"
@@ -102,7 +102,7 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: ["objects"]
+          field_path: ["objects"]
       requester:
         $ref: "#/definitions/requester"
         http_method: "POST"

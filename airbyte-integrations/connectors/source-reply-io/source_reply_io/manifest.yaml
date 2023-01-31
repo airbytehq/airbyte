@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   requester:
     url_base: "https://api.reply.io/v1/"
     http_method: "GET"
@@ -34,7 +34,7 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: ["{{ parameters.name }}"]
+          field_path: ["{{ parameters.name }}"]
       paginator:
         type: "DefaultPaginator"
         page_size_option:
@@ -72,7 +72,7 @@ definitions:
       $ref: "#/definitions/base_stream/retriever"
       record_selector:
         extractor:
-          field_pointer: ["userTemplates"]
+          field_path: ["userTemplates"]
     $parameters:
       name: "templates"
       primary_key: "id"

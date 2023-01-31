@@ -560,12 +560,12 @@ definitions:
     type: object
     required:
       - type
-      - field_pointer
+      - field_path
     properties:
       type:
         type: string
         enum: [DpathExtractor]
-      field_pointer:
+      field_path:
         type: array
         items:
           - type: string

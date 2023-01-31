@@ -3,7 +3,7 @@ version: "0.1.1"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   requester:
     url_base: "{{ 'https://rest.coinapi.io/v1' if config['environment'] == 'production' else 'https://rest-sandbox.coinapi.io/v1' }}"
     http_method: "GET"

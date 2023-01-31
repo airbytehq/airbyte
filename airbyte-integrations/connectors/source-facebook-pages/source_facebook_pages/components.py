@@ -51,6 +51,8 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
             raise Exception(f"Error while generating page access token: {e}") from e
 
 
+# TODO To be removed when source-facebook-pages is moved to beta or bugfixed since this is now supported by the CDK as part of
+# https://github.com/airbytehq/airbyte/pull/21690
 @dataclass
 class NestedDpathExtractor(DpathExtractor):
     """
@@ -83,12 +85,12 @@ class NestedDpathExtractor(DpathExtractor):
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
-        if len(self.field_pointer) == 0:
+        if len(self.field_path) == 0:
             extracted = response_body
         else:
-            pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
-            extracted_list = dpath.util.get(response_body, pointer[0], default=[])
-            extracted = list(chain(*[dpath.util.get(x, pointer[1:], default=[]) for x in extracted_list])) if extracted_list else []
+            path = [path.eval(self.config) for path in self.field_path]
+            extracted_list = dpath.util.get(response_body, path[0], default=[])
+            extracted = list(chain(*[dpath.util.get(x, path[1:], default=[]) for x in extracted_list])) if extracted_list else []
         if isinstance(extracted, list):
             return extracted
         elif extracted:

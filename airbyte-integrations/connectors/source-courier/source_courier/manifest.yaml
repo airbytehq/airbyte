@@ -9,13 +9,13 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: []
+      field_path: []
 
   results_selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer:
+      field_path:
         - results
 
   requester:

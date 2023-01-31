@@ -3,7 +3,7 @@ version: "0.2.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["entries"]
+      field_path: ["entries"]
   requester:
     url_base: "https://api.chartmogul.com"
     http_method: "GET"

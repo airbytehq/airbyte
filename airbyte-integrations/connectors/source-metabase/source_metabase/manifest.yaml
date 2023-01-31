@@ -3,12 +3,12 @@ version: "0.3.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   data_field_selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: ["data"]
+      field_path: ["data"]
   requester:
     url_base: "{{ config['instance_api_url'] }}"
     http_method: "GET"
