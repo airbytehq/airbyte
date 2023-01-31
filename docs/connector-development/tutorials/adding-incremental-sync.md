@@ -62,7 +62,7 @@ Also, create a file called `incremental_configured_catalog.json` with the follow
                     }
                 }
             },
-            "sync_mode": "full_refresh",
+            "sync_mode": "incremental",
             "destination_sync_mode": "overwrite"
         }
     ]
