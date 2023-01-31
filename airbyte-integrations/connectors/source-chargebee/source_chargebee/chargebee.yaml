@@ -37,10 +37,7 @@ definitions:
       datetime_format: "%s"
     datetime_format: "%s"
     cursor_granularity: PT1S
-    step: P100Y # set long interval to bypass slicing
-    start_time_option:
-      field_name: updated_at[after]
-      inject_into: request_parameter
+    step: P1M
     cursor_field: "{{ options.get('stream_cursor_field', 'updated_at') }}"
   retriever:
     type: SimpleRetriever
@@ -78,6 +75,7 @@ definitions:
           request_parameters:
             sort_by[asc]: updated_at
             include_deleted: "true"
+            updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
       stream_slicer:
         $ref: "*ref(definitions.date_stream_slicer)"
     transformations:
@@ -158,17 +156,13 @@ definitions:
     $ref: "*ref(definitions.base_incremental_stream)"
     retriever:
       $ref: "*ref(definitions.base_incremental_stream.retriever)"
-      stream_slicer:
-        $ref: "*ref(definitions.date_stream_slicer)"
-        start_time_option:
-          field_name: occurred_at[after]
-          inject_into: request_parameter
       requester:
         $ref: "*ref(definitions.base_incremental_stream.retriever.requester)"
         request_options_provider:
           request_parameters:
             sort_by[asc]: "occurred_at"
             include_deleted: "true"
+            occurred_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $options:
       name: "event"
       primary_key: "id"
@@ -234,11 +228,10 @@ definitions:
     $ref: "*ref(definitions.base_incremental_stream)"
     retriever:
       $ref: "*ref(definitions.base_incremental_stream.retriever)"
-      stream_slicer:
-        $ref: "*ref(definitions.date_stream_slicer)"
-        start_time_option:
-          field_name: created_at[after]
-          inject_into: request_parameter
+      requester:
+        $ref: "*ref(definitions.retriever.requester)"
+        request_options_provider:
+          created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $options:
       name: "promotional_credit"
       primary_key: "id"
@@ -282,6 +275,7 @@ definitions:
           request_parameters:
             sort_by[asc]: date
             include_deleted: "true"
+            updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $options:
       name: "quote"
       primary_key: "id"
