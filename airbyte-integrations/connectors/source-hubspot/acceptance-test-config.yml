@@ -1,83 +1,79 @@
-acceptance_tests:
-  basic_read:
-    tests:
-    - config_path: secrets/config.json
-      empty_streams:
-      - name: companies
-        bypass_reason: unable to populate
-      - name: deals
-        bypass_reason: unable to populate
-      - name: property_history
-        bypass_reason: unable to populate
-      - name: tickets
-        bypass_reason: unable to populate
-      - name: form_submissions
-        bypass_reason: unable to populate
-      - name: ticket_pipelines
-        bypass_reason: unable to populate
-      - name: engagements_meetings
-        bypass_reason: unable to populate
-      - name: engagements_emails
-        bypass_reason: unable to populate
-      - name: engagements
-        bypass_reason: unable to populate
-      - name: engagements_calls
-        bypass_reason: unable to populate
-      - name: quotes
-        bypass_reason: unable to populate
-      - name: contacts_list_memberships
-        bypass_reason: unable to populate
-      timeout_seconds: 600
-      expect_records:
-        path: integration_tests/expected_records.jsonl
-        exact_order: no
-        extra_fields: no
-        extra_records: no
-  connection:
-    tests:
-    - config_path: secrets/config.json
-      status: succeed
-    - config_path: integration_tests/invalid_config.json
-      status: failed
-    - config_path: integration_tests/invalid_config_oauth.json
-      status: failed
-    - config_path: integration_tests/invalid_config_wrong_title.json
-      status: failed
-  discovery:
-    tests:
-    - backward_compatibility_tests_config:
-        disable_for_version: 0.2.3
-      config_path: secrets/config.json
-  full_refresh:
-    tests:
-    - config_path: secrets/config.json
-      configured_catalog_path: sample_files/full_refresh_oauth_catalog.json
-      ignored_fields:
-        companies:
-        - properties
-        - hs_time_in_subscriber
-        contact_lists:
-        - properties
-        - ilsFilterBranch
-        contacts:
-        - properties
-        - hs_time_in_subscriber
-        deals:
-        - properties
-        - hs_time_in_qualifiedtobuy
-        tickets:
-        - properties
-        - hs_time_in_4
-  incremental:
-    tests:
-    - config_path: secrets/config.json
-      configured_catalog_path: sample_files/incremental_catalog.json
-      future_state:
-        future_state_path: integration_tests/abnormal_state.json
-  spec:
-    tests:
-    - backward_compatibility_tests_config:
-        disable_for_version: 0.2.3
-      spec_path: source_hubspot/spec.yaml
 connector_image: airbyte/source-hubspot:dev
 test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: source_hubspot/spec.yaml
+  connection:
+    tests:
+      - config_path: secrets/config_oauth.json
+        status: succeed
+      - config_path: integration_tests/invalid_config.json
+        status: failed
+      - config_path: integration_tests/invalid_config_oauth.json
+        status: failed
+      - config_path: integration_tests/invalid_config_wrong_title.json
+        status: failed
+  discovery:
+    tests:
+      - config_path: secrets/config_oauth.json
+  basic_read:
+    tests:
+      - config_path: secrets/config_oauth.json
+        empty_streams:
+        - name: companies
+          bypass_reason: unable to populate
+        - name: deals
+          bypass_reason: unable to populate
+        - name: property_history
+          bypass_reason: unable to populate
+        - name: tickets
+          bypass_reason: unable to populate
+        - name: form_submissions
+          bypass_reason: unable to populate
+        - name: ticket_pipelines
+          bypass_reason: unable to populate
+        - name: engagements_meetings
+          bypass_reason: unable to populate
+        - name: engagements_emails
+          bypass_reason: unable to populate
+        - name: engagements
+          bypass_reason: unable to populate
+        - name: engagements_calls
+          bypass_reason: unable to populate
+        - name: quotes
+          bypass_reason: unable to populate
+        - name: contacts_list_memberships
+          bypass_reason: unable to populate
+        timeout_seconds: 3600
+        expect_records:
+          path: integration_tests/expected_records.jsonl
+          exact_order: yes
+          extra_fields: yes
+          extra_records: no
+  full_refresh:
+    tests:
+      - config_path: secrets/config_oauth.json
+        configured_catalog_path: sample_files/full_refresh_oauth_catalog.json
+        ignored_fields:
+          companies:
+          - properties
+          - hs_time_in_subscriber
+          contact_lists:
+          - properties
+          - ilsFilterBranch
+          contacts:
+          - properties
+          - hs_time_in_subscriber
+          deals:
+          - properties
+          - hs_time_in_qualifiedtobuy
+          tickets:
+          - properties
+          - hs_time_in_4
+  incremental:
+    tests:
+      - config_path: secrets/config_oauth.json
+        configured_catalog_path: sample_files/incremental_catalog.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
