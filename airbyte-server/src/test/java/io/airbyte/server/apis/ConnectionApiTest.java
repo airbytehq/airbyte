@@ -17,7 +17,6 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import java.io.IOException;
 import java.util.HashSet;
 import javax.validation.ConstraintViolationException;
-import javax.ws.rs.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -48,7 +47,7 @@ class ConnectionApiTest extends BaseControllerTest {
     Mockito.when(connectionsHandler.updateConnection(Mockito.any()))
         .thenReturn(new ConnectionRead())
         .thenThrow(new ConstraintViolationException(new HashSet<>()))
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/connections/update";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new ConnectionUpdate())),
@@ -65,7 +64,7 @@ class ConnectionApiTest extends BaseControllerTest {
   void testListConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(connectionsHandler.listConnectionsForWorkspace(Mockito.any()))
         .thenReturn(new ConnectionReadList())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/connections/list";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new WorkspaceIdRequestBody())),
@@ -79,7 +78,7 @@ class ConnectionApiTest extends BaseControllerTest {
   void testListAllConnectionsForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(connectionsHandler.listAllConnectionsForWorkspace(Mockito.any()))
         .thenReturn(new ConnectionReadList())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/connections/list_all";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new WorkspaceIdRequestBody())),
@@ -93,7 +92,7 @@ class ConnectionApiTest extends BaseControllerTest {
   void testSearchConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(connectionsHandler.searchConnections(Mockito.any()))
         .thenReturn(new ConnectionReadList())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/connections/search";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new ConnectionSearch())),
@@ -107,7 +106,7 @@ class ConnectionApiTest extends BaseControllerTest {
   void testGetConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(connectionsHandler.getConnection(Mockito.any()))
         .thenReturn(new ConnectionRead())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/connections/get";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
@@ -120,7 +119,7 @@ class ConnectionApiTest extends BaseControllerTest {
   @Test
   void testDeleteConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.doNothing()
-        .doThrow(new NotFoundException())
+        .doThrow(new ConfigNotFoundException("", ""))
         .when(connectionsHandler).deleteConnection(Mockito.any());
 
     final String path = "/api/v1/connections/delete";
@@ -136,7 +135,7 @@ class ConnectionApiTest extends BaseControllerTest {
   void testSyncConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(schedulerHandler.syncConnection(Mockito.any()))
         .thenReturn(new JobInfoRead())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/connections/sync";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),
@@ -150,7 +149,7 @@ class ConnectionApiTest extends BaseControllerTest {
   void testResetConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(schedulerHandler.resetConnection(Mockito.any()))
         .thenReturn(new JobInfoRead())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/connections/reset";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new ConnectionIdRequestBody())),

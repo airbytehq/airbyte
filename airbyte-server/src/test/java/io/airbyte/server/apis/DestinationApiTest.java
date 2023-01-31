@@ -17,7 +17,6 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import java.io.IOException;
 import java.util.HashSet;
 import javax.validation.ConstraintViolationException;
-import javax.ws.rs.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -33,7 +32,7 @@ class DestinationApiTest extends BaseControllerTest {
   void testCheckConnectionToDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(schedulerHandler.checkDestinationConnectionFromDestinationId(Mockito.any()))
         .thenReturn(new CheckConnectionRead())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/destinations/check_connection";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new DestinationIdRequestBody())),
@@ -47,7 +46,7 @@ class DestinationApiTest extends BaseControllerTest {
   void testCheckConnectionToDestinationForUpdate() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(Mockito.any()))
         .thenReturn(new CheckConnectionRead())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/destinations/check_connection_for_update";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new DestinationUpdate())),
@@ -61,7 +60,7 @@ class DestinationApiTest extends BaseControllerTest {
   void testCloneDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(destinationHandler.cloneDestination(Mockito.any()))
         .thenReturn(new DestinationRead())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/destinations/clone";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new DestinationCloneRequestBody())),
@@ -88,7 +87,7 @@ class DestinationApiTest extends BaseControllerTest {
   @Test
   void testDeleteDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.doNothing()
-        .doThrow(new NotFoundException())
+        .doThrow(new ConfigNotFoundException("", ""))
         .when(destinationHandler).deleteDestination(Mockito.any(DestinationIdRequestBody.class));
 
     final String path = "/api/v1/destinations/delete";
@@ -104,7 +103,7 @@ class DestinationApiTest extends BaseControllerTest {
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(destinationHandler.getDestination(Mockito.any()))
         .thenReturn(new DestinationRead())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/destinations/get";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new DestinationIdRequestBody())),
@@ -118,7 +117,7 @@ class DestinationApiTest extends BaseControllerTest {
   void testListDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(destinationHandler.listDestinationsForWorkspace(Mockito.any()))
         .thenReturn(new DestinationReadList())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/destinations/list";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new WorkspaceIdRequestBody())),
@@ -132,7 +131,7 @@ class DestinationApiTest extends BaseControllerTest {
   void testSearchDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(destinationHandler.searchDestinations(Mockito.any()))
         .thenReturn(new DestinationReadList())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/destinations/search";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new DestinationSearch())),
@@ -146,7 +145,7 @@ class DestinationApiTest extends BaseControllerTest {
   void testUpdateDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.when(destinationHandler.updateDestination(Mockito.any()))
         .thenReturn(new DestinationRead())
-        .thenThrow(new NotFoundException());
+        .thenThrow(new ConfigNotFoundException("", ""));
     final String path = "/api/v1/destinations/update";
     testEndpointStatus(
         HttpRequest.POST(path, Jsons.serialize(new DestinationUpdate())),
