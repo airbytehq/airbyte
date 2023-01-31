@@ -1,4 +1,4 @@
-import { ColumnDef, flexRender, useReactTable, getCoreRowModel, ColumnSort } from "@tanstack/react-table";
+import { ColumnDef, flexRender, useReactTable, getCoreRowModel } from "@tanstack/react-table";
 import classNames from "classnames";
 import { PropsWithChildren } from "react";
 
@@ -12,7 +12,6 @@ export interface TableProps<T> {
   data: T[];
   light?: boolean;
   onClickRow?: (data: T) => void;
-  columnSort?: ColumnSort[];
   testId?: string;
 }
 

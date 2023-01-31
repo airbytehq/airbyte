@@ -4,6 +4,7 @@
 $cell-height: 28px;
 $cell-padding: variables.$spacing-xl + variables.$spacing-sm;
 $cell-fixed-width: 100px;
+$arrow-cell-fixed-width: 40px;
 
 .customTableStyle {
   td {
@@ -12,13 +13,15 @@ $cell-fixed-width: 100px;
 }
 
 .headerGroupCell {
-  height: 58px;
-  background-color: colors.$white;
-  color: colors.$dark-blue;
-  font-weight: 700;
-  font-size: 16px;
-  line-height: $cell-height;
-  text-transform: capitalize;
+  &.light {
+    height: 58px;
+    color: colors.$dark-blue;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: $cell-height;
+    text-transform: capitalize;
+    background-color: colors.$white;
+  }
 
   &:first-child {
     padding-left: $cell-padding;
@@ -56,17 +59,22 @@ $cell-fixed-width: 100px;
 
 %bodyCell {
   height: $cell-height;
-  padding: 0;
+  padding: 0 $cell-padding 0 0;
 
   &:first-child {
     padding-left: $cell-padding;
     border-radius: 0;
-    min-width: 130px;
   }
 
   &:last-child {
     padding-right: $cell-padding;
   }
+}
+
+.syncCell {
+  @extend %bodyCell;
+
+  min-width: 0;
 }
 
 .textCell {
@@ -96,6 +104,8 @@ $cell-fixed-width: 100px;
 
 .arrowCell {
   @extend %bodyCell;
+
+  width: $arrow-cell-fixed-width;
 
   svg {
     color: colors.$grey-200;

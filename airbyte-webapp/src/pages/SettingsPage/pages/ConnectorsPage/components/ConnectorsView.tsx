@@ -1,4 +1,4 @@
-import { ColumnSort, createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -34,8 +34,6 @@ interface ConnectorsViewProps {
   onUpdateVersion: ({ id, version }: { id: string; version: string }) => void;
   feedbackList: Record<string, string>;
 }
-
-const defaultSorting: ColumnSort[] = [{ id: "name", desc: false }];
 
 const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   type,
@@ -175,7 +173,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
                 </FlexItem>
                 {renderHeaderControls("used")}
               </FlexContainer>
-              <NextTable columns={usedDefinitionColumns} data={usedConnectorsDefinitions} columnSort={defaultSorting} />
+              <NextTable columns={usedDefinitionColumns} data={usedConnectorsDefinitions} />
             </FlexContainer>
           )}
 
@@ -188,11 +186,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
               </FlexItem>
               {renderHeaderControls("available")}
             </FlexContainer>
-            <NextTable
-              columns={availableDefinitionColumns}
-              data={availableConnectorDefinitions}
-              columnSort={defaultSorting}
-            />
+            <NextTable columns={availableDefinitionColumns} data={availableConnectorDefinitions} />
           </FlexContainer>
         </FlexContainer>
       </div>
