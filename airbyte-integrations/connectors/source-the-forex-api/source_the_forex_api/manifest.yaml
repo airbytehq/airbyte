@@ -1,0 +1,85 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: []
+  requester:
+    type: HttpRequester
+    url_base: "https://theforexapi.com"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        base: "{{ config['base'] }}"
+        symbols: "{{ config['symbols'] }}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  rates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "rates"
+      primary_key: "date"
+      path: "/api/{{stream_slice['start_time'] or 'latest'}}"
+      stream_cursor_field: "date"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ now_utc() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+    step: "P1D"
+    datetime_format: "%Y-%m-%d"
+    cursor_granularity: "P1D"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+
+streams:
+  - "*ref(definitions.rates_stream)"
+
+check:
+  stream_names:
+    - "rates"
+
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/the-forex-api
+  connection_specification:
+    title: The Forex Api Spec
+    type: object
+    required:
+      - start_date
+      - base
+    additionalProperties: true
+    properties:
+      start_date:
+        type: string
+        description: Start getting data from that date.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - YYYY-MM-DD
+      base:
+        type: string
+        description: Base currency
+        examples:
+          - EUR
+          - USD
+      symbols:
+        type: string
+        description: Exchange rates to fetch
+        examples:
+          - USD
+          - USD,GBP
