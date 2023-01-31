@@ -15,6 +15,7 @@ from urllib.parse import parse_qs
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .errors import HTTP_ERROR_CODES, error_msg_from_status
@@ -31,6 +32,10 @@ class AmplitudeStream(HttpStream, ABC):
     def url_base(self) -> str:
         subdomain = "analytics.eu." if self.data_region == "EU Residency Server" else ""
         return f"https://{subdomain}amplitude.com/api/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None

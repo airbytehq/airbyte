@@ -3,8 +3,8 @@
 #
 
 
-from .constants import CLOUD_CATALOG_URL, GCS_QA_REPORT_PATH, OSS_CATALOG_URL
-from . import enrichments, inputs, validations, outputs
+from .constants import CLOUD_CATALOG_URL, OSS_CATALOG_URL
+from . import enrichments, inputs, validations
 
 
 def main():
@@ -12,8 +12,8 @@ def main():
     cloud_catalog = inputs.fetch_remote_catalog(CLOUD_CATALOG_URL)
     adoption_metrics_per_connector_version = inputs.fetch_adoption_metrics_per_connector_version()
     enriched_catalog = enrichments.get_enriched_catalog(
-        oss_catalog, 
-        cloud_catalog, 
+        oss_catalog,
+        cloud_catalog,
         adoption_metrics_per_connector_version
     )
     validations.get_qa_report(enriched_catalog, len(oss_catalog))
