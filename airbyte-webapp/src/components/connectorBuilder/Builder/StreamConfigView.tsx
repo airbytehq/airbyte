@@ -21,9 +21,6 @@ import {
   useConnectorBuilderTestState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
-import { BuilderStream } from "../types";
-import { formatJson } from "../utils";
 import { AddStreamButton } from "./AddStreamButton";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderConfigView } from "./BuilderConfigView";
@@ -34,6 +31,9 @@ import { KeyValueListField } from "./KeyValueListField";
 import { PaginationSection } from "./PaginationSection";
 import styles from "./StreamConfigView.module.scss";
 import { StreamSlicerSection } from "./StreamSlicerSection";
+import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
+import { BuilderStream } from "../types";
+import { formatJson } from "../utils";
 
 interface StreamConfigViewProps {
   streamNum: number;
