@@ -7,16 +7,14 @@ package io.airbyte.server.apis;
 import static io.airbyte.commons.auth.AuthRoleConstants.ADMIN;
 import static io.airbyte.commons.auth.AuthRoleConstants.EDITOR;
 
-import com.amazonaws.util.json.Jackson;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.airbyte.api.generated.SourceOauthApi;
 import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
 import io.airbyte.api.model.generated.OAuthConsentRead;
+import io.airbyte.api.model.generated.SecretId;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SourceOauthConsentRequest;
 import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.OAuthHandler;
-import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -49,17 +47,9 @@ public class SourceOauthApiController implements SourceOauthApi {
   @Secured({EDITOR})
   @Override
   public SecretId completeSourceOAuthReturnSecret(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
-    Map<String, Object> oAuthTokens = ApiHelper
+    final Map<String, Object> oAuthTokens = ApiHelper
         .execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
-    try {
-      String payload = Jackson.getObjectMapper().writeValueAsString(oAuthTokens);
-      SecretCoordinate secretCoordinate = oAuthHandler.writeOAuthSecret(completeSourceOauthRequest.getWorkspaceId(),
-          payload);
-      return new SecretId().secretId(secretCoordinate.getFullCoordinate());
-    } catch (JsonProcessingException e) {
-      // TODO - throw real exception here
-      throw new RuntimeException();
-    }
+    return ApiHelper.execute(() -> oAuthHandler.writeOAuthSecret(completeSourceOauthRequest.getWorkspaceId(), oAuthTokens));
   }
 
   @Post("/get_consent_url")
