@@ -10,22 +10,20 @@ from ci_connector_ops import utils
 
 RELEASE_STAGES_TO_CHECK = ["generally_available", "beta"]
 
-def get_connectors_missing_allowed_hosts() -> List[str]:
-    connectors_missing_allowed_hosts = []
-    changed_connector_names = utils.get_changed_connector_names()
+def get_connectors_missing_allowed_hosts() -> List[utils.Connector]:
+    connectors_missing_allowed_hosts: List[utils.Connector] = []
+    changed_connectors = utils.get_changed_connectors()
 
-    for connector_name in changed_connector_names:
-        connector_release_stage = utils.get_connector_release_stage(connector_name)
-        if connector_release_stage in RELEASE_STAGES_TO_CHECK:
-          missing = not connector_has_allowed_hosts(connector_name)
+    for connector in changed_connectors:
+        if connector.release_stage in RELEASE_STAGES_TO_CHECK:
+          missing = not connector_has_allowed_hosts(connector)
           if missing:
-            connectors_missing_allowed_hosts.append(connector_name)
+            connectors_missing_allowed_hosts.append(connector)
 
     return connectors_missing_allowed_hosts
 
-def connector_has_allowed_hosts(connector_name: str) -> bool:
-    definition = utils.get_connector_definition(connector_name)
-    return definition.get("allowedHosts") is not None
+def connector_has_allowed_hosts(connector: utils.Connector) -> bool:
+    return connector.allowed_hosts is not None
 
 
 def check_allowed_hosts():

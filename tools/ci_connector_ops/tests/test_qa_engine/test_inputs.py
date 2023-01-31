@@ -121,7 +121,7 @@ def test_fetch_latest_build_status_for_connector_version(mocker, connector_name,
     mock_get = mocker.patch.object(requests, 'get', return_value=mock_response)
 
     assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == expected_status
-    assert mock_get.call_args == call(f"{constants.CONNECTOR_BUILD_OUTPUT_URL}/{connector_name}/{connector_version}.json")
+    assert mock_get.call_args == call(f"{constants.CONNECTOR_BUILD_OUTPUT_URL}/{connector_name}/version-{connector_version}.json")
 
 def test_fetch_latest_build_status_for_connector_version_invalid_status(mocker, caplog):
     connector_name = "connectors/source-pokeapi"
