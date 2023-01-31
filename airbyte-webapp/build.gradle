@@ -49,7 +49,7 @@ task pnpmBuild(type: PnpmTask) {
     outputs.dir 'build/app'
 }
 
-task test(type: NpmTask) {
+task test(type: PnpmTask) {
     dependsOn assemble
 
     args = ['run', 'test:ci']
@@ -57,7 +57,7 @@ task test(type: NpmTask) {
     inputs.dir 'src'
 }
 
-task licenseCheck(type: NpmTask) {
+task licenseCheck(type: PnpmTask) {
     dependsOn pnpmInstall
 
     args = ['run', 'license-check']
@@ -69,7 +69,7 @@ task licenseCheck(type: NpmTask) {
     outputs.upToDateWhen { true }
 }
 
-task validateLinks(type: NpmTask) {
+task validateLinks(type: PnpmTask) {
     dependsOn pnpmInstall
 
     args = ['run', 'validate-links']
@@ -79,7 +79,7 @@ task validateLinks(type: NpmTask) {
     outputs.upToDateWhen { false }
 }
 
-task buildStorybook(type: NpmTask) {
+task buildStorybook(type: PnpmTask) {
     dependsOn pnpmInstall
     args = ['run', 'build:storybook']
 

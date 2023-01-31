@@ -15,7 +15,7 @@ function getRequestBody<U>(data: U) {
   if (nonJsonObject) {
     // The app tries to stringify blobs which results in broken functionality.
     // There may be some edge cases where we pass in an empty object.
-    return data as BodyInit;
+    return data as unknown as BodyInit;
   }
   return stringifiedData;
 }
