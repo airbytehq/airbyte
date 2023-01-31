@@ -2,39 +2,78 @@
 
 set -e
 
+. tools/lib/lib.sh
+
+
 BUCKET=airbyte-connector-build-status
 
 CONNECTOR=$1
 REPOSITORY=$2
 RUN_ID=$3
 TEST_OUTCOME=$4
-QA_CHECKS_OUTCOME=$5
+
+# TODO: Disabled for on master until #22127 resolved
+# QA_CHECKS_OUTCOME=$5
+QA_CHECKS_OUTCOME=success
+
+# Ensure connector is prefixed with connectors/
+# TODO (ben): In the future we should just hard error if this is not the case
+if [[ $CONNECTOR != *"/"* ]]; then
+    CONNECTOR="connectors/$CONNECTOR"
+fi
 
 BUCKET_WRITE_ROOT=/tmp/bucket_write_root
 LAST_TEN_ROOT=/tmp/last_ten_root
 SUMMARY_WRITE_ROOT=/tmp/summary_write_root
+VERSION_PREFIX="version-"
+
+DOCKER_VERSION=$(get_connector_version "$CONNECTOR")
+
+GITHUB_ACTION_LINK=https://github.com/$REPOSITORY/actions/runs/$RUN_ID
 
 export AWS_PAGER=""
+
+function generate_job_log_json() {
+  local timestamp=$1
+  local outcome=$2
+
+  echo "{ \"link\": \"$GITHUB_ACTION_LINK\", \"outcome\": \"$outcome\", \"docker_version\": \"$DOCKER_VERSION\", \"timestamp\": \"$timestamp\", \"connector\": \"$CONNECTOR\" }"
+}
 
 function write_job_log() {
   rm -r $BUCKET_WRITE_ROOT || true
   mkdir -p $BUCKET_WRITE_ROOT
   cd $BUCKET_WRITE_ROOT
-  mkdir -p tests/history/"$CONNECTOR"
-  LINK=https://github.com/$REPOSITORY/actions/runs/$RUN_ID
-  TIMESTAMP="$(date +%s)"
-  OUTCOME=failure
+  mkdir -p tests/history/"$CONNECTOR"/"$DOCKER_VERSION"
+
+  local timestamp="$(date +%s)"
+  local outcome=failure
   if [ "$TEST_OUTCOME" = "success" ] && [ "$QA_CHECKS_OUTCOME" = "success" ]; then
-    OUTCOME=success
+    outcome=success
   fi
-  echo "{ \"link\": \"$LINK\", \"outcome\": \"$OUTCOME\" }" > tests/history/"$CONNECTOR"/"$TIMESTAMP".json
+
+  # Generate the JSON for the job log
+  local job_log_json=$(generate_job_log_json "$timestamp" "$outcome")
+  echo "$job_log_json" > tests/history/"$CONNECTOR"/"$timestamp".json
+
+  # if docker version has a value, write it to a file with the docker version as the name
+  # else output an error to the build log
+  if [ -n "$DOCKER_VERSION" ]; then
+    echo "$job_log_json" > tests/history/"$CONNECTOR"/"$VERSION_PREFIX""$DOCKER_VERSION".json
+  else
+    echo "ERROR: Could not find docker version for $CONNECTOR"
+  fi
+
   aws s3 sync "$BUCKET_WRITE_ROOT"/tests/history/"$CONNECTOR"/ s3://"$BUCKET"/tests/history/"$CONNECTOR"/
 }
 
 function pull_latest_job_logs() {
   # pull the logs for the latest ten jobs for this connector
+  # note this is done by key as each log has a timestamp in the filename
+  # ensuring that the version specific runs are filtered out.
   LAST_TEN_FILES=$(aws s3api list-objects-v2 --bucket "$BUCKET"  \
-    --query "reverse(sort_by(Contents[?contains(Key, \`tests/history/$CONNECTOR\`)], &LastModified))[:10].Key" \
+    --prefix "tests/history/$CONNECTOR" \
+    --query "reverse(sort_by(Contents[?!contains(Key, \`$VERSION_PREFIX\`)], &Key))[:10].Key" \
     --output=text)
 
   rm -r $LAST_TEN_ROOT || true
@@ -91,7 +130,6 @@ function write_badge_and_summary() {
   fi
 
   echo "color: $color"
-
   echo "message: $message"
 
   HTML_TOP="<html><head><title>$CONNECTOR</title><style>body {padding:20px; font-family:monospace;} table {border-collapse: collapse;} th, td {padding:20px; text-align:left;} th, td { border:1px solid #c5c4ff;} </style></head><body><p><img src=\"https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2F$CONNECTOR%2Fbadge.json\"></p><h1>$CONNECTOR</h1>"

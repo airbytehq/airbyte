@@ -1,10 +1,10 @@
 # Source Acceptance Tests
-This package gathers multiple test suites to assess the sanity of any Airbyte **source** connector. 
+This package gathers multiple test suites to assess the sanity of any Airbyte **source** connector.
 It is shipped as a [pytest](https://docs.pytest.org/en/7.1.x/) plugin and relies on pytest to discover, configure and execute tests.
 Test-specific documentation can be found [here](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference/)).
 
 ## Running the acceptance tests on a source connector:
-1. `cd` into your connector project (e.g. `airbyte-integrations/connectors/source-pokeapi`) 
+1. `cd` into your connector project (e.g. `airbyte-integrations/connectors/source-pokeapi`)
 2. Edit `acceptance-test-config.yml` according to your need. Please refer to our [Source Acceptance Test Reference](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference/) if you need details about the available options.
 3. Build the connector docker image ( e.g.: `docker build . -t airbyte/source-pokeapi:dev`)
 4. Use one of the following ways to run tests (**from your connector project directory**)
@@ -33,9 +33,9 @@ _Note: this will use the latest docker image for source-acceptance-test and will
   * When running or `./acceptance-test-docker.sh` in a connector project
 * When running `/test` command on a GitHub pull request.
 * When running `/publish` command on a GitHub pull request.
-* When running ` integration-test` GitHub action that is creating the [connector builds summary](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md).
+* When running ` integration-test` GitHub action that is creating the JSON files linked to from [connector builds summary](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md).
 
-## Developing on the SAT 
+## Developing on the SAT
 You may want to iterate on the SAT project: adding new tests, fixing a bug etc.
 These iterations are more conveniently achieved by remaining in the current directory.
 
