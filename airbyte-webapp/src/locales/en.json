@@ -750,6 +750,7 @@
   "connectorBuilder.interUserInputValue": "Insert a user input value",
   "connectorBuilder.loadingStreamList": "Loading",
   "connectorBuilder.noStreamSelected": "No stream selected",
+  "connectorBuilder.streamListUrlError": "Could not load URL",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 

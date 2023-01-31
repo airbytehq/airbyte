@@ -95,6 +95,11 @@ export const StreamTester: React.FC<{
           <FormattedMessage id="connectorBuilder.loadingStreamList" />
         </Text>
       )}
+      {!currentStream && streamListErrorMessage && (
+        <Text size="lg" centered>
+          <FormattedMessage id="connectorBuilder.streamListUrlError" />
+        </Text>
+      )}
 
       <StreamTestButton
         readStream={() => {
