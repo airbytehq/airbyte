@@ -186,7 +186,7 @@ const renderBulkEditPanel = () =>
 
 describe("<BulkEditPanel />", () => {
   beforeAll(() => {
-    // @ts-ignore
+    // @ts-expect-error Okay for test
     ReactDOM.createPortal = (element) => {
       return element;
     };
