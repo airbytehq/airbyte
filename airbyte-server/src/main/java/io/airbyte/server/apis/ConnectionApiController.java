@@ -16,14 +16,16 @@ import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.OperationsHandler;
-import io.airbyte.server.handlers.SchedulerHandler;
+import io.airbyte.commons.server.handlers.ConnectionsHandler;
+import io.airbyte.commons.server.handlers.OperationsHandler;
+import io.airbyte.commons.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
@@ -89,6 +91,7 @@ public class ConnectionApiController implements ConnectionApi {
 
   @Override
   @Post(uri = "/delete")
+  @Status(HttpStatus.NO_CONTENT)
   @Secured({EDITOR})
   public void deleteConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     ApiHelper.execute(() -> {

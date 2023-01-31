@@ -9,7 +9,7 @@ import static io.airbyte.commons.auth.AuthRoleConstants.AUTHENTICATED_USER;
 import io.airbyte.api.generated.NotificationsApi;
 import io.airbyte.api.model.generated.Notification;
 import io.airbyte.api.model.generated.NotificationRead;
-import io.airbyte.server.handlers.WorkspacesHandler;
+import io.airbyte.commons.server.handlers.WorkspacesHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;

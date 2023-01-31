@@ -274,6 +274,7 @@ font-style: italic;
   <li><a href="#getAttemptNormalizationStatusesForJob"><code><span class="http-method">post</span> /v1/jobs/get_normalization_status</code></a></li>
   <li><a href="#saveStats"><code><span class="http-method">post</span> /v1/attempt/save_stats</code></a></li>
   <li><a href="#setWorkflowInAttempt"><code><span class="http-method">post</span> /v1/attempt/set_workflow_in_attempt</code></a></li>
+  <li><a href="#writeDiscoverCatalogResult"><code><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></a></li>
   </ul>
   <h4><a href="#Jobs">Jobs</a></h4>
   <ul>
@@ -325,6 +326,7 @@ font-style: italic;
   <li><a href="#listSourcesForWorkspace"><code><span class="http-method">post</span> /v1/sources/list</code></a></li>
   <li><a href="#searchSources"><code><span class="http-method">post</span> /v1/sources/search</code></a></li>
   <li><a href="#updateSource"><code><span class="http-method">post</span> /v1/sources/update</code></a></li>
+  <li><a href="#writeDiscoverCatalogResult"><code><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></a></li>
   </ul>
   <h4><a href="#SourceDefinition">SourceDefinition</a></h4>
   <ul>
@@ -550,6 +552,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -571,6 +574,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -727,6 +731,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -748,6 +753,7 @@ font-style: italic;
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -860,6 +866,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -881,6 +888,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -936,6 +944,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -957,6 +966,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1070,6 +1080,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1091,6 +1102,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1146,6 +1158,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1167,6 +1180,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1472,6 +1486,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1493,6 +1508,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1548,6 +1564,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1569,6 +1586,7 @@ font-style: italic;
         },
         "config" : {
           "aliasName" : "aliasName",
+          "suggested" : true,
           "fieldSelectionEnabled" : true,
           "selectedFields" : [ {
             "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1873,6 +1891,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -1894,6 +1913,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -4152,6 +4172,58 @@ containing the updated stream needs to be sent.</div>
         <a href="#InternalOperationResult">InternalOperationResult</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="writeDiscoverCatalogResult"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></pre></div>
+    <div class="method-summary">Should only called from worker, to write result from discover activity back to DB. (<span class="nickname">writeDiscoverCatalogResult</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDiscoverSchemaWriteRequestBody <a href="#SourceDiscoverSchemaWriteRequestBody">SourceDiscoverSchemaWriteRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Jobs">Jobs</a></h1>
   <div class="method"><a name="cancelJob"/>
     <div class="method-path">
@@ -6100,6 +6172,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -6121,6 +6194,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -6575,6 +6649,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -6596,6 +6671,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -7027,6 +7103,58 @@ containing the updated stream needs to be sent.</div>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="writeDiscoverCatalogResult"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/write_discover_catalog_result</code></pre></div>
+    <div class="method-summary">Should only called from worker, to write result from discover activity back to DB. (<span class="nickname">writeDiscoverCatalogResult</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDiscoverSchemaWriteRequestBody <a href="#SourceDiscoverSchemaWriteRequestBody">SourceDiscoverSchemaWriteRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful Operation
+        <a href="#DiscoverCatalogResult">DiscoverCatalogResult</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="SourceDefinition">SourceDefinition</a></h1>
@@ -8733,6 +8861,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -8754,6 +8883,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -8981,6 +9111,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -9002,6 +9133,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -9457,6 +9589,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -9478,6 +9611,7 @@ containing the updated stream needs to be sent.</div>
       },
       "config" : {
         "aliasName" : "aliasName",
+        "suggested" : true,
         "fieldSelectionEnabled" : true,
         "selectedFields" : [ {
           "fieldPath" : [ "fieldPath", "fieldPath" ]
@@ -10329,6 +10463,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#DestinationSnippetRead"><code>DestinationSnippetRead</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
+    <li><a href="#DiscoverCatalogResult"><code>DiscoverCatalogResult</code> - </a></li>
     <li><a href="#FieldAdd"><code>FieldAdd</code> - </a></li>
     <li><a href="#FieldRemove"><code>FieldRemove</code> - </a></li>
     <li><a href="#FieldSchemaUpdate"><code>FieldSchemaUpdate</code> - </a></li>
@@ -10409,6 +10544,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#SourceDefinitionUpdate"><code>SourceDefinitionUpdate</code> - </a></li>
     <li><a href="#SourceDiscoverSchemaRead"><code>SourceDiscoverSchemaRead</code> - </a></li>
     <li><a href="#SourceDiscoverSchemaRequestBody"><code>SourceDiscoverSchemaRequestBody</code> - </a></li>
+    <li><a href="#SourceDiscoverSchemaWriteRequestBody"><code>SourceDiscoverSchemaWriteRequestBody</code> - </a></li>
     <li><a href="#SourceIdRequestBody"><code>SourceIdRequestBody</code> - </a></li>
     <li><a href="#SourceOauthConsentRequest"><code>SourceOauthConsentRequest</code> - </a></li>
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
@@ -10511,7 +10647,8 @@ containing the updated stream needs to be sent.</div>
 <div class="param">destinationSyncMode </div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">DestinationSyncMode</a></span>  </div>
 <div class="param">primaryKey (optional)</div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Paths to the fields that will be used as primary key. This field is REQUIRED if <code>destination_sync_mode</code> is <code>*_dedup</code>. Otherwise it is ignored. </div>
 <div class="param">aliasName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Alias name to the stream to be used in the destination </div>
-<div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If this is true, the stream is selected with all of its properties. </div>
+<div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If this is true, the stream is selected with all of its properties. For new connections, this considers if the stream is suggested or not </div>
+<div class="param">suggested (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Does the connector suggest that this stream be enabled by default? </div>
 <div class="param">fieldSelectionEnabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Whether field selection should be enabled. If this is true, only the properties in <code>selectedFields</code> will be included. </div>
 <div class="param">selectedFields (optional)</div><div class="param-desc"><span class="param-type"><a href="#SelectedFieldInfo">array[SelectedFieldInfo]</a></span> Paths to the fields that will be included in the configured catalog. This must be set if <code>fieldSelectedEnabled</code> is set. An empty list indicates that no properties will be included. </div>
     </div>  <!-- field-items -->
@@ -11104,6 +11241,13 @@ containing the updated stream needs to be sent.</div>
       <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DiscoverCatalogResult"><code>DiscoverCatalogResult</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">catalogId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11795,6 +11939,16 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">disable_cache (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceDiscoverSchemaWriteRequestBody"><code>SourceDiscoverSchemaWriteRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>to write this requested object to database.</div>
+    <div class="field-items">
+      <div class="param">catalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectorVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">configurationHash (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

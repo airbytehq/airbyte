@@ -17,11 +17,13 @@ import io.airbyte.api.model.generated.OperationRead;
 import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
 import io.airbyte.api.model.generated.OperatorConfiguration;
-import io.airbyte.server.handlers.OperationsHandler;
+import io.airbyte.commons.server.handlers.OperationsHandler;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
@@ -54,6 +56,7 @@ public class OperationApiController implements OperationApi {
   @Post("/delete")
   @Secured({EDITOR})
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void deleteOperation(@Body final OperationIdRequestBody operationIdRequestBody) {
     ApiHelper.execute(() -> {
       operationsHandler.deleteOperation(operationIdRequestBody);

@@ -10,21 +10,25 @@ import static io.airbyte.commons.auth.AuthRoleConstants.READER;
 import io.airbyte.api.generated.SourceApi;
 import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.CheckConnectionRead;
+import io.airbyte.api.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaWriteRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.server.handlers.SchedulerHandler;
-import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.commons.server.handlers.SchedulerHandler;
+import io.airbyte.commons.server.handlers.SourceHandler;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Status;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
@@ -72,6 +76,7 @@ public class SourceApiController implements SourceApi {
   @Post("/delete")
   @Secured({EDITOR})
   @Override
+  @Status(HttpStatus.NO_CONTENT)
   public void deleteSource(final SourceIdRequestBody sourceIdRequestBody) {
     ApiHelper.execute(() -> {
       sourceHandler.deleteSource(sourceIdRequestBody);
@@ -118,6 +123,12 @@ public class SourceApiController implements SourceApi {
   @Override
   public SourceRead updateSource(final SourceUpdate sourceUpdate) {
     return ApiHelper.execute(() -> sourceHandler.updateSource(sourceUpdate));
+  }
+
+  @Post("/write_discover_catalog_result")
+  @Override
+  public DiscoverCatalogResult writeDiscoverCatalogResult(final SourceDiscoverSchemaWriteRequestBody request) {
+    return ApiHelper.execute(() -> sourceHandler.writeDiscoverCatalogResult(request));
   }
 
 }

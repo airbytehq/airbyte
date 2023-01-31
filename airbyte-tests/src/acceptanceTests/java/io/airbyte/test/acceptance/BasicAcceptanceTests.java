@@ -46,7 +46,6 @@ import io.airbyte.api.client.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
-import io.airbyte.api.client.model.generated.DataType;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
@@ -148,6 +147,9 @@ class BasicAcceptanceTests {
   private static PostgreSQLContainer sourcePsql;
 
   private static final String TYPE = "type";
+  private static final String REF = "$ref";
+  private static final String INTEGER_REFERENCE = "WellKnownTypes.json#/definitions/Integer";
+  private static final String STRING_REFERENCE = "WellKnownTypes.json#/definitions/String";
   private static final String PUBLIC = "public";
   private static final String E2E_TEST_SOURCE = "E2E Test Source -";
   private static final String INFINITE_FEED = "INFINITE_FEED";
@@ -317,8 +319,8 @@ class BasicAcceptanceTests {
     final AirbyteCatalog actual = testHarness.discoverSourceSchema(sourceId);
 
     final Map<String, Map<String, String>> fields = ImmutableMap.of(
-        COLUMN_ID, ImmutableMap.of(TYPE, DataType.NUMBER.getValue(), "airbyte_type", "integer"),
-        COLUMN_NAME, ImmutableMap.of(TYPE, DataType.STRING.getValue()));
+        COLUMN_ID, ImmutableMap.of(REF, INTEGER_REFERENCE),
+        COLUMN_NAME, ImmutableMap.of(REF, STRING_REFERENCE));
     final JsonNode jsonSchema = Jsons.jsonNode(ImmutableMap.builder()
         .put(TYPE, "object")
         .put("properties", fields)
@@ -337,7 +339,8 @@ class BasicAcceptanceTests {
         .destinationSyncMode(DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
         .aliasName(STREAM_NAME.replace(".", "_"))
-        .selected(true);
+        .selected(true)
+        .suggested(true);
     final AirbyteCatalog expected = new AirbyteCatalog()
         .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
             .stream(stream)
@@ -359,6 +362,7 @@ class BasicAcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode).setFieldSelectionEnabled(false));
     final ConnectionRead createdConnection =
         testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.BASIC, BASIC_SCHEDULE_DATA);
+    createdConnection.getSyncCatalog().getStreams().forEach(s -> s.getConfig().setSuggested(true));
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
@@ -569,8 +573,8 @@ class BasicAcceptanceTests {
     // add new records and run again.
     final Database source = testHarness.getSourceDatabase();
     final List<JsonNode> expectedRawRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, "sherif").build()));
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "7").put(COLUMN_NAME, "chris").build()));
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET id=6 WHERE name='sherif'"));
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(7, 'chris')"));
     // retrieve latest snapshot of source records after modifications; the deduplicated table in
@@ -623,7 +627,7 @@ class BasicAcceptanceTests {
     final Database source = testHarness.getSourceDatabase();
     // get contents of source before mutating records.
     final List<JsonNode> expectedRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, GERALT).build()));
     // add a new record
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // mutate a record that was already synced with out updating its cursor value. if we are actually
@@ -921,7 +925,7 @@ class BasicAcceptanceTests {
     final Database sourceDatabase = testHarness.getSourceDatabase();
     // get contents of source before mutating records.
     final List<JsonNode> expectedRecords = testHarness.retrieveSourceRecords(sourceDatabase, STREAM_NAME);
-    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, GERALT).build()));
     // add a new record
     sourceDatabase.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     // mutate a record that was already synced with out updating its cursor value. if we are actually
@@ -1222,9 +1226,9 @@ class BasicAcceptanceTests {
         testHarness.retrieveSourceRecords(source, STAGING_SCHEMA_NAME + "." + COOL_EMPLOYEES_TABLE_NAME);
     final List<JsonNode> expectedRecordsAwesomePeople =
         testHarness.retrieveSourceRecords(source, STAGING_SCHEMA_NAME + "." + AWESOME_PEOPLE_TABLE_NAME);
-    expectedRecordsIdAndName.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
-    expectedRecordsCoolEmployees.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, GERALT).build()));
-    expectedRecordsAwesomePeople.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 3).put(COLUMN_NAME, GERALT).build()));
+    expectedRecordsIdAndName.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, GERALT).build()));
+    expectedRecordsCoolEmployees.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, GERALT).build()));
+    expectedRecordsAwesomePeople.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "3").put(COLUMN_NAME, GERALT).build()));
     // add a new record to each table
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     source.query(ctx -> ctx.execute("INSERT INTO staging.cool_employees(id, name) VALUES(6, 'geralt')"));
@@ -1459,8 +1463,8 @@ class BasicAcceptanceTests {
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'mike')"));
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(7, 'chris')"));
     // The expected new raw records should only have the ID column.
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).build()));
-    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).build()));
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").build()));
+    expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "7").build()));
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());

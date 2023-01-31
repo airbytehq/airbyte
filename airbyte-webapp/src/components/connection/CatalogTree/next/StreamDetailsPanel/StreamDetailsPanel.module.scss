@@ -23,5 +23,5 @@ $container-right-space: variables.$spacing-xl * 2;
 
 .tableContainer {
   height: calc(100% - 64px);
-  overflow: scroll;
+  overflow: auto;
 }
