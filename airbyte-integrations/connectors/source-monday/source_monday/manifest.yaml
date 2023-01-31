@@ -8,7 +8,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer:
+      field_path:
         - "data"
         - "{{ parameters['name'] }}"
   requester:
@@ -60,7 +60,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          field_pointer: "/data/boards/*/items/*"
+          field_path: "/data/boards/*/items/*"
           class_name: "source_monday.DpathStringExtractor"
       paginator:
         $ref: "#/definitions/default_paginator"

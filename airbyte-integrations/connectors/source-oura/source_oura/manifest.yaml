@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["data"]
+      field_path: ["data"]
   base_requester:
     url_base: "https://api.ouraring.com/v2/usercollection"
     http_method: "GET"

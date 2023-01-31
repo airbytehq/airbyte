@@ -16,7 +16,7 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: ["response", "docs"]
+          field_path: ["response", "docs"]
       stream_slicer:
         type: "DatetimeStreamSlicer"
         start_datetime:
@@ -39,7 +39,7 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: ["results"]
+          field_path: ["results"]
     $parameters:
       name: "most_popular_emailed"
       primary_key: "id"
@@ -49,7 +49,7 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: ["results"]
+          field_path: ["results"]
     $parameters:
       name: "most_popular_shared"
       primary_key: "id"
@@ -59,7 +59,7 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: ["results"]
+          field_path: ["results"]
     $parameters:
       name: "most_popular_viewed"
       primary_key: "id"

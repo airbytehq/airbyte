@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   requester:
     # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api
     url_base: "https://api.tyntec.com"

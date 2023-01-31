@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["articles"]
+      field_path: ["articles"]
   requester:
     url_base: "https://newsapi.org/v2"
     http_method: "GET"
