@@ -1,0 +1,11 @@
+$connector-icon-width: 20px;
+$connector-icon-margin: 10px;
+
+.content {
+  display: flex;
+  align-items: center;
+}
+
+.text {
+  width: calc(100% - #{$connector-icon-width + $connector-icon-margin});
+}

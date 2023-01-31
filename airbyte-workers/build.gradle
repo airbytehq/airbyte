@@ -1,5 +1,5 @@
-import groovy.yaml.YamlSlurper
 import groovy.json.JsonBuilder
+import groovy.yaml.YamlSlurper
 
 plugins {
     id 'application'
@@ -19,10 +19,10 @@ dependencies {
 
     // Ensure that the versions defined in deps.toml are used
     // instead of versions from transitive dependencies
-    implementation (libs.flyway.core) {
+    implementation(libs.flyway.core) {
         force = true
     }
-    implementation (libs.jooq) {
+    implementation(libs.jooq) {
         force = true
     }
     implementation(libs.s3) {
@@ -40,7 +40,7 @@ dependencies {
     implementation 'com.auth0:java-jwt:3.19.2'
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation libs.guava
-    implementation (libs.temporal.sdk) {
+    implementation(libs.temporal.sdk) {
         exclude module: 'guava'
     }
     implementation 'org.apache.ant:ant:1.10.10'
@@ -64,11 +64,12 @@ dependencies {
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-featureflag')
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-notification')
-    implementation (project(':airbyte-persistence:job-persistence')) {
+    implementation(project(':airbyte-persistence:job-persistence')) {
         // Temporary hack to avoid dependency conflicts
         exclude group: 'io.micronaut'
         exclude group: 'io.micronaut.flyway'

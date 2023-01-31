@@ -7,10 +7,12 @@ from importlib.resources import files
 
 import pandas as pd
 import pytest
+from unittest.mock import MagicMock, call
+import requests
 
-from ci_connector_ops.qa_engine import inputs
+from ci_connector_ops.qa_engine import inputs, constants
 
-@pytest.mark.parametrize("catalog_url", [inputs.OSS_CATALOG_URL, inputs.CLOUD_CATALOG_URL])
+@pytest.mark.parametrize("catalog_url", [constants.OSS_CATALOG_URL, constants.CLOUD_CATALOG_URL])
 def test_fetch_remote_catalog(catalog_url):
     catalog = inputs.fetch_remote_catalog(catalog_url)
     assert isinstance(catalog, pd.DataFrame)
@@ -56,3 +58,86 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
         project_id=expected_project_id,
         credentials=inputs.service_account.Credentials.from_service_account_info.return_value
     )
+
+@pytest.mark.parametrize("connector_name, connector_version, mocked_json_payload, mocked_status_code, expected_status", [
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        {
+            "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+            "outcome": "success",
+            "docker_version": "0.1.5",
+            "timestamp": "1674872401",
+            "connector": "connectors/source-pokeapi"
+        },
+        200,
+        inputs.BUILD_STATUSES.SUCCESS
+    ),
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        {
+            "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+            "outcome": "failure",
+            "docker_version": "0.1.5",
+            "timestamp": "1674872401",
+            "connector": "connectors/source-pokeapi"
+        },
+        200,
+        inputs.BUILD_STATUSES.FAILURE
+    ),
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        None,
+        404,
+        inputs.BUILD_STATUSES.NOT_FOUND
+    ),
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        {
+            "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+            "docker_version": "0.1.5",
+            "timestamp": "1674872401",
+            "connector": "connectors/source-pokeapi"
+        },
+        200,
+        inputs.BUILD_STATUSES.NOT_FOUND
+    ),
+    (
+        "connectors/source-pokeapi",
+        "0.1.5",
+        None,
+        404,
+        inputs.BUILD_STATUSES.NOT_FOUND
+    ),
+])
+def test_fetch_latest_build_status_for_connector_version(mocker, connector_name, connector_version, mocked_json_payload, mocked_status_code, expected_status):
+    # Mock the api call to get the latest build status for a connector version
+    mock_response = MagicMock()
+    mock_response.json.return_value = mocked_json_payload
+    mock_response.status_code = mocked_status_code
+    mock_get = mocker.patch.object(requests, 'get', return_value=mock_response)
+
+    assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == expected_status
+    assert mock_get.call_args == call(f"{constants.CONNECTOR_BUILD_OUTPUT_URL}/{connector_name}/version-{connector_version}.json")
+
+def test_fetch_latest_build_status_for_connector_version_invalid_status(mocker, caplog):
+    connector_name = "connectors/source-pokeapi"
+    connector_version = "0.1.5"
+    mocked_json_payload = {
+        "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
+        "outcome": "unknown_outcome_123",
+        "docker_version": "0.1.5",
+        "timestamp": "1674872401",
+        "connector": "connectors/source-pokeapi"
+    }
+    # Mock the api call to get the latest build status for a connector version
+    mock_response = MagicMock()
+    mock_response.json.return_value = mocked_json_payload
+    mock_response.status_code = 200
+    mocker.patch.object(requests, 'get', return_value=mock_response)
+
+    assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == inputs.BUILD_STATUSES.NOT_FOUND
+    assert 'Error: Unexpected build status value: unknown_outcome_123 for connector connectors/source-pokeapi:0.1.5' in caplog.text
