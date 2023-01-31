@@ -15,10 +15,12 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OP
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SERVICE_ACCOUNT;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.groupConcat;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
@@ -82,6 +84,7 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.JoinType;
 import org.jooq.Record;
+import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectJoinStep;
@@ -762,6 +765,25 @@ public class ConfigRepository {
   }
 
   /**
+   * List workspace IDs with most recently running jobs within a given time window (in hours).
+   *
+   * @param timeWindowInHours - integer, e.g. 24, 48, etc
+   * @return List<UUID> - list of workspace IDs
+   * @throws IOException - failed to query data
+   */
+  public List<UUID> listWorkspacesByMostRecentlyRunningJobs(final int timeWindowInHours) throws IOException {
+    final Result<Record1<UUID>> records = database.query(ctx -> ctx.selectDistinct(ACTOR.WORKSPACE_ID)
+        .from(ACTOR)
+        .join(CONNECTION)
+        .on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .join(JOBS)
+        .on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
+        .where(JOBS.UPDATED_AT.greaterOrEqual(OffsetDateTime.now().minusHours(timeWindowInHours)))
+        .fetch());
+    return records.stream().map(record -> record.get(ACTOR.WORKSPACE_ID)).collect(Collectors.toList());
+  }
+
+  /**
    * Returns all active sources using a definition
    *
    * @param definitionId - id for the definition
@@ -1184,8 +1206,10 @@ public class ConfigRepository {
 
     final Map<UUID, AirbyteCatalog> result = new HashMap<>();
     for (final Record record : records) {
-      final AirbyteCatalog catalog = Jsons.deserialize(
-          record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
+      // We do not apply the on-the-fly migration here because the only caller is getOrInsertActorCatalog
+      // which is using this to figure out if the catalog has already been inserted. Migrating on the fly
+      // here will cause us to add a duplicate each time we check for existence of a catalog.
+      final AirbyteCatalog catalog = Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
       result.put(record.get(ACTOR_CATALOG.ID), catalog);
     }
     return result;
@@ -1348,19 +1372,22 @@ public class ConfigRepository {
     return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 
-  // todo (cgardens) - following up on why this arg is not used in this comment:
-  // https://github.com/airbytehq/airbyte/pull/18125/files#r1027377700
   @SuppressWarnings({"unused", "SqlNoDataSourceInspection"})
   public Map<UUID, ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds) throws IOException {
     // noinspection SqlResolve
+    if (sourceIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
     return database.query(ctx -> ctx.fetch(
         """
-        select actor_catalog_id, actor_id, created_at from
-          (select actor_catalog_id, actor_id, created_at, rank() over (partition by actor_id order by created_at desc) as creation_order_rank
+        select distinct actor_catalog_id, actor_id, created_at from
+          (select actor_catalog_id, actor_id, created_at, row_number() over (partition by actor_id order by created_at desc) as creation_order_row_number
           from public.actor_catalog_fetch_event
+          where actor_id in ({0})
           ) table_with_rank
-        where creation_order_rank = 1;
-        """))
+        where creation_order_row_number = 1;
+        """,
+        DSL.list(sourceIds.stream().map(DSL::value).collect(Collectors.toList()))))
         .stream().map(DbConverter::buildActorCatalogFetchEvent)
         .collect(Collectors.toMap(ActorCatalogFetchEvent::getActorId, record -> record));
   }

@@ -32,3 +32,11 @@ class CdkAdapter(ABC):
         :param config: The user-provided configuration as specified by the source's spec.
         :return: An iterator over `AirbyteMessage` objects.
         """
+
+
+class CdkAdapterFactory(ABC):
+
+    @abstractmethod
+    def create(self, manifest: Dict[str, Any]) -> CdkAdapter:
+        """Return an implementation of CdkAdapter"""
+        pass
