@@ -45,6 +45,8 @@ class CommcareStream(HttpStream, ABC):
         for key, value in form.items():
             if key in self.form_fields:
              continue
+            if any(key.startswith(prefix) for prefix in self.form_fields):
+             continue
             if isinstance(value, dict):
              new_dict[key] = self.scrubUnwantedFields(value)
             else:
