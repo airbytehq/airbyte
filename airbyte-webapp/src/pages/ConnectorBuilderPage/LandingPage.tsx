@@ -141,6 +141,7 @@ export const LandingPage = React.memo(
               unregisterNotificationById(YAML_UPLOAD_ERROR_ID);
               fileInputRef.current?.click();
             }}
+            dataTestId="import-yaml"
           />
           <Tile
             image={<StartFromScratchImage />}
@@ -151,6 +152,7 @@ export const LandingPage = React.memo(
               switchToUI();
               hideLandingPage();
             }}
+            dataTestId="start-from-scratch"
           />
         </FlexContainer>
       </FlexContainer>
@@ -165,9 +167,10 @@ interface TileProps {
   buttonText: string;
   buttonProps?: Partial<ButtonProps>;
   onClick: () => void;
+  dataTestId: string;
 }
 
-const Tile: React.FC<TileProps> = ({ image, title, description, buttonText, buttonProps, onClick }) => {
+const Tile: React.FC<TileProps> = ({ image, title, description, buttonText, buttonProps, onClick, dataTestId }) => {
   return (
     <Card className={styles.tile}>
       <FlexContainer direction="column" gap="xl" alignItems="center">
@@ -184,7 +187,7 @@ const Tile: React.FC<TileProps> = ({ image, title, description, buttonText, butt
             </Text>
           </FlexContainer>
         </FlexContainer>
-        <Button onClick={onClick} {...buttonProps}>
+        <Button onClick={onClick} {...buttonProps} data-testid={dataTestId}>
           <FlexContainer direction="row" alignItems="center" gap="md" className={styles.tileButton}>
             <FontAwesomeIcon icon={faArrowRight} />
             <FormattedMessage id={buttonText} />
