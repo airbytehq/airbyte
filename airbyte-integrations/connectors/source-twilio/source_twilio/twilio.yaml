@@ -230,8 +230,8 @@ definitions:
     $options:
       name: "alerts"
       cursor_field: "date_generated"
-      lower_boundary_param: "StartDate="
-      upper_boundary_param: "EndDate="
+      lower_boundary_param: "StartDate"
+      upper_boundary_param: "EndDate"
       boundary_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: "PT0S"
       step_default: "P1Y"
