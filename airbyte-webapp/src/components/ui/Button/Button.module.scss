@@ -106,7 +106,7 @@
   }
 
   &.sizeXS {
-    height: variables.$buttonHeightXs;
+    height: variables.$button-height-xs;
     font-size: 12px;
     line-height: 15px;
     padding: 10px;
@@ -117,7 +117,7 @@
   }
 
   &.sizeS {
-    height: variables.$buttonHeightSm;
+    height: variables.$button-height-sm;
     font-size: 12px;
     line-height: 15px;
     padding: 10px 14px;
@@ -128,7 +128,7 @@
   }
 
   &.sizeL {
-    height: variables.$buttonHeightLg;
+    height: variables.$button-height-lg;
     font-size: 16px;
     line-height: 19px;
     padding: 10px 14px;
