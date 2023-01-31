@@ -1,5 +1,7 @@
+@use "scss/variables";
+
 .inProgressLabel {
-  height: 32px; /** Needs to match our Button height to avoid jumping around */
+  height: variables.$buttonHeightSm;
   display: flex;
   align-items: center;
 }
