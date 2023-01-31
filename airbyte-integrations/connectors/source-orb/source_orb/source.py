@@ -269,7 +269,7 @@ class SubscriptionUsage(IncrementalOrbStream):
         response_json = response.json()
         records = response_json.get("data", [])
         for record in records:
-            self.yield_transformed_subrecords(record, subscription_id)
+            yield from self.yield_transformed_subrecords(record, subscription_id)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # This API endpoint is not paginated, so there will never be a next page
@@ -305,6 +305,7 @@ class SubscriptionUsage(IncrementalOrbStream):
                     del output["metric_group"]
                     output[nested_key] = nested_value
                 yield output
+        yield from []
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, **kwargs) -> MutableMapping[str, Any]:
         """
