@@ -18,4 +18,4 @@ source .venv/bin/activate
 pip install -e . # assuming you are in the ./tools/ci_connector_ops directory
 ```
 
-pip will make binaries for all the commands in setup.py, so you can run `allowed-hosts-check` directly from the virtual-env
+pip will make binaries for all the commands in setup.py, so you can run `allowed-hosts-checks` directly from the virtual-env
