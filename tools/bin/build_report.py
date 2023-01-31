@@ -30,7 +30,7 @@ SOURCE_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/source_definitions.yaml"
 DESTINATION_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/destination_definitions.yaml"
 CONNECTORS_ROOT_PATH = "./airbyte-integrations/connectors"
 RELEVANT_BASE_MODULES = ["base-normalization", "source-acceptance-test"]
-CONNECTOR_BUILD_OUTPUT_URL = "https://dnsgjos7lj2fu.cloudfront.net/tests/history/connectors"
+CONNECTOR_BUILD_OUTPUT_URL = "https://dnsgjos7lj2fu.cloudfront.net/tests/summary/connectors"
 
 # Global vars
 TESTED_SOURCE = []
