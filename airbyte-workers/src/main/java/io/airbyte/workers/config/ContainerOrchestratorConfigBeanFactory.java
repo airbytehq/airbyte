@@ -110,9 +110,9 @@ public class ContainerOrchestratorConfigBeanFactory {
       environmentVariables.put(DD_VERSION_ENV_VAR, System.getenv(DD_VERSION_ENV_VAR));
     }
 
-    if (System.getenv(DD_CONNECTOR_JAVA_OPTS_ENV_VAR) != null) {
-      environmentVariables.put(DD_CONNECTOR_JAVA_OPTS_ENV_VAR, System.getenv(containerConnectorJavaOpts));
-    }
+//    if (System.getenv(DD_CONNECTOR_JAVA_OPTS_ENV_VAR) != null) {
+//      environmentVariables.put(DD_CONNECTOR_JAVA_OPTS_ENV_VAR, System.getenv(containerConnectorJavaOpts));
+//    }
 
     // Environment variables for ApiClientBeanFactory
     environmentVariables.put(CONTROL_PLANE_AUTH_ENDPOINT_ENV_VAR, controlPlaneAuthEndpoint);
