@@ -1,8 +1,6 @@
 @use "scss/variables";
 @use "scss/colors";
 
-$buttonHeight: 36px;
-
 .container {
   padding: variables.$spacing-lg;
   height: 100%;
@@ -19,7 +17,7 @@ $buttonHeight: 36px;
 
 .streamSelector {
   flex: 0 0 auto;
-  height: $buttonHeight;
+  height: variables.$button-height-sm;
 }
 
 .selectAndTestContainer {

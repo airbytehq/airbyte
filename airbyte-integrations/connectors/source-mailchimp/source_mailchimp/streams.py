@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -24,6 +25,10 @@ class MailChimpStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"https://{self.data_center}.api.mailchimp.com/3.0/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
