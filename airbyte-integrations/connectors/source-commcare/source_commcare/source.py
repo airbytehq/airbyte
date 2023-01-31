@@ -19,10 +19,10 @@ from flatten_json import flatten
 
 # Basic full refresh stream
 class CommcareStream(HttpStream, ABC):
-    def __init__(self, project_space, form_fields, **kwargs):
+    def __init__(self, project_space, form_fields_to_exclude, **kwargs):
         super().__init__(**kwargs)
         self.project_space = project_space
-        self.form_fields = form_fields
+        self.form_fields_to_exclude = form_fields_to_exclude
 
     @property
     def url_base(self) -> str:
@@ -43,9 +43,9 @@ class CommcareStream(HttpStream, ABC):
     def scrubUnwantedFields(self, form):
         new_dict = {}
         for key, value in form.items():
-            if key in self.form_fields:
+            if key in self.form_fields_to_exclude:
              continue
-            if any(key.startswith(prefix) for prefix in self.form_fields):
+            if any(key.startswith(prefix) for prefix in self.form_fields_to_exclude):
              continue
             if isinstance(value, dict):
              new_dict[key] = self.scrubUnwantedFields(value)
@@ -291,7 +291,7 @@ class SourceCommcare(AbstractSource):
         args = {
             "authenticator": auth,
         }
-        appdata = Application(**{**args, "app_id": config["app_id"], "form_fields": config["form_fields"], "project_space": config["project_space"]}).read_records(
+        appdata = Application(**{**args, "app_id": config["app_id"], "form_fields_to_exclude": config["form_fields_to_exclude"], "project_space": config["project_space"]}).read_records(
             sync_mode=SyncMode.full_refresh
         )
 
@@ -300,7 +300,7 @@ class SourceCommcare(AbstractSource):
         return streams
 
     def generate_streams(self, args, config, appdata):
-        form_args = {"app_id": config["app_id"], "start_date": config["start_date"], "form_fields": config["form_fields"], "project_space": config["project_space"], **args}
+        form_args = {"app_id": config["app_id"], "start_date": config["start_date"], "form_fields_to_exclude": config["form_fields_to_exclude"], "project_space": config["project_space"], **args}
         streams = []
         name2xmlns = {}
 
@@ -334,7 +334,7 @@ class SourceCommcare(AbstractSource):
             start_date=config["start_date"],
             schema=self.base_schema(),
             project_space=config["project_space"],
-            form_fields=config["form_fields"],
+            form_fields_to_exclude=config["form_fields_to_exclude"],
             **args,
         )
 

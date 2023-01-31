@@ -36,8 +36,8 @@ connectionSpecification:
       description: >-
         UTC date and time in the format 2017-01-25T00:00:00Z. Only records after this date will be replicated.
       order: 3
-    form_fields:
+    form_fields_to_exclude:
       type: array
-      title: Unwanted Fields 
+      title: Form Fields to be Excluded
       description: Forms field which you don't want to pull
       order: 4
