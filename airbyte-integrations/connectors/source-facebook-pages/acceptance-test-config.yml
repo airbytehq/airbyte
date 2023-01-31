@@ -27,11 +27,8 @@ acceptance_tests:
             bypass_reason: "Data is not permanent"
           - name: page_insights
             bypass_reason: "Data is not permanent"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
+          - name: post_insights
+            bypass_reason: "Data is not permanent"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

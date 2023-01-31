@@ -4,6 +4,11 @@
 
 package io.airbyte.workers.normalization;
 
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
+import static io.airbyte.workers.process.Metadata.NORMALIZE_STEP;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -25,7 +30,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -120,7 +124,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     try {
       LOGGER.info("Running with normalization version: {}", normalizationImageName);
       process = processFactory.create(
-          AirbyteIntegrationLauncher.NORMALIZE_STEP,
+          NORMALIZE_STEP,
           jobId,
           attempt,
           jobRoot,
@@ -130,8 +134,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           false, files,
           null,
           resourceRequirements,
-          Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
-              AirbyteIntegrationLauncher.NORMALIZE_STEP),
+          null,
+          Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, NORMALIZE_STEP),
           Collections.emptyMap(),
           Collections.emptyMap(),
           args);

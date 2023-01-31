@@ -31,7 +31,7 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.connectors.testcontainers.postgresql
 
-    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
+    testImplementation libs.junit.jupiter.system.stubs
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation libs.connectors.testcontainers.postgresql

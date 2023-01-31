@@ -13,3 +13,6 @@ spec:
     targetPort: 7233
   selector:
     {{- include "airbyte.selectorLabels" . | nindent 4 }}
+    {{- if .Values.extraSelectorLabels }}
+    {{ toYaml (mergeOverwrite .Values.extraSelectorLabels .Values.global.extraSelectorLabels) | nindent 4 }}
+    {{- end }}

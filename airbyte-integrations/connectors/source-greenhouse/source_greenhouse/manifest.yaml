@@ -1,0 +1,305 @@
+version: "0.1.0"
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_greenhouse/schemas/{{ options['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: []
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "https://harvest.greenhouse.io/v1/"
+    http_method: "GET"
+    error_handler:
+      type: CompositeErrorHandler
+      # ignore 403 error but retry default retriable http errors (429, 500 - 600)
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [403]
+              action: IGNORE
+        - type: DefaultErrorHandler
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+  retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ headers['link']['next']['url'] }}"
+        stop_condition: "{{ 'next' not in headers['link'] }}"
+        page_size: 100
+      page_size_option:
+        field_name: "per_page"
+        inject_into: "request_parameter"
+      page_token_option:
+        inject_into: "path"
+      url_base: "*ref(definitions.requester.url_base)"
+  base_stream:
+    type: DeclarativeStream
+    $options:
+      name: "applications"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+  base_incremental_stream:
+    $ref: "*ref(definitions.base_stream)"
+    stream_cursor_field: "updated_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester: "*ref(definitions.requester)"
+      stream_slicer:
+        request_cursor_field: "updated_after"
+        cursor_field: "updated_at"
+        class_name: source_greenhouse.components.GreenHouseSlicer
+  applications_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "applications"
+      path: "applications"
+    stream_cursor_field: "applied_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester: "*ref(definitions.requester)"
+      stream_slicer:
+        request_cursor_field: "created_after"
+        cursor_field: "applied_at"
+        class_name: source_greenhouse.components.GreenHouseSlicer
+  candidates_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "candidates"
+      path: "candidates"
+  close_reasons_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "close_reasons"
+      path: "close_reasons"
+    primary_key: "id"
+  degrees_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "degrees"
+      path: "degrees"
+  departments_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "departments"
+      path: "departments"
+  jobs_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "jobs"
+      path: "jobs"
+  jobs_openings_stream:
+    $options:
+      name: "jobs_openings"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "jobs/{{ stream_slice.parent_id }}/openings"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.jobs_stream)"
+            parent_key: "id"
+            stream_slice_field: "parent_id"
+  applications_demographics_answers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "applications_demographics_answers"
+    stream_cursor_field: "updated_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "applications/{{ stream_slice.parent_id }}/demographics/answers"
+      stream_slicer:
+        class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
+        parent_stream: "*ref(definitions.applications_stream)"
+        request_cursor_field: "updated_after"
+        stream_slice_field: "parent_id"
+        cursor_field: "updated_at"
+        parent_key: "id"
+  applications_interviews_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "applications_interviews"
+    stream_cursor_field: "updated_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "applications/{{ stream_slice.parent_id }}/scheduled_interviews"
+      stream_slicer:
+        class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
+        parent_stream: "*ref(definitions.applications_stream)"
+        request_cursor_field: "updated_after"
+        stream_slice_field: "parent_id"
+        cursor_field: "updated_at"
+        parent_key: "id"
+  custom_fields_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "custom_fields"
+      path: "custom_fields"
+  questions_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "demographics_questions"
+      path: "demographics/questions"
+  demographics_answers_answer_options_stream:
+    $options:
+      name: "demographics_answers_answer_options"
+      primary_key: "id"
+      schema_loader:
+        $ref: "*ref(definitions.schema_loader)"
+      retriever:
+        $ref: "*ref(definitions.retriever)"
+        requester:
+          $ref: "*ref(definitions.requester)"
+          path: "demographics/questions/{{ stream_slice.parent_id }}/answer_options"
+        stream_slicer:
+          type: SubstreamSlicer
+          parent_stream_configs:
+            - stream: "*ref(definitions.questions_stream)"
+              parent_key: "id"
+              stream_slice_field: "parent_id"
+  demographics_question_sets_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "demographics_question_sets"
+      path: "demographics/question_sets"
+  demographics_question_sets_questions_stream:
+    $options:
+      name: "demographics_question_sets_questions"
+      primary_key: "id"
+      schema_loader:
+        $ref: "*ref(definitions.schema_loader)"
+      retriever:
+        $ref: "*ref(definitions.retriever)"
+        requester:
+          $ref: "*ref(definitions.requester)"
+          path: "demographics/question_sets/{{ stream_slice.parent_id }}/questions"
+        stream_slicer:
+          type: SubstreamSlicer
+          parent_stream_configs:
+            - stream: "*ref(definitions.demographics_question_sets_stream)"
+              parent_key: "id"
+              stream_slice_field: "parent_id"
+  interviews_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "interviews"
+      path: "scheduled_interviews"
+  job_posts_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "job_posts"
+      path: "job_posts"
+  job_stages_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "job_stages"
+      path: "job_stages"
+  jobs_stages_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "jobs_stages"
+      path: "jobs/{{ stream_slice.parent_id }}/stages"
+      stream_cursor_field: "updated_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "jobs/{{ stream_slice.parent_id }}/stages"
+      stream_slicer:
+        class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
+        parent_stream: "*ref(definitions.jobs_stream)"
+        request_cursor_field: "updated_after"
+        stream_slice_field: "parent_id"
+        cursor_field: "updated_at"
+        parent_key: "id"
+  offers_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "offers"
+      path: "offers"
+  rejection_reasons_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "rejection_reasons"
+      path: "rejection_reasons"
+  scorecards_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "scorecards"
+      path: "scorecards"
+  sources_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "sources"
+      path: "sources"
+  users_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "users"
+      path: "users"
+  demographics_answers_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    $options:
+      name: "demographics_answers"
+      path: "demographics/answers"
+  demographics_answer_options_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "demographics_answer_options"
+      path: "demographics/answer_options"
+streams:
+  - "*ref(definitions.applications_stream)"
+  - "*ref(definitions.applications_demographics_answers_stream)"
+  - "*ref(definitions.applications_interviews_stream)"
+  - "*ref(definitions.candidates_stream)"
+  - "*ref(definitions.close_reasons_stream)"
+  - "*ref(definitions.custom_fields_stream)"
+  - "*ref(definitions.degrees_stream)"
+  - "*ref(definitions.demographics_answers_stream)"
+  - "*ref(definitions.demographics_answer_options_stream)"
+  - "*ref(definitions.questions_stream)"
+  - "*ref(definitions.demographics_answers_answer_options_stream)"
+  - "*ref(definitions.demographics_question_sets_stream)"
+  - "*ref(definitions.demographics_question_sets_questions_stream)"
+  - "*ref(definitions.departments_stream)"
+  - "*ref(definitions.jobs_stream)"
+  - "*ref(definitions.jobs_openings_stream)"
+  - "*ref(definitions.interviews_stream)"
+  - "*ref(definitions.job_posts_stream)"
+  - "*ref(definitions.job_stages_stream)"
+  - "*ref(definitions.jobs_stages_stream)"
+  - "*ref(definitions.offers_stream)"
+  - "*ref(definitions.rejection_reasons_stream)"
+  - "*ref(definitions.scorecards_stream)"
+  - "*ref(definitions.sources_stream)"
+  - "*ref(definitions.users_stream)"
+
+check:
+  type: CheckStream
+  stream_names: ["applications"]

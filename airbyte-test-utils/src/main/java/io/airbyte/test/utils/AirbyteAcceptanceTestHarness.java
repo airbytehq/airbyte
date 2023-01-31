@@ -34,6 +34,7 @@ import io.airbyte.api.client.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.DestinationSyncMode;
+import io.airbyte.api.client.model.generated.Geography;
 import io.airbyte.api.client.model.generated.JobConfigType;
 import io.airbyte.api.client.model.generated.JobDebugInfoRead;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -173,7 +174,7 @@ public class AirbyteAcceptanceTestHarness {
   private final UUID defaultWorkspaceId;
   private final String postgresSqlInitFile;
 
-  private KubernetesClient kubernetesClient = null;
+  private KubernetesClient kubernetesClient;
 
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
@@ -490,6 +491,18 @@ public class AirbyteAcceptanceTestHarness {
                                          final ConnectionScheduleType scheduleType,
                                          final ConnectionScheduleData scheduleData)
       throws ApiException {
+    return createConnectionWithGeography(name, sourceId, destinationId, operationIds, catalog, scheduleType, scheduleData, Geography.AUTO);
+  }
+
+  public ConnectionRead createConnectionWithGeography(final String name,
+                                                      final UUID sourceId,
+                                                      final UUID destinationId,
+                                                      final List<UUID> operationIds,
+                                                      final AirbyteCatalog catalog,
+                                                      final ConnectionScheduleType scheduleType,
+                                                      final ConnectionScheduleData scheduleData,
+                                                      final Geography geography)
+      throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
             .status(ConnectionStatus.ACTIVE)
@@ -502,7 +515,8 @@ public class AirbyteAcceptanceTestHarness {
             .name(name)
             .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
             .namespaceFormat(OUTPUT_NAMESPACE)
-            .prefix(OUTPUT_STREAM_PREFIX));
+            .prefix(OUTPUT_STREAM_PREFIX)
+            .geography(geography));
     connectionIds.add(connection.getConnectionId());
     return connection;
   }
@@ -571,6 +585,19 @@ public class AirbyteAcceptanceTestHarness {
     return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
+        .map(rec -> {
+          // The protocol requires converting numbers to strings. source-postgres does that internally,
+          // but we're querying the DB directly, so we have to do it manually.
+          final Map<String, Object> stringifiedNumbers = new HashMap<>();
+          for (final String key : rec.keySet()) {
+            Object o = rec.get(key);
+            if (o instanceof Number) {
+              o = o.toString();
+            }
+            stringifiedNumbers.put(key, o);
+          }
+          return stringifiedNumbers;
+        })
         .map(Jsons::jsonNode)
         .collect(Collectors.toList());
   }

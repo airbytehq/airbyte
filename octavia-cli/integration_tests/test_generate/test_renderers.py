@@ -111,7 +111,7 @@ def test_expected_output_connection_renderer(octavia_tmp_project_directory, mock
     mock_destination = mocker.Mock(
         resource_id="my_destination_id",
         configuration_path="destination_configuration_path",
-        definition=mocker.Mock(supports_dbt=with_normalization, supports_normalization=with_normalization),
+        definition=mocker.Mock(supports_dbt=with_normalization, normalization_config=mocker.Mock(supported=with_normalization)),
     )
 
     renderer = ConnectionRenderer("my_new_connection", mock_source, mock_destination)

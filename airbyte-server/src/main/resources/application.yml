@@ -1,0 +1,162 @@
+micronaut:
+  application:
+    name: airbyte-server
+  security:
+    authentication-provider-strategy: ALL
+    enabled: ${API_AUTHORIZATION_ENABLED:false}
+  server:
+    port: 8001
+    cors:
+      enabled: true
+      configurations:
+        web:
+          allowedOrigins:
+            - ^.*$
+airbyte:
+  cloud:
+    storage:
+      logs:
+        type: ${WORKER_LOGS_STORAGE_TYPE:}
+        gcs:
+          application-credentials: ${GOOGLE_APPLICATION_CREDENTIALS:}
+          bucket: ${GCS_LOG_BUCKET:}
+        minio:
+          access-key: ${AWS_ACCESS_KEY_ID:}
+          bucket: ${S3_LOG_BUCKET:}
+          endpoint: ${S3_MINIO_ENDPOINT:}
+          secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+        s3:
+          access-key: ${AWS_ACCESS_KEY_ID:}
+          bucket: ${S3_LOG_BUCKET:}
+          region: ${S3_LOG_BUCKET_REGION:}
+          secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+      state:
+        type: ${WORKER_STATE_STORAGE_TYPE:}
+        gcs:
+          application-credentials: ${STATE_STORAGE_GCS_APPLICATION_CREDENTIALS:}
+          bucket: ${STATE_STORAGE_GCS_BUCKET_NAME:}
+        minio:
+          access-key: ${STATE_STORAGE_MINIO_ACCESS_KEY:}
+          bucket: ${STATE_STORAGE_MINIO_BUCKET_NAME:}
+          endpoint: ${STATE_STORAGE_MINIO_ENDPOINT:}
+          secret-access-key: ${STATE_STORAGE_MINIO_SECRET_ACCESS_KEY:}
+        s3:
+          access-key: ${STATE_STORAGE_S3_ACCESS_KEY:}
+          bucket: ${STATE_STORAGE_S3_BUCKET_NAME:}
+          region: ${STATE_STORAGE_S3_BUCKET_REGION:}
+          secret-access-key: ${STATE_STORAGE_S3_SECRET_ACCESS_KEY:}
+  deployment-mode: ${DEPLOYMENT_MODE:OSS}
+  flyway:
+    configs:
+      initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+      minimum-migration-version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+    jobs:
+      initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+      minimum-migration-version: ${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+  version: ${AIRBYTE_VERSION}
+  secret:
+    persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
+    store:
+      aws:
+        access-key: ${AWS_ACCESS_KEY:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      gcp:
+        credentials: ${SECRET_STORE_GCP_CREDENTIALS:}
+        project-id: ${SECRET_STORE_GCP_PROJECT_ID:}
+      vault:
+        address: ${VAULT_ADDRESS:}
+        prefix: ${VAULT_PREFIX:}
+        token: ${VAULT_AUTH_TOKEN:}
+  role: ${AIRBYTE_ROLE:dev}
+  tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
+  worker:
+    job:
+      error-reporting:
+        sentry:
+          dsn: ${JOB_ERROR_REPORTING_SENTRY_DSN}
+        strategy: ${JOB_ERROR_REPORTING_STRATEGY:LOGGING}
+  web-app:
+    url: ${WEBAPP_URL:}
+  workspace:
+    root: ${WORKSPACE_ROOT}
+  protocol:
+    min-version: ${AIRBYTE_PROTOCOL_VERSION_MIN:0.0.0}
+    max-version: ${AIRBYTE_PROTOCOL_VERSION_MAX:1.0.0}
+
+temporal:
+  cloud:
+    client:
+      cert: ${TEMPORAL_CLOUD_CLIENT_CERT:}
+      key: ${TEMPORAL_CLOUD_CLIENT_KEY:}
+    enabled: ${TEMPORAL_CLOUD_ENABLED:false}
+    host: ${TEMPORAL_CLOUD_HOST:}
+    namespace: ${TEMPORAL_CLOUD_NAMESPACE:}
+  host: ${TEMPORAL_HOST:`airbyte-temporal:7233`}
+  retention: ${TEMPORAL_HISTORY_RETENTION_IN_DAYS:30}
+
+datasources:
+  config:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    maximum-pool-size: 10
+    minimum-idle: 0
+    idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  env:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true
+
+flyway:
+  enabled: true
+  datasources:
+    config:
+      enabled: false
+      locations:
+        - 'classpath:io/airbyte/db/instance/configs/migrations'
+    jobs:
+      enabled: false
+      locations:
+        - 'classpath:io/airbyte/db/instance/jobs/migrations'
+
+jooq:
+  datasources:
+    config:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
+    jobs:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
+
+logger:
+  levels:
+  # Uncomment to help resolve issues with conditional beans
+  #    io.micronaut.context.condition: DEBUG
+  # Uncomment to help resolve issues with security beans
+  #    io.micronaut.security: DEBUG

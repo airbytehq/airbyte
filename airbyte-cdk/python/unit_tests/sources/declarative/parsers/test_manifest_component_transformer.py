@@ -17,7 +17,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
                     {
                         "type": "DeclarativeStream",
                         "retriever": {"type": "SimpleRetriever"},
-                        "schema_loader": {"type": "DefaultSchemaLoader"},
+                        "schema_loader": {"type": "JsonFileSchemaLoader"},
                     }
                 ],
             },

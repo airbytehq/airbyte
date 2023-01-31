@@ -176,6 +176,8 @@ class SourceGithub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
         organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+        if not any((organizations, repositories)):
+            raise Exception("No streams available. Please check permissions")
         page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
         organization_args = {"authenticator": authenticator, "organizations": organizations}

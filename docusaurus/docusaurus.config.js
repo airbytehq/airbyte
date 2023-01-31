@@ -42,6 +42,10 @@ const config = {
                             to: '/integrations/sources/google-analytics-v4',
                         },
                         {
+                            from: '/integrations/sources/appstore',
+                            to: '/integrations/sources/appstore-singer',
+                        },
+                        {
                             from: '/project-overview/security',
                             to: '/operator-guides/security',
                         },
@@ -73,6 +77,7 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs',
+                    exclude: ['**/*.inapp.md'],
                 },
                 blog: false,
                 theme: {

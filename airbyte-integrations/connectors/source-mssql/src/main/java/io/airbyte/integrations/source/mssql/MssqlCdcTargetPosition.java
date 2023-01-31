@@ -38,7 +38,7 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
       return true;
     } else {
       final Lsn recordLsn = extractLsn(valueAsJson);
-      boolean isEventLSNAfter = targetLsn.compareTo(recordLsn) <= 0;
+      final boolean isEventLSNAfter = targetLsn.compareTo(recordLsn) <= 0;
       if (isEventLSNAfter) {
         LOGGER.info("Signalling close because record's LSN : " + recordLsn + " is after target LSN : " + targetLsn);
       }

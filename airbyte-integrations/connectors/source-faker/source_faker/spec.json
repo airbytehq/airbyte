@@ -35,8 +35,16 @@
         "description": "How many fake records will be in each page (stream slice), before a state message is emitted?",
         "type": "integer",
         "minimum": 1,
-        "default": 100,
+        "default": 1000,
         "order": 3
+      },
+      "parallelism": {
+        "title": "Parallelism",
+        "description": "How many parallel workers should we use to generate fake data?  Choose a value equal to the number of CPUs you will allocate to this source.",
+        "type": "integer",
+        "minimum": 1,
+        "default": 4,
+        "order": 4
       }
     }
   }

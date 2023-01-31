@@ -40,7 +40,7 @@ connectionSpecification:
       description: |
         Whether to return adjusted data. Only applicable to intraday endpoints.
       default: false
-      order: 4
+      order: 3
     outputsize:
       title: Output Size
       type: string
@@ -50,4 +50,4 @@ connectionSpecification:
         - compact
         - full
       default: compact
-      order: 5
+      order: 4

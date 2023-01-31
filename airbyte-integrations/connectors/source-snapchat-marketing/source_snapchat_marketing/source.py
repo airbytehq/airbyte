@@ -14,6 +14,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import IncrementalMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
@@ -161,6 +162,7 @@ def get_parent_ids(parent) -> List:
 class SnapchatMarketingStream(HttpStream, ABC):
     url_base = "https://adsapi.snapchat.com/v1/"
     primary_key = "id"
+    raise_on_http_errors = True
 
     def __init__(self, start_date, end_date, **kwargs):
         super().__init__(**kwargs)
@@ -181,6 +183,10 @@ class SnapchatMarketingStream(HttpStream, ABC):
     def response_root_name(self):
         """Using the class name in lower to set the root node for response parsing"""
         return self.name
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     @property
     def response_item_name(self):
@@ -205,13 +211,20 @@ class SnapchatMarketingStream(HttpStream, ABC):
         Also, the client side filtering for incremental sync is used
         """
 
-        json_response = response.json().get(self.response_root_name)
+        json_response = response.json().get(self.response_root_name, [])
         for resp in json_response:
             if self.response_item_name not in resp:
                 error_text = f"stream {self.name}: field named '{self.response_item_name}' is absent in the response: {resp}"
                 self.logger.error(error_text)
                 raise SnapchatMarketingException(error_text)
             yield resp.get(self.response_item_name)
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 403:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warning(f"Got permission error when accessing URL {response.request.url}. " f"Skipping {self.name} stream.")
+            return False
+        return super().should_retry(response)
 
 
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):

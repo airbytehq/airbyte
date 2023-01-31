@@ -9,7 +9,6 @@ from typing import Any, Mapping
 OPTIONS_STR = "$options"
 
 
-# todo: For better granularity, we may want this to be keyed on the object + field
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # CompositeErrorHandler
     "CompositeErrorHandler.error_handlers": "DefaultErrorHandler",
@@ -26,7 +25,7 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DeclarativeSource.streams": "DeclarativeStream",
     # DeclarativeStream
     "DeclarativeStream.retriever": "SimpleRetriever",
-    "DeclarativeStream.schema_loader": "DefaultSchemaLoader",
+    "DeclarativeStream.schema_loader": "JsonFileSchemaLoader",
     # DefaultErrorHandler
     "DefaultErrorHandler.response_filters": "HttpResponseFilter",
     # DefaultPaginator
@@ -56,7 +55,11 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # AddFields
     "AddFields.fields": "AddedFieldDefinition",
     # CustomStreamSlicer
+    "CustomStreamSlicer.end_datetime": "MinMaxDatetime",
+    "CustomStreamSlicer.end_time_option": "RequestOption",
     "CustomStreamSlicer.parent_stream_configs": "ParentStreamConfig",
+    "CustomStreamSlicer.start_datetime": "MinMaxDatetime",
+    "CustomStreamSlicer.start_time_option": "RequestOption",
 }
 
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
@@ -126,10 +129,14 @@ class ManifestComponentTransformer:
                 if excluded_option:
                     current_options[field_name] = excluded_option
             elif isinstance(field_value, typing.List):
+                # We exclude propagating an option that matches the current field name because that would result in an infinite cycle
+                excluded_option = current_options.pop(field_name, None)
                 for i, element in enumerate(field_value):
                     if isinstance(element, dict):
                         parent_type_field_identifier = f"{propagated_component.get('type')}.{field_name}"
                         field_value[i] = self.propagate_types_and_options(parent_type_field_identifier, element, current_options)
+                if excluded_option:
+                    current_options[field_name] = excluded_option
 
         if current_options:
             propagated_component[OPTIONS_STR] = current_options

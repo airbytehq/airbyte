@@ -8,7 +8,7 @@ import LoadingPage from "components/LoadingPage";
 import { PageHeader } from "components/ui/PageHeader";
 import { SideMenu, CategoryItem, SideMenuItem } from "components/ui/SideMenu";
 
-import useConnector from "hooks/services/useConnector";
+import { useGetConnectorsOutOfDate } from "hooks/services/useConnector";
 
 import AccountPage from "./pages/AccountPage";
 import ConfigurationsPage from "./pages/ConfigurationsPage";
@@ -38,7 +38,7 @@ export const SettingsRoute = {
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const push = useNavigate();
   const { pathname } = useLocation();
-  const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
+  const { countNewSourceVersion, countNewDestinationVersion } = useGetConnectorsOutOfDate();
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {

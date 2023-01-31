@@ -144,7 +144,7 @@ public class ApplicationBeanFactory {
   @Singleton
   public AirbyteConfigValidator airbyteConfigValidator() {
     return new AirbyteConfigValidator();
-  };
+  }
 
   @Singleton
   public MetricClient metricClient() {

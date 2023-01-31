@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.config.SlackNotificationConfiguration;
-import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.notification.SlackNotificationClient;
 import io.airbyte.validation.json.JsonValidationException;
@@ -102,7 +101,7 @@ class ConnectionNotificationWorkflowTest {
 
     final UUID connectionId = UUID.randomUUID();
 
-    when(mConfigFetchActivity.getStandardSync(connectionId)).thenReturn(new StandardSync().withBreakingChange(false));
+    when(mConfigFetchActivity.getBreakingChange(connectionId)).thenReturn(Optional.of(false));
     workflow.sendSchemaChangeNotification(connectionId);
 
     verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(SlackNotificationClient.class), any(UUID.class), any(boolean.class));

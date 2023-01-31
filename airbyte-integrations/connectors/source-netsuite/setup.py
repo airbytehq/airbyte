@@ -6,8 +6,8 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
-    "requests-oauthlib~=1.3",
+    "airbyte-cdk",
+    "requests-oauthlib",
 ]
 
 TEST_REQUIREMENTS = [
