@@ -230,6 +230,9 @@
   icon: chargebee.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "${subdomain}.chargebee.com"
 - name: Chargify
   sourceDefinitionId: 9b2d3607-7222-4709-9fa2-c2abdebbdd88
   dockerRepository: airbyte/source-chargify
