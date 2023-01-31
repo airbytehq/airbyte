@@ -10,6 +10,7 @@ import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { useInitService } from "services/useInitService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 import { useAnalyticsService } from "./Analytics";
 import { useAppMonitoringService } from "./AppMonitoringService";
@@ -84,7 +85,7 @@ export const useSyncConnection = () => {
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
   const notificationService = useNotificationService();
-  const workspaceId = useCurrentWorkspace();
+  const workspaceId = useCurrentWorkspaceId();
   const { formatMessage } = useIntl();
 
   return useMutation(
@@ -111,7 +112,7 @@ export const useSyncConnection = () => {
       },
       onSuccess: async () => {
         await webConnectionService
-          .list(workspaceId)
+          .list({ workspaceId })
           .then((updatedConnections) => queryClient.setQueryData(connectionsKeys.lists(), updatedConnections));
       },
     }
