@@ -18,6 +18,7 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
+import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
@@ -27,6 +28,9 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Condition;
+import org.assertj.core.api.InstanceOfAssertFactory;
 import org.jooq.DSLContext;
 import org.mockito.Mockito;
 
@@ -243,6 +247,14 @@ public abstract class BaseControllerTest {
 
   void testEndpointStatus(HttpRequest request, HttpStatus expectedStatus) {
     assertEquals(expectedStatus, client.toBlocking().exchange(request).getStatus());
+  }
+
+  void testErrorEndpointStatus(HttpRequest request, HttpStatus expectedStatus) {
+    Assertions.assertThatThrownBy(() -> client.toBlocking().exchange(request))
+        .isInstanceOf(HttpClientResponseException.class)
+        .asInstanceOf(new InstanceOfAssertFactory(HttpClientResponseException.class, Assertions::assertThat))
+        .has(new Condition<HttpClientResponseException>(exception -> exception.getStatus() == expectedStatus,
+            "Http status to be %s", expectedStatus));
   }
 
 }
