@@ -397,6 +397,10 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        # We need to fetch at least one more commmit for the Chromatic action not to fail
+        # but since we don't do screenshot comparison we don't need to fetch the full history.
+        with:
+          fetch-depth: 2
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
