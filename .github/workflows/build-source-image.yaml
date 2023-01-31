@@ -277,7 +277,7 @@ jobs:
             exit 0
           fi;
           
-          last_commit=${git rev-list -n 1 ${{ steps.current_tag.outputs.tag }}}
+          last_commit=$(git rev-list -n 1 ${{ steps.current_tag.outputs.tag }})
           current_commit=${{ github.sha }}
           if [ $last_commit = $current_commit ]; then 
             echo "no new commits from the last tag, no version bump is required"
