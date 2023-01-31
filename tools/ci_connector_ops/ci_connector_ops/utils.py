@@ -142,11 +142,11 @@ class Connector:
 
     @property
     def allowed_hosts(self) -> Optional[List[str]]:
-        return self.definition["allowedHosts"] if self.definition and self.definition.get('allowedHosts') else None
+        return self.definition.get("allowedHosts") if self.definition else None
 
     @property
     def suggested_streams(self) -> Optional[List[str]]:
-        return self.definition["suggestedStreams"] if self.definition and self.definition.get('suggestedStreams') else None
+        return self.definition.get("suggestedStreams") if self.definition else None
 
     @property
     def acceptance_test_config_path(self) -> Path:
