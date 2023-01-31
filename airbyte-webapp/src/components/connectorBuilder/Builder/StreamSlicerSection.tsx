@@ -82,7 +82,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
       label: "Datetime",
       typeValue: "DatetimeStreamSlicer",
       default: {
-        datetime_format: "",
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00",
         start_datetime: "",
         end_datetime: "{{ now_utc() }}",
         step: "",
