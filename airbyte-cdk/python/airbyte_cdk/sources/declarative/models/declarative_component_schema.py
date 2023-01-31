@@ -466,7 +466,6 @@ class DeclarativeStream(BaseModel):
 
     type: Literal["DeclarativeStream"]
     retriever: Union[CustomRetriever, SimpleRetriever]
-    checkpoint_interval: Optional[int] = None
     name: Optional[str] = ""
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = ""
     schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = None
