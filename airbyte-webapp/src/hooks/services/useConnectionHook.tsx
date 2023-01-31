@@ -110,7 +110,7 @@ export const useSyncConnection = () => {
         });
       },
       onSuccess: async () => {
-        webConnectionService
+        await webConnectionService
           .list(workspaceId)
           .then((updatedConnections) => queryClient.setQueryData(connectionsKeys.lists(), updatedConnections));
       },
