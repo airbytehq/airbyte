@@ -38,7 +38,7 @@ const UserRoleDropDown: React.FC<IProps> = ({ value, options, onChange, name }) 
       isDisabled={getRoleAgainstRoleNumber(selectedRole as number) === ROLES.Administrator_Owner ? true : false}
       $withBorder
       $background="white"
-      isSearchable
+      // isSearchable
       options={options}
       value={selectedRole}
       onChange={(option: DropDownRow.IDataItem) => onChangeRole(option)}
