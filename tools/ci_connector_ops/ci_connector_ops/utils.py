@@ -6,7 +6,7 @@
 from dataclasses import dataclass
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple, List
 import os
 import git
 import requests
@@ -135,7 +135,15 @@ class Connector:
 
     @property
     def release_stage(self) -> Optional[str]:
-        return self.definition["releaseStage"] if self.definition else None
+        return self.definition.get("releaseStage") if self.definition else None
+
+    @property
+    def allowed_hosts(self) -> Optional[List[str]]:
+        return self.definition.get("allowedHosts") if self.definition else None
+
+    @property
+    def suggested_streams(self) -> Optional[List[str]]:
+        return self.definition.get("suggestedStreams") if self.definition else None
 
     @property
     def acceptance_test_config_path(self) -> Path:
