@@ -58,6 +58,18 @@ definitions:
       path: "/2010-04-01/Accounts.json"
       data_field: null
       primary_key: "sid"
+  # https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows
+  flows_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        url_base: "https://studio.twilio.com/"
+    $options:
+      name: "flows"
+      path: "/v1/Flows"
+      primary_key: "sid"
   accounts_slicer:
     type: SubstreamSlicer
     parent_stream_configs:
@@ -269,6 +281,7 @@ definitions:
 
 streams:
   - "*ref(definitions.accounts_stream)"
+  - "*ref(definitions.flows_stream)"
   - "*ref(definitions.addresses_stream)"
   - "*ref(definitions.applications_stream)"
   - "*ref(definitions.incoming_phone_numbers_stream)"
