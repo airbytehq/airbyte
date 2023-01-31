@@ -51,6 +51,8 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
             raise Exception(f"Error while generating page access token: {e}") from e
 
 
+# TODO To be removed when source-facebook-pages is moved to beta or bugfixed since this is now supported by the CDK as part of
+# https://github.com/airbytehq/airbyte/pull/21690
 @dataclass
 class NestedDpathExtractor(DpathExtractor):
     """
