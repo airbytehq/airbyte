@@ -235,6 +235,36 @@ definitions:
       step_default: "P1Y"
       primary_key: "sid"
     stream_cursor_field: "date_generated"
+  # https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources
+  usage_records_stream:
+    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_nested_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.base_incremental_nested_stream.retriever.requester)"
+        path: "/2010-04-01/Accounts/{{ stream_slice.record.sid }}/Usage/Records/Daily.json"
+      stream_slicer:
+        type: CustomStreamSlicer
+        class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
+        stream_slicers:
+          - $ref: "*ref(definitions.accounts_slicer)"
+          - $ref: "*ref(definitions.datetime_slicer)"
+            start_datetime:
+              datetime: "{{ format_datetime(config.start_date, '%Y-%m-%d') }}"
+            end_datetime:
+              datetime: "{{ today_utc() }}"
+            datetime_format: "%Y-%m-%d"
+            cursor_format: ""
+    $options:
+      name: "usage_records"
+      cursor_field: "start_date"
+      lower_boundary_param: "StartDate"
+      upper_boundary_param: "EndDate"
+      boundary_format: "%Y-%m-%d"
+      cursor_granularity: "P1D"
+      step_default: "P1Y"
+      primary_key: ["account_sid", "category", "start_date"]
+    stream_cursor_field: "start_date"
 
 
 streams:
@@ -255,6 +285,7 @@ streams:
   - "*ref(definitions.messages_stream)"
   - "*ref(definitions.recordings_stream)"
   - "*ref(definitions.alerts_stream)"
+  - "*ref(definitions.usage_records_stream)"
 
 check:
   stream_names:
