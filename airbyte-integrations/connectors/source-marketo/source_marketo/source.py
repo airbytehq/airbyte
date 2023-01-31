@@ -226,6 +226,7 @@ class MarketoExportBase(IncrementalMarketoStream):
 
         default_prop = {"type": ["null", "string"]}
         schema = self.get_json_schema()["properties"]
+        response.encoding = "utf-8"
 
         reader = csv.DictReader(response.iter_lines(chunk_size=1024, decode_unicode=True))
         for record in reader:
