@@ -18,6 +18,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.FieldSelectionData;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
 import java.util.ArrayList;
@@ -103,29 +104,57 @@ public class CatalogConverter {
         .withNamespace(stream.getNamespace());
   }
 
-  public static io.airbyte.api.model.generated.AirbyteCatalog toApi(final io.airbyte.protocol.models.AirbyteCatalog catalog) {
+  public static io.airbyte.api.model.generated.AirbyteCatalog toApi(final io.airbyte.protocol.models.AirbyteCatalog catalog,
+                                                                    StandardSourceDefinition sourceDefinition) {
+    List<String> suggestedStreams = new ArrayList<>();
+    Boolean suggestingStreams;
+
+    // There are occasions in tests where we have not seeded the sourceDefinition fully. This is to
+    // prevent those tests from failing
+    if (sourceDefinition != null) {
+      suggestingStreams = sourceDefinition.getSuggestedStreams() != null;
+      if (suggestingStreams) {
+        suggestedStreams.addAll(sourceDefinition.getSuggestedStreams().getStreams());
+      }
+    } else {
+      suggestingStreams = false;
+    }
+
     return new io.airbyte.api.model.generated.AirbyteCatalog()
         .streams(catalog.getStreams()
             .stream()
             .map(CatalogConverter::toApi)
             .map(s -> new io.airbyte.api.model.generated.AirbyteStreamAndConfiguration()
                 .stream(s)
-                .config(generateDefaultConfiguration(s)))
+                .config(generateDefaultConfiguration(s, suggestingStreams, suggestedStreams)))
             .collect(Collectors.toList()));
   }
 
-  private static io.airbyte.api.model.generated.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.generated.AirbyteStream stream) {
+  private static io.airbyte.api.model.generated.AirbyteStreamConfiguration generateDefaultConfiguration(final io.airbyte.api.model.generated.AirbyteStream stream,
+                                                                                                        Boolean suggestingStreams,
+                                                                                                        List<String> suggestedStreams) {
     final io.airbyte.api.model.generated.AirbyteStreamConfiguration result = new io.airbyte.api.model.generated.AirbyteStreamConfiguration()
         .aliasName(Names.toAlphanumericAndUnderscore(stream.getName()))
         .cursorField(stream.getDefaultCursorField())
         .destinationSyncMode(io.airbyte.api.model.generated.DestinationSyncMode.APPEND)
         .primaryKey(stream.getSourceDefinedPrimaryKey())
-        .selected(true);
+        .selected(!suggestingStreams)
+        .suggested(true);
+
+    if (suggestingStreams) {
+      if (suggestedStreams.contains(stream.getName())) {
+        result.setSelected(true);
+      } else {
+        result.setSuggested(false);
+      }
+    }
+
     if (stream.getSupportedSyncModes().size() > 0) {
       result.setSyncMode(stream.getSupportedSyncModes().get(0));
     } else {
       result.setSyncMode(io.airbyte.api.model.generated.SyncMode.INCREMENTAL);
     }
+
     return result;
   }
 

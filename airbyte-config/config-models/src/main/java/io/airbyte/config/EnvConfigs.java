@@ -218,6 +218,8 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
   private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
+  private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX = new Version("1.0.0");
+  private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN = new Version("0.0.0");
   private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
   private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
   private static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
@@ -314,12 +316,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Version getAirbyteProtocolVersionMax() {
-    return new Version("0.3.0");
+    return DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX;
   }
 
   @Override
   public Version getAirbyteProtocolVersionMin() {
-    return new Version("0.0.0");
+    return DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN;
   }
 
   @Override
