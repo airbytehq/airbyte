@@ -147,6 +147,7 @@ definitions:
           request_parameters:
             sort_by[asc]: date
             include_deleted: "true"
+            updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $options:
       name: "credit_note"
       primary_key: "id"
