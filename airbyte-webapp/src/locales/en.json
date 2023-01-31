@@ -747,10 +747,10 @@
   "connectorBuilder.landingPage.title": "Connector Builder",
   "connectorBuilder.landingPage.prompt": "How do you want to start building your connector?",
   "connectorBuilder.landingPage.importYaml.title": "Import a YAML manifest",
-  "connectorBuilder.landingPage.importYaml.description": "Select a low-code YAML manifest from your computer to import into the Connector Builder",
+  "connectorBuilder.landingPage.importYaml.description": "Select an existing low-code YAML manifest from your computer to import into the Connector Builder",
   "connectorBuilder.landingPage.importYaml.button": "Import a YAML",
   "connectorBuilder.landingPage.startFromScratch.title": "Start from scratch",
-  "connectorBuilder.landingPage.startFromScratch.description": "Build a connector from start to finish in the Connector Builder",
+  "connectorBuilder.landingPage.startFromScratch.description": "Build a connector from start to finish using the Connector Builder",
   "connectorBuilder.landingPage.startFromScratch.button": "Start from scratch",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
