@@ -98,9 +98,10 @@ include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-commons-temporal'
 include ':airbyte-commons-worker'
 include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
-include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
+include ':airbyte-featureflag'
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
+include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
 include ':airbyte-worker-models'
 
 // platform
@@ -111,7 +112,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-connector-builder-server'
     include ':airbyte-container-orchestrator'
     include ':airbyte-cron'
-    include ':airbyte-featureflag'
     include ':airbyte-metrics:reporter'
     include ':airbyte-proxy'
     include ':airbyte-server'
