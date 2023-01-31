@@ -197,7 +197,13 @@ export function useRunOauthFlow(
     [completeOauth]
   );
 
+  const onCloseWindow = useCallback(() => {
+    windowObjectReference?.close();
+  }, []);
+
   useEvent("message", onOathGranted);
+  // Close popup oauth window when we close the original tab
+  useEvent("beforeunload", onCloseWindow);
 
   return {
     loading: loadingCompleteOauth || loading,
