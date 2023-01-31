@@ -135,11 +135,11 @@ class CatalogProcessor:
                 primary_key = get_field(configured_stream, "primary_key", f"Undefined primary key for stream {stream_name}")
 
             message = f"'json_schema'.'properties' are not defined for stream {stream_name}"
-            schema = get_field(stream_config, "json_schema", f"'json_schema' is not defined for stream {stream_name}")
-            if "properties" in schema:
-                properties = get_field(schema, "properties", message)
-            elif "oneOf" in schema:
-                options = filter(lambda option: "properties" in option, schema["oneOf"])
+            stream_schema = get_field(stream_config, "json_schema", f"'json_schema' is not defined for stream {stream_name}")
+            if "properties" in stream_schema:
+                properties = get_field(stream_schema, "properties", message)
+            elif "oneOf" in stream_schema:
+                options = list(filter(lambda option: "properties" in option, stream_schema["oneOf"]))
                 if len(options) == 0:
                     raise KeyError(f"Stream {stream_name} does not have any properties")
                 # If there are multiple oneOf options, just pick the first one - we don't really support oneOf to begin with
