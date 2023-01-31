@@ -20,7 +20,7 @@ import styles from "./ConnectionTable.module.scss";
 import { ConnectionTableDataItem, SortOrderEnum } from "./types";
 import { NextTable } from "../ui/NextTable";
 
-interface IProps {
+interface ConnectionTableProps {
   data: ConnectionTableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ConnectionTableDataItem) => void;
