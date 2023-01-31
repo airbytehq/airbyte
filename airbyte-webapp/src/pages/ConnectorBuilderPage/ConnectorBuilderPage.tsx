@@ -61,7 +61,7 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
           if (showLandingPage) {
             return (
               <LandingPage
-                setShowLandingPage={setShowLandingPage}
+                hideLandingPage={() => setShowLandingPage(false)}
                 switchToUI={switchToUI}
                 switchToYaml={switchToYaml}
               />

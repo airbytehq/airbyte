@@ -2,6 +2,7 @@ import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useFormikContext } from "formik";
 import { load, YAMLException } from "js-yaml";
+import startCase from "lodash/startCase";
 import React, { useCallback, useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -27,11 +28,11 @@ const YAML_UPLOAD_ERROR_ID = "connectorBuilder.yamlUpload.error";
 
 export const LandingPage = React.memo(
   ({
-    setShowLandingPage,
+    hideLandingPage,
     switchToUI,
     switchToYaml,
   }: {
-    setShowLandingPage: (value: boolean) => void;
+    hideLandingPage: () => void;
     switchToUI: () => void;
     switchToYaml: () => void;
   }) => {
@@ -43,7 +44,7 @@ export const LandingPage = React.memo(
     const [importYamlLoading, setImportYamlLoading] = useState(false);
 
     const handleYamlUpload = useCallback(
-      async (yaml: string) => {
+      async (yaml: string, fileName?: string) => {
         try {
           let json;
           try {
@@ -74,13 +75,15 @@ export const LandingPage = React.memo(
           } catch (e) {
             switchToYaml();
             setJsonManifest(json);
-            setShowLandingPage(false);
+            hideLandingPage();
             return;
           }
 
-          switchToUI();
+          if (fileName) {
+            convertedFormValues.global.connectorName = startCase(fileName.split(".")[0]);
+          }
           setValues(convertedFormValues);
-          setShowLandingPage(false);
+          hideLandingPage();
         } finally {
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
@@ -92,10 +95,9 @@ export const LandingPage = React.memo(
         convertToBuilderFormValues,
         registerNotification,
         setJsonManifest,
-        setShowLandingPage,
+        hideLandingPage,
         setValues,
         setYamlIsValid,
-        switchToUI,
         switchToYaml,
       ]
     );
@@ -122,7 +124,7 @@ export const LandingPage = React.memo(
               const file = uploadEvent.target.files?.[0];
               const reader = new FileReader();
               reader.onload = (readerEvent) => {
-                handleYamlUpload(readerEvent.target?.result as string);
+                handleYamlUpload(readerEvent.target?.result as string, file?.name);
               };
               if (file) {
                 reader.readAsText(file);
@@ -147,7 +149,7 @@ export const LandingPage = React.memo(
             buttonText="connectorBuilder.landingPage.startFromScratch.button"
             onClick={() => {
               switchToUI();
-              setShowLandingPage(false);
+              hideLandingPage();
             }}
           />
         </FlexContainer>
