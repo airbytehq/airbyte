@@ -53,7 +53,7 @@ def test_create_export_job(mocker, send_email_stream, caplog):
                     "activityTypeId": {"type": ["null", "integer"]},
                     "campaignId": {"type": ["null", "integer"]},
                     "costperperson": {"type": ["number", "null"]},
-                    "date": {"format": "date-time", "type": ["string", "null"]},
+                    "date": {"format": "date", "type": ["string", "null"]},
                     "ismandatory": {"type": ["boolean", "null"]},
                     "leadId": {"type": ["null", "integer"]},
                     "marketoGUID": {"type": ["null", "string"]},
