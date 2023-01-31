@@ -20,7 +20,9 @@ GITHUB_PROJECT_NAME = "SAT-high-test-strictness-level"
 logging.basicConfig(level=logging.DEBUG)
 environment = Environment(loader=FileSystemLoader(TEMPLATES_FOLDER))
 
-parser = argparse.ArgumentParser(description="Create issues for migration of GA connectors to high test strictness level in connector acceptance test")
+parser = argparse.ArgumentParser(
+    description="Create issues for migration of GA connectors to high test strictness level in connector acceptance test"
+)
 parser.add_argument("-d", "--dry", default=True)
 
 

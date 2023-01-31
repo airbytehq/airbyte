@@ -23,7 +23,9 @@ AIRBYTE_REPO = Repo(REPO_ROOT)
 environment = Environment(loader=FileSystemLoader("./templates/"))
 PR_TEMPLATE = environment.get_template("pr.md.j2")
 
-parser = argparse.ArgumentParser(description="Create PRs for migration of GA connectors to high test strictness level in connector acceptance test")
+parser = argparse.ArgumentParser(
+    description="Create PRs for migration of GA connectors to high test strictness level in connector acceptance test"
+)
 parser.add_argument("-d", "--dry", default=True)
 
 
