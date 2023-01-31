@@ -62,13 +62,29 @@ acceptance_tests:
             bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
           - name: advertisers_audience_reports
             bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
+          - name: advertisers_audience_reports_by_country
+            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
+          - name: advertisers_audience_reports_by_platform
+            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
+          - name: campaigns_audience_reports
+            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
           - name: campaigns_audience_reports_by_country
             bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
+          - name: campaigns_audience_reports_by_platform
+            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
           - name: ad_group_audience_reports
+            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
+          - name: ad_group_audience_reports_by_country
+            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
+          - name: ad_group_audience_reports_by_platform
             bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
           - name: ads_audience_reports
             bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
           - name: ad_groups_reports
+            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
+          - name: ad_groups_reports_by_country
+            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
+          - name: ad_groups_reports_by_platform
             bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
           - name: ads_reports
             bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
@@ -98,9 +114,15 @@ acceptance_tests:
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
           - name: ads_audience_reports_daily
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: ads_audience_reports_daily
+          - name: ads_audience_reports_by_country_daily
+            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
+          - name: ads_audience_reports_by_platform_daily
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
           - name: ad_group_audience_reports_daily
+            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
+          - name: ad_group_audience_reports_by_country_daily
+            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
+          - name: ad_group_audience_reports_by_platform_daily
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
           - name: campaigns_reports_lifetime
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
@@ -108,9 +130,17 @@ acceptance_tests:
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
           - name: advertisers_reports_lifetime
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
+          - name: campaigns_audience_reports_daily
+            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
           - name: campaigns_audience_reports_by_country_daily
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
+          - name: campaigns_audience_reports_by_platform_daily
+            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
           - name: advertisers_audience_reports_daily
+            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
+          - name: advertisers_audience_reports_by_country_daily
+            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
+          - name: advertisers_audience_reports_by_platform_daily
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
           - name: advertisers_reports_hourly
             bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
