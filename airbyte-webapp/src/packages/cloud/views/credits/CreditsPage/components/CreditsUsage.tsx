@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
 
 import { BarChart } from "components/ui/BarChart";
 import { Card } from "components/ui/Card";
@@ -11,8 +10,6 @@ import { useGetCloudWorkspaceUsage } from "packages/cloud/services/workspaces/Cl
 
 import styles from "./CreditsUsage.module.scss";
 import UsagePerConnectionTable from "./UsagePerConnectionTable";
-
-export const ChartWrapper = styled.div``;
 
 const LegendLabels = ["value"];
 
