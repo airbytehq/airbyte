@@ -25,6 +25,7 @@ specifiers:
   '@storybook/addon-actions': ^7.0.0-beta.36
   '@storybook/addon-essentials': ^7.0.0-beta.36
   '@storybook/addon-links': ^7.0.0-beta.36
+  '@storybook/react': ^7.0.0-beta.36
   '@storybook/react-vite': ^7.0.0-beta.36
   '@storybook/theming': ^7.0.0-beta.36
   '@tanstack/react-table': ^8.7.0
@@ -216,6 +217,7 @@ devDependencies:
   '@storybook/addon-actions': 7.0.0-beta.38_sfoxds7t5ydpegc3knd667wn6m
   '@storybook/addon-essentials': 7.0.0-beta.38_sfoxds7t5ydpegc3knd667wn6m
   '@storybook/addon-links': 7.0.0-beta.38_sfoxds7t5ydpegc3knd667wn6m
+  '@storybook/react': 7.0.0-beta.38_jgxnvbe4faw3ohf4h6p42qq6oy
   '@storybook/react-vite': 7.0.0-beta.38_ixkwjuwc6whfuuxbuybnyjw2h4
   '@storybook/theming': 7.0.0-beta.38_sfoxds7t5ydpegc3knd667wn6m
   '@testing-library/jest-dom': 5.16.5
@@ -15077,7 +15079,7 @@ packages:
   /unplugin/0.10.2:
     resolution: {integrity: sha512-6rk7GUa4ICYjae5PrAllvcDeuT8pA9+j5J5EkxbMFaV+SalHhxZ7X2dohMzu6C3XzsMT+6jwR/+pwPNR3uK9MA==}
     dependencies:
-      acorn: 8.8.1
+      acorn: 8.8.2
       chokidar: 3.5.3
       webpack-sources: 3.2.3
       webpack-virtual-modules: 0.4.6
