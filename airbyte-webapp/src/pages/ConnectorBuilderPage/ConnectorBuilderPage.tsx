@@ -47,8 +47,8 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
   );
 
   const initialFormValues = useRef(builderFormValues);
-  return useMemo(() => {
-    return (
+  return useMemo(
+    () => (
       <Formik
         initialValues={initialFormValues.current}
         validateOnBlur
@@ -78,8 +78,9 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
           );
         }}
       </Formik>
-    );
-  }, [editorView, showLandingPage, switchToUI, switchToYaml]);
+    ),
+    [editorView, showLandingPage, switchToUI, switchToYaml]
+  );
 });
 
 export const ConnectorBuilderPage: React.FC = () => (
