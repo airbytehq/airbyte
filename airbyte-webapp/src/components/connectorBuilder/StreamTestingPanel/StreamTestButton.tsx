@@ -54,9 +54,8 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
   if ((editorView === "ui" && hasErrors(false)) || hasTestInputJsonErrors) {
     showWarningIcon = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsTest" />;
-  }
-
-  if (hasStreamListErrors) {
+  } else if (hasStreamListErrors) {
+    // only disable the button on stream list errors if there are no user-fixable errors
     buttonDisabled = true;
   }
 
