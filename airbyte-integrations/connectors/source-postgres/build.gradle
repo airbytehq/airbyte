@@ -8,7 +8,8 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceRunner'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-Xms2048m', '-Xmx2048m', '-XX:+HeapDumpOnOutOfMemoryError',
+                                 '-XX:HeapDumpPath=/data/dump.hprof']
 }
 
 dependencies {
