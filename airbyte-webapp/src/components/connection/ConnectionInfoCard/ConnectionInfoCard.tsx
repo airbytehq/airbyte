@@ -50,7 +50,7 @@ export const ConnectionInfoCard: React.FC = () => {
         >
           <ConnectorCard
             connectionName={source.sourceName}
-            icon={sourceDefinition?.icon}
+            icon={source?.icon}
             connectorName={source.name}
             releaseStage={sourceDefinition?.releaseStage}
           />
@@ -63,7 +63,7 @@ export const ConnectionInfoCard: React.FC = () => {
         >
           <ConnectorCard
             connectionName={destination.destinationName}
-            icon={destDefinition?.icon}
+            icon={destination?.icon}
             connectorName={destination.name}
             releaseStage={destDefinition?.releaseStage}
           />
