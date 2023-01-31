@@ -243,7 +243,8 @@ class AbstractSource(Source, ABC):
             has_slices = True
             if logger.isEnabledFor(logging.DEBUG):
                 yield AirbyteMessage(
-                    type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice)}")
+                    type=MessageType.LOG,
+                    log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice, default=str)}"),
                 )
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
@@ -295,7 +296,8 @@ class AbstractSource(Source, ABC):
         for _slice in slices:
             if logger.isEnabledFor(logging.DEBUG):
                 yield AirbyteMessage(
-                    type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice)}")
+                    type=MessageType.LOG,
+                    log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice, default=str)}"),
                 )
             record_data_or_messages = stream_instance.read_records(
                 stream_slice=_slice,
