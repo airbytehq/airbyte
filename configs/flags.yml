@@ -1,5 +1,5 @@
 flags:
   - name: performance.backgroundJsonSchemaValidation
     enabled: true
-  - name: heartbeat.fail_sync
+  - name: heartbeat.failSync
     enabled: false
