@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+CONNECTOR_BUILD_OUTPUT_URL = "https://dnsgjos7lj2fu.cloudfront.net/tests/history/connectors"
 CLOUD_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/cloud_catalog.json"
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
 
@@ -13,3 +13,5 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
 ]
 
 GCS_QA_REPORT_PATH = "gs://prod-airbyte-cloud-connector-metadata-service/qa_report.json"
+AIRBYTE_CLOUD_GITHUB_REPO_URL = "https://github.com/airbytehq/airbyte-cloud.git"
+AIRBYTE_CLOUD_MAIN_BRANCH_NAME = "master"

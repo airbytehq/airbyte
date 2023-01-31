@@ -211,7 +211,7 @@ export const ConnectionStatusPage: React.FC = () => {
       </Card>
       {(moreJobPagesAvailable || isJobPageLoading) && (
         <footer className={styles.footer}>
-          <Button isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
+          <Button variant="secondary" isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
             <FormattedMessage id="connection.loadMoreJobs" />
           </Button>
         </footer>

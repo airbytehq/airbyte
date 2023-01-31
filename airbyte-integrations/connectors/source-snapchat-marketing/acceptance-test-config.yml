@@ -1,36 +1,49 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-snapchat-marketing:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "source_snapchat_marketing/spec.json"
+    tests:
+      - spec_path: "source_snapchat_marketing/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-      timeout_seconds: 60
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
-      timeout_seconds: 60
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/catalog_lifetime.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/catalog_daily.json"
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        empty_streams:
+          - name: "adaccounts_stats_lifetime"
+            bypass_reason: "The data changes from sync to sync"
+          - name: "ads_stats_lifetime"
+            bypass_reason: "The data changes from sync to sync"
+          - name: "adsquads_stats_lifetime"
+            bypass_reason: "The data changes from sync to sync"
+          - name: "campaigns_stats_lifetime"
+            bypass_reason: "The data changes from sync to sync"
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/catalog_daily.json"
-      # connector does not release state if start date is in the future, so abnormal_state is not used in the test
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/catalog_daily.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state_daily.json"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/catalog_lifetime.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/catalog_daily.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/catalog_lifetime.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/catalog_daily.json"
