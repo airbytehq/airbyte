@@ -12,8 +12,8 @@ import {
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
-import { ConnectionRoutePaths } from "../types";
 import { ConnectionPageTitle } from "./ConnectionPageTitle";
+import { ConnectionRoutePaths } from "../types";
 
 const ConnectionHeadTitle: React.FC = () => {
   const { connection } = useConnectionEditService();
