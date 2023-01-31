@@ -42,6 +42,7 @@
     "@sentry/tracing": "^6.19.6",
     "@tanstack/react-table": "^8.7.0",
     "@types/diff": "^5.0.2",
+    "@types/node-fetch": "^2.6.2",
     "@types/segment-analytics": "^0.0.34",
     "@types/uuid": "^9.0.0",
     "classnames": "^2.3.1",
