@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -58,6 +59,10 @@ class GitlabStream(HttpStream, ABC):
         # Use path if netloc is not detected
         host = parse_result.netloc if parse_result.netloc else parse_result.path
         return f"{scheme}://{host}/api/v4/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).

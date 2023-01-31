@@ -3,13 +3,17 @@
 #
 
 
-from .constants import GCS_QA_REPORT_PATH
-from .enrichments import get_enriched_catalog
-from .inputs import CLOUD_CATALOG, OSS_CATALOG
-from .validations import get_qa_report
+from .constants import CLOUD_CATALOG_URL, OSS_CATALOG_URL
+from . import enrichments, inputs, validations
 
 
 def main():
-    enriched_catalog = get_enriched_catalog(OSS_CATALOG, CLOUD_CATALOG)
-    qa_report = get_qa_report(enriched_catalog)
-    qa_report.to_json(GCS_QA_REPORT_PATH, orient="records")
+    oss_catalog = inputs.fetch_remote_catalog(OSS_CATALOG_URL)
+    cloud_catalog = inputs.fetch_remote_catalog(CLOUD_CATALOG_URL)
+    adoption_metrics_per_connector_version = inputs.fetch_adoption_metrics_per_connector_version()
+    enriched_catalog = enrichments.get_enriched_catalog(
+        oss_catalog,
+        cloud_catalog,
+        adoption_metrics_per_connector_version
+    )
+    validations.get_qa_report(enriched_catalog, len(oss_catalog))

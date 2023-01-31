@@ -1,10 +1,12 @@
 import classNames from "classnames";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 
 import { GAIcon } from "components/icons/GAIcon";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
+import { useFeature, FeatureItem } from "hooks/services/Feature";
+import { FreeTag } from "packages/cloud/components/experiments/FreeConnectorProgram";
 
 import styles from "./ReleaseStageBadge.module.scss";
 
@@ -15,16 +17,10 @@ interface ReleaseStageBadgeProps {
    * Whether to show a detailed message via a tooltip. If not specified, will be {@code true}.
    */
   tooltip?: boolean;
-  showFreeTag?: boolean;
 }
 
-export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({
-  stage,
-  small,
-  tooltip = true,
-  showFreeTag = false,
-}) => {
-  const { formatMessage } = useIntl();
+export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({ stage, small, tooltip = true }) => {
+  const fcpEnabled = useFeature(FeatureItem.FreeConnectorProgram);
 
   if (!stage) {
     return null;
@@ -37,13 +33,10 @@ export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({
       <div
         className={classNames(styles.pill, {
           [styles["pill--small"]]: small,
-          [styles["pill--contains-tag"]]: showFreeTag,
         })}
       >
         <FormattedMessage id={`connector.releaseStage.${stage}`} />
-        {showFreeTag && (
-          <span className={styles.freeTag}>{formatMessage({ id: "freeConnectorProgram.releaseStageBadge.free" })}</span>
-        )}
+        {fcpEnabled && <FreeTag releaseStage={stage} />}
       </div>
     );
 
