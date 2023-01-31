@@ -138,7 +138,7 @@ class Connector:
 
     @property
     def release_stage(self) -> Optional[str]:
-        return self.definition["releaseStage"] if self.definition and self.definition.get('releaseStage') else None
+        return self.definition.get("releaseStage") if self.definition else None
 
     @property
     def allowed_hosts(self) -> Optional[List[str]]:
