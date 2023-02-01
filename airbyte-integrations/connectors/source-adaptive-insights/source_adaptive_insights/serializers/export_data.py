@@ -41,7 +41,7 @@ class Data:
             return round(float(amount), 5)
         except ValueError as e:
             logger.exception(f"ERROR: Parsing non valid decimal number: '{amount}'.")
-
+            raise e
 
     def parse_row(self, row: dict) -> None:
         account_code = row.get("Account Code")
