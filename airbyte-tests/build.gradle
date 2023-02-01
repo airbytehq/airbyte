@@ -57,6 +57,8 @@ dependencies {
     acceptanceTestsImplementation 'org.apache.commons:commons-csv:1.4'
     acceptanceTestsImplementation libs.platform.testcontainers.postgresql
     acceptanceTestsImplementation libs.postgresql
+    acceptanceTestsImplementation 'org.bouncycastle:bcprov-jdk15on:1.66'
+    acceptanceTestsImplementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
 
     automaticMigrationAcceptanceTestImplementation project(':airbyte-api')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-commons')
