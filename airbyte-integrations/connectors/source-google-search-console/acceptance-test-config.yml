@@ -26,6 +26,9 @@ acceptance_tests:
           exact_order: yes
           extra_records: no
         timeout_seconds: 1800
+        empty_streams:
+          - name: custom_dimensions
+            bypass_reason: "Stream consists PII and fast-changing data"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
