@@ -26,9 +26,4 @@ public class ProtocolConverters {
         .withNamespace(apiStreamDescriptor.getNamespace());
   }
 
-  public static io.airbyte.protocol.models.StreamDescriptor clientStreamDescriptorToProtocol(final io.airbyte.api.client.model.generated.StreamDescriptor clientStreamDescriptor) {
-    return new io.airbyte.protocol.models.StreamDescriptor().withName(clientStreamDescriptor.getName())
-        .withNamespace(clientStreamDescriptor.getNamespace());
-  }
-
 }

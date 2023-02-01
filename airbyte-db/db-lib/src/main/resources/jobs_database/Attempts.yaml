@@ -19,8 +19,6 @@ properties:
     type: number
   attempt_number:
     type: number
-  attempt_sync_config:
-    type: ["null", object]
   log_path:
     type: string
   output:
