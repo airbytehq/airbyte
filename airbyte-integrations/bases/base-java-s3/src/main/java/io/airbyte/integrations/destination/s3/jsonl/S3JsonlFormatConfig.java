@@ -37,8 +37,6 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
       for (final S3JsonlFormatConfig.Flattening f : S3JsonlFormatConfig.Flattening.values()) {
         if (f.value.equalsIgnoreCase(value)) {
           return f;
-        } if (!f.value.equalsIgnoreCase(value)) {
-          return Flattening.NO;
         }
       }
       throw new IllegalArgumentException("Unexpected value: " + value);

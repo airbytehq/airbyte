@@ -29,7 +29,7 @@ public abstract class S3BaseJsonlDestinationAcceptanceTest extends S3Destination
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-            "flattening", Flattening.ROOT_LEVEL.getValue(),
+            "flattening", Flattening.NO.getValue(),
         "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
   }
 

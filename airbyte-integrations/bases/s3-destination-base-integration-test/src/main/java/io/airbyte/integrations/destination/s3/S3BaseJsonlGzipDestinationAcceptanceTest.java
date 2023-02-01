@@ -23,7 +23,7 @@ public abstract class S3BaseJsonlGzipDestinationAcceptanceTest extends S3BaseJso
     // config without compression defaults to GZIP
     return Jsons.jsonNode(Map.of(
             "format_type", outputFormat,
-            "flattening", S3JsonlFormatConfig.Flattening.ROOT_LEVEL.getValue()));
+            "flattening", S3JsonlFormatConfig.Flattening.NO.getValue()));
   }
 
   protected BufferedReader getReader(final S3Object s3Object) throws IOException {
