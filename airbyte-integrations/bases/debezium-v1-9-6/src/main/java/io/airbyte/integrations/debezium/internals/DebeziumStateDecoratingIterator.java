@@ -39,7 +39,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
   private final CdcMetadataInjector cdcMetadataInjector;
   private final Instant emittedAt;
 
-  private boolean isSyncFinished;
+  private boolean isSyncFinished = false;
 
   /**
    * These parameters control when a checkpoint message has to be sent in a CDC integration. We can
@@ -56,9 +56,9 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
   private final Integer syncCheckpointRecords;
   private OffsetDateTime dateTimeLastSync;
   private Integer recordsLastSync;
-  private Map<String, String> checkpointOffset;
-  private Map<String, String> previousCheckpointOffset;
-  private boolean sendCheckpointMessage;
+  private HashMap<String, String> checkpointOffset = new HashMap<>();
+  private HashMap<String, String> previousCheckpointOffset;
+  private boolean sendCheckpointMessage = false;
 
   /**
    * @param changeEventIterator Base iterator that we want to enrich with checkpoint messages
@@ -89,8 +89,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
 
     this.syncCheckpointDuration = Duration.ofSeconds(checkpointSeconds);
     this.syncCheckpointRecords = checkpointRecords;
-    this.isSyncFinished = false;
-    this.previousCheckpointOffset = new HashMap<>();
+    this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
     resetCheckpointValues();
   }
 
@@ -125,17 +124,17 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
         final ChangeEvent<String, String> event = changeEventIterator.next();
         recordsLastSync++;
 
-        if (checkpointOffset == null &&
+        if (checkpointOffset.size() == 0 &&
             (recordsLastSync >= syncCheckpointRecords ||
                 Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
-          checkpointOffset = offsetManager.read();
+          checkpointOffset.putAll(offsetManager.read());
           if (!previousCheckpointOffset.isEmpty() &&
               cdcStateHandler.isSameOffset(checkpointOffset, previousCheckpointOffset)){
-            checkpointOffset = null;
+            checkpointOffset.clear();
           }
         }
 
-        if (checkpointOffset != null
+        if (checkpointOffset.size() == 1
             && changeEventIterator.hasNext()
             && !cdcStateHandler.isSnapshotEvent(event)
             && cdcStateHandler.isRecordBehindOffset(checkpointOffset, event)) {
@@ -157,7 +156,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    */
   private void resetCheckpointValues() {
     sendCheckpointMessage = false;
-    checkpointOffset = null;
+    checkpointOffset.clear();
     recordsLastSync = 0;
     dateTimeLastSync = OffsetDateTime.now();
   }

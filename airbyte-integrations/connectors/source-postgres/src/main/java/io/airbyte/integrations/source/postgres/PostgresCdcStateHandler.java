@@ -77,11 +77,11 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
 
     JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
 
-    String lsn = offsetJson.get("lsn_commit") != null ?
+    String offset_lsn = offsetJson.get("lsn_commit") != null ?
         String.valueOf(offsetJson.get("lsn_commit")) :
         String.valueOf(offsetJson.get("lsn"));
-    return Integer.parseInt(String.valueOf(Jsons.deserialize(event.value()).get("source").get("lsn")))
-        > Integer.parseInt(lsn);
+    String event_lsn = String.valueOf(Jsons.deserialize(event.value()).get("source").get("lsn"));
+    return Integer.parseInt(event_lsn) > Integer.parseInt(offset_lsn);
   }
 
   @Override
