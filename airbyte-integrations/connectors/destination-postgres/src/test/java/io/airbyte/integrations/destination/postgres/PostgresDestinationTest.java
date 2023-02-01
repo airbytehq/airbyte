@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -208,7 +210,7 @@ public class PostgresDestinationTest {
 
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
-    final JdbcDatabase database = PostgreSQLContainerHelper.getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
+    final JdbcDatabase database = getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
 
     database.execute(connection -> connection.createStatement()
         .execute(String.format("create user %s with password '%s';", USERNAME, PASSWORD)));
@@ -249,7 +251,7 @@ public class PostgresDestinationTest {
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
     consumer.close();
 
-    final JdbcDatabase database = PostgreSQLContainerHelper.getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
+    final JdbcDatabase database = getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),
@@ -271,6 +273,10 @@ public class PostgresDestinationTest {
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
+  }
+
+  private JdbcDatabase getJdbcDatabaseFromConfig(final DataSource dataSource) {
+    return new DefaultJdbcDatabase(dataSource, JdbcUtils.getDefaultSourceOperations());
   }
 
 }
