@@ -15,6 +15,7 @@ from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
+    contains_typeless_schema,
     get_array_items,
     is_airbyte_column,
     is_array,
@@ -362,11 +363,7 @@ class StreamProcessor(object):
             elif is_combining_node(properties[field]):
                 # TODO: merge properties of all combinations
                 pass
-            elif (
-                data_type.TYPE_VAR_NAME not in properties[field]
-                and data_type.REF_TYPE_VAR_NAME not in properties[field]
-                and data_type.ONE_OF_VAR_NAME not in properties[field]
-            ) or is_object(properties[field]):
+            elif contains_typeless_schema(properties[field]) or is_object(properties[field]):
                 # properties without 'type' field are treated like properties with 'type' = 'object'
                 children_properties = find_properties_object([], field, properties[field])
                 is_nested_array = False
@@ -462,17 +459,16 @@ where 1 = 1
             table_alias = ""
 
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
-        if data_type.REF_TYPE_VAR_NAME in definition or data_type.TYPE_VAR_NAME in definition or data_type.ONE_OF_VAR_NAME in definition:
-            if is_array(definition):
-                json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
-                if is_simple_property(get_array_items(definition, {data_type.TYPE_VAR_NAME: "object"})):
-                    json_extract = jinja_call(f"json_extract_string_array({json_column_name}, {json_path}, {normalized_json_path})")
-            elif is_object(definition):
-                json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
-            elif is_date(definition) or is_time(definition) or is_datetime(definition):
-                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
-            elif is_simple_property(definition):
-                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
+        if is_array(definition):
+            json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
+            if is_simple_property(get_array_items(definition, {data_type.TYPE_VAR_NAME: "object"})):
+                json_extract = jinja_call(f"json_extract_string_array({json_column_name}, {json_path}, {normalized_json_path})")
+        elif is_object(definition):
+            json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
+        elif is_date(definition) or is_time(definition) or is_datetime(definition):
+            json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
+        elif is_simple_property(definition):
+            json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
 
         return f"{json_extract} as {column_name}"
 
@@ -512,6 +508,7 @@ where 1 = 1
 
     def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:  # noqa: C901
         definition = self.properties[property_name]
+        is_numeric = False
         if (
             data_type.TYPE_VAR_NAME not in definition
             and data_type.REF_TYPE_VAR_NAME not in definition
@@ -524,9 +521,7 @@ where 1 = 1
         elif is_object(definition):
             sql_type = jinja_call("type_json()")
         # Treat simple types from wider scope TO narrower type: string > boolean > integer > number
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_string(definition)) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_string(definition)
-        ):
+        elif is_string(definition):
             sql_type = jinja_call("dbt_utils.type_string()")
             if self.destination_type == DestinationType.CLICKHOUSE:
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
@@ -536,21 +531,18 @@ where 1 = 1
                 # Cast to `text` datatype. See https://github.com/airbytehq/airbyte/issues/7994
                 sql_type = f"{sql_type}(1024)"
 
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition)) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_boolean(definition)
-        ):
+        elif is_boolean(definition):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
         elif is_big_integer(definition):
             sql_type = jinja_call("type_very_large_integer()")
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_long(definition)) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_long(definition)
-        ):
+            is_numeric = True
+        elif is_long(definition):
             sql_type = jinja_call("dbt_utils.type_bigint()")
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_number(definition)) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_number(definition)
-        ):
+            is_numeric = True
+        elif is_number(definition):
             sql_type = jinja_call("dbt_utils.type_float()")
+            is_numeric = True
         elif is_datetime(definition):
             if self.destination_type == DestinationType.SNOWFLAKE:
                 # snowflake uses case when statement to parse timestamp field
@@ -604,9 +596,7 @@ where 1 = 1
                 return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_binary_datatype(definition)) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_binary_datatype(definition)
-        ):
+        elif is_binary_datatype(definition):
             if self.destination_type.value == DestinationType.POSTGRES.value:
                 # sql_type = "bytea"
                 sql_type = jinja_call("type_binary()")
@@ -649,10 +639,7 @@ where 1 = 1
             return column_name
 
         if self.destination_type == DestinationType.CLICKHOUSE:
-            if data_type.REF_TYPE_VAR_NAME in definition and (
-                data_type.NUMBER_TYPE in definition[data_type.REF_TYPE_VAR_NAME]
-                or data_type.INTEGER_TYPE in definition[data_type.REF_TYPE_VAR_NAME]
-            ):
+            if is_numeric:
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
                 return f"accurateCastOrNull({trimmed_column_name}, '{sql_type}') as {column_name}"
             else:
@@ -1119,7 +1106,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
         if path and len(path) == 1:
             field = path[0]
             if not is_airbyte_column(field):
-                if is_number(self.properties[field]) or is_object(self.properties[field]):
+                if is_number(self.properties[field]) or is_object(self.properties[field]) or contains_typeless_schema(self.properties[field]):
                     # some destinations don't handle float columns (or complex types) as primary keys, turn them to string
                     return f"cast({column_names[field][0]} as {jinja_call('dbt_utils.type_string()')})"
                 else:

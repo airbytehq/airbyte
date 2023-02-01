@@ -18,7 +18,7 @@ def remove_jinja(command: str) -> str:
 
 def is_type_included(definition: dict, is_type: Callable[[dict], bool]) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return bool(any(is_type(option) for option in definition[data_type.ONE_OF_VAR_NAME]))
+        return bool(any(is_type_included(option, is_type) for option in definition[data_type.ONE_OF_VAR_NAME]))
     else:
         return is_type(definition)
 
@@ -132,6 +132,14 @@ def is_object(definition: dict) -> bool:
     return is_type_included(
         definition, lambda schema: data_type.TYPE_VAR_NAME in schema and is_object_schema(schema[data_type.TYPE_VAR_NAME])
     )
+
+
+def is_typeless_schema(definition: dict) -> bool:
+    return data_type.TYPE_VAR_NAME not in definition and data_type.REF_TYPE_VAR_NAME not in definition
+
+
+def contains_typeless_schema(definition: dict) -> bool:
+    return is_type_included(definition, is_typeless_schema)
 
 
 def is_airbyte_column(name: str) -> bool:
