@@ -140,13 +140,7 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
         <FormattedMessage id="connectorBuilder.landingPage.prompt" />
       </Heading>
       <FlexContainer direction="row" gap="2xl">
-        <input
-          type="file"
-          accept=".yml,.yaml"
-          ref={fileInputRef}
-          style={{ display: "none" }}
-          onChange={handleYamlUpload}
-        />
+        <input type="file" accept=".yml,.yaml" ref={fileInputRef} onChange={handleYamlUpload} hidden />
         <Tile
           image={<ImportYamlImage />}
           title="connectorBuilder.landingPage.importYaml.title"
