@@ -24,10 +24,9 @@ interface ConnectionTableProps {
   data: ConnectionTableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ConnectionTableDataItem) => void;
-  onSync: (id: string) => void;
 }
 
-const ConnectionTable: React.FC<ConnectionTableProps> = ({ data, entity, onClickRow, onSync }) => {
+const ConnectionTable: React.FC<ConnectionTableProps> = ({ data, entity, onClickRow }) => {
   const navigate = useNavigate();
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
@@ -179,7 +178,6 @@ const ConnectionTable: React.FC<ConnectionTableProps> = ({ data, entity, onClick
             id={props.row.original.connectionId}
             isSyncing={props.row.original.isSyncing}
             isManual={props.row.original.scheduleType === ConnectionScheduleType.manual}
-            onSync={onSync}
             hasBreakingChange={allowAutoDetectSchema && props.row.original.schemaChange === SchemaChange.breaking}
             allowSync={allowSync}
           />
@@ -193,7 +191,7 @@ const ConnectionTable: React.FC<ConnectionTableProps> = ({ data, entity, onClick
         cell: (props) => <ConnectionSettingsCell id={props.cell.getValue()} />,
       }),
     ],
-    [columnHelper, sortBy, sortOrder, onSortClick, entity, onSync, allowAutoDetectSchema, allowSync]
+    [columnHelper, sortBy, sortOrder, onSortClick, entity, allowAutoDetectSchema, allowSync]
   );
 
   return <NextTable columns={columns} data={sortingData} onClickRow={onClickRow} testId="connectionsTable" />;

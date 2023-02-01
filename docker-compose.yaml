@@ -279,7 +279,7 @@ volumes:
     name: ${DB_DOCKER_MOUNT}
 configs:
   flags:
-    file: ./configs/flags.yml
+    file: ./flags.yml
 networks:
   airbyte_public:
   airbyte_internal:
