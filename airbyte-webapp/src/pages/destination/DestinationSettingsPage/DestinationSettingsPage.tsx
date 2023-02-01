@@ -1,15 +1,12 @@
 import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import { useParams } from "react-router-dom";
-
-import { StepsTypes } from "components/ConnectorBlocks";
+import { useOutletContext } from "react-router-dom";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import {
   useDeleteDestination,
-  useGetDestination,
   useInvalidateDestination,
   useUpdateDestination,
 } from "hooks/services/useDestinationHook";
@@ -20,10 +17,10 @@ import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ConnectorCardValues } from "views/Connector/ConnectorForm/types";
 
 import styles from "./DestinationSettings.module.scss";
+import { DestinationOutletContext } from "../types";
 
 export const DestinationSettingsPage: React.FC = () => {
-  const params = useParams() as { "*": StepsTypes | ""; id: string };
-  const destination = useGetDestination(params.id);
+  const { destination } = useOutletContext<DestinationOutletContext>();
   const { connections: connectionsWithDestination } = useConnectionList({ destinationId: [destination.destinationId] });
   const destinationSpecification = useGetDestinationDefinitionSpecification(destination.destinationDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
