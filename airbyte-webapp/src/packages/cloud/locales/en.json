@@ -165,7 +165,7 @@
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password",
 
-  "trial.alertMessage": "You are using a trial of Airbyte. Your trial ends in <b>{value, plural, one {# day} other {# days}}</b>.",
+  "trial.alertMessage": "You are using a trial of Airbyte. Your trial ends in <b>{remainingDays, plural, one {# day} other {# days}}</b>.",
 
   "verifyEmail.notification": "You successfully verified your email. Thank you.",
 
