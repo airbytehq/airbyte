@@ -5,11 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "backoff",
-    "requests",
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "backoff", "requests", "pandas"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
