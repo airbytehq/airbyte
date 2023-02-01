@@ -14,6 +14,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
@@ -40,6 +41,10 @@ class MarketoStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self._url_base
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, **kwargs) -> str:
         return f"rest/v1/{self.name}.json"
@@ -226,6 +231,7 @@ class MarketoExportBase(IncrementalMarketoStream):
 
         default_prop = {"type": ["null", "string"]}
         schema = self.get_json_schema()["properties"]
+        response.encoding = "utf-8"
 
         reader = csv.DictReader(response.iter_lines(chunk_size=1024, decode_unicode=True))
         for record in reader:
@@ -373,7 +379,9 @@ class Activities(MarketoExportBase):
             for attr in self.activity["attributes"]:
                 attr_name = clean_string(attr["name"])
 
-                if attr["dataType"] in ["datetime", "date"]:
+                if attr["dataType"] == "date":
+                    field_schema = {"type": "string", "format": "date"}
+                elif attr["dataType"] == "datetime":
                     field_schema = {"type": "string", "format": "date-time"}
                 elif attr["dataType"] in ["integer", "percent", "score"]:
                     field_schema = {"type": "integer"}
