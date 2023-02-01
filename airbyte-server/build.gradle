@@ -33,6 +33,7 @@ dependencies {
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
+    implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-server')
     implementation project(':airbyte-commons-worker')

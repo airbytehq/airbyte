@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.cli.Clis;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
@@ -84,7 +85,9 @@ public class CombinedConnectorCatalogGenerator {
         json -> json.get("spec")));
 
     for (final JsonNode definition : definitions) {
-      final String dockerImage = definition.get("dockerRepository").asText() + ":" + definition.get("dockerImageTag").asText();
+      final String dockerImage = DockerUtils.getTaggedImageName(
+          definition.get("dockerRepository").asText(),
+          definition.get("dockerImageTag").asText());
       final JsonNode specConfigJson = specsByImage.get(dockerImage);
 
       if (specConfigJson == null) {
