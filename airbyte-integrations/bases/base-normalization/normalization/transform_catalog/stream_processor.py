@@ -514,7 +514,7 @@ where 1 = 1
             and data_type.REF_TYPE_VAR_NAME not in definition
             and data_type.ONE_OF_VAR_NAME not in definition
         ):
-            print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
+            print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}: {definition}")
             return column_name
         elif is_array(definition):
             return column_name
@@ -1106,7 +1106,11 @@ from dedup_data where {{ airbyte_row_num }} = 1
         if path and len(path) == 1:
             field = path[0]
             if not is_airbyte_column(field):
-                if is_number(self.properties[field]) or is_object(self.properties[field]) or contains_typeless_schema(self.properties[field]):
+                if (
+                    is_number(self.properties[field])
+                    or is_object(self.properties[field])
+                    or contains_typeless_schema(self.properties[field])
+                ):
                     # some destinations don't handle float columns (or complex types) as primary keys, turn them to string
                     return f"cast({column_names[field][0]} as {jinja_call('dbt_utils.type_string()')})"
                 else:
