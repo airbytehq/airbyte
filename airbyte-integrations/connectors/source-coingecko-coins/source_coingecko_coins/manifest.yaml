@@ -11,8 +11,8 @@ definitions:
       x_cg_pro_api_key: "{{ config['api_key'] }}"
       vs_currency: "{{ config['vs_currency'] }}"
       days: "{{ config['days'] }}"
-  stream_slicer:
-    type: DatetimeStreamSlicer
+  incremental:
+    type: DatetimeBasedCursor
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%d-%m-%Y"
@@ -35,8 +35,8 @@ definitions:
       $ref: "#/definitions/requester"
   sliced_retriever:
     $ref: "#/definitions/retriever"
-    stream_slicer:
-      $ref: "#/definitions/stream_slicer"
+    incremental:
+      $ref: "#/definitions/incremental"
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"

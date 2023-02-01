@@ -18,8 +18,8 @@ definitions:
       orderby: "id"
       order: "asc"
       dates_are_gmt: "true"
-  date_stream_slicer:
-    type: DatetimeStreamSlicer
+  date_incremental:
+    type: DatetimeBasedCursor
     lookback_window: "P{{ config.get('conversion_window_days', 0) }}D"
     start_datetime:
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
@@ -59,8 +59,8 @@ definitions:
   base_incremental_stream:
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
-        $ref: "#/definitions/date_stream_slicer"
+      incremental:
+        $ref: "#/definitions/date_incremental"
   customers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -152,8 +152,8 @@ definitions:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
-        $ref: "#/definitions/date_stream_slicer"
+      incremental:
+        $ref: "#/definitions/date_incremental"
         start_time_option:
           field_name: after
           inject_into: request_parameter

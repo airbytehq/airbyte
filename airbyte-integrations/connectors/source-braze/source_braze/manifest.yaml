@@ -77,6 +77,7 @@ definitions:
 
   # ----- Slicers -----
   datetime_100d_slicer:
+    type: CustomIncremental
     class_name: "source_braze.DatetimeStreamSlicerComponent"
     cursor_field: "time"
     start_datetime:
@@ -107,7 +108,7 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-    stream_slicer:
+    incremental:
       $ref: "#/definitions/datetime_100d_slicer"
 
   kpi_daily_new_users_stream:
@@ -137,17 +138,16 @@ definitions:
     retriever:
       $ref: "#/definitions/sliced_retriever"
       stream_slicer:
-        type: CartesianProductStreamSlicer
-        stream_slicers:
-          - type: SubstreamSlicer
-            parent_stream_configs:
-              - stream: "#/definitions/campaigns_stream"
-                parent_key: "id"
-                stream_slice_field: "campaign_id"
-                request_option:
-                  field_name: "campaign_id"
-                  inject_into: "request_parameter"
-          - "#/definitions/datetime_100d_slicer"
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "#/definitions/campaigns_stream"
+            parent_key: "id"
+            stream_slice_field: "campaign_id"
+            request_option:
+              field_name: "campaign_id"
+              inject_into: "request_parameter"
+      incremental:
+        "$ref": "#/definitions/datetime_100d_slicer"
     transformations:
       - type: AddFields
         fields:
@@ -161,17 +161,16 @@ definitions:
         extractor:
           field_pointer: ["data", "stats"]
       stream_slicer:
-        type: CartesianProductStreamSlicer
-        stream_slicers:
-          - type: SubstreamSlicer
-            parent_stream_configs:
-              - stream: "#/definitions/canvases_stream"
-                parent_key: "id"
-                stream_slice_field: "canvas_id"
-                request_option:
-                  field_name: "canvas_id"
-                  inject_into: "request_parameter"
-          - "#/definitions/datetime_14d_slicer"
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "#/definitions/canvases_stream"
+            parent_key: "id"
+            stream_slice_field: "canvas_id"
+            request_option:
+              field_name: "canvas_id"
+              inject_into: "request_parameter"
+      incremental:
+        "$ref": "#/definitions/datetime_14d_slicer"
     transformations:
       - type: AddFields
         fields:
@@ -182,17 +181,16 @@ definitions:
     retriever:
       $ref: "#/definitions/sliced_retriever"
       stream_slicer:
-        type: CartesianProductStreamSlicer
-        stream_slicers:
-          - type: SubstreamSlicer
-            parent_stream_configs:
-              - stream: "#/definitions/cards_stream"
-                parent_key: "id"
-                stream_slice_field: "card_id"
-                request_option:
-                  field_name: "card_id"
-                  inject_into: "request_parameter"
-          - "#/definitions/datetime_100d_slicer"
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "#/definitions/cards_stream"
+            parent_key: "id"
+            stream_slice_field: "card_id"
+            request_option:
+              field_name: "card_id"
+              inject_into: "request_parameter"
+      incremental:
+        "$ref": "#/definitions/datetime_100d_slicer"
     transformations:
       - type: AddFields
         fields:
@@ -203,17 +201,16 @@ definitions:
     retriever:
       $ref: "#/definitions/sliced_retriever"
       stream_slicer:
-        type: CartesianProductStreamSlicer
-        stream_slicers:
-          - type: SubstreamSlicer
-            parent_stream_configs:
-              - stream: "#/definitions/segments_stream"
-                parent_key: "id"
-                stream_slice_field: "segment_id"
-                request_option:
-                  field_name: "segment_id"
-                  inject_into: "request_parameter"
-          - "#/definitions/datetime_100d_slicer"
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "#/definitions/segments_stream"
+            parent_key: "id"
+            stream_slice_field: "segment_id"
+            request_option:
+              field_name: "segment_id"
+              inject_into: "request_parameter"
+      incremental:
+        "$ref": "#/definitions/datetime_100d_slicer"
     transformations:
       - type: AddFields
         fields:
@@ -228,17 +225,16 @@ definitions:
         request_parameters:
           unit: "day"
       stream_slicer:
-        type: CartesianProductStreamSlicer
-        stream_slicers:
-          - type: SubstreamSlicer
-            parent_stream_configs:
-              - stream: "#/definitions/custom_events_stream"
-                parent_key: "event_name"
-                stream_slice_field: "event"
-                request_option:
-                  field_name: "event"
-                  inject_into: "request_parameter"
-          - "#/definitions/datetime_100d_slicer"
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "#/definitions/custom_events_stream"
+            parent_key: "event_name"
+            stream_slice_field: "event"
+            request_option:
+              field_name: "event"
+              inject_into: "request_parameter"
+      incremental:
+        "$ref": "#/definitions/datetime_100d_slicer"
     transformations:
       - type: AddFields
         fields:

@@ -14,11 +14,16 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "CompositeErrorHandler.error_handlers": "DefaultErrorHandler",
     # CursorPagination
     "CursorPagination.decoder": "JsonDecoder",
-    # DatetimeStreamSlicer
-    "DatetimeStreamSlicer.end_datetime": "MinMaxDatetime",
-    "DatetimeStreamSlicer.end_time_option": "RequestOption",
-    "DatetimeStreamSlicer.start_datetime": "MinMaxDatetime",
-    "DatetimeStreamSlicer.start_time_option": "RequestOption",
+    # DatetimeBasedCursor
+    "DatetimeBasedCursor.end_datetime": "MinMaxDatetime",
+    "DatetimeBasedCursor.end_time_option": "RequestOption",
+    "DatetimeBasedCursor.start_datetime": "MinMaxDatetime",
+    "DatetimeBasedCursor.start_time_option": "RequestOption",
+    # CustomIncremental
+    "CustomIncremental.end_datetime": "MinMaxDatetime",
+    "CustomIncremental.end_time_option": "RequestOption",
+    "CustomIncremental.start_datetime": "MinMaxDatetime",
+    "CustomIncremental.start_time_option": "RequestOption",
     # DeclarativeSource
     "DeclarativeSource.check": "CheckStream",
     "DeclarativeSource.spec": "Spec",

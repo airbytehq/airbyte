@@ -13,9 +13,9 @@ def test_string_to_dict_transformation():
     added_field = AddedFieldDefinition(
         path=["append_key"],
         value="{{ record }}",
-        options={}
+        parameters={}
     )
-    transformation = TransformToRecordComponent(fields=[added_field], options={})
+    transformation = TransformToRecordComponent(fields=[added_field], parameters={})
     record = transformation.transform(record="StringRecord", config={}, stream_state={}, stream_slice={})
     expected_record = {"append_key": "StringRecord"}
     assert record == expected_record

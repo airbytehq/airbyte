@@ -22,8 +22,8 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
 
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
+  incremental:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
@@ -49,8 +49,8 @@ definitions:
       page_token_option:
         field_name: "offset"
         inject_into: "request_parameter"
-    stream_slicer:
-      $ref: "#/definitions/stream_slicer"
+    incremental:
+      $ref: "#/definitions/incremental"
     requester:
       $ref: "#/definitions/requester"
 

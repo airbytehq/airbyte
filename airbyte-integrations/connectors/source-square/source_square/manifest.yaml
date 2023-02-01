@@ -77,8 +77,8 @@ definitions:
         page_size_option:
           field_name: "limit"
           inject_into: "body_json"
-      stream_slicer:
-        type: DatetimeStreamSlicer
+      incremental:
+        type: DatetimeBasedCursor
         start_datetime:
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -123,8 +123,8 @@ definitions:
         page_size_option:
           field_name: "limit"
           inject_into: "body_json"
-      stream_slicer:
-        type: DatetimeStreamSlicer
+      incremental:
+        type: DatetimeBasedCursor
         start_datetime:
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"

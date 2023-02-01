@@ -26,8 +26,8 @@ definitions:
       $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
-    stream_slicer:
-      type: "DatetimeStreamSlicer"
+    incremental:
+      type: "DatetimeBasedCursor"
       start_datetime:
         datetime: "{{ config['start_date'] or ' '.join(day_delta(-7).split('.')[0].split('T')) }}"
         datetime_format: "%Y-%m-%d %H:%M:%S"

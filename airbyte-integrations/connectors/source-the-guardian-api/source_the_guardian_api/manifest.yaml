@@ -17,8 +17,8 @@ definitions:
       order-by: "oldest"
       # from-date: "{{ config['start_date'] }}"
       # to-date: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
+  incremental:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
@@ -53,8 +53,8 @@ definitions:
         field_name: "page_size"
     requester:
       $ref: "#/definitions/requester"
-    stream_slicer:
-      $ref: "#/definitions/stream_slicer"
+    incremental:
+      $ref: "#/definitions/incremental"
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"

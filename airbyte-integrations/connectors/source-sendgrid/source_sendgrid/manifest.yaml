@@ -43,8 +43,8 @@ definitions:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
     primary_key: "{{ parameters['primary_key'] }}"
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
+  incremental:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_time'] }}"
       datetime_format: "%s"
@@ -61,8 +61,8 @@ definitions:
       inject_into: "request_parameter"
     datetime_format: "%s"
     cursor_granularity: "PT1S"
-  messages_stream_slicer:
-    type: "DatetimeStreamSlicer"
+  messages_incremental:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_time'] }}"
       datetime_format: "%s"
@@ -165,8 +165,8 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      stream_slicer:
-        $ref: "#/definitions/stream_slicer"
+      incremental:
+        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "global_suppressions"
@@ -178,8 +178,8 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      stream_slicer:
-        $ref: "#/definitions/stream_slicer"
+      incremental:
+        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "blocks"
@@ -191,8 +191,8 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      stream_slicer:
-        $ref: "#/definitions/stream_slicer"
+      incremental:
+        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "suppression_groups"
@@ -220,8 +220,8 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      stream_slicer:
-        $ref: "#/definitions/stream_slicer"
+      incremental:
+        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "spam_reports"
@@ -233,8 +233,8 @@ streams:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      stream_slicer:
-        $ref: "#/definitions/stream_slicer"
+      incremental:
+        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "messages"
@@ -249,8 +249,8 @@ streams:
         request_parameters:
           limit: "1000"
           query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
-      stream_slicer:
-        $ref: "#/definitions/messages_stream_slicer"
+      incremental:
+        $ref: "#/definitions/messages_incremental"
 check:
   type: CheckStream
   stream_names: ["lists"]

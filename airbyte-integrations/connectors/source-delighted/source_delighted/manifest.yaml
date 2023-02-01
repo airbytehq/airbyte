@@ -19,7 +19,8 @@ definitions:
       backoff_strategies:
         - type: WaitTimeFromHeader
           header: "Retry-After"
-  stream_slicer:
+  incremental:
+    type: DatetimeBasedCursor
     cursor_field: "{{ parameters['stream_cursor_field'] }}"
     datetime_format: "%s"
     cursor_granularity: "PT1S"
@@ -36,7 +37,6 @@ definitions:
     start_time_option:
       field_name: "since"
       inject_into: "request_parameter"
-    type: DatetimeStreamSlicer
   retriever:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
@@ -56,8 +56,8 @@ definitions:
         inject_into: "request_parameter"
     requester:
       $ref: "#/definitions/requester"
-    stream_slicer:
-      $ref: "#/definitions/stream_slicer"
+    incremental:
+      $ref: "#/definitions/incremental"
   base_stream:
     primary_key: "id"
     retriever:
@@ -104,8 +104,8 @@ definitions:
     stream_cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
-        $ref: "#/definitions/stream_slicer"
+      incremental:
+        $ref: "#/definitions/incremental"
         end_time_option:
           field_name: "updated_until"
           inject_into: "request_parameter"

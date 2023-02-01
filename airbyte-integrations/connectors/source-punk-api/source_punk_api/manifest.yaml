@@ -15,25 +15,6 @@ definitions:
           else ''
         }}
 
-  stream_slicer:
-    type: DatetimeStreamSlicer
-    start_datetime:
-      datetime: "{{ config['brewed_after'] }}"
-      format: "mm-YYYY"
-    end_datetime:
-      datetime: "{{ config['brewed_before'] }}"
-      format: "mm-YYYY"
-    # end_datetime:
-    #   datetime: "{{ now_local() }}"
-    #   format: "%Y-%m-%d %H:%M:%S.%f"
-    step: "P1M"
-    datetime_format: "mm-YYYY"
-    cursor_granularity: "P1M"
-    cursor_field: airdate
-    # start_time_option:
-    #   field_name: "date"
-    #   inject_into: "request_parameter"
-
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -41,8 +22,6 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-    # stream_slicer:
-    #   $ref: "#/definitions/stream_slicer"
 
   base_stream:
     schema_loader:

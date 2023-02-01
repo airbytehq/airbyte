@@ -17,8 +17,8 @@ definitions:
       record_selector:
         extractor:
           field_pointer: ["response", "docs"]
-      stream_slicer:
-        type: "DatetimeStreamSlicer"
+      incremental:
+        type: "DatetimeBasedCursor"
         start_datetime:
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m"

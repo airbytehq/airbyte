@@ -15,23 +15,6 @@ definitions:
       query: "{{ config['query'] }}"
       start_time: "{{ config['start_time'] }}"
       end_time: "{{ config['end_time'] }}"
-  stream_slicer:
-    type: DatetimeStreamSlicer
-    start_datetime:
-      datetime: "{{ config['start_time'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S"
-    end_datetime:
-      datetime: "{{ config['end_time'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S"
-    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    cursor_granularity: "PT1S"
-    step: "P1D"
-    start_time_option:
-      field_name: start_time
-      inject_into: request_parameter
-    end_time_option:
-      field_name: end_time
-      inject_into: request_parameter
   retriever:
     record_selector:
       $ref: "#/definitions/selector"

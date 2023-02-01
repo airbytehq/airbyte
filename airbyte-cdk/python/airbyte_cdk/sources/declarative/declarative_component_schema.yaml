@@ -118,27 +118,6 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  CartesianProductStreamSlicer:
-    description: Stream slicer that iterates over the cartesian product of input stream slicers
-    type: object
-    required:
-      - type
-      - stream_slicers
-    properties:
-      type:
-        enum: [CartesianProductStreamSlicer]
-      stream_slicers:
-        type: array
-        items:
-          anyOf:
-            - "$ref": "#/definitions/CustomStreamSlicer"
-            - "$ref": "#/definitions/DatetimeStreamSlicer"
-            - "$ref": "#/definitions/ListStreamSlicer"
-            - "$ref": "#/definitions/SingleSlice"
-            - "$ref": "#/definitions/SubstreamSlicer"
-      $parameters:
-        type: object
-        additionalProperties: true
   CheckStream:
     description: Checks the connections by trying to read records from one or many of the streams selected by the developer
     type: object
@@ -259,6 +238,23 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  CustomIncremental:
+    description: Incremental component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        type: string
+        enum: [CustomIncremental]
+      class_name:
+        type: string
+        additionalProperties: true
+      $parameters:
+        type: object
+        additionalProperties: true
   CustomPaginationStrategy:
     description: Pagination strategy component whose behavior is derived from a custom code implementation of the connector
     type: object
@@ -357,8 +353,8 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  DatetimeStreamSlicer:
-    description: Stream slicer that slices the stream over a datetime range
+  DatetimeBasedCursor:
+    description: Cursor to provide incremental capabilities over datetime
     type: object
     required:
       - type
@@ -371,7 +367,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [DatetimeStreamSlicer]
+        enum: [DatetimeBasedCursor]
       cursor_field:
         type: string
       datetime_format:
@@ -994,6 +990,10 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRequester"
           - "$ref": "#/definitions/HttpRequester"
+      incremental:
+        anyOf:
+          - "$ref": "#/definitions/DatetimeBasedCursor"
+          - "$ref": "#/definitions/CustomIncremental"
       name:
         type: string
         default: ""
@@ -1005,9 +1005,7 @@ definitions:
         "$ref": "#/definitions/PrimaryKey"
       stream_slicer:
         anyOf:
-          - "$ref": "#/definitions/CartesianProductStreamSlicer"
           - "$ref": "#/definitions/CustomStreamSlicer"
-          - "$ref": "#/definitions/DatetimeStreamSlicer"
           - "$ref": "#/definitions/ListStreamSlicer"
           - "$ref": "#/definitions/SingleSlice"
           - "$ref": "#/definitions/SubstreamSlicer"

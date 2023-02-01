@@ -23,8 +23,8 @@ def test_datetime_slicer():
         datetime_format="%Y-%m-%d",
         cursor_granularity="P1D",
         config={},
-        options={},
-        step_option=RequestOption(field_name="step", inject_into=RequestOptionType.request_parameter, options={})
+        parameters={},
+        step_option=RequestOption(field_name="step", inject_into=RequestOptionType.request_parameter, parameters={})
     )
     expected_slices = [
         {'start_time': '2022-12-01', 'end_time': '2022-12-03', 'step': 2},

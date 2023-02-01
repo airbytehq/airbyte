@@ -34,8 +34,8 @@ definitions:
     checkpoint_interval: 500
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
-        type: "DatetimeStreamSlicer"
+      incremental:
+        type: "DatetimeBasedCursor"
         start_datetime:
           datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%d"

@@ -62,7 +62,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
-      stream_slicer:
+      incremental:
         cursor_field: "startDate"
         datetime_format: "%Y-%m-%d"
         cursor_granularity: "P1D"
@@ -79,7 +79,7 @@ definitions:
         start_time_option:
           field_name: "from"
           inject_into: "request_parameter"
-        type: DatetimeStreamSlicer
+        type: DatetimeBasedCursor
     $parameters:
       name: "worklogs"
       path: "worklogs"

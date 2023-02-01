@@ -12,8 +12,8 @@ definitions:
       api_token: "{{ config['api_token'] }}"
     request_parameters:
       limit: "100"
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
+  incremental:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%s"
@@ -45,8 +45,8 @@ definitions:
       $ref: "#/definitions/paginator"
     requester:
       $ref: "#/definitions/requester"
-    stream_slicer:
-      $ref: "#/definitions/stream_slicer"
+    incremental:
+      $ref: "#/definitions/incremental"
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"

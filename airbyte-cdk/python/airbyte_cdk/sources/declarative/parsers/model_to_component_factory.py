@@ -26,9 +26,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
-    CartesianProductStreamSlicer as CartesianProductStreamSlicerModel,
-)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
@@ -36,13 +33,14 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomAuthenticator as CustomAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomBackoffStrategy as CustomBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomErrorHandler as CustomErrorHandlerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomIncremental as CustomIncrementalModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomStreamSlicer as CustomStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeStreamSlicer as DatetimeStreamSlicerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultPaginator as DefaultPaginatorModel
@@ -123,20 +121,20 @@ class ModelToComponentFactory:
             BasicHttpAuthenticatorModel: self.create_basic_http_authenticator,
             BearerAuthenticatorModel: self.create_bearer_authenticator,
             CheckStreamModel: self.create_check_stream,
-            CartesianProductStreamSlicerModel: self.create_cartesian_product_slicer,
             CompositeErrorHandlerModel: self.create_composite_error_handler,
             ConstantBackoffStrategyModel: self.create_constant_backoff_strategy,
             CursorPaginationModel: self.create_cursor_pagination,
             CustomAuthenticatorModel: self.create_custom_component,
             CustomBackoffStrategyModel: self.create_custom_component,
             CustomErrorHandlerModel: self.create_custom_component,
+            CustomIncrementalModel: self.create_custom_component,
             CustomRecordExtractorModel: self.create_custom_component,
             CustomRequesterModel: self.create_custom_component,
             CustomRetrieverModel: self.create_custom_component,
             CustomPaginationStrategyModel: self.create_custom_component,
             CustomStreamSlicerModel: self.create_custom_component,
             CustomTransformationModel: self.create_custom_component,
-            DatetimeStreamSlicerModel: self.create_datetime_stream_slicer,
+            DatetimeBasedCursorModel: self.create_datetime_stream_slicer,
             DeclarativeStreamModel: self.create_declarative_stream,
             DefaultErrorHandlerModel: self.create_default_error_handler,
             DefaultPaginatorModel: self.create_default_paginator,
@@ -227,14 +225,6 @@ class ModelToComponentFactory:
             config=config,
             parameters=model.parameters,
         )
-
-    def create_cartesian_product_slicer(
-        self, model: CartesianProductStreamSlicerModel, config: Config, **kwargs
-    ) -> CartesianProductStreamSlicer:
-        stream_slicers = [
-            self._create_component_from_model(model=stream_slicer_model, config=config) for stream_slicer_model in model.stream_slicers
-        ]
-        return CartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters=model.parameters)
 
     @staticmethod
     def create_check_stream(model: CheckStreamModel, config: Config, **kwargs):
@@ -360,7 +350,7 @@ class ModelToComponentFactory:
     def _is_component(model_value: Any) -> bool:
         return isinstance(model_value, dict) and model_value.get("type")
 
-    def create_datetime_stream_slicer(self, model: DatetimeStreamSlicerModel, config: Config, **kwargs) -> DatetimeStreamSlicer:
+    def create_datetime_stream_slicer(self, model: DatetimeBasedCursorModel, config: Config, **kwargs) -> DatetimeStreamSlicer:
         start_datetime = (
             model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
         )
@@ -664,11 +654,16 @@ class ModelToComponentFactory:
             if model.paginator
             else NoPagination(parameters={})
         )
+
         stream_slicer = (
             self._create_component_from_model(model=model.stream_slicer, config=config)
             if model.stream_slicer
             else SingleSlice(parameters={})
         )
+
+        if model.incremental:
+            cursor_stream_slicer = self._create_component_from_model(model=model.incremental, config=config)
+            stream_slicer = CartesianProductStreamSlicer([cursor_stream_slicer, stream_slicer], parameters={})
 
         if self._limit_slices_fetched:
             return SimpleRetrieverTestReadDecorator(

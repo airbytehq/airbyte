@@ -91,6 +91,15 @@ class CustomErrorHandler(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class CustomIncremental(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal["CustomIncremental"]
+    class_name: str
+    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+
+
 class CustomPaginationStrategy(BaseModel):
     class Config:
         extra = Extra.allow
@@ -325,8 +334,8 @@ class CursorPagination(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class DatetimeStreamSlicer(BaseModel):
-    type: Literal["DatetimeStreamSlicer"]
+class DatetimeBasedCursor(BaseModel):
+    type: Literal["DatetimeBasedCursor"]
     cursor_field: str
     datetime_format: str
     cursor_granularity: str
@@ -446,20 +455,6 @@ class DeclarativeSource(BaseModel):
     spec: Optional[Spec] = None
 
 
-class CartesianProductStreamSlicer(BaseModel):
-    type: Literal["CartesianProductStreamSlicer"]
-    stream_slicers: List[
-        Union[
-            CustomStreamSlicer,
-            DatetimeStreamSlicer,
-            ListStreamSlicer,
-            SingleSlice,
-            SubstreamSlicer,
-        ]
-    ]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
 class DeclarativeStream(BaseModel):
     class Config:
         extra = Extra.allow
@@ -488,19 +483,11 @@ class SimpleRetriever(BaseModel):
     type: Literal["SimpleRetriever"]
     record_selector: RecordSelector
     requester: Union[CustomRequester, HttpRequester]
+    incremental: Optional[Union[DatetimeBasedCursor, CustomIncremental]] = None
     name: Optional[str] = ""
     paginator: Optional[Union[DefaultPaginator, NoPagination]] = None
     primary_key: Optional[PrimaryKey] = None
-    stream_slicer: Optional[
-        Union[
-            CartesianProductStreamSlicer,
-            CustomStreamSlicer,
-            DatetimeStreamSlicer,
-            ListStreamSlicer,
-            SingleSlice,
-            SubstreamSlicer,
-        ]
-    ] = None
+    stream_slicer: Optional[Union[CustomStreamSlicer, ListStreamSlicer, SingleSlice, SubstreamSlicer]] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
@@ -512,6 +499,5 @@ class SubstreamSlicer(BaseModel):
 
 CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
-CartesianProductStreamSlicer.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SimpleRetriever.update_forward_refs()
