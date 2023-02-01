@@ -57,7 +57,7 @@ public class GlueOperations implements MetastoreOperations {
           .withTableInput(
               new TableInput()
                   .withName(tableName)
-                  // .withTableType("GOVERNED")
+                  .withTableType("EXTERNAL_TABLE")
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)
@@ -80,7 +80,7 @@ public class GlueOperations implements MetastoreOperations {
           .withTableInput(
               new TableInput()
                   .withName(tableName)
-                  // .withTableType("GOVERNED")
+                  .withTableType("EXTERNAL_TABLE")
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)
