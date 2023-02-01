@@ -59,51 +59,63 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
   const [importYamlLoading, setImportYamlLoading] = useState(false);
 
   const handleYamlUpload = useCallback(
-    async (yaml: string, fileName?: string) => {
-      try {
-        let json;
+    async (uploadEvent: React.ChangeEvent<HTMLInputElement>) => {
+      setImportYamlLoading(true);
+      const file = uploadEvent.target.files?.[0];
+      const reader = new FileReader();
+      reader.onload = async (readerEvent) => {
+        const yaml = readerEvent.target?.result as string;
+        const fileName = file?.name;
+
         try {
-          json = load(yaml) as ConnectorManifest;
-        } catch (e) {
-          if (e instanceof YAMLException) {
-            registerNotification({
-              id: YAML_UPLOAD_ERROR_ID,
-              text: (
-                <FormattedMessage
-                  id={YAML_UPLOAD_ERROR_ID}
-                  values={{
-                    reason: e.reason,
-                    line: e.mark.line,
-                  }}
-                />
-              ),
-              type: ToastType.ERROR,
-            });
+          let json;
+          try {
+            json = load(yaml) as ConnectorManifest;
+          } catch (e) {
+            if (e instanceof YAMLException) {
+              registerNotification({
+                id: YAML_UPLOAD_ERROR_ID,
+                text: (
+                  <FormattedMessage
+                    id={YAML_UPLOAD_ERROR_ID}
+                    values={{
+                      reason: e.reason,
+                      line: e.mark.line,
+                    }}
+                  />
+                ),
+                type: ToastType.ERROR,
+              });
+            }
+            return;
           }
-          return;
-        }
 
-        let convertedFormValues;
-        try {
-          convertedFormValues = await convertToBuilderFormValues(json, DEFAULT_BUILDER_FORM_VALUES);
-        } catch (e) {
-          setStoredEditorView("yaml");
-          setStoredManifest(json);
+          let convertedFormValues;
+          try {
+            convertedFormValues = await convertToBuilderFormValues(json, DEFAULT_BUILDER_FORM_VALUES);
+          } catch (e) {
+            setStoredEditorView("yaml");
+            setStoredManifest(json);
+            navigate(ConnectorBuilderRoutePaths.Edit);
+            return;
+          }
+
+          if (fileName) {
+            convertedFormValues.global.connectorName = startCase(fileName.split(".")[0]);
+          }
+          setStoredEditorView("ui");
+          setStoredFormValues(convertedFormValues);
           navigate(ConnectorBuilderRoutePaths.Edit);
-          return;
+        } finally {
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+          setImportYamlLoading(false);
         }
+      };
 
-        if (fileName) {
-          convertedFormValues.global.connectorName = startCase(fileName.split(".")[0]);
-        }
-        setStoredEditorView("ui");
-        setStoredFormValues(convertedFormValues);
-        navigate(ConnectorBuilderRoutePaths.Edit);
-      } finally {
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        setImportYamlLoading(false);
+      if (file) {
+        reader.readAsText(file);
       }
     },
     [
@@ -133,17 +145,7 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
           accept=".yml,.yaml"
           ref={fileInputRef}
           style={{ display: "none" }}
-          onChange={(uploadEvent) => {
-            setImportYamlLoading(true);
-            const file = uploadEvent.target.files?.[0];
-            const reader = new FileReader();
-            reader.onload = (readerEvent) => {
-              handleYamlUpload(readerEvent.target?.result as string, file?.name);
-            };
-            if (file) {
-              reader.readAsText(file);
-            }
-          }}
+          onChange={handleYamlUpload}
         />
         <Tile
           image={<ImportYamlImage />}
