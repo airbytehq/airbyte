@@ -4,7 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom/extend-expect";
 import "@testing-library/jest-dom";
-import "../globals";
+import "../dayjs-setup";
 
 // jsdom doesn't mock `matchMedia`, which is required by react-slick
 Object.defineProperty(window, "matchMedia", {

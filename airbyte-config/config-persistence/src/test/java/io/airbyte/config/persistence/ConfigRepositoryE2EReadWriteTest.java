@@ -141,6 +141,7 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
 
   @Test
   void testSimpleInsertActorCatalog() throws IOException, JsonValidationException, SQLException {
+    final String otherConfigHash = "OtherConfigHash";
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
@@ -160,35 +161,52 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
     configRepository.writeSourceConnectionNoSecrets(source);
 
     final AirbyteCatalog actorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING));
+    final AirbyteCatalog expectedActorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING_V1));
     configRepository.writeActorCatalogFetchEvent(
         actorCatalog, source.getSourceId(), DOCKER_IMAGE_TAG, CONFIG_HASH);
 
     final Optional<ActorCatalog> catalog =
         configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, CONFIG_HASH);
     assertTrue(catalog.isPresent());
-    assertEquals(actorCatalog, Jsons.object(catalog.get().getCatalog(), AirbyteCatalog.class));
+    assertEquals(expectedActorCatalog, Jsons.object(catalog.get().getCatalog(), AirbyteCatalog.class));
     assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.3.0", CONFIG_HASH).isPresent());
-    assertFalse(configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, "OtherConfigHash").isPresent());
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, otherConfigHash).isPresent());
 
     configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.3.0", CONFIG_HASH);
     final Optional<ActorCatalog> catalogNewConnectorVersion =
         configRepository.getActorCatalog(source.getSourceId(), "1.3.0", CONFIG_HASH);
     assertTrue(catalogNewConnectorVersion.isPresent());
-    assertEquals(actorCatalog, Jsons.object(catalogNewConnectorVersion.get().getCatalog(), AirbyteCatalog.class));
+    assertEquals(expectedActorCatalog, Jsons.object(catalogNewConnectorVersion.get().getCatalog(), AirbyteCatalog.class));
 
-    configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.2.0", "OtherConfigHash");
+    configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.2.0", otherConfigHash);
     final Optional<ActorCatalog> catalogNewConfig =
-        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, "OtherConfigHash");
+        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, otherConfigHash);
     assertTrue(catalogNewConfig.isPresent());
-    assertEquals(actorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
+    assertEquals(expectedActorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
 
     final int catalogDbEntry = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
     assertEquals(1, catalogDbEntry);
+
+    // Writing the previous catalog with v1 data types
+    configRepository.writeActorCatalogFetchEvent(expectedActorCatalog, source.getSourceId(), "1.2.0", otherConfigHash);
+    final Optional<ActorCatalog> catalogV1NewConfig =
+        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, otherConfigHash);
+    assertTrue(catalogV1NewConfig.isPresent());
+    assertEquals(expectedActorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
+
+    configRepository.writeActorCatalogFetchEvent(expectedActorCatalog, source.getSourceId(), "1.4.0", otherConfigHash);
+    final Optional<ActorCatalog> catalogV1again =
+        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, otherConfigHash);
+    assertTrue(catalogV1again.isPresent());
+    assertEquals(expectedActorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
+
+    final int catalogDbEntry2 = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
+    assertEquals(2, catalogDbEntry2);
   }
 
   @Test
   void testListWorkspaceStandardSyncAll() throws IOException {
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+    final List<StandardSync> expectedSyncs = copyWithV1Types(MockData.standardSyncs().subList(0, 4));
     final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(
         MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
 
@@ -199,10 +217,11 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   void testListWorkspaceStandardSyncWithAllFiltering() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final StandardSyncQuery query = new StandardSyncQuery(workspaceId, List.of(MockData.SOURCE_ID_1), List.of(MockData.DESTINATION_ID_1), false);
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3).stream()
-        .filter(sync -> query.destinationId().contains(sync.getDestinationId()))
-        .filter(sync -> query.sourceId().contains(sync.getSourceId()))
-        .toList();
+    final List<StandardSync> expectedSyncs = copyWithV1Types(
+        MockData.standardSyncs().subList(0, 3).stream()
+            .filter(sync -> query.destinationId().contains(sync.getDestinationId()))
+            .filter(sync -> query.sourceId().contains(sync.getSourceId()))
+            .toList());
     final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
 
     assertSyncsMatch(expectedSyncs, actualSyncs);
@@ -212,9 +231,10 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   void testListWorkspaceStandardSyncDestinationFiltering() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final StandardSyncQuery query = new StandardSyncQuery(workspaceId, null, List.of(MockData.DESTINATION_ID_1), false);
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3).stream()
-        .filter(sync -> query.destinationId().contains(sync.getDestinationId()))
-        .toList();
+    final List<StandardSync> expectedSyncs = copyWithV1Types(
+        MockData.standardSyncs().subList(0, 3).stream()
+            .filter(sync -> query.destinationId().contains(sync.getDestinationId()))
+            .toList());
     final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
 
     assertSyncsMatch(expectedSyncs, actualSyncs);
@@ -224,9 +244,10 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   void testListWorkspaceStandardSyncSourceFiltering() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final StandardSyncQuery query = new StandardSyncQuery(workspaceId, List.of(MockData.SOURCE_ID_2), null, false);
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3).stream()
-        .filter(sync -> query.sourceId().contains(sync.getSourceId()))
-        .toList();
+    final List<StandardSync> expectedSyncs = copyWithV1Types(
+        MockData.standardSyncs().subList(0, 3).stream()
+            .filter(sync -> query.sourceId().contains(sync.getSourceId()))
+            .toList());
     final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
 
     assertSyncsMatch(expectedSyncs, actualSyncs);
@@ -234,7 +255,7 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
 
   @Test
   void testListWorkspaceStandardSyncExcludeDeleted() throws IOException {
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3);
+    final List<StandardSync> expectedSyncs = copyWithV1Types(MockData.standardSyncs().subList(0, 3));
     final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), false);
 
     assertSyncsMatch(expectedSyncs, actualSyncs);
@@ -456,10 +477,20 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   @Test
   void testGetStandardSyncUsingOperation() throws IOException {
     final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 3);
+    final List<StandardSync> expectedSyncs = copyWithV1Types(MockData.standardSyncs().subList(0, 3));
     final List<StandardSync> actualSyncs = configRepository.listStandardSyncsUsingOperation(operationId);
 
     assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  private List<StandardSync> copyWithV1Types(final List<StandardSync> syncs) {
+    return syncs.stream()
+        .map(standardSync -> {
+          final StandardSync copiedStandardSync = Jsons.deserialize(Jsons.serialize(standardSync), StandardSync.class);
+          copiedStandardSync.setCatalog(MockData.getConfiguredCatalogWithV1DataTypes());
+          return copiedStandardSync;
+        })
+        .toList();
   }
 
   private void assertSyncsMatch(final List<StandardSync> expectedSyncs, final List<StandardSync> actualSyncs) {
