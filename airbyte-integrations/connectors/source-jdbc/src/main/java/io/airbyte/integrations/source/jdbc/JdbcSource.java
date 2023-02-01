@@ -36,7 +36,7 @@ public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   @Override
   protected Set<String> getExcludedViews() {
-    return Set.of("pg_stat_statements");
+    return Set.of("pg_stat_statements", "pg_stat_statements_info");
   }
 
   public static void main(final String[] args) throws Exception {
