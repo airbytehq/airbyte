@@ -7,7 +7,6 @@ import { Text } from "components/ui/Text";
 import { useExperiment } from "hooks/services/Experiment";
 import { RoutePaths } from "pages/routePaths";
 
-import BuilderIcon from "./components/BuilderIcon";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
 import SourceIcon from "./components/SourceIcon";
@@ -18,8 +17,8 @@ export const MainNav: React.FC = () => {
   const showBuilderNavigationLinks = useExperiment("connectorBuilder.showNavigationLinks", false);
 
   return (
-    <FlexContainer direction="column">
-      <ul data-testid="navMainItems">
+    <ul data-testid="navMainItems">
+      <FlexContainer direction="column" gap="sm">
         <li>
           <NavLink className={navLinkClassName} to={RoutePaths.Connections} data-testid="connectionsLink">
             <FlexContainer direction="column" alignItems="center" justifyContent="space-between">
@@ -49,18 +48,8 @@ export const MainNav: React.FC = () => {
               </Text>
             </FlexContainer>
           </NavLink>
-          {showBuilderNavigationLinks && (
-            <li>
-              <NavLink className={navLinkClassName} to={RoutePaths.ConnectorBuilder}>
-                <BuilderIcon />
-                <Text size="sm">
-                  <FormattedMessage id="sidebar.builder" />
-                </Text>
-              </NavLink>
-            </li>
-          )}
         </li>
-      </ul>
-    </FlexContainer>
+      </FlexContainer>
+    </ul>
   );
 };

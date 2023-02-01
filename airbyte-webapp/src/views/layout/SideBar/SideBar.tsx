@@ -104,8 +104,14 @@ export const SideBar: React.FC<SideBarProps> = ({ additionalTopItems, bottomMenu
   const bottomMenuArray = bottomMenuItems ?? OSSBottomMenuItems;
 
   return (
-    <FlexContainer direction="column" alignItems="center" justifyContent="space-between" className={styles.menuContent}>
-      <nav className={styles.nav}>
+    <nav className={styles.nav}>
+      <FlexContainer
+        direction="column"
+        alignItems="center"
+        justifyContent="space-between"
+        className={styles.menuContent}
+        gap="xs"
+      >
         <FlexItem>
           <div>
             <Link to={RoutePaths.Connections} aria-label={formatMessage({ id: "sidebar.homepage" })}>
@@ -120,19 +126,21 @@ export const SideBar: React.FC<SideBarProps> = ({ additionalTopItems, bottomMenu
           justifyContent="space-between"
           className={styles.menuContent}
         >
-          <FlexItem>
+          <FlexItem className={styles.menuContent}>
             <MainNav />
           </FlexItem>
-          <FlexItem className={styles.bottomMenu}>
-            <ul className={styles.menu} data-testid="navBottomMenu">
-              {bottomMenuArray.map((item, idx) => {
-                // todo: better key
-                return <li key={idx}>{item}</li>;
-              })}
-            </ul>
-          </FlexItem>
-        </FlexContainer>
-      </nav>
-    </FlexContainer>
+          <ul className={styles.menu} data-testid="navBottomMenu">
+            <FlexItem className={styles.bottomMenu}>
+              <FlexContainer direction="column" gap="xs">
+                {bottomMenuArray.map((item, idx) => {
+                  // todo: better key
+                  return <li key={idx}>{item}</li>;
+                })}
+              </FlexContainer>
+            </FlexItem>
+          </ul>
+        </FlexContainer>{" "}
+      </FlexContainer>
+    </nav>
   );
 };

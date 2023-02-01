@@ -8,15 +8,14 @@
   height: 100%;
   width: 100px;
   min-width: 65px;
-  background-color: greenyellow;
-  padding: 23px 4px 15px;
+  background-color: colors.$white;
+  padding: variables.$spacing-xl variables.$spacing-xs variables.$spacing-lg;
   text-align: center;
   box-shadow: variables.$box-shadow-sidebar;
 
   ul {
     width: 100%;
     padding: 0;
-    margin: variables.$spacing-xl 0 0;
 
     li {
       list-style-type: none;
@@ -26,10 +25,13 @@
 
 .menuContent {
   height: 100%;
+  padding: 0;
+  width: 100%;
 }
 
 .bottomMenu {
-  background-color: orange;
+  padding: 0;
+  width: 100%;
 }
 
 .text {
