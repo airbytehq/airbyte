@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium.internals;
 
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -13,9 +14,8 @@ import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
-  public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(10);
-  public static final int SYNC_CHECKPOINT_RECORDS = 1000;
+  public static final Integer SYNC_CHECKPOINT_SECONDS = 15*60;
+  public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
 
@@ -35,7 +35,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
   private final CdcStateHandler cdcStateHandler;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final boolean trackSchemaHistory;
-  private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
+  private final AirbyteSchemaHistoryStorage schemaHistoryManager;
   private final CdcMetadataInjector cdcMetadataInjector;
   private final Instant emittedAt;
 
@@ -57,6 +57,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
   private OffsetDateTime dateTimeLastSync;
   private Integer recordsLastSync;
   private Map<String, String> checkpointOffset;
+  private Map<String, String> previousCheckpointOffset;
   private boolean sendCheckpointMessage;
 
   /**
@@ -66,7 +67,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    * @param trackSchemaHistory Set true if the schema needs to be tracked
    * @param schemaHistoryManager Handler to write schema. Needs to be initialized if
    *        trackSchemaHistory is set to true
-   * @param checkpointDuration Duration between syncs
+   * @param checkpointSeconds Seconds between syncs
    * @param checkpointRecords Number of records between syncs
    */
   public DebeziumStateDecoratingIterator(final Iterator<ChangeEvent<String, String>> changeEventIterator,
@@ -75,8 +76,8 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
                                          final Instant emittedAt,
                                          final AirbyteFileOffsetBackingStore offsetManager,
                                          final boolean trackSchemaHistory,
-                                         final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager,
-                                         final Duration checkpointDuration,
+                                         final AirbyteSchemaHistoryStorage schemaHistoryManager,
+                                         final Integer checkpointSeconds,
                                          final Integer checkpointRecords) {
     this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
@@ -86,10 +87,11 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
     this.trackSchemaHistory = trackSchemaHistory;
     this.schemaHistoryManager = schemaHistoryManager;
 
-    this.syncCheckpointDuration = checkpointDuration;
+    this.syncCheckpointDuration = Duration.ofSeconds(checkpointSeconds);
     this.syncCheckpointRecords = checkpointRecords;
     this.isSyncFinished = false;
-    initializeCheckpointValues();
+    this.previousCheckpointOffset = new HashMap<>();
+    resetCheckpointValues();
   }
 
   /**
@@ -112,42 +114,48 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
 
     if (sendCheckpointMessage) {
       AirbyteMessage stateMessage = createStateMessage(checkpointOffset);
-      initializeCheckpointValues();
+      previousCheckpointOffset.clear();
+      previousCheckpointOffset.putAll(checkpointOffset);
+      resetCheckpointValues();
       return stateMessage;
     }
 
     if (changeEventIterator.hasNext()) {
       try {
-        ChangeEvent<String, String> event = changeEventIterator.next();
+        final ChangeEvent<String, String> event = changeEventIterator.next();
         recordsLastSync++;
 
         if (checkpointOffset == null &&
             (recordsLastSync >= syncCheckpointRecords ||
                 Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
           checkpointOffset = offsetManager.read();
+          if (!previousCheckpointOffset.isEmpty() &&
+              cdcStateHandler.isSameOffset(checkpointOffset, previousCheckpointOffset)){
+            checkpointOffset = null;
+          }
         }
 
         if (checkpointOffset != null
-            && cdcStateHandler.isRecordBehindOffset(checkpointOffset, event)
+            && changeEventIterator.hasNext()
             && !cdcStateHandler.isSnapshotEvent(event)
-            && changeEventIterator.hasNext()) {
+            && cdcStateHandler.isRecordBehindOffset(checkpointOffset, event)) {
           sendCheckpointMessage = true;
         }
 
         return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt);
       } catch (final Exception e) {
-        LOGGER.error("Message iterator failed to read next record. {}", e.getMessage());
+        throw new RuntimeException(e);
       }
     }
 
     isSyncFinished = true;
-    return createStateMessage(null);
+    return createStateMessage(offsetManager.read());
   }
 
   /**
    * Initialize or reset the checkpoint variables.
    */
-  private void initializeCheckpointValues() {
+  private void resetCheckpointValues() {
     sendCheckpointMessage = false;
     checkpointOffset = null;
     recordsLastSync = 0;
@@ -161,9 +169,14 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    * @return {@link AirbyteStateMessage} which includes offset and schema history if used.
    */
   private AirbyteMessage createStateMessage(Map<String, String> offset) {
-    final String dbHistory = trackSchemaHistory ? schemaHistoryManager
-        .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but manager is not initialised")).read() : null;
-    return cdcStateHandler.saveState(offset != null ? offset : offsetManager.read(), dbHistory);
+    if (trackSchemaHistory && schemaHistoryManager == null) {
+      throw new RuntimeException("Schema History Tracking is true but manager is not initialised");
+    }
+    if (offsetManager == null) {
+      throw new RuntimeException("Offset can not be null");
+    }
+
+    return cdcStateHandler.saveState(offset, schemaHistoryManager != null ? schemaHistoryManager.read() : null);
   }
 
 }

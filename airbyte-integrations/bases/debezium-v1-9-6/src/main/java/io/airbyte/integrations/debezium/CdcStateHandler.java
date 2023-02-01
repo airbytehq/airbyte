@@ -27,7 +27,7 @@ public interface CdcStateHandler {
   boolean isSnapshotEvent(ChangeEvent<String, String> event);
 
   /**
-   * This function checks if the event we are processing in the loop is already behind the offse so
+   * This function checks if the event we are processing in the loop is already behind the offset so
    * the process can safety save the state.
    *
    * @param offset DB CDC offset
@@ -36,4 +36,13 @@ public interface CdcStateHandler {
    */
   boolean isRecordBehindOffset(Map<String, String> offset, ChangeEvent<String, String> event);
 
+  /**
+   * This function compares two offsets to make sure both are not pointing to the same position. The
+   * main purpose is to avoid sending same offset multiple times.
+   *
+   * @param offsetA Offset to compare
+   * @param offsetB Offset to compare
+   * @return Returns `true` if both offsets are at the same position. Otherwise, it returns `false`
+   */
+  boolean isSameOffset(Map<String, String> offsetA, Map<String, String> offsetB);
 }

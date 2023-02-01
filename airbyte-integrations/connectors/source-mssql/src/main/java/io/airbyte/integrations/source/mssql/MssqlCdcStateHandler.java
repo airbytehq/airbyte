@@ -67,5 +67,12 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   public boolean isRecordBehindOffset(Map<String, String> offset, ChangeEvent<String, String> event){
     // TODO: With this implementation the checkpoint is not going to be saved ever. Add required logic like in Postgres
     return false;
-  };
+  }
+
+  @Override
+  public boolean isSameOffset(Map<String, String> offsetA, Map<String, String> offsetB) {
+    // TODO: With this implementation the checkpoint is not going to be saved ever. Add required logic like in Postgres
+    return false;
+  }
+
 }
