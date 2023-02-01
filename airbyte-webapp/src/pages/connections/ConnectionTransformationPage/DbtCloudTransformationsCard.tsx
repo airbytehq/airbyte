@@ -63,6 +63,20 @@ class DbtCloudErrorBoundary extends React.Component<React.PropsWithChildren<DbtC
   }
 }
 
+type DbtIntegrationCardContentProps = Omit<ReturnType<typeof useDbtIntegration>, "hasDbtIntegration">;
+
+const DbtIntegrationCardContent = ({ saveJobs, isSaving, dbtCloudJobs }: DbtIntegrationCardContentProps) => {
+  const availableDbtJobs = useAvailableDbtJobs();
+  return (
+    <DbtJobsForm
+      saveJobs={saveJobs}
+      isSaving={isSaving}
+      dbtCloudJobs={dbtCloudJobs}
+      availableDbtCloudJobs={availableDbtJobs}
+    />
+  );
+};
+
 export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBackendConnectionRead }) => {
   // Possible render paths:
   // 1) IF the workspace has no dbt cloud account linked
@@ -75,18 +89,12 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   //        THEN show the jobs list and the "+ Add transformation" button
 
   const { hasDbtIntegration, isSaving, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
-  const availableDbtJobs = useAvailableDbtJobs();
   const { trackError } = useAppMonitoringService();
   const workspaceId = useCurrentWorkspaceId();
 
   return hasDbtIntegration ? (
     <DbtCloudErrorBoundary trackError={trackError} workspaceId={workspaceId}>
-      <DbtJobsForm
-        saveJobs={saveJobs}
-        isSaving={isSaving}
-        dbtCloudJobs={dbtCloudJobs}
-        availableDbtCloudJobs={availableDbtJobs}
-      />
+      <DbtIntegrationCardContent saveJobs={saveJobs} isSaving={isSaving} dbtCloudJobs={dbtCloudJobs} />
     </DbtCloudErrorBoundary>
   ) : (
     <NoDbtIntegration />
