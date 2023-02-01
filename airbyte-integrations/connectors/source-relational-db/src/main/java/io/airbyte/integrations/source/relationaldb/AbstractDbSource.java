@@ -203,7 +203,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
       final JsonNode catalogSchema = stream.getJsonSchema();
       if (!catalogSchema.equals(currentJsonSchema)) {
-        LOGGER.warn("Source schema changed for table  {}! Actual schema: {}. Catalog schema:  {}",
+        LOGGER.warn(
+            "The underlying schema changed for the table. Please refresh your source schema! Source schema changed for table  {}! Actual schema: {}. Catalog schema:  {}",
             fullyQualifiedTableName,
             currentJsonSchema,
             catalogSchema);
