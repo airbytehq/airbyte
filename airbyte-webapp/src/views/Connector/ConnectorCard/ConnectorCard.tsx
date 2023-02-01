@@ -131,8 +131,9 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const testConnectorWithTracking = async (connectorCardValues?: ConnectorCardValues) => {
     trackTestConnectorStarted(selectedConnectorDefinition);
     try {
-      return await testConnector(connectorCardValues);
+      const response = await testConnector(connectorCardValues);
       trackTestConnectorSuccess(selectedConnectorDefinition);
+      return response;
     } catch (e) {
       trackTestConnectorFailure(selectedConnectorDefinition);
       throw e;
