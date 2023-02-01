@@ -5,7 +5,6 @@
 package io.airbyte.integrations.debezium.internals;
 
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -15,7 +14,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +24,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
-  public static final Integer SYNC_CHECKPOINT_SECONDS = 15*60;
+  public static final Integer SYNC_CHECKPOINT_SECONDS = 15 * 60;
   public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
@@ -129,7 +127,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
                 Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
           checkpointOffset.putAll(offsetManager.read());
           if (!previousCheckpointOffset.isEmpty() &&
-              cdcStateHandler.isSameOffset(checkpointOffset, previousCheckpointOffset)){
+              cdcStateHandler.isSameOffset(checkpointOffset, previousCheckpointOffset)) {
             checkpointOffset.clear();
           }
         }

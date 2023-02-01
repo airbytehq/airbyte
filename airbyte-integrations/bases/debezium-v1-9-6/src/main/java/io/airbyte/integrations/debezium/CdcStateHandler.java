@@ -45,4 +45,5 @@ public interface CdcStateHandler {
    * @return Returns `true` if both offsets are at the same position. Otherwise, it returns `false`
    */
   boolean isSameOffset(Map<String, String> offsetA, Map<String, String> offsetB);
+
 }
