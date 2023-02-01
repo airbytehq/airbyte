@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `java-library`
+    `maven-publish`
     kotlin("jvm") version "1.8.0"
     kotlin("kapt") version "1.8.0"
 }
@@ -36,4 +37,18 @@ tasks.withType<KotlinCompile> {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+publishing {
+    repositories {
+        publications {
+            create<MavenPublication>("${project.name}") {
+                groupId = "${project.group}"
+                artifactId = "${project.name}"
+                version = "${rootProject.version}"
+                repositories.add(rootProject.repositories.getByName("cloudrepo"))
+                from(components["java"])
+            }
+        }
+    }
 }
