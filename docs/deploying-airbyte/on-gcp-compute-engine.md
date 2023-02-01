@@ -83,7 +83,7 @@ gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 
 ```bash
 mkdir airbyte && cd airbyte
-curl -sOO https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+curl -sOO https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml,flags.yml}
 docker compose up -d
 ```
 

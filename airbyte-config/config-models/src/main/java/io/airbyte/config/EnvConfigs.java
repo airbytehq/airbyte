@@ -86,8 +86,8 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "2.0";
   private static final String SIDECAR_KUBE_CPU_LIMIT = "SIDECAR_KUBE_CPU_LIMIT";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
-  private static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
-  private static final String SOCAT_KUBE_CPU_REQUEST = "SOCAT_KUBE_CPU_REQUEST";
+  public static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
+  public static final String SOCAT_KUBE_CPU_REQUEST = "SOCAT_KUBE_CPU_REQUEST";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
@@ -758,13 +758,13 @@ public class EnvConfigs implements Configs {
   /**
    * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
    * injected in the KubePodProcess class and used in the job pod templates.
-   *
+   * <p>
    * Can provide multiple strings seperated by comma(,) to indicate pulling from different
    * repositories. The empty string is a no-op value.
    */
   @Override
   public List<String> getJobKubeMainContainerImagePullSecrets() {
-    String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+    final String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
     return Arrays.stream(secrets.split(",")).collect(Collectors.toList());
   }
 
