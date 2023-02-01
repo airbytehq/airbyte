@@ -766,11 +766,7 @@ where 1 = 1
         the curly brackets.
         """
 
-        if (
-            data_type.TYPE_VAR_NAME not in definition
-            and data_type.REF_TYPE_VAR_NAME not in definition
-            and data_type.ONE_OF_VAR_NAME not in definition
-        ):
+        if contains_typeless_schema(definition):
             col = column_name
         elif data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition):
             col = f"boolean_to_string({column_name})"
