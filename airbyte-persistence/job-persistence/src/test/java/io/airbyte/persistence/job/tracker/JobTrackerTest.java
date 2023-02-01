@@ -20,7 +20,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.AttemptFailureSummary;
-import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -551,11 +550,9 @@ class JobTrackerTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withConfiguredAirbyteCatalog(catalog);
-
-    final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig()
         .withSourceConfiguration(Jsons.jsonNode(ImmutableMap.of("key", "some_value")))
-        .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("key", false)));
+        .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("key", false)))
+        .withConfiguredAirbyteCatalog(catalog);
 
     final JobConfig jobConfig = mock(JobConfig.class);
     when(jobConfig.getConfigType()).thenReturn(configType);
@@ -564,15 +561,11 @@ class JobTrackerTest {
       when(jobConfig.getSync()).thenReturn(jobSyncConfig);
     }
 
-    final Attempt attempt = mock(Attempt.class);
-    when(attempt.getSyncConfig()).thenReturn(Optional.of(attemptSyncConfig));
-
     final Job job = mock(Job.class);
     when(job.getId()).thenReturn(jobId);
     when(job.getConfig()).thenReturn(jobConfig);
     when(job.getConfigType()).thenReturn(configType);
     when(job.getScope()).thenReturn(CONNECTION_ID.toString());
-    when(job.getLastAttempt()).thenReturn(Optional.of(attempt));
     when(job.getAttemptsCount()).thenReturn(700);
     return job;
   }

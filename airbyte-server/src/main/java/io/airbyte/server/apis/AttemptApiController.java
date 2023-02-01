@@ -8,7 +8,6 @@ import static io.airbyte.commons.auth.AuthRoleConstants.ADMIN;
 
 import io.airbyte.api.generated.AttemptApi;
 import io.airbyte.api.model.generated.InternalOperationResult;
-import io.airbyte.api.model.generated.SaveAttemptSyncConfigRequestBody;
 import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.commons.server.handlers.AttemptHandler;
@@ -45,14 +44,6 @@ public class AttemptApiController implements AttemptApi {
   @Secured({ADMIN})
   public InternalOperationResult setWorkflowInAttempt(@Body final SetWorkflowInAttemptRequestBody requestBody) {
     return ApiHelper.execute(() -> attemptHandler.setWorkflowInAttempt(requestBody));
-  }
-
-  @Override
-  @Post(uri = "/save_sync_config",
-        processes = MediaType.APPLICATION_JSON)
-  @Secured({ADMIN})
-  public InternalOperationResult saveSyncConfig(@Body final SaveAttemptSyncConfigRequestBody requestBody) {
-    return ApiHelper.execute(() -> attemptHandler.saveSyncConfig(requestBody));
   }
 
 }
