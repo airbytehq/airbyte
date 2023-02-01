@@ -52,6 +52,18 @@ class ConnectorExceptionUtilTest {
   }
 
   @Test
+  void isConfigErrorForEOFException() {
+    EOFException eofException = new EOFException(EOF_EXCEPTION_MESSAGE);
+    assertTrue(ConnectorExceptionUtil.isConfigError(eofException));
+  }
+
+  @Test
+  void isConfigErrorForEOFExceptionCdc() {
+    EOFException eofException = new EOFException(EOF_EXCEPTION_IN_CDC_MESSAGE);
+    assertTrue(ConnectorExceptionUtil.isConfigError(eofException));
+  }
+
+  @Test
   void isConfigErrorForCommonSQLException() {
     SQLException commonSQLException = new SQLException(COMMON_EXCEPTION_MESSAGE);
     assertFalse(ConnectorExceptionUtil.isConfigError(commonSQLException));
