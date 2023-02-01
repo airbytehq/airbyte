@@ -18,15 +18,13 @@ import {
   useConnectorBuilderFormState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import styles from "./ConnectorBuilderPage.module.scss";
-import { LandingPage } from "./LandingPage";
+import styles from "./ConnectorBuilderEditPage.module.scss";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = function () {};
 
-const ConnectorBuilderPageInner: React.FC = React.memo(() => {
-  const { builderFormValues, editorView, setEditorView, showLandingPage, setShowLandingPage } =
-    useConnectorBuilderFormState();
+const ConnectorBuilderEditPageInner: React.FC = React.memo(() => {
+  const { builderFormValues, editorView, setEditorView } = useConnectorBuilderFormState();
   const analyticsService = useAnalyticsService();
 
   useEffect(() => {
@@ -37,7 +35,6 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
 
   const switchToUI = useCallback(() => setEditorView("ui"), [setEditorView]);
   const switchToYaml = useCallback(() => setEditorView("yaml"), [setEditorView]);
-  const hideLandingPage = useCallback(() => setShowLandingPage(false), [setShowLandingPage]);
 
   const initialFormValues = useRef(builderFormValues);
   return useMemo(
@@ -50,33 +47,26 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
         onSubmit={noop}
         validationSchema={builderFormValidationSchema}
       >
-        {(props) => {
-          if (showLandingPage) {
-            return (
-              <LandingPage hideLandingPage={hideLandingPage} switchToUI={switchToUI} switchToYaml={switchToYaml} />
-            );
-          }
-          return (
-            <Panels
-              editorView={editorView}
-              validateForm={props.validateForm}
-              switchToUI={switchToUI}
-              values={props.values}
-              switchToYaml={switchToYaml}
-            />
-          );
-        }}
+        {(props) => (
+          <Panels
+            editorView={editorView}
+            validateForm={props.validateForm}
+            switchToUI={switchToUI}
+            values={props.values}
+            switchToYaml={switchToYaml}
+          />
+        )}
       </Formik>
     ),
-    [editorView, hideLandingPage, showLandingPage, switchToUI, switchToYaml]
+    [editorView, switchToUI, switchToYaml]
   );
 });
 
-export const ConnectorBuilderPage: React.FC = () => (
+export const ConnectorBuilderEditPage: React.FC = () => (
   <ConnectorBuilderLocalStorageProvider>
     <ConnectorBuilderFormStateProvider>
       <ConnectorBuilderTestStateProvider>
-        <ConnectorBuilderPageInner />
+        <ConnectorBuilderEditPageInner />
       </ConnectorBuilderTestStateProvider>
     </ConnectorBuilderFormStateProvider>
   </ConnectorBuilderLocalStorageProvider>
@@ -128,5 +118,3 @@ const Panels = React.memo(
     );
   }
 );
-
-export default ConnectorBuilderPage;
