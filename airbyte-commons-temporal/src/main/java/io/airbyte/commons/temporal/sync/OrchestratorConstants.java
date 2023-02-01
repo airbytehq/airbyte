@@ -4,9 +4,6 @@
 
 package io.airbyte.commons.temporal.sync;
 
-import static io.airbyte.config.EnvConfigs.SOCAT_KUBE_CPU_LIMIT;
-import static io.airbyte.config.EnvConfigs.SOCAT_KUBE_CPU_REQUEST;
-
 import com.uber.m3.util.ImmutableSet;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.EnvConfigs;
@@ -80,8 +77,8 @@ public class OrchestratorConstants {
           FEATURE_FLAG_CLIENT,
           FEATURE_FLAG_PATH,
           LAUNCHDARKLY_KEY,
-          SOCAT_KUBE_CPU_LIMIT,
-          SOCAT_KUBE_CPU_REQUEST))
+          EnvConfigs.SOCAT_KUBE_CPU_LIMIT,
+          EnvConfigs.SOCAT_KUBE_CPU_REQUEST))
       .build();
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
