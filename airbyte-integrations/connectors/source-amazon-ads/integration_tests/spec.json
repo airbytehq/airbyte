@@ -92,6 +92,7 @@
         "type": "array",
         "uniqueItems": true,
         "order": 9
+      }
     },
     "required": ["client_id", "client_secret", "refresh_token"],
     "additionalProperties": true
