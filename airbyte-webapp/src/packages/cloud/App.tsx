@@ -6,13 +6,14 @@ import { ThemeProvider } from "styled-components";
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
+import { ConfigServiceProvider, config } from "config";
 import { I18nProvider } from "core/i18n";
 import { AppMonitoringServiceProvider } from "hooks/services/AppMonitoringService";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { defaultCloudFeatures, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ModalServiceProvider } from "hooks/services/Modal";
-import NotificationServiceProvider from "hooks/services/Notification";
+import { NotificationService } from "hooks/services/Notification";
 import en from "locales/en.json";
 import { Routing } from "packages/cloud/cloudRoutes";
 import cloudLocales from "packages/cloud/locales/en.json";
@@ -22,7 +23,6 @@ import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
 
 import { AppServicesProvider } from "./services/AppServicesProvider";
-import { ConfigProvider } from "./services/ConfigProvider";
 import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 
 const messages = { ...en, ...cloudLocales };
@@ -35,7 +35,7 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <AnalyticsProvider>
     <AppMonitoringServiceProvider>
       <ApiErrorBoundary>
-        <NotificationServiceProvider>
+        <NotificationService>
           <ConfirmationModalService>
             <ModalServiceProvider>
               <FormChangeTrackerService>
@@ -51,7 +51,7 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
               </FormChangeTrackerService>
             </ModalServiceProvider>
           </ConfirmationModalService>
-        </NotificationServiceProvider>
+        </NotificationService>
       </ApiErrorBoundary>
     </AppMonitoringServiceProvider>
   </AnalyticsProvider>
@@ -64,13 +64,13 @@ const App: React.FC = () => {
         <I18nProvider locale="en" messages={messages}>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ConfigProvider>
+              <ConfigServiceProvider config={config}>
                 <Router>
                   <Services>
                     <Routing />
                   </Services>
                 </Router>
-              </ConfigProvider>
+              </ConfigServiceProvider>
             </Suspense>
           </StoreProvider>
         </I18nProvider>

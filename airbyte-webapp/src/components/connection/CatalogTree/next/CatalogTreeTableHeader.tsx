@@ -5,6 +5,7 @@ import { useFormikContext } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
+import { FormikConnectionFormValues } from "components/connection/ConnectionForm/formConfig";
 import { Header } from "components/SimpleTableComponents";
 import { Button } from "components/ui/Button";
 import { CheckBox } from "components/ui/CheckBox";
@@ -12,12 +13,14 @@ import { Text } from "components/ui/Text";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useModalService } from "hooks/services/Modal";
 import { links } from "utils/links";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
+import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
+import styles from "./CatalogTreeTableHeader.module.scss";
 import {
   DestinationNamespaceFormValueType,
   DestinationNamespaceModal,
@@ -27,8 +30,6 @@ import {
   DestinationStreamNamesModal,
   StreamNameDefinitionValueType,
 } from "../../DestinationStreamNamesModal/DestinationStreamNamesModal";
-import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
-import styles from "./CatalogTreeTableHeader.module.scss";
 
 const HeaderCell: React.FC<React.PropsWithChildren<Parameters<typeof CatalogTreeTableCell>[0]>> = ({
   size,
@@ -43,13 +44,12 @@ const HeaderCell: React.FC<React.PropsWithChildren<Parameters<typeof CatalogTree
   );
 };
 
-const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
-
 export const CatalogTreeTableHeader: React.FC = () => {
   const { mode } = useConnectionFormService();
   const { openModal, closeModal } = useModalService();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEditService();
   const formikProps = useFormikContext<FormikConnectionFormValues>();
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
 
   const destinationNamespaceChange = (value: DestinationNamespaceFormValueType) => {
     formikProps.setFieldValue("namespaceDefinition", value.namespaceDefinition);
@@ -67,7 +67,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
   };
 
   return (
-    <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewStreamsTableEnabled })}>
+    <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewTableDesignEnabled })}>
       <CatalogTreeTableCell size="small" className={styles.checkboxCell}>
         {mode !== "readonly" && (
           <CheckBox
@@ -85,9 +85,15 @@ export const CatalogTreeTableHeader: React.FC = () => {
       </TextCell> */}
       <HeaderCell>
         <FormattedMessage id="form.namespace" />
+        <InfoTooltip>
+          <FormattedMessage id="connectionForm.sourceNamespace.info" />
+        </InfoTooltip>
       </HeaderCell>
       <HeaderCell>
         <FormattedMessage id="form.streamName" />
+        <InfoTooltip>
+          <FormattedMessage id="connectionForm.sourceStreamName.info" />
+        </InfoTooltip>
       </HeaderCell>
       <HeaderCell size="large">
         <FormattedMessage id="form.syncMode" />
@@ -104,6 +110,9 @@ export const CatalogTreeTableHeader: React.FC = () => {
       </HeaderCell>
       <HeaderCell>
         <FormattedMessage id="form.primaryKey" />
+        <InfoTooltip>
+          <FormattedMessage id="connectionForm.primaryKey.info" />
+        </InfoTooltip>
       </HeaderCell>
       <CatalogTreeTableCell size="xsmall" />
       <HeaderCell>

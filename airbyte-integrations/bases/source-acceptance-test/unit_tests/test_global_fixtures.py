@@ -3,6 +3,7 @@
 #
 
 import json
+import time
 
 import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
@@ -193,6 +194,8 @@ def test_connector_config_path_fixture(mocker, tmp_path, updated_configurations)
         for configuration_file_name in updated_configurations:
             updated_configuration_path = updated_configurations_dir / configuration_file_name
             updated_configuration_path.touch()
+            # to avoid the equivalent 'ctime' for created files
+            time.sleep(0.01)
 
     connector_config_path = conftest.connector_config_path_fixture.__wrapped__(inputs, base_path)
     if not updated_configurations:

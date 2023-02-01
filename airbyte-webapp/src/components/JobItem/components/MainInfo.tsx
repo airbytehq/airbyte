@@ -9,12 +9,12 @@ import { Cell, Row } from "components/SimpleTableComponents";
 import { StatusIcon } from "components/ui/StatusIcon";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 
-import { getJobStatus } from "../JobItem";
 import { AttemptDetails } from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
 import { ResetStreamsDetails } from "./ResetStreamDetails";
+import { JobsWithJobs } from "../types";
+import { getJobStatus } from "../utils";
 
 const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
   (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job.configType;

@@ -28,7 +28,7 @@ interface Props {
 const Block = styled.div`
   background: ${({ theme }) => theme.blue50};
   border-radius: 8px;
-  padding: 18px 25px 22px;
+  padding: 15px 20px;
   font-size: 13px;
   line-height: 20px;
   display: flex;
@@ -109,6 +109,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
       workspaceId: currentWorkspace.workspaceId,
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
+      stripeMode: "payment",
     });
     analytics.track(Namespace.CREDITS, Action.CHECKOUT_START, {
       actionDescription: "Checkout Start",
@@ -136,7 +137,11 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         <CreditView>
           <FormattedMessage id="credits.remainingCredits" />
           <Count>
-            <FormattedNumber value={cloudWorkspace.remainingCredits} />
+            <FormattedNumber
+              value={cloudWorkspace.remainingCredits}
+              maximumFractionDigits={2}
+              minimumFractionDigits={2}
+            />
           </Count>
         </CreditView>
         <Actions>

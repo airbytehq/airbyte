@@ -3,15 +3,16 @@ import styled from "styled-components";
 
 import { Spinner } from "components/ui/Spinner";
 
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
+import { SynchronousJobRead } from "core/request/AirbyteClient";
 
-import { AttemptRead, JobStatus, SynchronousJobRead } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import ErrorDetails from "./components/ErrorDetails";
 import { JobLogs } from "./components/JobLogs";
 import MainInfo from "./components/MainInfo";
 import styles from "./JobItem.module.scss";
+import { JobsWithJobs } from "./types";
+import { didJobSucceed, getJobAttempts, getJobId } from "./utils";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -26,18 +27,6 @@ const Item = styled.div<{ isFailed: boolean }>`
 interface JobItemProps {
   job: SynchronousJobRead | JobsWithJobs;
 }
-
-const didJobSucceed = (job: SynchronousJobRead | JobsWithJobs): boolean =>
-  "succeeded" in job ? job.succeeded : getJobStatus(job) !== "failed";
-
-export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) =>
-  "succeeded" in job ? (job.succeeded ? JobStatus.succeeded : JobStatus.failed) : job.job.status;
-
-export const getJobAttemps: (job: SynchronousJobRead | JobsWithJobs) => AttemptRead[] | undefined = (job) =>
-  "attempts" in job ? job.attempts : undefined;
-
-export const getJobId = (job: SynchronousJobRead | JobsWithJobs): string | number =>
-  "id" in job ? job.id : job.job.id;
 
 export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
@@ -63,7 +52,7 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
 
   return (
     <Item isFailed={!didSucceed} ref={scrollAnchor}>
-      <MainInfo isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} attempts={getJobAttemps(job)} />
+      <MainInfo isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} attempts={getJobAttempts(job)} />
       <ContentWrapper isOpen={isOpen} onToggled={onDetailsToggled}>
         <div>
           <Suspense
@@ -75,7 +64,7 @@ export const JobItem: React.FC<JobItemProps> = ({ job }) => {
           >
             {isOpen && (
               <>
-                <ErrorDetails attempts={getJobAttemps(job)} />
+                <ErrorDetails attempts={getJobAttempts(job)} />
                 <JobLogs job={job} jobIsFailed={!didSucceed} />
               </>
             )}

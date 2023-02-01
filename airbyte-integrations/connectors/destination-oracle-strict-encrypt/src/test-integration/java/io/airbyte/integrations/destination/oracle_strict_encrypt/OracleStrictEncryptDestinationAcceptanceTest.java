@@ -82,11 +82,6 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   }
 
   @Override
-  protected boolean supportsDBT() {
-    return false;
-  }
-
-  @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
                                                      final String streamName,
                                                      final String namespace)

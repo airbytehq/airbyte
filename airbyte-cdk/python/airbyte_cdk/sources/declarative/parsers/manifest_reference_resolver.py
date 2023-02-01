@@ -96,19 +96,19 @@ class ManifestReferenceResolver:
 
     ref_tag = "$ref"
 
-    def preprocess_manifest(self, manifest):
+    def preprocess_manifest(self, manifest: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         :param manifest: incoming manifest that could have references to previously defined components
         :return:
         """
-        return self._evaluate_node(manifest, manifest)
+        return self._evaluate_node(manifest, manifest, set())
 
-    def _evaluate_node(self, node: Any, manifest: Mapping[str, Any], visited: Set = None):
+    def _evaluate_node(self, node: Any, manifest: Mapping[str, Any], visited: Set):
         if isinstance(node, dict):
-            evaluated_dict = {k: self._evaluate_node(v, manifest) for k, v in node.items() if not self._is_ref_key(k)}
+            evaluated_dict = {k: self._evaluate_node(v, manifest, visited) for k, v in node.items() if not self._is_ref_key(k)}
             if self.ref_tag in node:
                 # The node includes a $ref key, so we splat the referenced value(s) into the evaluated dict
-                evaluated_ref = self._evaluate_node(node[self.ref_tag], manifest)
+                evaluated_ref = self._evaluate_node(node[self.ref_tag], manifest, visited)
                 if not isinstance(evaluated_ref, dict):
                     return evaluated_ref
                 else:
@@ -117,10 +117,8 @@ class ManifestReferenceResolver:
             else:
                 return evaluated_dict
         elif isinstance(node, list):
-            return [self._evaluate_node(v, manifest) for v in node]
+            return [self._evaluate_node(v, manifest, visited) for v in node]
         elif isinstance(node, str) and node.startswith("*ref("):
-            if visited is None:
-                visited = set()
             if node in visited:
                 raise CircularReferenceException(node)
             visited.add(node)

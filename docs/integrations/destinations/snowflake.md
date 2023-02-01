@@ -110,7 +110,7 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
         commit;
 
 
-3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowlight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select the **All Queries** checkbox.
+3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select the **All Queries** checkbox.
 
 ### Step 2: Set up a data loading method
 
@@ -148,7 +148,7 @@ To use a Google Cloud Storage bucket:
     ```
     The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value. Add read/write permissions to your bucket with that email.
 
-4. Navigate to the Snowflake UI and run the script as a [Snowflake account admin](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowlight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
+4. Navigate to the Snowflake UI and run the script as a [Snowflake account admin](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
 
 #### Using Azure Blob Storage
 
@@ -272,12 +272,28 @@ Now that you have set up the Snowflake destination connector, check out the foll
 - [Migrate your data from Redshift to Snowflake](https://airbyte.com/tutorials/redshift-to-snowflake)
 - [Orchestrate ELT pipelines with Prefect, Airbyte and dbt](https://airbyte.com/tutorials/elt-pipeline-prefect-airbyte-dbt)
 
+## Troubleshooting
+
+### 'Current role does not have permissions on the target schema'
+If you receive an error stating `Current role does not have permissions on the target schema` make sure that the 
+Snowflake destination `SCHEMA` is one that the role you've provided has permissions on. When creating a connection,
+it may allow you to select `Mirror source structure` for the `Destination namespace`, which if you have followed
+some of our default examples and tutorials may result in the connection trying to write to a `PUBLIC` schema.
+
+A quick fix could be to edit your connection's 'Replication' settings from `Mirror source structure` to `Destination Default`.
+Otherwise, make sure to grant the role the required permissions in the desired namespace.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.41  | 2022-12-16 | [\#20566](https://github.com/airbytehq/airbyte/pull/20566) | Improve spec to adhere to standards                                                                     |
+| 0.4.47  | 2023-01-30 | [\#21912](https://github.com/airbytehq/airbyte/pull/21912) | Catch "Create" Table and Stage Known Permissions and rethrow as ConfigExceptions                                                                      |
+| 0.4.46  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                            |
+| 0.4.45  | 2023-01-25 | [#21087](https://github.com/airbytehq/airbyte/pull/21764)  | Catch Known Permissions and rethrow as ConfigExceptions                                                                                             |
+| 0.4.44  | 2023-01-20 | [#21087](https://github.com/airbytehq/airbyte/pull/21087)  | Wrap Authentication Errors as Config Exceptions                                                                                                     |
+| 0.4.43  | 2023-01-20 | [\#21450](https://github.com/airbytehq/airbyte/pull/21450) | Updated Check methods to handle more possible s3 and gcs stagings issues                                                                            |
+| 0.4.42  | 2023-01-12 | [\#21342](https://github.com/airbytehq/airbyte/pull/21342) | Better handling for conflicting destination streams                                                                                                 |
+| 0.4.41  | 2022-12-16 | [\#20566](https://github.com/airbytehq/airbyte/pull/20566) | Improve spec to adhere to standards                                                                                                                 |
 | 0.4.40  | 2022-11-11 | [\#19302](https://github.com/airbytehq/airbyte/pull/19302) | Set jdbc application env variable depends on env - airbyte_oss or airbyte_cloud                                                                     |
 | 0.4.39  | 2022-11-09 | [\#18970](https://github.com/airbytehq/airbyte/pull/18970) | Updated "check" connection method to handle more errors                                                                                             |
 | 0.4.38  | 2022-09-26 | [\#17115](https://github.com/airbytehq/airbyte/pull/17115) | Added connection string identifier                                                                                                                  |

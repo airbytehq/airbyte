@@ -9,7 +9,10 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
+from freezegun import freeze_time
 from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream
+
+from .utils import read_incremental
 
 json_credentials = """
 {
@@ -271,3 +274,118 @@ def test_backoff_time(patch_base_class):
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+@freeze_time("2023-01-01 00:00:00")
+def test_stream_slices():
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 29), "window_in_days": 1}
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
+    slices = list(stream.stream_slices(sync_mode=None))
+    assert slices == [
+        {"startDate": "2022-12-29", "endDate": "2022-12-29"},
+        {"startDate": "2022-12-30", "endDate": "2022-12-30"},
+        {"startDate": "2022-12-31", "endDate": "2022-12-31"},
+        {"startDate": "2023-01-01", "endDate": "2023-01-01"},
+    ]
+
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 28), "window_in_days": 2}
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
+    slices = list(stream.stream_slices(sync_mode=None))
+    assert slices == [
+        {"startDate": "2022-12-28", "endDate": "2022-12-29"},
+        {"startDate": "2022-12-30", "endDate": "2022-12-31"},
+        {"startDate": "2023-01-01", "endDate": "2023-01-01"},
+    ]
+
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 20), "window_in_days": 5}
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
+    slices = list(stream.stream_slices(sync_mode=None))
+    assert slices == [
+        {"startDate": "2022-12-20", "endDate": "2022-12-24"},
+        {"startDate": "2022-12-25", "endDate": "2022-12-29"},
+        {"startDate": "2022-12-30", "endDate": "2023-01-01"},
+    ]
+
+
+def test_read_incremental(requests_mock):
+    config = {
+        "property_id": 123,
+        "date_ranges_start_date": datetime.date(2022, 12, 29),
+        "window_in_days": 1,
+        "dimensions": ["date"],
+        "metrics": ["totalUsers"],
+    }
+
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
+    stream_state = {}
+
+    responses = [
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221229"}], "metricValues": [{"value": "100"}]}],
+            "rowCount": 1
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "110"}]}],
+            "rowCount": 1
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "120"}]}],
+            "rowCount": 1
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "130"}]}],
+            "rowCount": 1
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "140"}]}],
+            "rowCount": 1
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20230102"}], "metricValues": [{"value": "150"}]}],
+            "rowCount": 1
+        }
+    ]
+
+    requests_mock.register_uri(
+        "POST",
+        "https://analyticsdata.googleapis.com/v1beta/properties/123:runReport",
+        json=lambda request, context: responses.pop(0),
+    )
+
+    with freeze_time("2023-01-01 12:00:00"):
+        records = list(read_incremental(stream, stream_state))
+
+    for record in records:
+        del record["uuid"]
+
+    assert records == [
+        {"date": "20221229", "totalUsers": 100, "property_id": 123},
+        {"date": "20221230", "totalUsers": 110, "property_id": 123},
+        {"date": "20221231", "totalUsers": 120, "property_id": 123},
+        {"date": "20230101", "totalUsers": 130, "property_id": 123},
+    ]
+
+    assert stream_state == {"date": "20230101"}
+
+    with freeze_time("2023-01-02 12:00:00"):
+        records = list(read_incremental(stream, stream_state))
+
+    for record in records:
+        del record["uuid"]
+
+    assert records == [
+        {"date": "20230101", "totalUsers": 140, "property_id": 123},
+        {"date": "20230102", "totalUsers": 150, "property_id": 123},
+    ]

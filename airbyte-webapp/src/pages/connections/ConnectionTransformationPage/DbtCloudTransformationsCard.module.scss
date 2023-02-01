@@ -1,0 +1,103 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.jobListContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: variables.$spacing-xl;
+  background-color: colors.$grey-50;
+}
+
+.jobListTitle {
+  display: flex;
+  justify-content: space-between;
+}
+
+.jobListForm {
+  width: 100%;
+}
+
+.emptyListImage {
+  width: 111px;
+  height: 111px;
+  margin: variables.$spacing-xl 0;
+}
+
+.contextExplanation {
+  color: colors.$grey-300;
+  width: 100%;
+
+  & a {
+    color: colors.$grey-300;
+  }
+}
+
+.jobListButtonGroup {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: variables.$spacing-xl;
+  width: 100%;
+}
+
+.jobListButton {
+  margin-left: variables.$spacing-md;
+}
+
+.jobListItem {
+  margin-top: variables.$spacing-md;
+  padding: variables.$spacing-md variables.$spacing-xl;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dbtLogo {
+  height: 18px;
+  width: 18px;
+  margin-right: variables.$spacing-md;
+}
+
+.jobListItemIntegrationName {
+  display: flex;
+  align-items: center;
+  flex: 1 2 auto;
+}
+
+.jobListItemIdFieldGroup {
+  display: flex;
+  justify-content: space-between;
+  margin-left: auto;
+  align-items: center;
+  flex: 0 1 auto;
+}
+
+.jobListItemIdField {
+  height: fit-content;
+  margin-left: 1em;
+  background-color: colors.$grey-50;
+  flex-grow: 1;
+  padding: variables.$spacing-xs variables.$spacing-md;
+  border-radius: variables.$border-radius-2xl;
+
+  p {
+    color: colors.$grey-600;
+  }
+}
+
+.jobListItemDelete {
+  svg {
+    height: 21px;
+    width: 21px;
+    color: colors.$dark-blue-50;
+    transition: color variables.$transition;
+  }
+
+  &:hover,
+  &:focus-visible {
+    svg {
+      color: colors.$dark-blue-100;
+    }
+  }
+}

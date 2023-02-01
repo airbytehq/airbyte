@@ -188,13 +188,13 @@ def test_create_substream_slicer():
     assert len(parent_stream_configs) == 2
     assert isinstance(parent_stream_configs[0].stream, DeclarativeStream)
     assert isinstance(parent_stream_configs[1].stream, DeclarativeStream)
-    assert stream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert stream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert stream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert stream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
     assert stream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 
-    assert stream_slicer.parent_stream_configs[1].parent_key == "someid"
-    assert stream_slicer.parent_stream_configs[1].stream_slice_field == "word_id"
+    assert stream_slicer.parent_stream_configs[1].parent_key.eval({}) == "someid"
+    assert stream_slicer.parent_stream_configs[1].stream_slice_field.eval({}) == "word_id"
     assert stream_slicer.parent_stream_configs[1].request_option is None
 
 
@@ -265,6 +265,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
+    assert stream_slicer.cursor_granularity == "PT0.000001S"
     assert stream_slicer.lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer.start_time_option.field_name == "created[gte]"

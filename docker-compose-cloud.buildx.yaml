@@ -1,9 +1,41 @@
 # Defines the minimum set of images needed to run Cloud.
 # Used to push OSS images that Cloud depends on.
 
-version: "3.7"
+version: "3.8"
 
 services:
+  bootloader:
+    image: airbyte/bootloader:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-bootloader/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/bootloader:${VERSION}
+          - airbyte/bootloader:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64
+  server:
+    image: airbyte/server:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-server/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/server:${VERSION}
+          - airbyte/server:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64
   worker:
     image: airbyte/worker:${VERSION}
     build:

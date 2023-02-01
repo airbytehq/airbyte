@@ -264,19 +264,15 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         else:
             start_date = self.config["date_ranges_start_date"]
 
-        timedelta: int = self.config["window_in_days"]
-
         while start_date <= today:
-            end_date: datetime.date = start_date + datetime.timedelta(days=timedelta)
-            if timedelta > 1 and end_date > today:
-                end_date: datetime.date = start_date + datetime.timedelta(days=timedelta - (end_date - today).days)
-
             if self._stop_iteration:
                 return
 
-            yield {"startDate": utils.date_to_string(start_date), "endDate": utils.date_to_string(end_date)}
-
-            start_date: datetime.date = end_date + datetime.timedelta(days=1)
+            yield {
+                "startDate": utils.date_to_string(start_date),
+                "endDate": utils.date_to_string(min(start_date + datetime.timedelta(days=self.config["window_in_days"] - 1), today)),
+            }
+            start_date += datetime.timedelta(days=self.config["window_in_days"])
 
 
 class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream):

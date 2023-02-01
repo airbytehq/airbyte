@@ -9,12 +9,12 @@ import { RoutePaths } from "../routePaths";
 const AllSourcesPage = React.lazy(() => import("./pages/AllSourcesPage"));
 const CreateSourcePage = React.lazy(() => import("./pages/CreateSourcePage/CreateSourcePage"));
 const SourceItemPage = React.lazy(() => import("./pages/SourceItemPage"));
-const CreationFormPage = React.lazy(() => import("pages/ConnectionPage/pages/CreationFormPage/CreationFormPage"));
+const CreateConnectionPage = React.lazy(() => import("pages/connections/CreateConnectionPage"));
 
 export const SourcesPage: React.FC = () => (
   <Routes>
     <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
-    <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
+    <Route path={RoutePaths.ConnectionNew} element={<CreateConnectionPage />} />
     <Route
       path=":id/*"
       element={
