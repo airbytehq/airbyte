@@ -103,6 +103,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------|
+| 2.0.1   | 2023-02-01 | [22224](https://github.com/airbytehq/airbyte/pull/22224) | Fixed broken `API Key` authentication
 | 2.0.0   | 2023-01-27 | [21962](https://github.com/airbytehq/airbyte/pull/21962) | Added casting of native Airtable data types to JsonSchema types
 | 1.0.2   | 2023-01-25 | [20934](https://github.com/airbytehq/airbyte/pull/20934) | Added `OAuth2.0` authentication support 
 | 1.0.1   | 2023-01-10 | [21215](https://github.com/airbytehq/airbyte/pull/21215) | Fix field names                                        |
