@@ -10,7 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -39,6 +43,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 public class PostgresDestinationTest {
 
@@ -111,7 +116,7 @@ public class PostgresDestinationTest {
 
   @BeforeEach
   void setup() {
-    config = PostgreSQLContainerHelper.createDatabaseWithRandomNameAndGetPostgresConfig(PSQL_DB);
+    config = createDatabaseWithRandomNameAndGetPostgresConfig(PSQL_DB);
   }
 
   @AfterAll
@@ -210,7 +215,7 @@ public class PostgresDestinationTest {
 
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
-    final JdbcDatabase database = getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
+    final JdbcDatabase database = getJdbcDatabaseFromConfig(getDataSourceFromConfig(config));
 
     database.execute(connection -> connection.createStatement()
         .execute(String.format("create user %s with password '%s';", USERNAME, PASSWORD)));
@@ -251,7 +256,7 @@ public class PostgresDestinationTest {
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
     consumer.close();
 
-    final JdbcDatabase database = getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
+    final JdbcDatabase database = getJdbcDatabaseFromConfig(getDataSourceFromConfig(config));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),
@@ -277,6 +282,38 @@ public class PostgresDestinationTest {
 
   private JdbcDatabase getJdbcDatabaseFromConfig(final DataSource dataSource) {
     return new DefaultJdbcDatabase(dataSource, JdbcUtils.getDefaultSourceOperations());
+  }
+
+  private JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(final PostgreSQLContainer<?> psqlDb) {
+    final var dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    final var initScriptName = "init_" + dbName.concat(".sql");
+    final var tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), psqlDb);
+    return getDestinationConfig(psqlDb, dbName);
+  }
+
+  private JsonNode getDestinationConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.SSL_KEY, false)
+        .build());
+  }
+
+  private DataSource getDataSourceFromConfig(final JsonNode config) {
+    return DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
   }
 
 }

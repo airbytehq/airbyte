@@ -6,6 +6,14 @@ package io.airbyte.test.utils;
 
 import java.util.Objects;
 
+// TODO: replace with record class:
+//public record SchemaTableNamePair(String schemaName, String tableName) {
+//
+//  public String getFullyQualifiedTableName() {
+//    return schemaName + "." + tableName;
+//  }
+//
+//}
 public class SchemaTableNamePair {
 
   public String schemaName;
