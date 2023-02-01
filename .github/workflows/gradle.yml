@@ -308,7 +308,7 @@ jobs:
         if: always()
         run: |
           gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
+          filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')
           echo "$filename"
           gsutil -h "Cache-Control:public" cp connectors_base_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
 
@@ -397,8 +397,10 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        # We need to fetch at least one more commmit for the Chromatic action not to fail
+        # but since we don't do screenshot comparison we don't need to fetch the full history.
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -564,11 +566,7 @@ jobs:
           EOF
 
       - name: Build Platform Docker Images
-        uses: Wandalen/wretry.action@master
-        with:
-          command: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
+        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
 
       - name: Run End-to-End Frontend Tests
         env:
@@ -834,7 +832,7 @@ jobs:
         if: always()
         run: |
           gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
+          filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')
           echo "$filename"
           gsutil -h "Cache-Control:public" cp platform_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
 
@@ -1057,7 +1055,7 @@ jobs:
         if: always()
         run: |
           gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
+          filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')
           echo "$filename"
           gsutil -h "Cache-Control:public" cp kube_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
 

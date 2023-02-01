@@ -17,6 +17,9 @@ public class OrchestratorConstants {
 
   // necessary for s3/minio logging. used in the log4j2 configuration.
   private static final String S3_PATH_STYLE_ACCESS = "S3_PATH_STYLE_ACCESS";
+  private static final String FEATURE_FLAG_CLIENT = "FEATURE_FLAG_CLIENT";
+  private static final String FEATURE_FLAG_PATH = "FEATURE_FLAG_PATH";
+  private static final String LAUNCHDARKLY_KEY = "LAUNCHDARKLY_KEY";
 
   // set of env vars necessary for the container orchestrator app to run
   public static final Set<String> ENV_VARS_TO_TRANSFER = new ImmutableSet.Builder<String>()
@@ -70,7 +73,12 @@ public class OrchestratorConstants {
           EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE,
           EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA,
           EnvVariableFeatureFlags.APPLY_FIELD_SELECTION,
-          EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES))
+          EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES,
+          FEATURE_FLAG_CLIENT,
+          FEATURE_FLAG_PATH,
+          LAUNCHDARKLY_KEY,
+          EnvConfigs.SOCAT_KUBE_CPU_LIMIT,
+          EnvConfigs.SOCAT_KUBE_CPU_REQUEST))
       .build();
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";

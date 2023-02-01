@@ -159,6 +159,7 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.1.34  | 2023-01-27 | [22006](https://github.com/airbytehq/airbyte/pull/22006) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.33  | 2022-12-23 | [20858](https://github.com/airbytehq/airbyte/pull/20858) | Fix check connection                                                                         |  
 | 0.1.32  | 2022-11-04 | [18965](https://github.com/airbytehq/airbyte/pull/18965) | Fix for `discovery` stage, when `custom_reports` are provided with single stream as `dict`   |  
 | 0.1.31  | 2022-10-30 | [18670](https://github.com/airbytehq/airbyte/pull/18670) | Add `Custom Reports` schema validation on `check connection`                                 |
