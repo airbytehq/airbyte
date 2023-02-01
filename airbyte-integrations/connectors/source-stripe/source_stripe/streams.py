@@ -10,6 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 STRIPE_ERROR_CODES: List = [
@@ -30,6 +31,10 @@ class StripeStream(HttpStream, ABC):
         self.account_id = account_id
         self.start_date = start_date
         self.slice_range = slice_range or self.DEFAULT_SLICE_RANGE
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()

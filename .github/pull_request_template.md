@@ -80,23 +80,3 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 - [ ] Documentation which references the generator is updated as needed
 
 </details>
-
-## Tests
-
-<details><summary><strong>Unit</strong></summary>
-
-*Put your unit tests output here.*
-
-</details>
-
-<details><summary><strong>Integration</strong></summary>
-
-*Put your integration tests output here.*
-
-</details>
-
-<details><summary><strong>Acceptance</strong></summary>
-
-*Put your acceptance tests output here.*
-
-</details>

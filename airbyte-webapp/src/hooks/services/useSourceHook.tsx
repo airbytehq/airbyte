@@ -64,6 +64,14 @@ const useGetSource = <T extends string | undefined | null>(
   });
 };
 
+export const useInvalidateSource = <T extends string | undefined | null>(sourceId: T): (() => void) => {
+  const queryClient = useQueryClient();
+
+  return useCallback(() => {
+    queryClient.invalidateQueries(sourcesKeys.detail(sourceId ?? ""));
+  }, [queryClient, sourceId]);
+};
+
 const useCreateSource = () => {
   const service = useSourceService();
   const queryClient = useQueryClient();
