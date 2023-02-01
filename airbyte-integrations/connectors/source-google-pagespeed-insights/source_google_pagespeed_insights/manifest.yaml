@@ -31,10 +31,8 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
     stream_slicer:
-      type: CartesianProductStreamSlicer
-      stream_slicers:
-        - "#/definitions/url_stream_slicer"
-        - "#/definitions/strategy_stream_slicer"
+      - "#/definitions/url_stream_slicer"
+      - "#/definitions/strategy_stream_slicer"
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"

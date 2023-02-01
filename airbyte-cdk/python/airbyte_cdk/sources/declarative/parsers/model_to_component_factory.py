@@ -656,9 +656,11 @@ class ModelToComponentFactory:
         )
 
         stream_slicer = (
-            self._create_component_from_model(model=model.stream_slicer, config=config)
-            if model.stream_slicer
-            else SingleSlice(parameters={})
+            CartesianProductStreamSlicer(
+                [self._create_component_from_model(model=slicer, config=config) for slicer in model.stream_slicer], parameters={}
+            )
+            if type(model.stream_slicer) == list
+            else self._create_component_from_model(model=model.stream_slicer, config=config)
         )
 
         if model.incremental:

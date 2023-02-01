@@ -487,7 +487,15 @@ class SimpleRetriever(BaseModel):
     name: Optional[str] = ""
     paginator: Optional[Union[DefaultPaginator, NoPagination]] = None
     primary_key: Optional[PrimaryKey] = None
-    stream_slicer: Optional[Union[CustomStreamSlicer, ListStreamSlicer, SingleSlice, SubstreamSlicer]] = None
+    stream_slicer: Optional[
+        Union[
+            CustomStreamSlicer,
+            ListStreamSlicer,
+            SingleSlice,
+            SubstreamSlicer,
+            List[Union[CustomStreamSlicer, ListStreamSlicer, SingleSlice, SubstreamSlicer]],
+        ]
+    ] = []
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 

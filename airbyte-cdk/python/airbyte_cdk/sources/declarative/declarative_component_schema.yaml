@@ -1004,11 +1004,19 @@ definitions:
       primary_key:
         "$ref": "#/definitions/PrimaryKey"
       stream_slicer:
+        default: []
         anyOf:
           - "$ref": "#/definitions/CustomStreamSlicer"
           - "$ref": "#/definitions/ListStreamSlicer"
           - "$ref": "#/definitions/SingleSlice"
           - "$ref": "#/definitions/SubstreamSlicer"
+          - type: array
+            items:
+              anyOf:
+                - "$ref": "#/definitions/CustomStreamSlicer"
+                - "$ref": "#/definitions/ListStreamSlicer"
+                - "$ref": "#/definitions/SingleSlice"
+                - "$ref": "#/definitions/SubstreamSlicer"
       $parameters:
         type: object
         additionalProperties: true
