@@ -11,17 +11,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.source.mysql.MySqlSource;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
@@ -63,7 +60,7 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
   @Test
   public void sshConnectionExceptionMarkAsConfigErrorTest() throws Exception {
     prepareBastionEnv();
-    //set fake port
+    // set fake port
     JsonNode fakeConfig = ((ObjectNode) config).put("tunnel_port", 1111);;
     Source sshWrappedSource = MySqlSource.sshWrappedSource();
     Exception exception = assertThrows(ConfigErrorException.class, () -> sshWrappedSource.discover(fakeConfig));

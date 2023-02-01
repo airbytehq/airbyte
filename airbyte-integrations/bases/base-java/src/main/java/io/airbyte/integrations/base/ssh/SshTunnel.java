@@ -369,7 +369,7 @@ public class SshTunnel implements AutoCloseable {
       return session;
     } catch (final IOException | GeneralSecurityException e) {
       if (e instanceof SshException &&
-              (isTimeout(e) || e.getMessage().contains("Failed (ConnectException) to execute: Connection refused"))) {
+          (isTimeout(e) || e.getMessage().contains("Failed (ConnectException) to execute: Connection refused"))) {
         throw new ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e);
       } else {
         throw new RuntimeException(e);
