@@ -37,6 +37,38 @@ def discover():
     print(json.dumps(airbyte_message))
 ```
 
+Also, create a file called `incremental_configured_catalog.json` with the following content:
+```javascript
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "stock_prices",
+                "supported_sync_modes": [
+                    "full_refresh",
+                    "incremental"
+                ],
+                "json_schema": {
+                    "properties": {
+                        "date": {
+                            "type": "string"
+                        },
+                        "price": {
+                            "type": "number"
+                        },
+                        "stock_ticker": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        }
+    ]
+}
+```
+
 ## Update `read`
 
 Next we will adapt the `read` method that we wrote previously. We need to change three things.
@@ -63,7 +95,7 @@ Here's what our updated `read` method would look like.
 def read(config, catalog, state):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
-        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        log_error("Input config must contain the properties 'api_key' and 'stock_ticker'")
         sys.exit(1)
 
     # Find the stock_prices stream if it is present in the input catalog
@@ -73,7 +105,7 @@ def read(config, catalog, state):
             stock_prices_stream = configured_stream
 
     if stock_prices_stream is None:
-        log("No streams selected")
+        log_error("No streams selected")
         return
 
     # By default we fetch stock prices for the 7 day period ending with today
@@ -93,7 +125,7 @@ def read(config, catalog, state):
         response = _call_api(ticker=config["stock_ticker"], token = config["api_key"], from_day=from_day, to_day=cursor_value)
         if response.status_code != 200:
             # In a real scenario we'd handle this error better :)
-            log("Failure occurred when calling Polygon.io API")
+            log_error("Failure occurred when calling Polygon.io API")
             sys.exit(1)
         else:
             # Stock prices are returned sorted by date in ascending order
@@ -115,6 +147,11 @@ def read(config, catalog, state):
     if stock_prices_stream["sync_mode"] == "incremental":
         output_message = {"type": "STATE", "state": {"data": {"stock_prices": {"date": cursor_value}}}}
         print(json.dumps(output_message))
+```
+
+That code requires to add a new library import in the `source.py` file:
+```python
+from datetime import timezone
 ```
 
 We will also need to parse `state` argument in the `run` method. In order to do that, we will modify the code that 
@@ -207,6 +244,23 @@ You will also need to create an `abnormal_state.json` file with a date in the fu
 
 ```
 {"stock_prices": {"date": "2121-01-01"}}
+```
+
+And lastly you need to modify the `check` function call to include the new parameters `from_day` and `to_day` in `source.py`:
+```python
+def check(config):
+    # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
+    response = _call_api(ticker=config["stock_ticker"], token=config["api_key"], from_day=datetime.now().date()-timedelta(days=1), to_day=datetime.now().date())
+    if response.status_code == 200:
+        result = {"status": "SUCCEEDED"}
+    elif response.status_code == 403:
+        # HTTP code 403 means authorization failed so the API key is incorrect
+        result = {"status": "FAILED", "message": "API Key is incorrect."}
+    else:
+        result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
+
+    output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
+    print(json.dumps(output_message))
 ```
 
 Run the tests once again:

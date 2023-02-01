@@ -3,12 +3,14 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `java-library`
+    `maven-publish`
     kotlin("jvm") version "1.8.0"
+    kotlin("kapt") version "1.8.0"
 }
 
 dependencies {
-    annotationProcessor(platform(libs.micronaut.bom))
-    annotationProcessor(libs.bundles.micronaut.annotation.processor)
+    kapt(platform(libs.micronaut.bom))
+    kapt(libs.bundles.micronaut.annotation.processor)
 
     implementation(platform(libs.micronaut.bom))
     implementation(libs.micronaut.inject)
@@ -17,9 +19,8 @@ dependencies {
     implementation(libs.jackson.dataformat)
     implementation(libs.jackson.kotlin)
 
-    testAnnotationProcessor(platform(libs.micronaut.bom))
-    testAnnotationProcessor(libs.micronaut.inject)
-    testAnnotationProcessor(libs.bundles.micronaut.test.annotation.processor)
+    kaptTest(platform(libs.micronaut.bom))
+    kaptTest(libs.bundles.micronaut.test.annotation.processor)
 
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
@@ -36,4 +37,18 @@ tasks.withType<KotlinCompile> {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+publishing {
+    repositories {
+        publications {
+            create<MavenPublication>("${project.name}") {
+                groupId = "${project.group}"
+                artifactId = "${project.name}"
+                version = "${rootProject.version}"
+                repositories.add(rootProject.repositories.getByName("cloudrepo"))
+                from(components["java"])
+            }
+        }
+    }
 }
