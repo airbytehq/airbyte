@@ -11,6 +11,7 @@ import { ResizablePanels } from "components/ui/ResizablePanels";
 
 import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { ConnectorBuilderLocalStorageProvider } from "services/connectorBuilder/ConnectorBuilderLocalStorageService";
 import {
   ConnectorBuilderTestStateProvider,
   ConnectorBuilderFormStateProvider,
@@ -72,11 +73,13 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
 });
 
 export const ConnectorBuilderPage: React.FC = () => (
-  <ConnectorBuilderFormStateProvider>
-    <ConnectorBuilderTestStateProvider>
-      <ConnectorBuilderPageInner />
-    </ConnectorBuilderTestStateProvider>
-  </ConnectorBuilderFormStateProvider>
+  <ConnectorBuilderLocalStorageProvider>
+    <ConnectorBuilderFormStateProvider>
+      <ConnectorBuilderTestStateProvider>
+        <ConnectorBuilderPageInner />
+      </ConnectorBuilderTestStateProvider>
+    </ConnectorBuilderFormStateProvider>
+  </ConnectorBuilderLocalStorageProvider>
 );
 
 const Panels = React.memo(
