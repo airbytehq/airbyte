@@ -16,7 +16,13 @@ import yaml
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.chdir('../../..')
 
-AIRBYTE_REPO = git.Repo(".")
+# print the current working directory
+print("Current working directory:")
+print(os.getcwd())
+
+REPO_ROOT = "."
+
+AIRBYTE_REPO = git.Repo(REPO_ROOT)
 DIFFED_BRANCH = "origin/master"
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
