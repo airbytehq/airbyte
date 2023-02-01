@@ -413,17 +413,18 @@ public class AirbyteAcceptanceTestHarness {
 
   private Set<SchemaTableNamePair> addAirbyteGeneratedTables(final boolean withScdTable, final Set<SchemaTableNamePair> sourceTables) {
     return sourceTables.stream().flatMap(x -> {
-      final String cleanedNameStream = x.tableName.replace(".", "_");
+      final String cleanedNameStream = x.tableName().replace(".", "_");
       final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
-          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName(),
               String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream)),
-          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream))));
+          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName(), String.format("%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream))));
       if (withScdTable) {
         explodedStreamNames
-            .add(new SchemaTableNamePair("_airbyte_" + OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+            .add(new SchemaTableNamePair("_airbyte_" + OUTPUT_NAMESPACE_PREFIX + x.schemaName(),
                 String.format("%s%s_stg", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
         explodedStreamNames
-            .add(new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s_scd", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
+            .add(new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName(),
+                String.format("%s%s_scd", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
       }
       return explodedStreamNames.stream();
     }).collect(Collectors.toSet());
@@ -618,8 +619,8 @@ public class AirbyteAcceptanceTestHarness {
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
-    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, pair.tableName.replace(".", "_"));
-    final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + pair.schemaName, rawStreamName);
+    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, pair.tableName().replace(".", "_"));
+    final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + pair.schemaName(), rawStreamName);
     assertTrue(namePairs.contains(rawTablePair), "can't find a non-normalized version (raw) of " + rawTablePair.getFullyQualifiedTableName());
 
     return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());
@@ -779,7 +780,7 @@ public class AirbyteAcceptanceTestHarness {
     final Database database = getSourceDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName(), pair.tableName())));
     }
   }
 
@@ -787,7 +788,7 @@ public class AirbyteAcceptanceTestHarness {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName(), pair.tableName())));
     }
   }
 
