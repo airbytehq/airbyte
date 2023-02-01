@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,8 +21,8 @@ public abstract class S3BaseJsonlGzipDestinationAcceptanceTest extends S3BaseJso
   protected JsonNode getFormatConfig() {
     // config without compression defaults to GZIP
     return Jsons.jsonNode(Map.of(
-            "format_type", outputFormat,
-            "flattening", S3JsonlFormatConfig.Flattening.NO.getValue()));
+        "format_type", outputFormat,
+        "flattening", S3JsonlFormatConfig.Flattening.NO.getValue()));
   }
 
   protected BufferedReader getReader(final S3Object s3Object) throws IOException {
