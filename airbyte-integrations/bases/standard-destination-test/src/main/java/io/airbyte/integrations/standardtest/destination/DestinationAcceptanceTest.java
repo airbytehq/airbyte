@@ -145,10 +145,18 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected String getNormalizationImageName() {
+    final String normalizationVersion;
+    // Normalization >= 0.3.0 requires a different catalog format, so pin to 0.2.25 here.
+    // If you need to make a normalization update for a connector update, you'll need to also upgrade to protocol v1.
+    if (getProtocolVersion() == ProtocolVersion.V0){
+      normalizationVersion = "0.2.25";
+    } else {
+      normalizationVersion = NORMALIZATION_VERSION;
+    }
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
         .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
         .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":"
-            + NORMALIZATION_VERSION)
+            + normalizationVersion)
         .orElse(null);
   }
 
