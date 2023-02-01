@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.sql.SQLException;

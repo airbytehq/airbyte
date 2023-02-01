@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
-
 import java.io.EOFException;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
@@ -97,7 +96,7 @@ public class ConnectorExceptionUtil {
   private static Predicate<Throwable> isEofExceptionPredicate() {
     return e -> e instanceof EOFException
         && (e.getMessage().contains("Can not read response from server. Expected to read")
-        || e.getMessage().contains("Failed to read remaining"));
+            || e.getMessage().contains("Failed to read remaining"));
   }
 
 }
