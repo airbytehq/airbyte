@@ -7,6 +7,8 @@ import {
   PauseSubscription,
 } from "../domain/payment";
 import { ProductItemsList, PackagesDetail } from "../domain/product";
+import { RolesList, UpdateRoleRequestBody } from "../domain/role";
+import { UsersList, NewUser, NewUserRegisterBody } from "../domain/user";
 import { apiOverride } from "./apiOverride";
 
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never;
@@ -87,6 +89,86 @@ export const pauseSubscription = (options?: SecondParameter<typeof apiOverride>)
       url: `/sub/pause`,
       method: "post",
       headers: { "Content-Type": "application/json" },
+    },
+    options
+  );
+};
+
+/**
+ * @summary role apis in current Daspire deployment
+ */
+
+export const listRoles = (options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<RolesList>({ url: `/user/management/role/list`, method: "get" }, options);
+};
+
+/**
+ * @summary user management apis in current Daspire deployment
+ */
+
+export const listUser = (options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<UsersList>({ url: `/user/management/list`, method: "get" }, options);
+};
+
+export const addUsers = (users: NewUser[], options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<UsersList>(
+    {
+      url: `/user/management/add`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: users,
+    },
+    options
+  );
+};
+
+export const deleteUser = (userId: string, options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride(
+    {
+      url: `/user/management/del/${userId}`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+    },
+    options
+  );
+};
+
+export const resendInviteToUser = (userId: string, options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride(
+    {
+      url: `/user/management/resend/${userId}`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+    },
+    options
+  );
+};
+
+export const updateUserRole = (
+  UpdateRoleBody: UpdateRoleRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride(
+    {
+      url: `/user/management/edit/role`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: UpdateRoleBody,
+    },
+    options
+  );
+};
+
+export const registerNewUser = (
+  newUserRegisterBody: NewUserRegisterBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride(
+    {
+      url: `/user/management/register`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: newUserRegisterBody,
     },
     options
   );

@@ -7,17 +7,7 @@ package io.airbyte.server.handlers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.DestinationCloneConfiguration;
-import io.airbyte.api.model.generated.DestinationCloneRequestBody;
-import io.airbyte.api.model.generated.DestinationCreate;
-import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.generated.DestinationIdRequestBody;
-import io.airbyte.api.model.generated.DestinationRead;
-import io.airbyte.api.model.generated.DestinationReadList;
-import io.airbyte.api.model.generated.DestinationSearch;
-import io.airbyte.api.model.generated.DestinationUpdate;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -31,7 +21,9 @@ import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -312,4 +304,15 @@ public class DestinationHandler {
         .destinationName(standardDestinationDefinition.getName());
   }
 
+  public List<WebBackendConnectionFilterParamItem> listFilterParam() throws IOException {
+    List<WebBackendConnectionFilterParamItem> result = new LinkedList<>();
+    List<Map<String, String>> listMap = configRepository.listFilterParamDestination();
+    listMap.forEach(item -> {
+      WebBackendConnectionFilterParamItem paramItem = new WebBackendConnectionFilterParamItem();
+      paramItem.setValue(item.get("value"));
+      paramItem.setKey(item.get("key"));
+      result.add(paramItem);
+    });
+    return result;
+  }
 }

@@ -1,39 +1,34 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-
-// import { Text } from "components/base/Text";
 import styled from "styled-components";
 
 import HeadTitle from "components/HeadTitle";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 
-// import { OAuthLogin } from "../OAuthLogin";
 import { Link } from "../../../components/Link";
 import { RoutePaths } from "../../routePaths";
 import { SignupForm } from "./components/SignupForm";
-// import styles from "../LoginPage/LoginPage.module.scss";
-// import SpecialBlock from "./components/SpecialBlock";
-// import styles from "./SignupPage.module.scss";
 
 interface SignupPageProps {
   highlightStyle?: React.CSSProperties;
 }
-// highlightStyle
 
 const Container = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   background-color: #ffffff;
 `;
 
 const InformationContent = styled.div`
   width: 40%;
+  // height: 100%;
   background: linear-gradient(75.03deg, #313e6a 1.54%, #0e1331 100%);
   position: relative;
 `;
+
 const ImageContent = styled.div`
   position: absolute;
   top: 200px;
@@ -72,6 +67,7 @@ const TitleText = styled.div`
   font-size: 24px;
   color: white;
 `;
+
 const FirstListItem = styled.div`
   display: flex;
   flex-direction: row;
@@ -96,6 +92,7 @@ const ListItem = styled.div`
 
 const FormContent = styled.div`
   width: 60%;
+  // height: 100%;
   background-color: #eff0f5;
 `;
 
@@ -214,8 +211,6 @@ const SignupPage: React.FC<SignupPageProps> = () => {
         <SignupFormContainer>
           <SignupForm />
         </SignupFormContainer>
-        {/* <OAuthLogin isSignUpPage />*/}
-        {/* <Disclaimer />*/}
       </FormContent>
     </Container>
   );

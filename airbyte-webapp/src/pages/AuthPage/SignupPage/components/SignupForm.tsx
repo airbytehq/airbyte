@@ -1,25 +1,20 @@
 import { Field, FieldProps, Formik } from "formik";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-
-// import styled from "styled-components";
+import styled from "styled-components";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
 import Alert from "components/Alert";
+import { Separator } from "components/Separator";
 
 import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
+import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
-// import { useExperiment } from "hooks/services/Experiment";
-// import { FieldError } from "packages/cloud/lib/errors/FieldError";
-// import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { useAuthenticationService } from "../../../../services/auth/AuthSpecificationService";
-
-// import CheckBoxControl from "../../components/CheckBoxControl";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
+import { GoogleAuthBtn } from "../../GoogleAuthBtn";
 import styles from "./SignupForm.module.scss";
-// import {AuthService} from "../../../../services/auth/AuthService";
 
 interface FormValues {
   firstName: string;
@@ -29,10 +24,6 @@ interface FormValues {
   password: string;
   confirmPassword: string;
 }
-
-// const MarginBlock = styled.div`
-//   margin-bottom: 15px;
-// `;
 
 export const FirstNameField: React.FC = () => {
   const { formatMessage } = useIntl();
@@ -160,48 +151,6 @@ export const ConfirmPasswordField: React.FC<{ label?: React.ReactNode }> = ({ la
   );
 };
 
-// export const NewsField: React.FC = () => {
-//     const { formatMessage } = useIntl();
-//     return (
-//         <Field name="news">
-//             {({ field, meta }: FieldProps<string>) => (
-//                 <MarginBlock>
-//                     <CheckBoxControl
-//                         {...field}
-//                         checked={!!field.value}
-//                         checkbox
-//                         label={<FormattedMessage id="login.subscribe" />}
-//                         message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-//                     />
-//                 </MarginBlock>
-//             )}
-//         </Field>
-//     );
-// };
-
-// export const Disclaimer: React.FC = () => {
-//     const config = useConfig();
-//     return (
-//         <div className={styles.disclaimer}>
-//             <FormattedMessage
-//                 id="login.disclaimer"
-//                 values={{
-//                     terms: (terms: React.ReactNode) => (
-//                         <Link $clear target="_blank" href={config.links.termsLink} as="a">
-//                             {terms}
-//                         </Link>
-//                     ),
-//                     privacy: (privacy: React.ReactNode) => (
-//                         <Link $clear target="_blank" href={config.links.privacyLink} as="a">
-//                             {privacy}
-//                         </Link>
-//                     ),
-//                 }}
-//             />
-//         </div>
-//     );
-// };
-
 interface SignupButtonProps {
   isLoading: boolean;
   disabled: boolean;
@@ -222,13 +171,30 @@ export const SignupFormStatusMessage: React.FC = ({ children }) => (
   <div className={styles.statusMessage}>{children}</div>
 );
 
+const AuthSeperatorContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const Line = styled.div`
+  width: 100%;
+  border-top: 1px solid #d6dadf;
+`;
+
+const SeperatorText = styled.div`
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  color: #6b6b6f;
+  margin: 0 37px;
+`;
+
 export const SignupForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const signUp = useAuthenticationService();
   const { setUser } = useUser();
-
-  // const showName = !useExperiment("authPage.signup.hideName", false);
-  // const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
 
   const validationSchema = useMemo(() => {
     const shape = {
@@ -243,13 +209,6 @@ export const SignupForm: React.FC = () => {
         .min(8, `signup.confirmPassword.minLength`)
         .required("confirmPassword.empty.error"),
     };
-    // Confirm password should match new password
-    // if (showName) {
-    //     shape.name = shape.name.required("form.empty.error");
-    // }
-    // if (showCompanyName) {
-    //     shape.companyName = shape.companyName.required("form.empty.error");
-    // }
     return yup.object().shape(shape);
   }, []);
 
@@ -272,37 +231,33 @@ export const SignupForm: React.FC = () => {
           confirmPassword: "",
         }}
         validationSchema={validationSchema}
-        onSubmit={
-          async (values) => {
-            signUp
-              .create(values)
-              .then((res: any) => {
-                setUser?.(res);
-              })
-              .catch((err: any) => {
-                setErrorMessage(err.message);
-              });
-          }
-          // .catch(() => {
-          // console.log(err)
-          // if (err instanceof FieldError) {
-          //     setFieldError(err.field, err.message);
-          // } else {
-          //     setStatus(err.message);
-          // }
-          // })
-        }
+        onSubmit={async (values) => {
+          signUp
+            .create(values)
+            .then((res: any) => {
+              setUser?.(res);
+            })
+            .catch((err: any) => {
+              setErrorMessage(err.message);
+            });
+        }}
         validateOnBlur
         validateOnChange
       >
         {({ isValid, dirty, isSubmitting, status }) => (
           <Form className={styles.form}>
-            {/* {(showName || showCompanyName) && (*/}
+            <GoogleAuthBtn buttonText="signup_with" />
+            <Separator height="28px" />
+            <AuthSeperatorContainer>
+              <Line />
+              <SeperatorText>Or</SeperatorText>
+              <Line />
+            </AuthSeperatorContainer>
+            <Separator height="40px" />
             <RowFieldItem>
               <FirstNameField />
               <LastNameField />
             </RowFieldItem>
-            {/* )}*/}
             <FieldItem>
               <EmailField />
             </FieldItem>

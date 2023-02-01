@@ -40,6 +40,18 @@ export class AuthService extends AirbyteRequestService {
     });
   }
 
+  public async googleAuth(token: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.fetch(`/user/third/oauth`, { accessToken: token, type: "GOOGLE" })
+        .then((res: any) => {
+          resolve(res.data);
+        })
+        .catch((err: any) => {
+          reject(err);
+        });
+    });
+  }
+
   public async get(): Promise<any> {
     return new Promise((resolve, reject) => {
       userInfo(this.requestOptions)

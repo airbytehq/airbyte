@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "superDepartment": {
+      "type": ["null", "string"]
+    },
+    "superDepartmentId": {
+      "type": ["null", "string"]
+    },
+    "departments": {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "departmentName": {
+            "type": ["null", "string"]
+          },
+          "departmentId": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

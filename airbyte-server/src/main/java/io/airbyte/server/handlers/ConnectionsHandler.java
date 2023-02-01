@@ -40,13 +40,7 @@ import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -260,6 +254,23 @@ public class ConnectionsHandler {
 
     return new ConnectionReadList().connections(connectionReads);
   }
+  public ConnectionReadList pageConnectionsForWorkspace(final WorkspaceIdPageRequestBody workspaceIdRequestBody)
+      throws IOException{
+    final List<ConnectionRead> connectionReads = Lists.newArrayList();
+
+    for (final StandardSync standardSync : configRepository.pageWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(),
+            workspaceIdRequestBody.getSourceId(),workspaceIdRequestBody.getDestinationId(),workspaceIdRequestBody.getStatus(),
+            workspaceIdRequestBody.getPageSize(),workspaceIdRequestBody.getPageCurrent())) {
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
+    }
+
+    return new ConnectionReadList().connections(connectionReads);
+  }
+  public Long pageConnectionsForWorkspaceCount(final WorkspaceIdPageRequestBody workspaceIdRequestBody)
+      throws IOException{
+    return configRepository.pageWorkspaceStandardSyncsCount(workspaceIdRequestBody.getWorkspaceId(),
+            workspaceIdRequestBody.getSourceId(),workspaceIdRequestBody.getDestinationId(),workspaceIdRequestBody.getStatus());
+  }
 
   public ConnectionReadList listConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
@@ -417,4 +428,14 @@ public class ConnectionsHandler {
     return new ConnectionsCount().count(configRepository.connectionsCount(workspaceIdRequestBody.getWorkspaceId()));
   }
 
+  public List<WebBackendConnectionFilterParamItem> listStatus() {
+    List<WebBackendConnectionFilterParamItem> list = new ArrayList<>();
+    configRepository.mapStatus().keySet().forEach(key -> {
+      WebBackendConnectionFilterParamItem item = new WebBackendConnectionFilterParamItem();
+      item.setKey(key);
+      item.setValue(configRepository.mapStatus().get(key));
+      list.add(item);
+    });
+    return list;
+  }
 }

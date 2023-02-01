@@ -17,6 +17,7 @@ export type OptionType = any;
 export interface DropdownProps<T = unknown> extends Props<OptionType> {
   withBorder?: boolean;
   $withBorder?: boolean;
+  $background?: string;
   fullText?: boolean;
   error?: boolean;
   selectProps?: T;
@@ -59,7 +60,7 @@ function DropDownInner<T = unknown>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     menuPortal: (base: CSSObjectWithLabel, menuPortalProps: any) => ({
       ...(props.styles?.menuPortal?.(base, menuPortalProps) ?? { ...base }),
-      zIndex: 9999,
+      zIndex: 9999999999,
     }),
   };
 

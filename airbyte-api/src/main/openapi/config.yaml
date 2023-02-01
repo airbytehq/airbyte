@@ -1938,6 +1938,46 @@ paths:
           $ref: "#/components/responses/ExceptionResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
+  /v1/web_backend/connections/filter/param:
+    post:
+      tags:
+        - web_backend
+      summary: Returns all non-deleted connections for a workspace.
+      operationId: webBackendConnectionsFilterParam
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionFilterParam"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/connections/page:
+    post:
+      tags:
+        - web_backend
+      summary: Returns all non-deleted connections for a workspace.
+      operationId: webBackendPageConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdPageRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionPageReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -2389,6 +2429,25 @@ components:
             - failed
         message:
           type: string
+    WorkspaceIdPageRequestBody:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceId:
+          type: string
+          format: uuid
+        destinationId:
+          type: string
+          format: uuid
+        status:
+          type: string
+        pageSize:
+          type: integer
+        pageCurrent:
+          type: integer
     WorkspaceIdRequestBody:
       type: object
       required:
@@ -4647,6 +4706,13 @@ components:
           type: object
           additionalProperties: true
     # Web Backend
+    WebBackendConnectionFilterParamItem:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
     WebBackendConnectionRead:
       type: object
       required:
@@ -4724,6 +4790,37 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WebBackendConnectionRead"
+    WebBackendConnectionPageReadList:
+      type: object
+      required:
+        - connections
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebBackendConnectionRead"
+        total:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+        pageCurrent:
+          type: integer
+    WebBackendConnectionFilterParam:
+      type: object
+      properties:
+        status:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebBackendConnectionFilterParamItem"
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebBackendConnectionFilterParamItem"
+        destinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebBackendConnectionFilterParamItem"
     SyncMode:
       type: string
       enum:

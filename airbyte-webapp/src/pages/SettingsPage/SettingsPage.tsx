@@ -14,14 +14,14 @@ import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
 import { MessageBox } from "./components/MessageBox";
-// import UserManagementPage from "./pages/UserManagementPage";
 // import AccountSettingsPage from "./pages/AccountSettingsPage";
 import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
+import UserManagementPage from "./pages/UserManagementPage";
 
 const PageContainer = styled.div`
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
   background: transparent;
   display: flex;
   flex-direction: row;
@@ -30,12 +30,12 @@ const PageContainer = styled.div`
 const Seperator = styled.div`
   width: 10px;
   background: transparent;
-  min-height: 100vh;
+  min-height: 100%;
 `;
 
 const ContentContainer = styled.div`
   width: 100%;
-  min-height: 100vh;
+  min-height: 100%;
   background-color: white;
   padding: 26px;
 `;
@@ -83,16 +83,21 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { user } = useUser();
 
   const [messageId, setMessageId] = useState<string>("");
+  const [messageType, setMessageType] = useState<"info" | "error">("info");
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
       routes: [
-        // {
-        //   path: `${SettingsRoute.UserManagement}`,
-        //   name: <FormattedMessage id="settings.user.management" />,
-        //   component: <UserManagementPage />,
-        //   show: true,
-        // },
+        {
+          path: `${SettingsRoute.UserManagement}`,
+          name: <FormattedMessage id="settings.user.management" />,
+          component: <UserManagementPage setMessageId={setMessageId} setMessageType={setMessageType} />,
+          show:
+            getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
+            getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
+              ? true
+              : false,
+        },
         // {
         //   path: `${SettingsRoute.AccountSettings}`,
         //   name: <FormattedMessage id="settings.account.settings" />,
@@ -102,7 +107,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,
-          component: <PlansBillingPage setMessageId={setMessageId} />,
+          component: <PlansBillingPage setMessageId={setMessageId} setMessageType={setMessageType} />,
           show:
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
@@ -120,7 +125,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   ];
 
   const onSelectMenuItem = (newPath: string) => push(newPath);
-  const firstRoute = menuItems[0].routes?.[0]?.path;
+  const firstRoute = (): string => {
+    const { routes } = menuItems[0];
+    const filteredRoutes = routes.filter((route) => route.show === true);
+    if (filteredRoutes.length > 0) {
+      return filteredRoutes[0]?.path;
+    }
+    return "";
+  };
 
   return (
     <PageContainer>
@@ -134,7 +146,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               <div style={{ padding: "0 0 0 20px" }}>
                 <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
               </div>
-              <MessageBox message={messageId} onClose={() => setMessageId("")} />
+              <MessageBox message={messageId} onClose={() => setMessageId("")} type={messageType} />
             </PageHeaderContainer>
           }
         >
@@ -151,7 +163,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                       ({ path, component: Component, show }) =>
                         show && <Route key={path} path={path} element={Component} />
                     )}
-                  <Route path="*" element={<Navigate to={firstRoute} replace />} />
+                  <Route path="*" element={<Navigate to={firstRoute()} replace />} />
                 </Routes>
               </Suspense>
             </MainView>

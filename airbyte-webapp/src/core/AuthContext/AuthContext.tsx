@@ -10,6 +10,7 @@ interface IUserContext {
   user: IAuthUser;
   setUser?: (user: IAuthUser) => void;
   updateUserStatus?: (status: number) => void;
+  updateUserRole?: (role: number) => void;
   removeUser?: () => void;
 }
 
@@ -42,6 +43,12 @@ export const AuthContextProvider: React.FC = ({ children }) => {
     setAuthenticatedUser(updatedUser);
   };
 
+  const updateUserRole = (role: number) => {
+    const updatedUser = { ...authenticatedUser, role };
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
+    setAuthenticatedUser(updatedUser);
+  };
+
   const removeUser = () => {
     localStorage.removeItem(AUTH_USER_KEY);
     setAuthenticatedUser(MyAuthUser.userJSON(), () => window.location.reload());
@@ -53,6 +60,7 @@ export const AuthContextProvider: React.FC = ({ children }) => {
         user: authenticatedUser,
         setUser,
         updateUserStatus,
+        updateUserRole,
         removeUser,
       }}
     >

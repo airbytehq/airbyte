@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "purchaseOrderId": {
+      "type": ["null", "string"]
+    },
+    "customerOrderId": {
+      "type": ["null", "string"]
+    },
+    "customerEmailId": {
+      "type": ["null", "string"]
+    },
+    "orderDate": {
+      "type": ["null", "integer"]
+    },
+    "shippingInfo": {
+      "type": ["null", "object"]
+    },
+    "orderLines": {
+      "type": ["null", "object"]
+    },
+    "shipNode": {
+      "type": ["null", "object"]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "PARTNER ID": {
+      "type": ["null", "string"]
+    },
+    "SKU": {
+      "type": ["null", "string"]
+    },
+    "SKU OPT IN": {
+      "type": ["null", "string"]
+    },
+    "PRODUCT NAME": {
+      "type": ["null", "string"]
+    },
+    "CURRENCY": {
+      "type": ["null", "string"]
+    },
+    "PRICE": {
+      "type": ["null", "string"]
+    },
+    "SHIP PRICE": {
+      "type": ["null", "string"]
+    }
+  }
+}

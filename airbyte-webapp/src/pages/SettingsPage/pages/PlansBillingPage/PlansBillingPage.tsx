@@ -22,6 +22,7 @@ import styles from "./style.module.scss";
 
 interface IProps {
   setMessageId: React.Dispatch<React.SetStateAction<string>>;
+  setMessageType: React.Dispatch<React.SetStateAction<"info" | "error">>;
 }
 
 const CancelSubscriptionBtn = styled(Button)`
@@ -50,7 +51,7 @@ export const convert_M_To_Million = (string: string): string => {
   return string;
 };
 
-const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
+const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) => {
   const { push } = useRouter();
   const { user, updateUserStatus } = useUser();
   const { onPauseSubscription } = useAsyncAction();
@@ -70,6 +71,7 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
     if (prevUserPlanDetail?.selectedProduct !== undefined) {
       if (!_.isEqual(userPlanDetail.selectedProduct, prevUserPlanDetail?.selectedProduct)) {
         setMessageId?.("subscription.plan.update");
+        setMessageType("info");
       }
     }
   }, [prevUserPlanDetail, userPlanDetail]);
@@ -90,6 +92,7 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
             setConfirmLoading(false);
             setToggleCancel(false);
             setMessageId?.("subscription.cancel.successfull");
+            setMessageType("info");
           })
           .catch(() => {
             setConfirmLoading(false);

@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "inboundOrderId": {
+      "type": ["null", "string"]
+    },
+    "shipmentId": {
+      "type": ["null", "string"]
+    },
+    "gtin": {
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "itemDesc": {
+      "type": ["null", "string"]
+    },
+    "itemQty": {
+      "type": ["null", "integer"]
+    },
+    "vendorPackQty": {
+      "type": ["null", "integer"]
+    },
+    "innerPackQty": {
+      "type": ["null", "integer"]
+    },
+    "receivedQty": {
+      "type": ["null", "integer"]
+    },
+    "damagedQty": {
+      "type": ["null", "integer"]
+    },
+    "fillRate": {
+      "type": ["null", "number"]
+    },
+    "expectedDeliveryDate": {
+      "type": ["null", "string"]
+    },
+    "updatedExpectedDeliveryDate": {
+      "type": ["null", "string"]
+    },
+    "shipNodeName": {
+      "type": ["null", "string"]
+    }
+  }
+}

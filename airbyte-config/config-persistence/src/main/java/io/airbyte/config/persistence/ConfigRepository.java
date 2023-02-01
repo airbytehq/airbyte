@@ -63,15 +63,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jooq.Condition;
-import org.jooq.DSLContext;
-import org.jooq.Field;
-import org.jooq.JSONB;
-import org.jooq.JoinType;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.Record2;
-import org.jooq.Result;
-import org.jooq.SelectJoinStep;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -625,6 +619,69 @@ public class ConfigRepository {
     return getStandardSyncsFromResult(result);
   }
 
+  public List<StandardSync> pageWorkspaceStandardSyncs(final UUID workspaceId,
+                                                       final UUID sourceId,
+                                                       final UUID destinationId,
+                                                       final String status,
+                                                       final Integer pageSize,
+                                                       final Integer pageCurrent)
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      List<UUID> destinationList = null;
+      if (destinationId != null) {
+        destinationList = ctx.select(ACTOR.ID).from(ACTOR).where(ACTOR.ACTOR_DEFINITION_ID.eq(destinationId)).fetch(ACTOR.ID);
+        if (destinationList == null || destinationList.isEmpty()) {
+          destinationList = List.of(destinationId);
+        }
+      }
+      SelectConditionStep<Record> where = ctx.select(CONNECTION.asterisk()).from(CONNECTION)
+          .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+          .where(ACTOR.WORKSPACE_ID.eq(workspaceId));
+      if (sourceId != null) {
+        where.and(ACTOR.ACTOR_DEFINITION_ID.eq(sourceId));
+      }
+      if (destinationList != null && !destinationList.isEmpty()) {
+        where.and(CONNECTION.DESTINATION_ID.in(destinationList));
+      }
+      if (StringUtils.isNotEmpty(status)) {
+        where.and(CONNECTION.STATUS.eq(StatusType.valueOf(status)));
+      } else {
+        where.and(CONNECTION.STATUS.notEqual(StatusType.deprecated));
+      }
+      return where.limit(pageSize)
+          .offset(pageSize * (pageCurrent - 1));
+    }).fetch();
+    return getStandardSyncsFromResult(result);
+  }
+
+  public Long pageWorkspaceStandardSyncsCount(final UUID workspaceId, final UUID sourceId, final UUID destinationId, final String status)
+      throws IOException {
+    return database.query(ctx -> {
+      List<UUID> destinationList = null;
+      if (destinationId != null) {
+        destinationList = ctx.select(ACTOR.ID).from(ACTOR).where(ACTOR.ACTOR_DEFINITION_ID.eq(destinationId)).fetch(ACTOR.ID);
+        if (destinationList == null || destinationList.isEmpty()) {
+          destinationList = List.of(destinationId);
+        }
+      }
+      SelectConditionStep<Record1<Integer>> where = ctx.selectCount().from(CONNECTION)
+          .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+          .where(ACTOR.WORKSPACE_ID.eq(workspaceId));
+      if (sourceId != null) {
+        where.and(ACTOR.ACTOR_DEFINITION_ID.eq(sourceId));
+      }
+      if (destinationList != null && !destinationList.isEmpty()) {
+        where.and(CONNECTION.DESTINATION_ID.in(destinationList));
+      }
+      if (StringUtils.isNotEmpty(status)) {
+        where.and(CONNECTION.STATUS.eq(StatusType.valueOf(status)));
+      } else {
+        where.and(CONNECTION.STATUS.notEqual(StatusType.deprecated));
+      }
+      return where;
+    }).fetchOne().into(Long.class);
+  }
+
   private List<StandardSync> getStandardSyncsFromResult(final Result<Record> result) throws IOException {
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
@@ -1014,6 +1071,30 @@ public class ConfigRepository {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = getStandardSync(connectionId);
     return standardSync.getCatalog();
+  }
+
+  public Map<String, String> mapStatus() {
+    return Map.of(StatusType.active.name(), StatusType.active.name(), StatusType.inactive.name(), StatusType.inactive.name());
+  }
+
+  public List<Map<String, String>> listFilterParam(ActorType actorType) throws IOException {
+    return database.query(ctx -> ctx.select(ACTOR_DEFINITION.ID, ACTOR_DEFINITION.NAME).from(ACTOR_DEFINITION)
+        .where(ACTOR_DEFINITION.PUBLIC.eq(true))
+        .and(ACTOR_DEFINITION.ACTOR_TYPE.eq(actorType))
+        .fetch()).stream()
+        .map(record -> {
+          UUID uuid = record.get(ACTOR_DEFINITION.ID);
+          return Map.of("key", record.get(ACTOR_DEFINITION.NAME), "value", uuid.toString());
+        })
+        .collect(Collectors.toList());
+  }
+
+  public List<Map<String, String>> listFilterParamSources() throws IOException {
+    return listFilterParam(ActorType.source);
+  }
+
+  public List<Map<String, String>> listFilterParamDestination() throws IOException {
+    return listFilterParam(ActorType.destination);
   }
 
 }

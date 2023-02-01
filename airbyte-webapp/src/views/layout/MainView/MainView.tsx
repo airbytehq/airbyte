@@ -67,13 +67,7 @@ const MainView: React.FC = (props) => {
       <Content>
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <React.Suspense fallback={<LoadingPage />}>
-            {isAuthorized && (
-              <UnauthorizedModal
-                onClose={() => {
-                  setIsAuthorized(false);
-                }}
-              />
-            )}
+            {isAuthorized && <UnauthorizedModal onClose={() => setIsAuthorized(false)} />}
             {isUpgradePlanBar() && <UpgradePlanBar onUpgradePlan={onUpgradePlan} />}
             {props.children}
           </React.Suspense>

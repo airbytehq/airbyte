@@ -1081,6 +1081,14 @@
   icon: victorops.svg
   sourceType: api
   releaseStage: alpha
+- name: Walmart Marketplace
+  sourceDefinitionId: fba86c65-389d-4194-abe2-0732d87d0d75
+  dockerRepository: yuanrui2014/source-walmart
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/walmart-marketplace
+  icon: walmart.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Webflow
   sourceDefinitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
   dockerRepository: airbyte/source-webflow

@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "inboundOrderId": {
+      "type": ["null", "string"]
+    },
+    "shipmentId": {
+      "type": ["null", "string"]
+    },
+    "shipToAddress": {
+      "type": ["null", "object"],
+      "properties": {
+        "fcName": {
+          "type": ["null", "string"]
+        },
+        "addressLine1": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "integer"]
+        },
+        "stateCode": {
+          "type": ["null", "integer"]
+        },
+        "countryCode": {
+          "type": ["null", "string"]
+        },
+        "postalCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "returnAddress": {
+      "type": ["null", "object"],
+      "properties": {
+        "addressLine1": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "stateCode": {
+          "type": ["null", "integer"]
+        },
+        "countryCode": {
+          "type": ["null", "string"]
+        },
+        "postalCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "createdDate": {
+      "type": ["null", "string"]
+    },
+    "shipmentUnits": {
+      "type": ["null", "integer"]
+    },
+    "receivedUnits": {
+      "type": ["null", "integer"]
+    },
+    "expectedDeliveryDate": {
+      "type": ["null", "string"]
+    },
+    "updatedExpectedDeliveryDate": {
+      "type": ["null", "string"]
+    },
+    "trackingNo": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "carrierName": {
+      "type": ["null", "string"]
+    },
+    "shipmentCarrierType": {
+      "type": ["null", "string"]
+    }
+  }
+}

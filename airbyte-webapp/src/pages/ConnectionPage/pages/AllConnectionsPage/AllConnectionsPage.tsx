@@ -4,9 +4,17 @@ import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
+import {
+  Button,
+  LoadingPage,
+  MainPageWithScroll,
+  PageTitle,
+  // DropDown, DropDownRow
+} from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
+// import { Pagination } from "components/Pagination";
+// import { Separator } from "components/Separator";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -35,6 +43,29 @@ const BtnText = styled.div`
   color: #ffffff;
 `;
 
+// const DDsContainer = styled.div`
+//   width: 100%;
+//   display: flex;
+//   align-items: center;
+//   justify-content: flex-end;
+//   padding: 0 32px;
+// `;
+
+// const DDContainer = styled.div<{
+//   margin?: string;
+// }>`
+//   width: 216px;
+//   margin: ${({ margin }) => margin};
+// `;
+
+// const Footer = styled.div`
+//   width: 100%;
+//   display: flex;
+//   flex-direction: row;
+//   align-items: center;
+//   justify-content: center;
+// `;
+
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
 
@@ -44,6 +75,16 @@ const AllConnectionsPage: React.FC = () => {
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
   const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
+
+  // const StatusOptions: DropDownRow.IDataItem[] = [
+  //   { label: "All status", value: "All status" },
+  //   { label: "Active", value: "Active" },
+  //   { label: "Inactive", value: "Inactive" },
+  // ];
+
+  // const SourceOptions: DropDownRow.IDataItem[] = [{ label: "All sources", value: "All sources" }];
+
+  // const DestinationOptions: DropDownRow.IDataItem[] = [{ label: "All destinations", value: "All destinations" }];
 
   return (
     <Suspense fallback={<LoadingPage />}>
@@ -67,7 +108,24 @@ const AllConnectionsPage: React.FC = () => {
             />
           }
         >
+          {/* <Separator />
+          <DDsContainer>
+            <DDContainer margin="0 24px 0 0">
+              <DropDown $withBorder $background="white" value={StatusOptions[0].value} options={StatusOptions} />
+            </DDContainer>
+            <DDContainer margin="0 24px 0 0">
+              <DropDown $withBorder $background="white" value={SourceOptions[0].value} options={SourceOptions} />
+            </DDContainer>
+            <DDContainer>
+              <DropDown $withBorder $background="white" value={DestinationOptions[0].value} options={DestinationOptions} />
+            </DDContainer>
+          </DDsContainer>
+          <Separator height="24px" /> */}
           <ConnectionsTable connections={connections} />
+          {/* <Separator height="54px" />
+          <Footer>
+            <Pagination />
+          </Footer> */}
         </MainPageWithScroll>
       ) : (
         <EmptyResourceListView
