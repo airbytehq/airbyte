@@ -13,8 +13,8 @@ jobs:
       - name: Run Issue Command from workflow-actions
         uses: nick-fields/private-action-loader@v3
         with:
-          pal-repo-token: "${{ GH_PAT_MAINTENANCE_OCTAVIA }}"
+          pal-repo-token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
           pal-repo-name: airbytehq/workflow-actions@production
           # the following input gets passed to the private action
-          token: "${{ GH_PAT_MAINTENANCE_OCTAVIA }}"
+          token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
           command: "pull"
