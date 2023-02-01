@@ -5,6 +5,8 @@ import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { LogsDisplay } from "./LogsDisplay";
@@ -20,8 +22,21 @@ export const StreamTester: React.FC<{
   const {
     streams,
     testStreamIndex,
-    streamRead: { data: streamReadData, refetch: readStream, isError, error, isFetching },
+    streamRead: {
+      data: streamReadData,
+      refetch: readStream,
+      isError,
+      error,
+      isFetching,
+      isFetchedAfterMount,
+      dataUpdatedAt,
+      errorUpdatedAt,
+    },
   } = useConnectorBuilderTestState();
+
+  const streamName = streams[testStreamIndex]?.name;
+
+  const analyticsService = useAnalyticsService();
 
   const [logsFlex, setLogsFlex] = useState(0);
   const handleLogsTitleClick = () => {
@@ -44,6 +59,25 @@ export const StreamTester: React.FC<{
     }
   }, [isError]);
 
+  useEffect(() => {
+    // This will only be true if the data was manually refetched by the user clicking the Test button,
+    // so the analytics events won't fire just from the user switching between streams, as desired
+    if (isFetchedAfterMount) {
+      if (errorMessage) {
+        analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_TEST_FAILURE, {
+          actionDescription: "Stream test failed",
+          stream_name: streamName,
+          error_message: errorMessage,
+        });
+      } else {
+        analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_TEST_SUCCESS, {
+          actionDescription: "Stream test succeeded",
+          stream_name: streamName,
+        });
+      }
+    }
+  }, [analyticsService, errorMessage, isFetchedAfterMount, streamName, dataUpdatedAt, errorUpdatedAt]);
+
   return (
     <div className={styles.container}>
       <Text className={styles.url} size="lg">
@@ -51,7 +85,13 @@ export const StreamTester: React.FC<{
       </Text>
 
       <StreamTestButton
-        readStream={readStream}
+        readStream={() => {
+          readStream();
+          analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.STREAM_TEST, {
+            actionDescription: "Stream test initiated",
+            stream_name: streamName,
+          });
+        }}
         hasTestInputJsonErrors={hasTestInputJsonErrors}
         setTestInputOpen={setTestInputOpen}
       />

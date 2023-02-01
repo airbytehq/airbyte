@@ -64,6 +64,14 @@
         "type": "array",
         "uniqueItems": true,
         "order": 7
+      },
+      "look_back_window": {
+        "title": "Look Back Window",
+        "description": "The amount of days to go back in time to get the updated data from Amazon Ads",
+        "default": 3,
+        "examples": [3, 10],
+        "order": 8,
+        "type": "integer"
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"],
